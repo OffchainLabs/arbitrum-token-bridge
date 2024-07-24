@@ -1,4 +1,4 @@
-name: actions/node-modules/install
+name: Install node modules
 description: "Install node_modules and save it to cache"
 
 runs:

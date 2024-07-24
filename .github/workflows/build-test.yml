@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install node_modules
-        uses: ./.github/actions/actions/node-modules/install
+        uses: ./.github/actions/node-modules/install
 
       - name: Build
         run: yarn build
@@ -111,7 +111,7 @@ jobs:
     needs: build
     steps:
       - name: Install node_modules
-        uses: ./.github/actions/actions/node-modules/install
+        uses: ./.github/actions/node-modules/install
 
       - name: Run audit
         run: yarn audit:ci
@@ -122,7 +122,7 @@ jobs:
     needs: build
     steps:
       - name: Install node_modules
-        uses: ./.github/actions/actions/node-modules/install
+        uses: ./.github/actions/node-modules/install
 
       - name: Check formatting with Prettier
         run: yarn prettier:check
@@ -176,7 +176,7 @@ jobs:
           swap-storage: true
 
       - name: Install node_modules
-        uses: ./.github/actions/actions/node-modules/install
+        uses: ./.github/actions/node-modules/install
 
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
