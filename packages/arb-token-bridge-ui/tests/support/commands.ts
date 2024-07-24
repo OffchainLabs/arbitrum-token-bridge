@@ -253,7 +253,7 @@ export function typeAmount(
   const amountStringified = String(amount)
 
   return cy
-    .findByPlaceholderText(/enter amount/)
+    .findByPlaceholderText(/enter amount/i)
     .typeRecursively(amountStringified)
     .should('have.value', amountStringified)
 }
