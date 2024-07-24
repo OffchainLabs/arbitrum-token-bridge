@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 import { ethers, BigNumber } from 'ethers'
 
 import { DepositStatus, MergedTransaction } from './state'
@@ -82,7 +82,7 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
       return secondLegDepositStatus
     }
     switch (l1ToL2MsgData.status) {
-      case L1ToL2MessageStatus.REDEEMED:
+      case ParentToChildMessageStatus.REDEEMED:
         return DepositStatus.L2_PENDING // tx is still pending if `l1ToL2MsgData` is redeemed (but l2ToL3MsgData is not)
       default:
         return getDepositStatusFromL1ToL2MessageStatus(l1ToL2MsgData.status)
@@ -94,37 +94,37 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     return DepositStatus.L2_PENDING
   }
   switch (l1ToL2MsgData.status) {
-    case L1ToL2MessageStatus.NOT_YET_CREATED:
+    case ParentToChildMessageStatus.NOT_YET_CREATED:
       return DepositStatus.L2_PENDING
-    case L1ToL2MessageStatus.CREATION_FAILED:
+    case ParentToChildMessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
-    case L1ToL2MessageStatus.EXPIRED:
+    case ParentToChildMessageStatus.EXPIRED:
       return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.EXPIRED
-    case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2: {
+    case ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD: {
       return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
     }
-    case L1ToL2MessageStatus.REDEEMED:
+    case ParentToChildMessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
   }
 }
 
 function getDepositStatusFromL1ToL2MessageStatus(
-  status: L1ToL2MessageStatus
+  status: ParentToChildMessageStatus
 ): DepositStatus | undefined {
   switch (status) {
-    case L1ToL2MessageStatus.NOT_YET_CREATED:
+    case ParentToChildMessageStatus.NOT_YET_CREATED:
       return DepositStatus.L2_PENDING
-    case L1ToL2MessageStatus.CREATION_FAILED:
+    case ParentToChildMessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
-    case L1ToL2MessageStatus.EXPIRED:
+    case ParentToChildMessageStatus.EXPIRED:
       return DepositStatus.EXPIRED
-    case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
+    case ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD:
       return DepositStatus.L2_FAILURE
-    case L1ToL2MessageStatus.REDEEMED:
+    case ParentToChildMessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
   }
 }

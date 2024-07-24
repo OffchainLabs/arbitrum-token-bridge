@@ -77,10 +77,8 @@ describe('Deposit USDC through CCTP', () => {
       /// common code before all tests
       cy.login({ networkType: 'L1', networkName: 'sepolia' })
       context('should show L1 and L2 chains, and USD correctly', () => {
-        cy.findByRole('button', { name: /From: Sepolia/i }).should('be.visible')
-        cy.findByRole('button', { name: /To: Arbitrum Sepolia/i }).should(
-          'be.visible'
-        )
+        cy.findSourceChainButton('Sepolia')
+        cy.findDestinationChainButton('Arbitrum Sepolia')
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
@@ -92,8 +90,8 @@ describe('Deposit USDC through CCTP', () => {
       })
 
       context('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(USDCAmountToSend))
+        cy.typeAmount(USDCAmountToSend)
+          //
           .then(() => {
             cy.findByText(/You will pay in gas fees:/i)
               .siblings()

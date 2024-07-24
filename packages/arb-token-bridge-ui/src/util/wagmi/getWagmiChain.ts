@@ -7,8 +7,6 @@ import {
   holesky,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
-  stylusTestnetV2,
   localL1Network,
   localL2Network
 } from './wagmiAdditionalNetworks'
@@ -18,7 +16,6 @@ import { orbitChains } from '../orbitChainsList'
 
 export function getWagmiChain(chainId: number): Chain {
   const customChain = getCustomChainFromLocalStorageById(chainId)
-  // excluding Stylus because its part of the SDK
   const orbitChain = orbitChains[chainId]
 
   if (customChain) {
@@ -48,12 +45,6 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.ArbitrumSepolia:
       return arbitrumSepolia
-
-    case ChainId.StylusTestnet:
-      return stylusTestnet
-
-    case ChainId.StylusTestnetV2:
-      return stylusTestnetV2
 
     // Local networks
     case ChainId.Local:

@@ -1,5 +1,7 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useState, useEffect, useMemo } from 'react'
+import Resolution from '@unstoppabledomains/resolution'
+
 import {
   useProvider,
   useAccount,
@@ -12,7 +14,7 @@ import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { shortenAddress } from '../util/CommonUtils'
 import { useAppContextActions } from '../components/App/AppContext'
-import Resolution from '@unstoppabledomains/resolution'
+import { onDisconnectHandler } from '../util/walletConnectUtils'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -46,7 +48,9 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
 export const useAccountMenu = () => {
   const l1Provider = useProvider({ chainId: 1 })
   const { address } = useAccount()
-  const { disconnect } = useDisconnect()
+  const { disconnect } = useDisconnect({
+    onSettled: onDisconnectHandler
+  })
   const { chain } = useNetwork()
 
   const { openTransactionHistoryPanel } = useAppContextActions()
