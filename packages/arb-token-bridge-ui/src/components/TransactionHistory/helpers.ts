@@ -24,7 +24,7 @@ import {
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
-  getL1ToL2MessageDataFromL1TxHash,
+  getParentToChildMessageDataFromParentTxHash,
   fetchTeleporterDepositStatusData
 } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -271,11 +271,11 @@ export async function getUpdatedEthDeposit(
     return tx
   }
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+  const { parentToChildMsg: l1ToL2Msg } = await getParentToChildMessageDataFromParentTxHash({
     depositTxId: tx.txId,
     isEthDeposit: true,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
+    parentProvider: getProvider(tx.parentChainId),
+    childProvider: getProvider(tx.childChainId)
   })
 
   if (!l1ToL2Msg) {
@@ -328,11 +328,11 @@ export async function getUpdatedTokenDeposit(
     return tx
   }
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+  const { parentToChildMsg: l1ToL2Msg } = await getParentToChildMessageDataFromParentTxHash({
     depositTxId: tx.txId,
     isEthDeposit: false,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
+    parentProvider: getProvider(tx.parentChainId),
+    childProvider: getProvider(tx.childChainId)
   })
   const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
 

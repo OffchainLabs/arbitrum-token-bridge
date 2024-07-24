@@ -57,10 +57,10 @@ export const updateAdditionalDepositData = async ({
 
   const isEthDeposit = depositTx.assetType === AssetType.ETH
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+  const { parentToChildMsg: l1ToL2Msg } = await getParentToChildMessageDataFromParentTxHash({
     depositTxId: depositTx.txID,
-    l1Provider,
-    l2Provider,
+    parentProvider: l1Provider,
+    childProvider: l2Provider,
     isEthDeposit,
     isClassic
   })
@@ -464,42 +464,42 @@ export async function fetchTeleporterDepositStatusData({
   }
 }
 
-export const getL1ToL2MessageDataFromL1TxHash = async ({
+export const getParentToChildMessageDataFromParentTxHash = async ({
   depositTxId,
   isEthDeposit,
-  l1Provider,
-  l2Provider,
+  parentProvider,
+  childProvider,
   isClassic // optional: if we already know if tx is classic (eg. through subgraph) then no need to re-check in this fn
 }: {
   depositTxId: string
-  l1Provider: Provider
+  parentProvider: Provider
   isEthDeposit: boolean
-  l2Provider: Provider
+  childProvider: Provider
   isClassic?: boolean
 }): Promise<{
   isClassic?: boolean
-  l1ToL2Msg?:
+  parentToChildMsg?:
     | ParentToChildMessageReaderClassic
     | EthDepositMessage
     | ParentToChildMessageReader
 }> => {
   // fetch L1 transaction receipt
-  const depositTxReceipt = await l1Provider.getTransactionReceipt(depositTxId)
+  const depositTxReceipt = await parentProvider.getTransactionReceipt(depositTxId)
 
   // TODO: Handle tx not found
   if (!depositTxReceipt) {
     return {}
   }
 
-  const l1TxReceipt = new ParentTransactionReceipt(depositTxReceipt)
+  const parentTxReceipt = new ParentTransactionReceipt(depositTxReceipt)
 
   const getClassicDepositMessage = async () => {
-    const [l1ToL2Msg] = await l1TxReceipt.getParentToChildMessagesClassic(
-      l2Provider
+    const [parentToChildMsg] = await parentTxReceipt.getParentToChildMessagesClassic(
+      childProvider
     )
     return {
       isClassic: true,
-      l1ToL2Msg: l1ToL2Msg
+      parentToChildMsg: parentToChildMsg
     }
   }
 
@@ -507,22 +507,22 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     // post-nitro handling
     if (isEthDeposit) {
       // nitro eth deposit
-      const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+      const [ethDepositMessage] = await parentTxReceipt.getEthDeposits(childProvider)
       return {
         isClassic: false,
-        l1ToL2Msg: ethDepositMessage
+        parentToChildMsg: ethDepositMessage
       }
     }
 
     // Else, nitro token deposit
-    const [l1ToL2Msg] = await l1TxReceipt.getParentToChildMessages(l2Provider)
+    const [parentToChildMsg] = await parentTxReceipt.getParentToChildMessages(childProvider)
     return {
       isClassic: false,
-      l1ToL2Msg
+      parentToChildMsg
     }
   }
 
-  const safeIsClassic = isClassic ?? (await l1TxReceipt.isClassic(l2Provider)) // if it is unknown whether the transaction isClassic or not, fetch the result
+  const safeIsClassic = isClassic ?? (await parentTxReceipt.isClassic(childProvider)) // if it is unknown whether the transaction isClassic or not, fetch the result
 
   if (safeIsClassic) {
     // classic (pre-nitro) deposit - both eth + token
