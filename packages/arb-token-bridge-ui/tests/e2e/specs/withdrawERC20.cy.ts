@@ -149,8 +149,11 @@ describe('Withdraw ERC20 Token', () => {
                     interval: 1000
                   }
                 ).then(() => {
-                  cy.findAllByLabelText(/Claim Transaction/i)
-                    .first()
+                  cy.findByLabelText(
+                    `Claim ${formatAmount(ERC20AmountToSend, {
+                      symbol: 'WETH'
+                    })}`
+                  )
                     .click()
                     .then(() => {
                       cy.changeMetamaskNetwork(
