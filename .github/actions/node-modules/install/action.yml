@@ -1,12 +1,32 @@
 name: Install node modules
 description: "Install node_modules and save it to cache"
-
+inputs:
+  install-command:
+    description: "Command to run to install node_modules (yarn, npm, pnpm...)"
+    required: false
+    default: yarn install --frozen-lockfile
+  cache-key:
+    description: "Key to store node_modules in cache"
+    required: false
+    default: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - name: Check cache for "node_modules"
+      id: cache
+      uses: actions/cache/restore@v4
       with:
-        node-version: '20'
-        cache: 'yarn'
-    - run: yarn install --frozen-lockfile # optional, --immutable
+        path: "**/node_modules"
+        key: ${{ inputs.cache-key }}
+
+    - name: Install dependencies
       shell: bash
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: ${{ inputs.install-command }}
+
+    - name: Save "node_modules" to cache
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: "**/node_modules"
+        key: ${{ steps.cache.outputs.primary-key }}
