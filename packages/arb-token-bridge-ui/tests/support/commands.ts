@@ -255,6 +255,40 @@ export const fillCustomDestinationAddress = () => {
     .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
 
+export function typeAmount(
+  amount: string | number
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByPlaceholderText(/enter amount/i)
+    .typeRecursively(String(amount))
+}
+
+export function findSourceChainButton(
+  chain: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: `From: ${chain}` })
+    .should('be.visible')
+}
+
+export function findDestinationChainButton(
+  chain: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return (
+    cy
+      //
+      .findByRole('button', { name: `To: ${chain}` })
+      .should('be.visible')
+  )
+}
+
+export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: /move funds/i })
+    .scrollIntoView()
+    .should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -264,5 +298,9 @@ Cypress.Commands.addAll({
   fundUserUsdcTestnet,
   fundUserWalletEth,
   searchAndSelectToken,
-  fillCustomDestinationAddress
+  fillCustomDestinationAddress,
+  typeAmount,
+  findSourceChainButton,
+  findDestinationChainButton,
+  findMoveFundsButton
 })
