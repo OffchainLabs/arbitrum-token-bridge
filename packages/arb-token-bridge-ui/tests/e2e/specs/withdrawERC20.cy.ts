@@ -24,6 +24,7 @@ describe('Withdraw ERC20 Token', () => {
 
     // log in to metamask before withdrawal
     beforeEach(() => {
+      cy.login({ networkType: 'L2' })
       getInitialERC20Balance({
         tokenAddress: wethTokenAddressL2,
         multiCallerAddress: getL2NetworkConfig().multiCall,
@@ -38,7 +39,6 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should show form fields correctly', () => {
-      cy.login({ networkType: 'L2' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
 
@@ -57,7 +57,6 @@ describe('Withdraw ERC20 Token', () => {
       'should withdraw ERC-20 to the same address successfully',
       { defaultCommandTimeout: 120_000 },
       () => {
-        cy.login({ networkType: 'L2' })
         context('should add ERC-20 correctly', () => {
           cy.searchAndSelectToken({
             tokenName: 'WETH',
