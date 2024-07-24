@@ -20,7 +20,8 @@ logCollector({
     'cons:debug',
     'cons:error',
     'cons:info',
-    'cons:log'
+    'cons:log',
+    'cons:warn'
   ]
 })
 
