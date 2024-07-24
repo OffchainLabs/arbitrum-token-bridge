@@ -24,7 +24,6 @@ describe('Withdraw ERC20 Token', () => {
 
     // log in to metamask before withdrawal
     beforeEach(() => {
-      cy.login({ networkType: 'L2' })
       getInitialERC20Balance({
         tokenAddress: wethTokenAddressL2,
         multiCallerAddress: getL2NetworkConfig().multiCall,
@@ -170,6 +169,11 @@ describe('Withdraw ERC20 Token', () => {
                           )
                             .first()
                             .should('be.visible')
+
+                          // switch back to L2
+                          cy.changeMetamaskNetwork(
+                            getL2NetworkConfig().networkName
+                          )
                         })
                       })
                   })
