@@ -18,7 +18,7 @@ const { _ } = Cypress
 const moreThanZeroBalance = /0(\.\d+)/
 
 const testCases = {
-  ERC20: {
+  'Standard ERC20': {
     symbol: ERC20TokenSymbol,
     l1Address: Cypress.env('ERC20_TOKEN_ADDRESS_L1'),
     l2Address: Cypress.env('ERC20_TOKEN_ADDRESS_L2')
