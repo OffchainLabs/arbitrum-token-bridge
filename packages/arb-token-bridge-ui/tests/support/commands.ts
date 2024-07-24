@@ -15,7 +15,8 @@ import {
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getInitialERC20Balance
+  getInitialERC20Balance,
+  zeroToLessThanOneETH
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
@@ -274,6 +275,33 @@ export function findDestinationChainButton(
   )
 }
 
+export function findChainGasFee(
+  label: string | RegExp,
+  amount?: string | number | RegExp
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  if (amount) {
+    return cy
+      .findByText(label)
+      .parent()
+      .siblings()
+      .contains(amount)
+      .should('be.visible')
+  }
+
+  return cy.findByText(label).should('be.visible')
+}
+
+export function findSummaryGasFee(
+  amount: string | number | RegExp
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByText('You will pay in gas fees:')
+    .siblings()
+    .last()
+    .contains(amount)
+    .should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -286,5 +314,7 @@ Cypress.Commands.addAll({
   fillCustomDestinationAddress,
   typeAmount,
   findSourceChainButton,
-  findDestinationChainButton
+  findDestinationChainButton,
+  findChainGasFee,
+  findSummaryGasFee
 })

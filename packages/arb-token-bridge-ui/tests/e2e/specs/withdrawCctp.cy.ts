@@ -5,6 +5,7 @@
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { shortenAddress } from '../../../src/util/CommonUtils'
+import { zeroToLessThanOneETH } from '../../support/common'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -81,7 +82,15 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.typeAmount(USDCAmountToSend)
+        cy.typeAmount(USDCAmountToSend).then(() => {
+          cy.findByText(
+            'Gas estimates are not available for this action.'
+          ).should('be.visible')
+          cy.findChainGasFee('Arbitrum Sepolia gas fee', zeroToLessThanOneETH)
+          cy.findChainGasFee(
+            /You'll have to pay Sepolia gas fee upon claiming./i
+          )
+        })
         cy.findByRole('button', {
           name: /Move funds to Sepolia/i
         })

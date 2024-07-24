@@ -63,21 +63,9 @@ describe('Deposit ERC20 Token', () => {
         cy.typeAmount(ERC20AmountToSend)
           //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('Ethereum Local gas fee')
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('Arbitrum Local gas fee')
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findSummaryGasFee(zeroToLessThanOneETH)
+            cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
+            cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
           })
       })
 
@@ -117,11 +105,9 @@ describe('Deposit ERC20 Token', () => {
         cy.typeAmount(ERC20AmountToSend)
           //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findSummaryGasFee(zeroToLessThanOneETH)
+            cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
+            cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
           })
       })
 

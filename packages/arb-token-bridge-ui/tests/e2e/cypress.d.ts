@@ -12,7 +12,9 @@ import {
   fillCustomDestinationAddress,
   typeAmount,
   findSourceChainButton,
-  findDestinationChainButton
+  findDestinationChainButton,
+  findSummaryGasFee,
+  findChainGasFee
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -48,6 +50,8 @@ declare global {
       typeAmount: typeof typeAmount
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
+      findChainGasFee: typeof findChainGasFee
+      findSummaryGasFee: typeof findSummaryGasFee
     }
   }
 }
