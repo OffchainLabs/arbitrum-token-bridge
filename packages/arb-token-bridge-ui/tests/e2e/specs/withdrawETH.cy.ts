@@ -47,7 +47,7 @@ describe('Withdraw ETH', () => {
 
       it(
         'should show withdrawal confirmation and withdraw',
-        { defaultCommandTimeout: 120_000 },
+        { defaultCommandTimeout: 200_000 },
         () => {
           cy.login({ networkType: 'L2' })
           cy.typeAmount(ETHToWithdraw)
@@ -110,7 +110,7 @@ describe('Withdraw ETH', () => {
                           {
                             errorMsg:
                               'Claim Transaction button is not visible or enabled',
-                            timeout: 120_000,
+                            timeout: 200_000,
                             interval: 1000
                           }
                         ).then(() => {

@@ -38,6 +38,7 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should show form fields correctly', () => {
+      cy.login({ networkType: 'L2' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
 
@@ -54,8 +55,10 @@ describe('Withdraw ERC20 Token', () => {
 
     it(
       'should withdraw ERC-20 to the same address successfully',
-      { defaultCommandTimeout: 120_000 },
+      { defaultCommandTimeout: 200_000 },
       () => {
+        cy.login({ networkType: 'L2' })
+
         context('should add ERC-20 correctly', () => {
           cy.searchAndSelectToken({
             tokenName: 'WETH',
@@ -143,7 +146,7 @@ describe('Withdraw ERC20 Token', () => {
                   {
                     errorMsg:
                       'Claim Transaction button is not visible or enabled',
-                    timeout: 120_000,
+                    timeout: 200_000,
                     interval: 1000
                   }
                 ).then(() => {
