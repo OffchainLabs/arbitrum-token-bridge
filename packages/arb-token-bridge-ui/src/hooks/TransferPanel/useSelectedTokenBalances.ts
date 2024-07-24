@@ -81,7 +81,8 @@ export function useSelectedTokenBalances(): Balances {
     }
 
     if (erc20L1Balances) {
-      result.parentBalance = erc20L1Balances[selectedToken.address.toLowerCase()] ?? null
+      result.parentBalance =
+        erc20L1Balances[selectedToken.address.toLowerCase()] ?? null
     }
 
     if (
@@ -105,8 +106,10 @@ export function useSelectedTokenBalances(): Balances {
       erc20L2Balances
     ) {
       return {
-        parentBalance: erc20L1Balances[CommonAddress.Ethereum.USDC.toLowerCase()] ?? null,
-        childBalance: erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
+        parentBalance:
+          erc20L1Balances[CommonAddress.Ethereum.USDC.toLowerCase()] ?? null,
+        childBalance:
+          erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
       }
     }
     if (
@@ -116,8 +119,10 @@ export function useSelectedTokenBalances(): Balances {
       erc20L2Balances
     ) {
       return {
-        parentBalance: erc20L1Balances[CommonAddress.Sepolia.USDC.toLowerCase()] ?? null,
-        childBalance: erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
+        parentBalance:
+          erc20L1Balances[CommonAddress.Sepolia.USDC.toLowerCase()] ?? null,
+        childBalance:
+          erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
       }
     }
 

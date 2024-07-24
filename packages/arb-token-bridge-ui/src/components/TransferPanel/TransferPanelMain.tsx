@@ -478,7 +478,11 @@ export function TransferPanelMain({
 
     const customFeeTokenParentBalance = customFeeTokenBalances.parentBalance
     // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
-    if (nativeCurrency.isCustom && isDepositMode && customFeeTokenParentBalance) {
+    if (
+      nativeCurrency.isCustom &&
+      isDepositMode &&
+      customFeeTokenParentBalance
+    ) {
       setAmount(
         utils.formatUnits(customFeeTokenParentBalance, nativeCurrency.decimals)
       )
@@ -487,7 +491,9 @@ export function TransferPanelMain({
 
     // We have already handled token deposits and deposits of the custom fee token
     // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
-    const nativeCurrencyBalance = isDepositMode ? ethParentBalance : ethChildBalance
+    const nativeCurrencyBalance = isDepositMode
+      ? ethParentBalance
+      : ethChildBalance
 
     if (!nativeCurrencyBalance) {
       return
@@ -694,7 +700,9 @@ export function TransferPanelMain({
           </NetworkSelectionContainer>
           <BalancesContainer>
             <TokenBalance
-              on={isDepositMode ? NetworkType.parentChain : NetworkType.childChain}
+              on={
+                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
+              }
               balance={
                 isDepositMode
                   ? selectedTokenBalances.parentBalance
@@ -706,7 +714,11 @@ export function TransferPanelMain({
             {nativeCurrency.isCustom ? (
               <>
                 <TokenBalance
-                  on={isDepositMode ? NetworkType.parentChain : NetworkType.childChain}
+                  on={
+                    isDepositMode
+                      ? NetworkType.parentChain
+                      : NetworkType.childChain
+                  }
                   balance={
                     isDepositMode
                       ? customFeeTokenBalances.parentBalance
@@ -788,7 +800,11 @@ export function TransferPanelMain({
                         ? selectedTokenBalances.childBalance
                         : selectedTokenBalances.parentBalance
                     }
-                    on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+                    on={
+                      isDepositMode
+                        ? NetworkType.childChain
+                        : NetworkType.parentChain
+                    }
                     forToken={selectedToken}
                     prefix={selectedToken ? 'Balance: ' : ''}
                     tokenSymbolOverride={
@@ -824,7 +840,11 @@ export function TransferPanelMain({
                   {nativeCurrency.isCustom ? (
                     <>
                       <TokenBalance
-                        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+                        on={
+                          isDepositMode
+                            ? NetworkType.childChain
+                            : NetworkType.parentChain
+                        }
                         balance={
                           isDepositMode
                             ? customFeeTokenBalances.childBalance
@@ -833,11 +853,15 @@ export function TransferPanelMain({
                         forToken={nativeCurrency}
                         prefix={selectedToken ? '' : 'Balance: '}
                       />
-                      {!isDepositMode && <ETHBalance balance={ethParentBalance} />}
+                      {!isDepositMode && (
+                        <ETHBalance balance={ethParentBalance} />
+                      )}
                     </>
                   ) : (
                     <ETHBalance
-                      balance={isDepositMode ? ethChildBalance : ethParentBalance}
+                      balance={
+                        isDepositMode ? ethChildBalance : ethParentBalance
+                      }
                       prefix={selectedToken ? '' : 'Balance: '}
                     />
                   )}
