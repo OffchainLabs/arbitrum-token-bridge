@@ -9,7 +9,8 @@ import {
   fundUserUsdcTestnet,
   fundUserWalletEth,
   searchAndSelectToken,
-  fillCustomDestinationAddress
+  fillCustomDestinationAddress,
+  typeAmount
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -42,9 +43,7 @@ declare global {
         tokenAddress: string
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
-      typeAmount(
-        amount: string | number
-      ): Cypress.Chainable<JQuery<HTMLElement>>
+      typeAmount: typeof typeAmount
     }
   }
 }
