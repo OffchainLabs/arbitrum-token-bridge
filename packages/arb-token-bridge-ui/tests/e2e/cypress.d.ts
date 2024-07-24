@@ -14,7 +14,7 @@ import {
   findSourceChainButton,
   findDestinationChainButton,
   findSummaryGasFee,
-  findChainGasFee,
+  findGasFeeForChain,
   findMoveFundsButton
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
@@ -51,7 +51,7 @@ declare global {
       typeAmount: typeof typeAmount
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
-      findChainGasFee: typeof findChainGasFee
+      findGasFeeForChain: typeof findGasFeeForChain
       findSummaryGasFee: typeof findSummaryGasFee
       findMoveFundsButton: typeof findMoveFundsButton
     }

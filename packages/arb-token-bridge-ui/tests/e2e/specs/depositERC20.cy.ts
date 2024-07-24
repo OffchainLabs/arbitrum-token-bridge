@@ -64,8 +64,8 @@ describe('Deposit ERC20 Token', () => {
           //
           .then(() => {
             cy.findSummaryGasFee(zeroToLessThanOneETH)
-            cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
-            cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
           })
       })
 
@@ -101,8 +101,8 @@ describe('Deposit ERC20 Token', () => {
           //
           .then(() => {
             cy.findSummaryGasFee(zeroToLessThanOneETH)
-            cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
-            cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
           })
       })
 

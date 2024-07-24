@@ -62,8 +62,8 @@ describe('Withdraw ERC20 Token', () => {
           //
           .then(() => {
             cy.findSummaryGasFee(zeroToLessThanOneETH)
-            cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
-            cy.findChainGasFee(
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain(
               /You'll have to pay Ethereum Local gas fee upon claiming./i
             )
           })
@@ -128,8 +128,8 @@ describe('Withdraw ERC20 Token', () => {
           //
           .then(() => {
             cy.findSummaryGasFee(zeroToLessThanOneETH)
-            cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
-            cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
           })
       })
 

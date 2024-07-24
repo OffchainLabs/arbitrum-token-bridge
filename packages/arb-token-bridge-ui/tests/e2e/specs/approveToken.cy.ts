@@ -28,8 +28,8 @@ describe('Approve token and deposit afterwards', () => {
         .click()
         .then(() => {
           cy.findSummaryGasFee(zeroToLessThanOneETH)
-          cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
-          cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
+          cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+          cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
         })
       cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
         errorMsg: 'move funds button is disabled (expected to be enabled)',

@@ -21,8 +21,8 @@ describe('Deposit ETH', () => {
       //
       .then(() => {
         cy.findSummaryGasFee(zeroToLessThanOneETH)
-        cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
-        cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
+        cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+        cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
       })
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {

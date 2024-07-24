@@ -86,8 +86,8 @@ describe('Withdraw USDC through CCTP', () => {
           cy.findByText(
             'Gas estimates are not available for this action.'
           ).should('be.visible')
-          cy.findChainGasFee('Arbitrum Sepolia gas fee', zeroToLessThanOneETH)
-          cy.findChainGasFee(
+          cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
+          cy.findGasFeeForChain(
             /You'll have to pay Sepolia gas fee upon claiming./i
           )
         })

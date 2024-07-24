@@ -275,13 +275,13 @@ export function findDestinationChainButton(
   )
 }
 
-export function findChainGasFee(
+export function findGasFeeForChain(
   label: string | RegExp,
   amount?: string | number | RegExp
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   if (amount) {
     return cy
-      .findByText(label)
+      .findByText(`${label} gas fee`)
       .parent()
       .siblings()
       .contains(amount)
@@ -299,6 +299,7 @@ export function findSummaryGasFee(
     .siblings()
     .last()
     .contains(amount)
+    .should('be.visible')
 }
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
