@@ -264,7 +264,7 @@ async function generateActivityOnChains() {
         })
       ).wait()
 
-      await wait(1000)
+      await wait(100)
     }
   }
   // whilst waiting for status we mine on both l1 and l2
