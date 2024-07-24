@@ -13,7 +13,16 @@ Cypress.Keyboard.defaults({
   keystrokeDelay: 150
 })
 
-logCollector()
+logCollector({
+  collectTypes: [
+    'cy:command',
+    'cy:log',
+    'cons:debug',
+    'cons:error',
+    'cons:info',
+    'cons:log'
+  ]
+})
 
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing
