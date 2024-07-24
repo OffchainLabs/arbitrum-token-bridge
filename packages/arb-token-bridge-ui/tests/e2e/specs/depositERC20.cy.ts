@@ -17,7 +17,7 @@ const { _ } = Cypress
 
 const moreThanZeroBalance = /0(\.\d+)/
 
-const testCases = {
+const depositTestCases = {
   'Standard ERC20': {
     symbol: ERC20TokenSymbol,
     l1Address: Cypress.env('ERC20_TOKEN_ADDRESS_L1'),
@@ -35,21 +35,21 @@ describe('Deposit Token', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
-  // Happy Path
-  context('User has some tokens and is on L1', () => {
-    it('should show L1 and L2 chains, and ETH correctly', () => {
-      cy.login({ networkType: 'L1' })
-      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', 'ETH')
-    })
+  it('should show L1 and L2 chains, and ETH correctly', () => {
+    cy.login({ networkType: 'L1' })
+    cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
+    cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
+    cy.findByRole('button', { name: 'Select Token' })
+      .should('be.visible')
+      .should('have.text', 'ETH')
+  })
 
-    _.each(testCases, (testCase, tokenType) => {
+  // Happy Path
+
+  _.each(depositTestCases, (testCase, tokenType) => {
+    context(`User has some ${tokenType} and is on L1`, () => {
       let l1ERC20bal: string
 
-      // log in to metamask before deposit
       beforeEach(() => {
         getInitialERC20Balance({
           tokenAddress: testCase.l1Address,
