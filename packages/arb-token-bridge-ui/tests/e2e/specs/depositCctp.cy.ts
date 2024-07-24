@@ -92,8 +92,8 @@ describe('Deposit USDC through CCTP', () => {
       })
 
       context('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(USDCAmountToSend))
+        cy.typeAmount(USDCAmountToSend)
+          //
           .then(() => {
             cy.findByText(/You will pay in gas fees:/i)
               .siblings()

@@ -83,9 +83,7 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.findByPlaceholderText('Enter amount').typeRecursively(
-          String(USDCAmountToSend)
-        )
+        cy.typeAmount(USDCAmountToSend)
         cy.findByRole('button', {
           name: /Move funds to Sepolia/i
         })
@@ -115,9 +113,7 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.findByPlaceholderText('Enter amount').typeRecursively(
-          String(USDCAmountToSend)
-        )
+        cy.typeAmount(USDCAmountToSend)
       })
 
       context('should fill custom destination address successfully', () => {

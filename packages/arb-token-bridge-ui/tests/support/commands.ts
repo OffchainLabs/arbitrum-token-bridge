@@ -247,6 +247,14 @@ export const fillCustomDestinationAddress = () => {
     .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
 
+export function typeAmount(
+  amount: string | number
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByPlaceholderText(/enter amount/i)
+    .typeRecursively(String(amount))
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -256,5 +264,6 @@ Cypress.Commands.addAll({
   fundUserUsdcTestnet,
   fundUserWalletEth,
   searchAndSelectToken,
-  fillCustomDestinationAddress
+  fillCustomDestinationAddress,
+  typeAmount
 })

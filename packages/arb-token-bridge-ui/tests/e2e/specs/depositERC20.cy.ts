@@ -60,8 +60,8 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show gas estimations', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
             cy.findByText('You will pay in gas fees:')
               .siblings()
@@ -114,8 +114,8 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
             cy.findByText('You will pay in gas fees:')
               .siblings()
