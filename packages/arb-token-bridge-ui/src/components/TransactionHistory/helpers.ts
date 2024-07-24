@@ -271,12 +271,13 @@ export async function getUpdatedEthDeposit(
     return tx
   }
 
-  const { parentToChildMsg: l1ToL2Msg } = await getParentToChildMessageDataFromParentTxHash({
-    depositTxId: tx.txId,
-    isEthDeposit: true,
-    parentProvider: getProvider(tx.parentChainId),
-    childProvider: getProvider(tx.childChainId)
-  })
+  const { parentToChildMsg: l1ToL2Msg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: tx.txId,
+      isEthDeposit: true,
+      parentProvider: getProvider(tx.parentChainId),
+      childProvider: getProvider(tx.childChainId)
+    })
 
   if (!l1ToL2Msg) {
     const receipt = await getTxReceipt(tx)
@@ -328,12 +329,13 @@ export async function getUpdatedTokenDeposit(
     return tx
   }
 
-  const { parentToChildMsg: l1ToL2Msg } = await getParentToChildMessageDataFromParentTxHash({
-    depositTxId: tx.txId,
-    isEthDeposit: false,
-    parentProvider: getProvider(tx.parentChainId),
-    childProvider: getProvider(tx.childChainId)
-  })
+  const { parentToChildMsg: l1ToL2Msg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: tx.txId,
+      isEthDeposit: false,
+      parentProvider: getProvider(tx.parentChainId),
+      childProvider: getProvider(tx.childChainId)
+    })
   const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
 
   if (!l1ToL2Msg) {
