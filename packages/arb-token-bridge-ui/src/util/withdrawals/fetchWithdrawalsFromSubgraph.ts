@@ -1,3 +1,4 @@
+import { hasL2Subgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchWithdrawalsFromSubgraphResult = {
@@ -69,6 +70,12 @@ export async function fetchWithdrawalsFromSubgraph({
       search: searchString
     })
   )
+
+  if (!hasL2Subgraph(Number(l2ChainId))) {
+    throw new Error(`L2 subgraph not available for network: ${l2ChainId}`)
+  }
+
+  if (pageSize === 0) return [] // don't query subgraph if nothing requested
 
   const response = await fetch(
     `${getAPIBaseUrl()}/api/withdrawals?${urlParams}`,

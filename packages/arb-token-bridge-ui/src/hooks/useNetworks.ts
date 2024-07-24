@@ -1,103 +1,45 @@
 import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
-import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
+import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  rpcURLs
-} from '../util/networks'
+import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
 import {
   sepolia,
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
-  xaiTestnet,
-  stylusTestnet,
   localL1Network as local,
   localL2Network as arbitrumLocal
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
-import { getPartnerChainsForChainId } from '../util/wagmi/getPartnerChainsForChainId'
+import { getDestinationChainIds } from '../util/networks'
+import { getWagmiChain } from '../util/wagmi/getWagmiChain'
+import { getOrbitChains } from '../util/orbitChainsList'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-function getChainByChainId(chainId: ChainId): Chain {
-  const chain = {
-    // L1
-    [ChainId.Ethereum]: mainnet,
-    // L1 Testnet
-    [ChainId.Goerli]: goerli,
-    [ChainId.Sepolia]: sepolia,
-    // L2
-    [ChainId.ArbitrumOne]: arbitrum,
-    [ChainId.ArbitrumNova]: arbitrumNova,
-    // L2 Testnet
-    [ChainId.ArbitrumGoerli]: arbitrumGoerli,
-    [ChainId.ArbitrumSepolia]: arbitrumSepolia,
-    // L3
-    [ChainId.XaiTestnet]: xaiTestnet,
-    [ChainId.StylusTestnet]: stylusTestnet,
-    // E2E
-    [ChainId.Local]: local,
-    [ChainId.ArbitrumLocal]: arbitrumLocal
-  }[chainId]
-
-  return chain
-}
-
-function getPartnerChainsIds(chainId: ChainId): ChainId[] {
-  try {
-    const partnerChains = getPartnerChainsForChainId(chainId)
-    return partnerChains.map(chain => chain.id)
-  } catch (e) {
-    return []
-  }
-}
-
-const getProviderForChainCache: {
-  [chainId: number]: StaticJsonRpcProvider
-} = {
-  // start with empty cache
-}
-
-function createProviderWithCache(chainId: ChainId) {
-  const rpcUrl = rpcURLs[chainId]
-  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
-  getProviderForChainCache[chainId] = provider
-  return provider
-}
-
-function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
-  const cachedProvider = getProviderForChainCache[chainId]
-
-  if (typeof cachedProvider !== 'undefined') {
-    return cachedProvider
-  }
-
-  return createProviderWithCache(chainId)
-}
-
-function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
+export function isSupportedChainId(
+  chainId: ChainId | undefined
+): chainId is ChainId {
   if (!chainId) {
     return false
   }
 
   const customChainIds = getCustomChainsFromLocalStorage().map(
-    chain => chain.chainID
+    chain => chain.chainId
   )
 
   return [
     mainnet.id,
-    goerli.id,
     sepolia.id,
+    holesky.id,
     arbitrum.id,
     arbitrumNova.id,
-    arbitrumGoerli.id,
     arbitrumSepolia.id,
-    stylusTestnet.id,
-    xaiTestnet.id,
     arbitrumLocal.id,
     local.id,
+    ...getOrbitChains().map(chain => chain.chainId),
     ...customChainIds
   ].includes(chainId)
 }
@@ -129,7 +71,7 @@ export function sanitizeQueryParams({
     !isSupportedChainId(sourceChainId) &&
     isSupportedChainId(destinationChainId)
   ) {
-    const [defaultSourceChainId] = getPartnerChainsIds(destinationChainId)
+    const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
     return { sourceChainId: defaultSourceChainId!, destinationChainId }
   }
 
@@ -138,7 +80,7 @@ export function sanitizeQueryParams({
     isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
   ) {
-    const [defaultDestinationChainId] = getPartnerChainsIds(sourceChainId)
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
     return {
       sourceChainId: sourceChainId,
       destinationChainId: defaultDestinationChainId!
@@ -146,8 +88,8 @@ export function sanitizeQueryParams({
   }
 
   // destinationChainId is not a partner of sourceChainId
-  if (!getPartnerChainsIds(sourceChainId!).includes(destinationChainId!)) {
-    const [defaultDestinationChainId] = getPartnerChainsIds(sourceChainId!)
+  if (!getDestinationChainIds(sourceChainId!).includes(destinationChainId!)) {
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!)
     return {
       sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!
@@ -167,22 +109,23 @@ export type UseNetworksState = {
   destinationChainProvider: StaticJsonRpcProvider
 }
 
-export type UseNetworksSetStateParams =
-  | {
-      sourceChainId: ChainId
-      destinationChainId?: ChainId
-    }
-  | {
-      sourceChainId?: ChainId
-      destinationChainId: ChainId
-    }
+export type UseNetworksSetStateParams = {
+  sourceChainId: ChainId
+  destinationChainId?: ChainId
+}
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
+
+/**
+ * We keep track of this so we only call `setQueryParams` once.
+ */
+let didUpdateUrlWithSanitizedValues = false
 
 export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const [
     { sourceChain: sourceChainId, destinationChain: destinationChainId },
     setQueryParams
   ] = useArbQueryParams()
+
   const {
     sourceChainId: validSourceChainId,
     destinationChainId: validDestinationChainId
@@ -192,13 +135,16 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   })
 
   const setState = useCallback(
-    ({ sourceChainId, destinationChainId }: UseNetworksSetStateParams) => {
+    ({
+      sourceChainId: newSourceChainId,
+      destinationChainId: newDestinationChainId
+    }: UseNetworksSetStateParams) => {
       const {
         sourceChainId: validSourceChainId,
         destinationChainId: validDestinationChainId
       } = sanitizeQueryParams({
-        sourceChainId,
-        destinationChainId
+        sourceChainId: newSourceChainId,
+        destinationChainId: newDestinationChainId
       })
       setQueryParams({
         sourceChain: validSourceChainId,
@@ -212,17 +158,21 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     sourceChainId !== validSourceChainId ||
     destinationChainId !== validDestinationChainId
   ) {
-    // On the first render, update query params with the sanitized values
-    setQueryParams({
-      sourceChain: validSourceChainId,
-      destinationChain: validDestinationChainId
-    })
+    if (!didUpdateUrlWithSanitizedValues) {
+      // On the first render, update query params with the sanitized values
+      setQueryParams({
+        sourceChain: validSourceChainId,
+        destinationChain: validDestinationChainId
+      })
+
+      didUpdateUrlWithSanitizedValues = true
+    }
   }
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {
-    const sourceChain = getChainByChainId(validSourceChainId)
-    const destinationChain = getChainByChainId(validDestinationChainId)
+    const sourceChain = getWagmiChain(validSourceChainId)
+    const destinationChain = getWagmiChain(validDestinationChainId)
 
     return [
       {

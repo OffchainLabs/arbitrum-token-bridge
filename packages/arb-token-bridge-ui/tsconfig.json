@@ -13,7 +13,8 @@
     "jsx": "preserve",
     "paths": {
       "@/images/*": ["./public/images/*"],
-      "@/icons/*": ["./public/icons/*"]
+      "@/icons/*": ["./public/icons/*"],
+      "@/token-bridge-sdk/*": ["./src/token-bridge-sdk/*"]
     }
   },
   "exclude": ["node_modules"]

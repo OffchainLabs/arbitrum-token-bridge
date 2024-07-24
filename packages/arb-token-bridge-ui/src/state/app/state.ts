@@ -8,10 +8,12 @@ import {
 import {
   L1ToL2MessageData,
   L2ToL1MessageData,
+  L2ToL3MessageData,
   TxnType
 } from '../../hooks/useTransactions'
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
+import { Address } from '../../util/AddressUtils'
 
 export enum WhiteListState {
   VERIFYING,
@@ -59,14 +61,17 @@ export interface MergedTransaction {
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
+  l2ToL3MsgData?: L2ToL3MessageData
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number
+  sourceChainId: number
+  destinationChainId: number
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
-    attestationHash?: `0x${string}` | null
+    attestationHash?: Address | null
     messageBytes?: string | null
-    receiveMessageTransactionHash?: `0x${string}` | null
+    receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
 }
@@ -83,7 +88,6 @@ export type AppState = {
   warningTokens: WarningTokens
   connectionState: number
   selectedToken: ERC20BridgeToken | null
-  isDepositMode: boolean
   verifying: WhiteListState
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
@@ -98,7 +102,6 @@ export const defaultState: AppState = {
   l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
-  isDepositMode: true,
   arbTokenBridgeLoaded: false
 }
 export const state: AppState = {

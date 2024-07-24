@@ -6,7 +6,9 @@ import {
   logout,
   openTransactionsPanel,
   fundUserUsdcTestnet,
-  fundUserWalletEth
+  fundUserWalletEth,
+  searchAndSelectToken,
+  fillCustomDestinationAddress
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -30,6 +32,14 @@ declare global {
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
+      searchAndSelectToken({
+        tokenName,
+        tokenAddress
+      }: {
+        tokenName: string
+        tokenAddress: string
+      }): typeof searchAndSelectToken
+      fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
     }
   }
 }

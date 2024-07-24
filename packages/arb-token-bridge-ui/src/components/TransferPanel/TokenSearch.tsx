@@ -1,16 +1,10 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
-import { AutoSizer, List } from 'react-virtualized'
-import {
-  XMarkIcon,
-  ArrowSmallLeftIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/react/24/outline'
-import { useMedia } from 'react-use'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
+import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { twMerge } from 'tailwind-merge'
 
-import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
@@ -22,30 +16,35 @@ import {
   fetchErc20Data,
   erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumGoerliNativeUSDC
+  isTokenArbitrumSepoliaNativeUSDC,
+  isTokenArbitrumOneUSDCe,
+  getL2ERC20Address
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
-import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
+import { SearchPanel } from '../common/SearchPanel/SearchPanel'
+import { TokenRow } from './TokenRow'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import { useTokenFromSearchParams } from './TransferPanelUtils'
+import { Switch } from '../common/atoms/Switch'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 
-enum Panel {
-  TOKENS,
-  LISTS
-}
-
-const ARB_ONE_NATIVE_USDC_TOKEN = {
+export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
@@ -55,28 +54,80 @@ const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
-const ARB_GOERLI_NATIVE_USDC_TOKEN = {
+export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
-  address: CommonAddress.ArbitrumGoerli.USDC,
-  l2Address: CommonAddress.ArbitrumGoerli.USDC
+  address: CommonAddress.ArbitrumSepolia.USDC,
+  l2Address: CommonAddress.ArbitrumSepolia.USDC
 }
 
-function TokenListsPanel() {
+function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
   const { bridgeTokens, token } = arbTokenBridge
 
-  const listsToShow: BridgeTokenList[] = useMemo(() => {
-    if (typeof l2Network === 'undefined') {
-      return []
-    }
+  const toggleTokenList = useCallback(
+    (bridgeTokenList: BridgeTokenList, isActive: boolean) => {
+      if (isActive) {
+        token.removeTokensFromList(bridgeTokenList.id)
+      } else {
+        addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+      }
+    },
+    [arbTokenBridge, token]
+  )
 
+  const isActive = Object.keys(bridgeTokens ?? []).some(address => {
+    const token = bridgeTokens?.[address]
+    return token?.listIds.has(tokenList?.id)
+  })
+
+  const switchOnClick = useCallback(
+    () => toggleTokenList(tokenList, isActive),
+    [isActive, toggleTokenList, tokenList]
+  )
+
+  return (
+    <label
+      key={tokenList.id}
+      className="flex cursor-pointer items-center justify-start space-x-3 duration-200 [&:hover_img]:opacity-100 [&:hover_span]:text-white"
+    >
+      <Switch
+        name={`${tokenList.name} toggle`}
+        checked={isActive}
+        onChange={switchOnClick}
+      />
+      <div className="flex items-center gap-2">
+        <Image
+          src={tokenList.logoURI}
+          alt={`${tokenList.name} Logo`}
+          className={twMerge(
+            'h-4 w-4 rounded-full transition-opacity',
+            !isActive && 'opacity-70'
+          )}
+          width={16}
+          height={16}
+        />
+        <span
+          className={twMerge(
+            'text-sm transition-colors',
+            !isActive && 'text-white/70'
+          )}
+        >
+          {tokenList.name}
+        </span>
+      </div>
+    </label>
+  )
+}
+
+function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+
+  const listsToShow: BridgeTokenList[] = useMemo(() => {
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
       if (!tokenList.isValid) {
         return false
@@ -87,61 +138,28 @@ function TokenListsPanel() {
         return false
       }
 
-      return tokenList.originChainID === l2Network.id
+      return tokenList.originChainID === childChain.id
     })
-  }, [l2Network])
-
-  const toggleTokenList = (
-    bridgeTokenList: BridgeTokenList,
-    isActive: boolean
-  ) => {
-    if (isActive) {
-      token.removeTokensFromList(bridgeTokenList.id)
-    } else {
-      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
-    }
-  }
-
-  // Can happen when switching networks.
-  if (typeof bridgeTokens === 'undefined') {
-    return null
-  }
+  }, [childChain.id])
 
   return (
-    <div className="flex flex-col gap-6 rounded-md border border-gray-300 p-6">
-      {listsToShow.map(tokenList => {
-        const isActive = Object.keys(bridgeTokens).some(address => {
-          const token = bridgeTokens[address]
-          return token?.listIds.has(tokenList?.id)
-        })
-
-        return (
-          <label
-            key={tokenList.id}
-            className="flex items-center justify-start space-x-3"
-          >
-            <div className="switch">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={() => toggleTokenList(tokenList, isActive)}
-              />
-              <span className="slider round"></span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Image
-                src={tokenList.logoURI}
-                alt={`${tokenList.name} Logo`}
-                className="h-6 w-6 rounded-full"
-                width={24}
-                height={24}
-              />
-              <span className="text-sm text-gray-900">{tokenList.name}</span>
-            </div>
-          </label>
-        )
-      })}
-    </div>
+    <>
+      <SearchPanel.PageTitle title="Token Lists">
+        <SearchPanel.CloseButton onClick={closePanel} />
+      </SearchPanel.PageTitle>
+      <div className="flex flex-col gap-6 rounded-md border border-gray-dark p-6 text-white">
+        {listsToShow.map(tokenList => (
+          <TokenListRow key={tokenList.id} tokenList={tokenList} />
+        ))}
+        {listsToShow.length === 0 && (
+          <span className="text-sm leading-relaxed">
+            Sorry, there are no lists of tokens bridged from{' '}
+            {getNetworkName(networks.sourceChain.id)} to{' '}
+            {getNetworkName(networks.destinationChain.id)}.
+          </span>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -155,37 +173,36 @@ function TokensPanel({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
-  const {
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider, network: l2Network }
-  } = useNetworksAndSigners()
-  const { parentLayer, layer } = useChainLayers()
-  const isLarge = useMedia('(min-width: 1024px)')
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress })
+  } = useBalance({ chainId: parentChain.id, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress })
+  } = useBalance({ chainId: childChain.id, walletAddress })
 
-  const nativeCurrency = useNativeCurrency({ provider: L2Provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
-
+  const {
+    isArbitrumOne: isParentChainArbitrumOne,
+    isArbitrumSepolia: isParentChainArbitrumSepolia
+  } = isNetwork(parentChain.id)
+  const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
+    childChain.id
+  )
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
-
-  const numberOfRows = isLarge ? 5 : 3.5
 
   const getBalance = useCallback(
     (address: string) => {
@@ -209,7 +226,7 @@ function TokensPanel({
 
       if (
         isTokenArbitrumOneNativeUSDC(address) ||
-        isTokenArbitrumGoerliNativeUSDC(address)
+        isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
         return erc20L2Balances?.[address.toLowerCase()]
       }
@@ -235,13 +252,23 @@ function TokensPanel({
       ...Object.keys(tokensFromLists)
     ]
     if (!isDepositMode) {
+      // L2 to L1 withdrawals
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isArbitrumGoerli) {
-        tokenAddresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      if (isArbitrumSepolia) {
+        tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
+      }
+    } else {
+      // L2 to L3 deposits
+      if (isParentChainArbitrumOne) {
+        tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
+      }
+      if (isParentChainArbitrumSepolia) {
+        tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
     }
+
     const tokens = [
       NATIVE_CURRENCY_IDENTIFIER,
       // Deduplicate addresses
@@ -257,14 +284,22 @@ function TokensPanel({
           token = ARB_ONE_NATIVE_USDC_TOKEN
         }
 
-        if (isTokenArbitrumGoerliNativeUSDC(address)) {
+        if (isTokenArbitrumSepoliaNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
-          token = ARB_GOERLI_NATIVE_USDC_TOKEN
+          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+        }
+
+        if (isTokenArbitrumOneUSDCe(address) && isDepositMode && isOrbitChain) {
+          // hide USDC.e if depositing to an Orbit chain
+          return false
         }
 
         // If the token on the list is used as a custom fee token, we remove the duplicate
-        if (nativeCurrency.isCustom && address !== NATIVE_CURRENCY_IDENTIFIER) {
-          return address.toLowerCase() !== nativeCurrency.address
+        if (
+          nativeCurrency.isCustom &&
+          address.toLowerCase() === nativeCurrency.address.toLowerCase()
+        ) {
+          return false
         }
 
         // Which tokens to show while the search is not active
@@ -274,9 +309,9 @@ function TokensPanel({
             return true
           }
 
-          // Always show official ARB token
+          // Always show official ARB token except from or to Orbit chain
           if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
-            return true
+            return !isOrbitChain
           }
 
           const balance = getBalance(address)
@@ -331,7 +366,8 @@ function TokensPanel({
     tokensFromLists,
     isDepositMode,
     isArbitrumOne,
-    isArbitrumGoerli,
+    isArbitrumSepolia,
+    isOrbitChain,
     getBalance,
     nativeCurrency
   ])
@@ -387,96 +423,97 @@ function TokensPanel({
     }
   }
 
-  return (
-    <div className="flex flex-col space-y-3">
-      <form onSubmit={addNewToken} className="flex flex-col">
-        <div className="flex items-stretch gap-2">
-          <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
-            <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
+  const onSearchInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setErrorMessage('')
+      setNewToken(event.target.value)
+    },
+    []
+  )
 
-            <input
-              id="newTokenAddress"
-              value={newToken}
-              onChange={e => {
-                setErrorMessage('')
-                setNewToken(e.target.value)
-              }}
-              placeholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
-              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
-            />
-          </div>
+  const rowRenderer = useCallback(
+    (virtualizedProps: ListRowProps) => {
+      const address = tokensToShow[virtualizedProps.index]
+      let token: ERC20BridgeToken | null = null
 
-          <Button
-            type="submit"
-            variant="secondary"
-            loading={isAddingToken}
-            loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
-            disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
-            aria-label="Add New Token"
-          >
-            Add
-          </Button>
-        </div>
-        {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
-      </form>
-      <div
-        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-2 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
-        data-cy="tokenSearchList"
+      if (isTokenArbitrumOneNativeUSDC(address)) {
+        token = ARB_ONE_NATIVE_USDC_TOKEN
+      } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
+        token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+      } else if (address) {
+        token = tokensFromLists[address] || tokensFromUser[address] || null
+      }
+
+      if (address === NATIVE_CURRENCY_IDENTIFIER) {
+        return (
+          <TokenRow
+            key="TokenRowNativeCurrency"
+            onTokenSelected={onTokenSelected}
+            token={null}
+          />
+        )
+      }
+
+      return (
+        <TokenRow
+          key={address}
+          style={virtualizedProps.style}
+          onTokenSelected={onTokenSelected}
+          token={token}
+        />
+      )
+    },
+    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected]
+  )
+
+  const AddButton = useMemo(
+    () => (
+      <Button
+        type="submit"
+        variant="secondary"
+        loading={isAddingToken}
+        loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
+        disabled={!isAddress(newToken)}
+        className="border border-gray-dark py-1"
+        aria-label="Add New Token"
       >
-        <AutoSizer disableHeight>
-          {({ width }) => (
-            <List
-              width={width - 2}
-              height={numberOfRows * 84}
-              rowCount={tokensToShow.length}
-              rowHeight={84}
-              rowRenderer={virtualizedProps => {
-                const address = tokensToShow[virtualizedProps.index]
+        Add
+      </Button>
+    ),
+    [isAddingToken, newToken]
+  )
 
-                if (address === NATIVE_CURRENCY_IDENTIFIER) {
-                  return (
-                    <TokenRow
-                      key="TokenRowNativeCurrency"
-                      onClick={() => onTokenSelected(null)}
-                      token={null}
-                    />
-                  )
-                }
-
-                let token: ERC20BridgeToken | null = null
-                if (isTokenArbitrumOneNativeUSDC(address)) {
-                  token = ARB_ONE_NATIVE_USDC_TOKEN
-                } else if (isTokenArbitrumGoerliNativeUSDC(address)) {
-                  token = ARB_GOERLI_NATIVE_USDC_TOKEN
-                } else if (address) {
-                  token =
-                    tokensFromLists[address] || tokensFromUser[address] || null
-                }
-
-                return (
-                  <TokenRow
-                    key={address}
-                    style={virtualizedProps.style}
-                    onClick={() => onTokenSelected(token)}
-                    token={token}
-                  />
-                )
-              }}
-            />
-          )}
-        </AutoSizer>
-      </div>
-    </div>
+  return (
+    <SearchPanelTable
+      searchInputPlaceholder="Search by token name, symbol, or address"
+      searchInputValue={newToken}
+      searchInputOnChange={onSearchInputChange}
+      errorMessage={errorMessage}
+      onSubmit={addNewToken}
+      SearchInputButton={AddButton}
+      dataCy="tokenSearchList"
+    >
+      <AutoSizer>
+        {({ height, width }) => (
+          <List
+            width={width - 2}
+            height={height}
+            rowCount={tokensToShow.length}
+            rowHeight={84}
+            rowRenderer={rowRenderer}
+          />
+        )}
+      </AutoSizer>
+    </SearchPanelTable>
   )
 }
 
 export function TokenSearch({
-  close,
-  onImportToken
+  className,
+  close
 }: {
+  className?: string
   close: () => void
-  onImportToken: (address: string) => void
 }) {
   const { address: walletAddress } = useAccount()
   const {
@@ -487,13 +524,22 @@ export function TokenSearch({
   const {
     app: { setSelectedToken }
   } = useActions()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
+  const { setTokenQueryParam } = useTokenFromSearchParams()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
-
-  const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
+  const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
   async function selectToken(_token: ERC20BridgeToken | null) {
     close()
@@ -515,19 +561,37 @@ export function TokenSearch({
       // Native USDC on L2 won't have a corresponding L1 address
       const isNativeUSDC =
         isTokenArbitrumOneNativeUSDC(_token.address) ||
-        isTokenArbitrumGoerliNativeUSDC(_token.address)
+        isTokenArbitrumSepoliaNativeUSDC(_token.address)
 
       if (isNativeUSDC) {
         if (isLoadingAccountType) {
           return
         }
 
-        updateUSDCBalances(_token.address)
+        await updateUSDCBalances()
+
+        // if an Orbit chain is selected we need to fetch its USDC address
+        let childChainUsdcAddress
+        try {
+          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
+            ? (
+                await getL2ERC20Address({
+                  erc20L1Address: _token.address,
+                  l1Provider: parentChainProvider,
+                  l2Provider: childChainProvider
+                })
+              ).toLowerCase()
+            : undefined
+        } catch {
+          // could be never bridged before
+        }
+
         setSelectedToken({
           name: 'USD Coin',
           type: TokenType.ERC20,
           symbol: 'USDC',
           address: _token.address,
+          l2Address: childChainUsdcAddress,
           decimals: 6,
           listIds: new Set()
         })
@@ -536,7 +600,7 @@ export function TokenSearch({
 
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
-        onImportToken(_token.address)
+        setTokenQueryParam(_token.address)
         return
       }
 
@@ -546,7 +610,7 @@ export function TokenSearch({
 
       const data = await fetchErc20Data({
         address: _token.address,
-        provider: l1.provider
+        provider: parentChainProvider
       })
 
       if (data) {
@@ -555,6 +619,25 @@ export function TokenSearch({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address
         })
+      }
+
+      // do not allow import of withdraw-only tokens at deposit mode
+      if (isDepositMode && isWithdrawOnlyToken(_token.address, childChain.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (isTransferDisabledToken(_token.address, childChain.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (
+        isTeleportMode &&
+        !isTeleportEnabledToken(_token.address, parentChain.id, childChain.id)
+      ) {
+        openTransferDisabledDialog()
+        return
       }
     } catch (error: any) {
       console.warn(error)
@@ -565,53 +648,29 @@ export function TokenSearch({
     }
   }
 
-  if (currentPanel === Panel.TOKENS) {
-    return (
-      <>
-        <div className="flex flex-row items-center justify-between pb-4">
-          <span className="text-xl font-medium">Select Token</span>
-          <button className="arb-hover" onClick={close}>
-            <XMarkIcon className="h-6 w-6 text-gray-5" />
-          </button>
-        </div>
+  return (
+    <SearchPanel>
+      <SearchPanel.MainPage className={className}>
+        <SearchPanel.PageTitle title="Select Token">
+          <SearchPanel.CloseButton onClick={close} />
+        </SearchPanel.PageTitle>
         <TokensPanel onTokenSelected={selectToken} />
-        <div className="flex justify-end pt-6">
+        <div className="flex justify-end pt-4">
           {isFetchingTokenLists ? (
-            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
-              <Loader color="#28A0F0" size="small" />
-              Fetching Tokens...
-            </span>
+            <SearchPanel.LoaderWithMessage loadingMessage="Fetching Tokens..." />
           ) : (
-            <button
-              className="arb-hover text-gray text-sm font-medium text-blue-link"
-              onClick={() => setCurrentPanel(Panel.LISTS)}
-            >
+            <SearchPanel.MainPageCTA>
               Manage token lists
-            </button>
+            </SearchPanel.MainPageCTA>
           )}
         </div>
-      </>
-    )
-  }
-
-  return (
-    <>
-      <div className="flex flex-row items-center justify-between pb-4">
-        <span className="text-xl font-medium">Token Lists</span>
-        <button className="arb-hover" onClick={close}>
-          <XMarkIcon className="h-6 w-6 text-gray-5" />
-        </button>
-      </div>
-      <div className="flex justify-start pb-6">
-        <button
-          className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
-          onClick={() => setCurrentPanel(Panel.TOKENS)}
-        >
-          <ArrowSmallLeftIcon className="h-6 w-6" />
-          <span>Back to Select Token</span>
-        </button>
-      </div>
-      <TokenListsPanel />
-    </>
+      </SearchPanel.MainPage>
+      <SearchPanel.SecondaryPage className={className}>
+        <TokenListsPanel closePanel={close} />
+        <SearchPanel.SecondaryPageCTA>
+          Back to Select Token
+        </SearchPanel.SecondaryPageCTA>
+      </SearchPanel.SecondaryPage>
+    </SearchPanel>
   )
 }

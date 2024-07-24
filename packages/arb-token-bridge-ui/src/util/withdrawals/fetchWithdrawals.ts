@@ -2,8 +2,11 @@ import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
-import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
-import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
+import {
+  FetchWithdrawalsFromSubgraphResult,
+  fetchWithdrawalsFromSubgraph
+} from './fetchWithdrawalsFromSubgraph'
+import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
@@ -50,46 +53,26 @@ export async function fetchWithdrawals({
     // if toBlock hasn't been provided by the user
 
     // fetch the latest L2 block number thorough subgraph
-    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber(
-      'L2',
+    const latestSubgraphBlockNumber = await fetchLatestSubgraphBlockNumber(
       l2ChainID
     )
     toBlock = latestSubgraphBlockNumber
   }
 
-  const [
-    withdrawalsFromSubgraph,
-    ethWithdrawalsFromEventLogs,
-    tokenWithdrawalsFromEventLogs
-  ] = await Promise.all([
-    fetchWithdrawalsFromSubgraph({
-      sender,
-      receiver,
-      fromBlock,
-      toBlock,
-      l2ChainId: l2ChainID,
-      pageNumber,
-      pageSize,
-      searchString
-    }),
-    fetchETHWithdrawalsFromEventLogs({
-      receiver,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider
-    }),
-    fetchTokenWithdrawalsFromEventLogs({
-      sender,
-      receiver,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider,
-      l2GatewayAddresses
-    })
-  ])
-
-  if (withdrawalsFromSubgraph && withdrawalsFromSubgraph.length > 0) {
-    return withdrawalsFromSubgraph.map(tx => {
+  let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
+  try {
+    withdrawalsFromSubgraph = (
+      await fetchWithdrawalsFromSubgraph({
+        sender,
+        receiver,
+        fromBlock,
+        toBlock,
+        l2ChainId: l2ChainID,
+        pageNumber,
+        pageSize,
+        searchString
+      })
+    ).map(tx => {
       return {
         ...tx,
         direction: 'withdrawal',
@@ -98,7 +81,27 @@ export async function fetchWithdrawals({
         childChainId: l2ChainID
       }
     })
+  } catch (error) {
+    console.log('Error fetching withdrawals from subgraph', error)
   }
+
+  const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
+    await Promise.all([
+      fetchETHWithdrawalsFromEventLogs({
+        receiver,
+        fromBlock: toBlock + 1,
+        toBlock: 'latest',
+        l2Provider: l2Provider
+      }),
+      fetchTokenWithdrawalsFromEventLogs({
+        sender,
+        receiver,
+        fromBlock: toBlock + 1,
+        toBlock: 'latest',
+        l2Provider: l2Provider,
+        l2GatewayAddresses
+      })
+    ])
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
     ethWithdrawalsFromEventLogs.map(tx => {
@@ -132,6 +135,7 @@ export async function fetchWithdrawals({
 
   return [
     ...mappedEthWithdrawalsFromEventLogs,
-    ...tokenWithdrawalsFromEventLogsWithTimestamp
+    ...tokenWithdrawalsFromEventLogsWithTimestamp,
+    ...withdrawalsFromSubgraph
   ]
 }

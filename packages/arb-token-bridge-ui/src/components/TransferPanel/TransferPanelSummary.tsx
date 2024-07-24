@@ -1,240 +1,143 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { BigNumber, constants, utils } from 'ethers'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useAccount } from 'wagmi'
+import React, { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
-import { Tooltip } from '../common/Tooltip'
-import { useAppState } from '../../state'
-import { useETHPrice } from '../../hooks/useETHPrice'
-import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-import { formatAmount, formatUSD } from '../../util/NumberUtils'
+import { formatAmount } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useGasPrice } from '../../hooks/useGasPrice'
-import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
-import {
-  isTokenArbitrumGoerliNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  sanitizeTokenSymbol
-} from '../../util/TokenUtils'
-import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
+import { useAppState } from '../../state'
+import { Loader } from '../common/atoms/Loader'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { NoteBox } from '../common/NoteBox'
+import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 
-export type GasEstimationStatus =
-  | 'idle'
-  | 'loading'
-  | 'success'
-  | 'error'
-  | 'unavailable'
-
-export type GasEstimationResult = {
-  estimatedL1Gas: BigNumber
-  estimatedL2Gas: BigNumber
-  estimatedL2SubmissionCost: BigNumber
+export type TransferPanelSummaryToken = {
+  symbol: string
+  address: string
+  l2Address?: string
 }
-
-export type UseGasSummaryResult = {
-  status: GasEstimationStatus
-  estimatedL1GasFees: number
-  estimatedL2GasFees: number
-}
-
-const depositGasFeeTooltip = ({
-  l1NetworkName,
-  l2NetworkName,
-  depositToOrbit = false
-}: {
-  l1NetworkName: string
-  l2NetworkName: string
-  depositToOrbit?: boolean
-}) => ({
-  L1: `${l1NetworkName} fees go to Ethereum Validators.`,
-  L2: `${
-    depositToOrbit ? l1NetworkName : l2NetworkName
-  } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
-})
-
-export function useGasSummary(
-  amount: BigNumber,
-  token: TransferPanelSummaryToken | null,
-  shouldRunGasEstimation: boolean
-): UseGasSummaryResult {
-  const {
-    app: { arbTokenBridge, isDepositMode }
-  } = useAppState()
-  const networksAndSigners = useNetworksAndSigners()
-  const { l1, l2 } = networksAndSigners
-  const { address: walletAddress } = useAccount()
-
-  const l1GasPrice = useGasPrice({ provider: l1.provider })
-  const l2GasPrice = useGasPrice({ provider: l2.provider })
-
-  // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
-  const amountDebounced = useDebouncedValue(amount, 1500)
-
-  const [status, setStatus] = useState<GasEstimationStatus>('idle')
-  const [result, setResult] = useState<GasEstimationResult>({
-    // Estimated L1 gas, denominated in Wei, represented as a BigNumber
-    estimatedL1Gas: constants.Zero,
-    // Estimated L2 gas, denominated in Wei, represented as a BigNumber
-    estimatedL2Gas: constants.Zero,
-    // Estimated L2 submission cost is precalculated and includes gas price
-    estimatedL2SubmissionCost: constants.Zero
-  })
-
-  // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL1GasFees = useMemo(() => {
-    const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
-    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
-  }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
-
-  // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL2GasFees = useMemo(
-    () =>
-      parseFloat(
-        utils.formatEther(
-          result.estimatedL2Gas
-            .mul(l2GasPrice)
-            .add(result.estimatedL2SubmissionCost)
-        )
-      ),
-    [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
-  )
-
-  useEffect(() => {
-    // When the user starts typing, set the status to `loading` for better UX
-    // The value is debounced, so we'll start fetching the gas estimates only when the user stops typing
-    if (shouldRunGasEstimation) {
-      setStatus('loading')
-    }
-  }, [amount, shouldRunGasEstimation])
-
-  useEffect(() => {
-    async function estimateGas() {
-      // Since we are using a debounced value, it's possible for the value to be outdated
-      // Wait for it to sync before running the gas estimation
-      if (!amountDebounced.eq(amount)) {
-        return
-      }
-
-      // Don't run gas estimation if the value is zero or the flag is not set
-      if (amountDebounced.isZero() || !shouldRunGasEstimation) {
-        setStatus('idle')
-        return
-      }
-
-      if (!walletAddress) {
-        return
-      }
-
-      try {
-        setStatus('loading')
-
-        if (isDepositMode) {
-          if (token) {
-            const estimateGasResult = await depositTokenEstimateGas({
-              amount,
-              address: walletAddress,
-              erc20L1Address: token.address,
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
-            })
-
-            setResult(estimateGasResult)
-          } else {
-            const estimateGasResult = await depositEthEstimateGas({
-              amount: amountDebounced,
-              address: walletAddress,
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
-            })
-
-            setResult(estimateGasResult)
-          }
-        } else {
-          if (token) {
-            let estimateGasResult: {
-              estimatedL1Gas: BigNumber
-              estimatedL2Gas: BigNumber
-            }
-
-            if (
-              isTokenArbitrumOneNativeUSDC(token.address) ||
-              isTokenArbitrumGoerliNativeUSDC(token.address)
-            ) {
-              estimateGasResult = {
-                estimatedL1Gas: constants.Zero,
-                estimatedL2Gas: constants.Zero
-              }
-              setStatus('unavailable')
-              return
-            } else {
-              estimateGasResult = await withdrawTokenEstimateGas({
-                amount: amountDebounced,
-                erc20L1Address: token.address,
-                address: walletAddress,
-                l2Provider: l2.provider
-              })
-            }
-
-            setResult({
-              ...estimateGasResult,
-              estimatedL2SubmissionCost: constants.Zero
-            })
-          } else {
-            const estimateGasResult = await withdrawEthEstimateGas({
-              amount: amountDebounced,
-              address: walletAddress,
-              l2Provider: l2.provider
-            })
-
-            setResult({
-              ...estimateGasResult,
-              estimatedL2SubmissionCost: constants.Zero
-            })
-          }
-        }
-
-        setStatus('success')
-      } catch (error) {
-        console.error(error)
-        setStatus('error')
-      }
-    }
-
-    if (arbTokenBridge && arbTokenBridge.eth && arbTokenBridge.token) {
-      estimateGas()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    // Re-run gas estimation when:
-    isDepositMode, // when user switches deposit/withdraw mode
-    amount, // when user changes the amount (check against the debounced value)
-    amountDebounced,
-    token, // when the token changes
-    shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
-    l1.network.id, // when L1 and L2 network id changes
-    l2.network.id,
-    walletAddress // when user switches account or if user is not connected
-  ])
-
-  return {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees
-  }
-}
-
-export type TransferPanelSummaryToken = { symbol: string; address: string }
 
 export type TransferPanelSummaryProps = {
   amount: number
-  token: TransferPanelSummaryToken | null
-  gasSummary: UseGasSummaryResult
+  token: ERC20BridgeToken | null
+}
+
+function StyledLoader() {
+  return (
+    <span className="flex">
+      <Loader size="small" />
+    </span>
+  )
+}
+
+function TotalGasFees() {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+
+  const {
+    status: gasSummaryStatus,
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
+  } = useGasSummary()
+
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
+  const parentChainNativeCurrency = useNativeCurrency({
+    provider: parentChainProvider
+  })
+
+  const gasSummaryLoading = gasSummaryStatus === 'loading'
+
+  const sameNativeCurrency = useMemo(
+    // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
+    () =>
+      childChainNativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
+    [childChainNativeCurrency, parentChainNativeCurrency]
+  )
+
+  const estimatedTotalGasFees = useMemo(() => {
+    if (
+      gasSummaryStatus === 'loading' ||
+      typeof estimatedChildChainGasFees == 'undefined' ||
+      typeof estimatedParentChainGasFees == 'undefined'
+    ) {
+      return undefined
+    }
+
+    return estimatedParentChainGasFees + estimatedChildChainGasFees
+  }, [
+    gasSummaryStatus,
+    estimatedChildChainGasFees,
+    estimatedParentChainGasFees
+  ])
+
+  if (gasSummaryLoading) {
+    return <StyledLoader />
+  }
+
+  /**
+   * Same Native Currencies between Parent and Child chains
+   * 1. ETH/ER20 deposit: L1->L2
+   * 2. ETH/ERC20 withdrawal: L2->L1
+   * 3. ETH/ER20 deposit: L2->L3 (ETH as gas token)
+   * 4. ETH/ERC20 withdrawal: L3 (ETH as gas token)->L2
+   *
+   * x ETH
+   */
+  if (sameNativeCurrency) {
+    return (
+      <span className="tabular-nums">
+        {formatAmount(estimatedTotalGasFees, {
+          symbol: childChainNativeCurrency.symbol
+        })}{' '}
+        <NativeCurrencyPrice amount={estimatedTotalGasFees} showBrackets />
+      </span>
+    )
+  }
+  /** Different Native Currencies between Parent and Child chains
+   *
+   *  Custom gas token deposit: L2->Xai
+   *  x ETH
+   *
+   *  ERC20 deposit: L2->Xai
+   *  x ETH and x XAI
+   *
+   *  Custom gas token/ERC20 withdrawal: L3->L2
+   *  only show child chain native currency
+   *  x XAI
+   */
+  return (
+    <>
+      {isDepositMode && (
+        <span className="tabular-nums">
+          {formatAmount(estimatedParentChainGasFees, {
+            symbol: parentChainNativeCurrency.symbol
+          })}{' '}
+          <NativeCurrencyPrice
+            amount={estimatedParentChainGasFees}
+            showBrackets
+          />
+          {selectedToken && ' and '}
+        </span>
+      )}
+      {(selectedToken || !isDepositMode) &&
+        formatAmount(estimatedChildChainGasFees, {
+          symbol: childChainNativeCurrency.symbol
+        })}
+    </>
+  )
 }
 
 function TransferPanelSummaryContainer({
@@ -244,124 +147,67 @@ function TransferPanelSummaryContainer({
   children: React.ReactNode
   className?: string
 }) {
-  return (
-    <>
-      <div className="block lg:hidden">
-        <span className="text-xl text-gray-dark lg:text-2xl">Summary</span>
-        <div className="h-4" />
-      </div>
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
-      <div
-        className={`flex flex-col space-y-4 text-lg lg:min-h-[257px] ${className}`}
-      >
+  const isDisabled = DISABLED_CHAIN_IDS.includes(childChain.id)
+
+  return (
+    <div className="mb-8 flex flex-col text-white">
+      <span className="mb-3 text-xl">Summary</span>
+      <div className={twMerge('mb-3 flex flex-col space-y-3', className)}>
         {children}
       </div>
-
-      <div className="h-10" />
-    </>
+      {isDisabled && (
+        <NoteBox variant="error">
+          {getNetworkName(childChain.id)} is currently down. You will be able to
+          bridge again once it is back online.
+        </NoteBox>
+      )}
+    </div>
   )
 }
 
-export function TransferPanelSummary({
-  amount,
-  token,
-  gasSummary
-}: TransferPanelSummaryProps) {
-  const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
+export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
+  const { status: gasSummaryStatus } = useGasSummary()
+
+  const [networks] = useNetworks()
+  const { childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
+
+  const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
+
+  const [{ amount }] = useArbQueryParams()
 
   const {
-    app: { isDepositMode }
-  } = useAppState()
-  const { ethToUSD } = useETHPrice()
-  const { l1, l2 } = useNetworksAndSigners()
-  const { parentLayer, layer } = useChainLayers()
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
 
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
-  const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
+  const isDepositingUSDCtoArbOneOrArbSepolia =
+    isTokenNativeUSDC(token?.address) &&
+    isDepositMode &&
+    (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 
-  const layerGasFeeTooltipContent = (layer: ChainLayer) => {
-    if (!isDepositMode) {
-      return null
-    }
-
-    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
-
-    return depositGasFeeTooltip({
-      l1NetworkName: getNetworkName(l1.network.id),
-      l2NetworkName: getNetworkName(l2.network.id),
-      depositToOrbit: isDepositToOrbitChain
-    })[layer]
-  }
-
-  const isBridgingETH = token === null && !nativeCurrency.isCustom
-  const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
-  const showBreakdown = !nativeCurrency.isCustom && isDepositMode
-
-  const tokenSymbol = useMemo(() => {
-    if (token) {
-      return sanitizeTokenSymbol(token.symbol, {
-        erc20L1Address: token.address,
-        chain: isDepositMode ? l1.network : l2.network
-      })
-    }
-
-    return nativeCurrency.symbol
-  }, [token, nativeCurrency, isDepositMode, l1.network, l2.network])
-
-  const sameNativeCurrency = useMemo(
-    // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
-    () => nativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
-    [nativeCurrency, parentChainNativeCurrency]
-  )
-
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
-  )
-
-  if (status === 'loading') {
-    const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
-
+  if (gasSummaryStatus === 'unavailable') {
     return (
-      <TransferPanelSummaryContainer className="animate-pulse">
-        <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-        <div
-          className={`h-[28px] w-full opacity-10 lg:h-[56px] ${bgClassName}`}
-        />
-        <div className="flex flex-col space-y-2 pl-4">
-          <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-          <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
+      <TransferPanelSummaryContainer>
+        <div className="flex flex-row justify-between text-sm lg:text-base">
+          Gas estimates are not available for this action.
         </div>
-
-        {isBridgingETH && (
-          <>
-            <div>
-              <div className="h-2" />
-              <div className="lg:border-b lg:border-gray-2" />
-              <div className="h-2" />
-            </div>
-            <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-          </>
-        )}
       </TransferPanelSummaryContainer>
     )
   }
 
-  if (status === 'unavailable') {
+  if (gasSummaryStatus === 'insufficientBalance') {
     return (
       <TransferPanelSummaryContainer>
-        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-          Gas estimates are not available for this action.
-        </div>
-        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-          <span className="w-2/5 font-light">You&apos;re moving</span>
-          <div className="flex w-3/5 flex-row justify-between">
-            <span>
-              {formatAmount(amount, {
-                symbol: tokenSymbol
-              })}
-            </span>
-          </div>
+        <div className="flex flex-row justify-between text-sm lg:text-base">
+          Gas estimates will be displayed after entering a valid amount.
         </div>
       </TransferPanelSummaryContainer>
     )
@@ -369,122 +215,41 @@ export function TransferPanelSummary({
 
   return (
     <TransferPanelSummaryContainer>
-      <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-3/5 font-light">You&apos;re moving</span>
-        <div className="flex w-2/5 flex-row justify-between tabular-nums">
-          <span>
-            {formatAmount(amount, {
-              symbol: tokenSymbol
-            })}
-          </span>
+      <div
+        className={twMerge(
+          'grid grid-cols-[260px_auto] items-center text-sm font-light'
+        )}
+      >
+        <span className="text-left">You will pay in gas fees:</span>
 
-          {showPrice && (
-            <span className="font-medium text-dark">
-              {formatUSD(ethToUSD(amount))}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-3/5 font-light">
-          You&apos;ll now pay in gas fees
+        <span className="font-medium">
+          <TotalGasFees />
         </span>
-        <div className="flex w-2/5 justify-between tabular-nums">
-          {sameNativeCurrency ? (
-            <>
-              <span>
-                {formatAmount(estimatedTotalGasFees, {
-                  symbol: nativeCurrency.symbol
-                })}
-              </span>
-
-              {showPrice && (
-                <span className="font-medium text-dark">
-                  {formatUSD(ethToUSD(estimatedTotalGasFees))}
-                </span>
-              )}
-            </>
-          ) : (
-            <span>
-              {formatAmount(estimatedL1GasFees, {
-                symbol: parentChainNativeCurrency.symbol
-              })}
-              {' + '}
-              {formatAmount(estimatedL2GasFees, {
-                symbol: nativeCurrency.symbol
-              })}
-            </span>
-          )}
-        </div>
       </div>
 
-      {showBreakdown && (
-        <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
-          <div className="flex flex-row justify-between">
-            <div className="flex flex-row items-center space-x-2">
-              <span className="pl-4 font-light">{parentLayer} gas</span>
-              <Tooltip content={layerGasFeeTooltipContent(parentLayer)}>
-                <InformationCircleIcon className="h-4 w-4" />
-              </Tooltip>
-            </div>
-            <div className="flex w-2/5 flex-row justify-between tabular-nums">
-              <span className="font-light">
-                {formatAmount(estimatedL1GasFees, {
-                  symbol: parentChainNativeCurrency.symbol
-                })}
-              </span>
-
-              {showPrice && (
-                <span className="font-light">
-                  {formatUSD(ethToUSD(estimatedL1GasFees))}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-row justify-between text-gray-dark">
-            <div className="flex flex-row items-center space-x-2">
-              <span className="pl-4 font-light ">{layer} gas</span>
-              <Tooltip content={layerGasFeeTooltipContent(layer)}>
-                <InformationCircleIcon className="h-4 w-4 " />
-              </Tooltip>
-            </div>
-            <div className="flex w-2/5 flex-row justify-between tabular-nums">
-              <span className="font-light">
-                {formatAmount(estimatedL2GasFees, {
-                  symbol: nativeCurrency.symbol
-                })}
-              </span>
-
-              {showPrice && (
-                <span className="font-light">
-                  {formatUSD(ethToUSD(estimatedL2GasFees))}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!isDepositMode && (
-        <>
-          <div>
-            <div className="h-2" />
-            <div className="border-b border-gray-5" />
-            <div className="h-2" />
-          </div>
-          <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
-            <p>
-              This transaction will initiate the withdrawal on {l2.network.name}
-              .
-            </p>
-            <p>
-              When the withdrawal is ready for claiming on {l1.network.name},
-              you will have to pay gas fees for the claim transaction.
-            </p>
-          </div>
-        </>
-      )}
+      <div
+        className={twMerge(
+          'grid grid-cols-[260px_auto] items-center text-sm font-light'
+        )}
+      >
+        <span>
+          You will receive on {getNetworkName(networks.destinationChain.id)}:
+        </span>
+        <span className="font-medium">
+          <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
+          {isDepositingUSDCtoArbOneOrArbSepolia ? (
+            <>USDC</>
+          ) : (
+            <TokenSymbolWithExplorerLink
+              token={token}
+              isParentChain={!isDepositMode}
+            />
+          )}
+          {isBridgingEth && (
+            <NativeCurrencyPrice amount={Number(amount)} showBrackets />
+          )}
+        </span>
+      </div>
     </TransferPanelSummaryContainer>
   )
 }

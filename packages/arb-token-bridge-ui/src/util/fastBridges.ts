@@ -29,18 +29,6 @@ export enum SpecialTokenSymbol {
   USDC = 'USDC'
 }
 
-export enum NonCanonicalTokenNames {
-  FRAX = 'FRAX'
-}
-
-export enum NonCanonicalTokenAddresses {
-  FRAX = '0x853d955acef822db058eb8505911ed77f175b99e'
-}
-
-export type NonCanonicalTokenSupportedBridges<
-  T extends NonCanonicalTokenAddresses
-> = `${(typeof NonCanonicalTokensBridgeInfo)[T]['supportedBridges'][number]}`
-
 export type FastBridgeInfo = {
   name: FastBridgeNames
   imageSrc: StaticImageData
@@ -158,21 +146,12 @@ export function getFastBridges({
     })
 }
 
-export const NonCanonicalTokensBridgeInfo = {
-  [NonCanonicalTokenAddresses.FRAX]: {
-    tokenSymbol: 'FRAX',
-    supportedBridges: [FastBridgeNames.Celer],
-    learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
-    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
-  }
-} as const
-
 export const USDCBridgeInfo = {
   tokenSymbol: 'USDC',
   tokenSymbolOnArbitrum: 'USDC.e',
   supportedBridges: [
     FastBridgeNames.Celer,
-    FastBridgeNames.LIFI,
+    // FastBridgeNames.LIFI,
     FastBridgeNames.Wormhole,
     FastBridgeNames.Router
   ],
@@ -208,26 +187,26 @@ export const USDCFastBridges: USDCFastBridgeInfo[] = [
       }
     }
   },
-  {
-    name: FastBridgeNames.LIFI,
-    imageSrc: LIFI,
-    getHref: ({
-      from,
-      to,
-      fromTokenAddress,
-      toTokenAddress,
-      amount,
-      transferMode
-    }: getHrefParams) => {
-      switch (transferMode) {
-        case 'deposit':
-          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
-        case 'withdraw':
-        default:
-          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
-      }
-    }
-  },
+  // {
+  //   name: FastBridgeNames.LIFI,
+  //   imageSrc: LIFI,
+  //   getHref: ({
+  //     from,
+  //     to,
+  //     fromTokenAddress,
+  //     toTokenAddress,
+  //     amount,
+  //     transferMode
+  //   }: getHrefParams) => {
+  //     switch (transferMode) {
+  //       case 'deposit':
+  //         return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+  //       case 'withdraw':
+  //       default:
+  //         return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+  //     }
+  //   }
+  // },
   {
     name: FastBridgeNames.Wormhole,
     imageSrc: Wormhole,

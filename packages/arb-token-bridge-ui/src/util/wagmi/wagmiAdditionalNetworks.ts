@@ -2,19 +2,28 @@ import { Chain, sepolia as sepoliaDefault } from 'wagmi'
 
 import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
+
   return {
-    id: chain.chainID,
+    id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: chain.nativeTokenData ?? ether,
+    nativeCurrency: nativeTokenData ?? ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
       },
       public: {
         http: [chain.rpcUrl]
+      }
+    },
+    blockExplorers: {
+      default: {
+        name: 'Block Explorer',
+        url: chain.explorerUrl
       }
     }
   }
@@ -29,6 +38,28 @@ export const sepolia: Chain = {
     default: {
       http: [rpcURLs[ChainId.Sepolia]!]
     }
+  }
+}
+
+export const holesky: Chain = {
+  id: ChainId.Holesky,
+  name: 'Holesky',
+  network: 'holesky',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Etherscan',
+      url: explorerUrls[ChainId.Holesky]!
+    },
+    default: { name: 'Etherscan', url: explorerUrls[ChainId.Holesky]! }
   }
 }
 
@@ -73,55 +104,13 @@ export const arbitrumNova: Chain = {
   }
 }
 
-export const xaiTestnet: Chain = {
-  id: ChainId.XaiTestnet,
-  name: 'Xai Orbit Testnet',
-  network: 'xai-testnet',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://testnet-explorer.xai-chain.net'
-    }
-  }
-}
-
-export const stylusTestnet: Chain = {
-  id: ChainId.StylusTestnet,
-  name: 'Stylus Testnet',
-  network: 'stylus-testnet',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://stylus-testnet-explorer.arbitrum.io'
-    }
-  }
-}
-
 /**
  * For e2e testing
  */
 export const localL1Network: Chain = {
   id: ChainId.Local,
-  name: 'EthLocal',
-  network: 'local',
+  name: 'Ethereum Local',
+  network: 'custom-localhost',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -141,8 +130,8 @@ export const localL1Network: Chain = {
  */
 export const localL2Network: Chain = {
   id: ChainId.ArbitrumLocal,
-  name: 'ArbLocal',
-  network: 'arbitrum-local',
+  name: 'Arbitrum Local',
+  network: 'arbitrum-localhost',
   nativeCurrency: ether,
   rpcUrls: {
     default: {

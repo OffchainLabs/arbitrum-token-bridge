@@ -1,7 +1,11 @@
 // tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
-import { ChainId } from '../util/networks'
+import { ChainId, isNetwork } from '../util/networks'
+import {
+  isTokenArbitrumOneUSDCe,
+  isTokenArbitrumSepoliaUSDCe
+} from './TokenUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -10,7 +14,7 @@ export type WithdrawOnlyToken = {
   l2Address: string
 }
 
-const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
+export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   [ChainId.ArbitrumOne]: [
     {
       symbol: 'MIM',
@@ -54,17 +58,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l1Address: '0x10010078a54396F62c96dF8532dc2B4847d47ED3',
       l2Address: '0x626195b5a8b5f865E3516201D6ac30ee1B46A6e9'
     },
-    // We comment this out because when user tries to deposit FRAX,
-    // we show a dialog to use a fast bridge (Celer) instead
-    // and the user can never make a deposit on our UI
-    // eventually we should do that to all other withdraw-only
-    // tokens as well
-    // {
-    //   symbol: 'FRAX',
-    //   l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
-    //   l1Address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
-    //   l2Address: '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
-    // },
+    {
+      symbol: 'FRAX',
+      l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
+      l1Address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+      l2Address: '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
+    },
     {
       symbol: 'FXS',
       l2CustomAddr: '0x9d2F299715D94d8A7E6F5eaa8E654E8c74a988A7',
@@ -130,13 +129,84 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x3082CC23568eA640225c2467653dB90e9250AaA0',
       l1Address: '0x137dDB47Ee24EaA998a535Ab00378d6BFa84F893',
       l2Address: '0xa4431f62db9955bfd056c30e5ae703bf0d0eaec8'
+    },
+    {
+      symbol: 'GSWIFT',
+      l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
+    },
+    {
+      symbol: 'eETH',
+      l2CustomAddr: '',
+      l1Address: '0x35fA164735182de50811E8e2E824cFb9B6118ac2',
+      l2Address: '0x832307742aACFe2b9680309526b4d8a409e274E0'
+    },
+    {
+      symbol: 'rsETH',
+      l2CustomAddr: '',
+      l1Address: '0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7',
+      l2Address: '0x3d19a8b57e8082c4bbd5e068016295cfdb255e6a'
+    },
+    {
+      symbol: 'ETHx',
+      l2CustomAddr: '',
+      l1Address: '0xA35b1B31Ce002FBF2058D22F30f95D405200A15b',
+      l2Address: '0xaade6e725879375ba2b0ca608cfb26399d50a7ce'
+    },
+    {
+      symbol: 'ezETH',
+      l2CustomAddr: '0x2416092f143378750bb29b79eD961ab195CcEea5',
+      l1Address: '0xbf5495efe5db9ce00f80364c8b423567e58d2110',
+      l2Address: '0x6c2b260b7e4c4853a1227d9320c50e0b09917fa8'
+    },
+    {
+      symbol: 'USDe',
+      l2CustomAddr: '0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34',
+      l1Address: '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
+      l2Address: '0x1FefA878e65998482C743eE2deDB907E4D9c8c34'
+    },
+    {
+      symbol: 'sUSDe',
+      l2CustomAddr: '0x211Cc4DD073734dA055fbF44a2b4667d5E5fE5d2',
+      l1Address: '0x9D39A5DE30e57443BfF2A8307A4256c8797A3497',
+      l2Address: '0x292CbA96fce24f6802dBdA021ED2B05481a3eEdF'
+    },
+    {
+      symbol: 'GHO',
+      l2CustomAddr: '',
+      l1Address: '0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f',
+      l2Address: '0xfeb8670b834d9157864126f5dbd24b25d06882ad'
+    },
+    {
+      symbol: 'ETHFI',
+      l2CustomAddr: '0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27',
+      l1Address: '0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB',
+      l2Address: '0x07D65C18CECbA423298c0aEB5d2BeDED4DFd5736'
     }
   ],
   [ChainId.ArbitrumNova]: []
 }
 
-export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
-  return (withdrawOnlyTokens[chainId] ?? [])
+/**
+ *
+ * @param erc20L1Address
+ * @param childChainId
+ */
+export function isWithdrawOnlyToken(
+  parentChainErc20Address: string,
+  childChainId: number
+) {
+  // disable USDC.e deposits for Orbit chains
+  if (
+    (isTokenArbitrumOneUSDCe(parentChainErc20Address) ||
+      isTokenArbitrumSepoliaUSDCe(parentChainErc20Address)) &&
+    isNetwork(childChainId).isOrbitChain
+  ) {
+    return true
+  }
+
+  return (withdrawOnlyTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
-    .includes(erc20L1Address.toLowerCase())
+    .includes(parentChainErc20Address.toLowerCase())
 }

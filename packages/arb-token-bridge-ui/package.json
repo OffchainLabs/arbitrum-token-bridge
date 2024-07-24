@@ -5,11 +5,12 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.11",
-    "@arbitrum/sdk": "^3.1.13-orbit-custom-fee-token.1",
+    "@arbitrum/sdk": "^4.0.0",
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.7.8",
     "@headlessui/tailwindcss": "^0.1.2",
     "@heroicons/react": "^2.0.18",
+    "@offchainlabs/cobalt": "^0.3.6",
     "@rainbow-me/rainbowkit": "^0.12.16",
     "@rehooks/local-storage": "^2.4.4",
     "@sentry/react": "^7.73.0",
@@ -21,17 +22,16 @@
     "@vercel/edge-config": "^0.4.1",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
-    "axios": "^1.6.1",
+    "axios": "^1.6.6",
     "boring-avatars": "^1.7.0",
     "cheerio": "^1.0.0-rc.12",
     "dayjs": "^1.11.8",
     "ethers": "^5.6.0",
     "fetch-retry": "^5.0.3",
-    "framer-motion": "^10.12.10",
     "graphql": "^16.8.1",
     "lodash-es": "^4.17.21",
     "next": "^13.5.6",
-    "next-query-params": "^4.2.3",
+    "next-query-params": "^5.0.0",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
     "posthog-js": "^1.57.2",
@@ -45,7 +45,7 @@
     "sharp": "^0.32.6",
     "swr": "^2.1.2",
     "tailwind-merge": "^2.0.0",
-    "use-query-params": "^2.1.1",
+    "use-query-params": "^2.2.1",
     "wagmi": "^0.12.18",
     "zod": "^3.22.4",
     "zustand": "^4.3.9"
@@ -61,12 +61,9 @@
     "lint": "tsc && eslint 'src/**/*.{js,ts,tsx}'",
     "lint:fix": "tsc && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
-    "getUnusedComponents": "ts-prune | grep ' default$'",
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
-    "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
-    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
-    "e2e:run:cctp": "E2E_CCTP=true yarn e2e:run",
-    "e2e:install": "cypress install"
+    "generateCoreChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateCoreChainsToMonitor.ts",
+    "generateOrbitChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts"
   },
   "browserslist": {
     "production": [
@@ -84,8 +81,8 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
-    "@synthetixio/synpress": "3.6.0",
-    "@testing-library/react": "^14.0.0",
+    "@synthetixio/synpress": "3.7.3",
+    "@testing-library/react": "^14.2.1",
     "@types/jest": "^29.5.1",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",
@@ -95,7 +92,8 @@
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^6.13.2",
     "autoprefixer": "^10.4.13",
-    "cypress-recurse": "^1.27.0",
+    "cypress-recurse": "^1.35.2",
+    "cypress-terminal-report": "^5.3.10",
     "cypress-wait-until": "^1.7.2",
     "env-cmd": "^10.1.0",
     "eslint": "^7.32.0",
@@ -118,7 +116,6 @@
     "start-server-and-test": "^2.0.0",
     "tailwindcss": "^3.2.4",
     "ts-node": "^10.9.1",
-    "ts-prune": "^0.10.1",
     "typescript": "^5.2.2"
   }
 }

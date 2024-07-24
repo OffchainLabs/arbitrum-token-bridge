@@ -5,7 +5,8 @@ import { load } from 'cheerio'
 import useSWR from 'swr'
 
 import { getExplorerUrl, isNetwork } from '../util/networks'
-import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 const emptyData = { tps: null }
 
@@ -39,15 +40,12 @@ const fetchNetworkTPS = async (l2ChainId: number) => {
 }
 
 export const useNetworkTPS = () => {
-  const {
-    l2: {
-      network: { id: l2ChainId }
-    }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   return useSWR(
-    ['tps', l2ChainId],
-    ([, _l2ChainId]) => fetchNetworkTPS(_l2ChainId),
+    ['tps', childChain.id],
+    ([, _childChainId]) => fetchNetworkTPS(_childChainId),
     {
       refreshInterval: 30_000,
       shouldRetryOnError: false

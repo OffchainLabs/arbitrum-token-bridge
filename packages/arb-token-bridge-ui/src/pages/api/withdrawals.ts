@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+
 import { FetchWithdrawalsFromSubgraphResult } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
-import { getL2SubgraphClient } from '../../util/SubgraphUtils'
+import {
+  getL2SubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
@@ -18,6 +22,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
 }
 
 type WithdrawalResponse = {
+  meta?: { source: string | null }
   data: FetchWithdrawalsFromSubgraphResult[]
   message?: string // in case of any error
 }
@@ -57,6 +62,15 @@ export default async function handler(
         message: `incomplete request: ${errorMessage.join(', ')}`,
         data: []
       })
+      return
+    }
+
+    // if invalid pageSize, send empty data instead of error
+    if (isNaN(Number(pageSize)) || Number(pageSize) === 0) {
+      res.status(200).json({
+        data: []
+      })
+      return
     }
 
     const additionalFilters = `${
@@ -72,7 +86,19 @@ export default async function handler(
     ${search ? `l2TxHash_contains: "${search}"` : ''}
     `
 
-    const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
+    let subgraphClient
+    try {
+      subgraphClient = getL2SubgraphClient(Number(l2ChainId))
+    } catch (error: any) {
+      // catch attempt to query unsupported networks and throw a 400
+      res.status(400).json({
+        message: error?.message ?? 'Something went wrong',
+        data: []
+      })
+      return
+    }
+
+    const subgraphResult = await subgraphClient.query({
       query: gql`{
         withdrawals(
           where: {            
@@ -138,7 +164,10 @@ export default async function handler(
         }
       })
 
-    res.status(200).json({ data: transactions })
+    res.status(200).json({
+      meta: { source: getSourceFromSubgraphClient(subgraphClient) },
+      data: transactions
+    })
   } catch (error: any) {
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',

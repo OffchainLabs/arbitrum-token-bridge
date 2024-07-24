@@ -1,64 +1,87 @@
 import { useCallback } from 'react'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
+import { getL2ERC20Address } from '../../util/TokenUtils'
 import { useBalance } from '../useBalance'
-import { useNetworksAndSigners } from '../useNetworksAndSigners'
-
-function getL1AddressFromAddress(address: string) {
-  switch (address) {
-    case CommonAddress.Goerli.USDC:
-    case CommonAddress.ArbitrumGoerli.USDC:
-    case CommonAddress.ArbitrumGoerli['USDC.e']:
-      return CommonAddress.Goerli.USDC
-
-    case CommonAddress.Ethereum.USDC:
-    case CommonAddress.ArbitrumOne.USDC:
-    case CommonAddress.ArbitrumOne['USDC.e']:
-      return CommonAddress.Ethereum.USDC
-
-    default:
-      return CommonAddress.Ethereum.USDC
-  }
-}
+import { useNetworks } from '../useNetworks'
+import { useNetworksRelationship } from '../useNetworksRelationship'
+import { isNetwork } from '../../util/networks'
 
 export function useUpdateUSDCBalances({
   walletAddress
 }: {
   walletAddress: string | undefined
 }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { parentChainProvider, parentChain, childChain, childChainProvider } =
+    useNetworksRelationship(networks)
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: l1.provider,
+    chainId: parentChain.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: l2.provider,
+    chainId: childChain.id,
     walletAddress
   })
 
-  const updateUSDCBalances = useCallback(
-    (address: `0x${string}` | string) => {
-      const l1Address = getL1AddressFromAddress(address)
+  const updateUSDCBalances = useCallback(async () => {
+    const { isEthereumMainnet, isSepolia, isArbitrumOne, isArbitrumSepolia } =
+      isNetwork(parentChain.id)
 
-      updateErc20L1Balance([l1Address.toLowerCase()])
-      if (isTokenMainnetUSDC(l1Address)) {
-        updateErc20L2Balance([
-          CommonAddress.ArbitrumOne.USDC,
-          CommonAddress.ArbitrumOne['USDC.e']
-        ])
-      } else if (isTokenGoerliUSDC(l1Address)) {
-        updateErc20L2Balance([
-          CommonAddress.ArbitrumGoerli.USDC,
-          CommonAddress.ArbitrumGoerli['USDC.e']
-        ])
+    let parentChainUsdcAddress, childChainUsdcAddress: string | undefined
+
+    if (isEthereumMainnet || isSepolia) {
+      parentChainUsdcAddress = isEthereumMainnet
+        ? CommonAddress.Ethereum.USDC
+        : CommonAddress.Sepolia.USDC
+
+      childChainUsdcAddress = isEthereumMainnet
+        ? CommonAddress.ArbitrumOne.USDC
+        : CommonAddress.ArbitrumSepolia.USDC
+    }
+
+    if (isArbitrumOne || isArbitrumSepolia) {
+      parentChainUsdcAddress = isArbitrumOne
+        ? CommonAddress.ArbitrumOne.USDC
+        : CommonAddress.ArbitrumSepolia.USDC
+    }
+
+    // USDC is not native for the selected networks, do nothing
+    if (!parentChainUsdcAddress) {
+      return
+    }
+
+    updateErc20L1Balance([parentChainUsdcAddress])
+
+    // we don't have native USDC addresses for Orbit chains, we need to fetch it
+    if (!childChainUsdcAddress) {
+      try {
+        childChainUsdcAddress = (
+          await getL2ERC20Address({
+            erc20L1Address: parentChainUsdcAddress,
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
+          })
+        ).toLowerCase()
+      } catch {
+        // could be never bridged before
+        return
       }
-    },
-    [updateErc20L1Balance, updateErc20L2Balance]
-  )
+    }
+
+    if (childChainUsdcAddress) {
+      updateErc20L2Balance([childChainUsdcAddress])
+    }
+  }, [
+    childChainProvider,
+    parentChain.id,
+    parentChainProvider,
+    updateErc20L1Balance,
+    updateErc20L2Balance
+  ])
 
   return { updateUSDCBalances }
 }

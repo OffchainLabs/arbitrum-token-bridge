@@ -6,6 +6,7 @@ export function ExternalLink({
   if (!href) {
     return children
   }
+
   return (
     <a target="_blank" href={href} rel="noopener noreferrer" {...props}>
       {children}

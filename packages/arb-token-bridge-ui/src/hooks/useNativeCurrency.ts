@@ -1,12 +1,13 @@
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
+import { EthBridger, ArbitrumNetwork, getArbitrumNetwork } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
-import { ether } from '../constants'
+import { ETHER_TOKEN_LOGO, ether } from '../constants'
 import { rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
+import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 
-type NativeCurrencyBase = {
+export type NativeCurrencyBase = {
   name: string
   symbol: string
   decimals: number
@@ -29,8 +30,7 @@ export type NativeCurrency = NativeCurrencyEther | NativeCurrencyErc20
 
 const nativeCurrencyEther: NativeCurrencyEther = {
   ...ether,
-  logoUrl:
-    'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png',
+  logoUrl: ETHER_TOKEN_LOGO,
   isCustom: false
 }
 
@@ -57,10 +57,10 @@ export async function fetchNativeCurrency({
 }: {
   provider: Provider
 }): Promise<NativeCurrency> {
-  let chain: L2Network
+  let chain: ArbitrumNetwork
 
   try {
-    chain = await getChain(provider)
+    chain = await getArbitrumNetwork(provider)
   } catch (error) {
     // This will only throw for L1s, so we can safely assume that the native currency is ETH
     return nativeCurrencyEther
@@ -74,7 +74,7 @@ export async function fetchNativeCurrency({
   }
 
   const address = ethBridger.nativeToken.toLowerCase()
-  const parentChainId = chain.partnerChainID
+  const parentChainId = chain.parentChainId
   const parentChainProvider = new StaticJsonRpcProvider(rpcURLs[parentChainId])
 
   const { name, symbol, decimals } = await fetchErc20Data({
@@ -82,5 +82,12 @@ export async function fetchNativeCurrency({
     provider: parentChainProvider
   })
 
-  return { name, symbol, decimals, address, isCustom: true }
+  return {
+    name,
+    logoUrl: getBridgeUiConfigForChain(chain.chainId).nativeTokenData?.logoUrl,
+    symbol,
+    decimals,
+    address,
+    isCustom: true
+  }
 }

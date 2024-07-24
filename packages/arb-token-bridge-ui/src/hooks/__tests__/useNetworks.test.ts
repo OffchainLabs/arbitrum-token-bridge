@@ -1,42 +1,43 @@
 /**
  * @jest-environment jsdom
  */
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { ChainId, customChainLocalStorageKey } from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
+import { createMockOrbitChain } from './helpers'
 
 describe('sanitizeQueryParams', () => {
   let localStorageGetItemMock: jest.Mock
 
   beforeAll(() => {
+    const mockedOrbitChain_1 = createMockOrbitChain({
+      chainId: 2222,
+      parentChainId: ChainId.ArbitrumSepolia
+    })
+    const mockedOrbitChain_2 = createMockOrbitChain({
+      chainId: 3333,
+      parentChainId: ChainId.ArbitrumOne
+    })
+    const mockedOrbitChain_3 = createMockOrbitChain({
+      chainId: 4444,
+      parentChainId: ChainId.ArbitrumNova
+    })
+
     localStorageGetItemMock = global.Storage.prototype.getItem = jest.fn(
       key => {
         if (key === customChainLocalStorageKey) {
           return JSON.stringify([
-            {
-              chainID: '1111',
-              partnerChainID: ChainId.ArbitrumGoerli,
-              name: 'custom 1111 chain'
-            },
-            {
-              chainID: '2222',
-              partnerChainID: ChainId.ArbitrumSepolia,
-              name: 'custom 2222 chain'
-            },
-            {
-              chainID: '3333',
-              partnerChainID: ChainId.ArbitrumOne,
-              name: 'custom 3333 chain'
-            },
-            {
-              chainID: '4444',
-              partnerChainID: ChainId.ArbitrumNova,
-              name: 'custom 4444 chain'
-            }
+            mockedOrbitChain_1,
+            mockedOrbitChain_2,
+            mockedOrbitChain_3
           ])
         }
         return null
       }
     )
+    registerCustomArbitrumNetwork(mockedOrbitChain_1)
+    registerCustomArbitrumNetwork(mockedOrbitChain_2)
+    registerCustomArbitrumNetwork(mockedOrbitChain_3)
   })
 
   afterAll(() => {
@@ -53,6 +54,22 @@ describe('sanitizeQueryParams', () => {
         sourceChainId: ChainId.Sepolia,
         destinationChainId: ChainId.ArbitrumSepolia
       })
+      const resultWithArbitrumSepolia = sanitizeQueryParams({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
+      expect(resultWithArbitrumSepolia).toEqual({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
+      const resultWithBothChainsBeingTheSame = sanitizeQueryParams({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.Sepolia
+      })
+      expect(resultWithBothChainsBeingTheSame).toEqual({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
 
       // Orbit chains
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
@@ -63,19 +80,10 @@ describe('sanitizeQueryParams', () => {
         sourceChainId: 2222,
         destinationChainId: ChainId.ArbitrumSepolia
       })
-
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
     })
   })
   describe('when `destinationChainId` is valid and `sourceChainId` is invalid', () => {
-    it('should set `sourceChainId`', () => {
+    it('should set `sourceChainId` based on `destinationChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: 1234,
         destinationChainId: ChainId.ArbitrumSepolia
@@ -86,15 +94,6 @@ describe('sanitizeQueryParams', () => {
       })
 
       // Orbit chains
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: 1111
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: ChainId.ArbitrumGoerli,
-        destinationChainId: 1111
-      })
-
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 1234,
         destinationChainId: 2222
@@ -124,7 +123,7 @@ describe('sanitizeQueryParams', () => {
     })
   })
   describe('when `destinationChainId` is valid and `sourceChainId` is undefined', () => {
-    it('should set `sourceChainId`', () => {
+    it('should set `sourceChainId` based on `destinationChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: undefined,
         destinationChainId: ChainId.ArbitrumNova
@@ -134,14 +133,6 @@ describe('sanitizeQueryParams', () => {
         destinationChainId: ChainId.ArbitrumNova
       })
 
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: 1111
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: ChainId.ArbitrumGoerli,
-        destinationChainId: 1111
-      })
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: undefined,
         destinationChainId: 2222
@@ -154,7 +145,7 @@ describe('sanitizeQueryParams', () => {
   })
 
   describe('when `destinationChainId` is invalid and `sourceChainId` is valid', () => {
-    it('should set `destinationChainId`', () => {
+    it('should set `destinationChainId` based on `sourceChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
         destinationChainId: 12345
@@ -165,15 +156,6 @@ describe('sanitizeQueryParams', () => {
       })
 
       // Orbit chains
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: 1234
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 2222,
         destinationChainId: 1234
@@ -202,33 +184,9 @@ describe('sanitizeQueryParams', () => {
       })
     })
   })
-  describe('when `destinationChainId` is invalid and `sourceChainId` is invalid', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: 12345
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    })
-  })
-  describe('when `destinationChainId` is invalid and `sourceChainId` is undefined', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: 12345
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    })
-  })
 
   describe('when `destinationChainId` is undefined and `sourceChainId` is valid', () => {
-    it('should set `destinationChainId`', () => {
+    it('should set `destinationChainId` based on `sourceChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
         destinationChainId: undefined
@@ -246,39 +204,6 @@ describe('sanitizeQueryParams', () => {
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: 2222,
         destinationChainId: ChainId.ArbitrumSepolia
-      })
-
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: undefined
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-    })
-  })
-  describe('when `destinationChainId` is undefined and `sourceChainId` is invalid', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: undefined
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    })
-  })
-  describe('when`destinationChainId` is undefined and`sourceChainId` is undefined', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: undefined
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
       })
     })
   })

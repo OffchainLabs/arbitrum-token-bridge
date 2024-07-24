@@ -3,34 +3,38 @@ import * as chains from 'wagmi/chains'
 
 import {
   ChainId,
-  getCustomChainsFromLocalStorage,
-  getSupportedNetworks
+  getCustomChainFromLocalStorageById,
+  getSupportedChainIds
 } from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
+import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
+import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
   'ethereum',
-  'goerli',
   'sepolia',
   'arbitrum-one',
   'arbitrum-nova',
-  'arbitrum-goerli',
   'arbitrum-sepolia',
-  'stylus-testnet',
-  'xai-testnet',
-  'local',
-  'arbitrum-local'
+  'custom-localhost',
+  'arbitrum-localhost'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
-export type ChainQueryParam = ChainKeyQueryParam | ChainId | number
+export type ChainQueryParam = ChainKeyQueryParam | ChainId | number | string
 
 export function isValidChainQueryParam(value: string | number): boolean {
   if (typeof value === 'string') {
-    return (chainQueryParams as readonly string[]).includes(value)
+    const isValidCoreChainSlug = (
+      chainQueryParams as readonly string[]
+    ).includes(value)
+    const isValidOrbitChainSlug = getOrbitChains().some(
+      chain => chain.slug === value
+    )
+    return isValidCoreChainSlug || isValidOrbitChainSlug
   }
 
-  const supportedNetworkIds = getSupportedNetworks(value, true)
+  const supportedNetworkIds = getSupportedChainIds({ includeTestnets: true })
   return supportedNetworkIds.includes(value)
 }
 
@@ -39,23 +43,11 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.Ethereum:
       return 'ethereum'
 
-    case ChainId.Goerli:
-      return 'goerli'
-
     case ChainId.ArbitrumOne:
       return 'arbitrum-one'
 
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
-
-    case ChainId.ArbitrumGoerli:
-      return 'arbitrum-goerli'
-
-    case ChainId.StylusTestnet:
-      return 'stylus-testnet'
-
-    case ChainId.XaiTestnet:
-      return 'xai-testnet'
 
     case ChainId.Sepolia:
       return 'sepolia'
@@ -64,19 +56,22 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'arbitrum-sepolia'
 
     case ChainId.Local:
-      return 'local'
+      return 'custom-localhost'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-local'
+      return 'arbitrum-localhost'
 
     default:
-      const customChains = getCustomChainsFromLocalStorage()
-      const customChain = customChains.find(
-        customChain => customChain.chainID === chainId
-      )
+      const customChain = getCustomChainFromLocalStorageById(chainId)
+
+      const orbitChain = orbitChains[chainId]
 
       if (customChain) {
-        return customChain.chainID
+        return customChain.chainId
+      }
+
+      if (orbitChain) {
+        return orbitChain.slug ?? orbitChain.chainId
       }
 
       throw new Error(
@@ -92,9 +87,6 @@ export function getChainForChainKeyQueryParam(
     case 'ethereum':
       return chains.mainnet
 
-    case 'goerli':
-      return chains.goerli
-
     case 'sepolia':
       return chains.sepolia
 
@@ -104,25 +96,26 @@ export function getChainForChainKeyQueryParam(
     case 'arbitrum-nova':
       return customChains.arbitrumNova
 
-    case 'arbitrum-goerli':
-      return chains.arbitrumGoerli
-
     case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia
 
-    case 'stylus-testnet':
-      return customChains.stylusTestnet
-
-    case 'xai-testnet':
-      return customChains.xaiTestnet
-
-    case 'local':
+    case 'custom-localhost':
       return customChains.localL1Network
 
-    case 'arbitrum-local':
+    case 'arbitrum-localhost':
       return customChains.localL2Network
 
     default:
+      const orbitChain = getOrbitChains().find(
+        chain =>
+          chain.slug === chainKeyQueryParam ??
+          chain.chainId === Number(chainKeyQueryParam)
+      )
+
+      if (orbitChain) {
+        return chainToWagmiChain(orbitChain)
+      }
+
       throw new Error(
         `[getChainForChainKeyQueryParam] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
       )
