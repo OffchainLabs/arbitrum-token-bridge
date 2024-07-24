@@ -36,9 +36,7 @@ describe('Deposit ERC20 Token', () => {
       cy.login({ networkType: 'L1' })
       cy.findSourceChainButton('Ethereum Local')
       cy.findDestinationChainButton('Arbitrum Local')
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', 'ETH')
+      cy.findSelectTokenButton('ETH')
     })
 
     it('should deposit ERC-20 successfully to the same address', () => {

@@ -40,10 +40,7 @@ describe('Withdraw ERC20 Token', () => {
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
       cy.findMoveFundsButton().should('be.disabled')
-
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', 'ETH')
+      cy.findSelectTokenButton('ETH')
     })
 
     it('should withdraw ERC-20 to the same address successfully', () => {
