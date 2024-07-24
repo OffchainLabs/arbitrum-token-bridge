@@ -71,8 +71,8 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
 export const l1WethGateway = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const wethTokenAddressL1 = '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
-export const ERC20TokenName = 'IntArbTestToken'
-export const ERC20TokenSymbol = 'IARB'
+export const ERC20TokenName = 'TESTARB'
+export const ERC20TokenSymbol = 'TESTARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
