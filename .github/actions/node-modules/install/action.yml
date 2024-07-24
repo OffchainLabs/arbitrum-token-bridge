@@ -9,3 +9,4 @@ runs:
         node-version: '20'
         cache: 'yarn'
     - run: yarn install --frozen-lockfile # optional, --immutable
+      shell: bash
