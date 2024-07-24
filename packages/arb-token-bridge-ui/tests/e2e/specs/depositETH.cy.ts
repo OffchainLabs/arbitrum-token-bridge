@@ -11,8 +11,8 @@ describe('Deposit ETH', () => {
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
     cy.login({ networkType: 'L1' })
-    cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-    cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
+    cy.findSourceChainButton('Ethereum Local')
+    cy.findDestinationChainButton('Arbitrum Local')
   })
 
   it('should show gas estimations and bridge successfully', () => {

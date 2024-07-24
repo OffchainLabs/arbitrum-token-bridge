@@ -10,7 +10,9 @@ import {
   fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
-  typeAmount
+  typeAmount,
+  findSourceChainButton,
+  findDestinationChainButton
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -44,6 +46,8 @@ declare global {
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
       typeAmount: typeof typeAmount
+      findSourceChainButton: typeof findSourceChainButton
+      findDestinationChainButton: typeof findDestinationChainButton
     }
   }
 }
