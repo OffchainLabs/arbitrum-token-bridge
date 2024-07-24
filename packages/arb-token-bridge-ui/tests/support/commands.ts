@@ -291,7 +291,7 @@ export function findGasFeeForChain(
   return cy.findByText(label).should('be.visible')
 }
 
-export function findSummaryGasFee(
+export function findGasFeeSummary(
   amount: string | number | RegExp
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy
@@ -322,7 +322,7 @@ Cypress.Commands.addAll({
   typeAmount,
   findSourceChainButton,
   findDestinationChainButton,
-  findChainGasFee,
-  findSummaryGasFee,
+  findGasFeeForChain,
+  findGasFeeSummary,
   findMoveFundsButton
 })

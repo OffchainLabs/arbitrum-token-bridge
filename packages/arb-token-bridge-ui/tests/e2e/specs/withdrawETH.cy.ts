@@ -23,7 +23,7 @@ describe('Withdraw ETH', () => {
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {
-            cy.findSummaryGasFee(zeroToLessThanOneETH)
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
             cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
             cy.findGasFeeForChain(
               /You'll have to pay Ethereum Local gas fee upon claiming./i

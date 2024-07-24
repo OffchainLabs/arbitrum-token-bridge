@@ -27,7 +27,7 @@ describe('Approve token and deposit afterwards', () => {
       cy.findByText('MAX')
         .click()
         .then(() => {
-          cy.findSummaryGasFee(zeroToLessThanOneETH)
+          cy.findGasFeeSummary(zeroToLessThanOneETH)
           cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
           cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
         })

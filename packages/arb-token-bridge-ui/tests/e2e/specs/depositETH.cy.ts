@@ -20,7 +20,7 @@ describe('Deposit ETH', () => {
     cy.typeAmount(ETHAmountToDeposit)
       //
       .then(() => {
-        cy.findSummaryGasFee(zeroToLessThanOneETH)
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
         cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
         cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
       })
