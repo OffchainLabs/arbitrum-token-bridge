@@ -16,6 +16,7 @@ import { getCustomChainFromLocalStorageById } from '../networks'
 import { orbitChains } from '../orbitChainsList'
 
 export function getWagmiChain(chainId: number): Chain {
+  console.log({ localL2Network })
   const customChain = getCustomChainFromLocalStorageById(chainId)
   const orbitChain = orbitChains[chainId]
 

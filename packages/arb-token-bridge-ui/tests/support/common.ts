@@ -26,7 +26,15 @@ type NetworkConfig = {
   multiCall: string
 }
 
-const isOrbitTest = process.env.E2E_ORBIT
+export const getL1NetworkName = () => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  return isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local'
+}
+
+export const getL2NetworkName = () => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  return isOrbitTest ? 'L3 Local' : 'Arbitrum Local'
+}
 
 export const getL1NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
@@ -80,15 +88,6 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const l1WethGateway = isOrbitTest
-  ? defaultL2Network.tokenBridge.childWethGateway
-  : defaultL2Network.tokenBridge.parentWethGateway
-export const wethTokenAddressL1 = isOrbitTest
-  ? defaultL2Network.tokenBridge.childWeth
-  : defaultL2Network.tokenBridge.parentWeth
-export const wethTokenAddressL2 = isOrbitTest
-  ? defaultL3Network.tokenBridge.childWeth
-  : defaultL2Network.tokenBridge.childWeth
 export const ERC20TokenName = 'IntArbTestToken'
 export const ERC20TokenSymbol = 'IARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'

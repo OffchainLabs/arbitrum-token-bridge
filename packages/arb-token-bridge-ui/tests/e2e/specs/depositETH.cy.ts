@@ -2,17 +2,24 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import {
+  getL1NetworkName,
+  getL2NetworkName,
+  zeroToLessThanOneETH
+} from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Deposit ETH', () => {
   const ETHAmountToDeposit = 0.0001
 
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
     cy.login({ networkType: 'L1' })
-    cy.findSourceChainButton('Ethereum Local')
-    cy.findDestinationChainButton('Arbitrum Local')
+    cy.findSourceChainButton(getL1NetworkName())
+    cy.findDestinationChainButton(getL2NetworkName())
   })
 
   it('should show gas estimations and bridge successfully', () => {
@@ -25,13 +32,13 @@ describe('Deposit ETH', () => {
           .last()
           .contains(zeroToLessThanOneETH)
           .should('be.visible')
-        cy.findByText('Ethereum Local gas fee')
+        cy.findByText(`${getL1NetworkName()} gas fee`)
           .parent()
           .siblings()
           .last()
           .contains(zeroToLessThanOneETH)
           .should('be.visible')
-        cy.findByText('Arbitrum Local gas fee')
+        cy.findByText(`${getL2NetworkName()} gas fee`)
           .parent()
           .siblings()
           .last()
@@ -40,7 +47,7 @@ describe('Deposit ETH', () => {
       })
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
-      cy.findByText('10 minutes').should('be.visible')
+      cy.findByText(depositTime).should('be.visible')
       cy.findByText(
         `${formatAmount(ETHAmountToDeposit, {
           symbol: 'ETH'

@@ -3,7 +3,11 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { getInitialETHBalance } from './../../support/common'
+import {
+  getInitialETHBalance,
+  getL1NetworkName,
+  getL2NetworkName
+} from './../../support/common'
 
 describe('Login Account', () => {
   let l1ETHbal
@@ -39,7 +43,7 @@ describe('Login Account', () => {
       .should('be.visible')
       .siblings()
       .contains('Balance: ')
-    cy.findSourceChainButton('Ethereum Local')
-    cy.findDestinationChainButton('Arbitrum Local')
+    cy.findSourceChainButton(getL1NetworkName())
+    cy.findDestinationChainButton(getL2NetworkName())
   })
 })

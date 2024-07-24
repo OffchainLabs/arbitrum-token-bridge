@@ -7,7 +7,8 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getL2NetworkConfig,
-  wethTokenAddressL2,
+  getL1NetworkName,
+  getL2NetworkName,
   zeroToLessThanOneETH
 } from '../../support/common'
 
@@ -19,11 +20,12 @@ describe('Withdraw ERC20 Token', () => {
   // Happy Path
   context('User is on L2 and imports ERC-20', () => {
     let l2ERC20bal: string
+    const l2WethAddress = Cypress.env('L2_WETH_ADDRESS')
 
     // log in to metamask before withdrawal
     beforeEach(() => {
       getInitialERC20Balance({
-        tokenAddress: wethTokenAddressL2,
+        tokenAddress: l2WethAddress,
         multiCallerAddress: getL2NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ARB_RPC_URL')
@@ -37,8 +39,8 @@ describe('Withdraw ERC20 Token', () => {
 
     it('should show form fields correctly', () => {
       cy.login({ networkType: 'L2' })
-      cy.findSourceChainButton('Arbitrum Local')
-      cy.findDestinationChainButton('Ethereum Local')
+      cy.findSourceChainButton(getL2NetworkName())
+      cy.findDestinationChainButton(getL1NetworkName())
       cy.findMoveFundsButton().should('be.disabled')
 
       cy.findByRole('button', { name: 'Select Token' })
@@ -53,7 +55,7 @@ describe('Withdraw ERC20 Token', () => {
       context('should add ERC-20 correctly', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: wethTokenAddressL2
+          tokenAddress: getL2WethAddress()
         })
       })
 
@@ -127,7 +129,7 @@ describe('Withdraw ERC20 Token', () => {
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: wethTokenAddressL2
+          tokenAddress: l2WethAddress
         })
       })
 

@@ -2,7 +2,9 @@ import {
   importTokenThroughUI,
   ERC20TokenName,
   ERC20TokenSymbol,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  getL1NetworkName,
+  getL2NetworkName
 } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
@@ -31,12 +33,12 @@ describe('Approve token and deposit afterwards', () => {
             .siblings()
             .contains(zeroToLessThanOneETH)
             .should('be.visible')
-          cy.findByText('Ethereum Local gas fee')
+          cy.findByText(`${getL1NetworkName()} gas fee`)
             .parent()
             .siblings()
             .contains(zeroToLessThanOneETH)
             .should('be.visible')
-          cy.findByText('Arbitrum Local gas fee')
+          cy.findByText(`${getL2NetworkName()} gas fee`)
             .parent()
             .siblings()
             .contains(zeroToLessThanOneETH)

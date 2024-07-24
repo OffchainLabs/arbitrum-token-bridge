@@ -7,7 +7,8 @@ import {
   getInitialERC20Balance,
   getL1NetworkConfig,
   zeroToLessThanOneETH,
-  wethTokenAddressL1
+  getL1NetworkName,
+  getL2NetworkName
 } from '../../support/common'
 import { shortenAddress } from '../../../src/util/CommonUtils'
 
@@ -18,6 +19,10 @@ describe('Deposit ERC20 Token', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+  const l1WethAddress = Cypress.env('L1_WETH_ADDRESS')
+
   // Happy Path
   context('User has some ERC20 and is on L1', () => {
     let l1ERC20bal: string
@@ -25,7 +30,7 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     beforeEach(() => {
       getInitialERC20Balance({
-        tokenAddress: wethTokenAddressL1,
+        tokenAddress: l1WethAddress,
         multiCallerAddress: getL1NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ETH_RPC_URL')
@@ -34,8 +39,8 @@ describe('Deposit ERC20 Token', () => {
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
       cy.login({ networkType: 'L1' })
-      cy.findSourceChainButton('Ethereum Local')
-      cy.findDestinationChainButton('Arbitrum Local')
+      cy.findSourceChainButton(getL1NetworkName())
+      cy.findDestinationChainButton(getL2NetworkName())
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
         .should('have.text', 'ETH')
@@ -48,7 +53,7 @@ describe('Deposit ERC20 Token', () => {
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: wethTokenAddressL1
+          tokenAddress: l1WethAddress
         })
       })
 
@@ -68,12 +73,12 @@ describe('Deposit ERC20 Token', () => {
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('Ethereum Local gas fee')
+            cy.findByText(`${getL1NetworkName()} gas fee`)
               .parent()
               .siblings()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('Arbitrum Local gas fee')
+            cy.findByText(`${getL2NetworkName()} gas fee`)
               .parent()
               .siblings()
               .contains(zeroToLessThanOneETH)
@@ -86,7 +91,7 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('10 minutes').should('be.visible')
+              cy.findByText(depositTime).should('be.visible')
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'
@@ -104,7 +109,7 @@ describe('Deposit ERC20 Token', () => {
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: wethTokenAddressL1
+          tokenAddress: l1WethAddress
         })
       })
 
@@ -129,7 +134,7 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('10 minutes').should('be.visible')
+              cy.findByText(depositTime).should('be.visible')
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'

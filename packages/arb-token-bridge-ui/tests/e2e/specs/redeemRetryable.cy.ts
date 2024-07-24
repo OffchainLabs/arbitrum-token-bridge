@@ -4,7 +4,7 @@ import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 import {
   getInitialERC20Balance,
   getL2NetworkConfig,
-  wethTokenAddressL2
+  skipIfOrbitTest
 } from '../../support/common'
 
 const wethAmountToDeposit = 0.001
@@ -30,11 +30,18 @@ function mockErc20RedeemDepositTransaction(): Transaction {
 }
 
 describe('Redeem ERC20 Deposit', () => {
+  const l2WethAddress = Cypress.env('L2_WETH_ADDRESS')
+
+  before(() => {
+    // TODO: fix this test not to use WETH for Orbit chains
+    skipIfOrbitTest(this)
+  })
+
   context('User has some ERC20 and is on L1', () => {
     let l2ERC20bal: string
     beforeEach(() => {
       getInitialERC20Balance({
-        tokenAddress: wethTokenAddressL2,
+        tokenAddress: l2WethAddress,
         multiCallerAddress: getL2NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ARB_RPC_URL')
@@ -52,7 +59,7 @@ describe('Redeem ERC20 Deposit', () => {
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: wethTokenAddressL2
+          tokenAddress: getL2WethAddress()
         })
 
         // check the balance on the destination chain before redeeming

@@ -9,14 +9,13 @@ import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
 
-import {
-  NetworkName,
-  l1WethGateway,
-  wethTokenAddressL1,
-  wethTokenAddressL2
-} from './tests/support/common'
+import { NetworkName } from './tests/support/common'
 
-import { registerLocalNetwork } from './src/util/networks'
+import {
+  defaultL2Network,
+  defaultL3Network,
+  registerLocalNetwork
+} from './src/util/networks'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -27,11 +26,20 @@ if (process.env.TEST_FILE) {
   tests = specFiles.map(file => file.file)
 }
 
-const isOrbitTest = process.env.E2E_ORBIT
-console.log({ isOrbitTest })
-console.log(process.env.E2E_ORBIT)
-
+const isOrbitTest = process.env.E2E_ORBIT == 'true'
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+
+const l1WethGateway = isOrbitTest
+  ? defaultL3Network.tokenBridge.parentWethGateway
+  : defaultL2Network.tokenBridge.parentWethGateway
+
+const l1WethAddress = isOrbitTest
+  ? defaultL3Network.tokenBridge.parentWeth
+  : defaultL2Network.tokenBridge.parentWeth
+
+const l2WethAddress = isOrbitTest
+  ? defaultL3Network.tokenBridge.childWeth
+  : defaultL2Network.tokenBridge.childWeth
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -120,6 +128,8 @@ export default defineConfig({
         l1Provider: parentProvider,
         l2Provider: childProvider
       })
+      config.env.L1_WETH_ADDRESS = l1WethAddress
+      config.env.L2_WETH_ADDRESS = l2WethAddress
 
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
@@ -231,7 +241,7 @@ function getWethContract(
 async function wrapEth(networkType: 'L1' | 'L2') {
   console.log(`Wrapping ETH: ${networkType}...`)
   const amount = networkType === 'L1' ? '0.2' : '0.1'
-  const address = networkType === 'L1' ? wethTokenAddressL1 : wethTokenAddressL2
+  const address = networkType === 'L1' ? l1WethAddress : l2WethAddress
   const provider = networkType === 'L1' ? parentProvider : childProvider
   const tx = await getWethContract(provider, address).deposit({
     value: utils.parseEther(amount)
@@ -241,8 +251,8 @@ async function wrapEth(networkType: 'L1' | 'L2') {
 
 async function approveWeth() {
   console.log('Approving WETH...')
-  const tx = await getWethContract(parentProvider, wethTokenAddressL1).approve(
-    // L1 WETH gateway
+  console.log({ parentProvider, l1WethAddress, l1WethGateway })
+  const tx = await getWethContract(parentProvider, l1WethAddress).approve(
     l1WethGateway,
     constants.MaxInt256
   )
@@ -265,7 +275,7 @@ async function generateTestTxForRedeemRetryable() {
   const erc20Token = {
     symbol: 'WETH',
     decimals: 18,
-    address: wethTokenAddressL1
+    address: l1WethAddress
   }
   const amount = utils.parseUnits('0.001', erc20Token.decimals)
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)

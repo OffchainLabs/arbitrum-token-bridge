@@ -142,7 +142,7 @@ export const localL2Network: Chain = {
     }
   },
   blockExplorers: {
-    default: { name: 'Blockscout', url: '' }
+    default: { name: 'Blockscout', url: 'https://etherscan.io' }
   }
 }
 
@@ -163,6 +163,6 @@ export const localL3Network: Chain = {
     }
   },
   blockExplorers: {
-    default: { name: 'Blockscout', url: '' }
+    default: { name: 'Blockscout', url: 'https://etherscan.io' }
   }
 }
