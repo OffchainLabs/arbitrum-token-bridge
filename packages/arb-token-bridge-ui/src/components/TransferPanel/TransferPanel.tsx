@@ -101,7 +101,6 @@ export function TransferPanel() {
 
   const {
     app: {
-      connectionState,
       selectedToken,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token },
@@ -221,8 +220,7 @@ export function TransferPanel() {
   }
 
   useImportTokenModal({
-    importTokenModalStatus,
-    connectionState
+    importTokenModalStatus
   })
 
   const isBridgingANewStandardToken = useMemo(() => {
@@ -1093,11 +1091,13 @@ export function TransferPanel() {
           )}
         </div>
 
-        <TokenImportDialog
-          {...tokenImportDialogProps}
-          onClose={closeWithResetTokenImportDialog}
-          tokenAddress={tokenFromSearchParams ?? ''}
-        />
+        {typeof tokenFromSearchParams !== 'undefined' && (
+          <TokenImportDialog
+            {...tokenImportDialogProps}
+            onClose={closeWithResetTokenImportDialog}
+            tokenAddress={tokenFromSearchParams}
+          />
+        )}
 
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}
