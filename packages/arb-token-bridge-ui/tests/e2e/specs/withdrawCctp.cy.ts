@@ -64,10 +64,8 @@ describe('Withdraw USDC through CCTP', () => {
 
       cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
       context('should show L1 and L2 chains, and ETH correctly', () => {
-        cy.findByRole('button', { name: /From: Arbitrum Sepolia/i }).should(
-          'be.visible'
-        )
-        cy.findByRole('button', { name: /To: Sepolia/i }).should('be.visible')
+        cy.findSourceChainButton('Arbitrum Sepolia')
+        cy.findDestinationChainButton('Sepolia')
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
@@ -83,9 +81,7 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.findByPlaceholderText('Enter amount').typeRecursively(
-          String(USDCAmountToSend)
-        )
+        cy.typeAmount(USDCAmountToSend)
         cy.findByRole('button', {
           name: /Move funds to Sepolia/i
         })
@@ -115,9 +111,7 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.findByPlaceholderText('Enter amount').typeRecursively(
-          String(USDCAmountToSend)
-        )
+        cy.typeAmount(USDCAmountToSend)
       })
 
       context('should fill custom destination address successfully', () => {

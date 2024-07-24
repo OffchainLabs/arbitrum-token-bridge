@@ -32,9 +32,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_hotfix: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
-    
-    steps:        
-      - name: Make IS_HOTFIX env var global 
+
+    steps:
+      - name: Make IS_HOTFIX env var global
         id: check-is-hotfix
         run: |
           echo "is_hotfix=${{ env.IS_HOTFIX }}" >> $GITHUB_OUTPUT
@@ -95,6 +95,11 @@ jobs:
 
       - name: Build
         run: yarn build
+        env:
+          NEXT_PUBLIC_IS_E2E_TEST: true
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+          THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
 
       - name: Cache build artifacts
         uses: ./.github/actions/build-artifacts/cache
@@ -115,7 +120,7 @@ jobs:
         uses: ./.github/actions/build-artifacts/restore
 
       - name: Start UI and Test
-        run: yarn start-server-and-test 'dev' http://localhost:3000 'yarn test:ci'
+        run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
 
   audit:
     name: "Audit"
@@ -164,10 +169,11 @@ jobs:
           content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output .`
           echo "e2eFiles=$content" >> $GITHUB_OUTPUT
 
+  # based on https://github.com/Synthetixio/synpress/blob/dev/.github/workflows/e2e_cypress-action.yml
   test-e2e:
     name: "Test E2E"
     runs-on: ubuntu-latest
-    needs: [install, check-files, check-is-hotfix, load-e2e-files]
+    needs: [build, check-files, check-is-hotfix, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
     strategy:
       fail-fast: false # If one test fails, let the other tests run
@@ -176,122 +182,83 @@ jobs:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
 
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
+
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Chown workspace
-        run: chown -R $(whoami) .
-
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # pin@v1
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # pin@v1
-
-      - name: Cache Docker layers
-        uses: actions/cache@6998d139ddd3e68c71e9e398d8e40b71a2f39812 # pin@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-
-
-      - name: Make .e2e.env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
-          envkey_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          envkey_CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
-          envkey_SKIP_METAMASK_SETUP: true
-          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
-          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_TEST_FILE: ${{ matrix.tests.file }}
-          envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          envkey_THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
-          directory: ./packages/arb-token-bridge-ui/
-          file_name: .e2e.env
-
-      - name: Make .env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          envkey_THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
-          directory: ./packages/arb-token-bridge-ui/
-          file_name: .env
-
-      - name: Make synpress .env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_CYPRESS_GROUP: medium-resolution
-          envkey_DISPLAY_HEIGHT: 768
-          envkey_DISPLAY_WIDTH: 1366
-          envkey_SE_SCREEN_HEIGHT: 768
-          envkey_SE_SCREEN_WIDTH: 1366
-          file_name: medium-res.env
-
-      - name: Set up the local node
-        uses: OffchainLabs/actions/run-nitro-test-node@e3b7f5bdfc62cad21026c1d1f424f3fbadc046e0
-        with:
-          nitro-testnode-ref: old-release-v2.1.1
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
-      - name: Run e2e tests
-        id: e2e-run
+      - name: Restore build artifacts
+        uses: ./.github/actions/build-artifacts/restore
+
+      - name: Install cypress
+        run: yarn cypress install
+
+      - name: Install linux dependencies
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
-          exitcode=$(docker wait synpress-test)
-          if [[ $exitcode -eq 0 ]]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-          else
-            echo "status=failed" >> $GITHUB_OUTPUT
-          fi
+          sudo apt-get install --no-install-recommends -y \
+          fluxbox \
+          xvfb
+
+      - name: Run xvfb and fluxbox
+        run: |
+          Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
+          fluxbox &
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMPOSE_DOCKER_CLI_BUILD: 1
-          DOCKER_BUILDKIT: 1
-          DOCKER_DEFAULT_PLATFORM: linux/amd64
-      
-      - name: Create screenshots directory
-        if: steps.e2e-run.outputs.status == 'failed'
-        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+          DISPLAY: :0.0
 
-      - name: Copy screenshots from docker container volumes
-        if: steps.e2e-run.outputs.status == 'failed'
-        run: |
-          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
-
-      - name: Upload screenshots results
-        if: steps.e2e-run.outputs.status == 'failed'
-        uses: actions/upload-artifact@v4
+      - name: Run nitro testnode
+        uses: OffchainLabs/actions/run-nitro-test-node@953e8475606f180ce2b0531d411983ce37f34751
         with:
-          name: failed-e2e-screenshots-${{ fromJSON(toJSON(matrix.tests)).name }}
-          path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+          nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
+          l3-node: false
+          no-l3-token-bridge: true
 
-      - name: Create videos directory
-        if: matrix.tests.recordVideo == 'true'
-        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-
-      - name: Copy videos from docker container volumes
-        if: matrix.tests.recordVideo == 'true'
-        run: |
-          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/videos packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-
-      - name: Upload videos results
-        if: matrix.tests.recordVideo == 'true'
-        uses: actions/upload-artifact@v4
+      - name: Run e2e tests via cypress-io/github-action
+        uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
         with:
-          name: e2e-videos-${{ fromJSON(toJSON(matrix.tests)).name }}
-          path: packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-          compression-level: 0
-          retention-days: 3
-            
+          start: yarn start
+          command: yarn test:e2e --browser chromium
+          wait-on: http://127.0.0.1:3000
+          wait-on-timeout: 120
+          spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
+        env:
+          DISPLAY: :0.0
+          TEST_FILE: ${{ matrix.tests.file }}
+          SKIP_METAMASK_SETUP: true
+          CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
+          PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
+          PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
+          NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://127.0.0.1:8547
+
+      - name: Archive e2e artifacts
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
+        if: always()
+        with:
+          name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}
+          path: |
+            ./packages/arb-token-bridge-ui/cypress/videos
+            ./packages/arb-token-bridge-ui/cypress/screenshots
+        continue-on-error: true
+
       - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1

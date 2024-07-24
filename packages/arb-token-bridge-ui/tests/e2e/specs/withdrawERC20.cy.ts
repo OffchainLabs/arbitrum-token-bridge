@@ -37,8 +37,8 @@ describe('Withdraw ERC20 Token', () => {
 
     it('should show form fields correctly', () => {
       cy.login({ networkType: 'L2' })
-      cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
+      cy.findSourceChainButton('Arbitrum Local')
+      cy.findDestinationChainButton('Ethereum Local')
 
       cy.findByRole('button', {
         name: /Move funds to Ethereum/i
@@ -63,8 +63,8 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       context('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
             cy.findByText(/You will pay in gas fees:/i)
               .siblings()
@@ -175,8 +175,8 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       context('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
             cy.findByText('You will pay in gas fees:')
               .siblings()
