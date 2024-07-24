@@ -12,7 +12,7 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
-  L1ToL2MessageData,
+  ParentToChildMessageData,
   L2ToL3MessageData,
   Transaction,
   TxnStatus
@@ -160,7 +160,7 @@ const updateETHDepositStatusData = async ({
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID,
       // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited ? ethDepositMessage.childTxHash : undefined,
+      childTxId: isDeposited ? ethDepositMessage.childTxHash : undefined,
       fetchingUpdate: false
     }
   }
@@ -329,7 +329,7 @@ export async function fetchTeleporterDepositStatusData({
 }): Promise<{
   status?: TxnStatus
   timestampResolved?: string
-  l1ToL2MsgData?: L1ToL2MessageData
+  l1ToL2MsgData?: ParentToChildMessageData
   l2ToL3MsgData?: L2ToL3MessageData
 }> {
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
@@ -368,9 +368,9 @@ export async function fetchTeleporterDepositStatusData({
 
     // extract the l2 transaction details, if any
     const l1l2Redeem = await l2Retryable.getSuccessfulRedeem()
-    const l1ToL2MsgData: L1ToL2MessageData = {
+    const l1ToL2MsgData: ParentToChildMessageData = {
       status: await l2Retryable.status(),
-      l2TxID:
+      childTxId:
         l1l2Redeem && l1l2Redeem.status === ParentToChildMessageStatus.REDEEMED
           ? l1l2Redeem.childTxReceipt.transactionHash
           : undefined,
@@ -420,7 +420,7 @@ export async function fetchTeleporterDepositStatusData({
             timestampResolved,
             l1ToL2MsgData: {
               ...l1ToL2MsgData,
-              l2TxID: l2ForwarderRedeem.childTxReceipt.transactionHash
+              childTxId: l2ForwarderRedeem.childTxReceipt.transactionHash
             },
             l2ToL3MsgData: {
               ...l2ToL3MsgData,

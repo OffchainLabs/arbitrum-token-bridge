@@ -304,7 +304,7 @@ export async function getUpdatedEthDeposit(
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).childTxHash,
       // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited
+      childTxId: isDeposited
         ? (l1ToL2Msg as EthDepositMessage).childTxHash
         : undefined
     }
@@ -367,7 +367,7 @@ export async function getUpdatedTokenDeposit(
         : null,
     l1ToL2MsgData: {
       status: res.status,
-      l2TxID,
+      childTxId: l2TxID,
       fetchingUpdate: false,
       retryableCreationTxID: _l1ToL2Msg.retryableCreationId
     }
@@ -616,5 +616,5 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
 
   return tx.isWithdrawal
     ? tx.l2ToL1MsgData?.uniqueId.toString()
-    : tx.l1ToL2MsgData?.l2TxID
+    : tx.l1ToL2MsgData?.childTxId
 }
