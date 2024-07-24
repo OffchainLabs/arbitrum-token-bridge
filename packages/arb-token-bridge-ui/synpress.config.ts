@@ -264,25 +264,19 @@ async function generateActivityOnChains() {
         })
       ).wait()
 
-      if (networkType) {
-        console.log(`${Date.now()}: mining on ${networkType}...`)
-      }
       await wait(1000)
     }
   }
   // whilst waiting for status we mine on both l1 and l2
-  console.log('Funding miner 1...')
+  console.log('Generating activity on L1...')
   const miner1 = Wallet.createRandom().connect(ethProvider)
   await fundWalletEth(await miner1.getAddress(), 'L1')
 
-  console.log('Funding miner 2...')
+  console.log('Generating activity on L2...')
   const miner2 = Wallet.createRandom().connect(arbProvider)
   await fundWalletEth(await miner2.getAddress(), 'L2')
 
-  console.log('Starting mining on both chains so that assertions are posted...')
   await Promise.race([keepMining(miner1, 'L1'), keepMining(miner2, 'L2')])
-
-  console.log('>>> Mining finished')
 }
 
 async function generateTestTxForRedeemRetryable() {

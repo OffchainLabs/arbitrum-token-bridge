@@ -1,5 +1,10 @@
 [
   {
+    "name": "Withdraw ERC20",
+    "file": "tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}",
+    "recordVideo": "false"
+  },
+  {
     "name": "Withdraw ETH",
     "file": "tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"

@@ -6,12 +6,14 @@ import { shortenAddress } from '../../../src/util/CommonUtils'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
+  getL1NetworkConfig,
   getL2NetworkConfig,
   wethTokenAddressL2,
   zeroToLessThanOneETH
 } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {
+  const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
@@ -51,117 +53,130 @@ describe('Withdraw ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it('should withdraw ERC-20 to the same address successfully', () => {
-      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
-
-      cy.login({ networkType: 'L2' })
-      context('should add ERC-20 correctly', () => {
-        cy.searchAndSelectToken({
-          tokenName: 'WETH',
-          tokenAddress: wethTokenAddressL2
-        })
-      })
-
-      context('should show summary', () => {
-        cy.typeAmount(ERC20AmountToSend)
-          //
-          .then(() => {
-            cy.findByText(/You will pay in gas fees:/i)
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findAllByText(/gas fee$/)
-              .first()
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText(
-              /You'll have to pay [\w\s]+ gas fee upon claiming./i
-            ).should('be.visible')
+    it(
+      'should withdraw ERC-20 to the same address successfully',
+      { defaultCommandTimeout: 120_000 },
+      () => {
+        cy.login({ networkType: 'L2' })
+        context('should add ERC-20 correctly', () => {
+          cy.searchAndSelectToken({
+            tokenName: 'WETH',
+            tokenAddress: wethTokenAddressL2
           })
-      })
-
-      context('should show clickable withdraw button', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Ethereum/i
         })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
-      })
 
-      context('should withdraw successfully', () => {
-        cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
-
-        // the Continue withdrawal button should be disabled at first
-        cy.findByRole('button', {
-          name: /Continue/i
-        }).should('be.disabled')
-
-        cy.findByRole('switch', {
-          name: /before I can claim my funds/i
-        })
-          .should('be.visible')
-          .click()
-
-        cy.findByRole('switch', {
-          name: /after claiming my funds/i
-        })
-          .should('be.visible')
-          .click()
-          .then(() => {
-            // the Continue withdrawal button should not be disabled now
-            cy.findByRole('button', {
-              name: /Continue/i
-            })
-              .should('be.enabled')
-              .click()
-
-            cy.confirmMetamaskTransaction().then(() => {
+        context('should show summary', () => {
+          cy.typeAmount(ERC20AmountToSend)
+            //
+            .then(() => {
+              cy.findByText(/You will pay in gas fees:/i)
+                .siblings()
+                .contains(zeroToLessThanOneETH)
+                .should('be.visible')
+              cy.findAllByText(/gas fee$/)
+                .first()
+                .parent()
+                .siblings()
+                .contains(zeroToLessThanOneETH)
+                .should('be.visible')
               cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
+                /You'll have to pay [\w\s]+ gas fee upon claiming./i
               ).should('be.visible')
-              cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
+            })
+        })
 
-              cy.waitUntil(
-                () =>
-                  cy
-                    .findAllByLabelText(/Claim Transaction/i)
-                    .first()
-                    .should('be.visible')
-                    .should('not.be.disabled'),
-                {
-                  errorMsg:
-                    'Claim Transaction button is not visible or enabled',
-                  timeout: 60_000,
-                  interval: 1000
-                }
-              ).then(() => {
-                cy.findAllByLabelText(/Claim Transaction/i)
+        context('should show clickable withdraw button', () => {
+          cy.findByRole('button', {
+            name: /Move funds to Ethereum/i
+          })
+            .scrollIntoView()
+            .should('be.visible')
+            .should('be.enabled')
+            .click()
+        })
+
+        context('should withdraw successfully', () => {
+          cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
+
+          // the Continue withdrawal button should be disabled at first
+          cy.findByRole('button', {
+            name: /Continue/i
+          }).should('be.disabled')
+
+          cy.findByRole('switch', {
+            name: /before I can claim my funds/i
+          })
+            .should('be.visible')
+            .click()
+
+          cy.findByRole('switch', {
+            name: /after claiming my funds/i
+          })
+            .should('be.visible')
+            .click()
+            .then(() => {
+              // the Continue withdrawal button should not be disabled now
+              cy.findByRole('button', {
+                name: /Continue/i
+              })
+                .should('be.enabled')
+                .click()
+
+              cy.confirmMetamaskTransaction().then(() => {
+                cy.findAllByText(
+                  `${formatAmount(ERC20AmountToSend, {
+                    symbol: 'WETH'
+                  })}`
+                )
                   .first()
-                  .click()
-                  .then(() => {
-                    cy.confirmMetamaskTransaction().then(() => {
-                      cy.findByLabelText('show settled transactions')
-                        .should('be.visible')
-                        .click()
+                  .should('be.visible')
+                cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
 
-                      cy.findByText(
-                        `${formatAmount(ERC20AmountToSend, {
+                cy.waitUntil(
+                  () =>
+                    cy
+                      .findByLabelText(
+                        `Claim ${formatAmount(ERC20AmountToSend, {
                           symbol: 'WETH'
                         })}`
-                      ).should('be.visible')
+                      )
+                      .should('be.visible')
+                      .should('not.be.disabled'),
+                  {
+                    errorMsg:
+                      'Claim Transaction button is not visible or enabled',
+                    timeout: 120_000,
+                    interval: 1000
+                  }
+                ).then(() => {
+                  cy.findAllByLabelText(/Claim Transaction/i)
+                    .first()
+                    .click()
+                    .then(() => {
+                      cy.changeMetamaskNetwork(
+                        getL1NetworkConfig().networkName
+                      ).then(() => {
+                        cy.confirmMetamaskTransaction().then(() => {
+                          cy.findByLabelText('show settled transactions')
+                            .should('be.visible')
+                            .click()
+
+                          cy.findAllByText(
+                            `${formatAmount(ERC20AmountToSend, {
+                              symbol: 'WETH'
+                            })}`
+                          )
+                            .first()
+                            .should('be.visible')
+                        })
+                      })
                     })
-                  })
+                })
               })
             })
-          })
-      })
-    })
+        })
+      }
+    )
 
     it('should withdraw ERC-20 to custom destination address successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e

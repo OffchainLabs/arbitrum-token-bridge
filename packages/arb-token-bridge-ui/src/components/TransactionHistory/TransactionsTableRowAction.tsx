@@ -18,6 +18,8 @@ import { Address } from '../../util/AddressUtils'
 import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { formatAmount } from '../../util/NumberUtils'
 
 export function TransactionsTableRowAction({
   tx,
@@ -33,6 +35,11 @@ export function TransactionsTableRowAction({
   const { chain } = useNetwork()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
+
+  const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
+    erc20L1Address: tx.tokenAddress,
+    chainId: tx.sourceChainId
+  })
 
   const { claim, isClaiming } = useClaimWithdrawal(tx)
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
@@ -162,7 +169,9 @@ export function TransactionsTableRowAction({
       <span className="my-2 animate-pulse text-xs">Claiming...</span>
     ) : (
       <Button
-        aria-label="Claim Transaction"
+        aria-label={`Claim ${formatAmount(Number(tx.value), {
+          symbol: tokenSymbol
+        })}`}
         variant="primary"
         className="w-14 rounded bg-green-400 p-2 text-xs text-black"
         onClick={handleClaim}
