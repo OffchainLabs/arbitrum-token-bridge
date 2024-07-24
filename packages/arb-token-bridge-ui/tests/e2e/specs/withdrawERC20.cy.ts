@@ -37,8 +37,8 @@ describe('Withdraw ERC20 Token', () => {
 
     it('should show form fields correctly', () => {
       cy.login({ networkType: 'L2' })
-      cy.assertSourceChain('Arbitrum')
-      cy.assertDestinationChain('Ethereum')
+      cy.assertSourceChain('Arbitrum Local')
+      cy.assertDestinationChain('Ethereum Local')
 
       cy.findByRole('button', {
         name: /Move funds to Ethereum/i
