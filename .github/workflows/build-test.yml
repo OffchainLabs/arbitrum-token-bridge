@@ -105,6 +105,9 @@ jobs:
       - name: Install node_modules
         uses: ./.github/actions/node-modules/install
 
+      - name: Restore build artifacts
+        uses: ./.github/actions/build-artifacts/restore
+
       - name: Start UI and Test
         run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
 
