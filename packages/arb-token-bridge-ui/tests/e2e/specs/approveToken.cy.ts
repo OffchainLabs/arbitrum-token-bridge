@@ -31,23 +31,11 @@ describe('Approve token and deposit afterwards', () => {
           cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
           cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
         })
-      cy.waitUntil(
-        () =>
-          cy
-            .findByRole('button', { name: /Move funds to Arbitrum Local/i })
-            .should('not.be.disabled'),
-        {
-          errorMsg: '/Move funds to Arbitrum Local/ button is disabled',
-          timeout: 50000,
-          interval: 500
-        }
-      ).then(() => {
-        cy.findByRole('button', {
-          name: 'Move funds to Arbitrum Local'
-        })
-          .scrollIntoView()
-          .click()
-      })
+      cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
+        errorMsg: 'move funds button is disabled (expected to be enabled)',
+        timeout: 50000,
+        interval: 500
+      }).then(() => cy.findMoveFundsButton().click())
       cy.findByText(/pay a one-time approval fee/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/

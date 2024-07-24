@@ -299,6 +299,12 @@ export function findSummaryGasFee(
     .siblings()
     .last()
     .contains(amount)
+}
+
+export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: /move funds/i })
+    .scrollIntoView()
     .should('be.visible')
 }
 
@@ -316,5 +322,6 @@ Cypress.Commands.addAll({
   findSourceChainButton,
   findDestinationChainButton,
   findChainGasFee,
-  findSummaryGasFee
+  findSummaryGasFee,
+  findMoveFundsButton
 })

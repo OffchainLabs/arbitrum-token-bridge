@@ -70,12 +70,7 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should deposit successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Local/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
+        cy.findMoveFundsButton()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
@@ -116,12 +111,7 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should deposit successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Local/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
+        cy.findMoveFundsButton()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {

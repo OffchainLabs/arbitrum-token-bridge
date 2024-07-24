@@ -24,9 +24,7 @@ describe('Deposit ETH', () => {
         cy.findChainGasFee('Ethereum Local gas fee', zeroToLessThanOneETH)
         cy.findChainGasFee('Arbitrum Local gas fee', zeroToLessThanOneETH)
       })
-    cy.findByRole('button', {
-      name: 'Move funds to Arbitrum Local'
-    }).click()
+    cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
       cy.findByText('10 minutes').should('be.visible')
       cy.findByText(

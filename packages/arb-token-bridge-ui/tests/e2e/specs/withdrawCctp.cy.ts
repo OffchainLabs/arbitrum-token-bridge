@@ -91,12 +91,7 @@ describe('Withdraw USDC through CCTP', () => {
             /You'll have to pay Sepolia gas fee upon claiming./i
           )
         })
-        cy.findByRole('button', {
-          name: /Move funds to Sepolia/i
-        })
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {
@@ -128,11 +123,7 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('should click withdraw successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Sepolia/i
-        })
-          .scrollIntoView()
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {

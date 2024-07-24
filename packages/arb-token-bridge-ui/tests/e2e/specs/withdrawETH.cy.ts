@@ -14,12 +14,7 @@ describe('Withdraw ETH', () => {
       cy.login({ networkType: 'L2' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
-
-      cy.findByRole('button', {
-        name: /Move funds to Ethereum/i
-      })
-        .should('be.visible')
-        .should('be.disabled')
+      cy.findMoveFundsButton().should('be.disabled')
     })
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
@@ -41,12 +36,7 @@ describe('Withdraw ETH', () => {
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {
-            cy.findByRole('button', {
-              name: /Move funds to Ethereum/i
-            })
-              .should('be.visible')
-              .should('be.enabled')
-              .click()
+            cy.findMoveFundsButton().click()
             cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
             // the Continue withdrawal button should be disabled at first
