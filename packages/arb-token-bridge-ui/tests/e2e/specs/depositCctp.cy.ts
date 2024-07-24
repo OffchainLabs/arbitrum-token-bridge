@@ -77,8 +77,8 @@ describe('Deposit USDC through CCTP', () => {
       /// common code before all tests
       cy.login({ networkType: 'L1', networkName: 'sepolia' })
       context('should show L1 and L2 chains, and USD correctly', () => {
-        cy.assertSourceChain('Sepolia')
-        cy.assertDestinationChain('Arbitrum Sepolia')
+        cy.findSourceChainButton('Sepolia')
+        cy.findDestinationChainButton('Arbitrum Sepolia')
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')

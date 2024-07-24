@@ -258,7 +258,7 @@ export function typeAmount(
     .should('have.value', amountStringified)
 }
 
-export function assertSourceChain(
+export function findSourceChainButton(
   chain: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy
@@ -266,10 +266,15 @@ export function assertSourceChain(
     .should('be.visible')
 }
 
-export function assertDestinationChain(
+export function findDestinationChainButton(
   chain: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findByRole('button', { name: `To: ${chain}` }).should('be.visible')
+  return (
+    cy
+      //
+      .findByRole('button', { name: `To: ${chain}` })
+      .should('be.visible')
+  )
 }
 
 Cypress.Commands.addAll({
@@ -283,6 +288,6 @@ Cypress.Commands.addAll({
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
-  assertSourceChain,
-  assertDestinationChain
+  findSourceChainButton,
+  findDestinationChainButton
 })

@@ -64,8 +64,8 @@ describe('Withdraw USDC through CCTP', () => {
 
       cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
       context('should show L1 and L2 chains, and ETH correctly', () => {
-        cy.assertSourceChain('Arbitrum Sepolia')
-        cy.assertDestinationChain('Sepolia')
+        cy.findSourceChainButton('Arbitrum Sepolia')
+        cy.findDestinationChainButton('Sepolia')
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')

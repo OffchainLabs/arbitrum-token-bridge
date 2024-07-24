@@ -12,8 +12,8 @@ describe('Withdraw ETH', () => {
   context('user has some ETH and is on L2', () => {
     it('should show form fields correctly', () => {
       cy.login({ networkType: 'L2' })
-      cy.assertSourceChain('Arbitrum Local')
-      cy.assertDestinationChain('Ethereum Local')
+      cy.findSourceChainButton('Arbitrum Local')
+      cy.findDestinationChainButton('Ethereum Local')
 
       cy.findByRole('button', {
         name: /Move funds to Ethereum/i

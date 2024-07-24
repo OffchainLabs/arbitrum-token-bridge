@@ -34,8 +34,8 @@ describe('Deposit ERC20 Token', () => {
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
       cy.login({ networkType: 'L1' })
-      cy.assertSourceChain('Ethereum Local')
-      cy.assertDestinationChain('Arbitrum Local')
+      cy.findSourceChainButton('Ethereum Local')
+      cy.findDestinationChainButton('Arbitrum Local')
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
         .should('have.text', 'ETH')

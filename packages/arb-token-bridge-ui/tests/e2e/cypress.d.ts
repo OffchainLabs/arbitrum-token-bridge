@@ -45,8 +45,10 @@ declare global {
       typeAmount(
         amount: string | number
       ): Cypress.Chainable<JQuery<HTMLElement>>
-      assertSourceChain(chain: string): Cypress.Chainable<JQuery<HTMLElement>>
-      assertDestinationChain(
+      findSourceChainButton(
+        chain: string
+      ): Cypress.Chainable<JQuery<HTMLElement>>
+      findDestinationChainButton(
         chain: string
       ): Cypress.Chainable<JQuery<HTMLElement>>
     }
