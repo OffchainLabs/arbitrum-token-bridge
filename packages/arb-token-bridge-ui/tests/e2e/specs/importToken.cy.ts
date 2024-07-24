@@ -193,6 +193,10 @@ describe('Import token', () => {
         // eslint-disable-next-line
         cy.wait(3000)
 
+        visitAfterSomeDelay(
+          `/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost&token=${ERC20TokenAddressL1}`
+        )
+
         // Modal is displayed
         cy.get('h2')
           .contains(/import unknown token/i)
@@ -230,6 +234,10 @@ describe('Import token', () => {
         // eslint-disable-next-line
         cy.wait(3000)
 
+        visitAfterSomeDelay(
+          `/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost&token=${ERC20TokenAddressL2}`
+        )
+
         // Modal is displayed
         cy.get('h2')
           .contains(/import unknown token/i)
@@ -263,7 +271,7 @@ describe('Import token', () => {
         })
 
         visitAfterSomeDelay(
-          '/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+          `/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost&token=${invalidTokenAddress}`
         )
 
         // Modal is displayed
