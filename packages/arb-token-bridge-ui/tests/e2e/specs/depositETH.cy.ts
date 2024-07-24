@@ -11,8 +11,8 @@ describe('Deposit ETH', () => {
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
     cy.login({ networkType: 'L1' })
-    cy.assertSourceChain('Ethereum')
-    cy.assertDestinationChain('Arbitrum')
+    cy.assertSourceChain('Ethereum Local')
+    cy.assertDestinationChain('Arbitrum Local')
   })
 
   it('should show gas estimations and bridge successfully', () => {
