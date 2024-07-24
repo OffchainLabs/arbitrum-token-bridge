@@ -112,13 +112,7 @@ describe('Deposit USDC through CCTP', () => {
 
     it('should initiate depositing USDC to the same address through CCTP successfully', () => {
       context('should show clickable deposit button', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Sepolia/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {
@@ -146,11 +140,7 @@ describe('Deposit USDC through CCTP', () => {
       })
 
       context('should click deposit successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Sepolia/i
-        })
-          .scrollIntoView()
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {

@@ -39,12 +39,7 @@ describe('Withdraw ERC20 Token', () => {
       cy.login({ networkType: 'L2' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
-
-      cy.findByRole('button', {
-        name: /Move funds to Ethereum/i
-      })
-        .should('be.visible')
-        .should('be.disabled')
+      cy.findMoveFundsButton().should('be.disabled')
 
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
@@ -83,13 +78,7 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       context('should show clickable withdraw button', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Ethereum/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('should withdraw successfully', () => {
@@ -159,13 +148,7 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       context('should show clickable withdraw button', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Ethereum/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('should initiate withdrawal successfully', () => {
