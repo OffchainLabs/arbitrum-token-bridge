@@ -59,7 +59,7 @@ describe('Redeem ERC20 Deposit', () => {
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: getL2WethAddress()
+          tokenAddress: l2WethAddress
         })
 
         // check the balance on the destination chain before redeeming

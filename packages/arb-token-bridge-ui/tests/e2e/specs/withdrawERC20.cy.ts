@@ -55,7 +55,7 @@ describe('Withdraw ERC20 Token', () => {
       context('should add ERC-20 correctly', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: getL2WethAddress()
+          tokenAddress: l2WethAddress
         })
       })
 

@@ -1,4 +1,4 @@
-import { getL1NetworkName, getL2NetworkName } from "../../support/common"
+import { getL1NetworkName, getL2NetworkName } from '../../support/common'
 
 describe('Switch Networks', () => {
   context('User is on test network L1', () => {
