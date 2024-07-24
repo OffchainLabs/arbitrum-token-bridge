@@ -82,6 +82,7 @@ export default defineConfig({
         fundErc20ToL1(l1ERC20Token),
         fundErc20ToL2(l1ERC20Token)
       ])
+      await approveErc20(l1ERC20Token) // we currently don't cover token approval flows in E2E's
 
       // Wrap ETH to test WETH transactions and approve it's usage
       await Promise.all([fundWeth('L1'), fundWeth('L2')])
@@ -169,7 +170,7 @@ async function deployERC20ToL1() {
   const l1TokenContract = await factory.deploy(
     'Test Arb Token',
     'TESTARB',
-    parseEther('10000').toString()
+    parseEther('100').toString()
   )
   console.log('Deployed ERC20:', {
     symbol: await l1TokenContract.symbol(),
@@ -215,7 +216,7 @@ function getWethContract(
 }
 
 async function fundWeth(networkType: 'L1' | 'L2') {
-  console.log(`Wrapping ETH: ${networkType}...`)
+  console.log(`Funding WETH: ${networkType}...`)
   const amount = networkType === 'L1' ? '0.2' : '0.1'
   const address = networkType === 'L1' ? wethTokenAddressL1 : wethTokenAddressL2
   const provider = networkType === 'L1' ? ethProvider : arbProvider
@@ -235,12 +236,23 @@ async function approveWeth() {
   await tx.wait()
 }
 
+async function approveErc20(l1ERC20Token: Contract) {
+  console.log('Approving ERC20...')
+  const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
+  const approvalTx = await erc20Bridger.approveToken({
+    erc20ParentAddress: l1ERC20Token.address,
+    parentSigner: userWallet.connect(ethProvider),
+    amount: constants.MaxUint256
+  })
+  await approvalTx.wait()
+}
+
 async function fundErc20ToL1(l1ERC20Token: Contract) {
   console.log('Funding ERC20 to L1...')
   // Send deployed ERC-20 to the test userWallet
   const transferTx = await l1ERC20Token
     .connect(localWallet.connect(ethProvider))
-    .transfer(await userWallet.getAddress(), parseEther('1000'))
+    .transfer(await userWallet.getAddress(), parseEther('5'))
   await transferTx.wait()
 }
 
@@ -264,7 +276,7 @@ async function fundErc20ToL2(l1ERC20Token: Contract) {
     parentSigner: ethSigner,
     childProvider: arbProvider,
     erc20ParentAddress: l1ERC20Token.address,
-    amount: parseEther('50'),
+    amount: parseEther('5'),
     destinationAddress: await userWallet.getAddress()
   })
   const depositRec = await depositTx.wait()
