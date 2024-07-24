@@ -80,10 +80,7 @@ export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click()
+  cy.findSelectTokenButton('ETH').click()
 
   // open the Select Token popup
   return cy
