@@ -160,7 +160,7 @@ const updateETHDepositStatusData = async ({
         ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID,
-      // Only show `l2TxID` after the deposit is confirmed
+      // Only show `childTxId` after the deposit is confirmed
       childTxId: isDeposited ? ethDepositMessage.childTxHash : undefined,
       fetchingUpdate: false
     }
@@ -202,14 +202,14 @@ const updateTokenDepositStatusData = async ({
   // get the status data of `l1ToL2Msg`, if it is redeemed - `getSuccessfulRedeem` also returns its l2TxReceipt
   const res = await l1ToL2Msg.getSuccessfulRedeem()
 
-  const l2TxID =
+  const childTxId =
     res.status === ParentToChildMessageStatus.REDEEMED
       ? res.childTxReceipt.transactionHash
       : undefined
 
   const l1ToL2MsgData = {
     status: res.status,
-    l2TxID,
+    childTxId,
     fetchingUpdate: false,
     retryableCreationTxID: l1ToL2Msg.retryableCreationId
   }
@@ -263,7 +263,7 @@ const updateClassicDepositStatusData = async ({
     isEthDeposit &&
     status >= ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
 
-  const l2TxID = (() => {
+  const childTxId = (() => {
     if (isCompletedEthDeposit) {
       return l1ToL2Msg.retryableCreationId
     }
@@ -277,13 +277,13 @@ const updateClassicDepositStatusData = async ({
 
   const l1ToL2MsgData = {
     status,
-    l2TxID,
+    childTxId,
     fetchingUpdate: false,
     retryableCreationTxID: l1ToL2Msg.retryableCreationId
   }
 
-  const l2BlockNum = l2TxID
-    ? (await l2Provider.getTransaction(l2TxID)).blockNumber
+  const l2BlockNum = childTxId
+    ? (await l2Provider.getTransaction(childTxId)).blockNumber
     : null
 
   const timestampResolved = l2BlockNum
@@ -292,7 +292,7 @@ const updateClassicDepositStatusData = async ({
 
   const completeDepositTx: Transaction = {
     ...updatedDepositTx,
-    status: l2TxID ? 'success' : 'pending', // TODO :handle other cases here
+    status: childTxId ? 'success' : 'pending', // TODO :handle other cases here
     timestampCreated,
     timestampResolved: timestampResolved
       ? String(timestampResolved)

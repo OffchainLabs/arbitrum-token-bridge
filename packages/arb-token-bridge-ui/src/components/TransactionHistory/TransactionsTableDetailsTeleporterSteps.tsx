@@ -75,9 +75,9 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 }) => {
   const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
-  const l2TxID = tx.l1ToL2MsgData?.childTxId
+  const childTxId = tx.l1ToL2MsgData?.childTxId
   const isFirstRetryableLegSucceeded =
-    typeof l2TxID !== 'undefined' &&
+    typeof childTxId !== 'undefined' &&
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'
   const l2ChainId = tx.l2ToL3MsgData?.l2ChainId
   const isFirstRetryableLegFailed = firstRetryableLegRequiresRedeem(tx)
@@ -104,13 +104,13 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 
   const firstTransactionExternalLink = useMemo(
     () =>
-      l2TxID &&
+      childTxId &&
       l2ChainId && (
-        <ExternalLink href={`${getExplorerUrl(l2ChainId)}/tx/${l2TxID}`}>
+        <ExternalLink href={`${getExplorerUrl(l2ChainId)}/tx/${childTxId}`}>
           <ArrowTopRightOnSquareIcon height={12} />
         </ExternalLink>
       ),
-    [l2TxID, l2ChainId]
+    [childTxId, l2ChainId]
   )
 
   const firstTransactionActionItem = isFirstRetryableLegFailed

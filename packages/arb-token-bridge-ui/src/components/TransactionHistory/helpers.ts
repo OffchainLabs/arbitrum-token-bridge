@@ -304,7 +304,7 @@ export async function getUpdatedEthDeposit(
         ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).childTxHash,
-      // Only show `l2TxID` after the deposit is confirmed
+      // Only show `childTxId` after the deposit is confirmed
       childTxId: isDeposited
         ? (l1ToL2Msg as EthDepositMessage).childTxHash
         : undefined
@@ -352,7 +352,7 @@ export async function getUpdatedTokenDeposit(
 
   const res = await _l1ToL2Msg.getSuccessfulRedeem()
 
-  const l2TxID = (() => {
+  const childTxId = (() => {
     if (res.status === ParentToChildMessageStatus.REDEEMED) {
       return res.childTxReceipt.transactionHash
     } else {
@@ -369,7 +369,7 @@ export async function getUpdatedTokenDeposit(
         : null,
     l1ToL2MsgData: {
       status: res.status,
-      childTxId: l2TxID,
+      childTxId: childTxId,
       fetchingUpdate: false,
       retryableCreationTxID: _l1ToL2Msg.retryableCreationId
     }
