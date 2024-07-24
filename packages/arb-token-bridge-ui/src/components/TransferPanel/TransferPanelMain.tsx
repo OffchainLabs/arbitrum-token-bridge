@@ -69,8 +69,8 @@ import {
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 enum NetworkType {
-  parentChain = 'parentChain',
-  childChain = 'childChain'
+  parentChain = 'l1',
+  childChain = 'l2'
 }
 
 export function SwitchNetworksButton(
