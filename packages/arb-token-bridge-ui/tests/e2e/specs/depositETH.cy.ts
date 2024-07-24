@@ -11,14 +11,14 @@ describe('Deposit ETH', () => {
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
     cy.login({ networkType: 'L1' })
-    cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-    cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
+    cy.findSourceChainButton('Ethereum Local')
+    cy.findDestinationChainButton('Arbitrum Local')
   })
 
   it('should show gas estimations and bridge successfully', () => {
     cy.login({ networkType: 'L1' })
-    cy.findByPlaceholderText('Enter amount')
-      .typeRecursively(String(ETHAmountToDeposit))
+    cy.typeAmount(ETHAmountToDeposit)
+      //
       .then(() => {
         cy.findByText('You will pay in gas fees:')
           .siblings()
