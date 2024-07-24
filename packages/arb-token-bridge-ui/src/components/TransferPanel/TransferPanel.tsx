@@ -1093,13 +1093,11 @@ export function TransferPanel() {
           )}
         </div>
 
-        {typeof tokenFromSearchParams !== 'undefined' && (
-          <TokenImportDialog
-            {...tokenImportDialogProps}
-            onClose={closeWithResetTokenImportDialog}
-            tokenAddress={tokenFromSearchParams}
-          />
-        )}
+        <TokenImportDialog
+          {...tokenImportDialogProps}
+          onClose={closeWithResetTokenImportDialog}
+          tokenAddress={tokenFromSearchParams ?? ''}
+        />
 
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}

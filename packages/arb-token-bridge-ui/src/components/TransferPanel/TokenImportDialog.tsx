@@ -58,12 +58,12 @@ export const useTokenImportDialogStore = create<TokenImportDialogStore>(
 )
 
 type TokenImportDialogProps = Omit<UseDialogProps, 'isOpen'> & {
-  tokenAddress: string
+  tokenAddress: string | undefined
 }
 
 export function TokenImportDialog({
   onClose,
-  tokenAddress
+  tokenAddress = ''
 }: TokenImportDialogProps): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
@@ -351,6 +351,10 @@ export function TokenImportDialog({
         </span>
       </Dialog>
     )
+  }
+
+  if (tokenAddress === '') {
+    return null
   }
 
   return (
