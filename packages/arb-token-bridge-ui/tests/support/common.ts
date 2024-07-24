@@ -72,8 +72,8 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
 export const l1WethGateway = defaultL2Network.tokenBridge.parentWethGateway
 export const wethTokenAddressL1 = defaultL2Network.tokenBridge.parentWeth
 export const wethTokenAddressL2 = defaultL2Network.tokenBridge.childWeth
-export const ERC20TokenName = 'IntArbTestToken'
-export const ERC20TokenSymbol = 'IARB'
+export const ERC20TokenName = 'TESTARB'
+export const ERC20TokenSymbol = 'TESTARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
