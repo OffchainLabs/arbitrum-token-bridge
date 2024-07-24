@@ -1,0 +1,12 @@
+name: actions/node-modules/install
+description: "Install node_modules and save it to cache"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'yarn'
+    - run: yarn install --frozen-lockfile # optional, --immutable
