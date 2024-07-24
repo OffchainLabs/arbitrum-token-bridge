@@ -35,9 +35,7 @@ describe('Import token', () => {
         })
 
         // ERC-20 token should be selected now and popup should be closed after selection
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', ERC20TokenSymbol)
+        cy.findSelectTokenButton(ERC20TokenSymbol)
       })
     })
 
@@ -52,9 +50,7 @@ describe('Import token', () => {
         })
 
         // ERC-20 token should be selected now and popup should be closed after selection
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', ERC20TokenSymbol)
+        cy.findSelectTokenButton(ERC20TokenSymbol)
       })
     })
 
@@ -76,10 +72,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
+        cy.findSelectTokenButton('ETH').click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -103,10 +96,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
+        cy.findSelectTokenButton('ETH').click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -135,9 +125,7 @@ describe('Import token', () => {
         cy.findByText('Uniswap').click()
 
         // UNI token should be selected now and popup should be closed after selection
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'UNI')
+        cy.findSelectTokenButton('UNI')
       })
     })
 
@@ -149,10 +137,7 @@ describe('Import token', () => {
         )
 
         cy.login({ networkType: 'L1' })
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
+        cy.findSelectTokenButton('ETH').click()
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
@@ -210,9 +195,7 @@ describe('Import token', () => {
             force: true
           })
           .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
+            cy.findSelectTokenButton(ERC20TokenSymbol)
 
             // Modal is closed
             cy.findByRole('button', { name: 'Import token' }).should(
@@ -251,9 +234,7 @@ describe('Import token', () => {
             force: true
           })
           .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
+            cy.findSelectTokenButton(ERC20TokenSymbol)
           })
 
         // Modal is closed
@@ -289,9 +270,7 @@ describe('Import token', () => {
             force: true
           })
           .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', 'ETH')
+            cy.findSelectTokenButton('ETH')
           })
 
         // Modal is closed
