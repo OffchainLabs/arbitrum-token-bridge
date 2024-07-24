@@ -17,8 +17,8 @@ describe('Deposit ETH', () => {
 
   it('should show gas estimations and bridge successfully', () => {
     cy.login({ networkType: 'L1' })
-    cy.findByPlaceholderText('Enter amount')
-      .typeRecursively(String(ETHAmountToDeposit))
+    cy.typeAmount(ETHAmountToDeposit)
+      //
       .then(() => {
         cy.findByText('You will pay in gas fees:')
           .siblings()

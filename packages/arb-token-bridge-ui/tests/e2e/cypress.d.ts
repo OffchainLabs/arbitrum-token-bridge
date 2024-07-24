@@ -42,6 +42,9 @@ declare global {
         tokenAddress: string
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
+      typeAmount(
+        amount: string | number
+      ): Cypress.Chainable<JQuery<HTMLElement>>
     }
   }
 }

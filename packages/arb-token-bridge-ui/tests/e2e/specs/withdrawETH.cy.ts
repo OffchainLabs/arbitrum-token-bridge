@@ -8,12 +8,6 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 describe('Withdraw ETH', () => {
   const ETHToWithdraw = 0.0001
 
-  const typeAmountIntoInput = () => {
-    return cy
-      .findByPlaceholderText('Enter amount')
-      .typeRecursively(String(ETHToWithdraw))
-  }
-
   // Happy Path
   context('user has some ETH and is on L2', () => {
     it('should show form fields correctly', () => {
@@ -31,8 +25,8 @@ describe('Withdraw ETH', () => {
     context("bridge amount is lower than user's L2 ETH balance value", () => {
       it('should show gas estimations', () => {
         cy.login({ networkType: 'L2' })
-        typeAmountIntoInput()
-          .should('have.value', String(ETHToWithdraw))
+        cy.typeAmount(ETHToWithdraw)
+          //
           .then(() => {
             cy.findByText('You will pay in gas fees:')
               .siblings()
@@ -53,8 +47,8 @@ describe('Withdraw ETH', () => {
 
       it('should show withdrawal confirmation and withdraw', () => {
         cy.login({ networkType: 'L2' })
-        typeAmountIntoInput()
-          .should('have.value', String(ETHToWithdraw))
+        cy.typeAmount(ETHToWithdraw)
+          //
           .then(() => {
             cy.findByRole('button', {
               name: /Move funds to Ethereum/i
