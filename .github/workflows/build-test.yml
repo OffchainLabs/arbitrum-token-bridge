@@ -113,9 +113,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
-
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
 
@@ -130,8 +127,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Restore build artifacts
+        uses: ./.github/actions/build-artifacts/restore
 
       - name: Run audit
         run: yarn audit:ci
