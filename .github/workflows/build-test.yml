@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@update-install-action
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Build
         run: yarn build
@@ -103,7 +103,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@update-install-action
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
@@ -120,7 +120,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@update-install-action
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Run audit
         run: yarn audit:ci
@@ -134,7 +134,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@update-install-action
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Check formatting with Prettier
         run: yarn prettier:check
@@ -191,7 +191,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@update-install-action
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
@@ -217,7 +217,7 @@ jobs:
           no-l3-token-bridge: true
 
       - name: Run e2e tests via cypress-io/github-action
-        uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
+        uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
         with:
           start: yarn start
           command: yarn test:e2e --browser chromium
