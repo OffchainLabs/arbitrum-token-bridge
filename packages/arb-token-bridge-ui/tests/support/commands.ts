@@ -258,6 +258,20 @@ export function typeAmount(
     .should('have.value', amountStringified)
 }
 
+export function assertSourceChain(
+  chain: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: `From: ${chain}` })
+    .should('be.visible')
+}
+
+export function assertDestinationChain(
+  chain: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByRole('button', { name: `To: ${chain}` }).should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -268,5 +282,7 @@ Cypress.Commands.addAll({
   fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
-  typeAmount
+  typeAmount,
+  assertSourceChain,
+  assertDestinationChain
 })
