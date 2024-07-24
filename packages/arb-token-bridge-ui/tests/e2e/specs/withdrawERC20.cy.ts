@@ -149,16 +149,16 @@ describe('Withdraw ERC20 Token', () => {
                     interval: 1000
                   }
                 ).then(() => {
-                  cy.findByLabelText(
-                    `Claim ${formatAmount(ERC20AmountToSend, {
-                      symbol: 'WETH'
-                    })}`
-                  )
-                    .click()
-                    .then(() => {
-                      cy.changeMetamaskNetwork(
-                        getL1NetworkConfig().networkName
-                      ).then(() => {
+                  cy.changeMetamaskNetwork(
+                    getL1NetworkConfig().networkName
+                  ).then(() => {
+                    cy.findByLabelText(
+                      `Claim ${formatAmount(ERC20AmountToSend, {
+                        symbol: 'WETH'
+                      })}`
+                    )
+                      .click()
+                      .then(() => {
                         cy.confirmMetamaskTransaction().then(() => {
                           cy.findByLabelText('show settled transactions')
                             .should('be.visible')
@@ -173,7 +173,7 @@ describe('Withdraw ERC20 Token', () => {
                             .should('be.visible')
                         })
                       })
-                    })
+                  })
                 })
               })
             })
