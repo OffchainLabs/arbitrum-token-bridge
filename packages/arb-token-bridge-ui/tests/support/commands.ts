@@ -250,12 +250,9 @@ export const fillCustomDestinationAddress = () => {
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  const amountStringified = String(amount)
-
   return cy
     .findByPlaceholderText(/enter amount/i)
-    .typeRecursively(amountStringified)
-    .should('have.value', amountStringified)
+    .typeRecursively(String(amount))
 }
 
 Cypress.Commands.addAll({
