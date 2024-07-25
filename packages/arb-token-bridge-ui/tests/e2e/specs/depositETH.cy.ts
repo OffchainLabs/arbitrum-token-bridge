@@ -26,12 +26,11 @@ describe('Deposit ETH', () => {
       })
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
-      cy.findByText('10 minutes').should('be.visible')
-      cy.findByText(
-        `${formatAmount(ETHAmountToDeposit, {
-          symbol: 'ETH'
-        })}`
-      ).should('be.visible')
+      cy.findTransactionInTransactionHistory({
+        text: '10 minutes',
+        amount: ETHAmountToDeposit,
+        symbol: 'ETH'
+      })
     })
   })
 

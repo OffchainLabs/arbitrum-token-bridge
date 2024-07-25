@@ -15,14 +15,14 @@ import {
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getInitialERC20Balance,
-  zeroToLessThanOneETH
+  getInitialERC20Balance
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -313,6 +313,28 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function findTransactionInTransactionHistory({
+  text,
+  symbol,
+  amount
+}: {
+  text?: string
+  symbol: string
+  amount: number
+}) {
+  if (text) {
+    cy.findByText(text).should('be.visible')
+  }
+
+  return cy
+    .findByText(
+      `${formatAmount(amount, {
+        symbol
+      })}`
+    )
+    .should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -329,5 +351,6 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  findSelectTokenButton
+  findSelectTokenButton,
+  findTransactionInTransactionHistory
 })

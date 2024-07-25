@@ -72,12 +72,11 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('10 minutes').should('be.visible')
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                text: '10 minutes',
+                amount: ERC20AmountToSend,
+                symbol: 'WETH'
+              })
             })
           })
       })
@@ -113,12 +112,11 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('10 minutes').should('be.visible')
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                text: '10 minutes',
+                amount: ERC20AmountToSend,
+                symbol: 'WETH'
+              })
 
               // open the tx details popup
               cy.findAllByLabelText('Transaction details button')
@@ -152,13 +150,10 @@ describe('Deposit ERC20 Token', () => {
         //wait for some time for tx to go through and find the new amount in settled transactions
         cy.waitUntil(
           () =>
-            cy
-              .findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              )
-              .should('be.visible'),
+            cy.findTransactionInTransactionHistory({
+              amount: ERC20AmountToSend,
+              symbol: 'WETH'
+            }),
           {
             errorMsg: 'Could not find settled ERC20 Deposit transaction',
             timeout: 60_000,

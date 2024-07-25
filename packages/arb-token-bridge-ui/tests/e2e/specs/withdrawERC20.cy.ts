@@ -98,11 +98,10 @@ describe('Withdraw ERC20 Token', () => {
               .click()
 
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                amount: ERC20AmountToSend,
+                symbol: 'WETH'
+              })
               cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
             })
           })
@@ -168,11 +167,10 @@ describe('Withdraw ERC20 Token', () => {
               .click()
 
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                amount: ERC20AmountToSend,
+                symbol: 'WETH'
+              })
               cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
 
               // open the tx details popup

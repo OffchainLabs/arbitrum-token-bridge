@@ -69,11 +69,10 @@ describe('Redeem ERC20 Deposit', () => {
         cy.openTransactionsPanel()
 
         // find the Retry button and the amount in the row
-        cy.findByText(
-          `${formatAmount(wethAmountToDeposit, {
-            symbol: 'WETH'
-          })}`
-        ).should('be.visible')
+        cy.findTransactionInTransactionHistory({
+          amount: wethAmountToDeposit,
+          symbol: 'WETH'
+        })
 
         cy.findAllByLabelText(/Retry transaction/i)
           .first()
@@ -90,11 +89,10 @@ describe('Redeem ERC20 Deposit', () => {
               .click()
 
             // find the same transaction there redeemed successfully
-            cy.findByText(
-              `${formatAmount(wethAmountToDeposit, {
-                symbol: 'WETH'
-              })}`
-            )
+            cy.findTransactionInTransactionHistory({
+              amount: wethAmountToDeposit,
+              symbol: 'WETH'
+            })
 
             // close transaction history
             cy.findByLabelText('Close side panel').click()
