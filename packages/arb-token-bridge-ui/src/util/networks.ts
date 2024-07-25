@@ -276,7 +276,7 @@ export const defaultL2Network: ArbitrumNetwork = {
     bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
     inbox: '0x9f8c1c641336A371031499e3c362e40d58d0f254',
     outbox: '0x50143333b44Ea46255BEb67255C9Afd35551072F',
-    rollup: '0x46966d871d29e1772c2809459469f849d8AAb1A3',
+    rollup: '0xE8A8F50F2a237D06D0087D14E690f6Ff0556259D',
     sequencerInbox: '0x18d19C5d3E685f5be5b9C86E097f0E439285D216'
   },
   isCustom: true,
