@@ -59,19 +59,11 @@ describe('Withdraw ERC20 Token', () => {
         cy.typeAmount(ERC20AmountToSend)
           //
           .then(() => {
-            cy.findByText(/You will pay in gas fees:/i)
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findAllByText(/gas fee$/)
-              .first()
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText(
-              /You'll have to pay [\w\s]+ gas fee upon claiming./i
-            ).should('be.visible')
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain(
+              /You'll have to pay Ethereum Local gas fee upon claiming./i
+            )
           })
       })
 
@@ -112,7 +104,6 @@ describe('Withdraw ERC20 Token', () => {
                   symbol: 'WETH'
                 })}`
               ).should('be.visible')
-
               cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
             })
           })
