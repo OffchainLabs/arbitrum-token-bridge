@@ -14,8 +14,8 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
 
 export type Balances = {
-  l1: BigNumber | null
-  l2: BigNumber | null
+  parentBalance: BigNumber | null
+  childBalance: BigNumber | null
 }
 
 export function useSelectedTokenBalances(): Balances {
@@ -72,8 +72,8 @@ export function useSelectedTokenBalances(): Balances {
 
   return useMemo(() => {
     const result: Balances = {
-      l1: null,
-      l2: null
+      parentBalance: null,
+      childBalance: null
     }
 
     if (!selectedToken) {
@@ -81,7 +81,8 @@ export function useSelectedTokenBalances(): Balances {
     }
 
     if (erc20L1Balances) {
-      result.l1 = erc20L1Balances[selectedToken.address.toLowerCase()] ?? null
+      result.parentBalance =
+        erc20L1Balances[selectedToken.address.toLowerCase()] ?? null
     }
 
     if (
@@ -89,13 +90,13 @@ export function useSelectedTokenBalances(): Balances {
       selectedToken.l2Address &&
       selectedToken.l2Address in erc20L2Balances
     ) {
-      result.l2 =
+      result.childBalance =
         erc20L2Balances[selectedToken.l2Address.toLowerCase()] ?? constants.Zero
     }
 
     // token not bridged to the child chain, show zero
     if (!selectedToken.l2Address) {
-      result.l2 = constants.Zero
+      result.childBalance = constants.Zero
     }
 
     if (
@@ -105,8 +106,10 @@ export function useSelectedTokenBalances(): Balances {
       erc20L2Balances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Ethereum.USDC.toLowerCase()] ?? null,
-        l2: erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
+        parentBalance:
+          erc20L1Balances[CommonAddress.Ethereum.USDC.toLowerCase()] ?? null,
+        childBalance:
+          erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
       }
     }
     if (
@@ -116,8 +119,10 @@ export function useSelectedTokenBalances(): Balances {
       erc20L2Balances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Sepolia.USDC.toLowerCase()] ?? null,
-        l2: erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
+        parentBalance:
+          erc20L1Balances[CommonAddress.Sepolia.USDC.toLowerCase()] ?? null,
+        childBalance:
+          erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
       }
     }
 

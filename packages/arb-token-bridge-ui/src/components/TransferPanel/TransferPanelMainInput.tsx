@@ -57,8 +57,8 @@ function MaxButton(props: MaxButtonProps) {
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
     const tokenBalance = isDepositMode
-      ? selectedTokenBalances.l1
-      : selectedTokenBalances.l2
+      ? selectedTokenBalances.parentBalance
+      : selectedTokenBalances.childBalance
 
     if (selectedToken) {
       if (!tokenBalance) {
