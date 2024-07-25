@@ -22,9 +22,7 @@ describe('Approve token and deposit afterwards', () => {
       cy.findByText(ERC20TokenName).click()
 
       // ERC-20 token should be selected now and popup should be closed after selection
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', ERC20TokenSymbol)
+      cy.findSelectTokenButton(ERC20TokenSymbol)
 
       cy.findByText('MAX')
         .click()

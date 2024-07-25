@@ -216,10 +216,7 @@ export const searchAndSelectToken = ({
   tokenAddress: string
 }) => {
   // Click on the ETH dropdown (Select token button)
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click()
+  cy.findSelectTokenButton('ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
@@ -235,9 +232,7 @@ export const searchAndSelectToken = ({
       cy.findAllByText(tokenName).first().click()
 
       // USDC token should be selected now and popup should be closed after selection
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', tokenName)
+      cy.findSelectTokenButton(tokenName)
     })
 }
 
@@ -289,6 +284,15 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
+export function findSelectTokenButton(
+  text: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', text)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -302,5 +306,6 @@ Cypress.Commands.addAll({
   typeAmount,
   findSourceChainButton,
   findDestinationChainButton,
-  findMoveFundsButton
+  findMoveFundsButton,
+  findSelectTokenButton
 })
