@@ -1,13 +1,12 @@
 import dayjs from 'dayjs'
-import {
-  StaticJsonRpcProvider,
-  TransactionReceipt
-} from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   EthDepositMessage,
   EthDepositMessageStatus,
   ParentToChildMessageStatus,
-  ParentToChildMessageReader
+  ParentToChildMessageReader,
+  ChildTransactionReceipt,
+  ChildToParentTransactionEvent
 } from '@arbitrum/sdk'
 
 import {
@@ -32,6 +31,9 @@ import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
+import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -110,12 +112,6 @@ export function isTxFailed(tx: MergedTransaction): boolean {
   return tx.status === WithdrawalStatus.FAILURE
 }
 
-export function getProvider(chainId: ChainId) {
-  const rpcUrl =
-    rpcURLs[chainId] ?? getWagmiChain(chainId).rpcUrls.default.http[0]
-  return new StaticJsonRpcProvider(rpcUrl)
-}
-
 export function isSameTransaction(
   txDetails_1: {
     txId: string
@@ -136,22 +132,39 @@ export function isSameTransaction(
 }
 
 export function getTxReceipt(tx: MergedTransaction) {
-  const parentChainProvider = getProvider(tx.parentChainId)
-  const childChainProvider = getProvider(tx.childChainId)
+  const parentChainProvider = getProviderForChainId(tx.parentChainId)
+  const childChainProvider = getProviderForChainId(tx.childChainId)
 
   const provider = tx.isWithdrawal ? childChainProvider : parentChainProvider
 
   return provider.getTransactionReceipt(tx.txId)
 }
 
-function getWithdrawalStatusFromReceipt(
-  receipt: TransactionReceipt
-): WithdrawalStatus | undefined {
-  switch (receipt.status) {
+async function getWithdrawalStatusFromEvents({
+  withdrawalEvent,
+  childChainId,
+  parentChainProvider,
+  childChainProvider
+}: {
+  withdrawalEvent: ChildToParentTransactionEvent
+  parentChainProvider: Provider
+  childChainProvider: Provider
+  childChainId: ChainId
+}): Promise<WithdrawalStatus | undefined> {
+  const outgoingMessageState = await getOutgoingMessageState(
+    withdrawalEvent,
+    parentChainProvider,
+    childChainProvider,
+    childChainId
+  )
+
+  switch (outgoingMessageState) {
     case 0:
-      return WithdrawalStatus.FAILURE
-    case 1:
       return WithdrawalStatus.UNCONFIRMED
+    case 1:
+      return WithdrawalStatus.CONFIRMED
+    case 2:
+      return WithdrawalStatus.EXECUTED
     default:
       return undefined
   }
@@ -274,8 +287,8 @@ export async function getUpdatedEthDeposit(
   const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
     depositTxId: tx.txId,
     isEthDeposit: true,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
+    l1Provider: getProviderForChainId(tx.parentChainId),
+    l2Provider: getProviderForChainId(tx.childChainId)
   })
 
   if (!l1ToL2Msg) {
@@ -331,8 +344,8 @@ export async function getUpdatedTokenDeposit(
   const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
     depositTxId: tx.txId,
     isEthDeposit: false,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
+    l1Provider: getProviderForChainId(tx.parentChainId),
+    l2Provider: getProviderForChainId(tx.childChainId)
   })
   const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
 
@@ -386,14 +399,31 @@ export async function getUpdatedWithdrawal(
     return tx
   }
 
-  const receipt = await getTxReceipt(tx)
+  const parentChainProvider = getProviderForChainId(tx.parentChainId)
+  const childChainProvider = getProviderForChainId(tx.childChainId)
+  const txReceipt = await getTxReceipt(tx)
+  const childTxReceipt = new ChildTransactionReceipt(txReceipt)
+  const [withdrawalEvent] = await childTxReceipt.getChildToParentEvents()
 
-  if (receipt) {
-    const newStatus = getWithdrawalStatusFromReceipt(receipt)
+  if (childTxReceipt) {
+    const newStatus = withdrawalEvent
+      ? await getWithdrawalStatusFromEvents({
+          withdrawalEvent,
+          childChainId: tx.childChainId,
+          parentChainProvider,
+          childChainProvider
+        })
+      : undefined
+
+    // unique id for withdrawal event is required for claiming, if the new status changes to confirmed
+    const uniqueId = withdrawalEvent
+      ? getUniqueIdOrHashFromEvent(withdrawalEvent)
+      : null
 
     if (typeof newStatus !== 'undefined') {
       return {
         ...tx,
+        uniqueId,
         status: newStatus
       }
     }

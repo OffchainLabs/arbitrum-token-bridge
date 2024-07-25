@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -72,26 +72,15 @@ jobs:
           done
         shell: bash
 
-  install:
-    name: "Install"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@main
-
   build:
     name: "Build"
     runs-on: ubuntu-latest
-    needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Build
         run: yarn build
@@ -111,10 +100,10 @@ jobs:
     if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
@@ -125,13 +114,13 @@ jobs:
   audit:
     name: "Audit"
     runs-on: ubuntu-latest
-    needs: install
+    needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Run audit
         run: yarn audit:ci
@@ -139,13 +128,13 @@ jobs:
   check-formatting:
     name: "Check Formatting"
     runs-on: ubuntu-latest
-    needs: install
+    needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Check formatting with Prettier
         run: yarn prettier:check
@@ -156,13 +145,13 @@ jobs:
   load-e2e-files:
     name: "Load e2e files"
     runs-on: ubuntu-latest
-    needs: [install, check-is-hotfix]
+    needs: [check-is-hotfix]
     if: needs.check-is-hotfix.outputs.is_hotfix == 'false'
     outputs:
       matrix: ${{ steps.set-matrix.outputs.e2eFiles }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - id: set-matrix
         run: |
@@ -200,16 +189,13 @@ jobs:
           swap-storage: true
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
-
-      - name: Install cypress
-        run: yarn cypress install
 
       - name: Install linux dependencies
         run: |
@@ -225,14 +211,14 @@ jobs:
           DISPLAY: :0.0
 
       - name: Run nitro testnode
-        uses: OffchainLabs/actions/run-nitro-test-node@953e8475606f180ce2b0531d411983ce37f34751
+        uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
           l3-node: ${{ matrix.orbit-test == '1' }}
           no-l3-token-bridge: ${{ matrix.orbit-test == '0' }}
 
       - name: Run e2e tests via cypress-io/github-action
-        uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
+        uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
         with:
           start: yarn start
           command: ${{ matrix.orbit-test == '1' && 'yarn test:e2e:orbit --browser chromium' || 'yarn test:e2e --browser chromium' }}
@@ -252,7 +238,7 @@ jobs:
           NEXT_PUBLIC_LOCAL_L3_RPC_URL: http://127.0.0.1:3347
 
       - name: Archive e2e artifacts
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}
@@ -286,7 +272,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install gh-actions-cache
         run: gh extension install actions/gh-actions-cache
