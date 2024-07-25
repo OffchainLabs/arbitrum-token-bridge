@@ -121,9 +121,34 @@ export function getServerSideProps({
   }
 }
 
+function mockErc20RedeemDepositTransaction() {
+  return {
+    txID: '0x000000000',
+    value: '0.001',
+    type: 'deposit-l1',
+    direction: 'deposit',
+    source: 'local_storage_cache',
+    parentChainId: 412346,
+    childChainId: 333333,
+    status: 'pending',
+    assetName: 'WETH',
+    assetType: 'ERC20',
+    sender: '0xDd924501E36eFB66f838Cc53484D6E7246Ce9CE3',
+    destination: '0xDd924501E36eFB66f838Cc53484D6E7246Ce9CE3',
+    l1NetworkID: '412346',
+    l2NetworkID: '333333',
+    timestampCreated: Math.floor(Date.now() / 1000).toString()
+  }
+}
+
 export default function Index() {
   useEffect(() => {
     addOrbitChainsToArbitrumSDK()
+
+    window.localStorage.setItem(
+      `arbitrum:bridge:deposits-${'0xDd924501E36eFB66f838Cc53484D6E7246Ce9CE3'.toLowerCase()}`,
+      JSON.stringify([mockErc20RedeemDepositTransaction()])
+    )
   }, [])
 
   return <App />

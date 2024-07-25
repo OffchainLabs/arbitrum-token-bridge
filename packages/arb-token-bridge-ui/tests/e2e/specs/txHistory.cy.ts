@@ -81,13 +81,11 @@ describe('Transaction History', () => {
 
       numberOfWithdrawals.should('be.gt', 0)
 
-      if (Cypress.env('ORBIT_TEST') != '1') {
-        const numberOfDeposits = cy
-          .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
-          .its('length')
+      const numberOfDeposits = cy
+        .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
+        .its('length')
 
-        numberOfDeposits.should('be.gt', 0)
-      }
+      numberOfDeposits.should('be.gt', 0)
     })
   })
 })

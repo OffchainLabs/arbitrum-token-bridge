@@ -264,10 +264,6 @@ async function getCustomDestinationAddress() {
 async function generateTestTxForRedeemRetryable() {
   console.log('Adding a test transaction for redeeming retryable...')
 
-  if (isOrbitTest) {
-    return
-  }
-
   const walletAddress = await userWallet.getAddress()
   const erc20Token = {
     symbol: 'WETH',
