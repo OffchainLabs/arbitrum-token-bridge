@@ -21,71 +21,68 @@ describe('Withdraw ETH', () => {
       cy.findMoveFundsButton().should('be.disabled')
     })
 
-    context(
-      "bridge amount is lower than user's child chain ETH balance value",
-      () => {
-        it('should show gas estimations', () => {
-          cy.login({ networkType: 'childChain' })
-          cy.typeAmount(ETHToWithdraw)
-            //
-            .then(() => {
-              cy.findGasFeeSummary(zeroToLessThanOneETH)
-              cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-              cy.findGasFeeForChain(
-                new RegExp(
-                  `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-                  'i'
-                )
+    context("bridge amount is lower than user's L2 ETH balance value", () => {
+      it('should show gas estimations', () => {
+        cy.login({ networkType: 'childChain' })
+        cy.typeAmount(ETHToWithdraw)
+          //
+          .then(() => {
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+            cy.findGasFeeForChain(
+              new RegExp(
+                `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
+                'i'
               )
+            )
+          })
+      })
+
+      it('should show withdrawal confirmation and withdraw', () => {
+        cy.login({ networkType: 'childChain' })
+        cy.typeAmount(ETHToWithdraw)
+          //
+          .then(() => {
+            cy.findMoveFundsButton().click()
+            cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
+
+            // the Continue withdrawal button should be disabled at first
+            cy.findByRole('button', {
+              name: /Continue/i
+            }).should('be.disabled')
+
+            cy.findByRole('switch', {
+              name: /before I can claim my funds/i
             })
-        })
+              .should('be.visible')
+              .click()
 
-        it('should show withdrawal confirmation and withdraw', () => {
-          cy.login({ networkType: 'childChain' })
-          cy.typeAmount(ETHToWithdraw)
-            //
-            .then(() => {
-              cy.findMoveFundsButton().click()
-              cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
-
-              // the Continue withdrawal button should be disabled at first
-              cy.findByRole('button', {
-                name: /Continue/i
-              }).should('be.disabled')
-
-              cy.findByRole('switch', {
-                name: /before I can claim my funds/i
-              })
-                .should('be.visible')
-                .click()
-
-              cy.findByRole('switch', {
-                name: /after claiming my funds/i
-              })
-                .should('be.visible')
-                .click()
-                .then(() => {
-                  // the Continue withdrawal button should not be disabled now
-                  cy.findByRole('button', {
-                    name: /Continue/i
-                  })
-                    .should('be.enabled')
-                    .click()
-                    .then(() => {
-                      cy.confirmMetamaskTransaction().then(() => {
-                        cy.findByText('an hour').should('be.visible')
-                        cy.findByText(
-                          `${formatAmount(ETHToWithdraw, {
-                            symbol: 'ETH'
-                          })}`
-                        ).should('be.visible')
-                      })
-                    })
+            cy.findByRole('switch', {
+              name: /after claiming my funds/i
+            })
+              .should('be.visible')
+              .click()
+              .then(() => {
+                // the Continue withdrawal button should not be disabled now
+                cy.findByRole('button', {
+                  name: /Continue/i
                 })
-            })
-        })
-      }
-    )
+                  .should('be.enabled')
+                  .click()
+                  .then(() => {
+                    cy.confirmMetamaskTransaction().then(() => {
+                      cy.findByText('an hour').should('be.visible')
+                      cy.findByText(
+                        `${formatAmount(ETHToWithdraw, {
+                          symbol: 'ETH'
+                        })}`
+                      ).should('be.visible')
+                    })
+                  })
+              })
+          })
+      })
+    })
 
     // TODO => test for bridge amount higher than user's L2 ETH balance
   })
