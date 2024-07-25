@@ -139,9 +139,7 @@ const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
 const userWallet = new Wallet(Cypress.env('PRIVATE_KEY'))
 const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
 
-export async function resetCctpAllowance(
-  networkType: 'parentChain' | 'childChain'
-) {
+export async function resetCctpAllowance(networkType: NetworkType) {
   const provider = networkType === 'parentChain' ? l1Provider : l2Provider
   const { USDC, tokenMessengerContractAddress } =
     networkType === 'parentChain'
@@ -158,9 +156,7 @@ export async function resetCctpAllowance(
   }
 }
 
-export async function fundUserUsdcTestnet(
-  networkType: 'parentChain' | 'childChain'
-) {
+export async function fundUserUsdcTestnet(networkType: NetworkType) {
   console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
   const usdcContractAddress =
     networkType === 'parentChain'
@@ -191,9 +187,7 @@ export async function fundUserUsdcTestnet(
   }
 }
 
-export async function fundUserWalletEth(
-  networkType: 'parentChain' | 'childChain'
-) {
+export async function fundUserWalletEth(networkType: NetworkType) {
   console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'parentChain' ? l1Provider : l2Provider

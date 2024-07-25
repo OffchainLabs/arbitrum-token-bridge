@@ -11,6 +11,7 @@ import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
+  NetworkType,
   l1WethGateway,
   wethTokenAddressL1,
   wethTokenAddressL2
@@ -194,7 +195,7 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundUserWalletEth(networkType: 'parentChain' | 'childChain') {
+async function fundUserWalletEth(networkType: NetworkType) {
   console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'parentChain' ? ethProvider : arbProvider
@@ -216,7 +217,7 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
-async function wrapEth(networkType: 'parentChain' | 'childChain') {
+async function wrapEth(networkType: NetworkType) {
   console.log(`Wrapping ETH: ${networkType}...`)
   const amount = networkType === 'parentChain' ? '0.2' : '0.1'
   const address =
