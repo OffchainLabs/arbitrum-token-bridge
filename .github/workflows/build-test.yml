@@ -210,7 +210,7 @@ jobs:
           DISPLAY: :0.0
 
       - name: Run nitro testnode
-        uses: OffchainLabs/actions/run-nitro-test-node@953e8475606f180ce2b0531d411983ce37f34751
+        uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
           l3-node: false
