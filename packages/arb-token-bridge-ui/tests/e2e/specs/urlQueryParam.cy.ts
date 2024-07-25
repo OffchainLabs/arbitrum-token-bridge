@@ -15,7 +15,7 @@ describe('User enters site with query params on URL', () => {
       Cypress.env('ETH_RPC_URL'),
       Cypress.env('ADDRESS')
     ).then(val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 }))))
-    cy.login({ networkType: 'L1' })
+    cy.login({ networkType: 'parentChain' })
   })
 
   it('should correctly populate amount input from query param', () => {
