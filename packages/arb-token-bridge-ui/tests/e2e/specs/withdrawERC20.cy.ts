@@ -51,11 +51,24 @@ describe('Withdraw ERC20 Token', () => {
       () => {
         cy.login({ networkType: 'L2' })
 
+        cy.login({ networkType: 'L2' })
         context('should add ERC-20 correctly', () => {
           cy.searchAndSelectToken({
             tokenName: 'WETH',
             tokenAddress: wethTokenAddressL2
           })
+        })
+
+        context('should show summary', () => {
+          cy.typeAmount(ERC20AmountToSend)
+            //
+            .then(() => {
+              cy.findGasFeeSummary(zeroToLessThanOneETH)
+              cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+              cy.findGasFeeForChain(
+                /You'll have to pay Ethereum Local gas fee upon claiming./i
+              )
+            })
         })
 
         context('should show clickable withdraw button', () => {
@@ -198,11 +211,11 @@ describe('Withdraw ERC20 Token', () => {
         cy.typeAmount(ERC20AmountToSend)
           //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain(
+              /You'll have to pay Ethereum Local gas fee upon claiming./i
+            )
           })
       })
 
