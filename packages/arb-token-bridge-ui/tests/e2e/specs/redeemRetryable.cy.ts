@@ -9,7 +9,7 @@ import {
 const wethAmountToDeposit = 0.001
 
 function mockErc20RedeemDepositTransaction(): Transaction {
-  const isOrbitTest = Cypress.env('ORBIT_TEST')
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
     txID: Cypress.env('REDEEM_RETRYABLE_TEST_TX'),
