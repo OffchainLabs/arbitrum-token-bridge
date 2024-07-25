@@ -27,20 +27,11 @@ describe('Withdraw ETH', () => {
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findAllByText(/gas fee$/)
-              .first()
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText(
-              /You'll have to pay [\w\s]+ gas fee upon claiming./i
-            ).should('be.visible')
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain(
+              /You'll have to pay Ethereum Local gas fee upon claiming./i
+            )
           })
       })
 

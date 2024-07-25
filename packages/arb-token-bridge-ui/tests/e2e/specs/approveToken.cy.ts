@@ -27,20 +27,9 @@ describe('Approve token and deposit afterwards', () => {
       cy.findByText('MAX')
         .click()
         .then(() => {
-          cy.findByText('You will pay in gas fees:')
-            .siblings()
-            .contains(zeroToLessThanOneETH)
-            .should('be.visible')
-          cy.findByText(`${getL1NetworkName()} gas fee`)
-            .parent()
-            .siblings()
-            .contains(zeroToLessThanOneETH)
-            .should('be.visible')
-          cy.findByText(`${getL2NetworkName()} gas fee`)
-            .parent()
-            .siblings()
-            .contains(zeroToLessThanOneETH)
-            .should('be.visible')
+          cy.findGasFeeSummary(zeroToLessThanOneETH)
+          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+          cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
         })
       cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
         errorMsg: 'move funds button is disabled (expected to be enabled)',
