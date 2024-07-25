@@ -208,10 +208,7 @@ export const searchAndSelectToken = ({
   tokenAddress: string
 }) => {
   // Click on the ETH dropdown (Select token button)
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click()
+  cy.findSelectTokenButton('ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
@@ -227,9 +224,7 @@ export const searchAndSelectToken = ({
       cy.findAllByText(tokenName).first().click()
 
       // USDC token should be selected now and popup should be closed after selection
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', tokenName)
+      cy.findSelectTokenButton(tokenName)
     })
 }
 
@@ -247,6 +242,49 @@ export const fillCustomDestinationAddress = () => {
     .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
 
+export function typeAmount(
+  amount: string | number
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByPlaceholderText(/enter amount/i)
+    .typeRecursively(String(amount))
+}
+
+export function findSourceChainButton(
+  chain: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: `From: ${chain}` })
+    .should('be.visible')
+}
+
+export function findDestinationChainButton(
+  chain: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return (
+    cy
+      //
+      .findByRole('button', { name: `To: ${chain}` })
+      .should('be.visible')
+  )
+}
+
+export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: /move funds/i })
+    .scrollIntoView()
+    .should('be.visible')
+}
+
+export function findSelectTokenButton(
+  text: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', text)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -256,5 +294,10 @@ Cypress.Commands.addAll({
   fundUserUsdcTestnet,
   fundUserWalletEth,
   searchAndSelectToken,
-  fillCustomDestinationAddress
+  fillCustomDestinationAddress,
+  typeAmount,
+  findSourceChainButton,
+  findDestinationChainButton,
+  findMoveFundsButton,
+  findSelectTokenButton
 })
