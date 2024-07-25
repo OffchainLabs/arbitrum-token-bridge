@@ -10,8 +10,8 @@ import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
   firstRetryableLegRequiresRedeem,
   getChainIdForRedeemingRetryable,
-  l1L2RetryableRequiresRedeem,
-  l2ForwarderRetryableRequiresRedeem,
+  parentToChildRetryableRequiresRedeem,
+  childForwarderRetryableRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
@@ -32,10 +32,10 @@ const TeleportMiddleStepFailureExplanationNote = ({
       <div
         className={twMerge(
           'flex items-center gap-2',
-          l1L2RetryableRequiresRedeem(tx) && 'text-white/60'
+          parentToChildRetryableRequiresRedeem(tx) && 'text-white/60'
         )}
       >
-        {!l1L2RetryableRequiresRedeem(tx) ? (
+        {!parentToChildRetryableRequiresRedeem(tx) ? (
           <CheckCircleIcon
             height={15}
             className="h-[15px] w-[15px] shrink-0 text-green-400"
@@ -49,10 +49,10 @@ const TeleportMiddleStepFailureExplanationNote = ({
       <div
         className={twMerge(
           'mt-1 flex items-center gap-2',
-          l2ForwarderRetryableRequiresRedeem(tx) && 'text-white/60'
+          childForwarderRetryableRequiresRedeem(tx) && 'text-white/60'
         )}
       >
-        {!l2ForwarderRetryableRequiresRedeem(tx) ? (
+        {!childForwarderRetryableRequiresRedeem(tx) ? (
           <CheckCircleIcon
             height={15}
             className="h-[15px] w-[15px] shrink-0 text-green-400"
@@ -81,7 +81,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'
   const l2ChainId = tx.l2ToL3MsgData?.l2ChainId
   const isFirstRetryableLegFailed = firstRetryableLegRequiresRedeem(tx)
-  const l2ForwarderRequiresRedeem = l2ForwarderRetryableRequiresRedeem(tx)
+  const l2ForwarderRequiresRedeem = childForwarderRetryableRequiresRedeem(tx)
 
   const isFirstRetryableLegResolved =
     isFirstRetryableLegSucceeded || isFirstRetryableLegFailed

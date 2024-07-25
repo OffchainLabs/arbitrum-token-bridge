@@ -105,20 +105,23 @@ export const getRetryableTicketExpiration = async ({
 }
 
 // utilities for teleporter transactions
-export const l1L2RetryableRequiresRedeem = (tx: MergedTransaction) => {
+export const parentToChildRetryableRequiresRedeem = (tx: MergedTransaction) => {
   return (
     tx.l1ToL2MsgData?.status ===
     ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )
 }
 
-export const l2ForwarderRetryableRequiresRedeem = (tx: MergedTransaction) => {
+export const childForwarderRetryableRequiresRedeem = (
+  tx: MergedTransaction
+) => {
   return typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID !== 'undefined'
 }
 
 export const firstRetryableLegRequiresRedeem = (tx: MergedTransaction) => {
   return (
-    l1L2RetryableRequiresRedeem(tx) || l2ForwarderRetryableRequiresRedeem(tx)
+    parentToChildRetryableRequiresRedeem(tx) ||
+    childForwarderRetryableRequiresRedeem(tx)
   )
 }
 
@@ -126,7 +129,7 @@ export const secondRetryableLegForTeleportRequiresRedeem = (
   tx: MergedTransaction
 ) => {
   return (
-    !l2ForwarderRetryableRequiresRedeem(tx) &&
+    !childForwarderRetryableRequiresRedeem(tx) &&
     tx.l2ToL3MsgData?.status ===
       ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )

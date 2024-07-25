@@ -6,7 +6,6 @@ import {
 } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
-import { TransactionReceipt } from '@ethersproject/providers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
@@ -14,8 +13,8 @@ import {
   firstRetryableLegRequiresRedeem,
   getChainIdForRedeemingRetryable,
   getRetryableTicket,
-  l1L2RetryableRequiresRedeem,
-  l2ForwarderRetryableRequiresRedeem,
+  parentToChildRetryableRequiresRedeem,
+  childForwarderRetryableRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
 } from '../util/RetryableUtils'
 import { trackEvent } from '../util/AnalyticsUtils'
@@ -54,7 +53,7 @@ const redeemRetryable = async (retryable: ParentToChildMessageWriter) => {
   return successfulRedeem
 }
 
-// this will try to redeem - 1. L1L2Retryable 2. L2ForwarderRetryable
+// this will try to redeem - 1. Parent-to-Child Retryable 2. L2ForwarderRetryable
 const redeemTeleporterFirstLeg = async ({
   tx,
   signer,
@@ -67,9 +66,9 @@ const redeemTeleporterFirstLeg = async ({
   let teleportTransfer = tx
 
   // check if we require a redemption for the first retryable
-  if (l1L2RetryableRequiresRedeem(tx)) {
+  if (parentToChildRetryableRequiresRedeem(tx)) {
     // get retryable ticket
-    const l1l2Retryable = await getRetryableTicket({
+    const parentToChildRetryable = await getRetryableTicket({
       parentChainTxHash: tx.txId,
       retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
       parentChainProvider: getProviderForChainId(tx.parentChainId),
@@ -77,7 +76,7 @@ const redeemTeleporterFirstLeg = async ({
     })
 
     // redeem retryable
-    await redeemRetryable(l1l2Retryable)
+    await redeemRetryable(parentToChildRetryable)
 
     // update the teleport tx in the UI
     teleportTransfer = await getUpdatedTeleportTransfer(tx)
@@ -85,9 +84,9 @@ const redeemTeleporterFirstLeg = async ({
   }
 
   // check if we require a redemption for the second retryable
-  if (l2ForwarderRetryableRequiresRedeem(teleportTransfer)) {
+  if (childForwarderRetryableRequiresRedeem(teleportTransfer)) {
     // get retryable ticket
-    const l2ForwarderRetryable = await getRetryableTicket({
+    const childForwarderRetryable = await getRetryableTicket({
       parentChainTxHash: tx.txId,
       retryableCreationId:
         teleportTransfer?.l2ToL3MsgData?.l2ForwarderRetryableTxID,
@@ -96,7 +95,7 @@ const redeemTeleporterFirstLeg = async ({
     })
 
     // redeem retryable
-    await redeemRetryable(l2ForwarderRetryable)
+    await redeemRetryable(childForwarderRetryable)
 
     // update the teleport tx in the UI
     const updatedTeleportTransfer = await getUpdatedTeleportTransfer(
