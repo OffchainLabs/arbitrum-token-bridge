@@ -34,11 +34,9 @@ describe('Deposit ERC20 Token', () => {
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
       cy.login({ networkType: 'L1' })
-      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', 'ETH')
+      cy.findSourceChainButton('Ethereum Local')
+      cy.findDestinationChainButton('Arbitrum Local')
+      cy.findSelectTokenButton('ETH')
     })
 
     it('should deposit ERC-20 successfully to the same address', () => {
@@ -60,34 +58,17 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show gas estimations', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('Ethereum Local gas fee')
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('Arbitrum Local gas fee')
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
           })
       })
 
       context('should deposit successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Local/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
+        cy.findMoveFundsButton()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
@@ -114,14 +95,12 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
           })
       })
 
@@ -130,12 +109,7 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should deposit successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Local/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
+        cy.findMoveFundsButton()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {

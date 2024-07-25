@@ -10,7 +10,6 @@ import {
   holesky,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnetV2,
   localL1Network as local,
   localL2Network as arbitrumLocal
 } from '../util/wagmi/wagmiAdditionalNetworks'
@@ -28,7 +27,7 @@ export function isSupportedChainId(
   }
 
   const customChainIds = getCustomChainsFromLocalStorage().map(
-    chain => chain.chainID
+    chain => chain.chainId
   )
 
   return [
@@ -38,10 +37,9 @@ export function isSupportedChainId(
     arbitrum.id,
     arbitrumNova.id,
     arbitrumSepolia.id,
-    stylusTestnetV2.id,
     arbitrumLocal.id,
     local.id,
-    ...getOrbitChains().map(chain => chain.chainID),
+    ...getOrbitChains().map(chain => chain.chainId),
     ...customChainIds
   ].includes(chainId)
 }
@@ -117,11 +115,6 @@ export type UseNetworksSetStateParams = {
 }
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
-/**
- * We keep track of this so we only call `setQueryParams` once.
- */
-let didUpdateUrlWithSanitizedValues = false
-
 export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const [
     { sourceChain: sourceChainId, destinationChain: destinationChainId },
@@ -155,21 +148,6 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     },
     [setQueryParams]
   )
-
-  if (
-    sourceChainId !== validSourceChainId ||
-    destinationChainId !== validDestinationChainId
-  ) {
-    if (!didUpdateUrlWithSanitizedValues) {
-      // On the first render, update query params with the sanitized values
-      setQueryParams({
-        sourceChain: validSourceChainId,
-        destinationChain: validDestinationChainId
-      })
-
-      didUpdateUrlWithSanitizedValues = true
-    }
-  }
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {

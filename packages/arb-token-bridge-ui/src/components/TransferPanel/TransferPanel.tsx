@@ -186,13 +186,13 @@ export function TransferPanel() {
     eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress: l1WalletAddress
   })
   const {
     eth: [, updateEthL2Balance]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress: l2WalletAddress
   })
 

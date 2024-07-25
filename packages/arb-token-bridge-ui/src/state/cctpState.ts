@@ -8,7 +8,7 @@ import { useInterval } from 'react-use'
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 import {
   ChainId,
-  getBlockTime,
+  getL1BlockTime,
   getNetworkName,
   isNetwork
 } from '../util/networks'
@@ -607,7 +607,7 @@ function getConfirmedDate(tx: MergedTransaction) {
   const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
     tx.parentChainId
   )
-  const blockTime = getBlockTime(tx.parentChainId)
+  const blockTime = getL1BlockTime(tx.parentChainId)
 
   return dayjs(tx.createdAt).add(
     requiredL1BlocksBeforeConfirmation * blockTime,

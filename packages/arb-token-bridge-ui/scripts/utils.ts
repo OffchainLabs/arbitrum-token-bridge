@@ -1,10 +1,11 @@
-import { L2Network } from '@arbitrum/sdk'
+import { ArbitrumNetwork } from '@arbitrum/sdk'
 import { OrbitChainConfig } from '../src/util/orbitChainsList'
 import { getExplorerUrl, rpcURLs } from '../src/util/networks'
 
-export interface ChainToMonitor extends L2Network {
+export interface ChainToMonitor extends ArbitrumNetwork {
   parentRpcUrl: string
   orbitRpcUrl: string
+  explorerUrl: string
   parentExplorerUrl: string
 }
 
@@ -32,12 +33,12 @@ export const getChainToMonitor = ({
   chain,
   rpcUrl
 }: {
-  chain: L2Network | OrbitChainConfig
+  chain: ArbitrumNetwork | OrbitChainConfig
   rpcUrl: string
 }): ChainToMonitor => ({
   ...chain,
-  explorerUrl: sanitizeExplorerUrl(chain.explorerUrl),
+  explorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.chainId)),
   orbitRpcUrl: sanitizeRpcUrl(rpcUrl),
-  parentRpcUrl: sanitizeRpcUrl(rpcURLs[chain.partnerChainID]),
-  parentExplorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.partnerChainID))
+  parentRpcUrl: sanitizeRpcUrl(rpcURLs[chain.parentChainId]),
+  parentExplorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.parentChainId))
 })
