@@ -36,8 +36,6 @@ function getDestinationWithSanitizedQueryParams(
 ) {
   const params = new URLSearchParams()
 
-  console.log(query)
-
   for (const key in query) {
     // don't copy "sourceChain" and "destinationChain" query params
     if (key === 'sourceChain' || key === 'destinationChain') {
