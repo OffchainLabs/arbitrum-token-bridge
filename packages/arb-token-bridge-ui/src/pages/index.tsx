@@ -12,8 +12,7 @@ import { getOrbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
-  encodeChainQueryParam,
-  AmountQueryParam
+  encodeChainQueryParam
 } from '../hooks/useArbQueryParams'
 
 const App = dynamic(() => import('../components/App/App'), {
@@ -36,26 +35,31 @@ function getDestinationWithSanitizedQueryParams(
   query: GetServerSidePropsContext['query']
 ) {
   const params = new URLSearchParams()
+
+  console.log(query)
+
   for (const key in query) {
-    const value = query[key]
-    if (typeof value === 'string') {
-      params.set(key, value)
+    // don't copy "sourceChain" and "destinationChain" query params
+    if (key === 'sourceChain' || key === 'destinationChain') {
+      continue
+    }
+
+    // copy everything else
+    if (typeof query[key] === 'string') {
+      params.set(key, query[key])
     }
   }
 
-  const amount = AmountQueryParam.encode(
-    Array.isArray(query['amount']) ? '' : query['amount']
-  )
-  if (amount) {
-    params.set('amount', AmountQueryParam.encode(amount))
-  } else {
-    params.delete('amount')
+  const encodedSource = encodeChainQueryParam(sanitized.sourceChainId)
+  const encodedDestination = encodeChainQueryParam(sanitized.destinationChainId)
+
+  if (encodedSource) {
+    params.set('sourceChain', encodedSource)
+
+    if (encodedDestination) {
+      params.set('destinationChain', encodedDestination)
+    }
   }
-  params.set('sourceChain', encodeChainQueryParam(sanitized.sourceChainId)!)
-  params.set(
-    'destinationChain',
-    encodeChainQueryParam(sanitized.destinationChainId)!
-  )
 
   return `/?${params.toString()}`
 }
@@ -86,6 +90,7 @@ export function getServerSideProps({
     }
   }
 
+  // it's necessary to call this before sanitization to make sure all chains are registered
   addOrbitChainsToArbitrumSDK()
 
   // sanitize the query params
@@ -96,6 +101,13 @@ export function getServerSideProps({
     sourceChainId !== sanitized.sourceChainId ||
     destinationChainId !== sanitized.destinationChainId
   ) {
+    console.log(`[getServerSideProps] sanitizing query params`)
+    console.log(
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId} (before)`
+    )
+    console.log(
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId} (after)`
+    )
     return {
       redirect: {
         permanent: false,
