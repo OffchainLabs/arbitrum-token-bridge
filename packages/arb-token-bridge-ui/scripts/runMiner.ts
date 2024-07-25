@@ -1,6 +1,7 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber, Signer, Wallet, constants, utils } from 'ethers'
+import { BigNumber, Signer, Wallet, constants, ethers, utils } from 'ethers'
 import 'dotenv/config'
+import { defaultL2Network } from '../src/util/networks'
 
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 if (typeof INFURA_KEY === 'undefined') {
@@ -25,6 +26,32 @@ const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
 
 let counter = 0
 
+const wait = (ms = 0): Promise<void> => {
+  return new Promise(res => setTimeout(res, ms))
+}
+
+async function checkForAssertions() {
+  const abi = [
+    'function latestConfirmed() public view returns (uint64)',
+    'function latestNodeCreated() public view returns (uint64)'
+  ]
+
+  const rollupContract = new ethers.Contract(
+    defaultL2Network.ethBridge.rollup,
+    abi,
+    ethProvider
+  )
+
+  while (true) {
+    console.log(
+      'Assertion status (created vs confirmed)',
+      (await rollupContract.latestNodeCreated()).toString(),
+      (await rollupContract.latestConfirmed()).toString()
+    )
+    await wait(10000)
+  }
+}
+
 const main = async () => {
   async function fundWalletEth(
     walletAddress: string,
@@ -37,9 +64,7 @@ const main = async () => {
     })
     await tx.wait()
   }
-  const wait = (ms = 0): Promise<void> => {
-    return new Promise(res => setTimeout(res, ms))
-  }
+
   const keepMining = async (miner: Signer, networkType?: 'L1' | 'L2') => {
     while (true) {
       counter++
@@ -75,3 +100,4 @@ const main = async () => {
 }
 
 main()
+checkForAssertions()

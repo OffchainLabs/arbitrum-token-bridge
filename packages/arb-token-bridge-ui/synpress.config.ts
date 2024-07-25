@@ -1,4 +1,4 @@
-import { BigNumber, Signer, Wallet, constants, utils } from 'ethers'
+import { BigNumber, Signer, Wallet, constants, ethers, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -16,7 +16,7 @@ import {
   wethTokenAddressL2
 } from './tests/support/common'
 
-import { registerLocalNetwork } from './src/util/networks'
+import { defaultL2Network, registerLocalNetwork } from './src/util/networks'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -95,6 +95,8 @@ export default defineConfig({
 
       // Generate activity on chains so that assertions get posted and claims can be made
       generateActivityOnChains()
+
+      checkForAssertions()
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
@@ -242,6 +244,32 @@ async function getCustomDestinationAddress() {
   return (await Wallet.createRandom().getAddress()).toLowerCase()
 }
 
+async function checkForAssertions() {
+  const abi = [
+    'function latestConfirmed() public view returns (uint64)',
+    'function latestNodeCreated() public view returns (uint64)'
+  ]
+
+  const rollupContract = new ethers.Contract(
+    defaultL2Network.ethBridge.rollup,
+    abi,
+    ethProvider
+  )
+
+  while (true) {
+    console.log(
+      '>>>>> Assertion status (created vs confirmed)',
+      (await rollupContract.latestNodeCreated()).toString(),
+      (await rollupContract.latestConfirmed()).toString()
+    )
+    await wait(10000)
+  }
+}
+
+const wait = (ms = 0): Promise<void> => {
+  return new Promise(res => setTimeout(res, ms))
+}
+
 async function generateActivityOnChains() {
   async function fundWalletEth(walletAddress, networkType: 'L1' | 'L2') {
     const provider = networkType === 'L1' ? ethProvider : arbProvider
@@ -251,9 +279,7 @@ async function generateActivityOnChains() {
     })
     await tx.wait()
   }
-  const wait = (ms = 0): Promise<void> => {
-    return new Promise(res => setTimeout(res, ms))
-  }
+
   const keepMining = async (miner: Signer) => {
     while (true) {
       await (
