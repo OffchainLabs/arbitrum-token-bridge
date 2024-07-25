@@ -11,7 +11,7 @@ describe('Withdraw ETH', () => {
   // Happy Path
   context('user has some ETH and is on L2', () => {
     it('should show form fields correctly', () => {
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
       cy.findMoveFundsButton().should('be.disabled')
@@ -19,7 +19,7 @@ describe('Withdraw ETH', () => {
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
       it('should show gas estimations', () => {
-        cy.login({ networkType: 'L2' })
+        cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {
@@ -32,7 +32,7 @@ describe('Withdraw ETH', () => {
       })
 
       it('should show withdrawal confirmation and withdraw', () => {
-        cy.login({ networkType: 'L2' })
+        cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {

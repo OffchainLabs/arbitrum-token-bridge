@@ -48,7 +48,7 @@ describe('Read classic deposit messages', () => {
     it('can read successful ETH deposit', () => {
       // log in to metamask
       cy.login({
-        networkType: 'L1',
+        networkType: 'parentChain',
         networkName: 'mainnet'
       })
       window.localStorage.setItem(
@@ -85,7 +85,7 @@ describe('Read classic deposit messages', () => {
     it('can read successful ERC-20 deposit', () => {
       // log in to metamask
       cy.login({
-        networkType: 'L1',
+        networkType: 'parentChain',
         networkName: 'mainnet'
       })
       window.localStorage.setItem(

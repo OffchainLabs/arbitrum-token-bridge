@@ -1,7 +1,7 @@
 describe('Switch Networks', () => {
   context('User is on test network L1', () => {
     it('should show L1 and L2 chains correctly', () => {
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'parentChain' })
       cy.findSourceChainButton('Ethereum Local')
       cy.findDestinationChainButton('Arbitrum Local')
     })
@@ -10,7 +10,7 @@ describe('Switch Networks', () => {
       'User is connected to Ethereum, source chain is Ethereum and destination chain is Arbitrum',
       () => {
         it('should switch "from: Ethereum" to "from: Arbitrum" successfully', () => {
-          cy.login({ networkType: 'L1' })
+          cy.login({ networkType: 'parentChain' })
           cy.findSourceChainButton('Ethereum Local')
 
           cy.findByRole('button', { name: /Switch Networks/i })
