@@ -42,9 +42,11 @@ function getDestinationWithSanitizedQueryParams(
       continue
     }
 
+    const value = query[key]
+
     // copy everything else
-    if (typeof query[key] === 'string') {
-      params.set(key, query[key])
+    if (typeof value === 'string') {
+      params.set(key, value)
     }
   }
 
