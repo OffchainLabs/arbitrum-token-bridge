@@ -178,12 +178,3 @@ export const visitAfterSomeDelay = (
   cy.wait(15_000) // let all the race conditions settle, let UI load well first
   cy.visit(url, options)
 }
-
-export const skipIfOrbitTest = (() => {
-  return async (testContext: Mocha.Context) => {
-    if (Cypress.env('ORBIT_TEST') == '1') {
-      console.error("You're writing to the chain on mainnet lol stop")
-      testContext.skip()
-    }
-  }
-})()

@@ -3,8 +3,7 @@ import { Transaction } from '../../../src/hooks/useTransactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 import {
   getInitialERC20Balance,
-  getL2NetworkConfig,
-  skipIfOrbitTest
+  getL2NetworkConfig
 } from '../../support/common'
 
 const wethAmountToDeposit = 0.001
@@ -31,11 +30,6 @@ function mockErc20RedeemDepositTransaction(): Transaction {
 
 describe('Redeem ERC20 Deposit', () => {
   const l2WethAddress = Cypress.env('L2_WETH_ADDRESS')
-
-  before(() => {
-    // TODO: fix this test not to use WETH for Orbit chains
-    skipIfOrbitTest(this)
-  })
 
   context('User has some ERC20 and is on L1', () => {
     let l2ERC20bal: string
