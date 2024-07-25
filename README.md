@@ -122,6 +122,12 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
    1. First, make sure you have a Nitro test node running. Follow the instructions [here](https://docs.arbitrum.io/node-running/how-tos/local-dev-node).
 
+      Use the following command to run your test nodes locally for our tests.
+
+      ```bash
+      ./test-node.bash --init --no-simple --tokenbridge --l3node --l3-token-bridge
+      ```
+
    2. When the Nitro test-node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes.
 
 2. At the root of the token bridge UI:
@@ -132,7 +138,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
    $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
    ```
 
-   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY`
+   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY` and `PRIVATE_KEY_USER`
 
 3. Run the token bridge UI locally on `http://localhost:3000/` with:
 
@@ -144,6 +150,12 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
    ```bash
    $ yarn test:e2e
+   ```
+
+5. If you would like to run CCTP tests, run
+
+   ```bash
+   $ yarn test:e2e:cctp
    ```
 
 Read more about the test setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
