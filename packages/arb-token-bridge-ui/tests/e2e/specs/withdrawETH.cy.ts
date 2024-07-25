@@ -6,7 +6,7 @@ import { getL1NetworkConfig, zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
-  const ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+  let ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
   // Happy Path
   context('user has some ETH and is on L2', () => {
@@ -40,143 +40,100 @@ describe('Withdraw ETH', () => {
           })
       })
 
-      it(
-        'should show withdrawal confirmation and withdraw',
-        { defaultCommandTimeout: 200_000 },
-        () => {
-          cy.login({ networkType: 'L2' })
-          cy.typeAmount(ETHToWithdraw)
-            //
-            .then(() => {
-              cy.findMoveFundsButton().click()
-              cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
+      it('should show withdrawal confirmation and withdraw', () => {
+        ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
+        cy.login({ networkType: 'L2' })
+        cy.typeAmount(ETHToWithdraw)
+          //
+          .then(() => {
+            cy.findMoveFundsButton().click()
+            cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
-              // the Continue withdrawal button should be disabled at first
-              cy.findByRole('button', {
-                name: /Continue/i
-              }).should('be.disabled')
+            // the Continue withdrawal button should be disabled at first
+            cy.findByRole('button', {
+              name: /Continue/i
+            }).should('be.disabled')
 
-              cy.findByRole('switch', {
-                name: /before I can claim my funds/i
-              })
-                .should('be.visible')
-                .click()
-
-              cy.findByRole('switch', {
-                name: /after claiming my funds/i
-              })
-                .should('be.visible')
-                .click()
-                .then(() => {
-                  // the Continue withdrawal button should not be disabled now
-                  cy.findByRole('button', {
-                    name: /Continue/i
-                  })
-                    .should('be.enabled')
-                    .click()
-                    .then(() => {
-                      cy.confirmMetamaskTransaction().then(() => {
-                        cy.findByText('an hour').should('be.visible')
-                        cy.findByText(
-                          `${formatAmount(ETHToWithdraw, {
-                            symbol: 'ETH'
-                          })}`
-                        ).should('be.visible')
-                      })
-                    })
-                })
-                .should('be.visible')
-                .should('be.enabled')
-                .click()
-              cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
-
-              // the Continue withdrawal button should be disabled at first
-              cy.findByRole('button', {
-                name: /Continue/i
-              }).should('be.disabled')
-
-              cy.findByRole('switch', {
-                name: /before I can claim my funds/i
-              })
-                .should('be.visible')
-                .click()
-
-              cy.findByRole('switch', {
-                name: /after claiming my funds/i
-              })
-                .should('be.visible')
-                .click()
-                .then(() => {
-                  // the Continue withdrawal button should not be disabled now
-                  cy.findByRole('button', {
-                    name: /Continue/i
-                  })
-                    .should('be.enabled')
-                    .click()
-                    .then(() => {
-                      cy.confirmMetamaskTransaction().then(() => {
-                        cy.findAllByText(/an hour/i)
-                          .first()
-                          .should('be.visible')
-                        cy.findAllByText(
-                          `${formatAmount(ETHToWithdraw, {
-                            symbol: 'ETH'
-                          })}`
-                        )
-                          .first()
-                          .should('be.visible')
-
-                        cy.waitUntil(
-                          () =>
-                            cy
-                              .findByLabelText(
-                                `Claim ${formatAmount(ETHToWithdraw, {
-                                  symbol: 'ETH'
-                                })}`
-                              )
-                              .should('be.visible')
-                              .should('not.be.disabled'),
-                          {
-                            errorMsg:
-                              'Claim Transaction button is not visible or enabled',
-                            timeout: 200_000,
-                            interval: 1000
-                          }
-                        ).then(() => {
-                          cy.changeMetamaskNetwork(
-                            getL1NetworkConfig().networkName
-                          ).then(() => {
-                            cy.findByLabelText(
-                              `Claim ${formatAmount(ETHToWithdraw, {
-                                symbol: 'ETH'
-                              })}`
-                            )
-                              .click()
-                              .then(() => {
-                                cy.confirmMetamaskTransaction().then(() => {
-                                  cy.findByLabelText(
-                                    'show settled transactions'
-                                  )
-                                    .should('be.visible')
-                                    .click()
-
-                                  cy.findAllByText(
-                                    `${formatAmount(ETHToWithdraw, {
-                                      symbol: 'ETH'
-                                    })}`
-                                  )
-                                    .first()
-                                    .should('be.visible')
-                                })
-                              })
-                          })
-                        })
-                      })
-                    })
-                })
+            cy.findByRole('switch', {
+              name: /before I can claim my funds/i
             })
-        }
-      )
+              .should('be.visible')
+              .click()
+
+            cy.findByRole('switch', {
+              name: /after claiming my funds/i
+            })
+              .should('be.visible')
+              .click()
+              .then(() => {
+                // the Continue withdrawal button should not be disabled now
+                cy.findByRole('button', {
+                  name: /Continue/i
+                })
+                  .should('be.enabled')
+                  .click()
+                  .then(() => {
+                    cy.confirmMetamaskTransaction().then(() => {
+                      cy.findByText('an hour').should('be.visible')
+                      cy.findByText(
+                        `${formatAmount(ETHToWithdraw, {
+                          symbol: 'ETH'
+                        })}`
+                      ).should('be.visible')
+                    })
+                  })
+              })
+          })
+      })
+
+      it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
+        // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/s) to activate
+
+        cy.login({ networkType: 'L1' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
+
+        cy.findByLabelText('Open Transaction History')
+          .should('be.visible')
+          .click()
+
+        cy.waitUntil(
+          () =>
+            cy
+              .findByLabelText(
+                `Claim ${formatAmount(ETHToWithdraw, {
+                  symbol: 'ETH'
+                })}`
+              )
+              .should('be.visible')
+              .should('not.be.disabled'),
+          {
+            errorMsg: 'Claim Transaction button is not visible or enabled',
+            timeout: 200_000,
+            interval: 1000
+          }
+        ).then(() => {
+          cy.findByLabelText(
+            `Claim ${formatAmount(ETHToWithdraw, {
+              symbol: 'ETH'
+            })}`
+          )
+            .click()
+            .then(() => {
+              cy.confirmMetamaskTransaction().then(() => {
+                cy.findByLabelText('show settled transactions')
+                  .should('be.visible')
+                  .click()
+
+                cy.findAllByText(
+                  `${formatAmount(ETHToWithdraw, {
+                    symbol: 'ETH'
+                  })}`
+                )
+                  .first()
+                  .should('be.visible')
+              })
+            })
+        })
+      })
     })
 
     // TODO => test for bridge amount higher than user's L2 ETH balance

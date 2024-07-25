@@ -254,7 +254,7 @@ async function generateActivityOnChains() {
   const wait = (ms = 0): Promise<void> => {
     return new Promise(res => setTimeout(res, ms))
   }
-  const keepMining = async (miner: Signer, networkType?: 'L1' | 'L2') => {
+  const keepMining = async (miner: Signer) => {
     while (true) {
       await (
         await miner.sendTransaction({
@@ -264,19 +264,19 @@ async function generateActivityOnChains() {
         })
       ).wait()
 
-      await wait(100)
+      await wait(500)
     }
   }
   // whilst waiting for status we mine on both l1 and l2
   console.log('Generating activity on L1...')
-  const miner1 = Wallet.createRandom().connect(ethProvider)
-  await fundWalletEth(await miner1.getAddress(), 'L1')
+  const minerL1 = Wallet.createRandom().connect(ethProvider)
+  await fundWalletEth(await minerL1.getAddress(), 'L1')
 
   console.log('Generating activity on L2...')
-  const miner2 = Wallet.createRandom().connect(arbProvider)
-  await fundWalletEth(await miner2.getAddress(), 'L2')
+  const minerL2 = Wallet.createRandom().connect(arbProvider)
+  await fundWalletEth(await minerL2.getAddress(), 'L2')
 
-  await Promise.race([keepMining(miner1, 'L1'), keepMining(miner2, 'L2')])
+  await Promise.allSettled([keepMining(minerL1), keepMining(minerL2)])
 }
 
 async function generateTestTxForRedeemRetryable() {
