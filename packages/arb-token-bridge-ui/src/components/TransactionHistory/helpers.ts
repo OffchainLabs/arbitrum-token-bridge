@@ -33,6 +33,7 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -404,9 +405,9 @@ export async function getUpdatedWithdrawal(
     return tx
   }
 
-  const parentChainProvider = getProvider(tx.parentChainId)
-  const childChainProvider = getProvider(tx.childChainId)
-  const txReceipt = await childChainProvider.getTransactionReceipt(tx.txId)
+  const parentChainProvider = getProviderForChainId(tx.parentChainId)
+  const childChainProvider = getProviderForChainId(tx.childChainId)
+  const txReceipt = await getTxReceipt(tx)
   const childTxReceipt = new ChildTransactionReceipt(txReceipt)
   const [withdrawalEvent] = await childTxReceipt.getChildToParentEvents()
 
