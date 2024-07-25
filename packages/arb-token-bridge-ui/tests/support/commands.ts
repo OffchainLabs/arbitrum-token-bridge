@@ -57,7 +57,9 @@ export function login({
 
     // when testing Orbit chains we want to set destination chain to L3
     const destinationChain =
-      networkType === 'L1' && network.chainId === '412346' ? 'l3-localhost' : ''
+      networkType === 'parentChain' && network.chainId === '412346'
+        ? 'l3-localhost'
+        : ''
     startWebApp(url, {
       ...query,
       sourceChain,

@@ -9,9 +9,9 @@ describe('Switch Networks', () => {
     })
 
     context(
-      'User is connected to parent chain, source chain is parent chain and destination chain is child chain',
+      'User is connected to Ethereum, source chain is Ethereum and destination chain is Arbitrum',
       () => {
-        it('should switch "from: Parent Chain" to "from: Child Chain" successfully', () => {
+        it('should switch "from: Ethereum" to "from: Arbitrum" successfully', () => {
           cy.login({ networkType: 'parentChain' })
           cy.findSourceChainButton(getL1NetworkName())
 
