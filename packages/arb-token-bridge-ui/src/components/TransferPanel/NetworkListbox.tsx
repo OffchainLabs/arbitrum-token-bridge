@@ -25,8 +25,6 @@ export function NetworkListbox({
 }: NetworkListboxProps) {
   const { color: backgroundColor } = getBridgeUiConfigForChain(value.id)
 
-  console.log({ options })
-
   return (
     <Listbox
       as="div"

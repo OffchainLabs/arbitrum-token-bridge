@@ -196,7 +196,6 @@ async function deployERC20ToL1() {
   const contract = new TestERC20__factory().connect(
     localWallet.connect(parentProvider)
   )
-  console.log({ parentProvider })
   const token = await contract.deploy()
   await token.deployed()
 
@@ -205,7 +204,6 @@ async function deployERC20ToL1() {
 
 async function deployERC20ToL2(erc20L1Address: string) {
   console.log('Deploying ERC20 to L2...')
-  console.log({ childProvider })
   const bridger = await Erc20Bridger.fromProvider(childProvider)
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
@@ -251,7 +249,6 @@ async function wrapEth(networkType: 'L1' | 'L2') {
 
 async function approveWeth() {
   console.log('Approving WETH...')
-  console.log({ parentProvider, l1WethAddress, l1WethGateway })
   const tx = await getWethContract(parentProvider, l1WethAddress).approve(
     l1WethGateway,
     constants.MaxInt256

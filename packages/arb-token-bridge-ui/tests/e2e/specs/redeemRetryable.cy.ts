@@ -9,21 +9,23 @@ import {
 const wethAmountToDeposit = 0.001
 
 function mockErc20RedeemDepositTransaction(): Transaction {
+  const isOrbitTest = Cypress.env('ORBIT_TEST')
+
   return {
     txID: Cypress.env('REDEEM_RETRYABLE_TEST_TX'),
     value: wethAmountToDeposit.toString(),
     type: 'deposit-l1',
     direction: 'deposit',
     source: 'local_storage_cache',
-    parentChainId: 1337,
-    childChainId: 412346,
+    parentChainId: isOrbitTest ? 412346 : 1337,
+    childChainId: isOrbitTest ? 333333 : 412346,
     status: 'pending',
     assetName: 'WETH',
     assetType: AssetType.ERC20,
     sender: Cypress.env('ADDRESS'),
     destination: Cypress.env('ADDRESS'),
-    l1NetworkID: '1337',
-    l2NetworkID: '412346',
+    l1NetworkID: isOrbitTest ? '412346' : '1337',
+    l2NetworkID: isOrbitTest ? '333333' : '412346',
     timestampCreated: Math.floor(Date.now() / 1000).toString()
   }
 }
