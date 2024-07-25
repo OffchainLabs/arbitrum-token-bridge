@@ -115,11 +115,6 @@ export type UseNetworksSetStateParams = {
 }
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
-/**
- * We keep track of this so we only call `setQueryParams` once.
- */
-let didUpdateUrlWithSanitizedValues = false
-
 export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const [
     { sourceChain: sourceChainId, destinationChain: destinationChainId },
@@ -153,21 +148,6 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     },
     [setQueryParams]
   )
-
-  if (
-    sourceChainId !== validSourceChainId ||
-    destinationChainId !== validDestinationChainId
-  ) {
-    if (!didUpdateUrlWithSanitizedValues) {
-      // On the first render, update query params with the sanitized values
-      setQueryParams({
-        sourceChain: validSourceChainId,
-        destinationChain: validDestinationChainId
-      })
-
-      didUpdateUrlWithSanitizedValues = true
-    }
-  }
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {
