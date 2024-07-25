@@ -40,22 +40,19 @@ Sentry.init({
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.025,
   maxValueLength: 0,
+  // https://docs.sentry.io/platforms/javascript/guides/react/configuration/filtering/#filtering-error-events
+  ignoreErrors: [
+    // Ignore events related to failed `eth_gasPrice` calls
+    /eth_gasPrice/i,
+    // Ignore events related to failed `eth_getBalance` calls
+    /eth_getBalance/i,
+    // Ignore events related to failed walletConnect calls
+    /Attempt to connect to relay via/i,
+    // Ignore events about window.propertyX being redefined accross multiple extensions
+    /Cannot redefine property/i,
+    /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i
+  ],
   beforeSend: (event, hint) => {
-    if (event.message) {
-      if (
-        // Ignore events related to failed `eth_gasPrice` calls
-        event.message.match(/eth_gasPrice/i) ||
-        // Ignore events related to failed `eth_getBalance` calls
-        event.message.match(/eth_getBalance/i) ||
-        // Ignore events related to failed walletConnect calls
-        event.message.match(/Attempt to connect to relay via/i) ||
-        // Ignore events about window.propertyX being redefined accross multiple extensions
-        event.message.match(/Cannot redefine property/i)
-      ) {
-        return null
-      }
-    }
-
     if (isUserRejectedError(hint.originalException)) {
       return null
     }
