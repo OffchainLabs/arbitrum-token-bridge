@@ -22,7 +22,7 @@ describe('Import token', () => {
     })
     context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'parentChain' })
         importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the ERC-20 token
@@ -41,7 +41,7 @@ describe('Import token', () => {
 
     context('User uses L2 address', () => {
       it('should import token through its L2 address', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'parentChain' })
         importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
@@ -56,7 +56,7 @@ describe('Import token', () => {
 
     context('User uses invalid address', () => {
       it('should display an error message after invalid input', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'parentChain' })
         importTokenThroughUI(invalidTokenAddress)
 
         // Error message is displayed
@@ -68,7 +68,7 @@ describe('Import token', () => {
       it('should toggle token list', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           networkName: 'mainnet'
         })
 
@@ -92,7 +92,7 @@ describe('Import token', () => {
       it('should import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           networkName: 'mainnet'
         })
 
@@ -136,7 +136,7 @@ describe('Import token', () => {
           ERC20TokenAddressL1.length - 1
         )
 
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'parentChain' })
         cy.findSelectTokenButton('ETH').click()
 
         // open the Select Token popup
@@ -170,7 +170,7 @@ describe('Import token', () => {
     context('User uses L1 address', () => {
       it('should import token through URL using its L1 address', () => {
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           url: '/',
           query: {
             token: ERC20TokenAddressL1
@@ -208,7 +208,7 @@ describe('Import token', () => {
     context('User uses L2 address', () => {
       it('should import token through URL using its L2 address', () => {
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           url: '/',
           query: {
             token: ERC20TokenAddressL2
@@ -245,7 +245,7 @@ describe('Import token', () => {
     context('User uses invalid address', () => {
       it('should display an error message after invalid URL', () => {
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           url: '/',
           query: {
             token: invalidTokenAddress
