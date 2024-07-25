@@ -50,6 +50,7 @@ Sentry.init({
     /Attempt to connect to relay via/i,
     // Ignore events about window.propertyX being redefined accross multiple extensions
     /Cannot redefine property/i,
+    // Ignore WC bug until we can update to the latest version, see FS-677
     /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i
   ],
   beforeSend: (event, hint) => {
