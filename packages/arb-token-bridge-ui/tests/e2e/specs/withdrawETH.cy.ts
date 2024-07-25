@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L2 to L1
  */
 
-import { getL1NetworkConfig, zeroToLessThanOneETH } from '../../support/common'
+import { zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
@@ -78,7 +78,7 @@ describe('Withdraw ETH', () => {
       })
 
       it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
-        // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/s) to activate
+        // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
 
         cy.login({ networkType: 'L1' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
 
