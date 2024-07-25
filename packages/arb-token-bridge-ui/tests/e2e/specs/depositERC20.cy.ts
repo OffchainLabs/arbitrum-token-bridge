@@ -120,25 +120,9 @@ describe('Deposit ERC20 Token', () => {
                 })}`
               ).should('be.visible')
 
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
-
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
-
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
+              cy.checkForCustomDestinationAddressInTransactionDetail(
+                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+              )
             })
           })
       })

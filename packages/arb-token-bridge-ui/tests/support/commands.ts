@@ -15,14 +15,14 @@ import {
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getInitialERC20Balance,
-  zeroToLessThanOneETH
+  getInitialERC20Balance
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
+import { shortenAddress } from '../../src/util/CommonUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -313,6 +313,26 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function checkForCustomDestinationAddressInTransactionDetail(
+  customAddress: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  cy.findAllByLabelText('Transaction details button')
+    .first()
+    .click()
+    .then(() => {
+      cy.findByText('Transaction details').should('be.visible')
+
+      cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+      // custom destination label in pending tx history should be visible
+      cy.findByLabelText(
+        `Custom address: ${shortenAddress(customAddress)}`
+      ).should('be.visible')
+    })
+
+  return cy.findByLabelText('Close transaction details popup').click()
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -329,5 +349,6 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  findSelectTokenButton
+  findSelectTokenButton,
+  checkForCustomDestinationAddressInTransactionDetail
 })
