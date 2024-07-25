@@ -124,7 +124,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
       Use the following command to run your test nodes locally for our tests.
 
-      ```shell
+      ```bash
       ./test-node.bash --init --no-simple --tokenbridge --l3node --l3-token-bridge
       ```
 
