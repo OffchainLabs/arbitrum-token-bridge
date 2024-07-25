@@ -25,9 +25,6 @@ jobs:
     - name: Install node_modules
       uses: OffchainLabs/actions/node-modules/install@main
 
-    - name: Install dependencies
-      run: yarn install
-
     - name: Generate chains JSON
       run: yarn workspace arb-token-bridge-ui generateCoreChainsToMonitor
       env:
