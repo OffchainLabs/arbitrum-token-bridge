@@ -8,7 +8,7 @@ import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 
-export type NetworkType = 'L1' | 'L2'
+export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
   | 'custom-localhost'
   | 'arbitrum-localhost'

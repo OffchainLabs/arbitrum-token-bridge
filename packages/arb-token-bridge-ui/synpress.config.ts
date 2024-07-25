@@ -9,7 +9,7 @@ import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
 
-import { NetworkName } from './tests/support/common'
+import { NetworkName, NetworkType } from './tests/support/common'
 
 import {
   defaultL2Network,
@@ -100,10 +100,13 @@ export default defineConfig({
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
+      await Promise.all([
+        fundUserWalletEth('parentChain'),
+        fundUserWalletEth('childChain')
+      ])
 
       // Wrap ETH to test ERC-20 transactions
-      await Promise.all([wrapEth('L1'), wrapEth('L2')])
+      await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
 
       // Approve WETH
       await approveWeth()
@@ -214,10 +217,11 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+async function fundUserWalletEth(networkType: NetworkType) {
   console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
-  const provider = networkType === 'L1' ? parentProvider : childProvider
+  const provider =
+    networkType === 'parentChain' ? parentProvider : childProvider
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 2 eth
   if (balance.lt(utils.parseEther('2'))) {
@@ -236,11 +240,12 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
-async function wrapEth(networkType: 'L1' | 'L2') {
+async function wrapEth(networkType: NetworkType) {
   console.log(`Wrapping ETH: ${networkType}...`)
-  const amount = networkType === 'L1' ? '0.2' : '0.1'
-  const address = networkType === 'L1' ? l1WethAddress : l2WethAddress
-  const provider = networkType === 'L1' ? parentProvider : childProvider
+  const amount = networkType === 'parentChain' ? '0.2' : '0.1'
+  const address = networkType === 'parentChain' ? l1WethAddress : l2WethAddress
+  const provider =
+    networkType === 'parentChain' ? parentProvider : childProvider
   const tx = await getWethContract(provider, address).deposit({
     value: utils.parseEther(amount)
   })

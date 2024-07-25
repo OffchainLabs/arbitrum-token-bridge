@@ -17,13 +17,13 @@ describe('Deposit ETH', () => {
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
-    cy.login({ networkType: 'L1' })
+    cy.login({ networkType: 'parentChain' })
     cy.findSourceChainButton(getL1NetworkName())
     cy.findDestinationChainButton(getL2NetworkName())
   })
 
   it('should show gas estimations and bridge successfully', () => {
-    cy.login({ networkType: 'L1' })
+    cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
       //
       .then(() => {

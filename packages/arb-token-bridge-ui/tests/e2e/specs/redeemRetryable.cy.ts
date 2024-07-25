@@ -45,7 +45,7 @@ describe('Redeem ERC20 Deposit', () => {
     })
 
     it('should redeem failed retryable successfully', () => {
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
 
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
@@ -60,7 +60,7 @@ describe('Redeem ERC20 Deposit', () => {
 
         // check the balance on the destination chain before redeeming
         context('should show ERC-20 balance correctly', () => {
-          cy.findByLabelText('WETH balance amount on l2')
+          cy.findByLabelText('WETH balance amount on childChain')
             .should('be.visible')
             .contains(l2ERC20bal)
             .should('be.visible')
@@ -105,7 +105,7 @@ describe('Redeem ERC20 Deposit', () => {
             // wait for the destination balance to update
             cy.wait(5_000).then(() => {
               // the balance on the destination chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on l2')
+              cy.findByLabelText('WETH balance amount on childChain')
                 .should('be.visible')
                 .invoke('text')
                 .should(
