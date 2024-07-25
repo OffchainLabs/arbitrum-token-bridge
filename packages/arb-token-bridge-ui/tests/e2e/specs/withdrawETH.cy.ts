@@ -30,7 +30,10 @@ describe('Withdraw ETH', () => {
             cy.findGasFeeSummary(zeroToLessThanOneETH)
             cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
             cy.findGasFeeForChain(
-              /You'll have to pay Ethereum Local gas fee upon claiming./i
+              new RegExp(
+                `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
+                'i'
+              )
             )
           })
       })
