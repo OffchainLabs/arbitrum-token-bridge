@@ -36,7 +36,7 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should show form fields correctly', () => {
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
       cy.findMoveFundsButton().should('be.disabled')
@@ -46,7 +46,7 @@ describe('Withdraw ERC20 Token', () => {
     it('should withdraw ERC-20 to the same address successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
       context('should add ERC-20 correctly', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
@@ -120,7 +120,7 @@ describe('Withdraw ERC20 Token', () => {
     it('should withdraw ERC-20 to custom destination address successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',

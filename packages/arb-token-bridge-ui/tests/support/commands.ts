@@ -47,7 +47,7 @@ export function login({
 }) {
   // if networkName is not specified we connect to default network from config
   const network =
-    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
+    networkType === 'parentChain' ? getL1NetworkConfig() : getL2NetworkConfig()
   const networkNameWithDefault = networkName ?? network.networkName
 
   function _startWebApp() {
@@ -138,10 +138,14 @@ const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
 const userWallet = new Wallet(Cypress.env('PRIVATE_KEY'))
 const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
 
-export async function resetCctpAllowance(networkType: 'L1' | 'L2') {
-  const provider = networkType === 'L1' ? l1Provider : l2Provider
+export async function resetCctpAllowance(
+  networkType: 'parentChain' | 'childChain'
+) {
+  const provider = networkType === 'parentChain' ? l1Provider : l2Provider
   const { USDC, tokenMessengerContractAddress } =
-    networkType === 'L1' ? CommonAddress.Sepolia : CommonAddress.ArbitrumSepolia
+    networkType === 'parentChain'
+      ? CommonAddress.Sepolia
+      : CommonAddress.ArbitrumSepolia
 
   const contract = ERC20__factory.connect(USDC, userWallet.connect(provider))
   const allowance = await contract.allowance(
@@ -153,16 +157,18 @@ export async function resetCctpAllowance(networkType: 'L1' | 'L2') {
   }
 }
 
-export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
+export async function fundUserUsdcTestnet(
+  networkType: 'parentChain' | 'childChain'
+) {
   console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
   const usdcContractAddress =
-    networkType === 'L1'
+    networkType === 'parentChain'
       ? CommonAddress.Sepolia.USDC
       : CommonAddress.ArbitrumSepolia.USDC
 
   const usdcBalance = await getInitialERC20Balance({
     address: userWallet.address,
-    rpcURL: networkType === 'L1' ? l1RpcUrl : l2RpcUrl,
+    rpcURL: networkType === 'parentChain' ? l1RpcUrl : l2RpcUrl,
     tokenAddress: usdcContractAddress,
     multiCallerAddress: MULTICALL_TESTNET_ADDRESS
   })
@@ -172,7 +178,7 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
     console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
     const l1Provider = new StaticJsonRpcProvider(l1RpcUrl)
     const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
-    const provider = networkType === 'L1' ? l1Provider : l2Provider
+    const provider = networkType === 'parentChain' ? l1Provider : l2Provider
     const contract = new ERC20__factory().connect(localWallet.connect(provider))
     const token = contract.attach(usdcContractAddress)
     await token.deployed()
@@ -184,10 +190,12 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
   }
 }
 
-export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+export async function fundUserWalletEth(
+  networkType: 'parentChain' | 'childChain'
+) {
   console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
   const address = await userWallet.getAddress()
-  const provider = networkType === 'L1' ? l1Provider : l2Provider
+  const provider = networkType === 'parentChain' ? l1Provider : l2Provider
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 0.005 eth
   const amountToTransfer = '0.005'

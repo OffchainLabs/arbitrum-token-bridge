@@ -70,12 +70,12 @@ describe('Deposit USDC through CCTP', () => {
     beforeEach(() => {
       USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.fundUserWalletEth('L1')
-      cy.fundUserUsdcTestnet('L1')
-      cy.resetCctpAllowance('L1')
+      cy.fundUserWalletEth('parentChain')
+      cy.fundUserUsdcTestnet('parentChain')
+      cy.resetCctpAllowance('parentChain')
 
       /// common code before all tests
-      cy.login({ networkType: 'L1', networkName: 'sepolia' })
+      cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
       context('should show L1 and L2 chains, and USD correctly', () => {
         cy.findSourceChainButton('Sepolia')
         cy.findDestinationChainButton('Arbitrum Sepolia')

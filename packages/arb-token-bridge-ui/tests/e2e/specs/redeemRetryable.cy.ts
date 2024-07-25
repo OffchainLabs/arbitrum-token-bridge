@@ -42,7 +42,7 @@ describe('Redeem ERC20 Deposit', () => {
     })
 
     it('should redeem failed retryable successfully', () => {
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
 
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,

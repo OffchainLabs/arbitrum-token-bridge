@@ -33,7 +33,7 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'parentChain' })
       cy.findSourceChainButton('Ethereum Local')
       cy.findDestinationChainButton('Arbitrum Local')
       cy.findSelectTokenButton('ETH')
@@ -42,7 +42,7 @@ describe('Deposit ERC20 Token', () => {
     it('should deposit ERC-20 successfully to the same address', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'parentChain' })
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
@@ -98,7 +98,7 @@ describe('Deposit ERC20 Token', () => {
     it('should deposit ERC-20 to custom destination address successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'parentChain' })
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
