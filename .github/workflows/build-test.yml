@@ -229,6 +229,7 @@ jobs:
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
           l3-node: ${{ matrix.orbit-test == '1' }}
+          no-l3-token-bridge: ${{ matrix.orbit-test == '0' }}
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
