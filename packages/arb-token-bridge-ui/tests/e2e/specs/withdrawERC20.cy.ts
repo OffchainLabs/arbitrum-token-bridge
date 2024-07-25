@@ -206,7 +206,7 @@ describe('Withdraw ERC20 Token', () => {
               cy.findByLabelText('Close side panel').click()
 
               // the balance on the source chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on l2')
+              cy.findByLabelText('WETH balance amount on childChain')
                 .should('be.visible')
                 .its('text')
                 .should('not.eq', l2ERC20bal)

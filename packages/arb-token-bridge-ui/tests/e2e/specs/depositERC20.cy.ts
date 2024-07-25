@@ -51,7 +51,7 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show ERC-20 balance correctly', () => {
-        cy.findByLabelText('WETH balance amount on l1')
+        cy.findByLabelText('WETH balance amount on parentChain')
           .should('be.visible')
           .contains(l1ERC20bal)
           .should('be.visible')
@@ -206,12 +206,12 @@ describe('Deposit ERC20 Token', () => {
         cy.findByLabelText('Close side panel').click()
 
         // the custom destination address should now have some balance greater than zero
-        cy.findByLabelText('WETH balance amount on l2')
+        cy.findByLabelText('WETH balance amount on childChain')
           .contains(moreThanZeroBalance)
           .should('be.visible')
 
         // the balance on the source chain should not be the same as before
-        cy.findByLabelText('WETH balance amount on l1')
+        cy.findByLabelText('WETH balance amount on parentChain')
           .should('be.visible')
           .its('text')
           .should('not.eq', l1ERC20bal)
