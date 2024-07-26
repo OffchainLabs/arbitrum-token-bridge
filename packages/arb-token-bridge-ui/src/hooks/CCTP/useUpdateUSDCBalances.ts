@@ -1,10 +1,13 @@
 import { useCallback } from 'react'
+import { isAddress } from 'ethers/lib/utils.js'
+
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { getL2ERC20Address } from '../../util/TokenUtils'
-import { useBalance } from '../useBalance'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { isNetwork } from '../../util/networks'
+import { useBalances } from '../useBalances'
+import { Address } from 'wagmi'
 
 export function useUpdateUSDCBalances({
   walletAddress
@@ -12,19 +15,17 @@ export function useUpdateUSDCBalances({
   walletAddress: string | undefined
 }) {
   const [networks] = useNetworks()
-  const { parentChainProvider, parentChain, childChain, childChainProvider } =
+  const { parentChainProvider, parentChain, childChainProvider } =
     useNetworksRelationship(networks)
+
+  const _walletAddress: Address | undefined =
+    walletAddress && isAddress(walletAddress) ? walletAddress : undefined
   const {
-    erc20: [, updateErc20L1Balance]
-  } = useBalance({
-    chainId: parentChain.id,
-    walletAddress
-  })
-  const {
-    erc20: [, updateErc20L2Balance]
-  } = useBalance({
-    chainId: childChain.id,
-    walletAddress
+    updateErc20ParentBalances: updateErc20ParentBalance,
+    updateErc20ChildBalances: updateErc20ChildBalance
+  } = useBalances({
+    parentWalletAddress: _walletAddress,
+    childWalletAddress: _walletAddress
   })
 
   const updateUSDCBalances = useCallback(async () => {
@@ -54,7 +55,7 @@ export function useUpdateUSDCBalances({
       return
     }
 
-    updateErc20L1Balance([parentChainUsdcAddress])
+    updateErc20ParentBalance([parentChainUsdcAddress])
 
     // we don't have native USDC addresses for Orbit chains, we need to fetch it
     if (!childChainUsdcAddress) {
@@ -73,14 +74,14 @@ export function useUpdateUSDCBalances({
     }
 
     if (childChainUsdcAddress) {
-      updateErc20L2Balance([childChainUsdcAddress])
+      updateErc20ChildBalance([childChainUsdcAddress])
     }
   }, [
     childChainProvider,
     parentChain.id,
     parentChainProvider,
-    updateErc20L1Balance,
-    updateErc20L2Balance
+    updateErc20ParentBalance,
+    updateErc20ChildBalance
   ])
 
   return { updateUSDCBalances }

@@ -25,7 +25,6 @@ import {
 } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
-import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { CommonAddress } from '../../util/CommonAddressUtils'
@@ -67,10 +66,11 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useBalances } from '../../hooks/useBalances'
 
 enum NetworkType {
-  l1 = 'l1',
-  l2 = 'l2'
+  parentChain = 'parentChain',
+  childChain = 'childChain'
 }
 
 export function SwitchNetworksButton(
@@ -278,7 +278,7 @@ function TokenBalance({
   prefix?: string
   tokenSymbolOverride?: string
 }) {
-  const isParentChain = on === NetworkType.l1
+  const isParentChain = on === NetworkType.parentChain
 
   if (!forToken) {
     return null
@@ -358,39 +358,27 @@ export function TransferPanelMain({
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
+
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
-  const l1WalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const l2WalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
   const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances, updateErc20L1Balances]
-  } = useBalance({
-    chainId: parentChain.id,
-    walletAddress: l1WalletAddress
-  })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances, updateErc20L2Balances]
-  } = useBalance({
-    chainId: childChain.id,
-    walletAddress: l2WalletAddress
-  })
+    ethParentBalance,
+    erc20ParentBalances,
+    updateErc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances,
+    updateErc20ChildBalances
+  } = useBalances()
+
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
   })
 
   useEffect(() => {
     if (nativeCurrency.isCustom) {
-      updateErc20L1Balances([nativeCurrency.address])
+      updateErc20ParentBalances([nativeCurrency.address])
     }
-  }, [nativeCurrency, updateErc20L1Balances])
+  }, [nativeCurrency, updateErc20ParentBalances])
 
   useEffect(() => {
     if (
@@ -412,14 +400,14 @@ export function TransferPanelMain({
       return
     }
 
-    updateErc20L1Balances([selectedToken.address])
+    updateErc20ParentBalances([selectedToken.address])
     if (selectedToken.l2Address) {
-      updateErc20L2Balances([selectedToken.l2Address])
+      updateErc20ChildBalances([selectedToken.l2Address])
     }
   }, [
     selectedToken,
-    updateErc20L1Balances,
-    updateErc20L2Balances,
+    updateErc20ParentBalances,
+    updateErc20ChildBalances,
     destinationAddressOrWalletAddress,
     updateUSDCBalances,
     isTeleportMode
@@ -427,14 +415,14 @@ export function TransferPanelMain({
 
   const customFeeTokenBalances: Balances = useMemo(() => {
     if (!nativeCurrency.isCustom) {
-      return { l1: ethL1Balance, l2: ethL2Balance }
+      return { parentBalance: ethParentBalance, childBalance: ethChildBalance }
     }
 
     return {
-      l1: erc20L1Balances?.[nativeCurrency.address] ?? null,
-      l2: ethL2Balance
+      parentBalance: erc20ParentBalances?.[nativeCurrency.address] ?? null,
+      childBalance: ethChildBalance
     }
-  }, [nativeCurrency, ethL1Balance, ethL2Balance, erc20L1Balances])
+  }, [nativeCurrency, ethParentBalance, ethChildBalance, erc20ParentBalances])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =
@@ -460,8 +448,8 @@ export function TransferPanelMain({
   const setMaxAmount = useCallback(async () => {
     if (selectedToken) {
       const tokenBalance = isDepositMode
-        ? selectedTokenBalances.l1
-        : selectedTokenBalances.l2
+        ? selectedTokenBalances.parentBalance
+        : selectedTokenBalances.childBalance
 
       if (tokenBalance) {
         // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
@@ -476,18 +464,24 @@ export function TransferPanelMain({
       return
     }
 
-    const customFeeTokenL1Balance = customFeeTokenBalances.l1
+    const customFeeTokenParentBalance = customFeeTokenBalances.parentBalance
     // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
-    if (nativeCurrency.isCustom && isDepositMode && customFeeTokenL1Balance) {
+    if (
+      nativeCurrency.isCustom &&
+      isDepositMode &&
+      customFeeTokenParentBalance
+    ) {
       setAmount(
-        utils.formatUnits(customFeeTokenL1Balance, nativeCurrency.decimals)
+        utils.formatUnits(customFeeTokenParentBalance, nativeCurrency.decimals)
       )
       return
     }
 
     // We have already handled token deposits and deposits of the custom fee token
     // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
-    const nativeCurrencyBalance = isDepositMode ? ethL1Balance : ethL2Balance
+    const nativeCurrencyBalance = isDepositMode
+      ? ethParentBalance
+      : ethChildBalance
 
     if (!nativeCurrencyBalance) {
       return
@@ -512,8 +506,8 @@ export function TransferPanelMain({
     }
   }, [
     nativeCurrency,
-    ethL1Balance,
-    ethL2Balance,
+    ethParentBalance,
+    ethChildBalance,
     isDepositMode,
     selectedToken,
     setAmount,
@@ -694,11 +688,13 @@ export function TransferPanelMain({
           </NetworkSelectionContainer>
           <BalancesContainer>
             <TokenBalance
-              on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
+              on={
+                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
+              }
               balance={
                 isDepositMode
-                  ? selectedTokenBalances.l1
-                  : selectedTokenBalances.l2
+                  ? selectedTokenBalances.parentBalance
+                  : selectedTokenBalances.childBalance
               }
               forToken={selectedToken}
               prefix={selectedToken ? 'Balance: ' : ''}
@@ -706,21 +702,25 @@ export function TransferPanelMain({
             {nativeCurrency.isCustom ? (
               <>
                 <TokenBalance
-                  on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                  on={
+                    isDepositMode
+                      ? NetworkType.parentChain
+                      : NetworkType.childChain
+                  }
                   balance={
                     isDepositMode
-                      ? customFeeTokenBalances.l1
-                      : customFeeTokenBalances.l2
+                      ? customFeeTokenBalances.parentBalance
+                      : customFeeTokenBalances.childBalance
                   }
                   forToken={nativeCurrency}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
-                {/* Only show ETH balance on L1 */}
-                {isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                {/* Only show ETH balance on parent chain */}
+                {isDepositMode && <ETHBalance balance={ethParentBalance} />}
               </>
             ) : (
               <ETHBalance
-                balance={isDepositMode ? ethL1Balance : ethL2Balance}
+                balance={isDepositMode ? ethParentBalance : ethChildBalance}
                 prefix={selectedToken ? '' : 'Balance: '}
               />
             )}
@@ -785,10 +785,14 @@ export function TransferPanelMain({
                   <TokenBalance
                     balance={
                       isDepositMode
-                        ? selectedTokenBalances.l2
-                        : selectedTokenBalances.l1
+                        ? selectedTokenBalances.childBalance
+                        : selectedTokenBalances.parentBalance
                     }
-                    on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                    on={
+                      isDepositMode
+                        ? NetworkType.childChain
+                        : NetworkType.parentChain
+                    }
                     forToken={selectedToken}
                     prefix={selectedToken ? 'Balance: ' : ''}
                     tokenSymbolOverride={
@@ -807,12 +811,12 @@ export function TransferPanelMain({
                     <TokenBalance
                       balance={
                         (isArbitrumOne
-                          ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
-                          : erc20L2Balances?.[
+                          ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
+                          : erc20ChildBalances?.[
                               CommonAddress.ArbitrumSepolia.USDC
                             ]) ?? constants.Zero
                       }
-                      on={NetworkType.l2}
+                      on={NetworkType.childChain}
                       forToken={
                         selectedToken
                           ? { ...selectedToken, symbol: 'USDC' }
@@ -824,20 +828,28 @@ export function TransferPanelMain({
                   {nativeCurrency.isCustom ? (
                     <>
                       <TokenBalance
-                        on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                        on={
+                          isDepositMode
+                            ? NetworkType.childChain
+                            : NetworkType.parentChain
+                        }
                         balance={
                           isDepositMode
-                            ? customFeeTokenBalances.l2
-                            : customFeeTokenBalances.l1
+                            ? customFeeTokenBalances.childBalance
+                            : customFeeTokenBalances.parentBalance
                         }
                         forToken={nativeCurrency}
                         prefix={selectedToken ? '' : 'Balance: '}
                       />
-                      {!isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                      {!isDepositMode && (
+                        <ETHBalance balance={ethParentBalance} />
+                      )}
                     </>
                   ) : (
                     <ETHBalance
-                      balance={isDepositMode ? ethL2Balance : ethL1Balance}
+                      balance={
+                        isDepositMode ? ethChildBalance : ethParentBalance
+                      }
                       prefix={selectedToken ? '' : 'Balance: '}
                     />
                   )}
