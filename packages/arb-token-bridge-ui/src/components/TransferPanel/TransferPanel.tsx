@@ -71,10 +71,10 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
-import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
+import { useBalances } from '../../hooks/useBalances'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -172,29 +172,11 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-
-  const parentWalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const childWalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
   const {
-    eth: [, updateEthParentBalance],
-    erc20: [, updateErc20ParentBalance]
-  } = useBalance({
-    chainId: parentChain.id,
-    walletAddress: parentWalletAddress
-  })
-  const {
-    eth: [, updateEthChildBalance]
-  } = useBalance({
-    chainId: childChain.id,
-    walletAddress: childWalletAddress
-  })
+    updateEthParentBalance,
+    updateErc20ParentBalances,
+    updateEthChildBalance
+  } = useBalances()
 
   const [isCctp, setIsCctp] = useState(false)
 
@@ -952,7 +934,7 @@ export function TransferPanel() {
     }
 
     if (nativeCurrency.isCustom) {
-      await updateErc20ParentBalance([nativeCurrency.address])
+      await updateErc20ParentBalances([nativeCurrency.address])
     }
   }
 
