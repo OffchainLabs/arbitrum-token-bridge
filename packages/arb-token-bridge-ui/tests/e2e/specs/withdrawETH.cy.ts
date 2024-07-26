@@ -27,7 +27,7 @@ describe('Withdraw ETH', () => {
   // Happy Path
   context('user has some ETH and is on L2', () => {
     it('should show form fields correctly', () => {
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
       cy.findMoveFundsButton().should('be.disabled')
@@ -35,7 +35,7 @@ describe('Withdraw ETH', () => {
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
       it('should show gas estimations', () => {
-        cy.login({ networkType: 'L2' })
+        cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {
@@ -49,7 +49,7 @@ describe('Withdraw ETH', () => {
 
       it('should show withdrawal confirmation and withdraw', () => {
         ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
-        cy.login({ networkType: 'L2' })
+        cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {
@@ -96,7 +96,7 @@ describe('Withdraw ETH', () => {
       it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
         // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
 
-        cy.login({ networkType: 'L1' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
+        cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
 
         cy.findByLabelText('Open Transaction History')
           .should('be.visible')
@@ -141,7 +141,7 @@ describe('Withdraw ETH', () => {
                 cy.findByLabelText('Close side panel').click()
 
                 // the balance on the destination chain should not be the same as before
-                cy.findByLabelText('ETH balance amount on l1')
+                cy.findByLabelText('ETH balance amount on parentChain')
                   .should('be.visible')
                   .its('text')
                   .should('not.eq', l1EthBal)

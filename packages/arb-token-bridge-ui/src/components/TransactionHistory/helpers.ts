@@ -112,12 +112,6 @@ export function isTxFailed(tx: MergedTransaction): boolean {
   return tx.status === WithdrawalStatus.FAILURE
 }
 
-export function getProvider(chainId: ChainId) {
-  const rpcUrl =
-    rpcURLs[chainId] ?? getWagmiChain(chainId).rpcUrls.default.http[0]
-  return new StaticJsonRpcProvider(rpcUrl)
-}
-
 export function isSameTransaction(
   txDetails_1: {
     txId: string
@@ -138,8 +132,8 @@ export function isSameTransaction(
 }
 
 export function getTxReceipt(tx: MergedTransaction) {
-  const parentChainProvider = getProvider(tx.parentChainId)
-  const childChainProvider = getProvider(tx.childChainId)
+  const parentChainProvider = getProviderForChainId(tx.parentChainId)
+  const childChainProvider = getProviderForChainId(tx.childChainId)
 
   const provider = tx.isWithdrawal ? childChainProvider : parentChainProvider
 
@@ -293,8 +287,8 @@ export async function getUpdatedEthDeposit(
   const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
     depositTxId: tx.txId,
     isEthDeposit: true,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
+    l1Provider: getProviderForChainId(tx.parentChainId),
+    l2Provider: getProviderForChainId(tx.childChainId)
   })
 
   if (!l1ToL2Msg) {
@@ -350,8 +344,8 @@ export async function getUpdatedTokenDeposit(
   const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
     depositTxId: tx.txId,
     isEthDeposit: false,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
+    l1Provider: getProviderForChainId(tx.parentChainId),
+    l2Provider: getProviderForChainId(tx.childChainId)
   })
   const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
 

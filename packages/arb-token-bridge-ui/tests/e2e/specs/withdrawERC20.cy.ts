@@ -51,7 +51,7 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should show form fields correctly', () => {
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
       cy.findSourceChainButton('Arbitrum Local')
       cy.findDestinationChainButton('Ethereum Local')
       cy.findMoveFundsButton().should('be.disabled')
@@ -59,9 +59,9 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should withdraw ERC-20 to the same address successfully', () => {
-      ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that `findByText(amount)` doesn't stall coz of prev transactions
-      cy.login({ networkType: 'L2' })
+      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
+      cy.login({ networkType: 'childChain' })
       context('should add ERC-20 correctly', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
@@ -127,7 +127,7 @@ describe('Withdraw ERC20 Token', () => {
     it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
       // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
 
-      cy.login({ networkType: 'L1' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
+      cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
 
       cy.findByLabelText('Open Transaction History')
         .should('be.visible')
@@ -177,7 +177,7 @@ describe('Withdraw ERC20 Token', () => {
               })
 
               // the balance on the destination chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on l1')
+              cy.findByLabelText('WETH balance amount on parentChain')
                 .should('be.visible')
                 .its('text')
                 .should('not.eq', l1ERC20bal)
@@ -189,7 +189,7 @@ describe('Withdraw ERC20 Token', () => {
     it('should withdraw ERC-20 to custom destination address successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
@@ -275,7 +275,7 @@ describe('Withdraw ERC20 Token', () => {
               cy.findByLabelText('Close side panel').click()
 
               // the balance on the source chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on l2')
+              cy.findByLabelText('WETH balance amount on childChain')
                 .should('be.visible')
                 .its('text')
                 .should('not.eq', l2ERC20bal)
