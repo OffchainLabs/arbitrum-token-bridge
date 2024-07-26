@@ -102,52 +102,35 @@ describe('Withdraw ETH', () => {
           .should('be.visible')
           .click()
 
-        cy.waitUntil(
-          () =>
-            cy
-              .findByLabelText(
-                `Claim ${formatAmount(ETHToWithdraw, {
+        cy.findByLabelText(
+          `Claim ${formatAmount(ETHToWithdraw, {
+            symbol: 'ETH'
+          })}`
+        )
+          .click()
+          .then(() => {
+            cy.confirmMetamaskTransaction().then(() => {
+              cy.findByLabelText('show settled transactions')
+                .should('be.visible')
+                .click()
+
+              cy.findAllByText(
+                `${formatAmount(ETHToWithdraw, {
                   symbol: 'ETH'
                 })}`
               )
-              .should('be.visible')
-              .should('not.be.disabled'),
-          {
-            errorMsg: 'Claim Transaction button is not visible or enabled',
-            timeout: 200_000,
-            interval: 1000
-          }
-        ).then(() => {
-          cy.findByLabelText(
-            `Claim ${formatAmount(ETHToWithdraw, {
-              symbol: 'ETH'
-            })}`
-          )
-            .click()
-            .then(() => {
-              cy.confirmMetamaskTransaction().then(() => {
-                cy.findByLabelText('show settled transactions')
-                  .should('be.visible')
-                  .click()
+                .first()
+                .should('be.visible')
 
-                cy.findAllByText(
-                  `${formatAmount(ETHToWithdraw, {
-                    symbol: 'ETH'
-                  })}`
-                )
-                  .first()
-                  .should('be.visible')
+              cy.findByLabelText('Close side panel').click()
 
-                cy.findByLabelText('Close side panel').click()
-
-                // the balance on the destination chain should not be the same as before
-                cy.findByLabelText('ETH balance amount on parentChain')
-                  .should('be.visible')
-                  .its('text')
-                  .should('not.eq', l1EthBal)
-              })
+              // the balance on the destination chain should not be the same as before
+              cy.findByLabelText('ETH balance amount on parentChain')
+                .should('be.visible')
+                .its('text')
+                .should('not.eq', l1EthBal)
             })
-        })
+          })
       })
     })
 

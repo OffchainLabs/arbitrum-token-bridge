@@ -59,7 +59,7 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should withdraw ERC-20 to the same address successfully', () => {
-      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+      ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'childChain' })
       context('should add ERC-20 correctly', () => {
@@ -133,57 +133,40 @@ describe('Withdraw ERC20 Token', () => {
         .should('be.visible')
         .click()
 
-      cy.waitUntil(
-        () =>
-          cy
-            .findByLabelText(
-              `Claim ${formatAmount(ERC20AmountToSend, {
+      cy.findByLabelText(
+        `Claim ${formatAmount(ERC20AmountToSend, {
+          symbol: 'WETH'
+        })}`
+      )
+        .click()
+        .then(() => {
+          cy.confirmMetamaskTransaction().then(() => {
+            cy.findByLabelText('show settled transactions')
+              .should('be.visible')
+              .click()
+
+            cy.findAllByText(
+              `${formatAmount(ERC20AmountToSend, {
                 symbol: 'WETH'
               })}`
             )
-            .should('be.visible')
-            .should('not.be.disabled'),
-        {
-          errorMsg: 'Claim Transaction button is not visible or enabled',
-          timeout: 200_000,
-          interval: 1000
-        }
-      ).then(() => {
-        cy.findByLabelText(
-          `Claim ${formatAmount(ERC20AmountToSend, {
-            symbol: 'WETH'
-          })}`
-        )
-          .click()
-          .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByLabelText('show settled transactions')
-                .should('be.visible')
-                .click()
+              .first()
+              .should('be.visible')
 
-              cy.findAllByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              )
-                .first()
-                .should('be.visible')
+            cy.findByLabelText('Close side panel').click()
 
-              cy.findByLabelText('Close side panel').click()
-
-              cy.searchAndSelectToken({
-                tokenName: 'WETH',
-                tokenAddress: wethTokenAddressL2
-              })
-
-              // the balance on the destination chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on parentChain')
-                .should('be.visible')
-                .its('text')
-                .should('not.eq', l1ERC20bal)
+            cy.searchAndSelectToken({
+              tokenName: 'WETH',
+              tokenAddress: wethTokenAddressL2
             })
+
+            // the balance on the destination chain should not be the same as before
+            cy.findByLabelText('WETH balance amount on parentChain')
+              .should('be.visible')
+              .its('text')
+              .should('not.eq', l1ERC20bal)
           })
-      })
+        })
     })
 
     it('should withdraw ERC-20 to custom destination address successfully', () => {
