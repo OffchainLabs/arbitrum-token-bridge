@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Address } from 'wagmi'
+import { isAddress } from 'ethers/lib/utils.js'
 
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { getL2ERC20Address } from '../../util/TokenUtils'
@@ -7,6 +7,7 @@ import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { isNetwork } from '../../util/networks'
 import { useBalances } from '../useBalances'
+import { Address } from 'wagmi'
 
 export function useUpdateUSDCBalances({
   walletAddress
@@ -16,12 +17,15 @@ export function useUpdateUSDCBalances({
   const [networks] = useNetworks()
   const { parentChainProvider, parentChain, childChainProvider } =
     useNetworksRelationship(networks)
+
+  const _walletAddress: Address | undefined =
+    walletAddress && isAddress(walletAddress) ? walletAddress : undefined
   const {
     updateErc20ParentBalances: updateErc20ParentBalance,
     updateErc20ChildBalances: updateErc20ChildBalance
   } = useBalances({
-    parentWalletAddress: walletAddress as Address,
-    childWalletAddress: walletAddress as Address
+    parentWalletAddress: _walletAddress,
+    childWalletAddress: _walletAddress
   })
 
   const updateUSDCBalances = useCallback(async () => {
