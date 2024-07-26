@@ -179,11 +179,15 @@ function TokensPanel({
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
-  const { ethL1Balance, erc20L1Balances, ethL2Balance, erc20L2Balances } =
-    useBalances({
-      l1WalletAddress: walletAddress,
-      l2WalletAddress: walletAddress
-    })
+  const {
+    ethParentBalance,
+    erc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances
+  } = useBalances({
+    l1WalletAddress: walletAddress,
+    l2WalletAddress: walletAddress
+  })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -206,15 +210,15 @@ function TokensPanel({
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
         if (nativeCurrency.isCustom) {
           return isDepositMode
-            ? erc20L1Balances?.[nativeCurrency.address]
-            : ethL2Balance
+            ? erc20ParentBalances?.[nativeCurrency.address]
+            : ethChildBalance
         }
 
-        return isDepositMode ? ethL1Balance : ethL2Balance
+        return isDepositMode ? ethParentBalance : ethChildBalance
       }
 
       if (isDepositMode) {
-        return erc20L1Balances?.[address.toLowerCase()]
+        return erc20ParentBalances?.[address.toLowerCase()]
       }
 
       if (typeof bridgeTokens === 'undefined') {
@@ -225,19 +229,19 @@ function TokensPanel({
         isTokenArbitrumOneNativeUSDC(address) ||
         isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
-        return erc20L2Balances?.[address.toLowerCase()]
+        return erc20ChildBalances?.[address.toLowerCase()]
       }
 
       const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
-      return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
+      return l2Address ? erc20ChildBalances?.[l2Address.toLowerCase()] : null
     },
     [
       nativeCurrency,
       bridgeTokens,
-      erc20L1Balances,
-      erc20L2Balances,
-      ethL1Balance,
-      ethL2Balance,
+      erc20ParentBalances,
+      erc20ChildBalances,
+      ethParentBalance,
+      ethChildBalance,
       isDepositMode
     ]
   )
