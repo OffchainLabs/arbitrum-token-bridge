@@ -1,5 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
+import { useCallback } from 'react'
 
 import { getNetworkName } from '../../../util/networks'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
@@ -63,24 +64,32 @@ export function SourceNetworkBox({
     backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
   }
 
-  async function onChange(network: Chain) {
-    if (networks.destinationChain.id === network.id) {
+  const onChange = useCallback(
+    async (network: Chain) => {
+      if (networks.destinationChain.id === network.id) {
+        setNetworks({
+          sourceChainId: networks.destinationChain.id,
+          destinationChainId: networks.sourceChain.id
+        })
+        return
+      }
+
+      // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
+      // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
       setNetworks({
-        sourceChainId: networks.destinationChain.id,
-        destinationChainId: networks.sourceChain.id
+        sourceChainId: network.id,
+        destinationChainId: networks.destinationChain.id
       })
-      return
-    }
 
-    // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
-    // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
-    setNetworks({
-      sourceChainId: network.id,
-      destinationChainId: networks.destinationChain.id
-    })
-
-    actions.app.setSelectedToken(null)
-  }
+      actions.app.setSelectedToken(null)
+    },
+    [
+      actions.app,
+      networks.destinationChain.id,
+      networks.sourceChain.id,
+      setNetworks
+    ]
+  )
 
   return (
     <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
