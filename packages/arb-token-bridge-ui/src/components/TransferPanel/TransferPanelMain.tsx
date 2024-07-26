@@ -11,7 +11,6 @@ import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   getExplorerUrl,
-  getNetworkName,
   getDestinationChainIds,
   isNetwork
 } from '../../util/networks'
@@ -24,7 +23,6 @@ import {
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
 
-import { TransferPanelMainInput } from './TransferPanelMainInput'
 import { useAccountType } from '../../hooks/useAccountType'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -32,19 +30,13 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import {
-  ETH_BALANCE_ARTICLE_LINK,
-  USDC_LEARN_MORE_LINK,
-  ether
-} from '../../constants'
+import { ether } from '../../constants'
 import { NetworkListboxProps } from './NetworkListbox'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
-import { EstimatedGas } from './EstimatedGas'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
-import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import {
@@ -60,9 +52,8 @@ import {
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { useBalances } from '../../hooks/useBalances'
-import { TokenBalance } from './TransferPanelMain/TokenBalance'
-import { NetworkType } from './TransferPanelMain/utils'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
+import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -607,110 +598,17 @@ export function TransferPanelMain({
     openOneNovaTransferDialog
   ])
 
-  const buttonStyle = useMemo(
-    () => ({
-      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
-    }),
-    [networks.sourceChain.id]
-  )
-
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
-        <NetworkListboxPlusBalancesContainer>
-          <NetworkSelectionContainer
-            buttonStyle={buttonStyle}
-            buttonClassName={twMerge(
-              'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
-            )}
-            onChange={networkListboxProps.from.onChange}
-          >
-            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
-              From: {getNetworkName(networks.sourceChain.id)}
-            </span>
-          </NetworkSelectionContainer>
-          <BalancesContainer>
-            <TokenBalance
-              on={
-                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
-              }
-              balance={
-                isDepositMode
-                  ? selectedTokenBalances.parentBalance
-                  : selectedTokenBalances.childBalance
-              }
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            {nativeCurrency.isCustom ? (
-              <>
-                <TokenBalance
-                  on={
-                    isDepositMode
-                      ? NetworkType.parentChain
-                      : NetworkType.childChain
-                  }
-                  balance={
-                    isDepositMode
-                      ? customFeeTokenBalances.parentBalance
-                      : customFeeTokenBalances.childBalance
-                  }
-                  forToken={nativeCurrency}
-                  prefix={selectedToken ? '' : 'Balance: '}
-                />
-                {/* Only show ETH balance on parent chain */}
-                {isDepositMode && <ETHBalance balance={ethParentBalance} />}
-              </>
-            ) : (
-              <ETHBalance
-                balance={isDepositMode ? ethParentBalance : ethChildBalance}
-                prefix={selectedToken ? '' : 'Balance: '}
-              />
-            )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
-
-        <div className="flex flex-col gap-1">
-          <TransferPanelMainInput
-            maxButtonProps={{
-              loading: isMaxAmount || loadingMaxAmount,
-              onClick: setMaxAmount
-            }}
-            errorMessage={errorMessageElement}
-            value={isMaxAmount ? '' : amount}
-          />
-
-          {showUSDCSpecificInfo && (
-            <p className="mt-1 text-xs font-light text-white">
-              Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
-              <ExternalLink
-                href={USDC_LEARN_MORE_LINK}
-                className="arb-hover underline"
-              >
-                Learn more
-              </ExternalLink>
-              .
-            </p>
-          )}
-
-          {isDepositMode && selectedToken && (
-            <p className="mt-1 text-xs font-light text-white">
-              Make sure you have {nativeCurrency.symbol} in your{' '}
-              {getNetworkName(childChain.id)} account, as you’ll need it to
-              power transactions.
-              <br />
-              <ExternalLink
-                href={ETH_BALANCE_ARTICLE_LINK}
-                className="arb-hover underline"
-              >
-                Learn more
-              </ExternalLink>
-              .
-            </p>
-          )}
-        </div>
-        <EstimatedGas chainType="source" />
-      </NetworkContainer>
+      <SourceNetworkBox
+        amount={amount}
+        loadingMaxAmount={loadingMaxAmount}
+        setMaxAmount={setMaxAmount}
+        errorMessageElement={errorMessageElement}
+        customFeeTokenBalances={customFeeTokenBalances}
+        showUsdcSpecificInfo={showUSDCSpecificInfo}
+        sourceNetworkListboxProps={networkListboxProps.from}
+      />
 
       <SwitchNetworksButton />
 
