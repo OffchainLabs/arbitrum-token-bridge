@@ -2,11 +2,27 @@
  * When user wants to bridge ETH from L2 to L1
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import {
+  getInitialETHBalance,
+  zeroToLessThanOneETH
+} from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
   let ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+  let l1EthBal: string
+
+  beforeEach(() => {
+    getInitialETHBalance(
+      Cypress.env('ETH_RPC_URL'),
+      Cypress.env('ADDRESS')
+    ).then(
+      val =>
+        (l1EthBal = formatAmount(val, {
+          symbol: 'ETH'
+        }))
+    )
+  })
 
   // Happy Path
   context('user has some ETH and is on L2', () => {
@@ -121,6 +137,14 @@ describe('Withdraw ETH', () => {
                 )
                   .first()
                   .should('be.visible')
+
+                cy.findByLabelText('Close side panel').click()
+
+                // the balance on the destination chain should not be the same as before
+                cy.findByLabelText('ETH balance amount on l1')
+                  .should('be.visible')
+                  .its('text')
+                  .should('not.eq', l1EthBal)
               })
             })
         })

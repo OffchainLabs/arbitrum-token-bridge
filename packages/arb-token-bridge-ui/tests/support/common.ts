@@ -2,8 +2,8 @@
   All the utility functions and configs related to our testing
 */
 
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { defaultL2Network } from '../../src/util/networks'
@@ -158,4 +158,81 @@ export const visitAfterSomeDelay = (
 ) => {
   cy.wait(15_000) // let all the race conditions settle, let UI load well first
   cy.visit(url, options)
+}
+
+export const wait = (ms = 0): Promise<void> => {
+  return new Promise(res => setTimeout(res, ms))
+}
+
+export async function generateActivityOnChains({
+  parentChainProvider,
+  childChainProvider,
+  wallet
+}: {
+  parentChainProvider: Provider
+  childChainProvider: Provider
+  wallet: Wallet
+}) {
+  async function fundWalletEth(walletAddress, networkType: 'L1' | 'L2') {
+    const provider =
+      networkType === 'L1' ? parentChainProvider : childChainProvider
+    const tx = await wallet.connect(provider).sendTransaction({
+      to: walletAddress,
+      value: utils.parseEther('1')
+    })
+    await tx.wait()
+  }
+
+  const keepMining = async (miner: Signer) => {
+    while (true) {
+      await (
+        await miner.sendTransaction({
+          to: await miner.getAddress(),
+          value: 0,
+          // random data to make the tx heavy, so that batches are posted sooner (since they're posted according to calldata size)
+          data: '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000010c3c627574746f6e20636c6173733d226e61766261722d746f67676c65722220747970653d22627574746f6e2220646174612d746f67676c653d22636f6c6c617073652220646174612d7461726765743d22236e6176626172537570706f72746564436f6e74656e742220617269612d636f6e74726f6c733d226e6176626172537570706f72746564436f6e74656e742220617269612d657870616e6465643d2266616c73652220617269612d6c6162656c3d223c253d20676574746578742822546f67676c65206e617669676174696f6e222920253e223e203c7370616e20636c6173733d226e61766261722d746f67676c65722d69636f6e223e3c2f7370616e3e203c2f627574746f6e3e0000000000000000000000000000000000000000'
+        })
+      ).wait()
+
+      await wait(100)
+    }
+  }
+  // whilst waiting for status we mine on both l1 and l2
+  console.log('Generating activity on L1...')
+  const minerL1 = Wallet.createRandom().connect(parentChainProvider)
+  await fundWalletEth(await minerL1.getAddress(), 'L1')
+
+  console.log('Generating activity on L2...')
+  const minerL2 = Wallet.createRandom().connect(childChainProvider)
+  await fundWalletEth(await minerL2.getAddress(), 'L2')
+
+  await Promise.allSettled([keepMining(minerL1), keepMining(minerL2)])
+}
+
+export async function checkForAssertions({
+  parentChainProvider
+}: {
+  parentChainProvider: Provider
+}) {
+  const abi = [
+    'function latestConfirmed() public view returns (uint64)',
+    'function latestNodeCreated() public view returns (uint64)'
+  ]
+
+  const rollupContract = new ethers.Contract(
+    defaultL2Network.ethBridge.rollup,
+    abi,
+    parentChainProvider
+  )
+
+  while (true) {
+    console.log(
+      `***** Assertion status: ${(
+        await rollupContract.latestNodeCreated()
+      ).toString()} created / ${(
+        await rollupContract.latestConfirmed()
+      ).toString()} confirmed`
+    )
+    await wait(10000)
+  }
 }

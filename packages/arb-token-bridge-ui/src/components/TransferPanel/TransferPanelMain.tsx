@@ -248,10 +248,12 @@ function StyledLoader() {
 
 function ETHBalance({
   balance,
-  prefix = ''
+  prefix = '',
+  on
 }: {
   balance: BigNumber | null
   prefix?: string
+  on: NetworkType
 }) {
   if (!balance) {
     return <StyledLoader />
@@ -260,7 +262,9 @@ function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
+      <span aria-label={`ETH balance amount on ${on}`}>
+        {formatAmount(balance, { symbol: ether.symbol })}
+      </span>
     </p>
   )
 }
@@ -716,12 +720,15 @@ export function TransferPanelMain({
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
                 {/* Only show ETH balance on L1 */}
-                {isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                {isDepositMode && (
+                  <ETHBalance balance={ethL1Balance} on={NetworkType.l1} />
+                )}
               </>
             ) : (
               <ETHBalance
                 balance={isDepositMode ? ethL1Balance : ethL2Balance}
                 prefix={selectedToken ? '' : 'Balance: '}
+                on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
               />
             )}
           </BalancesContainer>
@@ -833,12 +840,18 @@ export function TransferPanelMain({
                         forToken={nativeCurrency}
                         prefix={selectedToken ? '' : 'Balance: '}
                       />
-                      {!isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                      {!isDepositMode && (
+                        <ETHBalance
+                          balance={ethL1Balance}
+                          on={NetworkType.l2}
+                        />
+                      )}
                     </>
                   ) : (
                     <ETHBalance
                       balance={isDepositMode ? ethL2Balance : ethL1Balance}
                       prefix={selectedToken ? '' : 'Balance: '}
+                      on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
                     />
                   )}
                 </>

@@ -6,7 +6,9 @@ import { shortenAddress } from '../../../src/util/CommonUtils'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
+  getL1NetworkConfig,
   getL2NetworkConfig,
+  wethTokenAddressL1,
   wethTokenAddressL2,
   zeroToLessThanOneETH
 } from '../../support/common'
@@ -19,10 +21,22 @@ describe('Withdraw ERC20 Token', () => {
 
   // Happy Path
   context('User is on L2 and imports ERC-20', () => {
-    let l2ERC20bal: string
+    let l1ERC20bal: string, l2ERC20bal: string
 
     // log in to metamask before withdrawal
     beforeEach(() => {
+      getInitialERC20Balance({
+        tokenAddress: wethTokenAddressL1,
+        multiCallerAddress: getL1NetworkConfig().multiCall,
+        address: Cypress.env('ADDRESS'),
+        rpcURL: Cypress.env('ETH_RPC_URL')
+      }).then(
+        val =>
+          (l1ERC20bal = formatAmount(val, {
+            symbol: 'WETH'
+          }))
+      )
+
       getInitialERC20Balance({
         tokenAddress: wethTokenAddressL2,
         multiCallerAddress: getL2NetworkConfig().multiCall,
@@ -154,6 +168,19 @@ describe('Withdraw ERC20 Token', () => {
               )
                 .first()
                 .should('be.visible')
+
+              cy.findByLabelText('Close side panel').click()
+
+              cy.searchAndSelectToken({
+                tokenName: 'WETH',
+                tokenAddress: wethTokenAddressL2
+              })
+
+              // the balance on the destination chain should not be the same as before
+              cy.findByLabelText('WETH balance amount on l1')
+                .should('be.visible')
+                .its('text')
+                .should('not.eq', l1ERC20bal)
             })
           })
       })
