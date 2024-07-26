@@ -122,7 +122,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
    1. First, make sure you have a Nitro test node running. Follow the instructions [here](https://docs.arbitrum.io/node-running/how-tos/local-dev-node).
 
-      Use the following command to run your test nodes locally for our tests.
+      Use the following command to run your test nodes locally for our tests. You may omit `--l3node --l3-token-bridge` if you don't intend on testing Orbit chains.
 
       ```bash
       ./test-node.bash --init --no-simple --tokenbridge --l3node --l3-token-bridge
@@ -156,6 +156,12 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
    ```bash
    $ yarn test:e2e:cctp
+   ```
+
+6. For Orbit tests, run
+
+   ```bash
+   $ yarn test:e2e:orbit
    ```
 
 Read more about the test setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
