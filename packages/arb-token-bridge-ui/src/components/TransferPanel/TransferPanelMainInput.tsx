@@ -1,18 +1,16 @@
 import { twMerge } from 'tailwind-merge'
-import { useAccount } from 'wagmi'
 import { useEffect, useMemo } from 'react'
 
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useDestinationAddressStore } from './AdvancedSettings'
-import { useBalance } from '../../hooks/useBalance'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { countDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useBalances } from '../../hooks/useBalances'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -24,38 +22,14 @@ function MaxButton(props: MaxButtonProps) {
   const {
     app: { selectedToken }
   } = useAppState()
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const { childChain, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { isDepositMode } = useNetworksRelationship(networks)
 
-  const { destinationAddress } = useDestinationAddressStore()
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-
-  const l1WalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const l2WalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
-  const {
-    eth: [ethL1Balance]
-  } = useBalance({
-    chainId: parentChain.id,
-    walletAddress: l1WalletAddress
-  })
-  const {
-    eth: [ethL2Balance]
-  } = useBalance({
-    chainId: childChain.id,
-    walletAddress: l2WalletAddress
-  })
+  const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+    const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
     const tokenBalance = isDepositMode
       ? selectedTokenBalances.parentBalance
       : selectedTokenBalances.childBalance
@@ -74,8 +48,8 @@ function MaxButton(props: MaxButtonProps) {
 
     return !ethBalance.isZero()
   }, [
-    ethL1Balance,
-    ethL2Balance,
+    ethParentBalance,
+    ethChildBalance,
     selectedTokenBalances,
     selectedToken,
     isDepositMode
