@@ -124,7 +124,7 @@ function ErrorMessage({
     useTransferDisabledDialogStore()
 
   if (typeof errorMessage === 'undefined') {
-    return undefined
+    return null
   }
 
   if (typeof errorMessage === 'string') {
