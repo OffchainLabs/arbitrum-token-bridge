@@ -134,21 +134,27 @@ export function useTransferReadiness({
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const { ethL1Balance, erc20L1Balances, ethL2Balance, erc20L2Balances } =
-    useBalances({
-      l1WalletAddress: walletAddress,
-      l2WalletAddress: walletAddress
-    })
+  const {
+    ethParentBalance,
+    erc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances
+  } = useBalances({
+    l1WalletAddress: walletAddress,
+    l2WalletAddress: walletAddress
+  })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
   const ethL1BalanceFloat = useMemo(
-    () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
-    [ethL1Balance]
+    () =>
+      ethParentBalance ? parseFloat(utils.formatEther(ethParentBalance)) : null,
+    [ethParentBalance]
   )
 
   const ethL2BalanceFloat = useMemo(
-    () => (ethL2Balance ? parseFloat(utils.formatEther(ethL2Balance)) : null),
-    [ethL2Balance]
+    () =>
+      ethChildBalance ? parseFloat(utils.formatEther(ethChildBalance)) : null,
+    [ethChildBalance]
   )
 
   const selectedTokenL1BalanceFloat = useMemo(() => {
@@ -156,14 +162,14 @@ export function useTransferReadiness({
       return null
     }
 
-    const balance = erc20L1Balances?.[selectedToken.address.toLowerCase()]
+    const balance = erc20ParentBalances?.[selectedToken.address.toLowerCase()]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L1Balances])
+  }, [selectedToken, erc20ParentBalances])
 
   const selectedTokenL2BalanceFloat = useMemo(() => {
     if (!selectedToken) {
@@ -181,28 +187,28 @@ export function useTransferReadiness({
         ? selectedToken.address.toLowerCase()
         : (selectedToken.l2Address || '').toLowerCase()
 
-    const balance = erc20L2Balances?.[selectedTokenL2Address]
+    const balance = erc20ChildBalances?.[selectedTokenL2Address]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, childChain.id, erc20L2Balances])
+  }, [selectedToken, childChain.id, erc20ChildBalances])
 
   const customFeeTokenL1BalanceFloat = useMemo(() => {
     if (!nativeCurrency.isCustom) {
       return null
     }
 
-    const balance = erc20L1Balances?.[nativeCurrency.address]
+    const balance = erc20ParentBalances?.[nativeCurrency.address]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
-  }, [nativeCurrency, erc20L1Balances])
+  }, [nativeCurrency, erc20ParentBalances])
 
   return useMemo(() => {
     if (isNaN(Number(amount)) || Number(amount) === 0) {

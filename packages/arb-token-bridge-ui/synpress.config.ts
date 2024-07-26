@@ -11,6 +11,7 @@ import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
+  NetworkType,
   l1WethGateway,
   wethTokenAddressL1,
   wethTokenAddressL2
@@ -85,10 +86,13 @@ export default defineConfig({
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
+      await Promise.all([
+        fundUserWalletEth('parentChain'),
+        fundUserWalletEth('childChain')
+      ])
 
       // Wrap ETH to test ERC-20 transactions
-      await Promise.all([wrapEth('L1'), wrapEth('L2')])
+      await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
 
       // Approve WETH
       await approveWeth()
@@ -184,17 +188,17 @@ async function deployERC20ToL2(erc20L1Address: string) {
   const bridger = await Erc20Bridger.fromProvider(arbProvider)
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
-    erc20L1Address,
-    l1Signer: localWallet.connect(ethProvider),
-    l2Provider: arbProvider
+    erc20ParentAddress: erc20L1Address,
+    parentSigner: localWallet.connect(ethProvider),
+    childProvider: arbProvider
   })
   await deploy.wait()
 }
 
-async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+async function fundUserWalletEth(networkType: NetworkType) {
   console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
-  const provider = networkType === 'L1' ? ethProvider : arbProvider
+  const provider = networkType === 'parentChain' ? ethProvider : arbProvider
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 2 eth
   if (balance.lt(utils.parseEther('2'))) {
@@ -213,11 +217,12 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
-async function wrapEth(networkType: 'L1' | 'L2') {
+async function wrapEth(networkType: NetworkType) {
   console.log(`Wrapping ETH: ${networkType}...`)
-  const amount = networkType === 'L1' ? '0.2' : '0.1'
-  const address = networkType === 'L1' ? wethTokenAddressL1 : wethTokenAddressL2
-  const provider = networkType === 'L1' ? ethProvider : arbProvider
+  const amount = networkType === 'parentChain' ? '0.2' : '0.1'
+  const address =
+    networkType === 'parentChain' ? wethTokenAddressL1 : wethTokenAddressL2
+  const provider = networkType === 'parentChain' ? ethProvider : arbProvider
   const tx = await getWethContract(provider, address).deposit({
     value: utils.parseEther(amount)
   })
@@ -253,10 +258,10 @@ async function generateTestTxForRedeemRetryable() {
   const amount = utils.parseUnits('0.001', erc20Token.decimals)
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   const depositRequest = await erc20Bridger.getDepositRequest({
-    l1Provider,
-    l2Provider,
+    parentProvider: l1Provider,
+    childProvider: l2Provider,
     from: walletAddress,
-    erc20L1Address: erc20Token.address,
+    erc20ParentAddress: erc20Token.address,
     amount,
     retryableGasOverrides: {
       gasLimit: { base: BigNumber.from(0) }
@@ -264,7 +269,8 @@ async function generateTestTxForRedeemRetryable() {
   })
   const tx = await erc20Bridger.deposit({
     ...depositRequest,
-    l1Signer: userWallet.connect(ethProvider),
+    parentSigner: userWallet.connect(ethProvider),
+    childProvider: arbProvider,
     retryableGasOverrides: {
       gasLimit: {
         base: BigNumber.from(0)

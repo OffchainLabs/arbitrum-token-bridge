@@ -17,8 +17,8 @@ export function useUpdateUSDCBalances({
   const { parentChainProvider, parentChain, childChainProvider } =
     useNetworksRelationship(networks)
   const {
-    updateErc20L1Balances: updateErc20L1Balance,
-    updateErc20L2Balances: updateErc20L2Balance
+    updateErc20ParentBalances: updateErc20ParentBalance,
+    updateErc20ChildBalances: updateErc20ChildBalance
   } = useBalances({
     l1WalletAddress: walletAddress as Address,
     l2WalletAddress: walletAddress as Address
@@ -51,7 +51,7 @@ export function useUpdateUSDCBalances({
       return
     }
 
-    updateErc20L1Balance([parentChainUsdcAddress])
+    updateErc20ParentBalance([parentChainUsdcAddress])
 
     // we don't have native USDC addresses for Orbit chains, we need to fetch it
     if (!childChainUsdcAddress) {
@@ -70,14 +70,14 @@ export function useUpdateUSDCBalances({
     }
 
     if (childChainUsdcAddress) {
-      updateErc20L2Balance([childChainUsdcAddress])
+      updateErc20ChildBalance([childChainUsdcAddress])
     }
   }, [
     childChainProvider,
     parentChain.id,
     parentChainProvider,
-    updateErc20L1Balance,
-    updateErc20L2Balance
+    updateErc20ParentBalance,
+    updateErc20ChildBalance
   ])
 
   return { updateUSDCBalances }

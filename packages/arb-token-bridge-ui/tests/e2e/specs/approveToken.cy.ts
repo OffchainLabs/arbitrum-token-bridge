@@ -12,7 +12,7 @@ describe('Approve token and deposit afterwards', () => {
 
   it('should approve and deposit ERC-20 token', () => {
     context('Approve token', () => {
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'parentChain' })
       importTokenThroughUI(ERC20TokenAddressL1)
 
       // Select the ERC-20 token
@@ -20,45 +20,20 @@ describe('Approve token and deposit afterwards', () => {
       cy.findByText(ERC20TokenName).click()
 
       // ERC-20 token should be selected now and popup should be closed after selection
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', ERC20TokenSymbol)
+      cy.findSelectTokenButton(ERC20TokenSymbol)
 
       cy.findByText('MAX')
         .click()
         .then(() => {
-          cy.findByText('You will pay in gas fees:')
-            .siblings()
-            .contains(zeroToLessThanOneETH)
-            .should('be.visible')
-          cy.findByText('Ethereum Local gas fee')
-            .parent()
-            .siblings()
-            .contains(zeroToLessThanOneETH)
-            .should('be.visible')
-          cy.findByText('Arbitrum Local gas fee')
-            .parent()
-            .siblings()
-            .contains(zeroToLessThanOneETH)
-            .should('be.visible')
+          cy.findGasFeeSummary(zeroToLessThanOneETH)
+          cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+          cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
         })
-      cy.waitUntil(
-        () =>
-          cy
-            .findByRole('button', { name: /Move funds to Arbitrum Local/i })
-            .should('not.be.disabled'),
-        {
-          errorMsg: '/Move funds to Arbitrum Local/ button is disabled',
-          timeout: 50000,
-          interval: 500
-        }
-      ).then(() => {
-        cy.findByRole('button', {
-          name: 'Move funds to Arbitrum Local'
-        })
-          .scrollIntoView()
-          .click()
-      })
+      cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
+        errorMsg: 'move funds button is disabled (expected to be enabled)',
+        timeout: 50000,
+        interval: 500
+      }).then(() => cy.findMoveFundsButton().click())
       cy.findByText(/pay a one-time approval fee/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/

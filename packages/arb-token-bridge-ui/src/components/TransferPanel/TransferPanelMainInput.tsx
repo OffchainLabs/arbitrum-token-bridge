@@ -25,14 +25,14 @@ function MaxButton(props: MaxButtonProps) {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
 
-  const { ethL1Balance, ethL2Balance } = useBalances()
+  const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+    const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
     const tokenBalance = isDepositMode
-      ? selectedTokenBalances.l1
-      : selectedTokenBalances.l2
+      ? selectedTokenBalances.parentBalance
+      : selectedTokenBalances.childBalance
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -48,8 +48,8 @@ function MaxButton(props: MaxButtonProps) {
 
     return !ethBalance.isZero()
   }, [
-    ethL1Balance,
-    ethL2Balance,
+    ethParentBalance,
+    ethChildBalance,
     selectedTokenBalances,
     selectedToken,
     isDepositMode

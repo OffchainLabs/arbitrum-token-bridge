@@ -1,7 +1,7 @@
 import {
-  L1TransactionReceipt,
-  L1ToL2MessageWriter as IL1ToL2MessageWriter,
-  L1ToL2MessageStatus
+  ParentTransactionReceipt,
+  ParentToChildMessageWriter as IParentToChildMessageWriter,
+  ParentToChildMessageStatus
 } from '@arbitrum/sdk'
 import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
@@ -36,17 +36,17 @@ export async function getRetryableTicket({
   retryableCreationId,
   parentChainProvider,
   childChainSigner
-}: GetRetryableTicketParams): Promise<IL1ToL2MessageWriter> {
+}: GetRetryableTicketParams): Promise<IParentToChildMessageWriter> {
   if (!retryableCreationId) {
     throw new Error("Error: Couldn't find retryable ticket creation id")
   }
 
-  const parentChainTxReceipt = new L1TransactionReceipt(
+  const parentChainTxReceipt = new ParentTransactionReceipt(
     await parentChainProvider.getTransactionReceipt(parentChainTxHash)
   )
 
   const retryableTicket = (
-    await parentChainTxReceipt.getL1ToL2Messages(childChainSigner)
+    await parentChainTxReceipt.getParentToChildMessages(childChainSigner)
   )
     // Find message with the matching id
     .find(m => m.retryableCreationId === retryableCreationId)
@@ -74,10 +74,9 @@ export const getRetryableTicketExpiration = async ({
     const depositTxReceipt = await parentChainProvider.getTransactionReceipt(
       parentChainTxHash
     )
-    const parentChainTxReceipt = new L1TransactionReceipt(depositTxReceipt)
-    const [parentToChildMsg] = await parentChainTxReceipt.getL1ToL2Messages(
-      childChainProvider
-    )
+    const parentChainTxReceipt = new ParentTransactionReceipt(depositTxReceipt)
+    const [parentToChildMsg] =
+      await parentChainTxReceipt.getParentToChildMessages(childChainProvider)
 
     const now = dayjs()
 
@@ -107,7 +106,10 @@ export const getRetryableTicketExpiration = async ({
 
 // utilities for teleporter transactions
 export const l1L2RetryableRequiresRedeem = (tx: MergedTransaction) => {
-  return tx.l1ToL2MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+  return (
+    tx.l1ToL2MsgData?.status ===
+    ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
+  )
 }
 
 export const l2ForwarderRetryableRequiresRedeem = (tx: MergedTransaction) => {
@@ -125,7 +127,8 @@ export const secondRetryableLegForTeleportRequiresRedeem = (
 ) => {
   return (
     !l2ForwarderRetryableRequiresRedeem(tx) &&
-    tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+    tx.l2ToL3MsgData?.status ===
+      ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )
 }
 

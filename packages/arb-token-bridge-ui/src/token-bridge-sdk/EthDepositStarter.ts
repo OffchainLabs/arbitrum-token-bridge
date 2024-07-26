@@ -37,17 +37,17 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const { l2Network } = ethBridger
+    const { childNetwork } = ethBridger
 
-    if (typeof l2Network.nativeToken === 'undefined') {
+    if (typeof childNetwork.nativeToken === 'undefined') {
       return false // native currency doesn't require approval
     }
 
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
-      address: l2Network.nativeToken,
+      address: childNetwork.nativeToken,
       provider: this.sourceChainProvider,
       owner: address,
-      spender: l2Network.ethBridge.inbox
+      spender: childNetwork.ethBridge.inbox
     })
 
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
@@ -70,7 +70,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
   }: ApproveNativeCurrencyProps) {
     const ethBridger = await this.getBridger()
     return ethBridger.approveGasToken({
-      l1Signer: signer,
+      parentSigner: signer,
       amount
     })
   }
@@ -111,7 +111,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
     const sourceChainTransaction = await ethBridger.deposit({
       amount,
-      l1Signer: signer,
+      parentSigner: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
 

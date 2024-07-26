@@ -1,4 +1,4 @@
-import { Erc20L1L3Bridger, getL2Network } from '@arbitrum/sdk'
+import { Erc20L1L3Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { BigNumber, constants } from 'ethers'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -34,7 +34,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       return this.l1l3Bridger
     }
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
+    const l3Network = await getArbitrumNetwork(this.destinationChainProvider)
     this.l1l3Bridger = new Erc20L1L3Bridger(l3Network)
 
     return this.l1l3Bridger

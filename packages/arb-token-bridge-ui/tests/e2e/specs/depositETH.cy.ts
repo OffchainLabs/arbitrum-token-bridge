@@ -10,37 +10,21 @@ describe('Deposit ETH', () => {
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
-    cy.login({ networkType: 'L1' })
-    cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-    cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
+    cy.login({ networkType: 'parentChain' })
+    cy.findSourceChainButton('Ethereum Local')
+    cy.findDestinationChainButton('Arbitrum Local')
   })
 
   it('should show gas estimations and bridge successfully', () => {
-    cy.login({ networkType: 'L1' })
-    cy.findByPlaceholderText('Enter amount')
-      .typeRecursively(String(ETHAmountToDeposit))
+    cy.login({ networkType: 'parentChain' })
+    cy.typeAmount(ETHAmountToDeposit)
+      //
       .then(() => {
-        cy.findByText('You will pay in gas fees:')
-          .siblings()
-          .last()
-          .contains(zeroToLessThanOneETH)
-          .should('be.visible')
-        cy.findByText('Ethereum Local gas fee')
-          .parent()
-          .siblings()
-          .last()
-          .contains(zeroToLessThanOneETH)
-          .should('be.visible')
-        cy.findByText('Arbitrum Local gas fee')
-          .parent()
-          .siblings()
-          .last()
-          .contains(zeroToLessThanOneETH)
-          .should('be.visible')
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+        cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
       })
-    cy.findByRole('button', {
-      name: 'Move funds to Arbitrum Local'
-    }).click()
+    cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
       cy.findByText('10 minutes').should('be.visible')
       cy.findByText(

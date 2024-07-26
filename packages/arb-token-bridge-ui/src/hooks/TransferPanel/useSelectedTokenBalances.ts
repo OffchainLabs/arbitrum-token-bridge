@@ -11,8 +11,8 @@ import { isNetwork } from '../../util/networks'
 import { useBalances } from '../useBalances'
 
 export type Balances = {
-  l1: BigNumber | null
-  l2: BigNumber | null
+  parentBalance: BigNumber | null
+  childBalance: BigNumber | null
 }
 
 export function useSelectedTokenBalances(): Balances {
@@ -41,63 +41,70 @@ export function useSelectedTokenBalances(): Balances {
     (isSourceChainEthereum && isDestinationChainArbitrumOne) ||
     (isSourceChainArbitrumOne && isDestinationChainEthereum)
 
-  const { erc20L1Balances, erc20L2Balances } = useBalances()
+  const { erc20ParentBalances, erc20ChildBalances } = useBalances()
 
   return useMemo(() => {
     const result: Balances = {
-      l1: null,
-      l2: null
+      parentBalance: null,
+      childBalance: null
     }
 
     if (!selectedToken) {
       return result
     }
 
-    if (erc20L1Balances) {
-      result.l1 = erc20L1Balances[selectedToken.address.toLowerCase()] ?? null
+    if (erc20ParentBalances) {
+      result.parentBalance =
+        erc20ParentBalances[selectedToken.address.toLowerCase()] ?? null
     }
 
     if (
-      erc20L2Balances &&
+      erc20ChildBalances &&
       selectedToken.l2Address &&
-      selectedToken.l2Address in erc20L2Balances
+      selectedToken.l2Address in erc20ChildBalances
     ) {
-      result.l2 =
-        erc20L2Balances[selectedToken.l2Address.toLowerCase()] ?? constants.Zero
+      result.childBalance =
+        erc20ChildBalances[selectedToken.l2Address.toLowerCase()] ??
+        constants.Zero
     }
 
     // token not bridged to the child chain, show zero
     if (!selectedToken.l2Address) {
-      result.l2 = constants.Zero
+      result.childBalance = constants.Zero
     }
 
     if (
       isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
       isEthereumArbitrumOnePair &&
-      erc20L1Balances &&
-      erc20L2Balances
+      erc20ParentBalances &&
+      erc20ChildBalances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Ethereum.USDC.toLowerCase()] ?? null,
-        l2: erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
+        parentBalance:
+          erc20ParentBalances[CommonAddress.Ethereum.USDC.toLowerCase()] ??
+          null,
+        childBalance:
+          erc20ChildBalances[selectedToken.address.toLowerCase()] ?? null
       }
     }
     if (
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address.toLowerCase()) &&
       isSepoliaArbSepoliaPair &&
-      erc20L1Balances &&
-      erc20L2Balances
+      erc20ParentBalances &&
+      erc20ChildBalances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Sepolia.USDC.toLowerCase()] ?? null,
-        l2: erc20L2Balances[selectedToken.address.toLowerCase()] ?? null
+        parentBalance:
+          erc20ParentBalances[CommonAddress.Sepolia.USDC.toLowerCase()] ?? null,
+        childBalance:
+          erc20ChildBalances[selectedToken.address.toLowerCase()] ?? null
       }
     }
 
     return result
   }, [
-    erc20L1Balances,
-    erc20L2Balances,
+    erc20ParentBalances,
+    erc20ChildBalances,
     isEthereumArbitrumOnePair,
     isSepoliaArbSepoliaPair,
     selectedToken

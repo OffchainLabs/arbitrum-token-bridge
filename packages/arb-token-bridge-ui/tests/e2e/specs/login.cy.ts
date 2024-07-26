@@ -28,7 +28,7 @@ describe('Login Account', () => {
   })
 
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
-    cy.login({ networkType: 'L1' })
+    cy.login({ networkType: 'parentChain' })
     // Balance: is in a different element so we check for siblings
     cy.findByText(l1ETHbal)
       .should('be.visible')
@@ -39,7 +39,7 @@ describe('Login Account', () => {
       .should('be.visible')
       .siblings()
       .contains('Balance: ')
-    cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-    cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
+    cy.findSourceChainButton('Ethereum Local')
+    cy.findDestinationChainButton('Arbitrum Local')
   })
 })

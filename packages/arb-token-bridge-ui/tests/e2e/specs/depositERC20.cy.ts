@@ -33,18 +33,16 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
-      cy.login({ networkType: 'L1' })
-      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', 'ETH')
+      cy.login({ networkType: 'parentChain' })
+      cy.findSourceChainButton('Ethereum Local')
+      cy.findDestinationChainButton('Arbitrum Local')
+      cy.findSelectTokenButton('ETH')
     })
 
     it('should deposit ERC-20 successfully to the same address', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'parentChain' })
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
@@ -53,41 +51,24 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show ERC-20 balance correctly', () => {
-        cy.findByLabelText('WETH balance amount on l1')
+        cy.findByLabelText('WETH balance amount on parentChain')
           .should('be.visible')
           .contains(l1ERC20bal)
           .should('be.visible')
       })
 
       context('should show gas estimations', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('Ethereum Local gas fee')
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('Arbitrum Local gas fee')
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
           })
       })
 
       context('should deposit successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Local/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
+        cy.findMoveFundsButton()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
@@ -105,7 +86,7 @@ describe('Deposit ERC20 Token', () => {
     it('should deposit ERC-20 to custom destination address successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'parentChain' })
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
@@ -114,14 +95,12 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .typeRecursively(String(ERC20AmountToSend))
+        cy.typeAmount(ERC20AmountToSend)
+          //
           .then(() => {
-            cy.findByText('You will pay in gas fees:')
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findGasFeeSummary(zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
           })
       })
 
@@ -130,12 +109,7 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should deposit successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Local/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
+        cy.findMoveFundsButton()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
@@ -218,12 +192,12 @@ describe('Deposit ERC20 Token', () => {
         cy.findByLabelText('Close side panel').click()
 
         // the custom destination address should now have some balance greater than zero
-        cy.findByLabelText('WETH balance amount on l2')
+        cy.findByLabelText('WETH balance amount on childChain')
           .contains(moreThanZeroBalance)
           .should('be.visible')
 
         // the balance on the source chain should not be the same as before
-        cy.findByLabelText('WETH balance amount on l1')
+        cy.findByLabelText('WETH balance amount on parentChain')
           .should('be.visible')
           .its('text')
           .should('not.eq', l1ERC20bal)
