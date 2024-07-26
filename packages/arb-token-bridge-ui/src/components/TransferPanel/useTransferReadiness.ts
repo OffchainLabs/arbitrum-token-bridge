@@ -145,17 +145,13 @@ export function useTransferReadiness({
   })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
-  const ethL1BalanceFloat = useMemo(
-    () =>
-      ethParentBalance ? parseFloat(utils.formatEther(ethParentBalance)) : null,
-    [ethParentBalance]
-  )
+  const ethL1BalanceFloat = ethParentBalance
+    ? parseFloat(utils.formatEther(ethParentBalance))
+    : null
 
-  const ethL2BalanceFloat = useMemo(
-    () =>
-      ethChildBalance ? parseFloat(utils.formatEther(ethChildBalance)) : null,
-    [ethChildBalance]
-  )
+  const ethL2BalanceFloat = ethChildBalance
+    ? parseFloat(utils.formatEther(ethChildBalance))
+    : null
 
   const selectedTokenL1BalanceFloat = useMemo(() => {
     if (!selectedToken) {
