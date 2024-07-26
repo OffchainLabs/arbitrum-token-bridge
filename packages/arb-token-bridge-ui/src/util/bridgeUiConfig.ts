@@ -86,6 +86,14 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           name: 'Arbitrum Local'
         }
       }
+    case ChainId.L3Local:
+      return {
+        color: '#12AAFF',
+        network: {
+          name: 'L3 Local',
+          logo: '/images/OrbitLogo.svg'
+        }
+      }
     case ChainId.ArbitrumNova:
       return {
         color: '#E57310',
