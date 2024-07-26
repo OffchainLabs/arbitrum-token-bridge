@@ -33,9 +33,9 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { getProvider } from '../components/TransactionHistory/helpers'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 import { isTeleport } from '../token-bridge-sdk/teleport'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -99,25 +99,25 @@ export const useArbTokenBridge = (
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: l1.provider,
+    chainId: l1.network.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: l2.provider,
+    chainId: l2.network.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L1CustomDestinationBalance]
   } = useBalance({
-    provider: l1.provider,
+    chainId: l1.network.id,
     walletAddress: destinationAddress
   })
   const {
     erc20: [, updateErc20CustomDestinationL2Balance]
   } = useBalance({
-    provider: l2.provider,
+    chainId: l2.network.id,
     walletAddress: destinationAddress
   })
 
@@ -434,8 +434,8 @@ export const useArbTokenBridge = (
       return
     }
 
-    const parentChainProvider = getProvider(event.parentChainId)
-    const childChainProvider = getProvider(event.childChainId)
+    const parentChainProvider = getProviderForChainId(event.parentChainId)
+    const childChainProvider = getProviderForChainId(event.childChainId)
 
     const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
@@ -490,8 +490,8 @@ export const useArbTokenBridge = (
       return
     }
 
-    const parentChainProvider = getProvider(event.parentChainId)
-    const childChainProvider = getProvider(event.childChainId)
+    const parentChainProvider = getProviderForChainId(event.parentChainId)
+    const childChainProvider = getProviderForChainId(event.childChainId)
 
     const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,

@@ -71,10 +71,10 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
-import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
+import { useBalances } from '../../hooks/useBalances'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -130,10 +130,10 @@ export function TransferPanel() {
 
   const { isEOA, isSmartContractWallet } = useAccountType()
 
-  const { data: l1Signer } = useSigner({
+  const { data: parentSigner } = useSigner({
     chainId: parentChain.id
   })
-  const { data: l2Signer } = useSigner({
+  const { data: childSigner } = useSigner({
     chainId: childChain.id
   })
 
@@ -172,29 +172,11 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-
-  const l1WalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const l2WalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
   const {
-    eth: [, updateEthL1Balance],
-    erc20: [, updateErc20L1Balance]
-  } = useBalance({
-    provider: parentChainProvider,
-    walletAddress: l1WalletAddress
-  })
-  const {
-    eth: [, updateEthL2Balance]
-  } = useBalance({
-    provider: childChainProvider,
-    walletAddress: l2WalletAddress
-  })
+    updateEthParentBalance,
+    updateErc20ParentBalances,
+    updateEthChildBalance
+  } = useBalances()
 
   const [isCctp, setIsCctp] = useState(false)
 
@@ -368,7 +350,7 @@ export function TransferPanel() {
     if (!walletAddress) {
       return
     }
-    const signer = isDepositMode ? l1Signer : l2Signer
+    const signer = isDepositMode ? parentSigner : childSigner
     if (!signer) {
       throw 'Signer is undefined'
     }
@@ -577,7 +559,7 @@ export function TransferPanel() {
       return
     }
 
-    const hasBothSigners = l1Signer && l2Signer
+    const hasBothSigners = parentSigner && childSigner
     if (isEOA && !hasBothSigners) {
       throw signerUndefinedError
     }
@@ -611,7 +593,10 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      if ((isDepositMode && !l1Signer) || (!isDepositMode && !l2Signer)) {
+      if (
+        (isDepositMode && !parentSigner) ||
+        (!isDepositMode && !childSigner)
+      ) {
         throw signerUndefinedError
       }
 
@@ -708,7 +693,7 @@ export function TransferPanel() {
         ? selectedToken?.l2Address
         : selectedToken?.address
 
-      const signer = isDepositMode ? l1Signer : l2Signer
+      const signer = isDepositMode ? parentSigner : childSigner
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
@@ -733,7 +718,7 @@ export function TransferPanel() {
         the SDK to initialize wrongly and make an ETH withdrawal instead. To summarize:
         - if it's a withdrawal
         - if a token is selected
-        - but the token's L2 address is not found (ie. sourceChainErc20Address)
+        - but the token's address on the child chain is not found (ie. sourceChainErc20Address)
       */
         throw Error(
           'Source chain token address not found for ERC-20 withdrawal.'
@@ -942,14 +927,14 @@ export function TransferPanel() {
     await (sourceChainTransaction as TransactionResponse).wait()
 
     // tx confirmed, update balances
-    await Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+    await Promise.all([updateEthParentBalance(), updateEthChildBalance()])
 
     if (selectedToken) {
       token.updateTokenData(selectedToken.address)
     }
 
     if (nativeCurrency.isCustom) {
-      await updateErc20L1Balance([nativeCurrency.address])
+      await updateErc20ParentBalances([nativeCurrency.address])
     }
   }
 
