@@ -22,11 +22,8 @@ jobs:
       with:
         repository: OffchainLabs/arbitrum-token-bridge
 
-    - name: Restore node_modules
-      uses: OffchainLabs/actions/node-modules/restore@main
-
-    - name: Install dependencies
-      run: yarn install
+    - name: Install node_modules
+      uses: OffchainLabs/actions/node-modules/install@main
 
     - name: Generate chains JSON
       run: yarn workspace arb-token-bridge-ui generateCoreChainsToMonitor

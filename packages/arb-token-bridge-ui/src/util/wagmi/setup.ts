@@ -10,6 +10,7 @@ import {
   arbitrumSepolia,
   localL1Network as local,
   localL2Network as arbitrumLocal,
+  localL3Network as l3Local,
   holesky
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
@@ -40,6 +41,7 @@ const chainList = isTestingEnvironment
       // add local environments during testing
       local,
       arbitrumLocal,
+      l3Local,
       // user-added custom chains
       ...customChains
     ]
