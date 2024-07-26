@@ -1,4 +1,5 @@
 import { twMerge } from 'tailwind-merge'
+import { Chain } from 'wagmi'
 
 import { getNetworkName } from '../../../util/networks'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
@@ -10,7 +11,7 @@ import {
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
 import { NetworkType } from './utils'
-import { useAppState } from '../../../state'
+import { useActions, useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
@@ -26,28 +27,27 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
-import { NetworkListboxProps } from '../NetworkListbox'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
+import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 
 export function SourceNetworkBox({
   amount,
   loadingMaxAmount,
   setMaxAmount,
-  errorMessageElement,
+  errorMessage,
   customFeeTokenBalances,
-  showUsdcSpecificInfo,
-  sourceNetworkListboxProps
+  showUsdcSpecificInfo
 }: {
   amount: string
   loadingMaxAmount: boolean
   setMaxAmount: () => Promise<void>
-  errorMessageElement: string | React.JSX.Element | undefined
+  errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
-  sourceNetworkListboxProps: Pick<NetworkListboxProps, 'onChange'>
 }) {
-  const [networks] = useNetworks()
+  const actions = useActions()
+  const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const {
@@ -63,6 +63,25 @@ export function SourceNetworkBox({
     backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
   }
 
+  async function onChange(network: Chain) {
+    if (networks.destinationChain.id === network.id) {
+      setNetworks({
+        sourceChainId: networks.destinationChain.id,
+        destinationChainId: networks.sourceChain.id
+      })
+      return
+    }
+
+    // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
+    // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
+    setNetworks({
+      sourceChainId: network.id,
+      destinationChainId: networks.destinationChain.id
+    })
+
+    actions.app.setSelectedToken(null)
+  }
+
   return (
     <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
       <NetworkListboxPlusBalancesContainer>
@@ -71,7 +90,7 @@ export function SourceNetworkBox({
           buttonClassName={twMerge(
             'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
           )}
-          onChange={sourceNetworkListboxProps.onChange}
+          onChange={onChange}
         >
           <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
             From: {getNetworkName(networks.sourceChain.id)}
@@ -124,7 +143,7 @@ export function SourceNetworkBox({
             loading: isMaxAmount || loadingMaxAmount,
             onClick: setMaxAmount
           }}
-          errorMessage={errorMessageElement}
+          errorMessage={errorMessage}
           value={isMaxAmount ? '' : amount}
         />
 
