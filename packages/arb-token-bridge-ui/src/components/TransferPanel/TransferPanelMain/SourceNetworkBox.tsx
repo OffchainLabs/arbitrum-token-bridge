@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { getNetworkName } from '../../../util/networks'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
@@ -29,20 +29,20 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
-import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
+import { useMaxAmount } from './useMaxAmount'
 
 export function SourceNetworkBox({
   amount,
-  loadingMaxAmount,
-  setMaxAmount,
   errorMessage,
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
   amount: string
-  loadingMaxAmount: boolean
-  setMaxAmount: () => Promise<void>
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
@@ -58,7 +58,22 @@ export function SourceNetworkBox({
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
+  const [, setQueryParams] = useArbQueryParams()
+
+  const { setMaxAmount, loadingMaxAmount } = useMaxAmount({
+    customFeeTokenBalances
+  })
+
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  useEffect(() => {
+    setQueryParams({ amount })
+
+    if (isMaxAmount) {
+      setMaxAmount()
+    }
+  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
 
   const buttonStyle = {
     backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
