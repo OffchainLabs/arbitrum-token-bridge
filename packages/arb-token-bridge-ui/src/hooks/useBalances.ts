@@ -14,7 +14,7 @@ export function useBalances({
   l2WalletAddress?: Address
 } = {}) {
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
+  const { childChain, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const { destinationAddress } = useDestinationAddressStore()
@@ -29,29 +29,29 @@ export function useBalances({
     (isDepositMode ? destinationAddressOrWalletAddress : walletAddress)
 
   const {
-    eth: [ethL1Balance, updateEthL1Balance],
-    erc20: [erc20L1Balances, updateErc20L1Balances]
+    eth: [ethParentBalance, updateEthParentBalance],
+    erc20: [erc20ParentBalances, updateErc20ParentBalances]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress: _l1WalletAddress
   })
 
   const {
-    eth: [ethL2Balance, updateEthL2Balance],
-    erc20: [erc20L2Balances, updateErc20L2Balances]
+    eth: [ethChildBalance, updateEthChildBalance],
+    erc20: [erc20ChildBalances, updateErc20ChildBalances]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress: _l2WalletAddress
   })
 
   return {
-    ethL1Balance,
-    updateEthL1Balance,
-    erc20L1Balances,
-    updateErc20L1Balances,
-    ethL2Balance,
-    updateEthL2Balance,
-    erc20L2Balances,
-    updateErc20L2Balances
+    ethParentBalance,
+    updateEthParentBalance,
+    erc20ParentBalances,
+    updateErc20ParentBalances,
+    ethChildBalance,
+    updateEthChildBalance,
+    erc20ChildBalances,
+    updateErc20ChildBalances
   }
 }
