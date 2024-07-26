@@ -1,4 +1,5 @@
 import { Address, useAccount } from 'wagmi'
+import { useMemo } from 'react'
 
 import { useBalance } from './useBalance'
 import { useNetworks } from './useNetworks'
@@ -44,14 +45,26 @@ export function useBalances({
     walletAddress: _childWalletAddress
   })
 
-  return {
-    ethParentBalance,
-    updateEthParentBalance,
-    erc20ParentBalances,
-    updateErc20ParentBalances,
-    ethChildBalance,
-    updateEthChildBalance,
-    erc20ChildBalances,
-    updateErc20ChildBalances
-  }
+  return useMemo(
+    () => ({
+      ethParentBalance,
+      updateEthParentBalance,
+      erc20ParentBalances,
+      updateErc20ParentBalances,
+      ethChildBalance,
+      updateEthChildBalance,
+      erc20ChildBalances,
+      updateErc20ChildBalances
+    }),
+    [
+      erc20ChildBalances,
+      erc20ParentBalances,
+      ethChildBalance,
+      ethParentBalance,
+      updateErc20ChildBalances,
+      updateErc20ParentBalances,
+      updateEthChildBalance,
+      updateEthParentBalance
+    ]
+  )
 }
