@@ -140,8 +140,8 @@ export function useTransferReadiness({
     ethChildBalance,
     erc20ChildBalances
   } = useBalances({
-    l1WalletAddress: walletAddress,
-    l2WalletAddress: walletAddress
+    parentWalletAddress: walletAddress,
+    childWalletAddress: walletAddress
   })
   const { error: destinationAddressError } = useDestinationAddressStore()
 

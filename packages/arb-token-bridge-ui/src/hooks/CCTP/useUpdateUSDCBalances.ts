@@ -20,8 +20,8 @@ export function useUpdateUSDCBalances({
     updateErc20ParentBalances: updateErc20ParentBalance,
     updateErc20ChildBalances: updateErc20ChildBalance
   } = useBalances({
-    l1WalletAddress: walletAddress as Address,
-    l2WalletAddress: walletAddress as Address
+    parentWalletAddress: walletAddress as Address,
+    childWalletAddress: walletAddress as Address
   })
 
   const updateUSDCBalances = useCallback(async () => {

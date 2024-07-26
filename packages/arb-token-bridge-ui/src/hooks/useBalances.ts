@@ -7,11 +7,11 @@ import { useNetworksRelationship } from './useNetworksRelationship'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 
 export function useBalances({
-  l1WalletAddress,
-  l2WalletAddress
+  parentWalletAddress,
+  childWalletAddress
 }: {
-  l1WalletAddress?: Address
-  l2WalletAddress?: Address
+  parentWalletAddress?: Address
+  childWalletAddress?: Address
 } = {}) {
   const [networks] = useNetworks()
   const { childChain, parentChain, isDepositMode } =
@@ -20,12 +20,12 @@ export function useBalances({
   const { destinationAddress } = useDestinationAddressStore()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
-  const _l1WalletAddress =
-    l1WalletAddress ??
+  const _parentWalletAddress =
+    parentWalletAddress ??
     (isDepositMode ? walletAddress : destinationAddressOrWalletAddress)
 
-  const _l2WalletAddress =
-    l2WalletAddress ??
+  const _childWalletAddress =
+    childWalletAddress ??
     (isDepositMode ? destinationAddressOrWalletAddress : walletAddress)
 
   const {
@@ -33,7 +33,7 @@ export function useBalances({
     erc20: [erc20ParentBalances, updateErc20ParentBalances]
   } = useBalance({
     chainId: parentChain.id,
-    walletAddress: _l1WalletAddress
+    walletAddress: _parentWalletAddress
   })
 
   const {
@@ -41,7 +41,7 @@ export function useBalances({
     erc20: [erc20ChildBalances, updateErc20ChildBalances]
   } = useBalance({
     chainId: childChain.id,
-    walletAddress: _l2WalletAddress
+    walletAddress: _childWalletAddress
   })
 
   return {

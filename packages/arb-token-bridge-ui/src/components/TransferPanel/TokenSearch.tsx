@@ -185,8 +185,8 @@ function TokensPanel({
     ethChildBalance,
     erc20ChildBalances
   } = useBalances({
-    l1WalletAddress: walletAddress,
-    l2WalletAddress: walletAddress
+    parentWalletAddress: walletAddress,
+    childWalletAddress: walletAddress
   })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
