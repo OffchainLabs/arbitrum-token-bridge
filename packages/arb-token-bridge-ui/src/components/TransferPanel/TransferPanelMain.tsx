@@ -25,7 +25,6 @@ import {
 } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
-import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { CommonAddress } from '../../util/CommonAddressUtils'
@@ -67,6 +66,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useBalances } from '../../hooks/useBalances'
 
 enum NetworkType {
   parentChain = 'parentChain',
@@ -358,30 +358,18 @@ export function TransferPanelMain({
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
+
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
-  const parentWalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const childWalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
   const {
-    eth: [ethParentBalance],
-    erc20: [erc20ParentBalances, updateErc20ParentBalances]
-  } = useBalance({
-    chainId: parentChain.id,
-    walletAddress: parentWalletAddress
-  })
-  const {
-    eth: [ethChildBalance],
-    erc20: [erc20ChildBalances, updateErc20ChildBalances]
-  } = useBalance({
-    chainId: childChain.id,
-    walletAddress: childWalletAddress
-  })
+    ethParentBalance,
+    erc20ParentBalances,
+    updateErc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances,
+    updateErc20ChildBalances
+  } = useBalances()
+
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
   })
