@@ -1,5 +1,5 @@
 module.exports = {
-  plugins: ["@typescript-eslint", "jest", "unused-imports"],
+  plugins: ["@typescript-eslint", "jest"],
   extends: [
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
@@ -33,6 +33,5 @@ module.exports = {
         "ts-check": "allow-with-description",
       },
     ],
-    "unused-imports/no-unused-imports": "error",
   },
 };
