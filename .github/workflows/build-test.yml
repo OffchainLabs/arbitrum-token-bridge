@@ -197,6 +197,9 @@ jobs:
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
 
+      - name: Install cypress
+        run: yarn cypress install
+
       - name: Install linux dependencies
         run: |
           sudo apt-get install --no-install-recommends -y \
