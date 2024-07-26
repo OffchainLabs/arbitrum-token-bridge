@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
@@ -26,20 +26,18 @@ import {
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import { useAccountType } from '../../hooks/useAccountType'
-import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
-  isTokenMainnetUSDC,
-  sanitizeTokenSymbol
+  isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import {
   ETH_BALANCE_ARTICLE_LINK,
   USDC_LEARN_MORE_LINK,
   ether
 } from '../../constants'
-import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
+import { NetworkListboxProps } from './NetworkListbox'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -64,6 +62,7 @@ import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { useBalances } from '../../hooks/useBalances'
 import { TokenBalance } from './TransferPanelMain/TokenBalance'
 import { NetworkType } from './TransferPanelMain/utils'
+import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -172,7 +171,7 @@ function CustomAddressBanner({
   )
 }
 
-function NetworkContainer({
+export function NetworkContainer({
   network,
   customAddress,
   bgLogoHeight = 58,
@@ -238,7 +237,7 @@ function StyledLoader() {
   return <Loader color="white" size="small" />
 }
 
-function ETHBalance({
+export function ETHBalance({
   balance,
   prefix = ''
 }: {
@@ -257,7 +256,7 @@ function ETHBalance({
   )
 }
 
-function BalancesContainer({ children }: { children: React.ReactNode }) {
+export function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
       {children}
@@ -265,7 +264,7 @@ function BalancesContainer({ children }: { children: React.ReactNode }) {
   )
 }
 
-function NetworkListboxPlusBalancesContainer({
+export function NetworkListboxPlusBalancesContainer({
   children
 }: {
   children: React.ReactNode
@@ -311,7 +310,6 @@ export function TransferPanelMain({
     erc20ParentBalances,
     updateErc20ParentBalances,
     ethChildBalance,
-    erc20ChildBalances,
     updateErc20ChildBalances
   } = useBalances()
 
@@ -716,94 +714,11 @@ export function TransferPanelMain({
 
       <SwitchNetworksButton />
 
-      <NetworkContainer
-        bgLogoHeight={58}
-        network={networks.destinationChain}
-        customAddress={destinationAddress}
-      >
-        <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="To:" {...networkListboxProps.to} />
-          <BalancesContainer>
-            {destinationAddressOrWalletAddress &&
-              utils.isAddress(destinationAddressOrWalletAddress) && (
-                <>
-                  <TokenBalance
-                    balance={
-                      isDepositMode
-                        ? selectedTokenBalances.childBalance
-                        : selectedTokenBalances.parentBalance
-                    }
-                    on={
-                      isDepositMode
-                        ? NetworkType.childChain
-                        : NetworkType.parentChain
-                    }
-                    forToken={selectedToken}
-                    prefix={selectedToken ? 'Balance: ' : ''}
-                    tokenSymbolOverride={
-                      // we need to send the proper, sanitized token-name to the component
-                      selectedToken?.symbol
-                        ? sanitizeTokenSymbol(selectedToken?.symbol, {
-                            chainId: networks.destinationChain.id,
-                            erc20L1Address: selectedToken?.address
-                          })
-                        : undefined
-                    }
-                  />
-                  {/* In deposit mode, when user selected USDC on mainnet,
-                  the UI shows the Arb One balance of both USDC.e and native USDC */}
-                  {isDepositMode && showUSDCSpecificInfo && (
-                    <TokenBalance
-                      balance={
-                        (isArbitrumOne
-                          ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
-                          : erc20ChildBalances?.[
-                              CommonAddress.ArbitrumSepolia.USDC
-                            ]) ?? constants.Zero
-                      }
-                      on={NetworkType.childChain}
-                      forToken={
-                        selectedToken
-                          ? { ...selectedToken, symbol: 'USDC' }
-                          : null
-                      }
-                      tokenSymbolOverride="USDC"
-                    />
-                  )}
-                  {nativeCurrency.isCustom ? (
-                    <>
-                      <TokenBalance
-                        on={
-                          isDepositMode
-                            ? NetworkType.childChain
-                            : NetworkType.parentChain
-                        }
-                        balance={
-                          isDepositMode
-                            ? customFeeTokenBalances.childBalance
-                            : customFeeTokenBalances.parentBalance
-                        }
-                        forToken={nativeCurrency}
-                        prefix={selectedToken ? '' : 'Balance: '}
-                      />
-                      {!isDepositMode && (
-                        <ETHBalance balance={ethParentBalance} />
-                      )}
-                    </>
-                  ) : (
-                    <ETHBalance
-                      balance={
-                        isDepositMode ? ethChildBalance : ethParentBalance
-                      }
-                      prefix={selectedToken ? '' : 'Balance: '}
-                    />
-                  )}
-                </>
-              )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
-        <EstimatedGas chainType="destination" />
-      </NetworkContainer>
+      <DestinationNetworkBox
+        customFeeTokenBalances={customFeeTokenBalances}
+        showUsdcSpecificInfo={showUSDCSpecificInfo}
+        destinationNetworkListboxProps={networkListboxProps.to}
+      />
 
       <TransferDisabledDialog />
       <OneNovaTransferDialog
