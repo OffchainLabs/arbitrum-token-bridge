@@ -25,7 +25,6 @@ import {
 } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
@@ -43,15 +42,11 @@ import {
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
-import {
-  useNativeCurrency,
-  NativeCurrencyErc20
-} from '../../hooks/useNativeCurrency'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { EstimatedGas } from './EstimatedGas'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import {
@@ -67,11 +62,8 @@ import {
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { useBalances } from '../../hooks/useBalances'
-
-enum NetworkType {
-  parentChain = 'parentChain',
-  childChain = 'childChain'
-}
+import { TokenBalance } from './TransferPanelMain/TokenBalance'
+import { NetworkType } from './TransferPanelMain/utils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -265,48 +257,6 @@ function ETHBalance({
   )
 }
 
-function TokenBalance({
-  forToken,
-  balance,
-  on,
-  prefix = '',
-  tokenSymbolOverride
-}: {
-  forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
-  balance: BigNumber | null
-  on: NetworkType
-  prefix?: string
-  tokenSymbolOverride?: string
-}) {
-  const isParentChain = on === NetworkType.parentChain
-
-  if (!forToken) {
-    return null
-  }
-
-  if (!balance) {
-    return <StyledLoader />
-  }
-
-  const tokenSymbol = tokenSymbolOverride ?? forToken.symbol
-
-  return (
-    <p>
-      <span className="font-light">{prefix}</span>
-      <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
-        {formatAmount(balance, {
-          decimals: forToken.decimals
-        })}
-      </span>{' '}
-      <TokenSymbolWithExplorerLink
-        token={forToken}
-        tokenSymbolOverride={tokenSymbolOverride}
-        isParentChain={isParentChain}
-      />
-    </p>
-  )
-}
-
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
@@ -336,13 +286,8 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const {
-    childChain,
-    parentChain,
-    childChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, isDepositMode, isTeleportMode } =
+    useNetworksRelationship(networks)
   const setAmount = useSetInputAmount()
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
