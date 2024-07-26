@@ -1,4 +1,4 @@
-import { BigNumber, Signer, Wallet, constants, ethers, utils } from 'ethers'
+import { BigNumber, Wallet, constants, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
