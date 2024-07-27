@@ -92,7 +92,7 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.openTransactionsPanel('pending')
+      cy.openTransactionsPanel('settled')
 
       const destinationTxHash =
         '0x6cecd3bfc3ec73181c4ac0253d3f51e5aa8d26157ca7439ff9ab465de14a436f'

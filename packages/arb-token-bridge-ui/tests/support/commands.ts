@@ -113,6 +113,7 @@ export const connectToApp = () => {
 }
 
 export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
+  cy.log(`opening transactions panel on ${tab}`)
   cy.findByRole('button', { name: /account header button/i })
     .should('be.visible')
     .click()
