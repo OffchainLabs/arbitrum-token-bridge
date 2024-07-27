@@ -123,6 +123,15 @@ export const selectTransactionsHistoryTab = (tab: 'settled' | 'pending') => {
   cy.get('@tab')
     .should('have.attr', 'data-headlessui-state')
     .and('equal', 'selected')
+  
+  return cy.waitUntil(
+    () => cy.findByText(/Showing \d+ \w+ transactions made in/).should('be.visible')
+    {
+      errorMsg: 'Failed to fetch transactions.',
+      timeout: 30_000,
+      interval: 500
+    }
+  )
 }
 
 export const openTransactionsPanel = () => {
@@ -135,12 +144,9 @@ export const openTransactionsPanel = () => {
 
   // Waiting for transactions to be fetched
   return cy.waitUntil(
-    () =>
-      cy
-        .findByText(/Showing \d+ \w+ transactions made in/)
-        .should('be.visible'),
+    () => cy.findByText(/Loading transactions.../).should('be.visible'),
     {
-      errorMsg: 'Failed to fetch transactions.',
+      errorMsg: 'Failed to open transactions panel',
       timeout: 30_000,
       interval: 500
     }
