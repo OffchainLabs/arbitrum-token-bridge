@@ -13,8 +13,7 @@ describe('Transaction History', () => {
     })
     // open tx history panel
     context('open transactions history panel', () => {
-      cy.openTransactionsPanel()
-      cy.selectTransactionsHistoryTab('pending')
+      cy.openTransactionsPanel('pending')
       cy.findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
         .its('length')
         .should('be.gt', 0)
@@ -31,8 +30,7 @@ describe('Transaction History', () => {
       }
     })
     context('open transactions history panel', () => {
-      cy.openTransactionsPanel()
-      cy.selectTransactionsHistoryTab('settled')
+      cy.openTransactionsPanel('settled')
       cy.findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
         .its('length')
         .should('be.gt', 0)

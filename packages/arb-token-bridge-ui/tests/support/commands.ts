@@ -112,7 +112,13 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible').click()
 }
 
-export const selectTransactionsHistoryTab = (tab: 'settled' | 'pending') => {
+export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
+  cy.findByRole('button', { name: /account header button/i })
+    .should('be.visible')
+    .click()
+  cy.findByRole('button', { name: /transactions/i })
+    .should('be.visible')
+    .click()
   cy.findByRole('tab', {
     name: `show ${tab} transactions`
   })
@@ -124,6 +130,7 @@ export const selectTransactionsHistoryTab = (tab: 'settled' | 'pending') => {
     .should('have.attr', 'data-headlessui-state')
     .and('equal', 'selected')
 
+  // Waiting for transactions to be fetched
   return cy.waitUntil(
     () =>
       cy
@@ -131,25 +138,6 @@ export const selectTransactionsHistoryTab = (tab: 'settled' | 'pending') => {
         .should('be.visible'),
     {
       errorMsg: 'Failed to fetch transactions.',
-      timeout: 30_000,
-      interval: 500
-    }
-  )
-}
-
-export const openTransactionsPanel = () => {
-  cy.findByRole('button', { name: /account header button/i })
-    .should('be.visible')
-    .click()
-  cy.findByRole('button', { name: /transactions/i })
-    .should('be.visible')
-    .click()
-
-  // Waiting for transactions to be fetched
-  return cy.waitUntil(
-    () => cy.findByText(/Loading transactions.../).should('be.visible'),
-    {
-      errorMsg: 'Failed to open transactions panel',
       timeout: 30_000,
       interval: 500
     }
@@ -344,7 +332,6 @@ Cypress.Commands.addAll({
   login,
   logout,
   openTransactionsPanel,
-  selectTransactionsHistoryTab,
   resetCctpAllowance,
   fundUserUsdcTestnet,
   fundUserWalletEth,

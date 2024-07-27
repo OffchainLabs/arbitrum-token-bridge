@@ -66,7 +66,7 @@ describe('Redeem ERC20 Deposit', () => {
 
       context('deposit should be redeemed', () => {
         // open transaction history and wait for deposit to fetch data
-        cy.openTransactionsPanel()
+        cy.openTransactionsPanel('pending')
 
         // find the Retry button and the amount in the row
         cy.findByText(
