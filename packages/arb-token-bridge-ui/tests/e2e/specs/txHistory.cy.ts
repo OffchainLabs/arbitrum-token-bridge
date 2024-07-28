@@ -34,13 +34,10 @@ describe('Transaction History', () => {
         timeout: 30_000,
         interval: 500
       }
-    ).then(() => {
-      const numberOfWithdrawals = cy
-        .findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
-        .its('length')
-
-      numberOfWithdrawals.should('be.gt', 0)
-    })
+    )
+    cy.findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
+      .its('length')
+      .should('be.gt', 0)
   })
 
   it('should successfully open and use settled transactions panel', () => {
@@ -59,7 +56,10 @@ describe('Transaction History', () => {
     context('settled tab should be selected after click', () => {
       cy.findByRole('tab', { name: 'show settled transactions' })
         .should('be.visible')
+        .as('settledTab')
         .click()
+
+      cy.get('@settledTab')
         .should('have.attr', 'data-headlessui-state')
         .and('equal', 'selected')
     })
@@ -74,18 +74,12 @@ describe('Transaction History', () => {
         timeout: 30_000,
         interval: 500
       }
-    ).then(() => {
-      const numberOfWithdrawals = cy
-        .findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
-        .its('length')
+    )
 
-      numberOfWithdrawals.should('be.gt', 0)
+    cy.findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
+      .its('length')
+      .should('be.gt', 0)
 
-      const numberOfDeposits = cy
-        .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
-        .its('length')
-
-      numberOfDeposits.should('be.gt', 0)
-    })
+    cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER).its('length').should('be.gt', 0)
   })
 })

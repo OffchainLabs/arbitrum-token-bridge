@@ -25,21 +25,17 @@ describe('Deposit ETH', () => {
   it('should show gas estimations and bridge successfully', () => {
     cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
-      //
-      .then(() => {
-        cy.findGasFeeSummary(zeroToLessThanOneETH)
-        cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-      })
+    cy.findGasFeeSummary(zeroToLessThanOneETH)
+    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
     cy.findMoveFundsButton().click()
-    cy.confirmMetamaskTransaction().then(() => {
-      cy.findByText(depositTime).should('be.visible')
-      cy.findByText(
-        `${formatAmount(ETHAmountToDeposit, {
-          symbol: 'ETH'
-        })}`
-      ).should('be.visible')
-    })
+    cy.confirmMetamaskTransaction()
+    cy.findByText(depositTime).should('be.visible')
+    cy.findByText(
+      `${formatAmount(ETHAmountToDeposit, {
+        symbol: 'ETH'
+      })}`
+    ).should('be.visible')
   })
 
   // TODO

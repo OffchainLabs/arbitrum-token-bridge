@@ -85,36 +85,30 @@ describe('Redeem ERC20 Deposit', () => {
           .click()
 
         // approve redeem transaction
-        cy.confirmMetamaskTransaction().then(() => {
-          cy.wait(15_000).then(() => {
-            // switch to settled transactions
-            cy.findByLabelText('show settled transactions')
-              .should('be.visible')
-              .click()
+        cy.confirmMetamaskTransaction()
+        cy.wait(15_000)
+        // switch to settled transactions
+        cy.findByLabelText('show settled transactions')
+          .should('be.visible')
+          .click()
 
-            // find the same transaction there redeemed successfully
-            cy.findByText(
-              `${formatAmount(wethAmountToDeposit, {
-                symbol: 'WETH'
-              })}`
-            )
+        // find the same transaction there redeemed successfully
+        cy.findByText(
+          `${formatAmount(wethAmountToDeposit, {
+            symbol: 'WETH'
+          })}`
+        )
 
-            // close transaction history
-            cy.findByLabelText('Close side panel').click()
+        // close transaction history
+        cy.findByLabelText('Close side panel').click()
 
-            // wait for the destination balance to update
-            cy.wait(5_000).then(() => {
-              // the balance on the destination chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on childChain')
-                .should('be.visible')
-                .invoke('text')
-                .should(
-                  'eq',
-                  formatAmount(Number(l2ERC20bal) + wethAmountToDeposit)
-                )
-            })
-          })
-        })
+        // wait for the destination balance to update
+        cy.wait(5_000)
+        // the balance on the destination chain should not be the same as before
+        cy.findByLabelText('WETH balance amount on childChain')
+          .should('be.visible')
+          .invoke('text')
+          .should('eq', formatAmount(Number(l2ERC20bal) + wethAmountToDeposit))
       })
     })
   })

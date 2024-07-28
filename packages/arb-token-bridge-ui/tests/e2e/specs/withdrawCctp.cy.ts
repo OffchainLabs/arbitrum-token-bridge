@@ -80,34 +80,29 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.typeAmount(USDCAmountToSend).then(() => {
-          cy.findByText(
-            'Gas estimates are not available for this action.'
-          ).should('be.visible')
-          cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
-          cy.findGasFeeForChain(
-            /You'll have to pay Sepolia gas fee upon claiming./i
-          )
-        })
+        cy.typeAmount(USDCAmountToSend)
+        cy.findByText(
+          'Gas estimates are not available for this action.'
+        ).should('be.visible')
+        cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          /You'll have to pay Sepolia gas fee upon claiming./i
+        )
         cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-          () => {
-            // eslint-disable-next-line
-            cy.wait(40_000)
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
-            })
-          }
-        )
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
+        cy.findByText(
+          `${formatAmount(USDCAmountToSend, {
+            symbol: 'USDC'
+          })}`
+        ).should('be.visible')
       })
     })
 
@@ -126,40 +121,32 @@ describe('Withdraw USDC through CCTP', () => {
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-          () => {
-            // eslint-disable-next-line
-            cy.wait(40_000)
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
+        cy.findByText(
+          `${formatAmount(USDCAmountToSend, {
+            symbol: 'USDC'
+          })}`
+        ).should('be.visible')
 
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
+        // open the tx details popup
+        cy.findAllByLabelText('Transaction details button').first().click()
+        cy.findByText('Transaction details').should('be.visible')
 
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+        cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
 
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
+        // custom destination label in pending tx history should be visible
+        cy.findByLabelText(
+          `Custom address: ${shortenAddress(
+            Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+          )}`
+        ).should('be.visible')
 
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
-            })
-          }
-        )
+        // close popup
+        cy.findByLabelText('Close transaction details popup').click()
       })
     })
   })

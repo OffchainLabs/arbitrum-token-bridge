@@ -25,62 +25,51 @@ describe('Withdraw ETH', () => {
       it('should show gas estimations', () => {
         cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(
-              new RegExp(
-                `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-                'i'
-              )
-            )
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          new RegExp(
+            `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
+            'i'
+          )
+        )
       })
 
       it('should show withdrawal confirmation and withdraw', () => {
         cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
-          //
-          .then(() => {
-            cy.findMoveFundsButton().click()
-            cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
+        cy.findMoveFundsButton().click()
+        cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
-            // the Continue withdrawal button should be disabled at first
-            cy.findByRole('button', {
-              name: /Continue/i
-            }).should('be.disabled')
+        // the Continue withdrawal button should be disabled at first
+        cy.findByRole('button', {
+          name: /Continue/i
+        }).should('be.disabled')
 
-            cy.findByRole('switch', {
-              name: /before I can claim my funds/i
-            })
-              .should('be.visible')
-              .click()
+        cy.findByRole('switch', {
+          name: /before I can claim my funds/i
+        })
+          .should('be.visible')
+          .click()
 
-            cy.findByRole('switch', {
-              name: /after claiming my funds/i
-            })
-              .should('be.visible')
-              .click()
-              .then(() => {
-                // the Continue withdrawal button should not be disabled now
-                cy.findByRole('button', {
-                  name: /Continue/i
-                })
-                  .should('be.enabled')
-                  .click()
-                  .then(() => {
-                    cy.confirmMetamaskTransaction().then(() => {
-                      cy.findByText('an hour').should('be.visible')
-                      cy.findByText(
-                        `${formatAmount(ETHToWithdraw, {
-                          symbol: 'ETH'
-                        })}`
-                      ).should('be.visible')
-                    })
-                  })
-              })
-          })
+        cy.findByRole('switch', {
+          name: /after claiming my funds/i
+        })
+          .should('be.visible')
+          .click()
+        // the Continue withdrawal button should not be disabled now
+        cy.findByRole('button', {
+          name: /Continue/i
+        })
+          .should('be.enabled')
+          .click()
+        cy.confirmMetamaskTransaction()
+        cy.findByText('an hour').should('be.visible')
+        cy.findByText(
+          `${formatAmount(ETHToWithdraw, {
+            symbol: 'ETH'
+          })}`
+        ).should('be.visible')
       })
     })
 

@@ -64,27 +64,20 @@ describe('Deposit ERC20 Token', () => {
 
       context('should show gas estimations', () => {
         cy.typeAmount(ERC20AmountToSend)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
       })
 
       context('should deposit successfully', () => {
-        cy.findMoveFundsButton()
-          .click()
-          .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(depositTime).should('be.visible')
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
-            })
-          })
+        cy.findMoveFundsButton().click()
+        cy.confirmMetamaskTransaction()
+        cy.findByText(depositTime).should('be.visible')
+        cy.findByText(
+          `${formatAmount(ERC20AmountToSend, {
+            symbol: 'WETH'
+          })}`
+        ).should('be.visible')
       })
     })
 
@@ -101,12 +94,9 @@ describe('Deposit ERC20 Token', () => {
 
       context('should show summary', () => {
         cy.typeAmount(ERC20AmountToSend)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
       })
 
       context('should fill custom destination address successfully', () => {
@@ -114,38 +104,30 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should deposit successfully', () => {
-        cy.findMoveFundsButton()
-          .click()
-          .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(depositTime).should('be.visible')
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
+        cy.findMoveFundsButton().click()
+        cy.confirmMetamaskTransaction()
+        cy.findByText(depositTime).should('be.visible')
+        cy.findByText(
+          `${formatAmount(ERC20AmountToSend, {
+            symbol: 'WETH'
+          })}`
+        ).should('be.visible')
 
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
+        // open the tx details popup
+        cy.findAllByLabelText('Transaction details button').first().click()
+        cy.findByText('Transaction details').should('be.visible')
 
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+        cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
 
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
+        // custom destination label in pending tx history should be visible
+        cy.findByLabelText(
+          `Custom address: ${shortenAddress(
+            Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+          )}`
+        ).should('be.visible')
 
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
-            })
-          })
+        // close popup
+        cy.findByLabelText('Close transaction details popup').click()
       })
 
       context('deposit should complete successfully', () => {
@@ -171,21 +153,17 @@ describe('Deposit ERC20 Token', () => {
           }
         ).then(() => {
           // open the tx details popup
-          cy.findAllByLabelText('Transaction details button')
-            .first()
-            .click()
-            .then(() => {
-              cy.findByText('Transaction details').should('be.visible')
+          cy.findAllByLabelText('Transaction details button').first().click()
+          cy.findByText('Transaction details').should('be.visible')
 
-              cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+          cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
 
-              // custom destination label in pending tx history should be visible
-              cy.findByLabelText(
-                `Custom address: ${shortenAddress(
-                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                )}`
-              ).should('be.visible')
-            })
+          // custom destination label in pending tx history should be visible
+          cy.findByLabelText(
+            `Custom address: ${shortenAddress(
+              Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+            )}`
+          ).should('be.visible')
 
           // close popup
           cy.findByLabelText('Close transaction details popup').click()
