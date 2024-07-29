@@ -4,7 +4,7 @@ const CLAIMABLE_ROW_IDENTIFIER = /claimable-row-*/i
 describe('Transaction History', () => {
   it('should successfully open and use pending transactions panel', () => {
     cy.login({
-      networkType: 'L1',
+      networkType: 'parentChain',
       networkName: 'sepolia',
       query: {
         sourceChain: 'sepolia',
@@ -45,7 +45,7 @@ describe('Transaction History', () => {
 
   it('should successfully open and use settled transactions panel', () => {
     cy.login({
-      networkType: 'L1',
+      networkType: 'parentChain',
       networkName: 'sepolia',
       query: {
         sourceChain: 'sepolia',

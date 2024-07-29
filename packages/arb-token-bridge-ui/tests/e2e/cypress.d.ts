@@ -9,7 +9,14 @@ import {
   fundUserUsdcTestnet,
   fundUserWalletEth,
   searchAndSelectToken,
-  fillCustomDestinationAddress
+  fillCustomDestinationAddress,
+  typeAmount,
+  findSourceChainButton,
+  findDestinationChainButton,
+  findGasFeeSummary,
+  findGasFeeForChain,
+  findMoveFundsButton,
+  findSelectTokenButton
 } from '../support/commands'
 
 declare global {
@@ -28,8 +35,21 @@ declare global {
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
-      searchAndSelectToken: typeof searchAndSelectToken
-      fillCustomDestinationAddress: typeof fillCustomDestinationAddress
+      searchAndSelectToken({
+        tokenName,
+        tokenAddress
+      }: {
+        tokenName: string
+        tokenAddress: string
+      }): typeof searchAndSelectToken
+      fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
+      typeAmount: typeof typeAmount
+      findSourceChainButton: typeof findSourceChainButton
+      findDestinationChainButton: typeof findDestinationChainButton
+      findGasFeeForChain: typeof findGasFeeForChain
+      findGasFeeSummary: typeof findGasFeeSummary
+      findMoveFundsButton: typeof findMoveFundsButton
+      findSelectTokenButton: typeof findSelectTokenButton
     }
   }
 }

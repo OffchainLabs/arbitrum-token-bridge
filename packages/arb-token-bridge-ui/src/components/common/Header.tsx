@@ -8,6 +8,7 @@ import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
+import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 
 function HeaderAccountOrConnectWalletButton() {
@@ -23,14 +24,18 @@ export function Header() {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 
+  const destinationChainStyle = useDestinationChainStyle()
+
   return (
     <header
       className={twMerge(
         'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:relative sm:h-16 sm:px-6 sm:backdrop-blur-none [body.menu-open_&]:fixed',
         isTestnet
           ? 'sm:border-b sm:border-white sm:bg-white/20'
-          : 'sm:bg-transparent'
+          : 'sm:bg-transparent',
+        destinationChainStyle.borderColor ? 'sm:border-b' : ''
       )}
+      style={destinationChainStyle}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
         <Image

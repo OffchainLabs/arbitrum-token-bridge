@@ -33,9 +33,9 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { getProvider } from '../components/TransactionHistory/helpers'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 import { isTeleport } from '../token-bridge-sdk/teleport'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -430,8 +430,8 @@ export const useArbTokenBridge = (
       return
     }
 
-    const parentChainProvider = getProvider(event.parentChainId)
-    const childChainProvider = getProvider(event.childChainId)
+    const parentChainProvider = getProviderForChainId(event.parentChainId)
+    const childChainProvider = getProviderForChainId(event.childChainId)
 
     const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
@@ -486,8 +486,8 @@ export const useArbTokenBridge = (
       return
     }
 
-    const parentChainProvider = getProvider(event.parentChainId)
-    const childChainProvider = getProvider(event.childChainId)
+    const parentChainProvider = getProviderForChainId(event.parentChainId)
+    const childChainProvider = getProviderForChainId(event.childChainId)
 
     const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
