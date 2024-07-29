@@ -152,12 +152,20 @@ export function SourceNetworkBox({
                 prefix={selectedToken ? '' : 'Balance: '}
               />
               {/* Only show ETH balance on parent chain */}
-              {isDepositMode && <ETHBalance balance={ethParentBalance} />}
+              {isDepositMode && (
+                <ETHBalance
+                  balance={ethParentBalance}
+                  on={NetworkType.parentChain}
+                />
+              )}
             </>
           ) : (
             <ETHBalance
               balance={isDepositMode ? ethParentBalance : ethChildBalance}
               prefix={selectedToken ? '' : 'Balance: '}
+              on={
+                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
+              }
             />
           )}
         </BalancesContainer>

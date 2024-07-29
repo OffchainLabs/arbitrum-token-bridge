@@ -121,13 +121,21 @@ export function DestinationNetworkBox({
                       prefix={selectedToken ? '' : 'Balance: '}
                     />
                     {!isDepositMode && (
-                      <ETHBalance balance={ethParentBalance} />
+                      <ETHBalance
+                        balance={ethParentBalance}
+                        on={NetworkType.parentChain}
+                      />
                     )}
                   </>
                 ) : (
                   <ETHBalance
                     balance={isDepositMode ? ethChildBalance : ethParentBalance}
                     prefix={selectedToken ? '' : 'Balance: '}
+                    on={
+                      isDepositMode
+                        ? NetworkType.childChain
+                        : NetworkType.parentChain
+                    }
                   />
                 )}
               </>
