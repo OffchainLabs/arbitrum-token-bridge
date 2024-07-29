@@ -8,14 +8,15 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
+
 import {
   NetworkName,
-  getInitialERC20Balance,
-  NetworkType
+  checkForAssertions,
+  generateActivityOnChains,
+  NetworkType,
+  fundEth
 } from './tests/support/common'
-import { CommonAddress } from './src/util/CommonAddressUtils'
-import { MULTICALL_TESTNET_ADDRESS } from './src/constants'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+
 import {
   defaultL2Network,
   defaultL3Network,
@@ -104,14 +105,25 @@ export default defineConfig({
           .connect(localWallet.connect(parentProvider))
           .transfer(userWalletAddress, BigNumber.from(50000000))
 
-        // Fund the userWallet. We do this to run tests on a small amount of ETH.
-        await Promise.all([
-          fundWalletEth(userWallet.address, 'parentChain', 2),
-          fundWalletEth(userWallet.address, 'childChain', 2)
-        ])
-
         // Wrap ETH to test ERC-20 transactions
         await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
+        // Fund the userWallet. We do this to run tests on a small amount of ETH.
+        await Promise.all([
+          fundEth({
+            networkType: 'parentChain',
+            address: userWalletAddress,
+            parentProvider,
+            childProvider,
+            sourceWallet: localWallet
+          }),
+          fundEth({
+            networkType: 'childChain',
+            address: userWalletAddress,
+            parentProvider,
+            childProvider,
+            sourceWallet: localWallet
+          })
+        ])
 
         // Approve WETH
         await approveWeth()
@@ -131,6 +143,15 @@ export default defineConfig({
           l2Provider: childProvider
         })
       }
+
+      // Generate activity on chains so that assertions get posted and claims can be made
+      generateActivityOnChains({
+        parentProvider,
+        childProvider,
+        wallet: localWallet
+      })
+      // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
+      checkForAssertions({ parentProvider, isOrbitTest })
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
@@ -228,25 +249,6 @@ async function deployERC20ToL2(erc20L1Address: string) {
     childProvider
   })
   await deploy.wait()
-}
-
-async function fundWalletEth(
-  address: string,
-  networkType: 'parentChain' | 'childChain',
-  amount: number
-) {
-  console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than {amount} eth
-  if (balance.lt(utils.parseEther(amount.toString()))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther(amount.toString())
-    })
-    await tx.wait()
-  }
 }
 
 function getWethContract(
