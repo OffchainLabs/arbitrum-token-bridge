@@ -123,7 +123,7 @@ export function DestinationNetworkBox({
                     {!isDepositMode && (
                       <ETHBalance
                         balance={ethParentBalance}
-                        on={NetworkType.childChain}
+                        on={NetworkType.parentChain}
                       />
                     )}
                   </>

@@ -85,14 +85,14 @@ describe('Withdraw ETH', () => {
                   .should('be.enabled')
                   .click()
 
-                cy.confirmMetamaskTransaction().then(() => {
-                  cy.findByText('an hour').should('be.visible')
-                  cy.findByText(
-                    `${formatAmount(ETHToWithdraw, {
-                      symbol: 'ETH'
-                    })}`
-                  ).should('be.visible')
-                })
+                cy.confirmMetamaskTransaction()
+
+                cy.findByText('an hour').should('be.visible')
+                cy.findByText(
+                  `${formatAmount(ETHToWithdraw, {
+                    symbol: 'ETH'
+                  })}`
+                ).should('be.visible')
               })
           })
       })
