@@ -227,7 +227,7 @@ jobs:
           command: ${{ matrix.orbit-test == '1' && 'yarn test:e2e:orbit --browser chromium' || 'yarn test:e2e --browser chromium' }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
-          spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*          
+          spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
         env:
           DISPLAY: :0.0
           TEST_FILE: ${{ matrix.tests.file }}
