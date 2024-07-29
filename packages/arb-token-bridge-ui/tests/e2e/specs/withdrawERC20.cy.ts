@@ -117,14 +117,14 @@ describe('Withdraw ERC20 Token', () => {
               .should('be.enabled')
               .click()
 
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
-              cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
-            })
+            cy.confirmMetamaskTransaction()
+
+            cy.findByText(
+              `${formatAmount(ERC20AmountToSend, {
+                symbol: 'WETH'
+              })}`
+            ).should('be.visible')
+            cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
           })
       })
     })
@@ -142,34 +142,32 @@ describe('Withdraw ERC20 Token', () => {
         formatAmount(ERC20AmountToSend, {
           symbol: 'WETH'
         })
-      )
+      ).click()
+
+      cy.confirmMetamaskTransaction()
+
+      cy.findByLabelText('show settled transactions')
+        .should('be.visible')
         .click()
-        .then(() => {
-          cy.confirmMetamaskTransaction().then(() => {
-            cy.findByLabelText('show settled transactions')
-              .should('be.visible')
-              .click()
 
-            cy.findByText(
-              `${formatAmount(ERC20AmountToSend, {
-                symbol: 'WETH'
-              })}`
-            ).should('be.visible')
+      cy.findByText(
+        `${formatAmount(ERC20AmountToSend, {
+          symbol: 'WETH'
+        })}`
+      ).should('be.visible')
 
-            cy.findByLabelText('Close side panel').click()
+      cy.findByLabelText('Close side panel').click()
 
-            cy.searchAndSelectToken({
-              tokenName: 'WETH',
-              tokenAddress: l2WethAddress
-            })
+      cy.searchAndSelectToken({
+        tokenName: 'WETH',
+        tokenAddress: l2WethAddress
+      })
 
-            // the balance on the destination chain should not be the same as before
-            cy.findByLabelText('WETH balance amount on parentChain')
-              .should('be.visible')
-              .its('text')
-              .should('not.eq', l1ERC20bal)
-          })
-        })
+      // the balance on the destination chain should not be the same as before
+      cy.findByLabelText('WETH balance amount on parentChain')
+        .should('be.visible')
+        .its('text')
+        .should('not.eq', l1ERC20bal)
     })
 
     it('should withdraw ERC-20 to custom destination address successfully', () => {
