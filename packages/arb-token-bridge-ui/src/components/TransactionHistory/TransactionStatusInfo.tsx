@@ -153,6 +153,7 @@ export const TransactionStatusInfo = () => {
       showArrow
       truncate={false}
       variant="primary"
+      aria-label="Open Transaction History"
     >
       <Content
         numClaimableTransactions={numClaimableTransactions}

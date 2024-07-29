@@ -51,6 +51,7 @@ import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
+import { NetworkType } from './TransferPanelMain/utils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -227,10 +228,12 @@ function StyledLoader() {
 
 export function ETHBalance({
   balance,
-  prefix = ''
+  prefix = '',
+  on
 }: {
   balance: BigNumber | null
   prefix?: string
+  on: NetworkType
 }) {
   if (!balance) {
     return <StyledLoader />
@@ -239,7 +242,9 @@ export function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
+      <span aria-label={`ETH balance amount on ${on}`}>
+        {formatAmount(balance, { symbol: ether.symbol })}
+      </span>
     </p>
   )
 }
