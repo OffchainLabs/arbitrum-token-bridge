@@ -138,8 +138,10 @@ describe('Withdraw ERC20 Token', () => {
         .should('be.visible')
         .click()
 
-      cy.findClaimButton(formatAmount(ERC20AmountToSend, {
-        symbol: 'WETH'}
+      cy.findClaimButton(
+        formatAmount(ERC20AmountToSend, {
+          symbol: 'WETH'
+        })
       )
         .click()
         .then(() => {
