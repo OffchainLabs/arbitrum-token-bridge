@@ -7,6 +7,7 @@ import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
+import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -46,8 +47,8 @@ export const getL1NetworkConfig = (): NetworkConfig => {
     symbol: 'ETH',
     isTestnet: true,
     multiCall: isOrbitTest
-      ? defaultL2Network.tokenBridge.childMultiCall
-      : defaultL2Network.tokenBridge.parentMultiCall
+      ? defaultL2Network.tokenBridge!.childMultiCall
+      : defaultL2Network.tokenBridge!.parentMultiCall
   }
 }
 
@@ -61,8 +62,8 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     symbol: 'ETH',
     isTestnet: true,
     multiCall: isOrbitTest
-      ? defaultL3Network.tokenBridge.childMultiCall
-      : defaultL2Network.tokenBridge.childMultiCall
+      ? defaultL3Network.tokenBridge!.childMultiCall
+      : defaultL2Network.tokenBridge!.childMultiCall
   }
 }
 
@@ -180,25 +181,42 @@ export const wait = (ms = 0): Promise<void> => {
   return new Promise(res => setTimeout(res, ms))
 }
 
-export async function generateActivityOnChains({
-  parentChainProvider,
-  childChainProvider,
-  wallet
+export async function fundEth({
+  address, // wallet address where funding is required
+  networkType, // parentChain or childChain
+  parentProvider,
+  childProvider,
+  sourceWallet // source wallet that will fund the `address`
 }: {
-  parentChainProvider: Provider
-  childChainProvider: Provider
-  wallet: Wallet
+  address: string
+  parentProvider: Provider
+  childProvider: Provider
+  sourceWallet: Wallet
+  networkType: NetworkType
 }) {
-  async function fundWalletEth(walletAddress, networkType: 'L1' | 'L2') {
-    const provider =
-      networkType === 'L1' ? parentChainProvider : childChainProvider
-    const tx = await wallet.connect(provider).sendTransaction({
-      to: walletAddress,
-      value: utils.parseEther('1')
+  console.log(`Funding ETH to user wallet: ${networkType}...`)
+  const provider =
+    networkType === 'parentChain' ? parentProvider : childProvider
+  const balance = await provider.getBalance(address)
+  // Fund only if the balance is less than 2 eth
+  if (balance.lt(utils.parseEther('2'))) {
+    const tx = await sourceWallet.connect(provider).sendTransaction({
+      to: address,
+      value: utils.parseEther('2')
     })
     await tx.wait()
   }
+}
 
+export async function generateActivityOnChains({
+  parentProvider,
+  childProvider,
+  wallet
+}: {
+  parentProvider: Provider
+  childProvider: Provider
+  wallet: Wallet
+}) {
   const keepMining = async (miner: Signer) => {
     while (true) {
       await (
@@ -215,12 +233,24 @@ export async function generateActivityOnChains({
   }
   // whilst waiting for status we mine on both l1 and l2
   console.log('Generating activity on L1...')
-  const minerL1 = Wallet.createRandom().connect(parentChainProvider)
-  await fundWalletEth(await minerL1.getAddress(), 'L1')
+  const minerL1 = Wallet.createRandom().connect(parentProvider)
+  await fundEth({
+    address: await minerL1.getAddress(),
+    networkType: 'parentChain',
+    parentProvider,
+    childProvider,
+    sourceWallet: wallet
+  })
 
   console.log('Generating activity on L2...')
-  const minerL2 = Wallet.createRandom().connect(childChainProvider)
-  await fundWalletEth(await minerL2.getAddress(), 'L2')
+  const minerL2 = Wallet.createRandom().connect(childProvider)
+  await fundEth({
+    address: await minerL2.getAddress(),
+    networkType: 'childChain',
+    parentProvider,
+    childProvider,
+    sourceWallet: wallet
+  })
 
   await Promise.allSettled([keepMining(minerL1), keepMining(minerL2)])
 }
@@ -230,25 +260,41 @@ export async function checkForAssertions({
 }: {
   parentChainProvider: Provider
 }) {
+  const isOrbitTest =
+    typeof Cypress !== 'undefined' && Cypress.env('ORBIT_TEST') == '1'
+
   const abi = [
     'function latestConfirmed() public view returns (uint64)',
     'function latestNodeCreated() public view returns (uint64)'
   ]
 
+  const rollupAddress = isOrbitTest
+    ? defaultL3Network.ethBridge.rollup
+    : defaultL2Network.ethBridge.rollup
+
   const rollupContract = new ethers.Contract(
-    defaultL2Network.ethBridge.rollup,
+    rollupAddress,
     abi,
     parentChainProvider
   )
 
-  while (true) {
+  try {
+    while (true) {
+      console.log(
+        `***** Assertion status: ${(
+          await rollupContract.latestNodeCreated()
+        ).toString()} created / ${(
+          await rollupContract.latestConfirmed()
+        ).toString()} confirmed`
+      )
+      await wait(10000)
+    }
+  } catch (e) {
     console.log(
-      `***** Assertion status: ${(
-        await rollupContract.latestNodeCreated()
-      ).toString()} created / ${(
-        await rollupContract.latestConfirmed()
-      ).toString()} confirmed`
+      `Could not fetch assertions for '${rollupAddress}' on ChainId ${await getChainIdFromProvider(
+        parentChainProvider
+      )}`,
+      e
     )
-    await wait(10000)
   }
 }

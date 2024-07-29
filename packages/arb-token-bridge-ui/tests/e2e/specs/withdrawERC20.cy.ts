@@ -150,13 +150,11 @@ describe('Withdraw ERC20 Token', () => {
               .should('be.visible')
               .click()
 
-            cy.findAllByText(
+            cy.findByText(
               `${formatAmount(ERC20AmountToSend, {
                 symbol: 'WETH'
               })}`
-            )
-              .first()
-              .should('be.visible')
+            ).should('be.visible')
 
             cy.findByLabelText('Close side panel').click()
 

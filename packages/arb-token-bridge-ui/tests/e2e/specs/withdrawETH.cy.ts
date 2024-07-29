@@ -119,13 +119,11 @@ describe('Withdraw ETH', () => {
                 .should('be.visible')
                 .click()
 
-              cy.findAllByText(
+              cy.findByText(
                 `${formatAmount(ETHToWithdraw, {
                   symbol: 'ETH'
                 })}`
-              )
-                .first()
-                .should('be.visible')
+              ).should('be.visible')
 
               cy.findByLabelText('Close side panel').click()
 
