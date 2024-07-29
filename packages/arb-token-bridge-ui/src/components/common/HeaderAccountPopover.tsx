@@ -19,6 +19,7 @@ import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { Transition } from './Transition'
 import { CustomBoringAvatar } from './CustomBoringAvatar'
+import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 
 export function HeaderAccountPopover({
   isCorrectNetworkConnected = true
@@ -43,6 +44,8 @@ export function HeaderAccountPopover({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
+  const destinationChainStyle = useDestinationChainStyle()
+
   const [showCopied, setShowCopied] = useState(false)
 
   function copy(value: string) {
@@ -65,6 +68,7 @@ export function HeaderAccountPopover({
             ? 'sm:border-white sm:ui-not-open:bg-white/20'
             : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10'
         )}
+        style={destinationChainStyle}
         role="button"
         aria-label="Account Header Button"
       >

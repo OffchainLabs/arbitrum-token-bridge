@@ -15,8 +15,7 @@ import {
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getInitialERC20Balance,
-  zeroToLessThanOneETH
+  getInitialERC20Balance
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
@@ -54,7 +53,17 @@ export function login({
   function _startWebApp() {
     const sourceChain =
       networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
-    startWebApp(url, { ...query, sourceChain })
+
+    // when testing Orbit chains we want to set destination chain to L3
+    const destinationChain =
+      networkType === 'parentChain' && network.chainId === '412346'
+        ? 'l3-localhost'
+        : ''
+    startWebApp(url, {
+      ...query,
+      sourceChain,
+      destinationChain
+    })
   }
 
   shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
@@ -315,6 +324,12 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function findClaimButton(
+  amountToClaim: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText(`Claim ${amountToClaim}`)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -331,5 +346,6 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  findSelectTokenButton
+  findSelectTokenButton,
+  findClaimButton
 })
