@@ -6,12 +6,13 @@ import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
-import { defaultL2Network } from '../../src/util/networks'
+import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
   | 'custom-localhost'
   | 'arbitrum-localhost'
+  | 'l3-localhost'
   | 'arbitrum-sepolia'
   | 'mainnet'
   | 'sepolia'
@@ -25,25 +26,43 @@ type NetworkConfig = {
   multiCall: string
 }
 
+export const getL1NetworkName = () => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  return isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local'
+}
+
+export const getL2NetworkName = () => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  return isOrbitTest ? 'L3 Local' : 'Arbitrum Local'
+}
+
 export const getL1NetworkConfig = (): NetworkConfig => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+
   return {
-    networkName: 'custom-localhost',
+    networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
-    chainId: '1337',
+    chainId: isOrbitTest ? '412346' : '1337',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: defaultL2Network.tokenBridge.parentMultiCall
+    multiCall: isOrbitTest
+      ? defaultL2Network.tokenBridge.childMultiCall
+      : defaultL2Network.tokenBridge.parentMultiCall
   }
 }
 
 export const getL2NetworkConfig = (): NetworkConfig => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+
   return {
-    networkName: 'arbitrum-localhost',
+    networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
-    chainId: '412346',
+    chainId: isOrbitTest ? '333333' : '412346',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: defaultL2Network.tokenBridge.childMultiCall
+    multiCall: isOrbitTest
+      ? defaultL3Network.tokenBridge.childMultiCall
+      : defaultL2Network.tokenBridge.childMultiCall
   }
 }
 
@@ -69,9 +88,6 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const l1WethGateway = defaultL2Network.tokenBridge.parentWethGateway
-export const wethTokenAddressL1 = defaultL2Network.tokenBridge.parentWeth
-export const wethTokenAddressL2 = defaultL2Network.tokenBridge.childWeth
 export const ERC20TokenName = 'IntArbTestToken'
 export const ERC20TokenSymbol = 'IARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'

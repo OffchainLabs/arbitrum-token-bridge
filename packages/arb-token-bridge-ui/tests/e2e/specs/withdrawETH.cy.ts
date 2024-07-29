@@ -4,6 +4,8 @@
 
 import {
   getInitialETHBalance,
+  getL1NetworkName,
+  getL2NetworkName,
   zeroToLessThanOneETH
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -28,8 +30,8 @@ describe('Withdraw ETH', () => {
   context('user has some ETH and is on L2', () => {
     it('should show form fields correctly', () => {
       cy.login({ networkType: 'childChain' })
-      cy.findSourceChainButton('Arbitrum Local')
-      cy.findDestinationChainButton('Ethereum Local')
+      cy.findSourceChainButton(getL2NetworkName())
+      cy.findDestinationChainButton(getL1NetworkName())
       cy.findMoveFundsButton().should('be.disabled')
     })
 
@@ -40,9 +42,12 @@ describe('Withdraw ETH', () => {
           //
           .then(() => {
             cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
             cy.findGasFeeForChain(
-              /You'll have to pay Ethereum Local gas fee upon claiming./i
+              new RegExp(
+                `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
+                'i'
+              )
             )
           })
       })
