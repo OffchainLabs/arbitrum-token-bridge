@@ -77,23 +77,18 @@ export function useMaxAmount({
       return
     }
 
-    try {
-      setLoadingMaxAmount(true)
+    setLoadingMaxAmount(true)
 
-      const nativeCurrencyBalanceFloat = parseFloat(
-        utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
-      )
-      const estimatedTotalGasFees =
-        (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
-      const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
-      // make sure it's always a positive number
-      // if it's negative, set it to user's balance to show insufficient for gas error
-      setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoadingMaxAmount(false)
-    }
+    const nativeCurrencyBalanceFloat = parseFloat(
+      utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
+    )
+    const estimatedTotalGasFees =
+      (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
+    const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
+    // make sure it's always a positive number
+    // if it's negative, set it to user's balance to show insufficient for gas error
+    setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
+    setLoadingMaxAmount(false)
   }, [
     nativeCurrency,
     ethParentBalance,
