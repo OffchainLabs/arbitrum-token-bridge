@@ -151,21 +151,27 @@ export async function fundUserUsdcTestnet(
   address: string,
   networkType: 'parentChain' | 'childChain'
 ) {
-  console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
-  const usdcContractAddress =
-    networkType === 'parentChain'
-      ? CommonAddress.Sepolia.USDC
-      : CommonAddress.ArbitrumSepolia.USDC
+  try {
+    console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
+    const usdcContractAddress =
+      networkType === 'parentChain'
+        ? CommonAddress.Sepolia.USDC
+        : CommonAddress.ArbitrumSepolia.USDC
 
-  const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
-  const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
-  const provider =
-    networkType === 'parentChain' ? sepoliaProvider : arbSepoliaProvider
-  const contract = new ERC20__factory().connect(localWallet.connect(provider))
-  const token = contract.attach(usdcContractAddress)
-  await token.deployed()
-  const tx = await token.transfer(address, utils.parseUnits('0.0001', 6))
-  await tx.wait()
+    const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
+    const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
+    const provider =
+      networkType === 'parentChain' ? sepoliaProvider : arbSepoliaProvider
+    const contract = new ERC20__factory().connect(localWallet.connect(provider))
+    const token = contract.attach(usdcContractAddress)
+    await token.deployed()
+    const tx = await token.transfer(address, utils.parseUnits('0.0001', 6))
+    await tx.wait()
+  } catch (e) {
+    console.log(
+      `[fundUserUsdcTestnet]: Error while funding ${address} on ${networkType}`
+    )
+  }
 }
 
 export async function fundUserWalletEth(

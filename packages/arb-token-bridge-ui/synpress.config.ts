@@ -122,12 +122,6 @@ export default defineConfig({
           l2Provider: childProvider
         })
 
-        config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
-          erc20L1Address: l1ERC20Token.address,
-          l1Provider: parentProvider,
-          l2Provider: childProvider
-        })
-
         config.env.REDEEM_RETRYABLE_TEST_TX =
           await generateTestTxForRedeemRetryable()
 
@@ -152,12 +146,9 @@ export default defineConfig({
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
-
+      console.log(localWallet.address)
       config.env.L1_WETH_ADDRESS = l1WethAddress
       config.env.L2_WETH_ADDRESS = l2WethAddress
-
-      config.env.REDEEM_RETRYABLE_TEST_TX =
-        await generateTestTxForRedeemRetryable()
 
       synpressPlugins(on, config)
       setupCypressTasks(on)

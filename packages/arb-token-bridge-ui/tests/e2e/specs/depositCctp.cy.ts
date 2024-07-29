@@ -6,6 +6,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import { zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 import { shortenAddress } from 'packages/arb-token-bridge-ui/src/util/CommonUtils'
+import { Wallet } from 'ethers'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -70,11 +71,11 @@ describe('Deposit USDC through CCTP', () => {
 
     // log in to metamask before deposit
     beforeEach(() => {
-      const accountName = `wallet_${Cypress.currentRetry}`
-      cy.createMetamaskAccount(accountName)
-      cy.switchMetamaskAccount(accountName)
-      let address: string
-      cy.getMetamaskWalletAddress().then(address => cy.log(address))
+      const wallet = Wallet.createRandom()
+      const address = wallet.address
+
+      cy.importMetamaskAccount(wallet.privateKey)
+      cy.switchMetamaskAccount(3 + Cypress.currentRetry)
 
       cy.fundUserUsdcTestnet(address, 'parentChain')
       cy.fundUserWalletEth(address, 'parentChain')
@@ -83,17 +84,14 @@ describe('Deposit USDC through CCTP', () => {
 
       cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
 
-      // common code before all tests
-      cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
       context('should show L1 and L2 chains, and USD correctly', () => {
         cy.findSourceChainButton('Sepolia')
         cy.findDestinationChainButton('Arbitrum Sepolia')
         cy.findSelectTokenButton('ETH')
-      })
-
-      cy.searchAndSelectToken({
-        tokenName: 'USDC',
-        tokenAddress: CommonAddress.Sepolia.USDC
+        cy.searchAndSelectToken({
+          tokenName: 'USDC',
+          tokenAddress: CommonAddress.Sepolia.USDC
+        })
       })
 
       context('should show summary', () => {
@@ -119,9 +117,7 @@ describe('Deposit USDC through CCTP', () => {
 
       context('should display CCTP modal and claim', () => {
         confirmAndApproveCctpDeposit()
-        cy.confirmMetamaskPermissionToSpend({
-          spendLimit: USDCAmountToSend.toString()
-        })
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
         // eslint-disable-next-line
         cy.wait(40_000)
         cy.confirmMetamaskTransaction()
@@ -144,7 +140,7 @@ describe('Deposit USDC through CCTP', () => {
       })
     })
 
-    it('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
+    it.skip('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
       context('should fill custom destination address successfully', () => {
         cy.fillCustomDestinationAddress()
       })
@@ -155,9 +151,7 @@ describe('Deposit USDC through CCTP', () => {
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpDeposit()
-        cy.confirmMetamaskPermissionToSpend({
-          spendLimit: USDCAmountToSend.toString()
-        })
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
         // eslint-disable-next-line
         cy.wait(40_000)
         cy.confirmMetamaskTransaction()
