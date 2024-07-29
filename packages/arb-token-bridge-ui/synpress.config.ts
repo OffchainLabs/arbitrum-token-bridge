@@ -9,7 +9,13 @@ import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
 
-import { NetworkName, NetworkType } from './tests/support/common'
+import {
+  NetworkName,
+  checkForAssertions,
+  generateActivityOnChains,
+  NetworkType,
+  fundEth
+} from './tests/support/common'
 
 import {
   defaultL2Network,
@@ -30,16 +36,16 @@ const isOrbitTest = process.env.E2E_ORBIT == 'true'
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
 const l1WethGateway = isOrbitTest
-  ? defaultL3Network.tokenBridge.parentWethGateway
-  : defaultL2Network.tokenBridge.parentWethGateway
+  ? defaultL3Network.tokenBridge!.parentWethGateway
+  : defaultL2Network.tokenBridge!.parentWethGateway
 
 const l1WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge.parentWeth
-  : defaultL2Network.tokenBridge.parentWeth
+  ? defaultL3Network.tokenBridge!.parentWeth
+  : defaultL2Network.tokenBridge!.parentWeth
 
 const l2WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge.childWeth
-  : defaultL2Network.tokenBridge.childWeth
+  ? defaultL3Network.tokenBridge!.childWeth
+  : defaultL2Network.tokenBridge!.childWeth
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -101,8 +107,20 @@ export default defineConfig({
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
       await Promise.all([
-        fundUserWalletEth('parentChain'),
-        fundUserWalletEth('childChain')
+        fundEth({
+          networkType: 'parentChain',
+          address: userWalletAddress,
+          parentProvider,
+          childProvider,
+          sourceWallet: localWallet
+        }),
+        fundEth({
+          networkType: 'childChain',
+          address: userWalletAddress,
+          parentProvider,
+          childProvider,
+          sourceWallet: localWallet
+        })
       ])
 
       // Wrap ETH to test ERC-20 transactions
@@ -110,6 +128,15 @@ export default defineConfig({
 
       // Approve WETH
       await approveWeth()
+
+      // Generate activity on chains so that assertions get posted and claims can be made
+      generateActivityOnChains({
+        parentProvider,
+        childProvider,
+        wallet: localWallet
+      })
+      // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
+      checkForAssertions({ parentProvider, isOrbitTest })
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
@@ -215,22 +242,6 @@ async function deployERC20ToL2(erc20L1Address: string) {
     childProvider
   })
   await deploy.wait()
-}
-
-async function fundUserWalletEth(networkType: NetworkType) {
-  console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const address = await userWallet.getAddress()
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 2 eth
-  if (balance.lt(utils.parseEther('2'))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther('2')
-    })
-    await tx.wait()
-  }
 }
 
 function getWethContract(

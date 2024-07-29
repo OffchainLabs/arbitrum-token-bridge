@@ -15,8 +15,7 @@ import {
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getInitialERC20Balance,
-  zeroToLessThanOneETH
+  getInitialERC20Balance
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
@@ -332,6 +331,12 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function findClaimButton(
+  amountToClaim: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText(`Claim ${amountToClaim}`)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -348,5 +353,6 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  findSelectTokenButton
+  findSelectTokenButton,
+  findClaimButton
 })
