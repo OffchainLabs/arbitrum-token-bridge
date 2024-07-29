@@ -87,7 +87,10 @@ export const useSelectedToken = () => {
       : null
   }, [shouldFetch, parentChain.id, childChain.id, tokenFromSearchParams])
 
-  const { data, mutate } = useSWRImmutable(queryKey, fetcher)
+  const { data, mutate: refreshSelectedToken } = useSWRImmutable(
+    queryKey,
+    fetcher
+  )
 
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) =>
@@ -95,7 +98,7 @@ export const useSelectedToken = () => {
     [setTokenQueryParam]
   )
 
-  return [data ?? null, setSelectedToken, mutate] as const
+  return [data ?? null, setSelectedToken, refreshSelectedToken] as const
 }
 
 async function getUsdcToken({

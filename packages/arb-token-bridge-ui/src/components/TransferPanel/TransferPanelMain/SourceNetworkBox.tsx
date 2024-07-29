@@ -12,7 +12,7 @@ import {
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
 import { NetworkType } from './utils'
-import { useActions, useAppState } from '../../../state'
+import { useActions } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
@@ -31,6 +31,7 @@ import { TransferPanelMainInput } from '../TransferPanelMainInput'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 export function SourceNetworkBox({
   amount,
@@ -51,9 +52,7 @@ export function SourceNetworkBox({
   const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -81,13 +80,13 @@ export function SourceNetworkBox({
         destinationChainId: networks.destinationChain.id
       })
 
-      actions.app.setSelectedToken(null)
+      setSelectedToken(null)
     },
     [
-      actions.app,
       networks.destinationChain.id,
       networks.sourceChain.id,
-      setNetworks
+      setNetworks,
+      setSelectedToken
     ]
   )
 

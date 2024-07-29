@@ -13,7 +13,6 @@ import { TokenBalance } from './TokenBalance'
 import { useAccount } from 'wagmi'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { NetworkType } from './utils'
-import { useAppState } from '../../../state'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
@@ -24,6 +23,7 @@ import {
   useSelectedTokenBalances
 } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 export function DestinationNetworkBox({
   customFeeTokenBalances,
@@ -39,9 +39,7 @@ export function DestinationNetworkBox({
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
     useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
