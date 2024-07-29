@@ -50,7 +50,7 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
 
   const queryKey = useCallback(
     (type: 'eth' | 'erc20') => {
-      if (typeof walletAddressLowercased === 'undefined' && type === 'erc20') {
+      if (typeof walletAddressLowercased === 'undefined') {
         // Don't fetch
         return null
       }

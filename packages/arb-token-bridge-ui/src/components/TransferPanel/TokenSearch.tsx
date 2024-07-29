@@ -368,9 +368,11 @@ function TokensPanel({
     isDepositMode,
     isArbitrumOne,
     isArbitrumSepolia,
+    isParentChainArbitrumOne,
+    isParentChainArbitrumSepolia,
     isOrbitChain,
-    getBalance,
-    nativeCurrency
+    nativeCurrency,
+    getBalance
   ])
 
   const storeNewToken = async () => {
