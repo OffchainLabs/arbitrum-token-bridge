@@ -167,13 +167,10 @@ jobs:
     strategy:
       fail-fast: false # If one test fails, let the other tests run
       matrix:
-        tests:
-          ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
+        tests: ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
+        orbit-test: ['0', '1']
+        custom-fee-token: ['0']
         include:
-          - orbit-test: '0'
-            custom-fee-token: '0'
-          - orbit-test: '1'
-            custom-fee-token: '0'
           - orbit-test: '1'
             custom-fee-token: '1'
 
