@@ -9,14 +9,13 @@ import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
 
-import {
-  NetworkName,
-  l1WethGateway,
-  wethTokenAddressL1,
-  wethTokenAddressL2
-} from './tests/support/common'
+import { NetworkName, NetworkType } from './tests/support/common'
 
-import { registerLocalNetwork } from './src/util/networks'
+import {
+  defaultL2Network,
+  defaultL3Network,
+  registerLocalNetwork
+} from './src/util/networks'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -27,7 +26,20 @@ if (process.env.TEST_FILE) {
   tests = specFiles.map(file => file.file)
 }
 
+const isOrbitTest = process.env.E2E_ORBIT == 'true'
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+
+const l1WethGateway = isOrbitTest
+  ? defaultL3Network.tokenBridge.parentWethGateway
+  : defaultL2Network.tokenBridge.parentWethGateway
+
+const l1WethAddress = isOrbitTest
+  ? defaultL3Network.tokenBridge.parentWeth
+  : defaultL2Network.tokenBridge.parentWeth
+
+const l2WethAddress = isOrbitTest
+  ? defaultL3Network.tokenBridge.childWeth
+  : defaultL2Network.tokenBridge.childWeth
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -53,11 +65,14 @@ export default defineConfig({
       require('cypress-terminal-report/src/installLogsPrinter')(on)
       registerLocalNetwork()
 
-      if (!ethRpcUrl) {
+      if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
       }
       if (!arbRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+      }
+      if (!l3RpcUrl && isOrbitTest) {
+        throw new Error('NEXT_PUBLIC_LOCAL_L3_RPC_URL variable missing.')
       }
       if (!sepoliaRpcUrl) {
         throw new Error(
@@ -81,21 +96,24 @@ export default defineConfig({
 
       // Send minted ERC-20 to the test userWallet
       await l1ERC20Token
-        .connect(localWallet.connect(ethProvider))
+        .connect(localWallet.connect(parentProvider))
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
+      await Promise.all([
+        fundUserWalletEth('parentChain'),
+        fundUserWalletEth('childChain')
+      ])
 
       // Wrap ETH to test ERC-20 transactions
-      await Promise.all([wrapEth('L1'), wrapEth('L2')])
+      await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
 
       // Approve WETH
       await approveWeth()
 
       // Set Cypress variables
-      config.env.ETH_RPC_URL = ethRpcUrl
-      config.env.ARB_RPC_URL = arbRpcUrl
+      config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
+      config.env.ARB_RPC_URL = isOrbitTest ? l3RpcUrl : arbRpcUrl
       config.env.ETH_SEPOLIA_RPC_URL = sepoliaRpcUrl
       config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
       config.env.ADDRESS = userWalletAddress
@@ -103,15 +121,18 @@ export default defineConfig({
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
+      config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
 
       config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
-        l1Provider: ethProvider,
-        l2Provider: arbProvider
+        l1Provider: parentProvider,
+        l2Provider: childProvider
       })
+      config.env.L1_WETH_ADDRESS = l1WethAddress
+      config.env.L2_WETH_ADDRESS = l2WethAddress
 
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
@@ -151,12 +172,17 @@ const ethRpcUrl = (() => {
 })()
 
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
+const l3RpcUrl = process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL
 const sepoliaRpcUrl =
   process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
-const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
-const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
+const parentProvider = new StaticJsonRpcProvider(
+  isOrbitTest ? arbRpcUrl : ethRpcUrl
+)
+const childProvider = new StaticJsonRpcProvider(
+  isOrbitTest ? l3RpcUrl : arbRpcUrl
+)
 
 if (!process.env.PRIVATE_KEY_CUSTOM) {
   throw new Error('PRIVATE_KEY_CUSTOM variable missing.')
@@ -171,7 +197,7 @@ const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 async function deployERC20ToL1() {
   console.log('Deploying ERC20 to L1...')
   const contract = new TestERC20__factory().connect(
-    localWallet.connect(ethProvider)
+    localWallet.connect(parentProvider)
   )
   const token = await contract.deploy()
   await token.deployed()
@@ -181,20 +207,21 @@ async function deployERC20ToL1() {
 
 async function deployERC20ToL2(erc20L1Address: string) {
   console.log('Deploying ERC20 to L2...')
-  const bridger = await Erc20Bridger.fromProvider(arbProvider)
+  const bridger = await Erc20Bridger.fromProvider(childProvider)
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
     erc20ParentAddress: erc20L1Address,
-    parentSigner: localWallet.connect(ethProvider),
-    childProvider: arbProvider
+    parentSigner: localWallet.connect(parentProvider),
+    childProvider
   })
   await deploy.wait()
 }
 
-async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+async function fundUserWalletEth(networkType: NetworkType) {
   console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
-  const provider = networkType === 'L1' ? ethProvider : arbProvider
+  const provider =
+    networkType === 'parentChain' ? parentProvider : childProvider
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 2 eth
   if (balance.lt(utils.parseEther('2'))) {
@@ -213,11 +240,12 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
-async function wrapEth(networkType: 'L1' | 'L2') {
+async function wrapEth(networkType: NetworkType) {
   console.log(`Wrapping ETH: ${networkType}...`)
-  const amount = networkType === 'L1' ? '0.2' : '0.1'
-  const address = networkType === 'L1' ? wethTokenAddressL1 : wethTokenAddressL2
-  const provider = networkType === 'L1' ? ethProvider : arbProvider
+  const amount = networkType === 'parentChain' ? '0.2' : '0.1'
+  const address = networkType === 'parentChain' ? l1WethAddress : l2WethAddress
+  const provider =
+    networkType === 'parentChain' ? parentProvider : childProvider
   const tx = await getWethContract(provider, address).deposit({
     value: utils.parseEther(amount)
   })
@@ -226,8 +254,7 @@ async function wrapEth(networkType: 'L1' | 'L2') {
 
 async function approveWeth() {
   console.log('Approving WETH...')
-  const tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
-    // L1 WETH gateway
+  const tx = await getWethContract(parentProvider, l1WethAddress).approve(
     l1WethGateway,
     constants.MaxInt256
   )
@@ -243,18 +270,16 @@ async function generateTestTxForRedeemRetryable() {
   console.log('Adding a test transaction for redeeming retryable...')
 
   const walletAddress = await userWallet.getAddress()
-  const l1Provider = ethProvider
-  const l2Provider = arbProvider
   const erc20Token = {
     symbol: 'WETH',
     decimals: 18,
-    address: wethTokenAddressL1
+    address: l1WethAddress
   }
   const amount = utils.parseUnits('0.001', erc20Token.decimals)
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
   const depositRequest = await erc20Bridger.getDepositRequest({
-    parentProvider: l1Provider,
-    childProvider: l2Provider,
+    parentProvider,
+    childProvider,
     from: walletAddress,
     erc20ParentAddress: erc20Token.address,
     amount,
@@ -264,8 +289,8 @@ async function generateTestTxForRedeemRetryable() {
   })
   const tx = await erc20Bridger.deposit({
     ...depositRequest,
-    parentSigner: userWallet.connect(ethProvider),
-    childProvider: arbProvider,
+    parentSigner: userWallet.connect(parentProvider),
+    childProvider,
     retryableGasOverrides: {
       gasLimit: {
         base: BigNumber.from(0)

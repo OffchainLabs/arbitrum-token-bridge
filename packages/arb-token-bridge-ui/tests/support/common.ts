@@ -6,11 +6,13 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
+import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 
-export type NetworkType = 'L1' | 'L2'
+export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
   | 'custom-localhost'
   | 'arbitrum-localhost'
+  | 'l3-localhost'
   | 'arbitrum-sepolia'
   | 'mainnet'
   | 'sepolia'
@@ -24,25 +26,43 @@ type NetworkConfig = {
   multiCall: string
 }
 
+export const getL1NetworkName = () => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  return isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local'
+}
+
+export const getL2NetworkName = () => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  return isOrbitTest ? 'L3 Local' : 'Arbitrum Local'
+}
+
 export const getL1NetworkConfig = (): NetworkConfig => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+
   return {
-    networkName: 'custom-localhost',
+    networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
-    chainId: '1337',
+    chainId: isOrbitTest ? '412346' : '1337',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386'
+    multiCall: isOrbitTest
+      ? defaultL2Network.tokenBridge.childMultiCall
+      : defaultL2Network.tokenBridge.parentMultiCall
   }
 }
 
 export const getL2NetworkConfig = (): NetworkConfig => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+
   return {
-    networkName: 'arbitrum-localhost',
+    networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
-    chainId: '412346',
+    chainId: isOrbitTest ? '333333' : '412346',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+    multiCall: isOrbitTest
+      ? defaultL3Network.tokenBridge.childMultiCall
+      : defaultL2Network.tokenBridge.childMultiCall
   }
 }
 
@@ -68,9 +88,6 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const l1WethGateway = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
-export const wethTokenAddressL1 = '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
-export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const ERC20TokenName = 'IntArbTestToken'
 export const ERC20TokenSymbol = 'IARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
@@ -79,10 +96,7 @@ export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click()
+  cy.findSelectTokenButton('ETH').click()
 
   // open the Select Token popup
   return cy
