@@ -501,7 +501,7 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
       await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
     return {
       isClassic: true,
-      parentToChildMsg: parentToChildMsg
+      parentToChildMsg
     }
   }
 

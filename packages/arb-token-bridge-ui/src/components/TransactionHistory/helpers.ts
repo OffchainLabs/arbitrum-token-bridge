@@ -382,7 +382,7 @@ export async function getUpdatedTokenDeposit(
         : null,
     l1ToL2MsgData: {
       status: res.status,
-      childTxId: childTxId,
+      childTxId,
       fetchingUpdate: false,
       retryableCreationTxID: _l1ToL2Msg.retryableCreationId
     }
