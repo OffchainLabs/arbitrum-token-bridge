@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
@@ -11,7 +11,6 @@ import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   getExplorerUrl,
-  getNetworkName,
   getDestinationChainIds,
   isNetwork
 } from '../../util/networks'
@@ -24,40 +23,23 @@ import {
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
 
-import { TransferPanelMainInput } from './TransferPanelMainInput'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
-import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
-  isTokenMainnetUSDC,
-  sanitizeTokenSymbol
+  isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import {
-  ETH_BALANCE_ARTICLE_LINK,
-  USDC_LEARN_MORE_LINK,
-  ether
-} from '../../constants'
-import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
+import { ether } from '../../constants'
+import { NetworkListboxProps } from './NetworkListbox'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
-import {
-  useNativeCurrency,
-  NativeCurrencyErc20
-} from '../../hooks/useNativeCurrency'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
-import { EstimatedGas } from './EstimatedGas'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
-import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import {
-  TransferDisabledDialog,
-  useTransferDisabledDialogStore
-} from './TransferDisabledDialog'
+import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
@@ -67,11 +49,9 @@ import {
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { useBalances } from '../../hooks/useBalances'
-
-enum NetworkType {
-  parentChain = 'parentChain',
-  childChain = 'childChain'
-}
+import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
+import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
+import { NetworkType } from './TransferPanelMain/utils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -180,7 +160,7 @@ function CustomAddressBanner({
   )
 }
 
-function NetworkContainer({
+export function NetworkContainer({
   network,
   customAddress,
   bgLogoHeight = 58,
@@ -246,68 +226,30 @@ function StyledLoader() {
   return <Loader color="white" size="small" />
 }
 
-function ETHBalance({
+export function ETHBalance({
   balance,
-  prefix = ''
-}: {
-  balance: BigNumber | null
-  prefix?: string
-}) {
-  if (!balance) {
-    return <StyledLoader />
-  }
-
-  return (
-    <p>
-      <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
-    </p>
-  )
-}
-
-function TokenBalance({
-  forToken,
-  balance,
-  on,
   prefix = '',
-  tokenSymbolOverride
+  on
 }: {
-  forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
   balance: BigNumber | null
-  on: NetworkType
   prefix?: string
-  tokenSymbolOverride?: string
+  on: NetworkType
 }) {
-  const isParentChain = on === NetworkType.parentChain
-
-  if (!forToken) {
-    return null
-  }
-
   if (!balance) {
     return <StyledLoader />
   }
 
-  const tokenSymbol = tokenSymbolOverride ?? forToken.symbol
-
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
-        {formatAmount(balance, {
-          decimals: forToken.decimals
-        })}
-      </span>{' '}
-      <TokenSymbolWithExplorerLink
-        token={forToken}
-        tokenSymbolOverride={tokenSymbolOverride}
-        isParentChain={isParentChain}
-      />
+      <span aria-label={`ETH balance amount on ${on}`}>
+        {formatAmount(balance, { symbol: ether.symbol })}
+      </span>
     </p>
   )
 }
 
-function BalancesContainer({ children }: { children: React.ReactNode }) {
+export function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
       {children}
@@ -315,7 +257,7 @@ function BalancesContainer({ children }: { children: React.ReactNode }) {
   )
 }
 
-function NetworkListboxPlusBalancesContainer({
+export function NetworkListboxPlusBalancesContainer({
   children
 }: {
   children: React.ReactNode
@@ -336,13 +278,8 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const {
-    childChain,
-    parentChain,
-    childChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, isDepositMode, isTeleportMode } =
+    useNetworksRelationship(networks)
   const setAmount = useSetInputAmount()
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -366,7 +303,6 @@ export function TransferPanelMain({
     erc20ParentBalances,
     updateErc20ParentBalances,
     ethChildBalance,
-    erc20ChildBalances,
     updateErc20ChildBalances
   } = useBalances()
 
@@ -425,8 +361,6 @@ export function TransferPanelMain({
   }, [nativeCurrency, ethParentBalance, ethChildBalance, erc20ParentBalances])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [
     oneNovaTransferDestinationNetworkId,
@@ -533,50 +467,9 @@ export function TransferPanelMain({
     }
   }, [selectedToken, setDestinationAddress])
 
-  const errorMessageElement = useMemo(() => {
-    if (typeof errorMessage === 'undefined') {
-      return undefined
-    }
-
-    if (typeof errorMessage === 'string') {
-      return errorMessage
-    }
-
-    switch (errorMessage) {
-      case TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE:
-        return (
-          <span>
-            Gas estimation failed, join our{' '}
-            <ExternalLink
-              href="https://discord.com/invite/ZpZuw7p"
-              className="underline"
-            >
-              Discord
-            </ExternalLink>{' '}
-            and reach out in #support for assistance.
-          </span>
-        )
-
-      case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
-      case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
-        return (
-          <>
-            <span>This token can&apos;t be bridged over.</span>{' '}
-            <button
-              className="arb-hover underline"
-              onClick={openTransferDisabledDialog}
-            >
-              Learn more.
-            </button>
-          </>
-        )
-    }
-  }, [errorMessage, openTransferDisabledDialog])
-
   useUpdateUSDCTokenData()
 
   type NetworkListboxesProps = {
-    from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
   }
 
@@ -613,26 +506,6 @@ export function TransferPanelMain({
     const destinationChains = getDestinationChains()
 
     return {
-      from: {
-        onChange: async network => {
-          if (networks.destinationChain.id === network.id) {
-            setNetworks({
-              sourceChainId: networks.destinationChain.id,
-              destinationChainId: networks.sourceChain.id
-            })
-            return
-          }
-
-          // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
-          // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
-          setNetworks({
-            sourceChainId: network.id,
-            destinationChainId: networks.destinationChain.id
-          })
-
-          actions.app.setSelectedToken(null)
-        }
-      },
       to: {
         disabled:
           isSmartContractWallet ||
@@ -664,201 +537,24 @@ export function TransferPanelMain({
     openOneNovaTransferDialog
   ])
 
-  const buttonStyle = useMemo(
-    () => ({
-      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
-    }),
-    [networks.sourceChain.id]
-  )
-
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
-        <NetworkListboxPlusBalancesContainer>
-          <NetworkSelectionContainer
-            buttonStyle={buttonStyle}
-            buttonClassName={twMerge(
-              'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
-            )}
-            onChange={networkListboxProps.from.onChange}
-          >
-            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
-              From: {getNetworkName(networks.sourceChain.id)}
-            </span>
-          </NetworkSelectionContainer>
-          <BalancesContainer>
-            <TokenBalance
-              on={
-                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
-              }
-              balance={
-                isDepositMode
-                  ? selectedTokenBalances.parentBalance
-                  : selectedTokenBalances.childBalance
-              }
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            {nativeCurrency.isCustom ? (
-              <>
-                <TokenBalance
-                  on={
-                    isDepositMode
-                      ? NetworkType.parentChain
-                      : NetworkType.childChain
-                  }
-                  balance={
-                    isDepositMode
-                      ? customFeeTokenBalances.parentBalance
-                      : customFeeTokenBalances.childBalance
-                  }
-                  forToken={nativeCurrency}
-                  prefix={selectedToken ? '' : 'Balance: '}
-                />
-                {/* Only show ETH balance on parent chain */}
-                {isDepositMode && <ETHBalance balance={ethParentBalance} />}
-              </>
-            ) : (
-              <ETHBalance
-                balance={isDepositMode ? ethParentBalance : ethChildBalance}
-                prefix={selectedToken ? '' : 'Balance: '}
-              />
-            )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
-
-        <div className="flex flex-col gap-1">
-          <TransferPanelMainInput
-            maxButtonProps={{
-              loading: isMaxAmount || loadingMaxAmount,
-              onClick: setMaxAmount
-            }}
-            errorMessage={errorMessageElement}
-            value={isMaxAmount ? '' : amount}
-          />
-
-          {showUSDCSpecificInfo && (
-            <p className="mt-1 text-xs font-light text-white">
-              Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
-              <ExternalLink
-                href={USDC_LEARN_MORE_LINK}
-                className="arb-hover underline"
-              >
-                Learn more
-              </ExternalLink>
-              .
-            </p>
-          )}
-
-          {isDepositMode && selectedToken && (
-            <p className="mt-1 text-xs font-light text-white">
-              Make sure you have {nativeCurrency.symbol} in your{' '}
-              {getNetworkName(childChain.id)} account, as you’ll need it to
-              power transactions.
-              <br />
-              <ExternalLink
-                href={ETH_BALANCE_ARTICLE_LINK}
-                className="arb-hover underline"
-              >
-                Learn more
-              </ExternalLink>
-              .
-            </p>
-          )}
-        </div>
-        <EstimatedGas chainType="source" />
-      </NetworkContainer>
+      <SourceNetworkBox
+        amount={amount}
+        loadingMaxAmount={loadingMaxAmount}
+        setMaxAmount={setMaxAmount}
+        errorMessage={errorMessage}
+        customFeeTokenBalances={customFeeTokenBalances}
+        showUsdcSpecificInfo={showUSDCSpecificInfo}
+      />
 
       <SwitchNetworksButton />
 
-      <NetworkContainer
-        bgLogoHeight={58}
-        network={networks.destinationChain}
-        customAddress={destinationAddress}
-      >
-        <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="To:" {...networkListboxProps.to} />
-          <BalancesContainer>
-            {destinationAddressOrWalletAddress &&
-              utils.isAddress(destinationAddressOrWalletAddress) && (
-                <>
-                  <TokenBalance
-                    balance={
-                      isDepositMode
-                        ? selectedTokenBalances.childBalance
-                        : selectedTokenBalances.parentBalance
-                    }
-                    on={
-                      isDepositMode
-                        ? NetworkType.childChain
-                        : NetworkType.parentChain
-                    }
-                    forToken={selectedToken}
-                    prefix={selectedToken ? 'Balance: ' : ''}
-                    tokenSymbolOverride={
-                      // we need to send the proper, sanitized token-name to the component
-                      selectedToken?.symbol
-                        ? sanitizeTokenSymbol(selectedToken?.symbol, {
-                            chainId: networks.destinationChain.id,
-                            erc20L1Address: selectedToken?.address
-                          })
-                        : undefined
-                    }
-                  />
-                  {/* In deposit mode, when user selected USDC on mainnet,
-                  the UI shows the Arb One balance of both USDC.e and native USDC */}
-                  {isDepositMode && showUSDCSpecificInfo && (
-                    <TokenBalance
-                      balance={
-                        (isArbitrumOne
-                          ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
-                          : erc20ChildBalances?.[
-                              CommonAddress.ArbitrumSepolia.USDC
-                            ]) ?? constants.Zero
-                      }
-                      on={NetworkType.childChain}
-                      forToken={
-                        selectedToken
-                          ? { ...selectedToken, symbol: 'USDC' }
-                          : null
-                      }
-                      tokenSymbolOverride="USDC"
-                    />
-                  )}
-                  {nativeCurrency.isCustom ? (
-                    <>
-                      <TokenBalance
-                        on={
-                          isDepositMode
-                            ? NetworkType.childChain
-                            : NetworkType.parentChain
-                        }
-                        balance={
-                          isDepositMode
-                            ? customFeeTokenBalances.childBalance
-                            : customFeeTokenBalances.parentBalance
-                        }
-                        forToken={nativeCurrency}
-                        prefix={selectedToken ? '' : 'Balance: '}
-                      />
-                      {!isDepositMode && (
-                        <ETHBalance balance={ethParentBalance} />
-                      )}
-                    </>
-                  ) : (
-                    <ETHBalance
-                      balance={
-                        isDepositMode ? ethChildBalance : ethParentBalance
-                      }
-                      prefix={selectedToken ? '' : 'Balance: '}
-                    />
-                  )}
-                </>
-              )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
-        <EstimatedGas chainType="destination" />
-      </NetworkContainer>
+      <DestinationNetworkBox
+        customFeeTokenBalances={customFeeTokenBalances}
+        showUsdcSpecificInfo={showUSDCSpecificInfo}
+        destinationNetworkListboxProps={networkListboxProps.to}
+      />
 
       <TransferDisabledDialog />
       <OneNovaTransferDialog
