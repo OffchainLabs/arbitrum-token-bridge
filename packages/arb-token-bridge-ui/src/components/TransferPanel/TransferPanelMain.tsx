@@ -338,7 +338,8 @@ export function TransferPanelMain({
     isTeleportMode
   ])
 
-  // TODO: move into a hook
+  // TODO: move into a hook (FS-714)
+  // when customFeeTokenBalances is moved to an independent hook file, use `setAmount` directly in useMaxAmount and do not pass `customFeeTokenBalances` as a prop
   const customFeeTokenBalances: Balances = useMemo(() => {
     if (!nativeCurrency.isCustom) {
       return { parentBalance: ethParentBalance, childBalance: ethChildBalance }
