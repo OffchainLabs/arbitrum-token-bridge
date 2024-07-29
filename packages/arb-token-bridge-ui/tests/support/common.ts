@@ -231,28 +231,28 @@ export async function generateActivityOnChains({
       await wait(100)
     }
   }
-  // whilst waiting for status we mine on both l1 and l2
-  console.log('Generating activity on L1...')
-  const minerL1 = Wallet.createRandom().connect(parentProvider)
+  // whilst waiting for status we mine on both parentChain and childChain
+  console.log('Generating activity on parentChain...')
+  const minerParent = Wallet.createRandom().connect(parentProvider)
   await fundEth({
-    address: await minerL1.getAddress(),
+    address: await minerParent.getAddress(),
     networkType: 'parentChain',
     parentProvider,
     childProvider,
     sourceWallet: wallet
   })
 
-  console.log('Generating activity on L2...')
-  const minerL2 = Wallet.createRandom().connect(childProvider)
+  console.log('Generating activity on childChain...')
+  const minerChild = Wallet.createRandom().connect(childProvider)
   await fundEth({
-    address: await minerL2.getAddress(),
+    address: await minerChild.getAddress(),
     networkType: 'childChain',
     parentProvider,
     childProvider,
     sourceWallet: wallet
   })
 
-  await Promise.allSettled([keepMining(minerL1), keepMining(minerL2)])
+  await Promise.allSettled([keepMining(minerParent), keepMining(minerChild)])
 }
 
 export async function checkForAssertions({
