@@ -227,8 +227,9 @@ export function TransferPanel() {
       return undefined
     }
 
-    return Boolean(
-      tokensFromLists[tokenLowercased] || tokensFromUser[tokenLowercased]
+    return (
+      typeof tokensFromLists[tokenLowercased] !== 'undefined' ||
+      typeof tokensFromUser[tokenLowercased] !== 'undefined'
     )
   }, [tokenFromSearchParams, tokensFromLists, tokensFromUser])
 

@@ -37,7 +37,7 @@ export const useSelectedToken = () => {
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
   const tokensFromLists = useTokensFromLists()
-  const tokensFromUsers = useTokensFromUser()
+  const tokensFromUser = useTokensFromUser()
 
   const fetcher: () => Promise<ERC20BridgeToken | null> =
     useCallback(async () => {
@@ -55,13 +55,13 @@ export const useSelectedToken = () => {
         })
       }
 
-      if (!tokensFromLists || !tokensFromUsers) {
+      if (!tokensFromLists || !tokensFromUser) {
         return null
       }
 
       return (
         tokensFromLists[tokenAddressLowercased] ||
-        tokensFromUsers[tokenAddressLowercased] ||
+        tokensFromUser[tokenAddressLowercased] ||
         null
       )
     }, [
@@ -69,12 +69,15 @@ export const useSelectedToken = () => {
       parentChainProvider,
       tokenFromSearchParams,
       tokensFromLists,
-      tokensFromUsers
+      tokensFromUser
     ])
 
   const shouldFetch = useMemo(() => {
-    return Boolean(tokensFromLists && tokensFromUsers)
-  }, [tokensFromLists, tokensFromUsers])
+    return (
+      typeof tokensFromLists !== 'undefined' &&
+      typeof tokensFromUser !== 'undefined'
+    )
+  }, [tokensFromLists, tokensFromUser])
 
   const queryKey = useMemo(() => {
     return shouldFetch
