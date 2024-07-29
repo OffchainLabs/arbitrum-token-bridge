@@ -160,7 +160,7 @@ jobs:
 
   # based on https://github.com/Synthetixio/synpress/blob/dev/.github/workflows/e2e_cypress-action.yml
   test-e2e:
-    name: "Test E2E${{ matrix.orbit-test == '1' && ' with L3' || '' }} - ${{ matrix.tests.name }}"
+    name: "Test E2E${{ matrix.custom-fee-token == '1' && ' with L3 custom fee token' || matrix.orbit-test == '1' && ' with L3' || '' }} - ${{ matrix.tests.name }}"
     runs-on: ubuntu-latest
     needs: [build, check-files, check-is-hotfix, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
@@ -170,10 +170,10 @@ jobs:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
         orbit-test: ['0', '1']
-        custom-fee-token: ['0', '1']
+        custom-fee-token: ['0']
         include:
           - orbit-test: '1'
-            custom-fee-token: ['0', '1']  
+            custom-fee-token: '1'
 
     steps:
       - name: Free Disk Space (Ubuntu)
