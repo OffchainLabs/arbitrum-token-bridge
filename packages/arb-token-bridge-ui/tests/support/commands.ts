@@ -323,16 +323,16 @@ export function findTransactionInTransactionHistory({
   amount: number
 }) {
   if (text) {
-    cy.findByText(text).should('be.visible')
+    cy.findAllByText(text)[0].should('be.visible')
   }
 
-  return cy
-    .findByText(
-      `${formatAmount(amount, {
-        symbol
-      })}`
-    )
-    .should('be.visible')
+  cy.findByText(
+    `${formatAmount(amount, {
+      symbol
+    })}`
+  ).should('be.visible')
+
+  return cy.findByLabelText('Transaction details button').should('be.visible')
 }
 
 Cypress.Commands.addAll({

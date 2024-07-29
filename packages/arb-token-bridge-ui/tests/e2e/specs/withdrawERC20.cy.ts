@@ -168,10 +168,10 @@ describe('Withdraw ERC20 Token', () => {
 
             cy.confirmMetamaskTransaction().then(() => {
               cy.findTransactionInTransactionHistory({
+                text: 'an hour',
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
               })
-              cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
 
               // open the tx details popup
               cy.findAllByLabelText('Transaction details button')
