@@ -4,12 +4,18 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
-import { Erc20Bridger, EthBridger, MultiCaller } from '@arbitrum/sdk'
+import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
 
-import { NetworkName, NetworkType } from './tests/support/common'
+import {
+  NetworkName,
+  checkForAssertions,
+  generateActivityOnChains,
+  NetworkType,
+  fundEth
+} from './tests/support/common'
 
 import {
   defaultL2Network,
@@ -31,16 +37,16 @@ const isOrbitTest = process.env.E2E_ORBIT == 'true'
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
 const l1WethGateway = isOrbitTest
-  ? defaultL3Network.tokenBridge.parentWethGateway
-  : defaultL2Network.tokenBridge.parentWethGateway
+  ? defaultL3Network.tokenBridge!.parentWethGateway
+  : defaultL2Network.tokenBridge!.parentWethGateway
 
 let l1WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge.parentWeth
-  : defaultL2Network.tokenBridge.parentWeth
+  ? defaultL3Network.tokenBridge!.parentWeth
+  : defaultL2Network.tokenBridge!.parentWeth
 
 let l2WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge.childWeth
-  : defaultL2Network.tokenBridge.childWeth
+  ? defaultL3Network.tokenBridge!.childWeth
+  : defaultL2Network.tokenBridge!.childWeth
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -110,8 +116,20 @@ export default defineConfig({
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
       await Promise.all([
-        fundUserWalletEth('parentChain'),
-        fundUserWalletEth('childChain')
+        fundEth({
+          networkType: 'parentChain',
+          address: userWalletAddress,
+          parentProvider,
+          childProvider,
+          sourceWallet: localWallet
+        }),
+        fundEth({
+          networkType: 'childChain',
+          address: userWalletAddress,
+          parentProvider,
+          childProvider,
+          sourceWallet: localWallet
+        })
       ])
 
       if (
@@ -142,6 +160,15 @@ export default defineConfig({
 
       // Approve WETH
       await approveWeth()
+
+      // Generate activity on chains so that assertions get posted and claims can be made
+      generateActivityOnChains({
+        parentProvider,
+        childProvider,
+        wallet: localWallet
+      })
+      // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
+      checkForAssertions({ parentProvider, isOrbitTest })
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
@@ -321,22 +348,6 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundUserWalletEth(networkType: NetworkType) {
-  console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const address = await userWallet.getAddress()
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 2 eth
-  if (balance.lt(utils.parseEther('2'))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther('2')
-    })
-    await tx.wait()
-  }
-}
-
 async function fundUserWalletNativeCurrency() {
   const childEthBridger = await EthBridger.fromProvider(childProvider)
   const isCustomFeeToken = typeof childEthBridger.nativeToken !== 'undefined'
@@ -423,7 +434,6 @@ async function wrapEth(networkType: NetworkType) {
 
 async function approveWeth() {
   console.log('Approving WETH...')
-  console.log({ l1WethAddress })
   const tx = await getWethContract(parentProvider, l1WethAddress).approve(
     l1WethGateway,
     constants.MaxInt256
@@ -447,13 +457,6 @@ async function generateTestTxForRedeemRetryable() {
   }
   const amount = utils.parseUnits('0.001', erc20Token.decimals)
 
-  console.log({ l1WethGateway, l1WethAddress })
-
-  // const gas = await estimateDepositGas({
-  //   parentErc20Address: l1WethAddress,
-  //   amount,
-  //   from: walletAddress
-  // })
   await approveCustomFeeToken(
     userWallet.connect(parentProvider),
     erc20Token.address

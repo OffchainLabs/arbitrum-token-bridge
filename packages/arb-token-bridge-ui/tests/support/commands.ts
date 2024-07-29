@@ -324,6 +324,12 @@ export function findSelectTokenButton(
     .should('have.text', text ?? Cypress.env('NATIVE_TOKEN_SYMBOL'))
 }
 
+export function findClaimButton(
+  amountToClaim: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText(`Claim ${amountToClaim}`)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -340,5 +346,6 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  findSelectTokenButton
+  findSelectTokenButton,
+  findClaimButton
 })

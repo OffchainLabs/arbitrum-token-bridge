@@ -244,6 +244,7 @@ jobs:
           CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
           PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
           PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          NEXT_PUBLIC_IS_E2E_TEST: true
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
           NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://127.0.0.1:8547
