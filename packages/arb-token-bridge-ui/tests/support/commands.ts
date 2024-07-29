@@ -15,8 +15,7 @@ import {
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getInitialERC20Balance,
-  zeroToLessThanOneETH
+  getInitialERC20Balance
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
@@ -317,12 +316,12 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
 }
 
 export function findSelectTokenButton(
-  text: string
+  text?: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy
     .findByRole('button', { name: 'Select Token' })
     .should('be.visible')
-    .should('have.text', text)
+    .should('have.text', text ?? Cypress.env('NATIVE_TOKEN_SYMBOL'))
 }
 
 Cypress.Commands.addAll({

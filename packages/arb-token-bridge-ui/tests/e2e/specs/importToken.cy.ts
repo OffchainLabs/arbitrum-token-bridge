@@ -72,7 +72,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findSelectTokenButton('ETH').click()
+        cy.findSelectTokenButton().click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -96,7 +96,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findSelectTokenButton('ETH').click()
+        cy.findSelectTokenButton().click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -137,7 +137,7 @@ describe('Import token', () => {
         )
 
         cy.login({ networkType: 'parentChain' })
-        cy.findSelectTokenButton('ETH').click()
+        cy.findSelectTokenButton().click()
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
@@ -270,7 +270,7 @@ describe('Import token', () => {
             force: true
           })
           .then(() => {
-            cy.findSelectTokenButton('ETH')
+            cy.findSelectTokenButton()
           })
 
         // Modal is closed

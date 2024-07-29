@@ -8,7 +8,8 @@ import {
   getL1NetworkConfig,
   zeroToLessThanOneETH,
   getL1NetworkName,
-  getL2NetworkName
+  getL2NetworkName,
+  getZeroToLessThanOneNativeCurrencyText
 } from '../../support/common'
 import { shortenAddress } from '../../../src/util/CommonUtils'
 
@@ -41,7 +42,7 @@ describe('Deposit ERC20 Token', () => {
       cy.login({ networkType: 'parentChain' })
       cy.findSourceChainButton(getL1NetworkName())
       cy.findDestinationChainButton(getL2NetworkName())
-      cy.findSelectTokenButton('ETH')
+      cy.findSelectTokenButton()
     })
 
     it('should deposit ERC-20 successfully to the same address', () => {
@@ -68,7 +69,10 @@ describe('Deposit ERC20 Token', () => {
           .then(() => {
             cy.findGasFeeSummary(zeroToLessThanOneETH)
             cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+            cy.findGasFeeForChain(
+              getL2NetworkName(),
+              getZeroToLessThanOneNativeCurrencyText()
+            )
           })
       })
 
@@ -105,7 +109,10 @@ describe('Deposit ERC20 Token', () => {
           .then(() => {
             cy.findGasFeeSummary(zeroToLessThanOneETH)
             cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+            cy.findGasFeeForChain(
+              getL2NetworkName(),
+              getZeroToLessThanOneNativeCurrencyText()
+            )
           })
       })
 

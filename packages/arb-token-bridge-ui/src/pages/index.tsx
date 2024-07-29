@@ -14,6 +14,7 @@ import {
   decodeChainQueryParam,
   encodeChainQueryParam
 } from '../hooks/useArbQueryParams'
+import { utils } from 'ethers'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,

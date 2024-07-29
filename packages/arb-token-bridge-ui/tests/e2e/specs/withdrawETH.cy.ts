@@ -5,6 +5,7 @@
 import {
   getL1NetworkName,
   getL2NetworkName,
+  getZeroToLessThanOneNativeCurrencyText,
   zeroToLessThanOneETH
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -27,8 +28,11 @@ describe('Withdraw ETH', () => {
         cy.typeAmount(ETHToWithdraw)
           //
           .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+            cy.findGasFeeSummary(getZeroToLessThanOneNativeCurrencyText())
+            cy.findGasFeeForChain(
+              getL2NetworkName(),
+              getZeroToLessThanOneNativeCurrencyText()
+            )
             cy.findGasFeeForChain(
               new RegExp(
                 `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
@@ -74,7 +78,7 @@ describe('Withdraw ETH', () => {
                       cy.findByText('an hour').should('be.visible')
                       cy.findByText(
                         `${formatAmount(ETHToWithdraw, {
-                          symbol: 'ETH'
+                          symbol: Cypress.env('NATIVE_TOKEN_SYMBOL')
                         })}`
                       ).should('be.visible')
                     })

@@ -94,6 +94,12 @@ export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 
+export const getZeroToLessThanOneNativeCurrencyText = () => {
+  const symbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  // Matches a number between 0 and 1, and could also start with '<'
+  return new RegExp(`(< )?0(\\.\\d+)*( ${symbol})`)
+}
+
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)
   cy.findSelectTokenButton('ETH').click()
@@ -136,6 +142,11 @@ export async function getInitialERC20Balance({
     balanceOf: { account: address }
   })
   return tokenData.balance
+}
+
+export function getNativeTokenAddress() {
+  return '0xE069078bA9ACCE4eeAE609d8754515Cf13dd6706'
+  // return defaultL3Network.nativeToken
 }
 
 export const acceptMetamaskAccess = () => {

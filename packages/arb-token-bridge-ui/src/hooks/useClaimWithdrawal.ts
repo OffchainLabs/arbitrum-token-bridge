@@ -96,6 +96,7 @@ export function useClaimWithdrawal(
         })
       }
     } catch (error: any) {
+      console.log('HERE-0')
       err = error
     } finally {
       setIsClaiming(false)
@@ -108,6 +109,7 @@ export function useClaimWithdrawal(
 
     Sentry.captureException(err)
     if (!res) {
+      console.log('HERE-1')
       errorToast(`Can't claim withdrawal: ${err?.message ?? err}`)
     }
 

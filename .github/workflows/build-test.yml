@@ -170,6 +170,10 @@ jobs:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
         orbit-test: ['0', '1']
+        custom-fee-token: ['0', '1']
+        include:
+          - orbit-test: '1'
+            custom-fee-token: ['0', '1']  
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -223,8 +227,13 @@ jobs:
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
         with:
-          start: yarn start
-          command: ${{ matrix.orbit-test == '1' && 'yarn test:e2e:orbit --browser chromium' || 'yarn test:e2e --browser chromium' }}
+          start: ${{ matrix.custom-fee-token == '1' && 'NEXT_PUBLIC_CUSTOM_FEE_TOKEN=true yarn start' || 'yarn start' }}
+          command: >-
+            ${{ 
+              (matrix.orbit-test == '1' && matrix.custom-fee-token == '1') && 'yarn test:e2e:orbit:custom-fee-token --browser chromium' ||
+              (matrix.orbit-test == '1'  && matrix.custom-fee-token == '0') && 'yarn test:e2e:orbit --browser chromium' ||
+              'yarn test:e2e --browser chromium'
+            }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
