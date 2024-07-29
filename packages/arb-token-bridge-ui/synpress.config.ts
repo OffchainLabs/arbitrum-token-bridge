@@ -136,7 +136,7 @@ export default defineConfig({
         wallet: localWallet
       })
       // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
-      checkForAssertions({ parentChainProvider: parentProvider })
+      checkForAssertions({ parentProvider, isOrbitTest })
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl

@@ -256,13 +256,12 @@ export async function generateActivityOnChains({
 }
 
 export async function checkForAssertions({
-  parentChainProvider
+  parentProvider,
+  isOrbitTest
 }: {
-  parentChainProvider: Provider
+  parentProvider: Provider
+  isOrbitTest: boolean
 }) {
-  const isOrbitTest =
-    typeof Cypress !== 'undefined' && Cypress.env('ORBIT_TEST') == '1'
-
   const abi = [
     'function latestConfirmed() public view returns (uint64)',
     'function latestNodeCreated() public view returns (uint64)'
@@ -272,11 +271,7 @@ export async function checkForAssertions({
     ? defaultL3Network.ethBridge.rollup
     : defaultL2Network.ethBridge.rollup
 
-  const rollupContract = new ethers.Contract(
-    rollupAddress,
-    abi,
-    parentChainProvider
-  )
+  const rollupContract = new ethers.Contract(rollupAddress, abi, parentProvider)
 
   try {
     while (true) {
@@ -292,7 +287,7 @@ export async function checkForAssertions({
   } catch (e) {
     console.log(
       `Could not fetch assertions for '${rollupAddress}' on ChainId ${await getChainIdFromProvider(
-        parentChainProvider
+        parentProvider
       )}`,
       e
     )
