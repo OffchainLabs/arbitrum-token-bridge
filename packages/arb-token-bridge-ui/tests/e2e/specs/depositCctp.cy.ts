@@ -76,18 +76,19 @@ describe('Deposit USDC through CCTP', () => {
       let address: string
       cy.getMetamaskWalletAddress().then(address => cy.log(address))
 
-      cy.fundUserUsdcTestnet(address, 'L1')
-      cy.fundUserWalletEth(address, 'L1')
+      cy.fundUserUsdcTestnet(address, 'parentChain')
+      cy.fundUserWalletEth(address, 'parentChain')
       // Add ETH on L2 for claiming
-      cy.fundUserWalletEth(address, 'L2')
+      cy.fundUserWalletEth(address, 'childChain')
 
-      cy.login({ networkType: 'L1', networkName: 'sepolia' })
+      cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
+
+      // common code before all tests
+      cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
       context('should show L1 and L2 chains, and USD correctly', () => {
         cy.findSourceChainButton('Sepolia')
         cy.findDestinationChainButton('Arbitrum Sepolia')
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
+        cy.findSelectTokenButton('ETH')
       })
 
       cy.searchAndSelectToken({
@@ -97,22 +98,11 @@ describe('Deposit USDC through CCTP', () => {
 
       context('should show summary', () => {
         cy.typeAmount(USDCAmountToSend)
-          //
-          .then(() => {
-            cy.findByText(/You will pay in gas fees:/i)
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findAllByText(/gas fee$/)
-              .first()
-              .parent()
-              .siblings()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText(
-              /You'll have to pay [\w\s]+ gas fee upon claiming./i
-            ).should('be.visible')
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain('Sepolia', zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          /You'll have to pay Arbitrum Sepolia gas fee upon claiming./i
+        )
       })
     })
 
@@ -123,45 +113,34 @@ describe('Deposit USDC through CCTP', () => {
     })
 
     it('should initiate depositing USDC to the same address through CCTP successfully', () => {
-      context('should click deposit succesfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Sepolia/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
+      context('should show clickable deposit button', () => {
+        cy.findMoveFundsButton().click()
       })
 
       context('should display CCTP modal and claim', () => {
         confirmAndApproveCctpDeposit()
         cy.confirmMetamaskPermissionToSpend({
           spendLimit: USDCAmountToSend.toString()
-        }).then(() => {
-          // eslint-disable-next-line
-          cy.wait(40_000)
-          cy.confirmMetamaskTransaction()
-          cy.confirmMetamaskTransaction().then(() => {
-            cy.findByText(
-              `${formatAmount(USDCAmountToSend, {
-                symbol: 'USDC'
-              })}`
-            ).should('be.visible')
-            cy.findByRole('button', {
-              name: 'Switch Network',
-              timeout: 2.5 * 60 * 1_000 // CCTP transactions on testnet has a 2 minute delay before being valid
-            }).click()
-
-            cy.allowMetamaskToSwitchNetwork().then(() => {
-              cy.findByRole('button', { name: 'Claim' }).click()
-              cy.confirmMetamaskTransaction().then(() => {
-                cy.findByText('Looks like no transactions here yet!').should(
-                  'be.visible'
-                )
-              })
-            })
-          })
         })
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        cy.findByText(
+          `${formatAmount(USDCAmountToSend, {
+            symbol: 'USDC'
+          })}`
+        ).should('be.visible')
+        cy.findByRole('button', {
+          name: 'Switch Network',
+          timeout: 2.5 * 60 * 1_000 // CCTP transactions on testnet has a 2 minute delay before being valid
+        }).click()
+
+        cy.allowMetamaskToSwitchNetwork()
+        cy.findByRole('button', { name: 'Claim' }).click()
+        cy.confirmMetamaskTransaction()
+        cy.findByText('Looks like no transactions here yet!').should(
+          'be.visible'
+        )
       })
     })
 
@@ -170,52 +149,40 @@ describe('Deposit USDC through CCTP', () => {
         cy.fillCustomDestinationAddress()
       })
 
-      context('should click deposit succesfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Arbitrum Sepolia/i
-        })
-          .scrollIntoView()
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
+      context('should show clickable deposit button', () => {
+        cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpDeposit()
         cy.confirmMetamaskPermissionToSpend({
           spendLimit: USDCAmountToSend.toString()
-        }).then(() => {
-          // eslint-disable-next-line
-          cy.wait(40_000)
-          cy.confirmMetamaskTransaction().then(() => {
-            cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-            cy.findByText(
-              `${formatAmount(USDCAmountToSend, {
-                symbol: 'USDC'
-              })}`
-            ).should('be.visible')
-
-            // open the tx details popup
-            cy.findAllByLabelText('Transaction details button')
-              .first()
-              .click()
-              .then(() => {
-                cy.findByText('Transaction details').should('be.visible')
-
-                cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-                // custom destination label in pending tx history should be visible
-                cy.findByLabelText(
-                  `Custom address: ${shortenAddress(
-                    Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                  )}`
-                ).should('be.visible')
-              })
-
-            // close popup
-            cy.findByLabelText('Close transaction details popup').click()
-          })
         })
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
+        cy.findByText(
+          `${formatAmount(USDCAmountToSend, {
+            symbol: 'USDC'
+          })}`
+        ).should('be.visible')
+
+        // open the tx details popup
+        cy.findAllByLabelText('Transaction details button').first().click()
+        cy.findByText('Transaction details').should('be.visible')
+
+        cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+        // custom destination label in pending tx history should be visible
+        cy.findByLabelText(
+          `Custom address: ${shortenAddress(
+            Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+          )}`
+        ).should('be.visible')
+
+        // close popup
+        cy.findByLabelText('Close transaction details popup').click()
       })
     })
   })

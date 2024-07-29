@@ -14,7 +14,9 @@ import {
   NetworkName,
   startWebApp,
   getL1NetworkConfig,
-  getL2NetworkConfig
+  getL2NetworkConfig,
+  getInitialERC20Balance,
+  zeroToLessThanOneETH
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
@@ -45,13 +47,23 @@ export function login({
 }) {
   // if networkName is not specified we connect to default network from config
   const network =
-    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
+    networkType === 'parentChain' ? getL1NetworkConfig() : getL2NetworkConfig()
   const networkNameWithDefault = networkName ?? network.networkName
 
   function _startWebApp() {
     const sourceChain =
       networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
-    startWebApp(url, { ...query, sourceChain })
+
+    // when testing Orbit chains we want to set destination chain to L3
+    const destinationChain =
+      networkType === 'parentChain' && network.chainId === '412346'
+        ? 'l3-localhost'
+        : ''
+    startWebApp(url, {
+      ...query,
+      sourceChain,
+      destinationChain
+    })
   }
 
   shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
@@ -137,17 +149,18 @@ const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
 
 export async function fundUserUsdcTestnet(
   address: string,
-  networkType: 'L1' | 'L2'
+  networkType: 'parentChain' | 'childChain'
 ) {
   console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
   const usdcContractAddress =
-    networkType === 'L1'
+    networkType === 'parentChain'
       ? CommonAddress.Sepolia.USDC
       : CommonAddress.ArbitrumSepolia.USDC
 
   const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
   const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
-  const provider = networkType === 'L1' ? sepoliaProvider : arbSepoliaProvider
+  const provider =
+    networkType === 'parentChain' ? sepoliaProvider : arbSepoliaProvider
   const contract = new ERC20__factory().connect(localWallet.connect(provider))
   const token = contract.attach(usdcContractAddress)
   await token.deployed()
@@ -157,10 +170,11 @@ export async function fundUserUsdcTestnet(
 
 export async function fundUserWalletEth(
   address: string,
-  networkType: 'L1' | 'L2'
+  networkType: 'parentChain' | 'childChain'
 ) {
   console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
-  const provider = networkType === 'L1' ? sepoliaProvider : arbSepoliaProvider
+  const provider =
+    networkType === 'parentChain' ? sepoliaProvider : arbSepoliaProvider
   const tx = await localWallet.connect(provider).sendTransaction({
     to: address,
     value: utils.parseEther('0.05')
@@ -176,10 +190,7 @@ export const searchAndSelectToken = ({
   tokenAddress: string
 }) => {
   // Click on the ETH dropdown (Select token button)
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click()
+  cy.findSelectTokenButton('ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
@@ -195,9 +206,7 @@ export const searchAndSelectToken = ({
       cy.findAllByText(tokenName).first().click()
 
       // USDC token should be selected now and popup should be closed after selection
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', tokenName)
+      cy.findSelectTokenButton(tokenName)
     })
 }
 
@@ -242,6 +251,49 @@ export function findDestinationChainButton(
   )
 }
 
+export function findGasFeeForChain(
+  label: string | RegExp,
+  amount?: string | number | RegExp
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  if (amount) {
+    return cy
+      .findByText(`${label} gas fee`)
+      .parent()
+      .siblings()
+      .contains(amount)
+      .should('be.visible')
+  }
+
+  return cy.findByText(label).should('be.visible')
+}
+
+export function findGasFeeSummary(
+  amount: string | number | RegExp
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByText('You will pay in gas fees:')
+    .siblings()
+    .last()
+    .contains(amount)
+    .should('be.visible')
+}
+
+export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: /move funds/i })
+    .scrollIntoView()
+    .should('be.visible')
+}
+
+export function findSelectTokenButton(
+  text: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', text)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -253,5 +305,9 @@ Cypress.Commands.addAll({
   fillCustomDestinationAddress,
   typeAmount,
   findSourceChainButton,
-  findDestinationChainButton
+  findDestinationChainButton,
+  findGasFeeForChain,
+  findGasFeeSummary,
+  findMoveFundsButton,
+  findSelectTokenButton
 })
