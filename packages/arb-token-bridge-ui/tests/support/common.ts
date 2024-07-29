@@ -273,10 +273,12 @@ export async function checkForAssertions({
 
   const rollupContract = new ethers.Contract(rollupAddress, abi, parentProvider)
 
+  const parentChainId = await getChainIdFromProvider(parentProvider)
+
   try {
     while (true) {
       console.log(
-        `***** Assertion status: ${(
+        `***** Assertion status on ChainId ${parentChainId}: ${(
           await rollupContract.latestNodeCreated()
         ).toString()} created / ${(
           await rollupContract.latestConfirmed()
@@ -286,9 +288,7 @@ export async function checkForAssertions({
     }
   } catch (e) {
     console.log(
-      `Could not fetch assertions for '${rollupAddress}' on ChainId ${await getChainIdFromProvider(
-        parentProvider
-      )}`,
+      `Could not fetch assertions for '${rollupAddress}' on ChainId ${parentChainId}`,
       e
     )
   }
