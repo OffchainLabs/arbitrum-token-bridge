@@ -107,10 +107,10 @@ describe('Withdraw ETH', () => {
           .should('be.visible')
           .click()
 
-        cy.findByLabelText(
-          `Claim ${formatAmount(ETHToWithdraw, {
+        cy.findClaimButton(
+          formatAmount(ETHToWithdraw, {
             symbol: 'ETH'
-          })}`
+          })
         )
           .click()
           .then(() => {

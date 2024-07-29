@@ -13,7 +13,8 @@ import {
   NetworkName,
   checkForAssertions,
   generateActivityOnChains,
-  NetworkType
+  NetworkType,
+  fundEth
 } from './tests/support/common'
 
 import {
@@ -106,8 +107,20 @@ export default defineConfig({
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
       await Promise.all([
-        fundUserWalletEth('parentChain'),
-        fundUserWalletEth('childChain')
+        fundEth({
+          networkType: 'parentChain',
+          address: userWalletAddress,
+          parentProvider,
+          childProvider,
+          sourceWallet: localWallet
+        }),
+        fundEth({
+          networkType: 'childChain',
+          address: userWalletAddress,
+          parentProvider,
+          childProvider,
+          sourceWallet: localWallet
+        })
       ])
 
       // Wrap ETH to test ERC-20 transactions
@@ -118,8 +131,8 @@ export default defineConfig({
 
       // Generate activity on chains so that assertions get posted and claims can be made
       generateActivityOnChains({
-        parentChainProvider: parentProvider,
-        childChainProvider: childProvider,
+        parentProvider,
+        childProvider,
         wallet: localWallet
       })
       // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
@@ -229,22 +242,6 @@ async function deployERC20ToL2(erc20L1Address: string) {
     childProvider
   })
   await deploy.wait()
-}
-
-async function fundUserWalletEth(networkType: NetworkType) {
-  console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const address = await userWallet.getAddress()
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 2 eth
-  if (balance.lt(utils.parseEther('2'))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther('2')
-    })
-    await tx.wait()
-  }
 }
 
 function getWethContract(
