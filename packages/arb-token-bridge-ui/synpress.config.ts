@@ -110,17 +110,13 @@ export default defineConfig({
         // Fund the userWallet. We do this to run tests on a small amount of ETH.
         await Promise.all([
           fundEth({
-            networkType: 'parentChain',
             address: userWalletAddress,
-            parentProvider,
-            childProvider,
+            provider: parentProvider,
             sourceWallet: localWallet
           }),
           fundEth({
-            networkType: 'childChain',
             address: userWalletAddress,
-            parentProvider,
-            childProvider,
+            provider: childProvider,
             sourceWallet: localWallet
           })
         ])
@@ -142,16 +138,16 @@ export default defineConfig({
           l1Provider: parentProvider,
           l2Provider: childProvider
         })
-      }
 
-      // Generate activity on chains so that assertions get posted and claims can be made
-      generateActivityOnChains({
-        parentProvider,
-        childProvider,
-        wallet: localWallet
-      })
-      // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
-      checkForAssertions({ parentProvider, isOrbitTest })
+        // Generate activity on chains so that assertions get posted and claims can be made
+        generateActivityOnChains({
+          parentProvider,
+          childProvider,
+          wallet: localWallet
+        })
+        // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
+        checkForAssertions({ parentProvider, isOrbitTest })
+      }
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
@@ -167,7 +163,7 @@ export default defineConfig({
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
-      console.log(localWallet.address)
+
       config.env.L1_WETH_ADDRESS = l1WethAddress
       config.env.L2_WETH_ADDRESS = l2WethAddress
 

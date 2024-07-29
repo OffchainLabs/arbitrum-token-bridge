@@ -183,26 +183,22 @@ export const wait = (ms = 0): Promise<void> => {
 
 export async function fundEth({
   address, // wallet address where funding is required
-  networkType, // parentChain or childChain
-  parentProvider,
-  childProvider,
-  sourceWallet // source wallet that will fund the `address`
+  provider,
+  sourceWallet, // source wallet that will fund the `address`
+  amount = '2'
 }: {
   address: string
-  parentProvider: Provider
-  childProvider: Provider
+  provider: Provider
   sourceWallet: Wallet
-  networkType: NetworkType
+  amount?: string
 }) {
-  console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
+  console.log('Funding ETH to user wallet...')
   const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 2 eth
-  if (balance.lt(utils.parseEther('2'))) {
+  // Fund only if the balance is less than the amount
+  if (balance.lt(utils.parseEther(amount))) {
     const tx = await sourceWallet.connect(provider).sendTransaction({
       to: address,
-      value: utils.parseEther('2')
+      value: utils.parseEther(amount)
     })
     await tx.wait()
   }
@@ -236,9 +232,7 @@ export async function generateActivityOnChains({
   const minerParent = Wallet.createRandom().connect(parentProvider)
   await fundEth({
     address: await minerParent.getAddress(),
-    networkType: 'parentChain',
-    parentProvider,
-    childProvider,
+    provider: parentProvider,
     sourceWallet: wallet
   })
 
@@ -246,9 +240,7 @@ export async function generateActivityOnChains({
   const minerChild = Wallet.createRandom().connect(childProvider)
   await fundEth({
     address: await minerChild.getAddress(),
-    networkType: 'childChain',
-    parentProvider,
-    childProvider,
+    provider: childProvider,
     sourceWallet: wallet
   })
 

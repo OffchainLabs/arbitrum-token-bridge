@@ -173,20 +173,6 @@ export async function fundUserUsdcTestnet(
   }
 }
 
-export async function fundUserWalletEth(
-  address: string,
-  networkType: 'parentChain' | 'childChain'
-) {
-  console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
-  const provider =
-    networkType === 'parentChain' ? sepoliaProvider : arbSepoliaProvider
-  const tx = await localWallet.connect(provider).sendTransaction({
-    to: address,
-    value: utils.parseEther('0.05')
-  })
-  await tx.wait()
-}
-
 export const searchAndSelectToken = ({
   tokenName,
   tokenAddress
@@ -311,7 +297,6 @@ Cypress.Commands.addAll({
   logout,
   openTransactionsPanel,
   fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,

@@ -3,10 +3,11 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { zeroToLessThanOneETH } from '../../support/common'
+import { fundEth, zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 import { shortenAddress } from 'packages/arb-token-bridge-ui/src/util/CommonUtils'
 import { Wallet } from 'ethers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -78,9 +79,30 @@ describe('Deposit USDC through CCTP', () => {
       cy.switchMetamaskAccount(3 + Cypress.currentRetry)
 
       cy.fundUserUsdcTestnet(address, 'parentChain')
-      cy.fundUserWalletEth(address, 'parentChain')
-      // Add ETH on L2 for claiming
-      cy.fundUserWalletEth(address, 'childChain')
+      const sepoliaProvider = new StaticJsonRpcProvider(
+        Cypress.env('ETH_SEPOLIA_RPC_URL')
+      )
+      const arbSepoliaProvider = new StaticJsonRpcProvider(
+        Cypress.env('ARB_SEPOLIA_RPC_URL')
+      )
+      const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
+
+      cy.wrap(
+        fundEth({
+          address,
+          provider: sepoliaProvider,
+          sourceWallet: localWallet,
+          amount: '0.02'
+        })
+      ).then(() => {})
+      cy.wrap(
+        fundEth({
+          address,
+          provider: arbSepoliaProvider,
+          sourceWallet: localWallet,
+          amount: '0.02'
+        })
+      ).then(() => {})
 
       cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
 
