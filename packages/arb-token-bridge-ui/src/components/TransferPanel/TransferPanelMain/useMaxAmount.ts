@@ -1,7 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useMemo } from 'react'
 import { utils } from 'ethers'
 
-import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useAppState } from '../../../state'
@@ -28,30 +27,25 @@ export function useMaxAmount({
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const { ethParentBalance, ethChildBalance } = useBalances()
-  const setAmount = useSetInputAmount()
-
-  const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
 
-  const setMaxAmount = useCallback(async () => {
+  const maxAmount = useMemo(() => {
     if (selectedToken) {
       const tokenBalance = isDepositMode
         ? selectedTokenBalances.parentBalance
         : selectedTokenBalances.childBalance
 
-      if (tokenBalance) {
-        // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
-        setAmount(
-          utils.formatUnits(
-            tokenBalance,
-            selectedToken?.decimals ?? defaultErc20Decimals
-          )
-        )
+      if (!tokenBalance) {
+        return
       }
 
-      return
+      // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
+      return utils.formatUnits(
+        tokenBalance,
+        selectedToken?.decimals ?? defaultErc20Decimals
+      )
     }
 
     const customFeeTokenParentBalance = customFeeTokenBalances.parentBalance
@@ -61,10 +55,10 @@ export function useMaxAmount({
       isDepositMode &&
       customFeeTokenParentBalance
     ) {
-      setAmount(
-        utils.formatUnits(customFeeTokenParentBalance, nativeCurrency.decimals)
+      return utils.formatUnits(
+        customFeeTokenParentBalance,
+        nativeCurrency.decimals
       )
-      return
     }
 
     // We have already handled token deposits and deposits of the custom fee token
@@ -77,25 +71,30 @@ export function useMaxAmount({
       return
     }
 
-    setLoadingMaxAmount(true)
-
-    const nativeCurrencyBalanceFloat = parseFloat(
-      utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
+    const nativeCurrencyBalanceFormatted = utils.formatUnits(
+      nativeCurrencyBalance,
+      nativeCurrency.decimals
     )
+
     const estimatedTotalGasFees =
       (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
-    const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
+
+    const maxAmount =
+      parseFloat(nativeCurrencyBalanceFormatted) - estimatedTotalGasFees * 1.4
+
     // make sure it's always a positive number
     // if it's negative, set it to user's balance to show insufficient for gas error
-    setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
-    setLoadingMaxAmount(false)
+    if (maxAmount > 0) {
+      return String(maxAmount)
+    }
+
+    return nativeCurrencyBalanceFormatted
   }, [
     nativeCurrency,
     ethParentBalance,
     ethChildBalance,
     isDepositMode,
     selectedToken,
-    setAmount,
     selectedTokenBalances,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
@@ -103,7 +102,6 @@ export function useMaxAmount({
   ])
 
   return {
-    setMaxAmount,
-    loadingMaxAmount
+    maxAmount
   }
 }

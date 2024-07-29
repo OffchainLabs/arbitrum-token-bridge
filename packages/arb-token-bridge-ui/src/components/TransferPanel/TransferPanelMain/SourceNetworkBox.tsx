@@ -29,12 +29,10 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
-import {
-  AmountQueryParamEnum,
-  useArbQueryParams
-} from '../../../hooks/useArbQueryParams'
+import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import { useMaxAmount } from './useMaxAmount'
+import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
 
 export function SourceNetworkBox({
   amount,
@@ -57,10 +55,8 @@ export function SourceNetworkBox({
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const [, setQueryParams] = useArbQueryParams()
-
-  const { setMaxAmount, loadingMaxAmount } = useMaxAmount({
+  const setAmount = useSetInputAmount()
+  const { maxAmount } = useMaxAmount({
     customFeeTokenBalances
   })
 
@@ -68,19 +64,25 @@ export function SourceNetworkBox({
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
-    setQueryParams({ amount })
-
-    if (isMaxAmount) {
-      setMaxAmount()
+    if (isMaxAmount && typeof maxAmount !== 'undefined') {
+      setAmount(maxAmount)
+    } else {
+      setAmount(amount)
     }
-  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
+  }, [amount, maxAmount, isMaxAmount, setAmount])
+
+  const maxButtonOnClick = useCallback(() => {
+    if (typeof maxAmount !== 'undefined') {
+      setAmount(maxAmount)
+    }
+  }, [maxAmount, setAmount])
 
   const buttonStyle = {
     backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
   }
 
   const onChange = useCallback(
-    async (network: Chain) => {
+    (network: Chain) => {
       if (networks.destinationChain.id === network.id) {
         setNetworks({
           sourceChainId: networks.destinationChain.id,
@@ -163,10 +165,7 @@ export function SourceNetworkBox({
 
       <div className="flex flex-col gap-1">
         <TransferPanelMainInput
-          maxButtonProps={{
-            loading: isMaxAmount || loadingMaxAmount,
-            onClick: setMaxAmount
-          }}
+          maxButtonOnClick={maxButtonOnClick}
           errorMessage={errorMessage}
           value={isMaxAmount ? '' : amount}
         />
