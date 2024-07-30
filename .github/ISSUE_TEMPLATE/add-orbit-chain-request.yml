@@ -111,7 +111,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please fill out this section with your chain configuration details and contract addresses. As a reminder, you can get all contract addresses by running You can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
+        Please fill out this section with your chain configuration details and contract addresses. As a reminder, you can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
   - type: input
     id: confirmPeriodBlocks
     attributes:
