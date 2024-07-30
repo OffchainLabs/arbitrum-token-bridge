@@ -20,7 +20,7 @@ describe('Deposit ERC20 Token', () => {
   // because it is cleared between each `it` cypress test
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
   const l1WethAddress = Cypress.env('L1_WETH_ADDRESS')
 
   // Happy Path
