@@ -11,6 +11,7 @@ env:
   BATCH_POSTER_MONITORING_SLACK_TOKEN: ${{ secrets.CORE_CHAIN_BATCH_POSTER_MONITORING_SLACK_TOKEN }}
   BATCH_POSTER_MONITORING_SLACK_CHANNEL: ${{ secrets.CORE_CHAIN_BATCH_POSTER_MONITORING_SLACK_CHANNEL }}
   NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
+  ARB_ONE_MONITOR_RPC_URL: ${{ secrets.ARB_ONE_MONITOR_RPC_URL }}
 
 jobs:
   run-alerting:
@@ -32,6 +33,7 @@ jobs:
       run: yarn workspace arb-token-bridge-ui generateCoreChainsToMonitor
       env:
         NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
+        ARB_ONE_MONITOR_RPC_URL: ${{ secrets.ARB_ONE_MONITOR_RPC_URL }}
         BATCH_POSTER_MONITORING: true
 
     - name: Checkout Arbitrum Monitoring repository
