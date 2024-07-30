@@ -3,38 +3,41 @@ import { Transaction } from '../../../src/hooks/useTransactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 import {
   getInitialERC20Balance,
-  getL2NetworkConfig,
-  wethTokenAddressL2
+  getL2NetworkConfig
 } from '../../support/common'
 
 const wethAmountToDeposit = 0.001
 
 function mockErc20RedeemDepositTransaction(): Transaction {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+
   return {
     txID: Cypress.env('REDEEM_RETRYABLE_TEST_TX'),
     value: wethAmountToDeposit.toString(),
     type: 'deposit-l1',
     direction: 'deposit',
     source: 'local_storage_cache',
-    parentChainId: 1337,
-    childChainId: 412346,
+    parentChainId: isOrbitTest ? 412346 : 1337,
+    childChainId: isOrbitTest ? 333333 : 412346,
     status: 'pending',
     assetName: 'WETH',
     assetType: AssetType.ERC20,
     sender: Cypress.env('ADDRESS'),
     destination: Cypress.env('ADDRESS'),
-    l1NetworkID: '1337',
-    l2NetworkID: '412346',
+    l1NetworkID: isOrbitTest ? '412346' : '1337',
+    l2NetworkID: isOrbitTest ? '333333' : '412346',
     timestampCreated: Math.floor(Date.now() / 1000).toString()
   }
 }
 
 describe('Redeem ERC20 Deposit', () => {
+  const l2WethAddress = Cypress.env('L2_WETH_ADDRESS')
+
   context('User has some ERC20 and is on L1', () => {
     let l2ERC20bal: string
     beforeEach(() => {
       getInitialERC20Balance({
-        tokenAddress: wethTokenAddressL2,
+        tokenAddress: l2WethAddress,
         multiCallerAddress: getL2NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ARB_RPC_URL')
@@ -42,7 +45,7 @@ describe('Redeem ERC20 Deposit', () => {
     })
 
     it('should redeem failed retryable successfully', () => {
-      cy.login({ networkType: 'L2' })
+      cy.login({ networkType: 'childChain' })
 
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
@@ -52,12 +55,12 @@ describe('Redeem ERC20 Deposit', () => {
       context('should add a new token', () => {
         cy.searchAndSelectToken({
           tokenName: 'WETH',
-          tokenAddress: wethTokenAddressL2
+          tokenAddress: l2WethAddress
         })
 
         // check the balance on the destination chain before redeeming
         context('should show ERC-20 balance correctly', () => {
-          cy.findByLabelText('WETH balance amount on l2')
+          cy.findByLabelText('WETH balance amount on childChain')
             .should('be.visible')
             .contains(l2ERC20bal)
             .should('be.visible')
@@ -102,7 +105,7 @@ describe('Redeem ERC20 Deposit', () => {
             // wait for the destination balance to update
             cy.wait(5_000).then(() => {
               // the balance on the destination chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on l2')
+              cy.findByLabelText('WETH balance amount on childChain')
                 .should('be.visible')
                 .invoke('text')
                 .should(

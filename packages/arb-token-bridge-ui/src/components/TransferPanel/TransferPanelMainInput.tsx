@@ -1,18 +1,19 @@
 import { twMerge } from 'tailwind-merge'
-import { useAccount } from 'wagmi'
 import { useEffect, useMemo } from 'react'
 
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useDestinationAddressStore } from './AdvancedSettings'
-import { useBalance } from '../../hooks/useBalance'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { countDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useBalances } from '../../hooks/useBalances'
+import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { ExternalLink } from '../common/ExternalLink'
+import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -24,41 +25,17 @@ function MaxButton(props: MaxButtonProps) {
   const {
     app: { selectedToken }
   } = useAppState()
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { isDepositMode } = useNetworksRelationship(networks)
 
-  const { destinationAddress } = useDestinationAddressStore()
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-
-  const l1WalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const l2WalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
-  const {
-    eth: [ethL1Balance]
-  } = useBalance({
-    provider: parentChainProvider,
-    walletAddress: l1WalletAddress
-  })
-  const {
-    eth: [ethL2Balance]
-  } = useBalance({
-    provider: childChainProvider,
-    walletAddress: l2WalletAddress
-  })
+  const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+    const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
     const tokenBalance = isDepositMode
-      ? selectedTokenBalances.l1
-      : selectedTokenBalances.l2
+      ? selectedTokenBalances.parentBalance
+      : selectedTokenBalances.childBalance
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -74,8 +51,8 @@ function MaxButton(props: MaxButtonProps) {
 
     return !ethBalance.isZero()
   }, [
-    ethL1Balance,
-    ethL2Balance,
+    ethParentBalance,
+    ethChildBalance,
     selectedTokenBalances,
     selectedToken,
     isDepositMode
@@ -138,9 +115,58 @@ function TransferPanelInputField(
   )
 }
 
+function ErrorMessage({
+  errorMessage
+}: {
+  errorMessage: string | TransferReadinessRichErrorMessage | undefined
+}) {
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
+
+  if (typeof errorMessage === 'undefined') {
+    return null
+  }
+
+  if (typeof errorMessage === 'string') {
+    return <span className="text-sm text-brick">{errorMessage}</span>
+  }
+
+  switch (errorMessage) {
+    case TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE:
+      return (
+        <span className="text-sm text-brick">
+          Gas estimation failed, join our{' '}
+          <ExternalLink
+            href="https://discord.com/invite/ZpZuw7p"
+            className="underline"
+          >
+            Discord
+          </ExternalLink>{' '}
+          and reach out in #support for assistance.
+        </span>
+      )
+
+    case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+    case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
+      return (
+        <>
+          <span className="text-sm text-brick">
+            This token can&apos;t be bridged over.
+          </span>{' '}
+          <button
+            className="arb-hover underline"
+            onClick={openTransferDisabledDialog}
+          >
+            Learn more.
+          </button>
+        </>
+      )
+  }
+}
+
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
-    errorMessage?: string | React.ReactNode
+    errorMessage?: string | TransferReadinessRichErrorMessage | undefined
     maxButtonProps: MaxButtonProps
     value: string
   }
@@ -170,9 +196,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         </div>
       </div>
 
-      {typeof errorMessage !== 'undefined' && (
-        <span className="text-sm text-brick">{errorMessage}</span>
-      )}
+      <ErrorMessage errorMessage={errorMessage} />
     </>
   )
 }

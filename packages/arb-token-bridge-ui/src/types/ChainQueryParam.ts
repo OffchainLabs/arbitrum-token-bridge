@@ -17,7 +17,8 @@ const chainQueryParams = [
   'arbitrum-nova',
   'arbitrum-sepolia',
   'custom-localhost',
-  'arbitrum-localhost'
+  'arbitrum-localhost',
+  'l3-localhost'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
@@ -60,6 +61,9 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
 
     case ChainId.ArbitrumLocal:
       return 'arbitrum-localhost'
+
+    case ChainId.L3Local:
+      return 'l3-localhost'
 
     default:
       const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -104,6 +108,9 @@ export function getChainForChainKeyQueryParam(
 
     case 'arbitrum-localhost':
       return customChains.localL2Network
+
+    case 'l3-localhost':
+      return customChains.localL3Network
 
     default:
       const orbitChain = getOrbitChains().find(

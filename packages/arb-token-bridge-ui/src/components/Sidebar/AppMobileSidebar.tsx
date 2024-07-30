@@ -22,7 +22,11 @@ export const AppMobileSidebar: React.FC<React.PropsWithChildren> = () => {
 
   return (
     <div className="flex flex-col justify-center sm:hidden">
-      <DynamicMobileSidebar logger={posthog} activeMenu="Bridge">
+      <DynamicMobileSidebar
+        logger={posthog}
+        activeMenu="Bridge"
+        mobileToggleButtonClassOverrides="bg-transparent"
+      >
         {isConnected ? (
           <AccountMenuItem />
         ) : (
