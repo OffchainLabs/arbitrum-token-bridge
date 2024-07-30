@@ -2,32 +2,38 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
-import { formatAmount } from '../../../src/util/NumberUtils'
+import {
+  getL1NetworkName,
+  getL2NetworkName,
+  zeroToLessThanOneETH
+} from '../../support/common'
 
 describe('Deposit ETH', () => {
   const ETHAmountToDeposit = 0.0001
 
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
-    cy.login({ networkType: 'L1' })
-    cy.findSourceChainButton('Ethereum Local')
-    cy.findDestinationChainButton('Arbitrum Local')
+    cy.login({ networkType: 'parentChain' })
+    cy.findSourceChainButton(getL1NetworkName())
+    cy.findDestinationChainButton(getL2NetworkName())
   })
 
   it('should show gas estimations and bridge successfully', () => {
-    cy.login({ networkType: 'L1' })
+    cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
       //
       .then(() => {
         cy.findGasFeeSummary(zeroToLessThanOneETH)
-        cy.findGasFeeForChain('Ethereum Local', zeroToLessThanOneETH)
-        cy.findGasFeeForChain('Arbitrum Local', zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
       })
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
       cy.findTransactionInTransactionHistory({
-        text: '10 minutes',
+        text: depositTime,
         amount: ETHAmountToDeposit,
         symbol: 'ETH'
       })

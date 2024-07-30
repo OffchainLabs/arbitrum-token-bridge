@@ -11,7 +11,8 @@ import {
   arbitrumNova,
   arbitrumSepolia,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  localL3Network as l3Local
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
 import { getDestinationChainIds } from '../util/networks'
@@ -38,6 +39,7 @@ export function isSupportedChainId(
     arbitrumNova.id,
     arbitrumSepolia.id,
     arbitrumLocal.id,
+    l3Local.id,
     local.id,
     ...getOrbitChains().map(chain => chain.chainId),
     ...customChainIds
