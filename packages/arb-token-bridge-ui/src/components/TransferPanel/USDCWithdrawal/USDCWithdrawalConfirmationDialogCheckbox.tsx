@@ -5,7 +5,8 @@ import { getNetworkName, isNetwork } from '../../../util/networks'
 import { useNetworks } from '../../../hooks/useNetworks'
 import {
   TRANSFER_TIME_MINUTES_CCTP_MAINNET,
-  TRANSFER_TIME_MINUTES_CCTP_TESTNET
+  TRANSFER_TIME_MINUTES_CCTP_TESTNET,
+  minutesToHumanReadableTime
 } from '../../../hooks/useTransferDuration'
 
 export function USDCWithdrawalConfirmationDialogCheckbox({
@@ -18,6 +19,10 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
   const [checkboxesChecked, setCheckboxesChecked] = useState([false, false])
   const [networks] = useNetworks()
   const { isTestnet } = isNetwork(networks.sourceChain.id)
+
+  const withdrawalTime = isTestnet
+    ? TRANSFER_TIME_MINUTES_CCTP_TESTNET
+    : TRANSFER_TIME_MINUTES_CCTP_MAINNET
 
   const destinationNetworkName = getNetworkName(networks.destinationChain.id)
 
@@ -54,9 +59,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
           <span className="select-none font-light">
             I understand that it will take{' '}
             <span className="font-medium">
-              {isTestnet
-                ? TRANSFER_TIME_MINUTES_CCTP_TESTNET
-                : TRANSFER_TIME_MINUTES_CCTP_MAINNET}
+              {~minutesToHumanReadableTime(withdrawalTime)}
             </span>{' '}
             before I can claim my USDC on {isTestnet ? 'Sepolia' : 'Ethereum'}.
           </span>

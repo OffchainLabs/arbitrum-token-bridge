@@ -73,7 +73,7 @@ export function USDCDepositConfirmationDialogCheckbox({
               <span className="select-none font-light">
                 I understand that it will take{' '}
                 <span className="font-medium">
-                  {minutesToHumanReadableTime(depositTime)}
+                  {~minutesToHumanReadableTime(depositTime)}
                 </span>{' '}
                 before I can claim my USDC on {destinationNetworkName}.
               </span>
