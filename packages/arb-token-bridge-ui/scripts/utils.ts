@@ -27,7 +27,7 @@ export const sanitizeRpcUrl = (url: string) => {
   }
 }
 
-const isOrbitChainConfig = (
+const hasExplorerUrl = (
   chain: ArbitrumNetwork | OrbitChainConfig
 ): chain is OrbitChainConfig => {
   return (chain as OrbitChainConfig).explorerUrl !== undefined
@@ -44,9 +44,7 @@ export const getChainToMonitor = ({
 }): ChainToMonitor => ({
   ...chain,
   explorerUrl: sanitizeExplorerUrl(
-    isOrbitChainConfig(chain)
-      ? chain.explorerUrl
-      : getExplorerUrl(chain.chainId)
+    hasExplorerUrl(chain) ? chain.explorerUrl : getExplorerUrl(chain.chainId)
   ),
   orbitRpcUrl: sanitizeRpcUrl(rpcUrl),
   parentRpcUrl: sanitizeRpcUrl(rpcURLs[chain.parentChainId]),
