@@ -1,66 +1,50 @@
 import { useCallback, useMemo } from 'react'
 import { Chain, useAccount } from 'wagmi'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import { MaxUint256 } from '@ethersproject/constants'
-import { EthBridger, Erc20Bridger, L2ToL1Message } from '@arbitrum/sdk'
-import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import {
+  EventArgs,
+  ChildToParentMessage,
+  ChildToParentTransactionEvent
+} from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
-import dayjs from 'dayjs'
 import { create } from 'zustand'
 
 import useTransactions from './useTransactions'
 import {
   ArbTokenBridge,
-  AssetType,
   ContractStorage,
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
   TokenType,
-  L2ToL1EventResult,
-  L1EthDepositTransactionLifecycle,
-  L1ContractCallTransactionLifecycle,
-  ArbTokenBridgeEth,
-  ArbTokenBridgeToken
+  L2ToL1EventResult
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
   fetchErc20Data,
   getL1ERC20Address,
-  fetchErc20L2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled,
-  isValidErc20,
-  isGatewayRegistered
+  isValidErc20
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
-import { useNativeCurrency } from './useNativeCurrency'
-import { useTransactionHistory } from './useTransactionHistory'
-import { DepositStatus, WithdrawalStatus } from '../state/app/state'
-import {
-  addDepositToCache,
-  getProvider
-} from '../components/TransactionHistory/helpers'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { BridgeTokenList, fetchTokenListFromURL } from '../util/TokenListUtils'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
 function isClassicL2ToL1TransactionEvent(
-  event: L2ToL1TransactionEvent
+  event: ChildToParentTransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
 }
@@ -98,11 +82,6 @@ class TokenDisabledError extends Error {
   }
 }
 
-// https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L76
-function percentIncrease(num: BigNumber, increase: BigNumber): BigNumber {
-  return num.add(num.mul(increase).div(100))
-}
-
 export interface TokenBridgeParams {
   l1: { provider: JsonRpcProvider; network: Chain }
   l2: { provider: JsonRpcProvider; network: Chain }
@@ -129,63 +108,37 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
   const { address: walletAddress } = useAccount()
   const { bridgeTokens, setBridgeTokens } = useBridgeTokensStore()
 
-  const { addPendingTransaction } = useTransactionHistory(walletAddress)
-
   const { destinationAddress } = useDestinationAddressStore()
 
   const {
-    eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress
   })
   const {
-    eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress
   })
 
   const {
-    eth: [, updateEthL1CustomDestinationBalance],
     erc20: [, updateErc20L1CustomDestinationBalance]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress: destinationAddress
   })
   const {
-    eth: [, updateEthL2CustomDestinationBalance],
     erc20: [, updateErc20CustomDestinationL2Balance]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress: destinationAddress
   })
-
-  const updateEthBalances = useCallback(async () => {
-    Promise.all([
-      updateEthL1Balance(),
-      updateEthL2Balance(),
-      updateEthL1CustomDestinationBalance(),
-      updateEthL2CustomDestinationBalance()
-    ])
-  }, [
-    updateEthL1Balance,
-    updateEthL1CustomDestinationBalance,
-    updateEthL2Balance,
-    updateEthL2CustomDestinationBalance
-  ])
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
-
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const { updateUSDCBalances } = useUpdateUSDCBalances({
-    walletAddress
-  })
 
   const [executedMessagesCache, setExecutedMessagesCache] =
     useLocalStorage<ExecutedMessagesCache>(
@@ -200,205 +153,8 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
   const [transactions, { addTransaction, updateTransaction }] =
     useTransactions()
 
-  const depositEth = useCallback(
-    async ({
-      amount,
-      l1Signer,
-      txLifecycle
-    }: {
-      amount: BigNumber
-      l1Signer: Signer
-      txLifecycle?: L1EthDepositTransactionLifecycle
-    }) => {
-      if (!walletAddress) {
-        return
-      }
-
-      const ethBridger = await EthBridger.fromProvider(childChainProvider)
-      const parentChainBlockTimestamp = (
-        await parentChainProvider.getBlock('latest')
-      ).timestamp
-
-      const depositRequest = await ethBridger.getDepositRequest({
-        amount,
-        from: walletAddress
-      })
-
-      let tx: L1EthDepositTransaction
-
-      try {
-        const gasLimit = await parentChainProvider.estimateGas(
-          depositRequest.txRequest
-        )
-
-        tx = await ethBridger.deposit({
-          amount,
-          l1Signer,
-          overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
-        })
-
-        if (txLifecycle?.onTxSubmit) {
-          txLifecycle.onTxSubmit(tx)
-        }
-      } catch (error: any) {
-        if (txLifecycle?.onTxError) {
-          txLifecycle.onTxError(error)
-        }
-        return error.message
-      }
-
-      addPendingTransaction({
-        sender: walletAddress,
-        destination: walletAddress,
-        direction: 'deposit-l1',
-        status: 'pending',
-        createdAt: parentChainBlockTimestamp * 1_000,
-        resolvedAt: null,
-        txId: tx.hash,
-        asset: nativeCurrency.symbol,
-        assetType: AssetType.ETH,
-        value: utils.formatUnits(amount, nativeCurrency.decimals),
-        uniqueId: null,
-        isWithdrawal: false,
-        blockNum: null,
-        tokenAddress: null,
-        depositStatus: DepositStatus.L1_PENDING,
-        parentChainId: parentChain.id,
-        childChainId: childChain.id,
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      })
-
-      addDepositToCache({
-        sender: walletAddress,
-        destination: walletAddress,
-        status: 'pending',
-        txID: tx.hash,
-        assetName: nativeCurrency.symbol,
-        assetType: AssetType.ETH,
-        l1NetworkID: parentChain.id.toString(),
-        l2NetworkID: childChain.id.toString(),
-        value: utils.formatUnits(amount, nativeCurrency.decimals),
-        parentChainId: parentChain.id,
-        childChainId: childChain.id,
-        direction: 'deposit',
-        type: 'deposit-l1',
-        source: 'local_storage_cache',
-        timestampCreated: String(parentChainBlockTimestamp),
-        nonce: tx.nonce
-      })
-
-      const receipt = await tx.wait()
-
-      if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
-      }
-
-      updateEthBalances()
-
-      if (nativeCurrency.isCustom) {
-        updateErc20L1Balance([nativeCurrency.address])
-      }
-    },
-    [
-      addPendingTransaction,
-      childChain.id,
-      childChainProvider,
-      nativeCurrency,
-      networks.destinationChain.id,
-      networks.sourceChain.id,
-      parentChain.id,
-      parentChainProvider,
-      updateErc20L1Balance,
-      updateEthBalances,
-      walletAddress
-    ]
-  )
-
-  const withdrawEth: ArbTokenBridgeEth['withdraw'] = useCallback(
-    async ({ amount, l2Signer, txLifecycle }) => {
-      if (!walletAddress) {
-        return
-      }
-
-      try {
-        const ethBridger = await EthBridger.fromProvider(childChainProvider)
-
-        const withdrawalRequest = await ethBridger.getWithdrawalRequest({
-          from: walletAddress,
-          destinationAddress: walletAddress,
-          amount
-        })
-
-        const gasLimit = await childChainProvider.estimateGas(
-          withdrawalRequest.txRequest
-        )
-
-        const tx = await ethBridger.withdraw({
-          ...withdrawalRequest,
-          l2Signer,
-          overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
-        })
-
-        if (txLifecycle?.onTxSubmit) {
-          txLifecycle.onTxSubmit(tx)
-        }
-
-        addPendingTransaction({
-          sender: walletAddress,
-          destination: walletAddress,
-          direction: 'withdraw',
-          status: WithdrawalStatus.UNCONFIRMED,
-          createdAt: dayjs().valueOf(),
-          resolvedAt: null,
-          txId: tx.hash,
-          asset: nativeCurrency.symbol,
-          assetType: AssetType.ETH,
-          value: utils.formatUnits(amount, nativeCurrency.decimals),
-          uniqueId: null,
-          isWithdrawal: true,
-          blockNum: null,
-          tokenAddress: null,
-          parentChainId: parentChain.id,
-          childChainId: childChain.id,
-          sourceChainId: networks.sourceChain.id,
-          destinationChainId: networks.destinationChain.id
-        })
-
-        const receipt = await tx.wait()
-
-        if (txLifecycle?.onTxConfirm) {
-          txLifecycle.onTxConfirm(receipt)
-        }
-
-        updateEthBalances()
-
-        return receipt
-      } catch (error) {
-        if (txLifecycle?.onTxError) {
-          txLifecycle.onTxError(error)
-        }
-        console.error('withdrawEth err', error)
-      }
-    },
-    [
-      addPendingTransaction,
-      childChain.id,
-      childChainProvider,
-      nativeCurrency.decimals,
-      nativeCurrency.symbol,
-      parentChain.id,
-      updateEthBalances,
-      walletAddress,
-      networks.sourceChain.id,
-      networks.destinationChain.id
-    ]
-  )
-
   const updateTokenData = useCallback(
     async (l1Address: string) => {
-      updateUSDCBalances(l1Address)
-
       if (typeof bridgeTokens === 'undefined') {
         return
       }
@@ -432,268 +188,7 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       updateErc20CustomDestinationL2Balance,
       updateErc20L1Balance,
       updateErc20L1CustomDestinationBalance,
-      updateErc20L2Balance,
-      updateUSDCBalances
-    ]
-  )
-
-  const approveToken = useCallback(
-    async ({
-      erc20L1Address,
-      l1Signer
-    }: {
-      erc20L1Address: string
-      l1Signer: Signer
-    }) => {
-      if (!walletAddress) {
-        return
-      }
-
-      const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
-
-      if (
-        !(await isGatewayRegistered({
-          erc20ParentChainAddress: erc20L1Address,
-          parentChainProvider,
-          childChainProvider
-        }))
-      ) {
-        throw Error('Custom gateway is not registered yet.')
-      }
-
-      const tx = await erc20Bridger.approveToken({
-        erc20L1Address,
-        l1Signer
-      })
-
-      const { symbol } = await fetchErc20Data({
-        address: erc20L1Address,
-        provider: parentChainProvider
-      })
-
-      addTransaction({
-        type: 'approve',
-        status: 'pending',
-        value: null,
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
-        sender: walletAddress,
-        l1NetworkID: parentChain.id.toString()
-      })
-
-      const receipt = await tx.wait()
-
-      updateTransaction(receipt, tx)
-      updateTokenData(erc20L1Address)
-    },
-    [
-      addTransaction,
-      childChainProvider,
-      parentChain.id,
-      parentChainProvider,
-      updateTokenData,
-      updateTransaction,
-      walletAddress
-    ]
-  )
-
-  const approveTokenL2 = useCallback(
-    async ({
-      erc20L1Address,
-      l2Signer
-    }: {
-      erc20L1Address: string
-      l2Signer: Signer
-    }) => {
-      if (typeof bridgeTokens === 'undefined' || !walletAddress) {
-        return
-      }
-      const bridgeToken = bridgeTokens[erc20L1Address]
-      if (!bridgeToken) throw new Error('Bridge token not found')
-      const { l2Address } = bridgeToken
-      if (!l2Address) throw new Error('L2 address not found')
-      const gatewayAddress = await fetchErc20L2GatewayAddress({
-        erc20L1Address,
-        l2Provider: childChainProvider
-      })
-      const contract = await ERC20__factory.connect(l2Address, l2Signer)
-      const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-      const { symbol } = await fetchErc20Data({
-        address: erc20L1Address,
-        provider: parentChainProvider
-      })
-
-      addTransaction({
-        type: 'approve-l2',
-        status: 'pending',
-        value: null,
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
-        sender: walletAddress,
-        blockNumber: tx.blockNumber,
-        l1NetworkID: parentChain.id.toString(),
-        l2NetworkID: childChain.id.toString()
-      })
-
-      const receipt = await tx.wait()
-      updateTransaction(receipt, tx)
-      updateTokenData(erc20L1Address)
-    },
-    [
-      addTransaction,
-      bridgeTokens,
-      childChain.id,
-      childChainProvider,
-      parentChain.id,
-      parentChainProvider,
-      updateTokenData,
-      updateTransaction,
-      walletAddress
-    ]
-  )
-
-  const depositToken = useCallback(
-    async ({
-      erc20L1Address,
-      amount,
-      l1Signer,
-      txLifecycle,
-      destinationAddress
-    }: {
-      erc20L1Address: string
-      amount: BigNumber
-      l1Signer: Signer
-      txLifecycle?: L1ContractCallTransactionLifecycle
-      destinationAddress?: string
-    }) => {
-      if (!walletAddress) {
-        return
-      }
-      const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
-      const parentChainBlockTimestamp = (
-        await parentChainProvider.getBlock('latest')
-      ).timestamp
-
-      try {
-        if (
-          !(await isGatewayRegistered({
-            erc20ParentChainAddress: erc20L1Address,
-            parentChainProvider,
-            childChainProvider
-          }))
-        ) {
-          throw Error('Custom gateway is not registered yet.')
-        }
-
-        const { symbol, decimals } = await fetchErc20Data({
-          address: erc20L1Address,
-          provider: parentChainProvider
-        })
-
-        const depositRequest = await erc20Bridger.getDepositRequest({
-          l1Provider: parentChainProvider,
-          l2Provider: childChainProvider,
-          from: walletAddress,
-          erc20L1Address,
-          destinationAddress,
-          amount,
-          retryableGasOverrides: {
-            // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
-            // the 30% gas limit increase should cover the difference
-            gasLimit: { percentIncrease: BigNumber.from(30) }
-          }
-        })
-
-        const gasLimit = await parentChainProvider.estimateGas(
-          depositRequest.txRequest
-        )
-
-        const tx = await erc20Bridger.deposit({
-          ...depositRequest,
-          l1Signer,
-          overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
-        })
-
-        if (txLifecycle?.onTxSubmit) {
-          txLifecycle.onTxSubmit(tx)
-        }
-
-        addPendingTransaction({
-          sender: walletAddress,
-          destination: destinationAddress ?? walletAddress,
-          direction: 'deposit-l1',
-          status: 'pending',
-          createdAt: parentChainBlockTimestamp * 1_000,
-          resolvedAt: null,
-          txId: tx.hash,
-          asset: symbol,
-          assetType: AssetType.ERC20,
-          value: utils.formatUnits(amount, decimals),
-          depositStatus: DepositStatus.L1_PENDING,
-          uniqueId: null,
-          isWithdrawal: false,
-          blockNum: null,
-          tokenAddress: erc20L1Address,
-          parentChainId: parentChain.id,
-          childChainId: childChain.id,
-          sourceChainId: networks.sourceChain.id,
-          destinationChainId: networks.destinationChain.id
-        })
-
-        addDepositToCache({
-          sender: walletAddress,
-          destination: destinationAddress ?? walletAddress,
-          status: 'pending',
-          txID: tx.hash,
-          assetName: symbol,
-          assetType: AssetType.ERC20,
-          l1NetworkID: parentChain.id.toString(),
-          l2NetworkID: childChain.id.toString(),
-          value: utils.formatUnits(amount, decimals),
-          parentChainId: parentChain.id,
-          childChainId: childChain.id,
-          direction: 'deposit',
-          type: 'deposit-l1',
-          source: 'local_storage_cache',
-          timestampCreated: String(parentChainBlockTimestamp),
-          nonce: tx.nonce
-        })
-
-        const receipt = await tx.wait()
-
-        if (txLifecycle?.onTxConfirm) {
-          txLifecycle.onTxConfirm(receipt)
-        }
-
-        updateTokenData(erc20L1Address)
-        updateEthBalances()
-
-        if (nativeCurrency.isCustom) {
-          updateErc20L1Balance([nativeCurrency.address])
-        }
-
-        return receipt
-      } catch (error) {
-        if (txLifecycle?.onTxError) {
-          txLifecycle.onTxError(error)
-        }
-      }
-    },
-    [
-      addPendingTransaction,
-      childChain.id,
-      childChainProvider,
-      nativeCurrency,
-      parentChain.id,
-      parentChainProvider,
-      updateErc20L1Balance,
-      updateEthBalances,
-      updateTokenData,
-      walletAddress,
-      networks.sourceChain.id,
-      networks.destinationChain.id
+      updateErc20L2Balance
     ]
   )
 
@@ -772,119 +267,6 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       updateErc20L1Balance,
       updateErc20L2Balance,
       walletAddress
-    ]
-  )
-
-  const withdrawToken: ArbTokenBridgeToken['withdraw'] = useCallback(
-    async ({
-      erc20L1Address,
-      amount,
-      l2Signer,
-      txLifecycle,
-      destinationAddress
-    }) => {
-      if (!walletAddress) {
-        return
-      }
-
-      try {
-        const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
-        const provider = l2Signer.provider
-        const isSmartContractAddress =
-          provider &&
-          (await provider.getCode(String(erc20L1Address))).length < 2
-        if (isSmartContractAddress && !destinationAddress) {
-          throw new Error(`Missing destination address`)
-        }
-
-        if (typeof bridgeTokens === 'undefined') {
-          return
-        }
-        const bridgeToken = bridgeTokens[erc20L1Address]
-
-        const { symbol, decimals } = await (async () => {
-          if (bridgeToken) {
-            const { symbol, decimals } = bridgeToken
-            return { symbol, decimals }
-          }
-          const { symbol, decimals } = await fetchErc20Data({
-            address: erc20L1Address,
-            provider: parentChainProvider
-          })
-
-          addToken(erc20L1Address)
-          return { symbol, decimals }
-        })()
-
-        const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
-          from: walletAddress,
-          erc20l1Address: erc20L1Address,
-          destinationAddress: destinationAddress ?? walletAddress,
-          amount
-        })
-
-        const gasLimit = await childChainProvider.estimateGas(
-          withdrawalRequest.txRequest
-        )
-
-        const tx = await erc20Bridger.withdraw({
-          ...withdrawalRequest,
-          l2Signer,
-          overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
-        })
-
-        if (txLifecycle?.onTxSubmit) {
-          txLifecycle.onTxSubmit(tx)
-        }
-
-        addPendingTransaction({
-          sender: walletAddress,
-          destination: destinationAddress ?? walletAddress,
-          direction: 'withdraw',
-          status: WithdrawalStatus.UNCONFIRMED,
-          createdAt: dayjs().valueOf(),
-          resolvedAt: null,
-          txId: tx.hash,
-          asset: symbol,
-          assetType: AssetType.ERC20,
-          value: utils.formatUnits(amount, decimals),
-          uniqueId: null,
-          isWithdrawal: true,
-          blockNum: null,
-          tokenAddress: erc20L1Address,
-          parentChainId: parentChain.id,
-          childChainId: childChain.id,
-          sourceChainId: networks.sourceChain.id,
-          destinationChainId: networks.destinationChain.id
-        })
-
-        const receipt = await tx.wait()
-
-        if (txLifecycle?.onTxConfirm) {
-          txLifecycle.onTxConfirm(receipt)
-        }
-
-        updateTokenData(erc20L1Address)
-        return receipt
-      } catch (error) {
-        if (txLifecycle?.onTxError) {
-          txLifecycle.onTxError(error)
-        }
-        console.warn('withdraw token err', error)
-      }
-    },
-    [
-      addPendingTransaction,
-      addToken,
-      bridgeTokens,
-      childChain.id,
-      childChainProvider,
-      parentChain.id,
-      parentChainProvider,
-      updateTokenData,
-      walletAddress,
-      networks.sourceChain.id,
-      networks.destinationChain.id
     ]
   )
 
@@ -1109,10 +491,10 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
         return
       }
 
-      const parentChainProvider = getProvider(event.parentChainId)
-      const childChainProvider = getProvider(event.childChainId)
+      const parentChainProvider = getProviderForChainId(event.parentChainId)
+      const childChainProvider = getProviderForChainId(event.childChainId)
 
-      const messageWriter = L2ToL1Message.fromEvent(
+      const messageWriter = ChildToParentMessage.fromEvent(
         l1Signer,
         event,
         parentChainProvider
@@ -1171,10 +553,10 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
         return
       }
 
-      const parentChainProvider = getProvider(event.parentChainId)
-      const childChainProvider = getProvider(event.childChainId)
+      const parentChainProvider = getProviderForChainId(event.parentChainId)
+      const childChainProvider = getProviderForChainId(event.childChainId)
 
-      const messageWriter = L2ToL1Message.fromEvent(
+      const messageWriter = ChildToParentMessage.fromEvent(
         l1Signer,
         event,
         parentChainProvider
@@ -1193,14 +575,6 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     [addToExecutedMessagesCache, walletAddress]
   )
 
-  const ethFunctions = useMemo(
-    () => ({
-      deposit: depositEth,
-      withdraw: withdrawEth,
-      triggerOutbox: triggerOutboxEth
-    }),
-    [depositEth, triggerOutboxEth, withdrawEth]
-  )
   const tokenFunctions = useMemo(
     () => ({
       add: addToken,
@@ -1209,10 +583,6 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       removeTokensFromList,
       addBridgeTokenListToBridge,
       updateTokenData,
-      approve: approveToken,
-      approveL2: approveTokenL2,
-      deposit: depositToken,
-      withdraw: withdrawToken,
       triggerOutbox: triggerOutboxToken
     }),
     [
@@ -1220,14 +590,17 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       addL2NativeToken,
       addToken,
       addTokensFromList,
-      approveToken,
-      approveTokenL2,
-      depositToken,
       removeTokensFromList,
       triggerOutboxToken,
-      updateTokenData,
-      withdrawToken
+      updateTokenData
     ]
+  )
+
+  const ethFunctions = useMemo(
+    () => ({
+      triggerOutbox: triggerOutboxEth
+    }),
+    [triggerOutboxEth]
   )
 
   const transactionsFunctions = useMemo(
@@ -1239,10 +612,13 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     [addTransaction, , transactions, updateTransaction]
   )
 
-  return {
-    bridgeTokens,
-    eth: ethFunctions,
-    token: tokenFunctions,
-    transactions: transactionsFunctions
-  }
+  return useMemo(
+    () => ({
+      bridgeTokens,
+      eth: ethFunctions,
+      token: tokenFunctions,
+      transactions: transactionsFunctions
+    }),
+    [bridgeTokens, ethFunctions, tokenFunctions, transactionsFunctions]
+  )
 }

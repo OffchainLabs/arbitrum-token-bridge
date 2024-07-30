@@ -4,46 +4,21 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  rpcURLs
-} from '../util/networks'
+import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
 import {
   sepolia,
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  localL3Network as l3Local
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
 import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { getOrbitChains } from '../util/orbitChainsList'
-
-const getProviderForChainCache: {
-  [chainId: number]: StaticJsonRpcProvider
-} = {
-  // start with empty cache
-}
-
-function createProviderWithCache(chainId: ChainId) {
-  const rpcUrl = rpcURLs[chainId]
-  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
-  getProviderForChainCache[chainId] = provider
-  return provider
-}
-
-export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
-  const cachedProvider = getProviderForChainCache[chainId]
-
-  if (typeof cachedProvider !== 'undefined') {
-    return cachedProvider
-  }
-
-  return createProviderWithCache(chainId)
-}
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined
@@ -53,19 +28,20 @@ export function isSupportedChainId(
   }
 
   const customChainIds = getCustomChainsFromLocalStorage().map(
-    chain => chain.chainID
+    chain => chain.chainId
   )
 
   return [
     mainnet.id,
     sepolia.id,
+    holesky.id,
     arbitrum.id,
     arbitrumNova.id,
     arbitrumSepolia.id,
-    stylusTestnet.id,
     arbitrumLocal.id,
+    l3Local.id,
     local.id,
-    ...getOrbitChains().map(chain => chain.chainID),
+    ...getOrbitChains().map(chain => chain.chainId),
     ...customChainIds
   ].includes(chainId)
 }
@@ -141,11 +117,6 @@ export type UseNetworksSetStateParams = {
 }
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
-/**
- * We keep track of this so we only call `setQueryParams` once.
- */
-let didUpdateUrlWithSanitizedValues = false
-
 export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const [
     { sourceChain: sourceChainId, destinationChain: destinationChainId },
@@ -179,21 +150,6 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     },
     [setQueryParams]
   )
-
-  if (
-    sourceChainId !== validSourceChainId ||
-    destinationChainId !== validDestinationChainId
-  ) {
-    if (!didUpdateUrlWithSanitizedValues) {
-      // On the first render, update query params with the sanitized values
-      setQueryParams({
-        sourceChain: validSourceChainId,
-        destinationChain: validDestinationChainId
-      })
-
-      didUpdateUrlWithSanitizedValues = true
-    }
-  }
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {

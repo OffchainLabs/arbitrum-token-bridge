@@ -1,4 +1,8 @@
-import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  EthBridger,
+  ChildToParentTransactionRequest
+} from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
@@ -9,52 +13,60 @@ import { Address } from './AddressUtils'
 export async function withdrawInitTxEstimateGas({
   amount,
   address,
-  l2Provider,
+  childChainProvider,
   erc20L1Address
 }: {
   amount: BigNumber
   address: Address
-  l2Provider: Provider
+  childChainProvider: Provider
   erc20L1Address?: string
 }): Promise<GasEstimates> {
   const isToken = typeof erc20L1Address === 'string'
-  const bridger = await (isToken ? Erc20Bridger : EthBridger).fromProvider(
-    l2Provider
-  )
-
-  const withdrawalRequest = isToken
-    ? await (bridger as Erc20Bridger).getWithdrawalRequest({
-        amount,
-        destinationAddress: address,
-        from: address,
-        erc20l1Address: erc20L1Address
-      })
-    : await (bridger as EthBridger).getWithdrawalRequest({
-        amount,
-        destinationAddress: address,
-        from: address
-      })
 
   // For the withdrawal init tx, there's no gas fee paid on L1 separately
   // unless we break down part of the L2 gas fee into L2 tx fee + L1 batch posting fee for that tx
   // but as that does not fit into the context of the transfer. and
   // would lead to user confusion, we instead present all the gas fee as L2 gas fee
-  const estimatedL1Gas = BigNumber.from(0)
+  const estimatedParentChainGas = BigNumber.from(0)
 
   try {
+    let withdrawalRequest: ChildToParentTransactionRequest
+
+    if (isToken) {
+      const bridger = await Erc20Bridger.fromProvider(childChainProvider)
+      withdrawalRequest = await bridger.getWithdrawalRequest({
+        amount,
+        destinationAddress: address,
+        from: address,
+        erc20ParentAddress: erc20L1Address
+      })
+    } else {
+      const bridger = await EthBridger.fromProvider(childChainProvider)
+      withdrawalRequest = await bridger.getWithdrawalRequest({
+        amount,
+        destinationAddress: address,
+        from: address
+      })
+    }
+
     // add 30% to the estimated total gas as buffer
-    const estimatedL2Gas = BigNumber.from(
+    const estimatedChildChainGas = BigNumber.from(
       Math.ceil(
-        Number(await l2Provider.estimateGas(withdrawalRequest.txRequest)) * 1.3
+        Number(
+          await childChainProvider.estimateGas(withdrawalRequest.txRequest)
+        ) * 1.3
       )
     )
 
-    return { estimatedL1Gas, estimatedL2Gas }
+    return {
+      estimatedParentChainGas,
+      estimatedChildChainGas
+    }
   } catch (error) {
     Sentry.captureException(error)
 
     return {
-      estimatedL1Gas,
+      estimatedParentChainGas,
       // L2 gas estimation from recent txs
       //
       // ETH withdrawals @ ArbSys, average 482,462:
@@ -78,7 +90,7 @@ export async function withdrawInitTxEstimateGas({
       // https://arbiscan.io/tx/0x81427c5815f058905b4ed876ea6d3496392b15292daf510db08c94c16eff2703
       // WETH withdrawal 1,381,140
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
-      estimatedL2Gas: isToken
+      estimatedChildChainGas: isToken
         ? BigNumber.from(1_400_000)
         : BigNumber.from(800_000)
     }

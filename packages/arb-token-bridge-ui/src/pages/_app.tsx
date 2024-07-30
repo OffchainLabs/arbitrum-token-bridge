@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -19,6 +20,7 @@ import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 
 if (
   process.env.NODE_ENV !== 'production' ||
@@ -27,6 +29,7 @@ if (
   registerLocalNetwork()
 }
 
+dayjs.extend(utc)
 dayjs.extend(relativeTime)
 dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
@@ -37,16 +40,22 @@ Sentry.init({
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.025,
   maxValueLength: 0,
-  beforeSend: event => {
-    if (event.message) {
-      if (
-        // Ignore events related to failed `eth_gasPrice` calls
-        event.message.match(/eth_gasPrice/i) ||
-        // Ignore events related to failed `eth_getBalance` calls
-        event.message.match(/eth_getBalance/i)
-      ) {
-        return null
-      }
+  // https://docs.sentry.io/platforms/javascript/guides/react/configuration/filtering/#filtering-error-events
+  ignoreErrors: [
+    // Ignore events related to failed `eth_gasPrice` calls
+    /eth_gasPrice/i,
+    // Ignore events related to failed `eth_getBalance` calls
+    /eth_getBalance/i,
+    // Ignore events related to failed walletConnect calls
+    /Attempt to connect to relay via/i,
+    // Ignore events about window.propertyX being redefined accross multiple extensions
+    /Cannot redefine property/i,
+    // Ignore WC bug until we can update to the latest version, see FS-677
+    /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i
+  ],
+  beforeSend: (event, hint) => {
+    if (isUserRejectedError(hint.originalException)) {
+      return null
     }
 
     return event

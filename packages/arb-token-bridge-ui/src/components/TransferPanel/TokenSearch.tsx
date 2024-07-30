@@ -15,11 +15,12 @@ import {
   fetchErc20Data,
   erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumSepoliaNativeUSDC
+  isTokenArbitrumSepoliaNativeUSDC,
+  isTokenArbitrumOneUSDCe,
+  getL2ERC20Address
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
@@ -43,6 +44,8 @@ import {
   useBridgeTokensStore
 } from '../../hooks/useArbTokenBridge'
 import { Switch } from '../common/atoms/Switch'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { useBalances } from '../../hooks/useBalances'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -176,19 +179,24 @@ function TokensPanel({
     token: { addL2NativeToken, add: addToken }
   } = useArbTokenBridge()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
   const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: parentChainProvider, walletAddress })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: childChainProvider, walletAddress })
+    ethParentBalance,
+    erc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances
+  } = useBalances({
+    parentWalletAddress: walletAddress,
+    childWalletAddress: walletAddress
+  })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
+  const {
+    isArbitrumOne: isParentChainArbitrumOne,
+    isArbitrumSepolia: isParentChainArbitrumSepolia
+  } = isNetwork(parentChain.id)
   const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
     childChain.id
   )
@@ -204,15 +212,15 @@ function TokensPanel({
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
         if (nativeCurrency.isCustom) {
           return isDepositMode
-            ? erc20L1Balances?.[nativeCurrency.address]
-            : ethL2Balance
+            ? erc20ParentBalances?.[nativeCurrency.address]
+            : ethChildBalance
         }
 
-        return isDepositMode ? ethL1Balance : ethL2Balance
+        return isDepositMode ? ethParentBalance : ethChildBalance
       }
 
       if (isDepositMode) {
-        return erc20L1Balances?.[address.toLowerCase()]
+        return erc20ParentBalances?.[address.toLowerCase()]
       }
 
       if (typeof bridgeTokens === 'undefined') {
@@ -223,19 +231,19 @@ function TokensPanel({
         isTokenArbitrumOneNativeUSDC(address) ||
         isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
-        return erc20L2Balances?.[address.toLowerCase()]
+        return erc20ChildBalances?.[address.toLowerCase()]
       }
 
       const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
-      return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
+      return l2Address ? erc20ChildBalances?.[l2Address.toLowerCase()] : null
     },
     [
       nativeCurrency,
       bridgeTokens,
-      erc20L1Balances,
-      erc20L2Balances,
-      ethL1Balance,
-      ethL2Balance,
+      erc20ParentBalances,
+      erc20ChildBalances,
+      ethParentBalance,
+      ethChildBalance,
       isDepositMode
     ]
   )
@@ -247,13 +255,23 @@ function TokensPanel({
       ...Object.keys(tokensFromLists)
     ]
     if (!isDepositMode) {
+      // L2 to L1 withdrawals
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
       if (isArbitrumSepolia) {
         tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
+    } else {
+      // L2 to L3 deposits
+      if (isParentChainArbitrumOne) {
+        tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
+      }
+      if (isParentChainArbitrumSepolia) {
+        tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
+      }
     }
+
     const tokens = [
       NATIVE_CURRENCY_IDENTIFIER,
       // Deduplicate addresses
@@ -274,9 +292,17 @@ function TokensPanel({
           token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
         }
 
+        if (isTokenArbitrumOneUSDCe(address) && isDepositMode && isOrbitChain) {
+          // hide USDC.e if depositing to an Orbit chain
+          return false
+        }
+
         // If the token on the list is used as a custom fee token, we remove the duplicate
-        if (nativeCurrency.isCustom && address !== NATIVE_CURRENCY_IDENTIFIER) {
-          return address.toLowerCase() !== nativeCurrency.address
+        if (
+          nativeCurrency.isCustom &&
+          address.toLowerCase() === nativeCurrency.address.toLowerCase()
+        ) {
+          return false
         }
 
         // Which tokens to show while the search is not active
@@ -501,8 +527,14 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const [networks] = useNetworks()
-  const { childChain, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
@@ -538,12 +570,30 @@ export function TokenSearch({
           return
         }
 
-        updateUSDCBalances(_token.address)
+        await updateUSDCBalances()
+
+        // if an Orbit chain is selected we need to fetch its USDC address
+        let childChainUsdcAddress
+        try {
+          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
+            ? (
+                await getL2ERC20Address({
+                  erc20L1Address: _token.address,
+                  l1Provider: parentChainProvider,
+                  l2Provider: childChainProvider
+                })
+              ).toLowerCase()
+            : undefined
+        } catch {
+          // could be never bridged before
+        }
+
         setSelectedToken({
           name: 'USD Coin',
           type: TokenType.ERC20,
           symbol: 'USDC',
           address: _token.address,
+          l2Address: childChainUsdcAddress,
           decimals: 6,
           listIds: new Set()
         })
@@ -580,6 +630,14 @@ export function TokenSearch({
       }
 
       if (isTransferDisabledToken(_token.address, childChain.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (
+        isTeleportMode &&
+        !isTeleportEnabledToken(_token.address, parentChain.id, childChain.id)
+      ) {
         openTransferDisabledDialog()
         return
       }

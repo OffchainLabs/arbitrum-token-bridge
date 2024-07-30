@@ -6,17 +6,15 @@ import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { AssetType, L2ToL1EventResultPlus } from './arbTokenBridge.types'
-import {
-  getProvider,
-  setParentChainTxDetailsOfWithdrawalClaimTx
-} from '../components/TransactionHistory/helpers'
-import { L2TransactionReceipt } from '@arbitrum/sdk'
+import { setParentChainTxDetailsOfWithdrawalClaimTx } from '../components/TransactionHistory/helpers'
+import { ChildTransactionReceipt } from '@arbitrum/sdk'
 import { ContractReceipt, utils } from 'ethers'
 import { useTransactionHistory } from './useTransactionHistory'
 import dayjs from 'dayjs'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
 import { useArbTokenBridge } from './useArbTokenBridge'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -48,10 +46,10 @@ export function useClaimWithdrawal(
 
     setIsClaiming(true)
 
-    const childChainProvider = getProvider(tx.childChainId)
+    const childChainProvider = getProviderForChainId(tx.childChainId)
     const txReceipt = await childChainProvider.getTransactionReceipt(tx.txId)
-    const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-    const [event] = l2TxReceipt.getL2ToL1Events()
+    const l2TxReceipt = new ChildTransactionReceipt(txReceipt)
+    const [event] = l2TxReceipt.getChildToParentEvents()
 
     if (!event) {
       setIsClaiming(false)
@@ -63,7 +61,7 @@ export function useClaimWithdrawal(
       tx.assetType === AssetType.ERC20
         ? await fetchErc20Data({
             address: tx.tokenAddress as string,
-            provider: getProvider(tx.parentChainId)
+            provider: getProviderForChainId(tx.parentChainId)
           })
         : await fetchNativeCurrency({ provider: childChainProvider })
 
@@ -117,7 +115,7 @@ export function useClaimWithdrawal(
     const isSuccess = (res as ContractReceipt).status === 1
     const txHash = (res as ContractReceipt).transactionHash
 
-    updatePendingTransaction({
+    await updatePendingTransaction({
       ...tx,
       status: isSuccess ? WithdrawalStatus.EXECUTED : WithdrawalStatus.FAILURE,
       resolvedAt: isSuccess ? dayjs().valueOf() : null
@@ -127,8 +125,8 @@ export function useClaimWithdrawal(
       setParentChainTxDetailsOfWithdrawalClaimTx(tx, txHash)
     }
   }, [
-    arbTokenBridge.eth,
-    arbTokenBridge.token,
+    erc20TriggerOutbox,
+    ethTriggerOutbox,
     isClaiming,
     signer,
     tx,

@@ -7,5 +7,31 @@
 module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true,
-  reactStrictMode: true
+  reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: '/api/status',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'https://portal.arbitrum.io'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET'
+          }
+        ]
+      }
+    ]
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:slug',
+        destination: '/?destinationChain=:slug',
+        permanent: true
+      }
+    ]
+  }
 }

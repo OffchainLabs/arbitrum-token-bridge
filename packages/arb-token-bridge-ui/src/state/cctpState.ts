@@ -8,7 +8,7 @@ import { useInterval } from 'react-use'
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 import {
   ChainId,
-  getBlockTime,
+  getL1BlockTime,
   getNetworkName,
   isNetwork
 } from '../util/networks'
@@ -537,7 +537,7 @@ export function useClaimCctp(tx: MergedTransaction) {
         receiveReceiptTx.status === 1
           ? getStandardizedTimestamp(BigNumber.from(Date.now()).toString())
           : null
-      updatePendingTransaction({
+      await updatePendingTransaction({
         ...tx,
         resolvedAt,
         depositStatus: tx.isWithdrawal ? undefined : DepositStatus.L2_SUCCESS,
@@ -607,7 +607,7 @@ function getConfirmedDate(tx: MergedTransaction) {
   const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
     tx.parentChainId
   )
-  const blockTime = getBlockTime(tx.parentChainId)
+  const blockTime = getL1BlockTime(tx.parentChainId)
 
   return dayjs(tx.createdAt).add(
     requiredL1BlocksBeforeConfirmation * blockTime,

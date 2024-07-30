@@ -20,20 +20,33 @@ const apiKey = loadEnvironmentVariable('SCREENING_API_KEY')
 
 const basicAuth = Buffer.from(`${apiKey}:${apiKey}`).toString('base64')
 
+type AddressRiskIndicator = {
+  category: string
+  categoryId: string
+  categoryRiskScoreLevelLabel: string
+}
+
 type ExternalApiResponse = [
   {
     chain: 'ethereum'
-    addressRiskIndicators: [{ categoryRiskScoreLevel: number }]
+    addressRiskIndicators: AddressRiskIndicator[]
   },
   {
     chain: 'arbitrum'
-    addressRiskIndicators: [{ categoryRiskScoreLevel: number }]
+    addressRiskIndicators: AddressRiskIndicator[]
   }
 ]
 
+function filterRiskIndicator(ari: AddressRiskIndicator) {
+  // Don't filter out any
+  return true
+}
+
 function isBlocked(response: ExternalApiResponse): boolean {
-  // Block in case the address has any risk indicators on either network
-  return response.some(result => result.addressRiskIndicators.length > 0)
+  // Block in case the address has risk indicators on either network
+  return response.some(result => {
+    return result.addressRiskIndicators.filter(filterRiskIndicator).length > 0
+  })
 }
 
 function requestLooksLikeBot(req: NextApiRequest) {

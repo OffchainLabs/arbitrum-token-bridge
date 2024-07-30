@@ -1,50 +1,80 @@
 import {
-  L1Network,
-  L2Network,
-  addCustomNetwork,
-  constants
+  ArbitrumNetwork,
+  getChildrenForNetwork,
+  getArbitrumNetwork,
+  getArbitrumNetworks,
+  registerCustomArbitrumNetwork
 } from '@arbitrum/sdk'
-import { networks as arbitrumSdkChains } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
+import { chainIdToInfuraUrl } from './infura'
+
+export enum ChainId {
+  // L1
+  Ethereum = 1,
+  // L1 Testnets
+  Local = 1337,
+  Sepolia = 11155111,
+  Holesky = 17000,
+  // L2
+  ArbitrumOne = 42161,
+  ArbitrumNova = 42170,
+  // L2 Testnets
+  ArbitrumSepolia = 421614,
+  ArbitrumLocal = 412346,
+  // L3 Testnets
+  L3Local = 333333
+}
+
+type L1Network = {
+  chainId: ChainId
+  blockTime: number
+}
+
+const l1Networks: { [chainId: number]: L1Network } = {
+  [ChainId.Ethereum]: {
+    chainId: ChainId.Ethereum,
+    blockTime: 12
+  },
+  [ChainId.Sepolia]: {
+    chainId: ChainId.Sepolia,
+    blockTime: 12
+  },
+  [ChainId.Holesky]: {
+    chainId: ChainId.Holesky,
+    blockTime: 12
+  },
+  [ChainId.Local]: {
+    chainId: ChainId.Local,
+    blockTime: 12
+  }
+}
 
 export const getChains = () => {
-  const chains = Object.values(arbitrumSdkChains)
-  return chains.filter(
-    chain =>
-      // exclude devnet
-      chain.chainID !== 1338
-  )
+  const chains = [...Object.values(l1Networks), ...getArbitrumNetworks()]
+
+  return chains.filter(chain => {
+    // exclude L1 chains with no child chains
+    if (isL1Chain(chain) && getChildrenForNetwork(chain.chainId).length === 0) {
+      return false
+    }
+
+    return true
+  })
+}
+
+function getChainByChainId(chainId: number) {
+  return getChains().find(c => c.chainId === chainId)
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
-export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-
-if (typeof INFURA_KEY === 'undefined') {
-  throw new Error('Infura API key not provided')
-}
-
-const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
-const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
-
-export type ChainWithRpcUrl = L2Network & {
+export type ChainWithRpcUrl = ArbitrumNetwork & {
   rpcUrl: string
+  explorerUrl: string
   slug?: string
-}
-
-function getParentChain(chain: L2Network): L1Network | L2Network {
-  const parentChain = arbitrumSdkChains[chain.partnerChainID]
-
-  if (typeof parentChain === 'undefined') {
-    throw new Error(
-      `[getParentChain] parent chain ${chain.partnerChainID} not found for ${chain.chainID}`
-    )
-  }
-
-  return parentChain
 }
 
 export function getBaseChainIdByChainId({
@@ -52,23 +82,40 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  const chain = arbitrumSdkChains[chainId]
-
   // the chain provided is an L1 chain, so we can return early
-  if (!chain || isL1Chain(chain)) {
+  if (isL1Chain({ chainId })) {
     return chainId
   }
 
-  let currentParentChain = getParentChain(chain)
-  // keep following the parent chains until we find the L1 chain
-  while (!isL1Chain(currentParentChain)) {
-    currentParentChain = getParentChain(currentParentChain)
+  let currentParentChain: L1Network | ArbitrumNetwork
+
+  try {
+    currentParentChain = getArbitrumNetwork(chainId)
+  } catch (error) {
+    return chainId
   }
 
-  return currentParentChain.chainID
+  // keep following the parent chains until we find the L1 chain
+  while (true) {
+    if (isL1Chain(currentParentChain)) {
+      return currentParentChain.chainId
+    }
+
+    const newParentChain = getChains().find(
+      c => c.chainId === (currentParentChain as ArbitrumNetwork).parentChainId
+    )
+
+    if (!newParentChain) {
+      return currentParentChain.chainId
+    }
+
+    currentParentChain = newParentChain
+  }
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
+  if (typeof localStorage === 'undefined') return [] // required so that it does not fail test-runners
+
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
   )
@@ -80,13 +127,17 @@ export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
     .filter(
       // filter again in case local storage is compromised
-      chain => !supportedCustomOrbitParentChains.includes(Number(chain.chainID))
+      chain => !supportedCustomOrbitParentChains.includes(Number(chain.chainId))
     )
     .map(chain => {
+      // chainID is used in previously stored custom orbit chains
+      // if we don't make it backwards compatible then the app will hang on load if at least one old chain is present
+      const _chain = chain as ChainWithRpcUrl & { chainID?: string }
+
       return {
-        ...chain,
-        // make sure chainID is numeric
-        chainID: Number(chain.chainID)
+        ..._chain,
+        // make sure chainId is numeric
+        chainId: Number(_chain.chainId ?? _chain.chainID)
       }
     })
 }
@@ -98,14 +149,14 @@ export function getCustomChainFromLocalStorageById(chainId: ChainId) {
     return undefined
   }
 
-  return customChains.find(chain => chain.chainID === chainId)
+  return customChains.find(chain => chain.chainId === chainId)
 }
 
 export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
   const customChains = getCustomChainsFromLocalStorage()
 
   if (
-    customChains.findIndex(chain => chain.chainID === newCustomChain.chainID) >
+    customChains.findIndex(chain => chain.chainId === newCustomChain.chainId) >
     -1
   ) {
     // chain already exists
@@ -121,7 +172,7 @@ export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
 
 export function removeCustomChainFromLocalStorage(chainId: number) {
   const newCustomChains = getCustomChainsFromLocalStorage().filter(
-    chain => chain.chainID !== chainId
+    chain => chain.chainId !== chainId
   )
   localStorage.setItem(
     customChainLocalStorageKey,
@@ -129,24 +180,9 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
   )
 }
 
-export enum ChainId {
-  // L1
-  Ethereum = 1,
-  // L1 Testnets
-  Local = 1337,
-  Sepolia = 11155111,
-  // L2
-  ArbitrumOne = 42161,
-  ArbitrumNova = 42170,
-  // L2 Testnets
-  ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346,
-  // Orbit
-  StylusTestnet = 23011913
-}
-
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
+  ChainId.Holesky,
   ChainId.ArbitrumSepolia
 ]
 
@@ -154,20 +190,25 @@ export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-    fallback: MAINNET_INFURA_RPC_URL
+    fallback: chainIdToInfuraUrl(ChainId.Ethereum)
   }),
   // L1 Testnets
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
-    fallback: SEPOLIA_INFURA_RPC_URL
+    fallback: chainIdToInfuraUrl(ChainId.Sepolia)
   }),
+  [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
   // L2
-  [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
+  [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.ArbitrumOne),
+    fallback: 'https://arb1.arbitrum.io/rpc'
+  }),
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
-  [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc',
-  // Orbit Testnets
-  [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
+  [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
+    fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
+  })
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -175,13 +216,12 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.Ethereum]: 'https://etherscan.io',
   // L1 Testnets
   [ChainId.Sepolia]: 'https://sepolia.etherscan.io',
+  [ChainId.Holesky]: 'https://holesky.etherscan.io',
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
-  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
-  // Orbit Testnets
-  [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
+  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -189,22 +229,18 @@ export const getExplorerUrl = (chainId: ChainId) => {
   return explorerUrls[chainId] ?? explorerUrls[ChainId.Ethereum]! //defaults to etherscan, can never be null
 }
 
-export const getBlockTime = (chainId: ChainId) => {
-  const network = arbitrumSdkChains[chainId]
-  if (!network) {
+export const getL1BlockTime = (chainId: number) => {
+  const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
+
+  if (!chain || !isL1Chain(chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
-  return network.blockTime
+
+  return chain.blockTime
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  const network = arbitrumSdkChains[chainId]
-  if (!network || !isArbitrumChain(network)) {
-    throw new Error(
-      `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
-    )
-  }
-  return network.confirmPeriodBlocks
+  return getArbitrumNetwork(chainId).confirmPeriodBlocks
 }
 
 export const l2ArbReverseGatewayAddresses: { [chainId: number]: string } = {
@@ -231,84 +267,98 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
 
 const defaultL1Network: L1Network = {
   blockTime: 10,
-  chainID: 1337,
-  explorerUrl: '',
-  isCustom: true,
-  name: 'Ethereum Local',
-  partnerChainIDs: [412346],
-  isArbitrum: false
+  chainId: 1337
 }
 
-const defaultL2Network: L2Network = {
-  chainID: 412346,
-  partnerChainIDs: [
-    // Orbit chains will go here
-  ],
+export const defaultL2Network: ArbitrumNetwork = {
+  chainId: 412346,
+  parentChainId: ChainId.Local,
   confirmPeriodBlocks: 20,
   ethBridge: {
-    bridge: '0x2b360a9881f21c3d7aa0ea6ca0de2a3341d4ef3c',
-    inbox: '0xff4a24b22f94979e9ba5f3eb35838aa814bad6f1',
-    outbox: '0x49940929c7cA9b50Ff57a01d3a92817A414E6B9B',
-    rollup: '0x65a59d67da8e710ef9a01eca37f83f84aedec416',
-    sequencerInbox: '0xe7362d0787b51d8c72d504803e5b1d6dcda89540'
+    bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
+    inbox: '0x9f8c1c641336A371031499e3c362e40d58d0f254',
+    outbox: '0x50143333b44Ea46255BEb67255C9Afd35551072F',
+    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
+      ? '0xE8A8F50F2a237D06D0087D14E690f6Ff0556259D'
+      : '0x46966d871d29e1772c2809459469f849d8AAb1A3',
+    sequencerInbox: '0x18d19C5d3E685f5be5b9C86E097f0E439285D216'
   },
-  explorerUrl: '',
-  isArbitrum: true,
   isCustom: true,
   name: 'Arbitrum Local',
-  partnerChainID: 1337,
   retryableLifetimeSeconds: 604800,
-  nitroGenesisBlock: 0,
-  nitroGenesisL1Block: 0,
-  depositTimeout: 900000,
-  blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
   tokenBridge: {
-    l1CustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
-    l1ERC20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
-    l1GatewayRouter: '0x85D9a8a4bd77b9b5559c1B7FCb8eC9635922Ed49',
-    l1MultiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386',
-    l1ProxyAdmin: '0x7E32b54800705876d3b5cFbc7d9c226a211F7C1a',
-    l1Weth: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
-    l1WethGateway: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
-    l2CustomGateway: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
-    l2ERC20Gateway: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
-    l2GatewayRouter: '0x1294b86822ff4976BfE136cB06CF43eC7FCF2574',
-    l2Multicall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
-    l2ProxyAdmin: '0xda52b25ddB0e3B9CC393b0690Ac62245Ac772527',
-    l2Weth: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
-    l2WethGateway: '0x4A2bA922052bA54e29c5417bC979Daaf7D5Fe4f4'
+    parentCustomGateway: '0x8407E6180dC009D20D26D4BABB4790C1d4E6D2aA',
+    parentErc20Gateway: '0x00D9fE1a2B67B8151aEdE8855c95E58D73FB4245',
+    parentGatewayRouter: '0x093AAa96CD4387A68FC0e24C60140938Dc812549',
+    parentMultiCall: '0x49117fC32930E324F2E9A7BeA588FFb26008b8eC',
+    parentProxyAdmin: '0x2A1f38c9097e7883570e0b02BFBE6869Cc25d8a3',
+    parentWeth: '0x7E32b54800705876d3b5cFbc7d9c226a211F7C1a',
+    parentWethGateway: '0xB8F48Ba39fCfB44d70F6008fe1bf4F3E744044AF',
+    childCustomGateway: '0x0B35cfE62314C3852A0942b5830c728353BD654F',
+    childErc20Gateway: '0x7424e3DAAAAcd867c85ceB75c1E00119F2ee5eb7',
+    childGatewayRouter: '0x32656396981868E925280FB772b3f806892cf4bF',
+    childMultiCall: '0x6B1E93aE298B64e8f5b9f43B65Dd8F1eaA6DD4c3',
+    childProxyAdmin: '0x9F95547ABB0FfC92b4E37b3124d1e8613d5aB74A',
+    childWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
+    childWethGateway: '0x67aE8014BD1A0c1Ed747715d22b3b3a188aC324B'
   }
 }
 
-export type RegisterLocalNetworkParams = {
-  l1Network: L1Network
-  l2Network: L2Network
-}
-
-const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
-  l1Network: defaultL1Network,
-  l2Network: defaultL2Network
+export const defaultL3Network: ArbitrumNetwork = {
+  chainId: 333333,
+  parentChainId: ChainId.ArbitrumLocal,
+  confirmPeriodBlocks: 20,
+  ethBridge: {
+    bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
+    inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
+    outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
+    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
+      ? '0xdeD540257498027B1De7DFD4fe6cc4CeC030F355'
+      : '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
+    sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
+  },
+  isCustom: true,
+  name: 'L3 Local',
+  retryableLifetimeSeconds: 604800,
+  tokenBridge: {
+    parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
+    parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',
+    parentGatewayRouter: '0xfE03DBdf7A126994dBd749631D7fbaB58C618c58',
+    parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
+    parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
+    parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
+    parentWethGateway: '0x77603b0ea6a797C74Fa9ef11b5BdE04A4E03D550',
+    childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
+    childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',
+    childGatewayRouter: '0x8B6BC759226f8Fe687c8aD8Cc0DbF85E095e9297',
+    childMultiCall: '0x052B15c8Ff0544287AE689C4F2FC53A3905d7Db3',
+    childProxyAdmin: '0x36C56eC2CF3a3f53db9F01d0A5Ae84b36fb0A1e2',
+    childWeth: '0x582a8dBc77f665dF2c49Ce0a138978e9267dd968',
+    childWethGateway: '0xA6AB233B3c7bfd0399834897b5073974A3D467e2'
+  }
 }
 
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
-  fallback: 'http://localhost:8545'
+  fallback: 'http://127.0.0.1:8545'
 })
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
-  fallback: 'http://localhost:8547'
+  fallback: 'http://127.0.0.1:8547'
+})
+export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL,
+  fallback: 'http://127.0.0.1:3347'
 })
 
-export function registerLocalNetwork(
-  params: RegisterLocalNetworkParams = registerLocalNetworkDefaultParams
-) {
-  const { l1Network, l2Network } = params
-
+export function registerLocalNetwork() {
   try {
-    rpcURLs[l1Network.chainID] = localL1NetworkRpcUrl
-    rpcURLs[l2Network.chainID] = localL2NetworkRpcUrl
+    rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
+    rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
+    rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
-    addCustomNetwork({ customL1Network: l1Network, customL2Network: l2Network })
+    registerCustomArbitrumNetwork(defaultL2Network)
+    registerCustomArbitrumNetwork(defaultL3Network)
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
@@ -317,11 +367,13 @@ export function registerLocalNetwork(
 export function isNetwork(chainId: ChainId) {
   const customChains = getCustomChainsFromLocalStorage()
   const isMainnetOrbitChain = chainId in orbitMainnets
-  const isTestnetOrbitChain = chainId in orbitTestnets
+  const isL3Local = chainId === ChainId.L3Local
+  const isTestnetOrbitChain = chainId in orbitTestnets || isL3Local
 
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
   const isSepolia = chainId === ChainId.Sepolia
+  const isHolesky = chainId === ChainId.Holesky
   const isLocal = chainId === ChainId.Local
 
   const isArbitrumOne = chainId === ChainId.ArbitrumOne
@@ -329,14 +381,13 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
-  const isStylusTestnet = chainId === ChainId.StylusTestnet
-
-  const isEthereumMainnetOrTestnet = isEthereumMainnet || isSepolia || isLocal
+  const isEthereumMainnetOrTestnet =
+    isEthereumMainnet || isSepolia || isHolesky || isLocal
 
   const isArbitrum =
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia
 
-  const customChainIds = customChains.map(chain => chain.chainID)
+  const customChainIds = customChains.map(chain => chain.chainId)
   const isCustomOrbitChain = customChainIds.includes(chainId)
 
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
@@ -346,9 +397,9 @@ export function isNetwork(chainId: ChainId) {
     isLocal ||
     isArbitrumLocal ||
     isSepolia ||
+    isHolesky ||
     isArbitrumSepolia ||
     isCustomOrbitChain ||
-    isStylusTestnet ||
     isTestnetOrbitChain
 
   const isSupported =
@@ -356,6 +407,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumNova ||
     isEthereumMainnet ||
     isSepolia ||
+    isHolesky ||
     isArbitrumSepolia ||
     isCustomOrbitChain ||
     isMainnetOrbitChain ||
@@ -395,7 +447,7 @@ export function getSupportedChainIds({
   includeTestnets?: boolean
 }): ChainId[] {
   return getChains()
-    .map(chain => chain.chainID)
+    .map(chain => chain.chainId)
     .filter(chainId => {
       const { isTestnet } = isNetwork(chainId)
       if (includeMainnets && !includeTestnets) {
@@ -415,33 +467,44 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   // custom chain details need to be added to various objects to make it work with the UI
   //
   // add RPC
-  rpcURLs[chain.chainID] = chain.rpcUrl
+  rpcURLs[chain.chainId] = chain.rpcUrl
   // explorer URL
-  explorerUrls[chain.chainID] = chain.explorerUrl
+  explorerUrls[chain.chainId] = chain.explorerUrl
 }
 
-function isL1Chain(chain: L1Network | L2Network): chain is L1Network {
-  return !chain.isArbitrum
+function isL1Chain(chain: { chainId: number }): chain is L1Network {
+  return typeof l1Networks[chain.chainId] !== 'undefined'
 }
 
-function isArbitrumChain(chain: L1Network | L2Network): chain is L2Network {
-  return chain.isArbitrum
+function isArbitrumChain(
+  chain: L1Network | ArbitrumNetwork
+): chain is ArbitrumNetwork {
+  return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'
+}
+
+export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
+  [ChainId.Ethereum]: [1380012617, 70700], // Rari and PopApex
+  [ChainId.Sepolia]: [1918988905] // RARI Testnet
+}
+
+export function getChildChainIds(chain: ArbitrumNetwork | L1Network) {
+  const childChainIds = [
+    ...getChildrenForNetwork(chain.chainId).map(chain => chain.chainId),
+    ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
+  ]
+  return Array.from(new Set(childChainIds))
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
-  const chains = getChains()
-  const arbitrumSdkChain = chains.find(chain => chain.chainID === chainId)
+  const chain = getChainByChainId(chainId)
 
-  if (!arbitrumSdkChain) {
+  if (!chain) {
     return []
   }
 
-  const parentChainId = isArbitrumChain(arbitrumSdkChain)
-    ? arbitrumSdkChain.partnerChainID
-    : undefined
+  const parentChainId = isArbitrumChain(chain) ? chain.parentChainId : undefined
 
-  const validDestinationChainIds =
-    chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
+  const validDestinationChainIds = getChildChainIds(chain)
 
   if (parentChainId) {
     // always make parent chain the first element

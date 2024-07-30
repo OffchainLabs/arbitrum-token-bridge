@@ -41,6 +41,15 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           description: 'The current recommended Ethereum testnet.'
         }
       }
+    case ChainId.Holesky:
+      return {
+        ...ethereumBaseConfig,
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Holesky',
+          description: 'Ethereum testnet.'
+        }
+      }
     case ChainId.Local:
       return {
         ...ethereumBaseConfig,
@@ -56,7 +65,8 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           ...arbitrumBaseConfig.network,
           name: 'Arbitrum One',
           logo: '/images/ArbitrumOneLogo.svg',
-          description: 'Rollup protocol. Secured by operational fraud proofs.'
+          description:
+            'Rollup protocol. The original Arbitrum chain. Secured by functional fraud proofs.'
         }
       }
     case ChainId.ArbitrumSepolia:
@@ -76,6 +86,14 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           name: 'Arbitrum Local'
         }
       }
+    case ChainId.L3Local:
+      return {
+        color: '#12AAFF',
+        network: {
+          name: 'L3 Local',
+          logo: '/images/OrbitLogo.svg'
+        }
+      }
     case ChainId.ArbitrumNova:
       return {
         color: '#E57310',
@@ -83,17 +101,7 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           name: 'Arbitrum Nova',
           logo: '/images/ArbitrumNovaLogo.svg',
           description:
-            'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).'
-        }
-      }
-    case ChainId.StylusTestnet:
-      return {
-        color: '#E3066E',
-        network: {
-          name: 'Stylus Testnet',
-          logo: '/images/StylusLogo.svg',
-          description:
-            'An experimental playground for Arbitrum Stylus smart contracts.'
+            'AnyTrust protocol. Low fees for high-volume transactions. Secured by a trust-minimized Data Availability Committee (DAC).'
         }
       }
     default: {

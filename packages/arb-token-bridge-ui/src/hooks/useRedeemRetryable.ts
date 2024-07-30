@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { TransactionReceipt } from '@ethersproject/providers'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 
@@ -10,7 +9,7 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
-import { getProviderForChainId } from './useNetworks'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 
@@ -42,27 +41,29 @@ export function useRedeemRetryable(
       }
 
       const retryableTicket = await getRetryableTicket({
-        l1TxHash: tx.txId,
+        parentChainTxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: getProviderForChainId(tx.parentChainId),
-        l2Signer: signer
+        parentChainProvider: getProviderForChainId(tx.parentChainId),
+        childChainSigner: signer
       })
 
-      const reedemTx = await retryableTicket.redeem()
-      await reedemTx.wait()
+      const redeemTx = await retryableTicket.redeem()
+      await redeemTx.wait()
 
       const status = await retryableTicket.status()
-      const isSuccess = status === L1ToL2MessageStatus.REDEEMED
+      const isSuccess = status === ParentToChildMessageStatus.REDEEMED
+      const successfulRedeem = await retryableTicket.getSuccessfulRedeem()
 
-      const redeemReceipt = (await retryableTicket.getSuccessfulRedeem()) as {
-        status: L1ToL2MessageStatus.REDEEMED
-        l2TxReceipt: TransactionReceipt
+      if (successfulRedeem.status !== ParentToChildMessageStatus.REDEEMED) {
+        throw new Error(
+          `Unexpected status for retryable ticket (parent tx hash ${tx.txId}), expected ${ParentToChildMessageStatus.REDEEMED} but got ${successfulRedeem.status}`
+        )
       }
 
-      updatePendingTransaction({
+      await updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
-          l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
+          childTxId: successfulRedeem.childTxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
           fetchingUpdate: false

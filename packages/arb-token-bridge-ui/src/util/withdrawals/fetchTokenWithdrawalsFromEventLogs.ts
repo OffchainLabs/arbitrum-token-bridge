@@ -1,6 +1,5 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
-import { Erc20Bridger } from '@arbitrum/sdk'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
+import { Erc20Bridger, EventArgs } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
 function dedupeEvents(
@@ -38,13 +37,13 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   l2GatewayAddresses?: string[]
 }) {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  const promises: ReturnType<Erc20Bridger['getL2WithdrawalEvents']>[] = []
+  const promises: ReturnType<Erc20Bridger['getWithdrawalEvents']>[] = []
 
   l2GatewayAddresses.forEach(gatewayAddress => {
     // funds sent by this address
     if (sender) {
       promises.push(
-        erc20Bridger.getL2WithdrawalEvents(
+        erc20Bridger.getWithdrawalEvents(
           l2Provider,
           gatewayAddress,
           { fromBlock, toBlock },
@@ -58,7 +57,7 @@ export async function fetchTokenWithdrawalsFromEventLogs({
     // funds received by this address
     if (receiver) {
       promises.push(
-        erc20Bridger.getL2WithdrawalEvents(
+        erc20Bridger.getWithdrawalEvents(
           l2Provider,
           gatewayAddress,
           { fromBlock, toBlock },
