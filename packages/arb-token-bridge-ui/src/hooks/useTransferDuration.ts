@@ -10,8 +10,8 @@ import {
   isNetwork
 } from '../util/networks'
 
-const DEPOSIT_TIME_MINUTES_MAINNET = 15
-const DEPOSIT_TIME_MINUTES_TESTNET = 10
+export const DEPOSIT_TIME_MINUTES_MAINNET = 15
+export const DEPOSIT_TIME_MINUTES_TESTNET = 10
 
 export const TRANSFER_TIME_MINUTES_CCTP_MAINNET = 15
 export const TRANSFER_TIME_MINUTES_CCTP_TESTNET = 1
@@ -21,8 +21,8 @@ export const TRANSFER_TIME_MINUTES_CCTP_TESTNET = 1
  * We should default to 15 and allow custom deposit times in orbit config (e.g. Xai should be 1 min)
  * For now set 5 minutes for mainnet, 1 minute for testnet
  */
-const DEPOSIT_TIME_MINUTES_ORBIT_MAINNET = 5
-const DEPOSIT_TIME_MINUTES_ORBIT_TESTNET = 1
+export const DEPOSIT_TIME_MINUTES_ORBIT_MAINNET = 5
+export const DEPOSIT_TIME_MINUTES_ORBIT_TESTNET = 1
 
 /**
  * Buffer for after a node is confirmable but isn't yet confirmed.
@@ -51,8 +51,8 @@ export const useTransferDuration = (
 ): UseTransferDurationResult => {
   const { remainingMinutes: remainingMinutesCctp } = useRemainingTime(tx)
 
-  const { sourceChainId, destinationChainId, isCctp } = tx
-  const { isTestnet } = isNetwork(sourceChainId)
+  const { sourceChainId, destinationChainId, isCctp, childChainId } = tx
+  const { isTestnet, isOrbitChain } = isNetwork(childChainId)
 
   const standardDepositDuration = getStandardDepositDuration(isTestnet)
   const orbitDepositDuration = getOrbitDepositDuration(isTestnet)
@@ -86,6 +86,17 @@ export const useTransferDuration = (
       remaining: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: withdrawalDuration
+      })
+    }
+  }
+
+  if (isOrbitChain) {
+    return {
+      duration: orbitDepositDuration,
+      firstLegDuration: orbitDepositDuration,
+      remaining: getRemainingMinutes({
+        createdAt: tx.createdAt,
+        totalDuration: orbitDepositDuration
       })
     }
   }
@@ -142,7 +153,7 @@ function getOrbitDepositDuration(testnet: boolean) {
 
 function getCctpTransferDuration(testnet: boolean) {
   return testnet
-    ? TRANSFER_TIME_MINUTES_CCTP_MAINNET
+    ? TRANSFER_TIME_MINUTES_CCTP_TESTNET
     : TRANSFER_TIME_MINUTES_CCTP_MAINNET
 }
 
