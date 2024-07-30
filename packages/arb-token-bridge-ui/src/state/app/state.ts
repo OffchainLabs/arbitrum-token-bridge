@@ -6,7 +6,7 @@ import {
   NodeBlockDeadlineStatus
 } from '../../hooks/arbTokenBridge.types'
 import {
-  L1ToL2MessageData,
+  ParentToChildMessageData,
   L2ToL1MessageData,
   L2ToL3MessageData,
   TxnType
@@ -59,7 +59,7 @@ export interface MergedTransaction {
   tokenAddress: string | null
   isCctp?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  l1ToL2MsgData?: L1ToL2MessageData
+  l1ToL2MsgData?: ParentToChildMessageData
   l2ToL1MsgData?: L2ToL1MessageData
   l2ToL3MsgData?: L2ToL3MessageData
   depositStatus?: DepositStatus
