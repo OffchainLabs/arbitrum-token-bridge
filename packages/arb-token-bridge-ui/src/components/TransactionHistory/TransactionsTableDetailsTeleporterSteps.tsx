@@ -6,7 +6,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { MergedTransaction } from '../../state/app/state'
-import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import {
   firstRetryableLegRequiresRedeem,
   getChainIdForRedeemingRetryable,
@@ -20,7 +20,11 @@ import {
   Step,
   TransactionFailedOnNetwork
 } from './TransactionsTableDetailsSteps'
-import { DepositCountdown } from '../common/DepositCountdown'
+import { TransferCountdown } from '../common/TransferCountdown'
+import {
+  minutesToHumanReadableTime,
+  useTransferDuration
+} from '../../hooks/useTransferDuration'
 
 const TeleportMiddleStepFailureExplanationNote = ({
   tx
@@ -73,7 +77,10 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   tx: MergedTransaction
   address: Address | undefined
 }) => {
-  const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
+  const {
+    duration: totalTransferDuration,
+    firstLegDuration: firstRetryableWaitingDuration
+  } = useTransferDuration(tx)
 
   const l2TxID = tx.l1ToL2MsgData?.childTxId
   const isFirstRetryableLegSucceeded =
@@ -117,11 +124,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     ? firstRetryableRedeemButton
     : firstTransactionExternalLink
 
-  const firstRetryableWaitingDuration = isTestnetTx
-    ? '10 minutes'
-    : '15 minutes'
-
-  const secondRetryableWaitingDuration = isTestnetTx ? '1 minute' : '5 minutes'
+  const secondRetryableWaitingDuration =
+    totalTransferDuration - firstRetryableWaitingDuration
 
   return (
     <>
@@ -129,11 +133,13 @@ export const TransactionsTableDetailsTeleporterSteps = ({
       <Step
         pending={!isFirstRetryableLegResolved}
         done={isFirstRetryableLegResolved}
-        text={`Wait ~${firstRetryableWaitingDuration}`}
+        text={`Wait ~${minutesToHumanReadableTime(
+          firstRetryableWaitingDuration
+        )}`}
         endItem={
           !isFirstRetryableLegResolved && (
             <div>
-              <DepositCountdown tx={tx} firstTxOnly={true} />
+              <TransferCountdown tx={tx} firstLegOnly={true} />
               <span> remaining</span>
             </div>
           )
@@ -160,7 +166,9 @@ export const TransactionsTableDetailsTeleporterSteps = ({
       <Step
         pending={isFirstRetryableLegSucceeded && !isSecondRetryableLegResolved}
         done={isSecondRetryableLegResolved}
-        text={`Wait ~${secondRetryableWaitingDuration}`}
+        text={`Wait ~${minutesToHumanReadableTime(
+          secondRetryableWaitingDuration
+        )}`}
       />
     </>
   )

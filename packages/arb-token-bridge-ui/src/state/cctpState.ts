@@ -620,7 +620,7 @@ export function isTransferConfirmed(tx: MergedTransaction) {
 }
 
 export function useRemainingTime(tx: MergedTransaction) {
-  const [remainingTime, setRemainingTime] = useState<string>('Calculating...')
+  const [remainingMinutes, setRemainingMinutes] = useState<number | null>(null)
   const [canBeClaimedDate, setCanBeClaimedDate] = useState<dayjs.Dayjs>()
   const [isConfirmed, setIsConfirmed] = useState(
     tx.status === 'Confirmed' || tx.status === 'Executed'
@@ -628,9 +628,9 @@ export function useRemainingTime(tx: MergedTransaction) {
 
   useEffect(() => {
     if (tx.status === 'Failure') {
-      setRemainingTime('')
+      setRemainingMinutes(null)
     }
-  }, [tx.status, setRemainingTime])
+  }, [tx.status, setRemainingMinutes])
 
   useEffect(() => {
     if (!tx.createdAt || tx.status === 'Failure') {
@@ -647,13 +647,14 @@ export function useRemainingTime(tx: MergedTransaction) {
 
     if (isTransferConfirmed(tx)) {
       setIsConfirmed(true)
+      setRemainingMinutes(0)
     } else {
-      setRemainingTime(canBeClaimedDate.fromNow(true).toString())
+      setRemainingMinutes(canBeClaimedDate.diff(dayjs()))
     }
   }, 2000)
 
   return {
-    remainingTime,
+    remainingMinutes,
     isConfirmed
   }
 }
