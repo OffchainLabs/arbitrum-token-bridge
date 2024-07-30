@@ -33,7 +33,7 @@ function mockClassicDepositTransaction(
       fetchingUpdate: false,
       status: ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: undefined,
-      l2TxID: undefined
+      childTxId: undefined
     },
     ...params
   }
