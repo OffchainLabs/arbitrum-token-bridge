@@ -30,7 +30,7 @@ export const sanitizeRpcUrl = (url: string) => {
 const hasExplorerUrl = (
   chain: ArbitrumNetwork | OrbitChainConfig
 ): chain is OrbitChainConfig => {
-  return (chain as OrbitChainConfig).explorerUrl !== undefined
+  return typeof (chain as OrbitChainConfig).explorerUrl !== 'undefined'
 }
 
 // make the chain data compatible with that required by the retryable-monitoring script
