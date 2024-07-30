@@ -59,7 +59,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
           <span className="select-none font-light">
             I understand that it will take{' '}
             <span className="font-medium">
-              {~minutesToHumanReadableTime(withdrawalTime)}
+              ~{minutesToHumanReadableTime(withdrawalTime)}
             </span>{' '}
             before I can claim my USDC on {isTestnet ? 'Sepolia' : 'Ethereum'}.
           </span>
