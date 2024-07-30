@@ -1,13 +1,10 @@
 name: Monitor Orbit Batch Posting
 
 on:
-  push:
-    branches:
-      - 'chore-ib'
   workflow_dispatch:
   schedule:
-    # Run every 2 hours
-    - cron: "0 */2 * * *" 
+    # Run every 6 hours
+    - cron: "0 */6 * * *" 
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
@@ -37,7 +34,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: OffchainLabs/arbitrum-monitoring
-        ref: batch-poster
         path: arbitrum-monitoring
 
     - name: Copy chains JSON to Arbitrum Monitoring
