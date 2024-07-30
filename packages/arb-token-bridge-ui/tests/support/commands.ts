@@ -23,17 +23,6 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
-function shouldChangeNetwork(networkName: NetworkName) {
-  // synpress throws if trying to connect to a network we are already connected to
-  // issue has been raised with synpress and this is just a workaround
-  // TODO: remove this whenever fixed
-  return cy
-    .task('getCurrentNetworkName')
-    .then((currentNetworkName: NetworkName) => {
-      return currentNetworkName !== networkName
-    })
-}
-
 export function login({
   networkType,
   networkName,
@@ -67,21 +56,9 @@ export function login({
     })
   }
 
-  if (connectMetamask) {
-    shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
-      if (changeNetwork) {
-        cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
-          _startWebApp()
-        })
-      } else {
-        _startWebApp()
-      }
-
-      cy.task('setCurrentNetworkName', networkNameWithDefault)
-    })
-  } else {
-    cy.task('setCurrentNetworkName', networkNameWithDefault)
-  }
+  cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+    _startWebApp()
+  })
 }
 
 Cypress.Commands.add(
