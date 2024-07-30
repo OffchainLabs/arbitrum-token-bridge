@@ -58,12 +58,12 @@ describe('Withdraw USDC through CCTP', () => {
 
     // log in to metamask before withdrawal
     beforeEach(() => {
-      cy.fundUserWalletEth('L2')
-      cy.fundUserUsdcTestnet('L2')
-      cy.resetCctpAllowance('L2')
+      cy.fundUserWalletEth('childChain')
+      cy.fundUserUsdcTestnet('childChain')
+      cy.resetCctpAllowance('childChain')
       USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
+      cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
       context('should show L1 and L2 chains, and ETH correctly', () => {
         cy.findSourceChainButton('Arbitrum Sepolia')
         cy.findDestinationChainButton('Sepolia')

@@ -17,7 +17,8 @@ import {
   findGasFeeForChain,
   findMoveFundsButton,
   findSelectTokenButton,
-  checkForCustomDestinationAddressInTransactionDetail
+  checkForCustomDestinationAddressInTransactionDetail,
+  findClaimButton
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -58,6 +59,7 @@ declare global {
       findMoveFundsButton: typeof findMoveFundsButton
       findSelectTokenButton: typeof findSelectTokenButton
       checkForCustomDestinationAddressInTransactionDetail: typeof checkForCustomDestinationAddressInTransactionDetail
+      findClaimButton: typeof findClaimButton
     }
   }
 }
