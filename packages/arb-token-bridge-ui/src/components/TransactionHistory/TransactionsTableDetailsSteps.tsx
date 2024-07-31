@@ -168,7 +168,7 @@ export const TransactionsTableDetailsSteps = ({
   tx: MergedTransaction
   address: Address | undefined
 }) => {
-  const { duration: transferDuration } = useTransferDuration(tx)
+  const { approximateDuration } = useTransferDuration(tx)
 
   const { sourceChainId } = tx
 
@@ -229,7 +229,7 @@ export const TransactionsTableDetailsSteps = ({
         <Step
           pending={isTxPending(tx)}
           done={!isTxPending(tx) && !isSourceChainDepositFailure}
-          text={`Wait ~${minutesToHumanReadableTime(transferDuration)}`}
+          text={`Wait ~${minutesToHumanReadableTime(approximateDuration)}`}
           endItem={
             isTxPending(tx) && (
               <TransferCountdown tx={tx} textAfterTime="remaining" />

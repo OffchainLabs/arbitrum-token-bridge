@@ -1,8 +1,11 @@
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import {
+  getOrbitDepositDuration,
   minutesToHumanReadableTime,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
+import { isNetwork } from '../../util/networks'
 
 /**
  * Displays a transfer countdown for a deposit, withdrawal, or cctp.
@@ -19,19 +22,24 @@ export function TransferCountdown({
   firstLegOnly?: boolean
   textAfterTime?: string
 }) {
-  const { duration, firstLegDuration, remaining } = useTransferDuration(tx)
+  const { isTestnet } = isNetwork(tx.sourceChainId)
+  let { estimatedTimeLeft } = useTransferDuration(tx)
 
-  if (remaining === null) {
+  if (estimatedTimeLeft === null) {
     return <span>Calculating...</span>
   }
 
-  const durationWithoutFirstLeg = duration - firstLegDuration
+  const _isTeleport = isTeleport({
+    sourceChainId: tx.sourceChainId,
+    destinationChainId: tx.destinationChainId
+  })
 
-  const minutesRemaining = firstLegOnly
-    ? Math.max(remaining - durationWithoutFirstLeg, 0)
-    : remaining
+  // To get the first retryable only, we subtract the Orbit deposit time (second retryable)
+  if (_isTeleport && firstLegOnly) {
+    estimatedTimeLeft -= getOrbitDepositDuration(isTestnet)
+  }
 
-  if (!tx.isWithdrawal && !tx.isCctp) {
+  if (!tx.isWithdrawal && !tx.isCctp && !_isTeleport) {
     const depositStatus = tx.depositStatus
 
     if (
@@ -46,7 +54,7 @@ export function TransferCountdown({
 
   return (
     <span className="whitespace-nowrap">
-      {minutesToHumanReadableTime(minutesRemaining)} {textAfterTime}
+      {minutesToHumanReadableTime(estimatedTimeLeft)} {textAfterTime}
     </span>
   )
 }

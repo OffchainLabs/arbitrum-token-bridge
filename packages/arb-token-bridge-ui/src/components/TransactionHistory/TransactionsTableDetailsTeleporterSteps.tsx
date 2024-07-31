@@ -6,7 +6,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { MergedTransaction } from '../../state/app/state'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
   firstRetryableLegRequiresRedeem,
   getChainIdForRedeemingRetryable,
@@ -22,8 +22,9 @@ import {
 } from './TransactionsTableDetailsSteps'
 import { TransferCountdown } from '../common/TransferCountdown'
 import {
-  minutesToHumanReadableTime,
-  useTransferDuration
+  getOrbitDepositDuration,
+  getStandardDepositDuration,
+  minutesToHumanReadableTime
 } from '../../hooks/useTransferDuration'
 
 const TeleportMiddleStepFailureExplanationNote = ({
@@ -77,11 +78,6 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   tx: MergedTransaction
   address: Address | undefined
 }) => {
-  const {
-    duration: totalTransferDuration,
-    firstLegDuration: firstRetryableWaitingDuration
-  } = useTransferDuration(tx)
-
   const l2TxID = tx.l1ToL2MsgData?.childTxId
   const isFirstRetryableLegSucceeded =
     typeof l2TxID !== 'undefined' &&
@@ -89,6 +85,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   const l2ChainId = tx.l2ToL3MsgData?.l2ChainId
   const isFirstRetryableLegFailed = firstRetryableLegRequiresRedeem(tx)
   const l2ForwarderRequiresRedeem = l2ForwarderRetryableRequiresRedeem(tx)
+
+  const { isTestnet } = isNetwork(tx.sourceChainId)
 
   const isFirstRetryableLegResolved =
     isFirstRetryableLegSucceeded || isFirstRetryableLegFailed
@@ -124,8 +122,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     ? firstRetryableRedeemButton
     : firstTransactionExternalLink
 
-  const secondRetryableWaitingDuration =
-    totalTransferDuration - firstRetryableWaitingDuration
+  const firstRetryableWaitingDuration = getStandardDepositDuration(isTestnet)
+  const secondRetryableWaitingDuration = getOrbitDepositDuration(isTestnet)
 
   return (
     <>

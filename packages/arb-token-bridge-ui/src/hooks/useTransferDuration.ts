@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 import { MergedTransaction } from '../state/app/state'
-import { useRemainingTime } from '../state/cctpState'
+import { useRemainingTimeCctp } from '../state/cctpState'
 import {
   getBaseChainIdByChainId,
   getConfirmPeriodBlocks,
@@ -10,19 +10,19 @@ import {
   isNetwork
 } from '../util/networks'
 
-export const DEPOSIT_TIME_MINUTES_MAINNET = 15
-export const DEPOSIT_TIME_MINUTES_TESTNET = 10
+const DEPOSIT_TIME_MINUTES_MAINNET = 15
+const DEPOSIT_TIME_MINUTES_TESTNET = 10
 
-export const TRANSFER_TIME_MINUTES_CCTP_MAINNET = 15
-export const TRANSFER_TIME_MINUTES_CCTP_TESTNET = 1
+const TRANSFER_TIME_MINUTES_CCTP_MAINNET = 15
+const TRANSFER_TIME_MINUTES_CCTP_TESTNET = 1
 
 /**
  * TODO: An assumption should be 15 minutes for mainnet orbit deposits
  * We should default to 15 and allow custom deposit times in orbit config (e.g. Xai should be 1 min)
  * For now set 5 minutes for mainnet, 1 minute for testnet
  */
-export const DEPOSIT_TIME_MINUTES_ORBIT_MAINNET = 5
-export const DEPOSIT_TIME_MINUTES_ORBIT_TESTNET = 1
+const DEPOSIT_TIME_MINUTES_ORBIT_MAINNET = 5
+const DEPOSIT_TIME_MINUTES_ORBIT_TESTNET = 1
 
 /**
  * Buffer for after a node is confirmable but isn't yet confirmed.
@@ -32,9 +32,8 @@ const CONFIRMATION_BUFFER_MINUTES = 60
 const SECONDS_IN_MIN = 60
 
 type UseTransferDurationResult = {
-  duration: number
-  firstLegDuration: number
-  remaining: number | null
+  approximateDuration: number
+  estimatedTimeLeft: number | null
 }
 
 /**
@@ -42,14 +41,13 @@ type UseTransferDurationResult = {
  *
  * @param {MergedTransaction} tx - The transaction object.
  * @returns {UseTransferDurationResult} - An object containing the total duration, first leg duration, and remaining time.
- * @property {number} duration - The total duration of the transfer in minutes.
- * @property {number} firstLegDuration - The duration of the first leg of the transfer in minutes. Mostly it will be the same as {duration} but it could be split into multiple retryables, such as in teleporter. Then it is duration of the first retryable.
- * @property {number | null} remaining - The remaining time for the transfer in minutes, or null if calculating or unavailable.
+ * @property {number} approximateDuration - The total duration of the transfer in minutes.
+ * @property {number | null} estimatedTimeLeft - The remaining time for the transfer in minutes, or null if calculating or unavailable.
  */
 export const useTransferDuration = (
   tx: MergedTransaction
 ): UseTransferDurationResult => {
-  const { remainingMinutes: remainingMinutesCctp } = useRemainingTime(tx)
+  const { estimatedTimeLeft: estimatedTimeLeftCctp } = useRemainingTimeCctp(tx)
 
   const { sourceChainId, destinationChainId, isCctp, childChainId } = tx
   const { isTestnet, isOrbitChain } = isNetwork(childChainId)
@@ -60,9 +58,8 @@ export const useTransferDuration = (
   if (isTeleport({ sourceChainId, destinationChainId })) {
     // Deposit only
     return {
-      duration: standardDepositDuration + orbitDepositDuration,
-      firstLegDuration: standardDepositDuration,
-      remaining: getRemainingMinutes({
+      approximateDuration: standardDepositDuration + orbitDepositDuration,
+      estimatedTimeLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: standardDepositDuration + orbitDepositDuration
       })
@@ -72,18 +69,16 @@ export const useTransferDuration = (
   if (isCctp) {
     const cctpTransferDuration = getCctpTransferDuration(isTestnet)
     return {
-      duration: cctpTransferDuration,
-      firstLegDuration: cctpTransferDuration,
-      remaining: remainingMinutesCctp
+      approximateDuration: cctpTransferDuration,
+      estimatedTimeLeft: estimatedTimeLeftCctp
     }
   }
 
   if (tx.isWithdrawal) {
     const withdrawalDuration = getWithdrawalDuration(tx)
     return {
-      duration: withdrawalDuration,
-      firstLegDuration: withdrawalDuration,
-      remaining: getRemainingMinutes({
+      approximateDuration: withdrawalDuration,
+      estimatedTimeLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: withdrawalDuration
       })
@@ -92,9 +87,8 @@ export const useTransferDuration = (
 
   if (isOrbitChain) {
     return {
-      duration: orbitDepositDuration,
-      firstLegDuration: orbitDepositDuration,
-      remaining: getRemainingMinutes({
+      approximateDuration: orbitDepositDuration,
+      estimatedTimeLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: orbitDepositDuration
       })
@@ -102,9 +96,8 @@ export const useTransferDuration = (
   }
 
   return {
-    duration: standardDepositDuration,
-    firstLegDuration: standardDepositDuration,
-    remaining: getRemainingMinutes({
+    approximateDuration: standardDepositDuration,
+    estimatedTimeLeft: getRemainingMinutes({
       createdAt: tx.createdAt,
       totalDuration: standardDepositDuration
     })
@@ -141,17 +134,17 @@ function getWithdrawalDuration(tx: MergedTransaction) {
   return Math.max(confirmationDate.diff(tx.createdAt, 'minute'), 0)
 }
 
-function getStandardDepositDuration(testnet: boolean) {
+export function getStandardDepositDuration(testnet: boolean) {
   return testnet ? DEPOSIT_TIME_MINUTES_TESTNET : DEPOSIT_TIME_MINUTES_MAINNET
 }
 
-function getOrbitDepositDuration(testnet: boolean) {
+export function getOrbitDepositDuration(testnet: boolean) {
   return testnet
     ? DEPOSIT_TIME_MINUTES_ORBIT_TESTNET
     : DEPOSIT_TIME_MINUTES_ORBIT_MAINNET
 }
 
-function getCctpTransferDuration(testnet: boolean) {
+export function getCctpTransferDuration(testnet: boolean) {
   return testnet
     ? TRANSFER_TIME_MINUTES_CCTP_TESTNET
     : TRANSFER_TIME_MINUTES_CCTP_MAINNET
