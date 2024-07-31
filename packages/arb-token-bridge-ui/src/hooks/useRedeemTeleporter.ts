@@ -6,7 +6,6 @@ import {
 } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
-import { TransactionReceipt } from '@ethersproject/providers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
