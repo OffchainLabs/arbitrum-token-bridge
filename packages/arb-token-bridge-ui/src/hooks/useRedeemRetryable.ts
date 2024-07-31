@@ -42,7 +42,7 @@ export function useRedeemRetryable(
 
       const retryableTicket = await getRetryableTicket({
         parentChainTxHash: tx.txId,
-        retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
+        retryableCreationId: tx.parentToChildMsgData?.retryableCreationTxID,
         parentChainProvider: getProviderForChainId(tx.parentChainId),
         childChainSigner: signer
       })
@@ -62,7 +62,7 @@ export function useRedeemRetryable(
 
       await updatePendingTransaction({
         ...tx,
-        l1ToL2MsgData: {
+        parentToChildMsgData: {
           childTxId: successfulRedeem.childTxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
