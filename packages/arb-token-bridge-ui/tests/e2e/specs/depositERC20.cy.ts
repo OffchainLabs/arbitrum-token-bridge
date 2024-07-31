@@ -154,7 +154,7 @@ describe('Deposit ERC20 Token', () => {
         cy.waitUntil(
           () =>
             cy.findTransactionInTransactionHistory({
-              duration: 'Less than a minute',
+              duration: 'a few seconds ago',
               amount: ERC20AmountToSend,
               symbol: 'WETH'
             }),
