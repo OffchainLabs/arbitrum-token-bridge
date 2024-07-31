@@ -77,7 +77,7 @@ export interface L2ToL3MessageData {
   l2ChainId: number
 }
 
-export type L2ToL1MessageData = {
+export type ChildToParentMessageData = {
   uniqueId: BigNumber
 }
 
@@ -97,7 +97,7 @@ type TransactionBase = {
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   parentToChildMsgData?: ParentToChildMessageData
-  l2ToL1MsgData?: L2ToL1MessageData
+  childToParentMsgData?: ChildToParentMessageData
   isClassic?: boolean
 }
 
