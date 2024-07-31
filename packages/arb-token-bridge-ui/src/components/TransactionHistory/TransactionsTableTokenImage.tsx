@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { MergedTransaction } from '../../state/app/state'
-import { orbitChains } from '../../util/orbit'
+import { getOrbitChain } from '../../util/orbit'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TokenListWithId } from '../../util/TokenListUtils'
 
@@ -37,7 +37,7 @@ export const TransactionsTableTokenImage = ({
     : undefined
 
   if (tx.assetType === AssetType.ETH) {
-    const orbitChain = orbitChains[tx.childChainId]
+    const orbitChain = getOrbitChain(tx.childChainId)
 
     const nativeTokenLogoSrc =
       orbitChain?.bridgeUiConfig.nativeTokenData?.logoUrl

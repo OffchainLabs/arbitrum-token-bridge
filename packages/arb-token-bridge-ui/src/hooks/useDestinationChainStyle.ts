@@ -1,4 +1,4 @@
-import { getOrbitChains } from '../util/orbit'
+import { getOrbitChain } from '../util/orbit'
 import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 import { useNetworks } from './useNetworks'
 
@@ -11,10 +11,7 @@ type DestinationChainStyle =
 
 export const useDestinationChainStyle = (): DestinationChainStyle => {
   const [networks] = useNetworks()
-  const orbitChains = getOrbitChains({ mainnet: true, testnet: false })
-  const orbitChain = orbitChains.find(
-    orbitChain => orbitChain.chainId === networks.destinationChain.id
-  )
+  const orbitChain = getOrbitChain(networks.destinationChain.id)
 
   // early return if the orbit chain is not found
   if (!orbitChain) return {}

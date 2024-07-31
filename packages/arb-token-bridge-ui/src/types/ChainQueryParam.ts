@@ -7,7 +7,7 @@ import {
   getSupportedChainIds
 } from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
-import { getOrbitChains, orbitChains } from '../util/orbit'
+import { getOrbitChains, getOrbitChain } from '../util/orbit'
 import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
@@ -68,7 +68,7 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     default:
       const customChain = getCustomChainFromLocalStorageById(chainId)
 
-      const orbitChain = orbitChains[chainId]
+      const orbitChain = getOrbitChain(chainId)
 
       if (customChain) {
         return customChain.chainId

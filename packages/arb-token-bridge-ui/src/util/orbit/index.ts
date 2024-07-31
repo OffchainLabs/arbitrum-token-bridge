@@ -24,15 +24,13 @@ export type OrbitChainConfig = ChainWithRpcUrl & {
   bridgeUiConfig: BridgeUiConfig
 }
 
-export const orbitMainnets = orbitMainnetsJson as {
+const orbitMainnets = orbitMainnetsJson as {
   [key in number]: OrbitChainConfig
 }
 
-export const orbitTestnets = orbitTestnetsJson as {
+const orbitTestnets = orbitTestnetsJson as {
   [key in number]: OrbitChainConfig
 }
-
-export const orbitChains = { ...orbitMainnets, ...orbitTestnets }
 
 export function getOrbitChains(
   {
@@ -49,6 +47,10 @@ export function getOrbitChains(
   const chains = [...mainnetChains, ...testnetChains]
 
   return chains
+}
+
+export function getOrbitChain(chainId: number) {
+  return getOrbitChains().find(chain => chain.chainId === chainId)
 }
 
 export function getInboxAddressFromOrbitChainId(chainId: number) {

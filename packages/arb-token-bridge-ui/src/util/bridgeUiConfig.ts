@@ -1,5 +1,5 @@
 import { ChainId, getCustomChainFromLocalStorageById } from './networks'
-import { orbitChains, BridgeUiConfig } from './orbit'
+import { BridgeUiConfig, getOrbitChain } from './orbit'
 
 export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
   type BaseBridgeUiConfig = Omit<BridgeUiConfig, 'network'> & {
@@ -106,7 +106,7 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
       }
     default: {
       // added Orbit chains
-      const orbitChain = orbitChains[chainId]
+      const orbitChain = getOrbitChain(chainId)
 
       if (orbitChain) {
         return orbitChain.bridgeUiConfig

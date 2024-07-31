@@ -8,7 +8,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { orbitMainnets, orbitTestnets } from './orbit'
+import { getOrbitChains } from './orbit'
 import { chainIdToInfuraUrl } from './infura'
 
 export enum ChainId {
@@ -366,9 +366,24 @@ export function registerLocalNetwork() {
 
 export function isNetwork(chainId: ChainId) {
   const customChains = getCustomChainsFromLocalStorage()
-  const isMainnetOrbitChain = chainId in orbitMainnets
+  const customChainIds = customChains.map(chain => chain.chainId)
+  const isCustomOrbitChain = customChainIds.includes(chainId)
+
   const isL3Local = chainId === ChainId.L3Local
-  const isTestnetOrbitChain = chainId in orbitTestnets || isL3Local
+
+  const isMainnetOrbitChain =
+    typeof getOrbitChains({
+      mainnet: true,
+      testnet: false
+    }).find(chain => chain.chainId === chainId) !== 'undefined'
+
+  const isTestnetOrbitChain =
+    isCustomOrbitChain ||
+    isL3Local ||
+    typeof getOrbitChains({
+      mainnet: false,
+      testnet: true
+    }).find(chain => chain.chainId === chainId) !== 'undefined'
 
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
@@ -386,9 +401,6 @@ export function isNetwork(chainId: ChainId) {
 
   const isArbitrum =
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia
-
-  const customChainIds = customChains.map(chain => chain.chainId)
-  const isCustomOrbitChain = customChainIds.includes(chainId)
 
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
   const isOrbitChain = !isCoreChain
