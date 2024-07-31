@@ -13,15 +13,23 @@ import { IRollupCore__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IRoll
 import { getChainIdFromProvider, getProviderForChainId } from './utils'
 import { TELEPORT_ALLOWLIST } from '../util/networks'
 import { addressIsSmartContract } from '../util/AddressUtils'
+import {
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../state/app/state'
 
-export const isTeleport = ({
-  sourceChainId,
-  destinationChainId
-}: {
-  sourceChainId: number
-  destinationChainId: number
-}) => {
-  return !!TELEPORT_ALLOWLIST[sourceChainId]?.includes(destinationChainId)
+export const isTeleport = (
+  tx:
+    | {
+        sourceChainId: number
+        destinationChainId: number
+      }
+    | MergedTransaction
+    | TeleporterMergedTransaction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    | any
+): tx is TeleporterMergedTransaction => {
+  return !!TELEPORT_ALLOWLIST[tx.sourceChainId]?.includes(tx.destinationChainId)
 }
 
 export const getL2ConfigForTeleport = async ({
