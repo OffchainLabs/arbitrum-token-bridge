@@ -12,10 +12,12 @@ import {
  */
 export function TransferCountdown({
   tx,
-  firstLegOnly
+  firstLegOnly,
+  textAfterAmount = ''
 }: {
   tx: MergedTransaction
   firstLegOnly?: boolean
+  textAfterAmount?: string
 }) {
   const { duration, firstLegDuration, remaining } = useTransferDuration(tx)
 
@@ -44,7 +46,7 @@ export function TransferCountdown({
 
   return (
     <span className="whitespace-nowrap">
-      {minutesToHumanReadableTime(minutesRemaining)}
+      {minutesToHumanReadableTime(minutesRemaining)} {textAfterAmount}
     </span>
   )
 }

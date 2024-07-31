@@ -138,10 +138,11 @@ export const TransactionsTableDetailsTeleporterSteps = ({
         )}`}
         endItem={
           !isFirstRetryableLegResolved && (
-            <div>
-              <TransferCountdown tx={tx} firstLegOnly={true} />
-              <span> remaining</span>
-            </div>
+            <TransferCountdown
+              tx={tx}
+              firstLegOnly={true}
+              textAfterAmount="remaining"
+            />
           )
         }
       />

@@ -232,10 +232,7 @@ export const TransactionsTableDetailsSteps = ({
           text={`Wait ~${minutesToHumanReadableTime(transferDuration)}`}
           endItem={
             isTxPending(tx) && (
-              <div>
-                <TransferCountdown tx={tx} />
-                <span> remaining</span>
-              </div>
+              <TransferCountdown tx={tx} textAfterAmount="remaining" />
             )
           }
         />
