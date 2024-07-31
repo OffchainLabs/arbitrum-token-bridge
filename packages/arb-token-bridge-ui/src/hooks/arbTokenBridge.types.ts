@@ -19,7 +19,7 @@ import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumG
 import {
   NewTransaction,
   Transaction,
-  L1ToL2MessageData
+  ParentToChildMessageData
 } from './useTransactions'
 import { ChainId } from '../util/networks'
 
@@ -174,7 +174,7 @@ export interface TransactionActions {
   updateTransaction: (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: L1ToL2MessageData
+    l1ToL2MsgData?: ParentToChildMessageData
   ) => void
 }
 

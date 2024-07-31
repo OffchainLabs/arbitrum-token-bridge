@@ -278,7 +278,9 @@ export const defaultL2Network: ArbitrumNetwork = {
     bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
     inbox: '0x9f8c1c641336A371031499e3c362e40d58d0f254',
     outbox: '0x50143333b44Ea46255BEb67255C9Afd35551072F',
-    rollup: '0x46966d871d29e1772c2809459469f849d8AAb1A3',
+    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
+      ? '0xE8A8F50F2a237D06D0087D14E690f6Ff0556259D'
+      : '0x46966d871d29e1772c2809459469f849d8AAb1A3',
     sequencerInbox: '0x18d19C5d3E685f5be5b9C86E097f0E439285D216'
   },
   isCustom: true,
@@ -310,7 +312,9 @@ export const defaultL3Network: ArbitrumNetwork = {
     bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
     inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
     outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
-    rollup: '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
+    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
+      ? '0xdeD540257498027B1De7DFD4fe6cc4CeC030F355'
+      : '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
     sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
   },
   isCustom: true,

@@ -16,7 +16,8 @@ import {
   findGasFeeSummary,
   findGasFeeForChain,
   findMoveFundsButton,
-  findSelectTokenButton
+  findSelectTokenButton,
+  findClaimButton
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -36,7 +37,7 @@ declare global {
         query?: { [s: string]: string }
       }): typeof login
       logout(): typeof logout
-      openTransactionsPanel(): typeof openTransactionsPanel
+      openTransactionsPanel: typeof openTransactionsPanel
       resetCctpAllowance: typeof resetCctpAllowance
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth
@@ -56,6 +57,7 @@ declare global {
       findGasFeeSummary: typeof findGasFeeSummary
       findMoveFundsButton: typeof findMoveFundsButton
       findSelectTokenButton: typeof findSelectTokenButton
+      findClaimButton: typeof findClaimButton
     }
   }
 }

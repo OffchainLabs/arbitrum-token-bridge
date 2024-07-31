@@ -39,10 +39,7 @@ import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import {
-  TransferDisabledDialog,
-  useTransferDisabledDialogStore
-} from './TransferDisabledDialog'
+import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
@@ -54,6 +51,7 @@ import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
+import { NetworkType } from './TransferPanelMain/utils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -230,10 +228,12 @@ function StyledLoader() {
 
 export function ETHBalance({
   balance,
-  prefix = ''
+  prefix = '',
+  on
 }: {
   balance: BigNumber | null
   prefix?: string
+  on: NetworkType
 }) {
   if (!balance) {
     return <StyledLoader />
@@ -242,7 +242,9 @@ export function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
+      <span aria-label={`ETH balance amount on ${on}`}>
+        {formatAmount(balance, { symbol: ether.symbol })}
+      </span>
     </p>
   )
 }
@@ -359,8 +361,6 @@ export function TransferPanelMain({
   }, [nativeCurrency, ethParentBalance, ethChildBalance, erc20ParentBalances])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [
     oneNovaTransferDestinationNetworkId,
@@ -467,50 +467,9 @@ export function TransferPanelMain({
     }
   }, [selectedToken, setDestinationAddress])
 
-  const errorMessageElement = useMemo(() => {
-    if (typeof errorMessage === 'undefined') {
-      return undefined
-    }
-
-    if (typeof errorMessage === 'string') {
-      return errorMessage
-    }
-
-    switch (errorMessage) {
-      case TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE:
-        return (
-          <span>
-            Gas estimation failed, join our{' '}
-            <ExternalLink
-              href="https://discord.com/invite/ZpZuw7p"
-              className="underline"
-            >
-              Discord
-            </ExternalLink>{' '}
-            and reach out in #support for assistance.
-          </span>
-        )
-
-      case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
-      case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
-        return (
-          <>
-            <span>This token can&apos;t be bridged over.</span>{' '}
-            <button
-              className="arb-hover underline"
-              onClick={openTransferDisabledDialog}
-            >
-              Learn more.
-            </button>
-          </>
-        )
-    }
-  }, [errorMessage, openTransferDisabledDialog])
-
   useUpdateUSDCTokenData()
 
   type NetworkListboxesProps = {
-    from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
   }
 
@@ -547,26 +506,6 @@ export function TransferPanelMain({
     const destinationChains = getDestinationChains()
 
     return {
-      from: {
-        onChange: async network => {
-          if (networks.destinationChain.id === network.id) {
-            setNetworks({
-              sourceChainId: networks.destinationChain.id,
-              destinationChainId: networks.sourceChain.id
-            })
-            return
-          }
-
-          // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
-          // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
-          setNetworks({
-            sourceChainId: network.id,
-            destinationChainId: networks.destinationChain.id
-          })
-
-          actions.app.setSelectedToken(null)
-        }
-      },
       to: {
         disabled:
           isSmartContractWallet ||
@@ -604,10 +543,9 @@ export function TransferPanelMain({
         amount={amount}
         loadingMaxAmount={loadingMaxAmount}
         setMaxAmount={setMaxAmount}
-        errorMessageElement={errorMessageElement}
+        errorMessage={errorMessage}
         customFeeTokenBalances={customFeeTokenBalances}
         showUsdcSpecificInfo={showUSDCSpecificInfo}
-        sourceNetworkListboxProps={networkListboxProps.from}
       />
 
       <SwitchNetworksButton />
