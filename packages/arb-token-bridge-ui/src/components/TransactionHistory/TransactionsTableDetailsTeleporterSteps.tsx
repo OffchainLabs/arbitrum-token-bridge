@@ -141,7 +141,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
             <TransferCountdown
               tx={tx}
               firstLegOnly={true}
-              textAfterAmount="remaining"
+              textAfterTime="remaining"
             />
           )
         }
