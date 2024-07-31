@@ -178,9 +178,6 @@ export function minutesToHumanReadableTime(minutes: number | null) {
   if (minutes <= 0) {
     return 'Less than a minute'
   }
-  if (minutes === 1) {
-    return '1 minute'
-  }
   // will convert number to '20 minutes', '1 hour', '7 days', etc
   return dayjs().add(minutes, 'minutes').fromNow(true)
 }
