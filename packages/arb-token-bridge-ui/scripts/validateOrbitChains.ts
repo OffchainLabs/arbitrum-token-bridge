@@ -2,7 +2,6 @@ import z from 'zod'
 import { isAddress } from 'ethers/lib/utils.js'
 
 import { getOrbitChains, OrbitChainConfig } from '../src/util/orbit'
-import { constants } from 'ethers'
 
 const zAddress = z
   .string()
@@ -15,7 +14,7 @@ const zIsTrue = z
 function validateOrbitChain(chain: OrbitChainConfig) {
   try {
     z.object({
-      chainID: z.number().nonnegative().int(),
+      chainId: z.number().nonnegative().int(),
       confirmPeriodBlocks: z.number().nonnegative().int(),
       ethBridge: z.object({
         bridge: zAddress,
@@ -27,33 +26,27 @@ function validateOrbitChain(chain: OrbitChainConfig) {
       nativeToken: zAddress.optional(),
       explorerUrl: z.string().url(),
       rpcUrl: z.string().url(),
-      isArbitrum: zIsTrue,
       isCustom: zIsTrue,
       name: z.string(),
       slug: z.string(),
-      partnerChainID: z.number().nonnegative().int(),
-      partnerChainIDs: z.array(z.number()).refine(arr => arr.length === 0),
+      parentChainId: z.number().nonnegative().int(),
       retryableLifetimeSeconds: z.number().nonnegative().int(),
-      blockTime: z.number().refine(num => num === 0.25),
       tokenBridge: z.object({
-        l1CustomGateway: zAddress,
-        l1ERC20Gateway: zAddress,
-        l1GatewayRouter: zAddress,
-        l1MultiCall: zAddress,
-        l1ProxyAdmin: zAddress,
-        l1Weth: zAddress,
-        l1WethGateway: zAddress,
-        l2CustomGateway: zAddress,
-        l2ERC20Gateway: zAddress,
-        l2GatewayRouter: zAddress,
-        l2Multicall: zAddress,
-        l2ProxyAdmin: zAddress,
-        l2Weth: zAddress,
-        l2WethGateway: zAddress
+        parentCustomGateway: zAddress,
+        parentErc20Gateway: zAddress,
+        parentGatewayRouter: zAddress,
+        parentMultiCall: zAddress,
+        parentProxyAdmin: zAddress,
+        parentWeth: zAddress,
+        parentWethGateway: zAddress,
+        childCustomGateway: zAddress,
+        childErc20Gateway: zAddress,
+        childGatewayRouter: zAddress,
+        childMultiCall: zAddress,
+        childProxyAdmin: zAddress,
+        childWeth: zAddress,
+        childWethGateway: zAddress
       }),
-      nitroGenesisBlock: z.number().refine(num => num === 0),
-      nitroGenesisL1Block: z.number().refine(num => num === 0),
-      depositTimeout: z.number().nonnegative().int(),
       bridgeUiConfig: z.object({
         color: z.string(),
         network: z.object({
@@ -72,7 +65,7 @@ function validateOrbitChain(chain: OrbitChainConfig) {
     }).parse(chain)
   } catch (e) {
     console.error(
-      `Error while validating Orbit chain: ${chain.name} (${chain.chainID}):`
+      `Error while validating Orbit chain: ${chain.name} (${chain.chainId}):`
     )
     throw e
   }

@@ -1,4 +1,4 @@
-import { getOrbitChains } from '../util/orbitChainsList'
+import { getOrbitChains } from '../util/orbit'
 import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 import { useNetworks } from './useNetworks'
 

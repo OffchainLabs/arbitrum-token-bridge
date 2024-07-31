@@ -1,4 +1,3 @@
-import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { NativeCurrencyBase } from '../../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './../networks'
 import orbitMainnetsJson from './orbitMainnets.json'
@@ -54,13 +53,14 @@ export function getOrbitChains(
 
 export function getInboxAddressFromOrbitChainId(chainId: number) {
   return (
-    l2Networks[chainId]?.ethBridge.inbox ?? // for stylus testnet v2
-    getOrbitChains().find(chain => chain.chainID === chainId)?.ethBridge.inbox // for other custom orbit chains
+    getOrbitChains()
+      //
+      .find(chain => chain.chainId === chainId)?.ethBridge.inbox
   )
 }
 
 export function getChainIdFromInboxAddress(inboxAddress: string) {
   return getOrbitChains().find(
     chain => chain.ethBridge.inbox.toLowerCase() === inboxAddress.toLowerCase()
-  )?.chainID
+  )?.chainId
 }
