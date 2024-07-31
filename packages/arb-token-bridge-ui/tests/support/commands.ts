@@ -353,7 +353,7 @@ export function findTransactionInTransactionHistory({
   duration?: string
 }) {
   const rowId = `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
-  cy.findByTestId(rowId).as('row')
+  cy.findByTestId(new RegExp(rowId)).as('row')
   if (duration) {
     cy.get('@row').findAllByText(duration).first().should('be.visible')
   }
