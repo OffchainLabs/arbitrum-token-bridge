@@ -13,33 +13,10 @@ describe('Transaction History', () => {
     })
     // open tx history panel
     context('open transactions history panel', () => {
-      cy.openTransactionsPanel()
-    })
-
-    context('pending tab should be selected', () => {
-      cy.findByRole('tab', { name: 'show pending transactions' })
-        .should('be.visible')
-        .should('have.attr', 'data-headlessui-state')
-        .and('equal', 'selected')
-    })
-
-    // wait for transactions to fetch
-    cy.waitUntil(
-      () =>
-        cy
-          .findByText(/Showing \d+ pending transactions made in/)
-          .should('be.visible'),
-      {
-        errorMsg: 'Failed to fetch transactions.',
-        timeout: 30_000,
-        interval: 500
-      }
-    ).then(() => {
-      const numberOfWithdrawals = cy
-        .findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
+      cy.openTransactionsPanel('pending')
+      cy.findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
         .its('length')
-
-      numberOfWithdrawals.should('be.gt', 0)
+        .should('be.gt', 0)
     })
   })
 
@@ -53,39 +30,13 @@ describe('Transaction History', () => {
       }
     })
     context('open transactions history panel', () => {
-      cy.openTransactionsPanel()
-    })
-
-    context('settled tab should be selected after click', () => {
-      cy.findByRole('tab', { name: 'show settled transactions' })
-        .should('be.visible')
-        .click()
-        .should('have.attr', 'data-headlessui-state')
-        .and('equal', 'selected')
-    })
-
-    cy.waitUntil(
-      () =>
-        cy
-          .findByText(/Showing \d+ settled transactions made in/)
-          .should('be.visible'),
-      {
-        errorMsg: 'Failed to fetch transactions.',
-        timeout: 30_000,
-        interval: 500
-      }
-    ).then(() => {
-      const numberOfWithdrawals = cy
-        .findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
+      cy.openTransactionsPanel('settled')
+      cy.findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
         .its('length')
-
-      numberOfWithdrawals.should('be.gt', 0)
-
-      const numberOfDeposits = cy
-        .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
+        .should('be.gt', 0)
+      cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
         .its('length')
-
-      numberOfDeposits.should('be.gt', 0)
+        .should('be.gt', 0)
     })
   })
 })

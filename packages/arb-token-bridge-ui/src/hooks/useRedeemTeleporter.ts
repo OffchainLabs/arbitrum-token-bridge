@@ -118,11 +118,11 @@ const redeemTeleporterSecondLeg = async ({
   // check if we require a redemption for the l2l3 retryable
   if (
     secondRetryableLegForTeleportRequiresRedeem(tx) &&
-    tx.l1ToL2MsgData?.l2TxID &&
+    tx.l1ToL2MsgData?.childTxId &&
     tx.l2ToL3MsgData
   ) {
     const l2L3Retryable = await getRetryableTicket({
-      parentChainTxHash: tx.l1ToL2MsgData.l2TxID,
+      parentChainTxHash: tx.l1ToL2MsgData.childTxId,
       retryableCreationId: tx.l2ToL3MsgData?.retryableCreationTxID,
       parentChainProvider: getProviderForChainId(tx.l2ToL3MsgData.l2ChainId),
       childChainSigner: signer
