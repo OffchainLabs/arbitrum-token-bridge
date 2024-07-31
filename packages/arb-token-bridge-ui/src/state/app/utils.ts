@@ -59,7 +59,7 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
       destinationChainId: tx.childChainId
     })
   ) {
-    const { l2ToL3MsgData, l1ToL2MsgData } = tx
+    const { l2ToL3MsgData, parentToChildMsgData: l1ToL2MsgData } = tx
 
     // if any of the retryable info is missing, first fetch might be pending
     if (!l1ToL2MsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
@@ -89,7 +89,7 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     }
   }
 
-  const { l1ToL2MsgData } = tx
+  const { parentToChildMsgData: l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
     return DepositStatus.L2_PENDING
   }
@@ -149,7 +149,7 @@ export const transformDeposit = (tx: Transaction): MergedTransaction => {
     isWithdrawal: false,
     blockNum: tx.blockNumber || null,
     tokenAddress: tx.tokenAddress || null,
-    l1ToL2MsgData: tx.l1ToL2MsgData,
+    parentToChildMsgData: tx.parentToChildMsgData,
     l2ToL1MsgData: tx.l2ToL1MsgData,
     l2ToL3MsgData: tx.l2ToL3MsgData,
     depositStatus: getDepositStatus(tx),

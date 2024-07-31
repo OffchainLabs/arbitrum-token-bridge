@@ -84,7 +84,7 @@ export const updateAdditionalDepositData = async ({
       ...depositTx,
       status,
       timestampResolved,
-      l1ToL2MsgData,
+      parentToChildMsgData: l1ToL2MsgData,
       l2ToL3MsgData
     }
   }
@@ -155,7 +155,7 @@ const updateETHDepositStatusData = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData: {
+    parentToChildMsgData: {
       status: isDeposited
         ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
         : ParentToChildMessageStatus.NOT_YET_CREATED,
@@ -233,7 +233,7 @@ const updateTokenDepositStatusData = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData
+    parentToChildMsgData: l1ToL2MsgData
   }
 
   return completeDepositTx
@@ -297,7 +297,7 @@ const updateClassicDepositStatusData = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData
+    parentToChildMsgData: l1ToL2MsgData
   }
 
   return completeDepositTx

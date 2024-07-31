@@ -78,7 +78,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   tx: MergedTransaction
   address: Address | undefined
 }) => {
-  const l2TxID = tx.l1ToL2MsgData?.childTxId
+  const l2TxID = tx.parentToChildMsgData?.childTxId
   const isFirstRetryableLegSucceeded =
     typeof l2TxID !== 'undefined' &&
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'
