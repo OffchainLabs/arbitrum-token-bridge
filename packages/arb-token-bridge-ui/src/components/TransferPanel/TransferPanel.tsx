@@ -199,8 +199,7 @@ export function TransferPanel() {
   }
 
   useImportTokenModal({
-    importTokenModalStatus,
-    connectionState
+    importTokenModalStatus
   })
 
   const isBridgingANewStandardToken = useMemo(() => {
