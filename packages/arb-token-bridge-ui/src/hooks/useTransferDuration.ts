@@ -10,19 +10,25 @@ import {
   isNetwork
 } from '../util/networks'
 
-const DEPOSIT_TIME_MINUTES_MAINNET = 15
-const DEPOSIT_TIME_MINUTES_TESTNET = 10
+const DEPOSIT_TIME_MINUTES = {
+  mainnet: 15,
+  testnet: 10
+}
 
-const TRANSFER_TIME_MINUTES_CCTP_MAINNET = 15
-const TRANSFER_TIME_MINUTES_CCTP_TESTNET = 1
+const TRANSFER_TIME_MINUTES_CCTP = {
+  mainnet: 15,
+  testnet: 1
+}
 
 /**
  * TODO: An assumption should be 15 minutes for mainnet orbit deposits
  * We should default to 15 and allow custom deposit times in orbit config (e.g. Xai should be 1 min)
  * For now set 5 minutes for mainnet, 1 minute for testnet
  */
-const DEPOSIT_TIME_MINUTES_ORBIT_MAINNET = 5
-const DEPOSIT_TIME_MINUTES_ORBIT_TESTNET = 1
+const DEPOSIT_TIME_MINUTES_ORBIT = {
+  mainnet: 5,
+  testnet: 1
+}
 
 /**
  * Buffer for after a node is confirmable but isn't yet confirmed.
@@ -137,19 +143,19 @@ function getWithdrawalDuration(tx: MergedTransaction) {
 }
 
 export function getStandardDepositDuration(testnet: boolean) {
-  return testnet ? DEPOSIT_TIME_MINUTES_TESTNET : DEPOSIT_TIME_MINUTES_MAINNET
+  return testnet ? DEPOSIT_TIME_MINUTES.testnet : DEPOSIT_TIME_MINUTES.mainnet
 }
 
 export function getOrbitDepositDuration(testnet: boolean) {
   return testnet
-    ? DEPOSIT_TIME_MINUTES_ORBIT_TESTNET
-    : DEPOSIT_TIME_MINUTES_ORBIT_MAINNET
+    ? DEPOSIT_TIME_MINUTES_ORBIT.testnet
+    : DEPOSIT_TIME_MINUTES_ORBIT.mainnet
 }
 
 export function getCctpTransferDuration(testnet: boolean) {
   return testnet
-    ? TRANSFER_TIME_MINUTES_CCTP_TESTNET
-    : TRANSFER_TIME_MINUTES_CCTP_MAINNET
+    ? TRANSFER_TIME_MINUTES_CCTP.testnet
+    : TRANSFER_TIME_MINUTES_CCTP.mainnet
 }
 
 function getRemainingMinutes({
