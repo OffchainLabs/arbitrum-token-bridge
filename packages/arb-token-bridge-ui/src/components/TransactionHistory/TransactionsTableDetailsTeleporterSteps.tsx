@@ -75,7 +75,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 }) => {
   const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
-  const l2TxID = tx.l1ToL2MsgData?.l2TxID
+  const l2TxID = tx.l1ToL2MsgData?.childTxId
   const isFirstRetryableLegSucceeded =
     typeof l2TxID !== 'undefined' &&
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'

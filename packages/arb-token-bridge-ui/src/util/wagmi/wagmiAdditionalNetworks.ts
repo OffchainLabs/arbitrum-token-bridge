@@ -5,10 +5,10 @@ import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
-  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainID)
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
 
   return {
-    id: chain.chainID,
+    id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
     nativeCurrency: nativeTokenData ?? ether,
@@ -104,27 +104,6 @@ export const arbitrumNova: Chain = {
   }
 }
 
-export const stylusTestnetV2: Chain = {
-  id: ChainId.StylusTestnetV2,
-  name: 'Stylus Testnet v2',
-  network: 'stylus-testnet-v2',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.StylusTestnetV2]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.StylusTestnetV2]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://stylusv2-explorer.arbitrum.io'
-    }
-  }
-}
-
 /**
  * For e2e testing
  */
@@ -163,6 +142,27 @@ export const localL2Network: Chain = {
     }
   },
   blockExplorers: {
-    default: { name: 'Blockscout', url: '' }
+    default: { name: 'Blockscout', url: 'https://etherscan.io' }
+  }
+}
+
+/**
+ * For e2e testing
+ */
+export const localL3Network: Chain = {
+  id: ChainId.L3Local,
+  name: 'L3 Local',
+  network: 'l3-localhost',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.L3Local]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.L3Local]!]
+    }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://etherscan.io' }
   }
 }

@@ -5,9 +5,11 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import { L2ToL1Message } from '@arbitrum/sdk'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import {
+  EventArgs,
+  ChildToParentMessage,
+  ChildToParentTransactionEvent
+} from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
 import useTransactions from './useTransactions'
@@ -31,16 +33,16 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { getProvider } from '../components/TransactionHistory/helpers'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 import { isTeleport } from '../token-bridge-sdk/teleport'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
 function isClassicL2ToL1TransactionEvent(
-  event: L2ToL1TransactionEvent
+  event: ChildToParentTransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
 }
@@ -97,25 +99,25 @@ export const useArbTokenBridge = (
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: l1.provider,
+    chainId: l1.network.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: l2.provider,
+    chainId: l2.network.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L1CustomDestinationBalance]
   } = useBalance({
-    provider: l1.provider,
+    chainId: l1.network.id,
     walletAddress: destinationAddress
   })
   const {
     erc20: [, updateErc20CustomDestinationL2Balance]
   } = useBalance({
-    provider: l2.provider,
+    chainId: l2.network.id,
     walletAddress: destinationAddress
   })
 
@@ -432,10 +434,10 @@ export const useArbTokenBridge = (
       return
     }
 
-    const parentChainProvider = getProvider(event.parentChainId)
-    const childChainProvider = getProvider(event.childChainId)
+    const parentChainProvider = getProviderForChainId(event.parentChainId)
+    const childChainProvider = getProviderForChainId(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider
@@ -488,10 +490,10 @@ export const useArbTokenBridge = (
       return
     }
 
-    const parentChainProvider = getProvider(event.parentChainId)
-    const childChainProvider = getProvider(event.childChainId)
+    const parentChainProvider = getProviderForChainId(event.parentChainId)
+    const childChainProvider = getProviderForChainId(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider

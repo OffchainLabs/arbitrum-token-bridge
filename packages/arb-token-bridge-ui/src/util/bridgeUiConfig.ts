@@ -86,6 +86,14 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           name: 'Arbitrum Local'
         }
       }
+    case ChainId.L3Local:
+      return {
+        color: '#12AAFF',
+        network: {
+          name: 'L3 Local',
+          logo: '/images/OrbitLogo.svg'
+        }
+      }
     case ChainId.ArbitrumNova:
       return {
         color: '#E57310',
@@ -94,16 +102,6 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           logo: '/images/ArbitrumNovaLogo.svg',
           description:
             'AnyTrust protocol. Low fees for high-volume transactions. Secured by a trust-minimized Data Availability Committee (DAC).'
-        }
-      }
-    case ChainId.StylusTestnetV2:
-      return {
-        color: '#E3066E',
-        network: {
-          name: 'Stylus Testnet v2',
-          logo: '/images/StylusLogo.svg',
-          description:
-            'An experimental playground for Arbitrum Stylus smart contracts.'
         }
       }
     default: {

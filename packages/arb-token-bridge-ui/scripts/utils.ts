@@ -1,10 +1,11 @@
-import { L2Network } from '@arbitrum/sdk'
+import { ArbitrumNetwork } from '@arbitrum/sdk'
 import { OrbitChainConfig } from '../src/util/orbitChainsList'
 import { getExplorerUrl, rpcURLs } from '../src/util/networks'
 
-export interface ChainToMonitor extends L2Network {
+export interface ChainToMonitor extends ArbitrumNetwork {
   parentRpcUrl: string
   orbitRpcUrl: string
+  explorerUrl: string
   parentExplorerUrl: string
 }
 
@@ -26,18 +27,26 @@ export const sanitizeRpcUrl = (url: string) => {
   }
 }
 
+const hasExplorerUrl = (
+  chain: ArbitrumNetwork | OrbitChainConfig
+): chain is OrbitChainConfig => {
+  return typeof (chain as OrbitChainConfig).explorerUrl !== 'undefined'
+}
+
 // make the chain data compatible with that required by the retryable-monitoring script
 // TODO: in a later refactor, we will update the term `orbitRpcUrl` to chain-agnostic, `rpcUrl`
 export const getChainToMonitor = ({
   chain,
   rpcUrl
 }: {
-  chain: L2Network | OrbitChainConfig
+  chain: ArbitrumNetwork | OrbitChainConfig
   rpcUrl: string
 }): ChainToMonitor => ({
   ...chain,
-  explorerUrl: sanitizeExplorerUrl(chain.explorerUrl),
+  explorerUrl: sanitizeExplorerUrl(
+    hasExplorerUrl(chain) ? chain.explorerUrl : getExplorerUrl(chain.chainId)
+  ),
   orbitRpcUrl: sanitizeRpcUrl(rpcUrl),
-  parentRpcUrl: sanitizeRpcUrl(rpcURLs[chain.partnerChainID]),
-  parentExplorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.partnerChainID))
+  parentRpcUrl: sanitizeRpcUrl(rpcURLs[chain.parentChainId]),
+  parentExplorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.parentChainId))
 })

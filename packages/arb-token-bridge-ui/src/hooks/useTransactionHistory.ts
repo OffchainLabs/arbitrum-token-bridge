@@ -36,7 +36,6 @@ import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import {
   getDepositsWithoutStatusesFromCache,
-  getProvider,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
   getUpdatedTeleportTransfer,
@@ -53,6 +52,7 @@ import {
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Address } from '../util/AddressUtils'
 import {
   TeleportFromSubgraph,
@@ -131,7 +131,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
     // For each destination chain, map to an array of ChainPair objects
     return childChainIds.map(childChainId => ({
-      parentChainId: chain.chainID,
+      parentChainId: chain.chainId,
       childChainId: childChainId
     }))
   })
@@ -153,8 +153,8 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
     return await transformTeleportFromSubgraph(tx)
   }
 
-  const parentChainProvider = getProvider(tx.parentChainId)
-  const childChainProvider = getProvider(tx.childChainId)
+  const parentChainProvider = getProviderForChainId(tx.parentChainId)
+  const childChainProvider = getProviderForChainId(tx.childChainId)
 
   if (isCctpTransfer(tx)) {
     return tx
@@ -388,8 +388,12 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 return await fetchTeleports({
                   sender: includeSentTxs ? address : undefined,
                   receiver: includeReceivedTxs ? address : undefined,
-                  parentChainProvider: getProvider(chainPair.parentChainId),
-                  childChainProvider: getProvider(chainPair.childChainId),
+                  parentChainProvider: getProviderForChainId(
+                    chainPair.parentChainId
+                  ),
+                  childChainProvider: getProviderForChainId(
+                    chainPair.childChainId
+                  ),
                   pageNumber: 0,
                   pageSize: 1000
                 })
@@ -399,8 +403,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               return await fetcherFn({
                 sender: includeSentTxs ? address : undefined,
                 receiver: includeReceivedTxs ? address : undefined,
-                l1Provider: getProvider(chainPair.parentChainId),
-                l2Provider: getProvider(chainPair.childChainId),
+                l1Provider: getProviderForChainId(chainPair.parentChainId),
+                l2Provider: getProviderForChainId(chainPair.childChainId),
                 pageNumber: 0,
                 pageSize: 1000
               })

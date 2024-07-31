@@ -8,9 +8,9 @@ import {
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnetV2,
   localL1Network as local,
   localL2Network as arbitrumLocal,
+  localL3Network as l3Local,
   holesky
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
@@ -20,10 +20,10 @@ import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 const wagmiOrbitChains = getOrbitChains().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 
 const chainList = isTestingEnvironment
@@ -37,11 +37,11 @@ const chainList = isTestingEnvironment
       arbitrumSepolia,
       holesky,
       // Orbit chains
-      stylusTestnetV2,
       ...wagmiOrbitChains,
       // add local environments during testing
       local,
       arbitrumLocal,
+      l3Local,
       // user-added custom chains
       ...customChains
     ]
@@ -52,7 +52,6 @@ const chainList = isTestingEnvironment
       sepolia,
       arbitrumSepolia,
       holesky,
-      stylusTestnetV2,
       ...wagmiOrbitChains,
       ...customChains
     ]

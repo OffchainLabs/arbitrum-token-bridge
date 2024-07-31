@@ -3,7 +3,6 @@ import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
-import { Provider } from '@ethersproject/providers'
 import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
