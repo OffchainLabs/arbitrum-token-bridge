@@ -1,6 +1,3 @@
-import * as Sentry from '@sentry/react'
-
-import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export enum ImportTokenModalStatus {

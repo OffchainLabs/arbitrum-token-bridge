@@ -38,7 +38,7 @@ declare global {
         query?: { [s: string]: string }
       }): typeof login
       logout(): typeof logout
-      openTransactionsPanel(): typeof openTransactionsPanel
+      openTransactionsPanel: typeof openTransactionsPanel
       resetCctpAllowance: typeof resetCctpAllowance
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth

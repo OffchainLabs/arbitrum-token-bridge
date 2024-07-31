@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import {
   EthDepositMessage,
   EthDepositMessageStatus,
@@ -14,14 +14,8 @@ import {
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import {
-  ChainId,
-  getL1BlockTime,
-  isNetwork,
-  rpcURLs
-} from '../../util/networks'
+import { ChainId, getL1BlockTime, isNetwork } from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
   getParentToChildMessageDataFromParentTxHash,
   fetchTeleporterDepositStatusData
