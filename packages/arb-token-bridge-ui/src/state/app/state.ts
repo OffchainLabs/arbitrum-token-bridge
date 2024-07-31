@@ -61,7 +61,6 @@ export interface MergedTransaction {
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   parentToChildMsgData?: ParentToChildMessageData
   l2ToL1MsgData?: L2ToL1MessageData
-  l2ToL3MsgData?: L2ToL3MessageData
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number
@@ -74,6 +73,12 @@ export interface MergedTransaction {
     receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
+}
+
+export interface TeleporterMergedTransaction extends MergedTransaction {
+  l1ToL2MsgData?: ParentToChildMessageData
+  l2ToL1MsgData?: L2ToL1MessageData
+  l2ToL3MsgData?: L2ToL3MessageData
 }
 
 export interface WarningTokens {
