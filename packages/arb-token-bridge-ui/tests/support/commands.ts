@@ -122,21 +122,34 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible').click()
 }
 
-export const openTransactionsPanel = () => {
-  cy.waitUntil(
-    () =>
-      cy.findByText(/Summary/i).then(() => {
-        // Open tx history panel
-        cy.findByRole('button', { name: /account header button/i })
-          .should('be.visible')
-          .click()
+export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
+  cy.log(`opening transactions panel on ${tab}`)
+  cy.findByRole('button', { name: /account header button/i })
+    .should('be.visible')
+    .click()
+  cy.findByRole('button', { name: /transactions/i })
+    .should('be.visible')
+    .click()
+  cy.findByRole('tab', {
+    name: `show ${tab} transactions`
+  })
+    .as('tab')
+    .should('be.visible')
+    .click()
 
-        cy.findByRole('button', { name: /transactions/i })
-          .should('be.visible')
-          .click()
-      }),
+  cy.get('@tab')
+    .should('have.attr', 'data-headlessui-state')
+    .and('equal', 'selected')
+
+  // Waiting for transactions to be fetched
+  return cy.waitUntil(
+    () =>
+      cy
+        .findByText(/Showing \d+ \w+ transactions made in/)
+        .should('be.visible'),
     {
-      timeout: 10000,
+      errorMsg: 'Failed to fetch transactions.',
+      timeout: 30_000,
       interval: 500
     }
   )
