@@ -375,6 +375,7 @@ Cypress.Commands.addAll({
   login,
   logout,
   openTransactionsPanel,
+  selectTransactionsPanelTab,
   resetCctpAllowance,
   fundUserUsdcTestnet,
   fundUserWalletEth,
