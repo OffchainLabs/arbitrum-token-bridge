@@ -6,7 +6,6 @@ import {
 } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
-import { TransactionReceipt } from '@ethersproject/providers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
@@ -71,7 +70,7 @@ const redeemTeleporterFirstLeg = async ({
     // get retryable ticket
     const l1l2Retryable = await getRetryableTicket({
       parentChainTxHash: tx.txId,
-      retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
+      retryableCreationId: tx.parentToChildMsgData?.retryableCreationTxID,
       parentChainProvider: getProviderForChainId(tx.parentChainId),
       childChainSigner: signer
     })
@@ -119,11 +118,11 @@ const redeemTeleporterSecondLeg = async ({
   // check if we require a redemption for the l2l3 retryable
   if (
     secondRetryableLegForTeleportRequiresRedeem(tx) &&
-    tx.l1ToL2MsgData?.childTxId &&
+    tx.parentToChildMsgData?.childTxId &&
     tx.l2ToL3MsgData
   ) {
     const l2L3Retryable = await getRetryableTicket({
-      parentChainTxHash: tx.l1ToL2MsgData.childTxId,
+      parentChainTxHash: tx.parentToChildMsgData.childTxId,
       retryableCreationId: tx.l2ToL3MsgData?.retryableCreationTxID,
       parentChainProvider: getProviderForChainId(tx.l2ToL3MsgData.l2ChainId),
       childChainSigner: signer
