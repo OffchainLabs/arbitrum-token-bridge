@@ -4,7 +4,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
@@ -22,6 +22,7 @@ import {
   defaultL3Network,
   registerLocalNetwork
 } from './src/util/networks'
+import { parseEther } from 'ethers/lib/utils.js'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -39,11 +40,11 @@ const l1WethGateway = isOrbitTest
   ? defaultL3Network.tokenBridge!.parentWethGateway
   : defaultL2Network.tokenBridge!.parentWethGateway
 
-const l1WethAddress = isOrbitTest
+let l1WethAddress = isOrbitTest
   ? defaultL3Network.tokenBridge!.parentWeth
   : defaultL2Network.tokenBridge!.parentWeth
 
-const l2WethAddress = isOrbitTest
+let l2WethAddress = isOrbitTest
   ? defaultL3Network.tokenBridge!.childWeth
   : defaultL2Network.tokenBridge!.childWeth
 
@@ -91,6 +92,14 @@ export default defineConfig({
       // Deploy ERC-20 token to L1
       const l1ERC20Token = await deployERC20ToL1()
 
+      // Approve custom fee token if not ETH
+      await approveCustomFeeToken(
+        localWallet.connect(parentProvider),
+        l1ERC20Token.address
+      )
+
+      await fundUserWalletNativeCurrency()
+
       // Deploy ERC-20 token to L2
       await deployERC20ToL2(l1ERC20Token.address)
 
@@ -123,6 +132,29 @@ export default defineConfig({
         })
       ])
 
+      if (
+        !isNonZeroAddress(l1WethAddress) ||
+        !isNonZeroAddress(l2WethAddress)
+      ) {
+        const wethAddresses = await deployWeth(parentProvider)
+        l1WethAddress = wethAddresses.l1WethAddress
+        l2WethAddress = wethAddresses.l2WethAddress
+      }
+
+      const bridger = await Erc20Bridger.fromProvider(childProvider)
+      const isCustomFeeToken = typeof bridger.nativeToken !== 'undefined'
+
+      const ethBridger = await EthBridger.fromProvider(childProvider)
+
+      await approveCustomFeeToken(
+        userWallet.connect(parentProvider),
+        bridger.nativeToken!
+      )
+
+      await ethBridger.approveGasToken({
+        parentSigner: userWallet.connect(parentProvider)
+      })
+
       // Wrap ETH to test ERC-20 transactions
       await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
 
@@ -149,6 +181,7 @@ export default defineConfig({
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
+      config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
@@ -163,6 +196,13 @@ export default defineConfig({
 
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
+
+      // const multiCaller = new MultiCaller(parentProvider, '0x6B1E93aE298B64e8f5b9f43B65Dd8F1eaA6DD4c3')
+      // const [tokenData] = await multiCaller.getTokenData([bridger.nativeToken!], {
+      //   balanceOf: { account: userWallet.address }
+      // })
+      // console.log({ tokenData })
+      // throw 'end'
 
       synpressPlugins(on, config)
       setupCypressTasks(on)
@@ -218,7 +258,9 @@ if (!process.env.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
 
-const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
+const localWallet = new Wallet(
+  utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
+)
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
 async function deployERC20ToL1() {
@@ -230,6 +272,68 @@ async function deployERC20ToL1() {
   await token.deployed()
 
   return token
+}
+
+async function approveCustomFeeToken(
+  signer: Wallet,
+  erc20ParentAddress: string,
+  amount?: BigNumber
+) {
+  const childEthBridger = await EthBridger.fromProvider(childProvider)
+  const childErc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  const isCustomFeeToken = typeof childEthBridger.nativeToken !== 'undefined'
+
+  if (!isCustomFeeToken) {
+    return
+  }
+
+  console.log('Approving custom fee token...')
+
+  await childErc20Bridger.approveGasToken({
+    parentSigner: signer,
+    erc20ParentAddress
+  })
+}
+
+function percentIncrease(num: BigNumber, increase: BigNumber): BigNumber {
+  return num.add(num.mul(increase).div(100))
+}
+
+async function estimateDepositGas({
+  parentErc20Address,
+  from,
+  amount
+}: {
+  parentErc20Address: string
+  from: string
+  amount: BigNumber
+}) {
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+
+  const { retryableData } = await erc20Bridger.getDepositRequest({
+    amount,
+    erc20ParentAddress: parentErc20Address,
+    parentProvider: parentProvider,
+    childProvider: childProvider,
+    from,
+    retryableGasOverrides: {
+      gasLimit: { percentIncrease: BigNumber.from(30) }
+    }
+  })
+
+  const destinationChainGasPrice = await childProvider.getGasPrice()
+
+  return BigNumber.from(
+    utils.formatEther(
+      retryableData.gasLimit
+        .mul(percentIncrease(destinationChainGasPrice, BigNumber.from(500)))
+        .add(retryableData.maxSubmissionCost)
+    )
+  )
+}
+
+function isNonZeroAddress(address: string) {
+  return address !== constants.AddressZero && utils.isAddress(address)
 }
 
 async function deployERC20ToL2(erc20L1Address: string) {
@@ -244,6 +348,37 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
+async function fundUserWalletNativeCurrency() {
+  const childEthBridger = await EthBridger.fromProvider(childProvider)
+  const isCustomFeeToken = typeof childEthBridger.nativeToken !== 'undefined'
+
+  if (!isCustomFeeToken) {
+    return
+  }
+
+  const address = await userWallet.getAddress()
+
+  const tokenContract = TestERC20__factory.connect(
+    childEthBridger.nativeToken,
+    localWallet.connect(parentProvider)
+  )
+
+  const userBalance = await tokenContract.balanceOf(address)
+  const shouldFund = userBalance.lt(parseEther('0.3'))
+
+  if (!shouldFund) {
+    console.log(
+      `User wallet has enough L3 native currency for testing, skip funding...`
+    )
+    return
+  }
+
+  console.log(`Funding native currency to user wallet on L2...`)
+
+  const tx = await tokenContract.transfer(address, parseEther('3'))
+  await tx.wait()
+}
+
 function getWethContract(
   provider: StaticJsonRpcProvider,
   tokenAddress: string
@@ -251,7 +386,41 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
+async function deployWeth(provider: StaticJsonRpcProvider) {
+  const wethFactory = new TestWETH9__factory(localWallet.connect(provider))
+  const weth = await wethFactory.deploy('Wrapped Ether', 'WETH')
+  await weth.deployed()
+
+  const bridger = await Erc20Bridger.fromProvider(childProvider)
+  const deployOnChildChain = await bridger.deposit({
+    amount: BigNumber.from(0),
+    erc20ParentAddress: weth.address,
+    parentSigner: localWallet.connect(parentProvider),
+    childProvider
+  })
+
+  await deployOnChildChain.wait()
+
+  const l2WethAddress = await getL2ERC20Address({
+    erc20L1Address: weth.address,
+    l1Provider: parentProvider,
+    l2Provider: childProvider
+  })
+
+  return {
+    l1WethAddress: weth.address,
+    l2WethAddress
+  }
+}
+
 async function wrapEth(networkType: NetworkType) {
+  const childEthBridger = await EthBridger.fromProvider(childProvider)
+  const isCustomFeeToken = typeof childEthBridger.nativeToken !== 'undefined'
+
+  if (isCustomFeeToken && networkType === 'childChain') {
+    return
+  }
+
   console.log(`Wrapping ETH: ${networkType}...`)
   const amount = networkType === 'parentChain' ? '0.2' : '0.1'
   const address = networkType === 'parentChain' ? l1WethAddress : l2WethAddress
@@ -287,6 +456,12 @@ async function generateTestTxForRedeemRetryable() {
     address: l1WethAddress
   }
   const amount = utils.parseUnits('0.001', erc20Token.decimals)
+
+  await approveCustomFeeToken(
+    userWallet.connect(parentProvider),
+    erc20Token.address
+  )
+
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
   const depositRequest = await erc20Bridger.getDepositRequest({
     parentProvider,

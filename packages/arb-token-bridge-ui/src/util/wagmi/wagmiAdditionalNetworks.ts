@@ -153,7 +153,14 @@ export const localL3Network: Chain = {
   id: ChainId.L3Local,
   name: 'L3 Local',
   network: 'l3-localhost',
-  nativeCurrency: ether,
+  nativeCurrency:
+    process.env.NEXT_PUBLIC_CUSTOM_FEE_TOKEN === 'true'
+      ? {
+          name: 'testnode',
+          symbol: 'TN',
+          decimals: 18
+        }
+      : ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.L3Local]!]

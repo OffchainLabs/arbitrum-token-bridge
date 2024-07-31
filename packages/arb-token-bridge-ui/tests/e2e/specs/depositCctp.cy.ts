@@ -79,7 +79,7 @@ describe('Deposit USDC through CCTP', () => {
       context('should show L1 and L2 chains, and USD correctly', () => {
         cy.findSourceChainButton('Sepolia')
         cy.findDestinationChainButton('Arbitrum Sepolia')
-        cy.findSelectTokenButton('ETH')
+        cy.findSelectTokenButton()
       })
 
       cy.searchAndSelectToken({

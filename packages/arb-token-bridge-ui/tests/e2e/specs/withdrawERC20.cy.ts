@@ -10,7 +10,7 @@ import {
   getL2NetworkConfig,
   getL1NetworkName,
   getL2NetworkName,
-  zeroToLessThanOneETH
+  getZeroToLessThanOneNativeCurrencyText
 } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {
@@ -57,7 +57,7 @@ describe('Withdraw ERC20 Token', () => {
       cy.findSourceChainButton(getL2NetworkName())
       cy.findDestinationChainButton(getL1NetworkName())
       cy.findMoveFundsButton().should('be.disabled')
-      cy.findSelectTokenButton('ETH')
+      cy.findSelectTokenButton()
     })
 
     it('should withdraw ERC-20 to the same address successfully', () => {
@@ -75,8 +75,11 @@ describe('Withdraw ERC20 Token', () => {
         cy.typeAmount(ERC20AmountToSend)
           //
           .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+            cy.findGasFeeSummary(getZeroToLessThanOneNativeCurrencyText())
+            cy.findGasFeeForChain(
+              getL2NetworkName(),
+              getZeroToLessThanOneNativeCurrencyText()
+            )
             cy.findGasFeeForChain(
               new RegExp(
                 `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
@@ -185,8 +188,11 @@ describe('Withdraw ERC20 Token', () => {
         cy.typeAmount(ERC20AmountToSend)
           //
           .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+            cy.findGasFeeSummary(getZeroToLessThanOneNativeCurrencyText())
+            cy.findGasFeeForChain(
+              getL2NetworkName(),
+              getZeroToLessThanOneNativeCurrencyText()
+            )
             cy.findGasFeeForChain(
               new RegExp(
                 `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,

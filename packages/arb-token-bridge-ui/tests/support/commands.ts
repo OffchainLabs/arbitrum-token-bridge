@@ -329,12 +329,12 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
 }
 
 export function findSelectTokenButton(
-  text: string
+  text?: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy
     .findByRole('button', { name: 'Select Token' })
     .should('be.visible')
-    .should('have.text', text)
+    .should('have.text', text ?? Cypress.env('NATIVE_TOKEN_SYMBOL'))
 }
 
 export function findClaimButton(

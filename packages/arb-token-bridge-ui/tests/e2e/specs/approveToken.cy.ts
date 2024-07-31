@@ -4,7 +4,8 @@ import {
   ERC20TokenSymbol,
   zeroToLessThanOneETH,
   getL1NetworkName,
-  getL2NetworkName
+  getL2NetworkName,
+  getZeroToLessThanOneNativeCurrencyText
 } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
@@ -29,7 +30,10 @@ describe('Approve token and deposit afterwards', () => {
         .then(() => {
           cy.findGasFeeSummary(zeroToLessThanOneETH)
           cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+          cy.findGasFeeForChain(
+            getL2NetworkName(),
+            getZeroToLessThanOneNativeCurrencyText()
+          )
         })
       cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
         errorMsg: 'move funds button is disabled (expected to be enabled)',

@@ -852,12 +852,17 @@ export function TransferPanel() {
         )
       }
 
+      console.log('transfer before')
+      console.log({ signer })
+
       // finally, call the transfer function
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
         destinationAddress
       })
+
+      console.log('transfer post')
 
       // transaction submitted callback
       onTxSubmit(transfer)

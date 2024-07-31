@@ -67,7 +67,7 @@ describe('Withdraw USDC through CCTP', () => {
       context('should show L1 and L2 chains, and ETH correctly', () => {
         cy.findSourceChainButton('Arbitrum Sepolia')
         cy.findDestinationChainButton('Sepolia')
-        cy.findSelectTokenButton('ETH')
+        cy.findSelectTokenButton()
       })
 
       context('should add USDC token', () => {

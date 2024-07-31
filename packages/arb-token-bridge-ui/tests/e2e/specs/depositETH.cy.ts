@@ -5,6 +5,7 @@
 import {
   getL1NetworkName,
   getL2NetworkName,
+  getZeroToLessThanOneNativeCurrencyText,
   zeroToLessThanOneETH
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -29,14 +30,17 @@ describe('Deposit ETH', () => {
       .then(() => {
         cy.findGasFeeSummary(zeroToLessThanOneETH)
         cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          getL2NetworkName(),
+          getZeroToLessThanOneNativeCurrencyText()
+        )
       })
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
       cy.findByText(depositTime).should('be.visible')
       cy.findByText(
         `${formatAmount(ETHAmountToDeposit, {
-          symbol: 'ETH'
+          symbol: Cypress.env('NATIVE_TOKEN_SYMBOL')
         })}`
       ).should('be.visible')
     })
