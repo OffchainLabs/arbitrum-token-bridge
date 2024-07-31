@@ -29,7 +29,7 @@ export function TransferCountdown({
     ? Math.max(remaining - durationWithoutFirstLeg, 0)
     : remaining
 
-  if (!tx.isWithdrawal) {
+  if (!tx.isWithdrawal && !tx.isCctp) {
     const depositStatus = tx.depositStatus
 
     if (

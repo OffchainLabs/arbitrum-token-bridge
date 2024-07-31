@@ -649,7 +649,7 @@ export function useRemainingTime(tx: MergedTransaction) {
       setIsConfirmed(true)
       setRemainingMinutes(0)
     } else {
-      setRemainingMinutes(canBeClaimedDate.diff(dayjs()))
+      setRemainingMinutes(canBeClaimedDate.diff(dayjs(), 'minutes'))
     }
   }, 2000)
 
