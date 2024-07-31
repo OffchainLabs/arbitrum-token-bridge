@@ -358,6 +358,9 @@ export function findTransactionInTransactionHistory({
     cy.get('@row').findByText(duration).should('be.visible')
   }
 
+  cy.get('@row')
+    .findByLabelText('Transaction details button')
+    .should('be.visible')
   return cy.get('@row')
 }
 
