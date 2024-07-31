@@ -32,8 +32,8 @@ const CONFIRMATION_BUFFER_MINUTES = 60
 const SECONDS_IN_MIN = 60
 
 type UseTransferDurationResult = {
-  approximateDuration: number
-  estimatedTimeLeft: number | null
+  approximateDurationInMinutes: number
+  estimatedMinutesLeft: number | null
 }
 
 /**
@@ -41,13 +41,14 @@ type UseTransferDurationResult = {
  *
  * @param {MergedTransaction} tx - The transaction object.
  * @returns {UseTransferDurationResult} - An object containing the total duration, first leg duration, and remaining time.
- * @property {number} approximateDuration - The total duration of the transfer in minutes.
- * @property {number | null} estimatedTimeLeft - The remaining time for the transfer in minutes, or null if calculating or unavailable.
+ * @property {number} approximateDurationInMinutes - The total duration of the transfer in minutes.
+ * @property {number | null} estimatedMinutesLeft - The remaining time for the transfer in minutes, or null if calculating or unavailable.
  */
 export const useTransferDuration = (
   tx: MergedTransaction
 ): UseTransferDurationResult => {
-  const { estimatedTimeLeft: estimatedTimeLeftCctp } = useRemainingTimeCctp(tx)
+  const { estimatedMinutesLeft: estimatedMinutesLeftCctp } =
+    useRemainingTimeCctp(tx)
 
   const { sourceChainId, destinationChainId, isCctp, childChainId } = tx
   const { isTestnet, isOrbitChain } = isNetwork(childChainId)
@@ -58,8 +59,9 @@ export const useTransferDuration = (
   if (isTeleport({ sourceChainId, destinationChainId })) {
     // Deposit only
     return {
-      approximateDuration: standardDepositDuration + orbitDepositDuration,
-      estimatedTimeLeft: getRemainingMinutes({
+      approximateDurationInMinutes:
+        standardDepositDuration + orbitDepositDuration,
+      estimatedMinutesLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: standardDepositDuration + orbitDepositDuration
       })
@@ -69,16 +71,16 @@ export const useTransferDuration = (
   if (isCctp) {
     const cctpTransferDuration = getCctpTransferDuration(isTestnet)
     return {
-      approximateDuration: cctpTransferDuration,
-      estimatedTimeLeft: estimatedTimeLeftCctp
+      approximateDurationInMinutes: cctpTransferDuration,
+      estimatedMinutesLeft: estimatedMinutesLeftCctp
     }
   }
 
   if (tx.isWithdrawal) {
     const withdrawalDuration = getWithdrawalDuration(tx)
     return {
-      approximateDuration: withdrawalDuration,
-      estimatedTimeLeft: getRemainingMinutes({
+      approximateDurationInMinutes: withdrawalDuration,
+      estimatedMinutesLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: withdrawalDuration
       })
@@ -87,8 +89,8 @@ export const useTransferDuration = (
 
   if (isOrbitChain) {
     return {
-      approximateDuration: orbitDepositDuration,
-      estimatedTimeLeft: getRemainingMinutes({
+      approximateDurationInMinutes: orbitDepositDuration,
+      estimatedMinutesLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: orbitDepositDuration
       })
@@ -96,8 +98,8 @@ export const useTransferDuration = (
   }
 
   return {
-    approximateDuration: standardDepositDuration,
-    estimatedTimeLeft: getRemainingMinutes({
+    approximateDurationInMinutes: standardDepositDuration,
+    estimatedMinutesLeft: getRemainingMinutes({
       createdAt: tx.createdAt,
       totalDuration: standardDepositDuration
     })

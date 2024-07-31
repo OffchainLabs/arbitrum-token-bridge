@@ -23,9 +23,9 @@ export function TransferCountdown({
   textAfterTime?: string
 }) {
   const { isTestnet } = isNetwork(tx.sourceChainId)
-  let { estimatedTimeLeft } = useTransferDuration(tx)
+  let { estimatedMinutesLeft } = useTransferDuration(tx)
 
-  if (estimatedTimeLeft === null) {
+  if (estimatedMinutesLeft === null) {
     return <span>Calculating...</span>
   }
 
@@ -36,7 +36,7 @@ export function TransferCountdown({
 
   // To get the first retryable only, we subtract the Orbit deposit time (second retryable)
   if (_isTeleport && firstLegOnly) {
-    estimatedTimeLeft -= getOrbitDepositDuration(isTestnet)
+    estimatedMinutesLeft -= getOrbitDepositDuration(isTestnet)
   }
 
   if (!tx.isWithdrawal && !tx.isCctp && !_isTeleport) {
@@ -54,7 +54,7 @@ export function TransferCountdown({
 
   return (
     <span className="whitespace-nowrap">
-      {minutesToHumanReadableTime(estimatedTimeLeft)} {textAfterTime}
+      {minutesToHumanReadableTime(estimatedMinutesLeft)} {textAfterTime}
     </span>
   )
 }

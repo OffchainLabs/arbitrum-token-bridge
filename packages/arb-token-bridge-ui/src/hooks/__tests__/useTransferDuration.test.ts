@@ -92,10 +92,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_MAINNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(14)
+    expect(result.current.estimatedMinutesLeft).toEqual(14)
   })
 
   it('gets standard deposit duration for an ongoing transfer on Mainnet', async () => {
@@ -109,10 +109,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_MAINNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(6)
+    expect(result.current.estimatedMinutesLeft).toEqual(6)
   })
 
   it('gets standard deposit duration for a new transfer on Testnet', async () => {
@@ -126,10 +126,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_TESTNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(9)
+    expect(result.current.estimatedMinutesLeft).toEqual(9)
   })
 
   it('gets standard deposit duration for an ongoing transfer on Testnet', async () => {
@@ -143,10 +143,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_TESTNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(7)
+    expect(result.current.estimatedMinutesLeft).toEqual(7)
   })
 
   it('gets cctp deposit duration for a new transfer on Mainnet', async () => {
@@ -160,7 +160,7 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       TRANSFER_TIME_MINUTES_CCTP_MAINNET
     )
   })
@@ -176,7 +176,7 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       TRANSFER_TIME_MINUTES_CCTP_TESTNET
     )
   })
@@ -192,10 +192,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_ORBIT_MAINNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(4)
+    expect(result.current.estimatedMinutesLeft).toEqual(4)
   })
 
   it('gets orbit deposit duration for an ongoing transfer on Mainnet', async () => {
@@ -209,10 +209,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_ORBIT_MAINNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(1)
+    expect(result.current.estimatedMinutesLeft).toEqual(1)
   })
 
   it('gets orbit deposit duration for a new transfer on Testnet', async () => {
@@ -226,10 +226,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_ORBIT_TESTNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(0)
+    expect(result.current.estimatedMinutesLeft).toEqual(0)
   })
 
   it('gets orbit deposit duration for an ongoing transfer on Testnet', async () => {
@@ -243,10 +243,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_ORBIT_TESTNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(0)
+    expect(result.current.estimatedMinutesLeft).toEqual(0)
   })
 
   it('gets teleport duration for a new transfer on Mainnet', async () => {
@@ -260,10 +260,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_MAINNET + DEPOSIT_TIME_MINUTES_ORBIT_MAINNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(19)
+    expect(result.current.estimatedMinutesLeft).toEqual(19)
   })
 
   it('gets teleport duration for an ongoing transfer on Mainnet', async () => {
@@ -277,10 +277,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_MAINNET + DEPOSIT_TIME_MINUTES_ORBIT_MAINNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(8)
+    expect(result.current.estimatedMinutesLeft).toEqual(8)
   })
 
   it('gets teleport duration for a new transfer on Testnet', async () => {
@@ -294,10 +294,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_TESTNET + DEPOSIT_TIME_MINUTES_ORBIT_TESTNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(10)
+    expect(result.current.estimatedMinutesLeft).toEqual(10)
   })
 
   it('gets teleport duration for an ongoing transfer on Testnet', async () => {
@@ -311,10 +311,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       DEPOSIT_TIME_MINUTES_TESTNET + DEPOSIT_TIME_MINUTES_ORBIT_TESTNET
     )
-    expect(result.current.estimatedTimeLeft).toEqual(6)
+    expect(result.current.estimatedMinutesLeft).toEqual(6)
   })
 
   // ========= WITHDRAWALS =========
@@ -330,10 +330,12 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toBeGreaterThan(
+    expect(result.current.approximateDurationInMinutes).toBeGreaterThan(
       6 * DAY_IN_MINUTES
     )
-    expect(result.current.estimatedTimeLeft).toBeGreaterThan(6 * DAY_IN_MINUTES)
+    expect(result.current.estimatedMinutesLeft).toBeGreaterThan(
+      6 * DAY_IN_MINUTES
+    )
   })
 
   it('gets standard withdrawal duration for an ongoing transfer on Mainnet', async () => {
@@ -347,11 +349,13 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toBeGreaterThan(
+    expect(result.current.approximateDurationInMinutes).toBeGreaterThan(
       6 * DAY_IN_MINUTES
     )
-    expect(result.current.estimatedTimeLeft).toBeGreaterThan(3 * DAY_IN_MINUTES)
-    expect(result.current.estimatedTimeLeft).toBeLessThan(4 * DAY_IN_MINUTES)
+    expect(result.current.estimatedMinutesLeft).toBeGreaterThan(
+      3 * DAY_IN_MINUTES
+    )
+    expect(result.current.estimatedMinutesLeft).toBeLessThan(4 * DAY_IN_MINUTES)
   })
 
   it('gets standard withdrawal duration for a new transfer on Testnet', async () => {
@@ -365,8 +369,10 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toBeGreaterThan(HOUR_IN_MINUTES)
-    expect(result.current.estimatedTimeLeft).toBeGreaterThan(HOUR_IN_MINUTES)
+    expect(result.current.approximateDurationInMinutes).toBeGreaterThan(
+      HOUR_IN_MINUTES
+    )
+    expect(result.current.estimatedMinutesLeft).toBeGreaterThan(HOUR_IN_MINUTES)
   })
 
   it('gets standard withdrawal duration for an ongoing transfer on Testnet', async () => {
@@ -380,11 +386,15 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toBeGreaterThan(HOUR_IN_MINUTES)
-    expect(result.current.estimatedTimeLeft).toBeGreaterThan(
+    expect(result.current.approximateDurationInMinutes).toBeGreaterThan(
+      HOUR_IN_MINUTES
+    )
+    expect(result.current.estimatedMinutesLeft).toBeGreaterThan(
       0.3 * HOUR_IN_MINUTES
     )
-    expect(result.current.estimatedTimeLeft).toBeLessThan(0.7 * HOUR_IN_MINUTES)
+    expect(result.current.estimatedMinutesLeft).toBeLessThan(
+      0.7 * HOUR_IN_MINUTES
+    )
   })
 
   it('gets cctp withdrawal duration for a new transfer on Mainnet', async () => {
@@ -398,7 +408,7 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       TRANSFER_TIME_MINUTES_CCTP_MAINNET
     )
   })
@@ -414,7 +424,7 @@ describe('useTransferDuration', () => {
       })
     )
 
-    expect(result.current.approximateDuration).toEqual(
+    expect(result.current.approximateDurationInMinutes).toEqual(
       TRANSFER_TIME_MINUTES_CCTP_TESTNET
     )
   })
