@@ -88,7 +88,7 @@ describe('Withdraw ETH', () => {
                 cy.confirmMetamaskTransaction()
 
                 cy.findTransactionInTransactionHistory({
-                  text: 'an hour',
+                  duration: 'an hour',
                   amount: ETHToWithdraw,
                   symbol: 'ETH'
                 })

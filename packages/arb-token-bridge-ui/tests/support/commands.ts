@@ -22,7 +22,6 @@ import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
-import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -122,6 +121,20 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible').click()
 }
 
+export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
+  cy.findByRole('tab', {
+    name: `show ${tab} transactions`
+  })
+    .as('tab')
+    .should('be.visible')
+    .click()
+
+  return cy
+    .get('@tab')
+    .should('have.attr', 'data-headlessui-state')
+    .and('equal', 'selected')
+}
+
 export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
   cy.log(`opening transactions panel on ${tab}`)
   cy.findByRole('button', { name: /account header button/i })
@@ -130,16 +143,8 @@ export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
   cy.findByRole('button', { name: /transactions/i })
     .should('be.visible')
     .click()
-  cy.findByRole('tab', {
-    name: `show ${tab} transactions`
-  })
-    .as('tab')
-    .should('be.visible')
-    .click()
 
-  cy.get('@tab')
-    .should('have.attr', 'data-headlessui-state')
-    .and('equal', 'selected')
+  cy.selectTransactionsPanelTab(tab)
 
   // Waiting for transactions to be fetched
   return cy.waitUntil(
@@ -339,25 +344,21 @@ export function findSelectTokenButton(
 }
 
 export function findTransactionInTransactionHistory({
-  text,
   symbol,
-  amount
+  amount,
+  duration
 }: {
-  text?: string
   symbol: string
   amount: number
+  duration?: string
 }) {
-  if (text) {
-    cy.findAllByText(text)[0].should('be.visible')
+  const rowId = `claimable-row-*-${amount}${symbol}`
+  cy.findByTestId(rowId).as('row')
+  if (duration) {
+    cy.get('@row').findByText(duration).should('be.visible')
   }
 
-  cy.findByText(
-    `${formatAmount(amount, {
-      symbol
-    })}`
-  ).should('be.visible')
-
-  return cy.findByLabelText('Transaction details button').should('be.visible')
+  return cy.get('@row')
 }
 
 export function findClaimButton(

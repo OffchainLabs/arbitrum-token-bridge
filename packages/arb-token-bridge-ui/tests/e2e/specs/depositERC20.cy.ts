@@ -78,7 +78,7 @@ describe('Deposit ERC20 Token', () => {
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
               cy.findTransactionInTransactionHistory({
-                text: '10 minutes',
+                duration: depositTime,
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
               })
@@ -118,7 +118,7 @@ describe('Deposit ERC20 Token', () => {
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
               cy.findTransactionInTransactionHistory({
-                text: '10 minutes',
+                duration: depositTime,
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
               })
@@ -148,14 +148,13 @@ describe('Deposit ERC20 Token', () => {
 
       context('deposit should complete successfully', () => {
         // switch to settled transactions
-        cy.findByLabelText('show settled transactions')
-          .should('be.visible')
-          .click()
+        cy.selectTransactionsPanelTab('settled')
 
         //wait for some time for tx to go through and find the new amount in settled transactions
         cy.waitUntil(
           () =>
             cy.findTransactionInTransactionHistory({
+              duration: depositTime,
               amount: ERC20AmountToSend,
               symbol: 'WETH'
             }),

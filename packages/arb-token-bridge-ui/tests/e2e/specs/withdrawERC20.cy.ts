@@ -120,7 +120,7 @@ describe('Withdraw ERC20 Token', () => {
             cy.confirmMetamaskTransaction()
 
             cy.findTransactionInTransactionHistory({
-              text: 'an hour',
+              duration: 'an hour',
               amount: ERC20AmountToSend,
               symbol: 'WETH'
             })
@@ -232,7 +232,7 @@ describe('Withdraw ERC20 Token', () => {
 
             cy.confirmMetamaskTransaction().then(() => {
               cy.findTransactionInTransactionHistory({
-                text: 'an hour',
+                duration: 'an hour',
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
               })

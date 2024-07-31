@@ -33,7 +33,7 @@ describe('Deposit ETH', () => {
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
       cy.findTransactionInTransactionHistory({
-        text: depositTime,
+        duration: depositTime,
         amount: ETHAmountToDeposit,
         symbol: 'ETH'
       })
