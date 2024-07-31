@@ -59,7 +59,7 @@ export interface MergedTransaction {
   tokenAddress: string | null
   isCctp?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  l1ToL2MsgData?: ParentToChildMessageData
+  parentToChildMsgData?: ParentToChildMessageData
   l2ToL1MsgData?: L2ToL1MessageData
   l2ToL3MsgData?: L2ToL3MessageData
   depositStatus?: DepositStatus
