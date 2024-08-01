@@ -8,7 +8,11 @@ import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
-import { DepositStatus, TeleporterMergedTransaction } from '../state/app/state'
+import {
+  DepositStatus,
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../state/app/state'
 import {
   firstRetryableLegRequiresRedeem,
   getChainIdForRedeemingRetryable,
@@ -23,7 +27,7 @@ import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
-import { L2ToL3MessageData } from './useTransactions'
+import { isTeleporterTransaction, L2ToL3MessageData } from './useTransactions'
 import { UseRedeemRetryableResult } from './useRedeemRetryable'
 import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
 
@@ -149,7 +153,7 @@ const redeemTeleporterSecondLeg = async ({
 }
 
 export function useRedeemTeleporter(
-  tx: TeleporterMergedTransaction,
+  tx: TeleporterMergedTransaction | MergedTransaction,
   address: Address | undefined
 ): UseRedeemRetryableResult {
   const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
@@ -168,7 +172,7 @@ export function useRedeemTeleporter(
       return
     }
 
-    if (!isTeleport(tx)) {
+    if (!isTeleport(tx) || !isTeleporterTransaction(tx)) {
       throw new Error(
         'The transaction being redeemed is not a LayerLeap transaction.'
       )

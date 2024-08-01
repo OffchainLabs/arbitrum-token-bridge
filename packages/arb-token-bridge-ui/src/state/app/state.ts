@@ -77,8 +77,7 @@ export interface MergedTransaction {
 
 export interface TeleporterMergedTransaction extends MergedTransaction {
   l1ToL2MsgData?: ParentToChildMessageData
-  l2ToL1MsgData?: L2ToL1MessageData
-  l2ToL3MsgData?: L2ToL3MessageData
+  l2ToL3MsgData: L2ToL3MessageData
 }
 
 export interface WarningTokens {

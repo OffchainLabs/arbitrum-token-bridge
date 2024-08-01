@@ -332,7 +332,7 @@ export async function fetchTeleporterDepositStatusData({
   status?: TxnStatus
   timestampResolved?: string
   l1ToL2MsgData?: ParentToChildMessageData
-  l2ToL3MsgData?: L2ToL3MessageData
+  l2ToL3MsgData: L2ToL3MessageData
 }> {
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
   const sourceChainProvider = getProviderForChainId(sourceChainId)

@@ -174,9 +174,9 @@ export const transformDeposit = (
       ...transaction,
       l2ToL3MsgData: tx.l2ToL3MsgData
     }
-  } else {
-    return transaction
   }
+
+  return transaction
 }
 
 export const transformWithdrawal = (
@@ -301,7 +301,7 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
-  if (isTeleport(tx)) {
+  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
     return (
       firstRetryableLegRequiresRedeem(tx) ||
       secondRetryableLegForTeleportRequiresRedeem(tx)
