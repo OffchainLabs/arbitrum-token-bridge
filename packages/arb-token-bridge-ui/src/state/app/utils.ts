@@ -13,7 +13,11 @@ import {
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
-import { TeleporterTransaction, Transaction } from '../../hooks/useTransactions'
+import {
+  isTeleporterTransaction,
+  TeleporterTransaction,
+  Transaction
+} from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
@@ -165,7 +169,7 @@ export const transformDeposit = (
     sourceChainId: Number(tx.l1NetworkID),
     destinationChainId: Number(tx.l2NetworkID)
   }
-  if (isTeleport(tx)) {
+  if (isTeleporterTransaction(tx)) {
     return {
       ...transaction,
       l2ToL3MsgData: tx.l2ToL3MsgData

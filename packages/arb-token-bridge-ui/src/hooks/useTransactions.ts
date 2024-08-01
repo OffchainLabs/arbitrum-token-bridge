@@ -132,6 +132,12 @@ export interface DepositTransaction extends Transaction {
   type: 'deposit' | 'deposit-l1'
 }
 
+export function isTeleporterTransaction(
+  tx: Transaction | MergedTransaction
+): tx is TeleporterTransaction | TeleporterMergedTransaction {
+  return (tx as TeleporterTransaction).l2ToL3MsgData !== undefined
+}
+
 function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)

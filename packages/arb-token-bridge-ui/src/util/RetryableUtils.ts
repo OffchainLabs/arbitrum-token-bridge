@@ -12,6 +12,7 @@ import {
   MergedTransaction,
   TeleporterMergedTransaction
 } from '../state/app/state'
+import { isTeleporterTransaction } from '../hooks/useTransactions'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
@@ -139,7 +140,11 @@ export const secondRetryableLegForTeleportRequiresRedeem = (
 
 export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
   // which chain id needs to be connected to, to redeem the retryable ticket
-  if (isTeleport(tx) && firstRetryableLegRequiresRedeem(tx)) {
+  if (
+    isTeleport(tx) &&
+    firstRetryableLegRequiresRedeem(tx) &&
+    isTeleporterTransaction(tx)
+  ) {
     // in teleport, unless it's the final retryable being redeemed, we need to connect to the l2 chain
     if (!tx.l2ToL3MsgData) {
       throw Error(
