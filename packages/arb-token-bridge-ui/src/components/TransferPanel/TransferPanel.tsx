@@ -101,7 +101,7 @@ export function TransferPanel() {
     useState(false)
 
   const {
-    app: { connectionState, selectedToken, warningTokens }
+    app: { selectedToken, warningTokens }
   } = useAppState()
   const {
     token: { updateTokenData }

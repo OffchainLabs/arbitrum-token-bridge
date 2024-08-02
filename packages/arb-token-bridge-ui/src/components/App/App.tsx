@@ -37,6 +37,8 @@ import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
+import { useWarningTokensList } from '../../hooks/useWarningTokensList'
 
 declare global {
   interface Window {
@@ -94,6 +96,10 @@ function AppContent() {
   const {
     app: { selectedToken }
   } = useAppState()
+  // We want to be sure this fetch is completed by the time we open the USDC modals
+  useCCTPIsBlocked()
+
+  useWarningTokensList()
 
   const {
     token: { updateTokenData }
