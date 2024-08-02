@@ -15,7 +15,8 @@ import {
   ParentToChildMessageData,
   L2ToL3MessageData,
   Transaction,
-  TxnStatus
+  TxnStatus,
+  TeleporterTransaction
 } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
@@ -33,7 +34,7 @@ export const updateAdditionalDepositData = async ({
   depositTx: Transaction
   l1Provider: Provider
   l2Provider: Provider
-}): Promise<Transaction> => {
+}): Promise<Transaction | TeleporterTransaction> => {
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
 
@@ -331,7 +332,7 @@ export async function fetchTeleporterDepositStatusData({
   status?: TxnStatus
   timestampResolved?: string
   l1ToL2MsgData?: ParentToChildMessageData
-  l2ToL3MsgData?: L2ToL3MessageData
+  l2ToL3MsgData: L2ToL3MessageData
 }> {
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
   const sourceChainProvider = getProviderForChainId(sourceChainId)
