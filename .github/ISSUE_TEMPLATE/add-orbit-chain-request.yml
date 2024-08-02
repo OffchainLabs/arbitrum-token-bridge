@@ -6,7 +6,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please provide all the necessary config information. You can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
+        # Add an Orbit Chain to the Bridge UI
+  - type: markdown
+    attributes:
+      value: |
+        This form is used to submit a request to add an Orbit chain to the [Arbitrum bridge](https://bridge.arbitrum.io/). Please provide all the necessary config information. You can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
   - type: input
     id: chain-id
     attributes:
@@ -62,11 +66,15 @@ body:
       placeholder: ex. 42161
     validations:
       required: true
-  
+
   - type: markdown
     attributes:
       value: |
-        Native token information - only fill this if you are using a native token other than ETH
+        ## Native token information
+  - type: markdown
+    attributes:
+      value: |
+        Fill out this section if you are using a native token other than ETH. If you are using ETH as your gas token you can leave this blank.
   - type: input
     id: native-token-address
     attributes:
@@ -99,7 +107,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Chain config and contract addresses
+        # Chain Configuration and Core Addresses
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this section with your chain configuration details and contract addresses. As a reminder, you can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
   - type: input
     id: confirmPeriodBlocks
     attributes:
@@ -111,7 +123,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Rollup contract addresses
+        ## Rollup contract addresses
+  - type: markdown
+    attributes:
+      value: |
+        You can find this information under the `"coreContracts" : {...}` key.
   - type: input
     id: bridge
     attributes:
@@ -146,7 +162,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Token bridge contract addresses (parent chain)
+        ## Parent chain token bridge contract addresses
+  - type: markdown
+    attributes:
+      value: |
+        You can find this information under the `"l2Contracts" : {...}` key.
   - type: input
     id: parent-customGateway
     attributes:
@@ -193,7 +213,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Token bridge contract addresses (Orbit chain)
+        ## Orbit chain token bridge contract addresses 
+  - type: markdown
+    attributes:
+      value: |
+        You can find this information under the `"l3Contracts" : {...}` key.
   - type: input
     id: child-customGateway
     attributes:
