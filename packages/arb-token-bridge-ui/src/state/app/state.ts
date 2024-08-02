@@ -10,7 +10,6 @@ import {
   L2ToL3MessageData,
   TxnType
 } from '../../hooks/useTransactions'
-import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
 
@@ -88,7 +87,6 @@ export interface WarningTokens {
 
 export type AppState = {
   warningTokens: WarningTokens
-  connectionState: number
   selectedToken: ERC20BridgeToken | null
   verifying: WhiteListState
   sourceChainId: number | null
@@ -97,7 +95,6 @@ export type AppState = {
 
 const defaultState: AppState = {
   warningTokens: {} as WarningTokens,
-  connectionState: ConnectionState.LOADING,
   sourceChainId: null,
   destinationChainId: null,
   verifying: WhiteListState.ALLOWED,

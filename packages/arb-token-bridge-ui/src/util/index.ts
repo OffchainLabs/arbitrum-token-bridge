@@ -1,10 +1,3 @@
-export enum ConnectionState {
-  LOADING,
-  L1_CONNECTED,
-  L2_CONNECTED,
-  NETWORK_ERROR
-}
-
 export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {
     return `https://ipfs.io/ipfs/${url.substring(7)}`
