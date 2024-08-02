@@ -8,7 +8,11 @@ import { Provider } from '@ethersproject/abstract-provider'
 import dayjs from 'dayjs'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
-import { MergedTransaction } from '../state/app/state'
+import {
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../state/app/state'
+import { isTeleporterTransaction } from '../hooks/useTransactions'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
@@ -105,25 +109,31 @@ export const getRetryableTicketExpiration = async ({
 }
 
 // utilities for teleporter transactions
-export const l1L2RetryableRequiresRedeem = (tx: MergedTransaction) => {
+export const l1L2RetryableRequiresRedeem = (
+  tx: TeleporterMergedTransaction
+) => {
   return (
     tx.parentToChildMsgData?.status ===
     ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )
 }
 
-export const l2ForwarderRetryableRequiresRedeem = (tx: MergedTransaction) => {
+export const l2ForwarderRetryableRequiresRedeem = (
+  tx: TeleporterMergedTransaction
+) => {
   return typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID !== 'undefined'
 }
 
-export const firstRetryableLegRequiresRedeem = (tx: MergedTransaction) => {
+export const firstRetryableLegRequiresRedeem = (
+  tx: TeleporterMergedTransaction
+) => {
   return (
     l1L2RetryableRequiresRedeem(tx) || l2ForwarderRetryableRequiresRedeem(tx)
   )
 }
 
 export const secondRetryableLegForTeleportRequiresRedeem = (
-  tx: MergedTransaction
+  tx: TeleporterMergedTransaction
 ) => {
   return (
     !l2ForwarderRetryableRequiresRedeem(tx) &&
@@ -134,7 +144,11 @@ export const secondRetryableLegForTeleportRequiresRedeem = (
 
 export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
   // which chain id needs to be connected to, to redeem the retryable ticket
-  if (isTeleport(tx) && firstRetryableLegRequiresRedeem(tx)) {
+  if (
+    isTeleport(tx) &&
+    isTeleporterTransaction(tx) &&
+    firstRetryableLegRequiresRedeem(tx)
+  ) {
     // in teleport, unless it's the final retryable being redeemed, we need to connect to the l2 chain
     if (!tx.l2ToL3MsgData) {
       throw Error(
