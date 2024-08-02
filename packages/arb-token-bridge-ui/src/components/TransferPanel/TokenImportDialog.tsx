@@ -4,7 +4,7 @@ import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
-import { useActions, useAppState } from '../../state'
+import { useActions } from '../../state'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
