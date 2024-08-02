@@ -371,7 +371,7 @@ export function registerLocalNetwork() {
   }
 }
 
-function isTestnet(chainId: ChainId) {
+function isTestnetChain(chainId: ChainId) {
   const l1Network = l1Networks[chainId]
   if (l1Network) {
     return l1Network.isTestnet
@@ -421,7 +421,7 @@ export function isNetwork(chainId: ChainId) {
     // Orbit chains
     isOrbitChain,
     // General
-    isTestnet: isTestnet(chainId),
+    isTestnet: isTestnetChain(chainId),
     // Core Chain is a chain category for the UI
     isCoreChain
   }
