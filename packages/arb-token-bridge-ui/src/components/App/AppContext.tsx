@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useReducer,
-  Dispatch,
-  useCallback
-} from 'react'
+import { createContext, useContext, useReducer, Dispatch } from 'react'
 
 export enum TransactionHistoryTab {
   DEPOSITS = 0,

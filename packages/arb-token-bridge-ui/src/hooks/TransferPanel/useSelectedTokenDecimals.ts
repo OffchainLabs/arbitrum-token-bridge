@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { useAppState } from '../../state'
 import { useNativeCurrency } from '../useNativeCurrency'
 import { useNetworksRelationship } from '../useNetworksRelationship'
