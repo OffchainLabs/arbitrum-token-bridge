@@ -121,11 +121,10 @@ describe('Deposit ERC20 Token', () => {
                 duration: depositTime,
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
+              }).within(() => {
+                cy.openTransactionDetails()
+                cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
               })
-
-              cy.checkForCustomDestinationAddressInTransactionDetail(
-                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-              )
             })
           })
       })

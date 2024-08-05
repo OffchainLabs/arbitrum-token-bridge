@@ -134,11 +134,10 @@ describe('Withdraw USDC through CCTP', () => {
                 duration: 'a minute',
                 amount: USDCAmountToSend,
                 symbol: 'USDC'
+              }).within(() => {
+                cy.openTransactionDetails()
+                cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
               })
-
-              cy.checkForCustomDestinationAddressInTransactionDetail(
-                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-              )
             })
           }
         )

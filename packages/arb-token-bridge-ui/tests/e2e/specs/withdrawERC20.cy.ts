@@ -235,11 +235,10 @@ describe('Withdraw ERC20 Token', () => {
                 duration: 'an hour',
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
+              }).within(() => {
+                cy.openTransactionDetails()
+                cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
               })
-
-              cy.checkForCustomDestinationAddressInTransactionDetail(
-                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-              )
 
               // the balance on the source chain should not be the same as before
               cy.findByLabelText('WETH balance amount on childChain')
