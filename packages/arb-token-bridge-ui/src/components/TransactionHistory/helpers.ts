@@ -346,7 +346,6 @@ export async function getUpdatedTokenDeposit(
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })
-  const _parentToChildMsg = parentToChildMsg as ParentToChildMessageReader
 
   if (!parentToChildMsg) {
     const receipt = await getTxReceipt(tx)
@@ -360,6 +359,7 @@ export async function getUpdatedTokenDeposit(
     return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
   }
 
+  const _parentToChildMsg = parentToChildMsg as ParentToChildMessageReader
   const res = await _parentToChildMsg.getSuccessfulRedeem()
 
   const childTxId = (() => {
