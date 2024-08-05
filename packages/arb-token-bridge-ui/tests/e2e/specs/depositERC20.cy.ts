@@ -117,12 +117,15 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: depositTime,
+              const txData = {
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
+              }
+              cy.findTransactionInTransactionHistory({
+                duration: depositTime,
+                ...txData
               })
-              cy.openTransactionDetails()
+              cy.openTransactionDetails(txData)
               cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 
               cy.findByLabelText('Close transaction details popup').click()
@@ -149,12 +152,15 @@ describe('Deposit ERC20 Token', () => {
           }
         ).then(() => {
           // open the tx details popup
-          cy.findTransactionInTransactionHistory({
-            duration: 'a few seconds ago',
+          const txData = {
             amount: ERC20AmountToSend,
             symbol: 'WETH'
+          }
+          cy.findTransactionInTransactionHistory({
+            duration: 'a few seconds ago',
+            ...txData
           })
-          cy.openTransactionDetails()
+          cy.openTransactionDetails(txData)
           cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
           cy.findByLabelText('Close transaction details popup').click()
         })

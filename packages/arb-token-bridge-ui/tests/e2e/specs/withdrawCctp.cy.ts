@@ -130,12 +130,15 @@ describe('Withdraw USDC through CCTP', () => {
             // eslint-disable-next-line
             cy.wait(40_000)
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: 'a minute',
+              const txData = {
                 amount: USDCAmountToSend,
                 symbol: 'USDC'
+              }
+              cy.findTransactionInTransactionHistory({
+                duration: 'a minute',
+                ...txData
               })
-              cy.openTransactionDetails()
+              cy.openTransactionDetails(txData)
               cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
             })
           }

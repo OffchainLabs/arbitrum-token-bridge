@@ -344,10 +344,16 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
-export function openTransactionDetails(): Cypress.Chainable<
-  JQuery<HTMLElement>
-> {
-  cy.findByLabelText('Transaction details button').click()
+export function openTransactionDetails({
+  amount,
+  symbol
+}: {
+  amount: number
+  symbol: string
+}): Cypress.Chainable<JQuery<HTMLElement>> {
+  cy.findTransactionInTransactionHistory({ amount, symbol }).within(() => {
+    cy.findByLabelText('Transaction details button').click()
+  })
   return cy.findByText('Transaction details').should('be.visible')
 }
 

@@ -138,12 +138,12 @@ describe('Deposit USDC through CCTP', () => {
             // eslint-disable-next-line
             cy.wait(40_000)
             cy.confirmMetamaskTransaction().then(() => {
+              const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
               cy.findTransactionInTransactionHistory({
                 duration: 'a minute',
-                amount: USDCAmountToSend,
-                symbol: 'USDC'
+                ...txData
               })
-              cy.openTransactionDetails()
+              cy.openTransactionDetails(txData)
               cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
             })
           }

@@ -231,12 +231,15 @@ describe('Withdraw ERC20 Token', () => {
               .click()
 
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: 'an hour',
+              const txData = {
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
+              }
+              cy.findTransactionInTransactionHistory({
+                duration: 'an hour',
+                ...txData
               })
-              cy.openTransactionDetails()
+              cy.openTransactionDetails(txData)
               cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 
               // close popup
