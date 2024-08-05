@@ -28,7 +28,7 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import { isTeleporterTransaction } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../hooks/useTransactions'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -637,7 +637,7 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
 
-  if (isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     return tx.l2ToL3MsgData?.l3TxID
   }
 

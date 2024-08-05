@@ -26,7 +26,7 @@ import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
-import { isTeleporterTransaction, L2ToL3MessageData } from './useTransactions'
+import { isTeleportTx, L2ToL3MessageData } from './useTransactions'
 import { UseRedeemRetryableResult } from './useRedeemRetryable'
 import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
 
@@ -171,7 +171,7 @@ export function useRedeemTeleporter(
       return
     }
 
-    if (!isTeleporterTransaction(tx)) {
+    if (!isTeleportTx(tx)) {
       throw new Error(
         'The transaction being redeemed is not a LayerLeap transaction.'
       )

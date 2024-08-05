@@ -27,7 +27,7 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
-import { isTeleporterTransaction } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../hooks/useTransactions'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
@@ -42,7 +42,7 @@ function getTransferDurationText(tx: MergedTransaction) {
   }
 
   if (!tx.isWithdrawal) {
-    if (isOrbitChain && !isTeleporterTransaction(tx)) {
+    if (isOrbitChain && !isTeleportTx(tx)) {
       return 'a minute'
     }
     return isTestnet ? '10 minutes' : '15 minutes'
@@ -142,7 +142,7 @@ const LastStepEndItem = ({
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
-  const isTeleportTx = isTeleporterTransaction(tx)
+  const isTeleportTx = isTeleportTx(tx)
 
   if (destinationNetworkTxId) {
     return (
@@ -204,7 +204,7 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
-  const isTeleportTx = isTeleporterTransaction(tx)
+  const isTeleportTx = isTeleportTx(tx)
 
   const isDestinationChainFailure = isTeleportTx
     ? secondRetryableLegForTeleportRequiresRedeem(tx)
@@ -249,7 +249,7 @@ export const TransactionsTableDetailsSteps = ({
       />
 
       {/* Pending transfer showing the remaining time */}
-      {!isTeleporterTransaction(tx) && (
+      {!isTeleportTx(tx) && (
         <Step
           pending={isTxPending(tx)}
           done={!isTxPending(tx) && !isSourceChainDepositFailure}
@@ -271,7 +271,7 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
-      {isTeleporterTransaction(tx) && (
+      {isTeleportTx(tx) && (
         <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
       )}
 

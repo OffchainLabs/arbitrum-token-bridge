@@ -17,7 +17,7 @@ import {
   Transaction,
   TxnStatus,
   TeleporterTransaction,
-  isTeleporterTransaction
+  isTeleportTx
 } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
@@ -67,7 +67,7 @@ export const updateAdditionalDepositData = async ({
       isClassic
     })
 
-  if (isTeleporterTransaction(depositTx)) {
+  if (isTeleportTx(depositTx)) {
     const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
       await fetchTeleporterDepositStatusData({
         ...depositTx,

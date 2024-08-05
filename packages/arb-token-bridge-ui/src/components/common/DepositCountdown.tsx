@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { isNetwork } from '../../util/networks'
-import { isTeleporterTransaction } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../hooks/useTransactions'
 
 function getMinutesRemainingText(minutesRemaining: number): string {
   if (minutesRemaining <= 1) {
@@ -23,7 +23,7 @@ function getEstimatedDepositDurationInMinutes(
 
   const { isEthereumMainnetOrTestnet, isTestnet } = isNetwork(parentChainId)
 
-  if (isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     if (firstTxOnly) {
       return isTestnet ? 10 : 15
     }

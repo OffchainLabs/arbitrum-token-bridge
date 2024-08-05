@@ -51,12 +51,8 @@ export class BridgeTransferStarterFactory {
       destinationChainErc20Address: props.destinationChainErc20Address
     }
 
-    const {
-      isDeposit,
-      isNativeCurrencyTransfer,
-      isSupported,
-      isValidTeleportChainPair
-    } = getBridgeTransferProperties(props)
+    const { isDeposit, isNativeCurrencyTransfer, isSupported, isTeleport } =
+      getBridgeTransferProperties(props)
 
     if (!isSupported) {
       throw new Error('Unsupported transfer detected')
@@ -69,7 +65,7 @@ export class BridgeTransferStarterFactory {
       return cacheValue
     }
 
-    if (isValidTeleportChainPair) {
+    if (isTeleport) {
       if (isNativeCurrencyTransfer) {
         return withCache(cacheKey, new EthTeleportStarter(initProps))
       }

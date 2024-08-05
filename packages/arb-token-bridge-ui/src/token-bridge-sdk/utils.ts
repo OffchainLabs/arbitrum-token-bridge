@@ -48,7 +48,7 @@ export const getBridgeTransferProperties = (
     (isSourceChainOrbit && isDestinationChainEthereumMainnetOrTestnet) || // l2 orbit chains to l1
     (isSourceChainOrbit && isDestinationChainArbitrum) // l3 orbit chains to l1
 
-  const isValidTeleportChainPair = isTeleportTransfer({
+  const isTeleport = isTeleportTransfer({
     sourceChainId,
     destinationChainId
   })
@@ -60,8 +60,8 @@ export const getBridgeTransferProperties = (
     isDeposit,
     isWithdrawal,
     isNativeCurrencyTransfer,
-    isValidTeleportChainPair,
-    isSupported: isDeposit || isWithdrawal || isValidTeleportChainPair
+    isTeleport,
+    isSupported: isDeposit || isWithdrawal || isTeleport
   }
 }
 

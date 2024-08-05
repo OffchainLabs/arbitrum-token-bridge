@@ -17,7 +17,7 @@ import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
-import { isTeleporterTransaction, Transaction } from './useTransactions'
+import { isTeleportTx, Transaction } from './useTransactions'
 import { MergedTransaction } from '../state/app/state'
 import {
   getStandardizedTimestamp,
@@ -716,7 +716,7 @@ export const useTransactionHistory = (
         return
       }
 
-      if (isTeleporterTransaction(tx)) {
+      if (isTeleportTx(tx)) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
         updateCachedTransaction(updatedTeleportTransfer)
         return
