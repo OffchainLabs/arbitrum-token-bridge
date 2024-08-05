@@ -17,7 +17,8 @@ import {
   findSelectTokenButton,
   findTransactionInTransactionHistory,
   findClaimButton,
-  selectTransactionsPanelTab
+  selectTransactionsPanelTab,
+  claimCctp
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -58,6 +59,7 @@ declare global {
       findSelectTokenButton: typeof findSelectTokenButton
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      claimCctp: typeof claimCctp
     }
   }
 }

@@ -330,6 +330,15 @@ export function findClaimButton(
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
+export function claimCctp(amount: string) {
+  cy.findClaimButton(amount).click()
+  cy.allowMetamaskToSwitchNetwork()
+  cy.findClaimButton(amount).click()
+  cy.confirmMetamaskTransaction()
+
+  cy.findByText('Looks like no transactions here yet!').should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -347,5 +356,6 @@ Cypress.Commands.addAll({
   findMoveFundsButton,
   findSelectTokenButton,
   findTransactionInTransactionHistory,
-  findClaimButton
+  findClaimButton,
+  claimCctp
 })
