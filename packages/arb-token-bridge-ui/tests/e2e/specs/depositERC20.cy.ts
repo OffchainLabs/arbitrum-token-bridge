@@ -73,17 +73,13 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should deposit successfully', () => {
-        cy.findMoveFundsButton()
-          .click()
-          .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: depositTime,
-                amount: ERC20AmountToSend,
-                symbol: 'WETH'
-              })
-            })
-          })
+        cy.findMoveFundsButton().click()
+        cy.confirmMetamaskTransaction()
+        cy.findTransactionInTransactionHistory({
+          duration: depositTime,
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        })
       })
     })
 
