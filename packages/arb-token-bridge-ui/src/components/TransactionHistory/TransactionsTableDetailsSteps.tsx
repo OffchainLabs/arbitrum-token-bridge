@@ -31,6 +31,7 @@ import {
   minutesToHumanReadableTime,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
+import { isTeleporterTransaction } from '../../hooks/useTransactions'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
   return tx.isCctp || tx.isWithdrawal
@@ -118,7 +119,7 @@ const LastStepEndItem = ({
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
-  const isTeleportTx = isTeleport(tx)
+  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
 
   if (destinationNetworkTxId) {
     return (
@@ -180,7 +181,7 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
-  const isTeleportTx = isTeleport(tx)
+  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
 
   const isDestinationChainFailure = isTeleportTx
     ? secondRetryableLegForTeleportRequiresRedeem(tx)
@@ -240,7 +241,7 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
-      {isTeleport(tx) && (
+      {isTeleport(tx) && isTeleporterTransaction(tx) && (
         <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
       )}
 

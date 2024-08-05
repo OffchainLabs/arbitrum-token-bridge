@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useClaimCctp } from '../../state/cctpState'
+import {
+  DepositStatus,
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../../state/app/state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getNetworkName } from '../../util/networks'
@@ -26,7 +30,7 @@ export function TransactionsTableRowAction({
   type,
   address
 }: {
-  tx: MergedTransaction
+  tx: MergedTransaction | TeleporterMergedTransaction
   isError: boolean
   type: 'deposits' | 'withdrawals'
   address: Address | undefined

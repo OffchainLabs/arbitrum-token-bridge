@@ -3,6 +3,10 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
+import {
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../state/app/state'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -77,7 +81,7 @@ export interface L2ToL3MessageData {
   l2ChainId: number
 }
 
-export type L2ToL1MessageData = {
+export type ChildToParentMessageData = {
   uniqueId: BigNumber
 }
 
@@ -97,7 +101,7 @@ type TransactionBase = {
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   parentToChildMsgData?: ParentToChildMessageData
-  l2ToL1MsgData?: L2ToL1MessageData
+  childToParentMsgData?: ChildToParentMessageData
   isClassic?: boolean
 }
 
@@ -108,7 +112,10 @@ export interface Transaction extends TransactionBase {
   parentChainId: number
   childChainId: number
   nonce?: number
-  l2ToL3MsgData?: L2ToL3MessageData
+}
+
+export interface TeleporterTransaction extends Transaction {
+  l2ToL3MsgData: L2ToL3MessageData
 }
 
 export interface NewTransaction extends TransactionBase {
@@ -123,6 +130,12 @@ export interface FailedTransaction extends TransactionBase {
 export interface DepositTransaction extends Transaction {
   parentToChildMsgData: ParentToChildMessageData
   type: 'deposit' | 'deposit-l1'
+}
+
+export function isTeleporterTransaction(
+  tx: Transaction | MergedTransaction
+): tx is TeleporterTransaction | TeleporterMergedTransaction {
+  return (tx as TeleporterTransaction).l2ToL3MsgData !== undefined
 }
 
 function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
