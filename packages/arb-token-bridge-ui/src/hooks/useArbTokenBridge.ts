@@ -215,12 +215,6 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
         l2Address = lowercasedErc20L1orL2Address
       } else {
         // looks like l1 address was provided
-        // l1Address = lowercasedErc20L1orL2Address
-        // l2Address = await getL2ERC20Address({
-        //   erc20L1Address: l1Address,
-        //   l1Provider: parentChainProvider,
-        //   l2Provider: childChainProvider
-        // })
         l1Address = lowercasedErc20L1orL2Address
 
         // while deriving the child-chain address, it can be a teleport transfer too, in that case derive L3 address from L1 address
