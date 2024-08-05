@@ -5,7 +5,7 @@ import {
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
-import { MergedTransaction } from '../../state/app/state'
+import { TeleporterMergedTransaction } from '../../state/app/state'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
   firstRetryableLegRequiresRedeem,
@@ -25,7 +25,7 @@ import { DepositCountdown } from '../common/DepositCountdown'
 const TeleportMiddleStepFailureExplanationNote = ({
   tx
 }: {
-  tx: MergedTransaction
+  tx: TeleporterMergedTransaction
 }) => {
   return (
     <div className="mt-2">
@@ -70,12 +70,12 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   tx,
   address
 }: {
-  tx: MergedTransaction
+  tx: TeleporterMergedTransaction
   address: Address | undefined
 }) => {
   const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
-  const l2TxID = tx.l1ToL2MsgData?.l2TxID
+  const l2TxID = tx.l1ToL2MsgData?.childTxId
   const isFirstRetryableLegSucceeded =
     typeof l2TxID !== 'undefined' &&
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'
@@ -172,7 +172,7 @@ const FirstRetryableLegLabel = ({
   l2ForwarderRequiresRedeem,
   l2ChainId
 }: {
-  tx: MergedTransaction
+  tx: TeleporterMergedTransaction
   isFirstRetryableLegFailed: boolean
   l2ForwarderRequiresRedeem: boolean
   l2ChainId?: number

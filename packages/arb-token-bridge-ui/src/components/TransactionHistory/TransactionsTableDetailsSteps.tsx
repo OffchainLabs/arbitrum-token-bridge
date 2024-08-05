@@ -33,6 +33,7 @@ import {
   secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
 import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDetailsTeleporterSteps'
+import { isTeleporterTransaction } from '../../hooks/useTransactions'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -142,7 +143,7 @@ const LastStepEndItem = ({
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
-  const isTeleportTx = isTeleport(tx)
+  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
 
   if (destinationNetworkTxId) {
     return (
@@ -204,7 +205,7 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
-  const isTeleportTx = isTeleport(tx)
+  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
 
   const isDestinationChainFailure = isTeleportTx
     ? secondRetryableLegForTeleportRequiresRedeem(tx)
@@ -271,7 +272,7 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
-      {isTeleport(tx) && (
+      {isTeleport(tx) && isTeleporterTransaction(tx) && (
         <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
       )}
 

@@ -69,14 +69,13 @@ describe('Redeem ERC20 Deposit', () => {
 
       context('deposit should be redeemed', () => {
         // open transaction history and wait for deposit to fetch data
-        cy.openTransactionsPanel()
+        cy.openTransactionsPanel('pending')
 
         // find the Retry button and the amount in the row
-        cy.findByText(
-          `${formatAmount(wethAmountToDeposit, {
-            symbol: 'WETH'
-          })}`
-        ).should('be.visible')
+        cy.findTransactionInTransactionHistory({
+          amount: wethAmountToDeposit,
+          symbol: 'WETH'
+        })
 
         cy.findAllByLabelText(/Retry transaction/i)
           .first()
@@ -87,17 +86,13 @@ describe('Redeem ERC20 Deposit', () => {
         // approve redeem transaction
         cy.confirmMetamaskTransaction().then(() => {
           cy.wait(15_000).then(() => {
-            // switch to settled transactions
-            cy.findByLabelText('show settled transactions')
-              .should('be.visible')
-              .click()
+            cy.selectTransactionsPanelTab('settled')
 
             // find the same transaction there redeemed successfully
-            cy.findByText(
-              `${formatAmount(wethAmountToDeposit, {
-                symbol: 'WETH'
-              })}`
-            )
+            cy.findTransactionInTransactionHistory({
+              amount: wethAmountToDeposit,
+              symbol: 'WETH'
+            })
 
             // close transaction history
             cy.findByLabelText('Close side panel').click()

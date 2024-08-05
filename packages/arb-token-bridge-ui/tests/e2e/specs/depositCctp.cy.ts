@@ -143,26 +143,17 @@ describe('Deposit USDC through CCTP', () => {
         // eslint-disable-next-line
         cy.wait(40_000)
         cy.confirmMetamaskTransaction()
-        cy.findByText(
-          `${formatAmount(USDCAmountToSend, {
-            symbol: 'USDC'
-          })}`
-        ).should('be.visible')
-        cy.findByRole('button', {
-          name: 'Switch Network',
-          timeout: 2.5 * 60 * 1_000 // CCTP transactions on testnet has a 2 minute delay before being valid
-        }).click()
-
-        cy.allowMetamaskToSwitchNetwork()
-        cy.findByRole('button', { name: 'Claim' }).click()
-        cy.confirmMetamaskTransaction()
-        cy.findByText('Looks like no transactions here yet!').should(
-          'be.visible'
-        )
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        }).within(() => {
+          cy.claimCctp(USDCAmountToSend.toString())
+        })
       })
     })
 
-    it.skip('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
+    it('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
       context('should fill custom destination address successfully', () => {
         cy.fillCustomDestinationAddress()
       })
@@ -177,15 +168,15 @@ describe('Deposit USDC through CCTP', () => {
         // eslint-disable-next-line
         cy.wait(40_000)
         cy.confirmMetamaskTransaction()
-        cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-        cy.findByText(
-          `${formatAmount(USDCAmountToSend, {
-            symbol: 'USDC'
-          })}`
-        ).should('be.visible')
+        cy.selectTransactionsPanelTab('pending')
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        })
 
         // open the tx details popup
-        cy.findAllByLabelText('Transaction details button').first().click()
+        cy.findByLabelText('Transaction details button').click()
         cy.findByText('Transaction details').should('be.visible')
 
         cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
@@ -199,6 +190,8 @@ describe('Deposit USDC through CCTP', () => {
 
         // close popup
         cy.findByLabelText('Close transaction details popup').click()
+
+        cy.claimCctp(USDCAmountToSend.toString())
       })
     })
   })

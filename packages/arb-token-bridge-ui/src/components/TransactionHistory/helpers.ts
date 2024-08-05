@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import {
   EthDepositMessage,
   EthDepositMessageStatus,
@@ -12,18 +12,13 @@ import {
 import {
   DepositStatus,
   MergedTransaction,
+  TeleporterMergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import {
-  ChainId,
-  getL1BlockTime,
-  isNetwork,
-  rpcURLs
-} from '../../util/networks'
+import { ChainId, getL1BlockTime, isNetwork } from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
-  getL1ToL2MessageDataFromL1TxHash,
+  getParentToChildMessageDataFromParentTxHash,
   fetchTeleporterDepositStatusData
 } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -34,6 +29,7 @@ import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
+import { isTeleporterTransaction } from '../../hooks/useTransactions'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -284,12 +280,13 @@ export async function getUpdatedEthDeposit(
     return tx
   }
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
-    depositTxId: tx.txId,
-    isEthDeposit: true,
-    l1Provider: getProviderForChainId(tx.parentChainId),
-    l2Provider: getProviderForChainId(tx.childChainId)
-  })
+  const { parentToChildMsg: l1ToL2Msg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: tx.txId,
+      isEthDeposit: true,
+      parentProvider: getProviderForChainId(tx.parentChainId),
+      childProvider: getProviderForChainId(tx.childChainId)
+    })
 
   if (!l1ToL2Msg) {
     const receipt = await getTxReceipt(tx)
@@ -310,14 +307,14 @@ export async function getUpdatedEthDeposit(
     ...tx,
     status: 'success',
     resolvedAt: isDeposited ? dayjs().valueOf() : null,
-    l1ToL2MsgData: {
+    parentToChildMsgData: {
       fetchingUpdate: false,
       status: isDeposited
         ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).childTxHash,
-      // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited
+      // Only show `childTxId` after the deposit is confirmed
+      childTxId: isDeposited
         ? (l1ToL2Msg as EthDepositMessage).childTxHash
         : undefined
     }
@@ -341,12 +338,13 @@ export async function getUpdatedTokenDeposit(
     return tx
   }
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
-    depositTxId: tx.txId,
-    isEthDeposit: false,
-    l1Provider: getProviderForChainId(tx.parentChainId),
-    l2Provider: getProviderForChainId(tx.childChainId)
-  })
+  const { parentToChildMsg: l1ToL2Msg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: tx.txId,
+      isEthDeposit: false,
+      parentProvider: getProviderForChainId(tx.parentChainId),
+      childProvider: getProviderForChainId(tx.childChainId)
+    })
   const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
 
   if (!l1ToL2Msg) {
@@ -363,7 +361,7 @@ export async function getUpdatedTokenDeposit(
 
   const res = await _l1ToL2Msg.getSuccessfulRedeem()
 
-  const l2TxID = (() => {
+  const childTxId = (() => {
     if (res.status === ParentToChildMessageStatus.REDEEMED) {
       return res.childTxReceipt.transactionHash
     } else {
@@ -378,9 +376,9 @@ export async function getUpdatedTokenDeposit(
       res.status === ParentToChildMessageStatus.REDEEMED
         ? dayjs().valueOf()
         : null,
-    l1ToL2MsgData: {
+    parentToChildMsgData: {
       status: res.status,
-      l2TxID,
+      childTxId,
       fetchingUpdate: false,
       retryableCreationTxID: _l1ToL2Msg.retryableCreationId
     }
@@ -497,8 +495,8 @@ export async function getUpdatedCctpTransfer(
 }
 
 export async function getUpdatedTeleportTransfer(
-  tx: MergedTransaction
-): Promise<MergedTransaction> {
+  tx: TeleporterMergedTransaction
+): Promise<TeleporterMergedTransaction> {
   const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
     await fetchTeleporterDepositStatusData(tx)
 
@@ -640,11 +638,11 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
 
-  if (isTeleport(tx)) {
+  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
     return tx.l2ToL3MsgData?.l3TxID
   }
 
   return tx.isWithdrawal
-    ? tx.l2ToL1MsgData?.uniqueId.toString()
-    : tx.l1ToL2MsgData?.l2TxID
+    ? tx.childToParentMsgData?.uniqueId.toString()
+    : tx.parentToChildMsgData?.childTxId
 }

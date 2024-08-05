@@ -14,8 +14,7 @@ import {
   NetworkName,
   startWebApp,
   getL1NetworkConfig,
-  getL2NetworkConfig,
-  getInitialERC20Balance
+  getL2NetworkConfig
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
@@ -120,21 +119,40 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible').click()
 }
 
-export const openTransactionsPanel = () => {
-  cy.waitUntil(
-    () =>
-      cy.findByText(/Summary/i).then(() => {
-        // Open tx history panel
-        cy.findByRole('button', { name: /account header button/i })
-          .should('be.visible')
-          .click()
+export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
+  cy.findByRole('tab', {
+    name: `show ${tab} transactions`
+  })
+    .as('tab')
+    .should('be.visible')
+    .click()
 
-        cy.findByRole('button', { name: /transactions/i })
-          .should('be.visible')
-          .click()
-      }),
+  return cy
+    .get('@tab')
+    .should('have.attr', 'data-headlessui-state')
+    .and('equal', 'selected')
+}
+
+export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
+  cy.log(`opening transactions panel on ${tab}`)
+  cy.findByRole('button', { name: /account header button/i })
+    .should('be.visible')
+    .click()
+  cy.findByRole('button', { name: /transactions/i })
+    .should('be.visible')
+    .click()
+
+  cy.selectTransactionsPanelTab(tab)
+
+  // Waiting for transactions to be fetched
+  return cy.waitUntil(
+    () =>
+      cy
+        .findByText(/Showing \d+ \w+ transactions made in/)
+        .should('be.visible'),
     {
-      timeout: 10000,
+      errorMsg: 'Failed to fetch transactions.',
+      timeout: 30_000,
       interval: 500
     }
   )
@@ -142,8 +160,6 @@ export const openTransactionsPanel = () => {
 
 const sepoliaRpcUrl = Cypress.env('ETH_SEPOLIA_RPC_URL')
 const arbSepoliaRpcUrl = Cypress.env('ARB_SEPOLIA_RPC_URL')
-const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
-const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
 const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
 
 export async function fundUserUsdcTestnet(
@@ -285,6 +301,29 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function findTransactionInTransactionHistory({
+  symbol,
+  amount,
+  duration
+}: {
+  symbol: string
+  amount: number
+  duration?: string
+}) {
+  const rowId = new RegExp(
+    `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
+  )
+  cy.findByTestId(rowId).as('row')
+  if (duration) {
+    cy.get('@row').findAllByText(duration).first().should('be.visible')
+  }
+
+  cy.get('@row')
+    .findByLabelText('Transaction details button')
+    .should('be.visible')
+  return cy.get('@row')
+}
+
 export function findClaimButton(
   amountToClaim: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -296,6 +335,7 @@ Cypress.Commands.addAll({
   login,
   logout,
   openTransactionsPanel,
+  selectTransactionsPanelTab,
   fundUserUsdcTestnet,
   searchAndSelectToken,
   fillCustomDestinationAddress,
@@ -306,5 +346,6 @@ Cypress.Commands.addAll({
   findGasFeeSummary,
   findMoveFundsButton,
   findSelectTokenButton,
+  findTransactionInTransactionHistory,
   findClaimButton
 })
