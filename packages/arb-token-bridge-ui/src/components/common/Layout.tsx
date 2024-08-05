@@ -4,7 +4,6 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
-import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
@@ -52,10 +51,7 @@ export function Layout(props: LayoutProps) {
       />
       <div className="relative flex flex-col sm:min-h-screen">
         <div className="flex flex-row">
-          <AppSidebar />
-
           <main className="grow">{props.children}</main>
-
           <Toast />
         </div>
       </div>
