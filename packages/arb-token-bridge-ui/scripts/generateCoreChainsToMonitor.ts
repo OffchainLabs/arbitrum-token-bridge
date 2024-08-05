@@ -4,14 +4,23 @@ import { getArbitrumNetwork } from '@arbitrum/sdk'
 import { ChainId, rpcURLs } from '../src/util/networks'
 import { getChainToMonitor } from './utils'
 
+// github secrets return '' for empty values, so we need to sanitize the value
+const sanitizeEnvValue = (envValue: any) => {
+  return typeof envValue === 'string' && envValue !== '' ? envValue : undefined
+}
+
 async function generateCoreChainsToMonitor() {
   const novaChain = {
     ...getArbitrumNetwork(ChainId.ArbitrumNova),
-    rpcURL: process.env.NOVA_MONITOR_RPC_URL ?? rpcURLs[ChainId.ArbitrumNova]
+    rpcURL:
+      sanitizeEnvValue(process.env.NOVA_MONITOR_RPC_URL) ??
+      rpcURLs[ChainId.ArbitrumNova]
   }
   const arbOneChain = {
     ...getArbitrumNetwork(ChainId.ArbitrumOne),
-    rpcURL: process.env.ARB_ONE_MONITOR_RPC_URL ?? rpcURLs[ChainId.ArbitrumOne]
+    rpcURL:
+      sanitizeEnvValue(process.env.ARB_ONE_MONITOR_RPC_URL) ??
+      rpcURLs[ChainId.ArbitrumOne]
   }
 
   // don't need to monitor arbOne chain in case of retryable-monitoring

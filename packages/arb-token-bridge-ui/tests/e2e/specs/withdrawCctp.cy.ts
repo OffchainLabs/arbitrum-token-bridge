@@ -99,12 +99,11 @@ describe('Withdraw USDC through CCTP', () => {
             // eslint-disable-next-line
             cy.wait(40_000)
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                duration: 'a minute',
+                amount: USDCAmountToSend,
+                symbol: 'USDC'
+              })
             })
           }
         )
@@ -131,12 +130,11 @@ describe('Withdraw USDC through CCTP', () => {
             // eslint-disable-next-line
             cy.wait(40_000)
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                duration: 'a minute',
+                amount: USDCAmountToSend,
+                symbol: 'USDC'
+              })
 
               cy.checkForCustomDestinationAddressInTransactionDetail(
                 Cypress.env('CUSTOM_DESTINATION_ADDRESS')

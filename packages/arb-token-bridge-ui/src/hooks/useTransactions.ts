@@ -3,6 +3,10 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
+import {
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../state/app/state'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -77,7 +81,7 @@ export interface L2ToL3MessageData {
   l2ChainId: number
 }
 
-export type L2ToL1MessageData = {
+export type ChildToParentMessageData = {
   uniqueId: BigNumber
 }
 
@@ -96,8 +100,8 @@ type TransactionBase = {
   l2NetworkID?: string
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
-  l1ToL2MsgData?: ParentToChildMessageData
-  l2ToL1MsgData?: L2ToL1MessageData
+  parentToChildMsgData?: ParentToChildMessageData
+  childToParentMsgData?: ChildToParentMessageData
   isClassic?: boolean
 }
 
@@ -108,7 +112,10 @@ export interface Transaction extends TransactionBase {
   parentChainId: number
   childChainId: number
   nonce?: number
-  l2ToL3MsgData?: L2ToL3MessageData
+}
+
+export interface TeleporterTransaction extends Transaction {
+  l2ToL3MsgData: L2ToL3MessageData
 }
 
 export interface NewTransaction extends TransactionBase {
@@ -121,8 +128,14 @@ export interface FailedTransaction extends TransactionBase {
 
 // TODO: enforce this type restriction
 export interface DepositTransaction extends Transaction {
-  l1ToL2MsgData: ParentToChildMessageData
+  parentToChildMsgData: ParentToChildMessageData
   type: 'deposit' | 'deposit-l1'
+}
+
+export function isTeleporterTransaction(
+  tx: Transaction | MergedTransaction
+): tx is TeleporterTransaction | TeleporterMergedTransaction {
+  return (tx as TeleporterTransaction).l2ToL3MsgData !== undefined
 }
 
 function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
@@ -183,11 +196,11 @@ function updateTxnL1ToL2Msg(
     )
   }
 
-  const previousL1ToL2MsgData = transaction.l1ToL2MsgData
+  const previousL1ToL2MsgData = transaction.parentToChildMsgData
   if (!previousL1ToL2MsgData) {
     newState[index] = {
       ...transaction,
-      l1ToL2MsgData: {
+      parentToChildMsgData: {
         status: l1ToL2MsgData.status,
         retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
         fetchingUpdate: false
@@ -198,7 +211,7 @@ function updateTxnL1ToL2Msg(
 
   newState[index] = {
     ...transaction,
-    l1ToL2MsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
+    parentToChildMsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
   }
   return newState
 }
@@ -284,11 +297,11 @@ const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
   // don't cache fetchingUpdate state
   const stateForCache = newState.map(tx => {
-    if (tx.l1ToL2MsgData && tx.l1ToL2MsgData.fetchingUpdate) {
+    if (tx.parentToChildMsgData && tx.parentToChildMsgData.fetchingUpdate) {
       return {
         ...tx,
-        l1ToL2MsgData: {
-          ...tx.l1ToL2MsgData,
+        parentToChildMsgData: {
+          ...tx.parentToChildMsgData,
           fetchingUpdate: false
         }
       }
