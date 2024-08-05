@@ -162,7 +162,7 @@ export const transformDeposit = (
     blockNum: tx.blockNumber || null,
     tokenAddress: tx.tokenAddress || null,
     parentToChildMsgData: tx.parentToChildMsgData,
-    l2ToL1MsgData: tx.l2ToL1MsgData,
+    childToParentMsgData: tx.childToParentMsgData,
     depositStatus: getDepositStatus(tx),
     parentChainId: Number(tx.l1NetworkID),
     childChainId: Number(tx.l2NetworkID),
