@@ -240,6 +240,10 @@ describe('Withdraw ERC20 Token', () => {
                 cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
               })
 
+              // close popup
+              cy.findByLabelText('Close transaction details popup').click()
+              cy.findByLabelText('Close side panel').click()
+
               // the balance on the source chain should not be the same as before
               cy.findByLabelText('WETH balance amount on childChain')
                 .should('be.visible')

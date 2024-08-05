@@ -125,6 +125,7 @@ describe('Deposit ERC20 Token', () => {
                 cy.openTransactionDetails()
                 cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
               })
+              cy.findByLabelText('Close transaction details popup').click()
             })
           })
       })
@@ -148,23 +149,14 @@ describe('Deposit ERC20 Token', () => {
           }
         ).then(() => {
           // open the tx details popup
-          cy.findAllByLabelText('Transaction details button')
-            .first()
-            .click()
-            .then(() => {
-              cy.findByText('Transaction details').should('be.visible')
-
-              cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-              // custom destination label in pending tx history should be visible
-              cy.findByLabelText(
-                `Custom address: ${shortenAddress(
-                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                )}`
-              ).should('be.visible')
-            })
-
-          // close popup
+          cy.findTransactionInTransactionHistory({
+            duration: 'a few seconds ago',
+            amount: ERC20AmountToSend,
+            symbol: 'WETH'
+          }).within(() => {
+            cy.openTransactionDetails()
+            cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+          })
           cy.findByLabelText('Close transaction details popup').click()
         })
       })
