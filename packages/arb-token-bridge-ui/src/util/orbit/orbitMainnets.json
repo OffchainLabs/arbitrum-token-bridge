@@ -13,6 +13,7 @@
     "explorerUrl": "https://explorer.xai-chain.net",
     "rpcUrl": "https://xai-chain.net/rpc",
     "isCustom": true,
+    "isTestnet": false,
     "name": "Xai",
     "slug": "xai",
     "parentChainId": 42161,
@@ -61,6 +62,7 @@
     "explorerUrl": "https://mainnet.explorer.rarichain.org",
     "rpcUrl": "https://mainnet.rpc.rarichain.org/http",
     "isCustom": true,
+    "isTestnet": false,
     "name": "RARI Mainnet",
     "slug": "rari-mainnet",
     "parentChainId": 42161,
@@ -107,6 +109,7 @@
     "slug": "muster",
     "retryableLifetimeSeconds": 604800,
     "isCustom": true,
+    "isTestnet": false,
     "tokenBridge": {
       "parentCustomGateway": "0x6085B32d97be137cC2D6447DcB3BF684C0835D2F",
       "parentErc20Gateway": "0x6551eF99126253B7a838Cf46340030C8eD5342c2",
@@ -149,6 +152,7 @@
     "parentChainId": 42161,
     "retryableLifetimeSeconds": 604800,
     "isCustom": true,
+    "isTestnet": false,
     "tokenBridge": {
       "parentCustomGateway": "0x653f8D34a86207569069164d45a031eE552A4729",
       "parentErc20Gateway": "0x298eb8d9f2F046AC60c01535fad40320CCdeB7c0",
@@ -192,6 +196,7 @@
     "parentChainId": 42161,
     "retryableLifetimeSeconds": 604800,
     "isCustom": true,
+    "isTestnet": false,
     "tokenBridge": {
       "parentCustomGateway": "0x38727FfD8aFAdaeF60687D1E623Fd28B58A2B8a8",
       "parentErc20Gateway": "0x341F7f035f1CBA1E879Df40117f797F88aC703ea",
@@ -240,6 +245,7 @@
     "parentChainId": 42161,
     "retryableLifetimeSeconds": 604800,
     "isCustom": true,
+    "isTestnet": false,
     "tokenBridge": {
       "parentCustomGateway": "0xec80A45ebadD945379f69e9A8929973BCb3E297D",
       "parentErc20Gateway": "0x4fF3E70f30f0394Ad62428751Fe3858740595908",
@@ -278,6 +284,7 @@
     "explorerUrl": "https://xchain-explorer.idex.io",
     "rpcUrl": "https://xchain-rpc.idex.io",
     "isCustom": true,
+    "isTestnet": false,
     "name": "XCHAIN",
     "slug": "xchain",
     "parentChainId": 1,
@@ -321,6 +328,7 @@
     "explorerUrl": "https://explorer.sanko.xyz",
     "rpcUrl": "https://mainnet.sanko.xyz",
     "isCustom": true,
+    "isTestnet": false,
     "name": "Sanko",
     "slug": "sanko",
     "parentChainId": 42161,

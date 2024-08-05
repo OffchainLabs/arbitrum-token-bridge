@@ -2,6 +2,7 @@ import z from 'zod'
 import { isAddress } from 'ethers/lib/utils.js'
 
 import { getOrbitChains, OrbitChainConfig } from '../src/util/orbit'
+import { isNetwork } from '../src/util/networks'
 
 const zAddress = z
   .string()
@@ -11,7 +12,13 @@ const zIsTrue = z
   .boolean()
   .refine(bool => bool === true, 'Invalid input, must be true')
 
+const zIsFalse = z
+  .boolean()
+  .refine(bool => bool === false, 'Invalid input, must be false')
+
 function validateOrbitChain(chain: OrbitChainConfig) {
+  const { isTestnet } = isNetwork(chain.parentChainId)
+
   try {
     z.object({
       chainId: z.number().nonnegative().int(),
@@ -27,6 +34,7 @@ function validateOrbitChain(chain: OrbitChainConfig) {
       explorerUrl: z.string().url(),
       rpcUrl: z.string().url(),
       isCustom: zIsTrue,
+      isTestnet: isTestnet ? zIsTrue : zIsFalse,
       name: z.string(),
       slug: z.string(),
       parentChainId: z.number().nonnegative().int(),
