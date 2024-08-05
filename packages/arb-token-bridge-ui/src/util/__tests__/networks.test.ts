@@ -28,6 +28,7 @@ beforeAll(() => {
       sequencerInbox: '0xe7362d0787b51d8c72d504803e5b1d6dcda89540'
     },
     isCustom: true,
+    isTestnet: true,
     name: 'Arbitrum Local',
     parentChainId: 1337,
     retryableLifetimeSeconds: 604800,

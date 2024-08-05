@@ -7,7 +7,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import {
   ParentToChildMessageData,
-  L2ToL1MessageData,
+  ChildToParentMessageData,
   L2ToL3MessageData,
   TxnType
 } from '../../hooks/useTransactions'
@@ -59,9 +59,8 @@ export interface MergedTransaction {
   tokenAddress: string | null
   isCctp?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  l1ToL2MsgData?: ParentToChildMessageData
-  l2ToL1MsgData?: L2ToL1MessageData
-  l2ToL3MsgData?: L2ToL3MessageData
+  parentToChildMsgData?: ParentToChildMessageData
+  childToParentMsgData?: ChildToParentMessageData
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number
@@ -74,6 +73,11 @@ export interface MergedTransaction {
     receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
+}
+
+export interface TeleporterMergedTransaction extends MergedTransaction {
+  l1ToL2MsgData?: ParentToChildMessageData
+  l2ToL3MsgData: L2ToL3MessageData
 }
 
 export interface WarningTokens {

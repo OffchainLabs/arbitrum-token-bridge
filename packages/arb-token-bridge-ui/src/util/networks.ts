@@ -8,7 +8,6 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { getOrbitChains } from './orbit'
 import { chainIdToInfuraUrl } from './infura'
 
 export enum ChainId {
@@ -31,24 +30,29 @@ export enum ChainId {
 type L1Network = {
   chainId: ChainId
   blockTime: number
+  isTestnet: boolean
 }
 
 const l1Networks: { [chainId: number]: L1Network } = {
   [ChainId.Ethereum]: {
     chainId: ChainId.Ethereum,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: false
   },
   [ChainId.Sepolia]: {
     chainId: ChainId.Sepolia,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: true
   },
   [ChainId.Holesky]: {
     chainId: ChainId.Holesky,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: true
   },
   [ChainId.Local]: {
     chainId: ChainId.Local,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: true
   }
 }
 
@@ -267,7 +271,8 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
 
 const defaultL1Network: L1Network = {
   blockTime: 10,
-  chainId: 1337
+  chainId: 1337,
+  isTestnet: true
 }
 
 export const defaultL2Network: ArbitrumNetwork = {
@@ -284,6 +289,7 @@ export const defaultL2Network: ArbitrumNetwork = {
     sequencerInbox: '0x18d19C5d3E685f5be5b9C86E097f0E439285D216'
   },
   isCustom: true,
+  isTestnet: true,
   name: 'Arbitrum Local',
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
@@ -318,6 +324,7 @@ export const defaultL3Network: ArbitrumNetwork = {
     sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
   },
   isCustom: true,
+  isTestnet: true,
   name: 'L3 Local',
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
@@ -364,27 +371,21 @@ export function registerLocalNetwork() {
   }
 }
 
+function isTestnetChain(chainId: ChainId) {
+  const l1Network = l1Networks[chainId]
+  if (l1Network) {
+    return l1Network.isTestnet
+  }
+
+  try {
+    return getArbitrumNetwork(chainId).isTestnet
+  } catch {
+    // users could have data in local storage for chains that aren't supported anymore, avoid app error
+    return true
+  }
+}
+
 export function isNetwork(chainId: ChainId) {
-  const customChains = getCustomChainsFromLocalStorage()
-  const customChainIds = customChains.map(chain => chain.chainId)
-  const isCustomOrbitChain = customChainIds.includes(chainId)
-
-  const isL3Local = chainId === ChainId.L3Local
-
-  const isMainnetOrbitChain =
-    typeof getOrbitChains({
-      mainnet: true,
-      testnet: false
-    }).find(chain => chain.chainId === chainId) !== 'undefined'
-
-  const isTestnetOrbitChain =
-    isCustomOrbitChain ||
-    isL3Local ||
-    typeof getOrbitChains({
-      mainnet: false,
-      testnet: true
-    }).find(chain => chain.chainId === chainId) !== 'undefined'
-
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
   const isSepolia = chainId === ChainId.Sepolia
@@ -405,26 +406,6 @@ export function isNetwork(chainId: ChainId) {
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
   const isOrbitChain = !isCoreChain
 
-  const isTestnet =
-    isLocal ||
-    isArbitrumLocal ||
-    isSepolia ||
-    isHolesky ||
-    isArbitrumSepolia ||
-    isCustomOrbitChain ||
-    isTestnetOrbitChain
-
-  const isSupported =
-    isArbitrumOne ||
-    isArbitrumNova ||
-    isEthereumMainnet ||
-    isSepolia ||
-    isHolesky ||
-    isArbitrumSepolia ||
-    isCustomOrbitChain ||
-    isMainnetOrbitChain ||
-    isTestnetOrbitChain
-
   return {
     // L1
     isEthereumMainnet,
@@ -439,9 +420,8 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia,
     // Orbit chains
     isOrbitChain,
-    isTestnet,
     // General
-    isSupported,
+    isTestnet: isTestnetChain(chainId),
     // Core Chain is a chain category for the UI
     isCoreChain
   }

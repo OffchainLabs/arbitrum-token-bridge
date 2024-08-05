@@ -17,7 +17,8 @@ import {
   removeCustomChainFromLocalStorage,
   saveCustomChainToLocalStorage,
   supportedCustomOrbitParentChains,
-  rpcURLs
+  rpcURLs,
+  isNetwork
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
@@ -177,6 +178,8 @@ async function mapOrbitConfigToOrbitChain(
   )
   const confirmPeriodBlocks =
     (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
+  const { isTestnet } = isNetwork(data.chainInfo.parentChainId)
+
   return {
     chainId: data.chainInfo.chainId,
     confirmPeriodBlocks,
@@ -190,6 +193,7 @@ async function mapOrbitConfigToOrbitChain(
     rpcUrl: data.chainInfo.rpcUrl,
     explorerUrl: data.chainInfo.explorerUrl,
     isCustom: true,
+    isTestnet,
     name: data.chainInfo.chainName,
     parentChainId: data.chainInfo.parentChainId,
     retryableLifetimeSeconds: 604800,
