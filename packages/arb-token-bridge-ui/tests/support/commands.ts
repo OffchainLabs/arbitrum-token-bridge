@@ -411,5 +411,6 @@ Cypress.Commands.addAll({
   findSelectTokenButton,
   openTransactionDetails,
   findTransactionInTransactionHistory,
-  findClaimButton
+  findClaimButton,
+  checkCustomAddress
 })
