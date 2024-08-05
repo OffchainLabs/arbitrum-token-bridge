@@ -44,10 +44,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.0.tgz#8eb2deed1a438250acb4084a4bb8fc7eae7659b6"
-  integrity sha512-wNZFRs4yYxd6Pyc6xEjksp3C59PikmmVPIw49ceMoLY5D0e6xJt2nuA7jjsemDgRe7q6EvLFvHAY2At6XUWrkg==
+"@arbitrum/sdk@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.1.tgz#b51c7bb8ecef0143a35b7f3ab8538031bb1830d2"
+  integrity sha512-uW0Pe/oICbmlHpIpYOaHHWsNQRG+3UbCa3s0SJsp2O1Kt9b0M0CX/fEdFOFLyAi3OxHonNEfzhfvQrALy9C3Yw==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"

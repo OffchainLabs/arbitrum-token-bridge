@@ -1,7 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import { useEffect, useMemo } from 'react'
 
-import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -15,12 +14,8 @@ import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 
-type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  loading: boolean
-}
-
-function MaxButton(props: MaxButtonProps) {
-  const { loading, className = '', ...rest } = props
+function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { className = '', ...rest } = props
 
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
@@ -58,14 +53,6 @@ function MaxButton(props: MaxButtonProps) {
 
   if (!maxButtonVisible) {
     return null
-  }
-
-  if (loading) {
-    return (
-      <div className="px-4">
-        <Loader color="#999999" size="small" />
-      </div>
-    )
   }
 
   return (
@@ -165,12 +152,12 @@ function ErrorMessage({
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     errorMessage?: string | TransferReadinessRichErrorMessage | undefined
-    maxButtonProps: MaxButtonProps
+    maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps, ...rest } = props
+  const { errorMessage, maxButtonOnClick, ...rest } = props
 
   return (
     <>
@@ -190,7 +177,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
           )}
         >
           <TransferPanelInputField {...rest} />
-          <MaxButton {...maxButtonProps} />
+          <MaxButton onClick={maxButtonOnClick} />
         </div>
       </div>
 
