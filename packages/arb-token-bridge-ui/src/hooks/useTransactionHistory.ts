@@ -716,7 +716,7 @@ export const useTransactionHistory = (
         return
       }
 
-      if (isTeleport(tx) && isTeleporterTransaction(tx)) {
+      if (isTeleporterTransaction(tx)) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
         updateCachedTransaction(updatedTeleportTransfer)
         return

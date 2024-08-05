@@ -7,7 +7,6 @@ import {
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import {
   DepositStatus,
   MergedTransaction,
@@ -172,7 +171,7 @@ export function useRedeemTeleporter(
       return
     }
 
-    if (!isTeleport(tx) || !isTeleporterTransaction(tx)) {
+    if (!isTeleporterTransaction(tx)) {
       throw new Error(
         'The transaction being redeemed is not a LayerLeap transaction.'
       )

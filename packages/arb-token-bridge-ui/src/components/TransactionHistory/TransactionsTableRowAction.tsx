@@ -20,7 +20,7 @@ import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { Address } from '../../util/AddressUtils'
 import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { isTeleporterTransaction } from '../../hooks/useTransactions'
 import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { formatAmount } from '../../util/NumberUtils'
@@ -70,7 +70,7 @@ export function TransactionsTableRowAction({
         await switchNetworkAsync?.(chainIdForRedeemingRetryable)
       }
 
-      if (isTeleport(tx)) {
+      if (isTeleporterTransaction(tx)) {
         await teleporterRedeem()
       } else {
         await redeem()

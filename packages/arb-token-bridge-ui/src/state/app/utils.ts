@@ -19,7 +19,6 @@ import {
   Transaction
 } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
-import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
@@ -63,12 +62,7 @@ export const getDepositStatus = (
   }
 
   // for teleport txn
-  if (
-    isTeleport({
-      sourceChainId: tx.parentChainId, // we make sourceChain=parentChain assumption coz it's a deposit txn
-      destinationChainId: tx.childChainId
-    })
-  ) {
+  if (isTeleporterTransaction(tx)) {
     const { l2ToL3MsgData, l1ToL2MsgData } = tx as TeleporterMergedTransaction
 
     // if any of the retryable info is missing, first fetch might be pending
@@ -301,7 +295,7 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
-  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
+  if (isTeleporterTransaction(tx)) {
     return (
       firstRetryableLegRequiresRedeem(tx) ||
       secondRetryableLegForTeleportRequiresRedeem(tx)

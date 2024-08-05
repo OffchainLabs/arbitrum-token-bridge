@@ -27,13 +27,12 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { isTeleporterTransaction } from '../../hooks/useTransactions'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
 import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDetailsTeleporterSteps'
-import { isTeleporterTransaction } from '../../hooks/useTransactions'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -43,7 +42,7 @@ function getTransferDurationText(tx: MergedTransaction) {
   }
 
   if (!tx.isWithdrawal) {
-    if (isOrbitChain && !isTeleport(tx)) {
+    if (isOrbitChain && !isTeleporterTransaction(tx)) {
       return 'a minute'
     }
     return isTestnet ? '10 minutes' : '15 minutes'
@@ -143,7 +142,7 @@ const LastStepEndItem = ({
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
-  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
+  const isTeleportTx = isTeleporterTransaction(tx)
 
   if (destinationNetworkTxId) {
     return (
@@ -205,7 +204,7 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
-  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
+  const isTeleportTx = isTeleporterTransaction(tx)
 
   const isDestinationChainFailure = isTeleportTx
     ? secondRetryableLegForTeleportRequiresRedeem(tx)
@@ -250,7 +249,7 @@ export const TransactionsTableDetailsSteps = ({
       />
 
       {/* Pending transfer showing the remaining time */}
-      {!isTeleport(tx) && (
+      {!isTeleporterTransaction(tx) && (
         <Step
           pending={isTxPending(tx)}
           done={!isTxPending(tx) && !isSourceChainDepositFailure}
@@ -272,7 +271,7 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
-      {isTeleport(tx) && isTeleporterTransaction(tx) && (
+      {isTeleporterTransaction(tx) && (
         <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
       )}
 

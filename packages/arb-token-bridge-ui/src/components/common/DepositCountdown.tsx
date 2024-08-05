@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { isNetwork } from '../../util/networks'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { isTeleporterTransaction } from '../../hooks/useTransactions'
 
 function getMinutesRemainingText(minutesRemaining: number): string {
   if (minutesRemaining <= 1) {
@@ -16,19 +16,14 @@ function getEstimatedDepositDurationInMinutes(
   tx: MergedTransaction,
   firstTxOnly?: boolean // teleport has 2 txns, this flag will give us estimate of only 1st tx, else it will give consolidated duration
 ) {
-  const { parentChainId, sourceChainId, destinationChainId } = tx
+  const { parentChainId } = tx
   if (!parentChainId) {
     return 15
   }
 
   const { isEthereumMainnetOrTestnet, isTestnet } = isNetwork(parentChainId)
 
-  if (
-    isTeleport({
-      sourceChainId: sourceChainId,
-      destinationChainId: destinationChainId
-    })
-  ) {
+  if (isTeleporterTransaction(tx)) {
     if (firstTxOnly) {
       return isTestnet ? 10 : 15
     }

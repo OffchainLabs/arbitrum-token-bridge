@@ -25,7 +25,6 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
@@ -638,7 +637,7 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
 
-  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
+  if (isTeleporterTransaction(tx)) {
     return tx.l2ToL3MsgData?.l3TxID
   }
 
