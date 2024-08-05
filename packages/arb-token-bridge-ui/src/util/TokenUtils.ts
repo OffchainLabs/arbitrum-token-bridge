@@ -18,7 +18,7 @@ import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
 import {
   getL2ConfigForTeleport,
-  isTeleport
+  isValidTeleportChainPair
 } from '../token-bridge-sdk/teleport'
 
 export function getDefaultTokenName(address: string) {
@@ -476,7 +476,7 @@ export async function isGatewayRegistered({
   // for now, we are returning true since we are limiting the tokens to teleport, but we will expand this once we expand the allowList
   const sourceChainId = await getChainIdFromProvider(parentChainProvider)
   const destinationChainId = await getChainIdFromProvider(childChainProvider)
-  if (isTeleport({ sourceChainId, destinationChainId })) {
+  if (isValidTeleportChainPair({ sourceChainId, destinationChainId })) {
     return true
   }
 
