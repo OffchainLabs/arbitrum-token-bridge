@@ -235,10 +235,9 @@ describe('Withdraw ERC20 Token', () => {
                 duration: 'an hour',
                 amount: ERC20AmountToSend,
                 symbol: 'WETH'
-              }).within(() => {
-                cy.openTransactionDetails()
-                cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
               })
+              cy.openTransactionDetails()
+              cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 
               // close popup
               cy.findByLabelText('Close transaction details popup').click()
