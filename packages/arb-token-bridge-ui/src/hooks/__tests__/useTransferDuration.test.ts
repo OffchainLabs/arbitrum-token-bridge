@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { RenderHookResult, act, renderHook } from '@testing-library/react'
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { MergedTransaction } from '../../state/app/state'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
@@ -8,6 +9,7 @@ import {
   getStandardDepositDuration,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
+import { getOrbitChains } from '../../util/orbitChainsList'
 
 const DAY_IN_MINUTES = 24 * 60
 const HOUR_IN_MINUTES = 60
@@ -78,6 +80,11 @@ describe('useTransferDuration', () => {
   const DEPOSIT_TIME_MINUTES_ORBIT_TESTNET = getOrbitDepositDuration(true)
   const TRANSFER_TIME_MINUTES_CCTP_MAINNET = getCctpTransferDuration(false)
   const TRANSFER_TIME_MINUTES_CCTP_TESTNET = getCctpTransferDuration(true)
+
+  beforeAll(() => {
+    // register all chains so we can read `isTestnet`
+    getOrbitChains().forEach(chain => registerCustomArbitrumNetwork(chain))
+  })
 
   // ========= DEPOSITS =========
 
