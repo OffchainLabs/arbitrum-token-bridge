@@ -17,7 +17,9 @@ import {
   findGasFeeForChain,
   findMoveFundsButton,
   findSelectTokenButton,
-  findClaimButton
+  findTransactionInTransactionHistory,
+  findClaimButton,
+  selectTransactionsPanelTab
 } from '../support/commands'
 
 declare global {
@@ -31,6 +33,7 @@ declare global {
       // eslint-disable-next-line no-unused-vars
       login: typeof login
       logout: typeof logout
+      selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
       resetCctpAllowance: typeof resetCctpAllowance
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
@@ -51,6 +54,7 @@ declare global {
       findGasFeeSummary: typeof findGasFeeSummary
       findMoveFundsButton: typeof findMoveFundsButton
       findSelectTokenButton: typeof findSelectTokenButton
+      findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
     }
   }

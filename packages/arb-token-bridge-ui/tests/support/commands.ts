@@ -105,6 +105,20 @@ export const connectToApp = (connectMetamask: boolean) => {
   }
 }
 
+export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
+  cy.findByRole('tab', {
+    name: `show ${tab} transactions`
+  })
+    .as('tab')
+    .should('be.visible')
+    .click()
+
+  return cy
+    .get('@tab')
+    .should('have.attr', 'data-headlessui-state')
+    .and('equal', 'selected')
+}
+
 export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
   cy.log(`opening transactions panel on ${tab}`)
   cy.findByRole('button', { name: /account header button/i })
@@ -113,16 +127,8 @@ export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
   cy.findByRole('button', { name: /transactions/i })
     .should('be.visible')
     .click()
-  cy.findByRole('tab', {
-    name: `show ${tab} transactions`
-  })
-    .as('tab')
-    .should('be.visible')
-    .click()
 
-  cy.get('@tab')
-    .should('have.attr', 'data-headlessui-state')
-    .and('equal', 'selected')
+  cy.selectTransactionsPanelTab(tab)
 
   // Waiting for transactions to be fetched
   return cy.waitUntil(
@@ -321,6 +327,29 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function findTransactionInTransactionHistory({
+  symbol,
+  amount,
+  duration
+}: {
+  symbol: string
+  amount: number
+  duration?: string
+}) {
+  const rowId = new RegExp(
+    `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
+  )
+  cy.findByTestId(rowId).as('row')
+  if (duration) {
+    cy.get('@row').findAllByText(duration).first().should('be.visible')
+  }
+
+  cy.get('@row')
+    .findByLabelText('Transaction details button')
+    .should('be.visible')
+  return cy.get('@row')
+}
+
 export function findClaimButton(
   amountToClaim: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -332,6 +361,7 @@ Cypress.Commands.addAll({
   login,
   logout,
   openTransactionsPanel,
+  selectTransactionsPanelTab,
   resetCctpAllowance,
   fundUserUsdcTestnet,
   fundUserWalletEth,
@@ -344,5 +374,6 @@ Cypress.Commands.addAll({
   findGasFeeSummary,
   findMoveFundsButton,
   findSelectTokenButton,
+  findTransactionInTransactionHistory,
   findClaimButton
 })
