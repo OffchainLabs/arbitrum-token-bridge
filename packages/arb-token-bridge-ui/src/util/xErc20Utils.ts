@@ -1,6 +1,7 @@
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { fetchErc20L2GatewayAddress } from './TokenUtils'
 import { ChainId } from './networks'
+import { TokenWithdrawalApprovalParams } from './L2ApprovalUtils'
 
 export const xErc20Gateways: {
   [chainId: number]: {
@@ -16,11 +17,11 @@ export const xErc20Gateways: {
   }
 }
 
-export async function xErc20RequiresApprovalOnChildChain(
-  tokenAddress: string,
-  parentChainId: ChainId,
-  childChainId: ChainId
-): Promise<boolean> {
+export async function xErc20RequiresApprovalOnChildChain({
+  tokenAddressOnParentChain,
+  parentChainId,
+  childChainId
+}: TokenWithdrawalApprovalParams): Promise<boolean> {
   const gatewayData = xErc20Gateways[childChainId]
 
   if (gatewayData?.parentChainId !== parentChainId) {
@@ -30,7 +31,7 @@ export async function xErc20RequiresApprovalOnChildChain(
   const childChainProvider = getProviderForChainId(childChainId)
 
   const childChainGatewayAddress = await fetchErc20L2GatewayAddress({
-    erc20L1Address: tokenAddress,
+    erc20L1Address: tokenAddressOnParentChain,
     l2Provider: childChainProvider
   })
 

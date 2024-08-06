@@ -67,22 +67,22 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
   ]
 }
 
+export type TokenWithdrawalApprovalParams = {
+  tokenAddressOnParentChain: string
+  parentChainId: ChainId
+  childChainId: ChainId
+}
+
 export async function tokenRequiresApprovalOnL2(
-  erc20L1Address: string,
-  l1ChainId: number,
-  l2ChainId: number
+  params: TokenWithdrawalApprovalParams
 ) {
-  if (
-    await xErc20RequiresApprovalOnChildChain(
-      erc20L1Address,
-      l1ChainId,
-      l2ChainId
-    )
-  ) {
+  if (await xErc20RequiresApprovalOnChildChain(params)) {
     return true
   }
 
-  return (L2ApproveTokens[l2ChainId] ?? [])
+  const { tokenAddressOnParentChain, childChainId } = params
+
+  return (L2ApproveTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
-    .includes(erc20L1Address.toLowerCase())
+    .includes(tokenAddressOnParentChain.toLowerCase())
 }
