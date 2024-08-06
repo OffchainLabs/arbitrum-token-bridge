@@ -2,7 +2,6 @@
  * When user wants to bridge USDC through CCTP from L1 to L2
  */
 
-import { formatAmount } from '../../../src/util/NumberUtils'
 import { zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 import { shortenAddress } from '../../../src/util/CommonUtils'
@@ -112,12 +111,11 @@ describe('Deposit USDC through CCTP', () => {
             // eslint-disable-next-line
             cy.wait(40_000)
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                duration: 'a minute',
+                amount: USDCAmountToSend,
+                symbol: 'USDC'
+              })
             })
           }
         )
@@ -140,32 +138,15 @@ describe('Deposit USDC through CCTP', () => {
             // eslint-disable-next-line
             cy.wait(40_000)
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
-
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
-
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
-
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
+              const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
+              cy.findTransactionInTransactionHistory({
+                duration: 'a minute',
+                ...txData
+              })
+              cy.openTransactionDetails(txData)
+              cy.findTransactionDetailsCustomDestinationAddress(
+                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+              )
             })
           }
         )
