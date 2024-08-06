@@ -338,7 +338,7 @@ export const NetworkSelectionContainer = (
     <Dialog
       {...props}
       onClose={() => props.onClose(false)}
-      title={`Select ${isSource ? 'source' : 'destination'} network`}
+      title={`Select ${isSource ? 'Source' : 'Destination'} Network`}
       actionButtonProps={{ hidden: true }}
       isFooterHidden={true}
       className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
