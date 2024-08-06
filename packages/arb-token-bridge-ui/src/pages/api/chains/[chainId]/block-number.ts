@@ -20,6 +20,9 @@ function getSubgraphClient(chainId: number) {
     case ChainId.ArbitrumOne:
       return getL2SubgraphClient(ChainId.ArbitrumOne)
 
+    case ChainId.ArbitrumNova:
+      return getL2SubgraphClient(ChainId.ArbitrumNova)
+
     case ChainId.ArbitrumSepolia:
       return getL2SubgraphClient(ChainId.ArbitrumSepolia)
 

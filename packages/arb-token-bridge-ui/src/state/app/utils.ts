@@ -2,14 +2,22 @@ import dayjs from 'dayjs'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 import { ethers, BigNumber } from 'ethers'
 
-import { DepositStatus, MergedTransaction } from './state'
+import {
+  DepositStatus,
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from './state'
 import {
   AssetType,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../hooks/useTransactions'
+import {
+  isTeleporterTransaction,
+  TeleporterTransaction,
+  Transaction
+} from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
@@ -36,7 +44,9 @@ function isMergedTransaction(
   return typeof (tx as MergedTransaction).direction !== 'undefined'
 }
 
-export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
+export const getDepositStatus = (
+  tx: Transaction | MergedTransaction | TeleporterMergedTransaction
+) => {
   if (isTransaction(tx) && tx.type !== 'deposit' && tx.type !== 'deposit-l1') {
     return undefined
   }
@@ -59,7 +69,7 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
       destinationChainId: tx.childChainId
     })
   ) {
-    const { l2ToL3MsgData, l1ToL2MsgData } = tx
+    const { l2ToL3MsgData, l1ToL2MsgData } = tx as TeleporterMergedTransaction
 
     // if any of the retryable info is missing, first fetch might be pending
     if (!l1ToL2MsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
@@ -89,7 +99,7 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     }
   }
 
-  const { l1ToL2MsgData } = tx
+  const { parentToChildMsgData: l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
     return DepositStatus.L2_PENDING
   }
@@ -129,8 +139,10 @@ function getDepositStatusFromL1ToL2MessageStatus(
   }
 }
 
-export const transformDeposit = (tx: Transaction): MergedTransaction => {
-  return {
+export const transformDeposit = (
+  tx: Transaction | TeleporterTransaction
+): MergedTransaction | TeleporterMergedTransaction => {
+  const transaction = {
     sender: tx.sender,
     destination: tx.destination,
     direction: tx.type,
@@ -149,15 +161,22 @@ export const transformDeposit = (tx: Transaction): MergedTransaction => {
     isWithdrawal: false,
     blockNum: tx.blockNumber || null,
     tokenAddress: tx.tokenAddress || null,
-    l1ToL2MsgData: tx.l1ToL2MsgData,
-    l2ToL1MsgData: tx.l2ToL1MsgData,
-    l2ToL3MsgData: tx.l2ToL3MsgData,
+    parentToChildMsgData: tx.parentToChildMsgData,
+    childToParentMsgData: tx.childToParentMsgData,
     depositStatus: getDepositStatus(tx),
     parentChainId: Number(tx.l1NetworkID),
     childChainId: Number(tx.l2NetworkID),
     sourceChainId: Number(tx.l1NetworkID),
     destinationChainId: Number(tx.l2NetworkID)
   }
+  if (isTeleporterTransaction(tx)) {
+    return {
+      ...transaction,
+      l2ToL3MsgData: tx.l2ToL3MsgData
+    }
+  }
+
+  return transaction
 }
 
 export const transformWithdrawal = (
@@ -282,7 +301,7 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
-  if (isTeleport(tx)) {
+  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
     return (
       firstRetryableLegRequiresRedeem(tx) ||
       secondRetryableLegForTeleportRequiresRedeem(tx)

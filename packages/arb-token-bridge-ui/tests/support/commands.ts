@@ -15,14 +15,14 @@ import {
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getInitialERC20Balance,
-  zeroToLessThanOneETH
+  getInitialERC20Balance
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
+import { shortenAddress } from '../../src/util/CommonUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -122,21 +122,40 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible').click()
 }
 
-export const openTransactionsPanel = () => {
-  cy.waitUntil(
-    () =>
-      cy.findByText(/Summary/i).then(() => {
-        // Open tx history panel
-        cy.findByRole('button', { name: /account header button/i })
-          .should('be.visible')
-          .click()
+export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
+  cy.findByRole('tab', {
+    name: `show ${tab} transactions`
+  })
+    .as('tab')
+    .should('be.visible')
+    .click()
 
-        cy.findByRole('button', { name: /transactions/i })
-          .should('be.visible')
-          .click()
-      }),
+  return cy
+    .get('@tab')
+    .should('have.attr', 'data-headlessui-state')
+    .and('equal', 'selected')
+}
+
+export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
+  cy.log(`opening transactions panel on ${tab}`)
+  cy.findByRole('button', { name: /account header button/i })
+    .should('be.visible')
+    .click()
+  cy.findByRole('button', { name: /transactions/i })
+    .should('be.visible')
+    .click()
+
+  cy.selectTransactionsPanelTab(tab)
+
+  // Waiting for transactions to be fetched
+  return cy.waitUntil(
+    () =>
+      cy
+        .findByText(/Showing \d+ \w+ transactions made in/)
+        .should('be.visible'),
     {
-      timeout: 10000,
+      errorMsg: 'Failed to fetch transactions.',
+      timeout: 30_000,
       interval: 500
     }
   )
@@ -325,11 +344,69 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function openTransactionDetails({
+  amount,
+  symbol
+}: {
+  amount: number
+  symbol: string
+}): Cypress.Chainable<JQuery<HTMLElement>> {
+  cy.findTransactionInTransactionHistory({ amount, symbol }).within(() => {
+    cy.findByLabelText('Transaction details button').click()
+  })
+  return cy.findByText('Transaction details').should('be.visible')
+}
+
+export function closeTransactionDetails() {
+  cy.findByLabelText('Close transaction details popup').click()
+}
+
+export function findTransactionDetailsCustomDestinationAddress(
+  customAddress: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+  // custom destination label in pending tx history should be visible
+  return cy
+    .findByLabelText(`Custom address: ${shortenAddress(customAddress)}`)
+    .should('be.visible')
+}
+
+export function findTransactionInTransactionHistory({
+  symbol,
+  amount,
+  duration
+}: {
+  symbol: string
+  amount: number
+  duration?: string
+}) {
+  const rowId = new RegExp(
+    `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
+  )
+  cy.findByTestId(rowId).as('row')
+  if (duration) {
+    cy.get('@row').findAllByText(duration).first().should('be.visible')
+  }
+
+  cy.get('@row')
+    .findByLabelText('Transaction details button')
+    .should('be.visible')
+  return cy.get('@row')
+}
+
+export function findClaimButton(
+  amountToClaim: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText(`Claim ${amountToClaim}`)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
   openTransactionsPanel,
+  selectTransactionsPanelTab,
   resetCctpAllowance,
   fundUserUsdcTestnet,
   fundUserWalletEth,
@@ -341,5 +418,10 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  findSelectTokenButton
+  findSelectTokenButton,
+  openTransactionDetails,
+  closeTransactionDetails,
+  findTransactionInTransactionHistory,
+  findClaimButton,
+  findTransactionDetailsCustomDestinationAddress
 })

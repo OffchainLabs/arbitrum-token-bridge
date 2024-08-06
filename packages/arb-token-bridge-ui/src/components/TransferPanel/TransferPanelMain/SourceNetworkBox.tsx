@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { getNetworkName } from '../../../util/networks'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
@@ -31,18 +31,16 @@ import { TransferPanelMainInput } from '../TransferPanelMainInput'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
+import { useMaxAmount } from './useMaxAmount'
+import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
 
 export function SourceNetworkBox({
   amount,
-  loadingMaxAmount,
-  setMaxAmount,
   errorMessage,
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
   amount: string
-  loadingMaxAmount: boolean
-  setMaxAmount: () => Promise<void>
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
@@ -57,15 +55,34 @@ export function SourceNetworkBox({
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const setAmount = useSetInputAmount()
+  const { maxAmount } = useMaxAmount({
+    customFeeTokenBalances
+  })
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  useEffect(() => {
+    if (isMaxAmount && typeof maxAmount !== 'undefined') {
+      setAmount(maxAmount)
+    } else {
+      setAmount(amount)
+    }
+  }, [amount, maxAmount, isMaxAmount, setAmount])
+
+  const maxButtonOnClick = useCallback(() => {
+    if (typeof maxAmount !== 'undefined') {
+      setAmount(maxAmount)
+    }
+  }, [maxAmount, setAmount])
 
   const buttonStyle = {
     backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
   }
 
   const onChange = useCallback(
-    async (network: Chain) => {
+    (network: Chain) => {
       if (networks.destinationChain.id === network.id) {
         setNetworks({
           sourceChainId: networks.destinationChain.id,
@@ -135,12 +152,20 @@ export function SourceNetworkBox({
                 prefix={selectedToken ? '' : 'Balance: '}
               />
               {/* Only show ETH balance on parent chain */}
-              {isDepositMode && <ETHBalance balance={ethParentBalance} />}
+              {isDepositMode && (
+                <ETHBalance
+                  balance={ethParentBalance}
+                  on={NetworkType.parentChain}
+                />
+              )}
             </>
           ) : (
             <ETHBalance
               balance={isDepositMode ? ethParentBalance : ethChildBalance}
               prefix={selectedToken ? '' : 'Balance: '}
+              on={
+                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
+              }
             />
           )}
         </BalancesContainer>
@@ -148,10 +173,7 @@ export function SourceNetworkBox({
 
       <div className="flex flex-col gap-1">
         <TransferPanelMainInput
-          maxButtonProps={{
-            loading: isMaxAmount || loadingMaxAmount,
-            onClick: setMaxAmount
-          }}
+          maxButtonOnClick={maxButtonOnClick}
           errorMessage={errorMessage}
           value={isMaxAmount ? '' : amount}
         />

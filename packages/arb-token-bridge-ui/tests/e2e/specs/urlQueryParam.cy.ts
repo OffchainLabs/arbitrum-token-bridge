@@ -42,7 +42,10 @@ describe('User enters site with query params on URL', () => {
           () =>
             cy
               .findByPlaceholderText(/Enter amount/i)
-              .then($el => Number($el.val()) > 0),
+              .invoke('val')
+              .should($val => {
+                cy.wrap(Number($val)).should('be.gt', 0)
+              }),
           // optional timeouts and error messages
           {
             errorMsg: 'was expecting a numerical input value greater than 0',
@@ -117,7 +120,10 @@ describe('User enters site with query params on URL', () => {
           () =>
             cy
               .findByPlaceholderText(/Enter amount/i)
-              .then($el => Number($el.val()) > 0),
+              .invoke('val')
+              .should($val => {
+                cy.wrap(Number($val)).should('be.gt', 0)
+              }),
           // optional timeouts and error messages
           {
             errorMsg: 'was expecting a numerical input value greater than 0',

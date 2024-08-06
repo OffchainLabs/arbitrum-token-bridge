@@ -3,6 +3,7 @@
  */
 
 import {
+  getInitialETHBalance,
   getL1NetworkName,
   getL2NetworkName,
   zeroToLessThanOneETH
@@ -10,7 +11,20 @@ import {
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
-  const ETHToWithdraw = 0.0001
+  let ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+  let l1EthBal: string
+
+  beforeEach(() => {
+    getInitialETHBalance(
+      Cypress.env('ETH_RPC_URL'),
+      Cypress.env('ADDRESS')
+    ).then(
+      val =>
+        (l1EthBal = formatAmount(val, {
+          symbol: 'ETH'
+        }))
+    )
+  })
 
   // Happy Path
   context('user has some ETH and is on L2', () => {
@@ -36,6 +50,7 @@ describe('Withdraw ETH', () => {
       })
 
       it('should show withdrawal confirmation and withdraw', () => {
+        ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
         cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
         cy.findMoveFundsButton().click()
@@ -57,22 +72,59 @@ describe('Withdraw ETH', () => {
         })
           .should('be.visible')
           .click()
+
         // the Continue withdrawal button should not be disabled now
         cy.findByRole('button', {
           name: /Continue/i
         })
           .should('be.enabled')
           .click()
+
         cy.confirmMetamaskTransaction()
-        cy.findByText('an hour').should('be.visible')
-        cy.findByText(
-          `${formatAmount(ETHToWithdraw, {
-            symbol: 'ETH'
-          })}`
-        ).should('be.visible')
+
+        cy.findTransactionInTransactionHistory({
+          duration: 'an hour',
+          amount: ETHToWithdraw,
+          symbol: 'ETH'
+        })
       })
     })
 
+    it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
+      // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
+
+      cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
+
+      cy.findByLabelText('Open Transaction History')
+        .should('be.visible')
+        .click()
+
+      cy.findClaimButton(
+        formatAmount(ETHToWithdraw, {
+          symbol: 'ETH'
+        })
+      ).click()
+
+      cy.confirmMetamaskTransaction()
+
+      cy.findByLabelText('show settled transactions')
+        .should('be.visible')
+        .click()
+
+      cy.findByText(
+        `${formatAmount(ETHToWithdraw, {
+          symbol: 'ETH'
+        })}`
+      ).should('be.visible')
+
+      cy.findByLabelText('Close side panel').click()
+
+      // the balance on the destination chain should not be the same as before
+      cy.findByLabelText('ETH balance amount on parentChain')
+        .should('be.visible')
+        .its('text')
+        .should('not.eq', l1EthBal)
+    })
     // TODO => test for bridge amount higher than user's L2 ETH balance
   })
 

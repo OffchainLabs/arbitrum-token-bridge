@@ -10,7 +10,6 @@ import {
   getL1NetworkName,
   getL2NetworkName
 } from '../../support/common'
-import { shortenAddress } from '../../../src/util/CommonUtils'
 
 const moreThanZeroBalance = /0(\.\d+)/
 
@@ -72,12 +71,11 @@ describe('Deposit ERC20 Token', () => {
       context('should deposit successfully', () => {
         cy.findMoveFundsButton().click()
         cy.confirmMetamaskTransaction()
-        cy.findByText(depositTime).should('be.visible')
-        cy.findByText(
-          `${formatAmount(ERC20AmountToSend, {
-            symbol: 'WETH'
-          })}`
-        ).should('be.visible')
+        cy.findTransactionInTransactionHistory({
+          duration: depositTime,
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        })
       })
     })
 
@@ -106,68 +104,53 @@ describe('Deposit ERC20 Token', () => {
       context('should deposit successfully', () => {
         cy.findMoveFundsButton().click()
         cy.confirmMetamaskTransaction()
-        cy.findByText(depositTime).should('be.visible')
-        cy.findByText(
-          `${formatAmount(ERC20AmountToSend, {
-            symbol: 'WETH'
-          })}`
-        ).should('be.visible')
-
-        // open the tx details popup
-        cy.findAllByLabelText('Transaction details button').first().click()
-        cy.findByText('Transaction details').should('be.visible')
-
-        cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-        // custom destination label in pending tx history should be visible
-        cy.findByLabelText(
-          `Custom address: ${shortenAddress(
-            Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-          )}`
-        ).should('be.visible')
-
-        // close popup
-        cy.findByLabelText('Close transaction details popup').click()
+        const txData = {
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: depositTime,
+          ...txData
+        })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
+        cy.closeTransactionDetails()
       })
 
       context('deposit should complete successfully', () => {
         // switch to settled transactions
-        cy.findByLabelText('show settled transactions')
-          .should('be.visible')
-          .click()
+        cy.selectTransactionsPanelTab('settled')
 
         //wait for some time for tx to go through and find the new amount in settled transactions
         cy.waitUntil(
           () =>
-            cy
-              .findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              )
-              .should('be.visible'),
+            cy.findTransactionInTransactionHistory({
+              duration: 'a few seconds ago',
+              amount: ERC20AmountToSend,
+              symbol: 'WETH'
+            }),
           {
             errorMsg: 'Could not find settled ERC20 Deposit transaction',
             timeout: 60_000,
             interval: 500
           }
-        ).then(() => {
-          // open the tx details popup
-          cy.findAllByLabelText('Transaction details button').first().click()
-          cy.findByText('Transaction details').should('be.visible')
-
-          cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-          // custom destination label in pending tx history should be visible
-          cy.findByLabelText(
-            `Custom address: ${shortenAddress(
-              Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-            )}`
-          ).should('be.visible')
-
-          // close popup
-          cy.findByLabelText('Close transaction details popup').click()
+        )
+        // open the tx details popup
+        const txData = {
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: 'a few seconds ago',
+          ...txData
         })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
+        cy.closeTransactionDetails()
       })
 
       context('funds should reach destination account successfully', () => {

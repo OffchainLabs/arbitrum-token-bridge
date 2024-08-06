@@ -3,8 +3,6 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { formatAmount } from '../../../src/util/NumberUtils'
-import { shortenAddress } from '../../../src/util/CommonUtils'
 import { zeroToLessThanOneETH } from '../../support/common'
 
 // common function for this cctp withdrawal
@@ -97,12 +95,11 @@ describe('Withdraw USDC through CCTP', () => {
         // eslint-disable-next-line
         cy.wait(40_000)
         cy.confirmMetamaskTransaction()
-        cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-        cy.findByText(
-          `${formatAmount(USDCAmountToSend, {
-            symbol: 'USDC'
-          })}`
-        ).should('be.visible')
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        })
       })
     })
 
@@ -122,31 +119,22 @@ describe('Withdraw USDC through CCTP', () => {
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpWithdrawal()
         cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+
         // eslint-disable-next-line
         cy.wait(40_000)
         cy.confirmMetamaskTransaction()
-        cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-        cy.findByText(
-          `${formatAmount(USDCAmountToSend, {
-            symbol: 'USDC'
-          })}`
-        ).should('be.visible')
-
-        // open the tx details popup
-        cy.findAllByLabelText('Transaction details button').first().click()
-        cy.findByText('Transaction details').should('be.visible')
-
-        cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-        // custom destination label in pending tx history should be visible
-        cy.findByLabelText(
-          `Custom address: ${shortenAddress(
-            Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-          )}`
-        ).should('be.visible')
-
-        // close popup
-        cy.findByLabelText('Close transaction details popup').click()
+        const txData = {
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          ...txData
+        })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
       })
     })
   })

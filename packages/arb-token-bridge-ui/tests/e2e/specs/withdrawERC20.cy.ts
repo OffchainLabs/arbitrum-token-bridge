@@ -2,10 +2,10 @@
  * When user wants to bridge ERC20 from L2 to L1
  */
 
-import { shortenAddress } from '../../../src/util/CommonUtils'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
+  getL1NetworkConfig,
   getL2NetworkConfig,
   getL1NetworkName,
   getL2NetworkName,
@@ -13,17 +13,31 @@ import {
 } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {
+  let ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
   // Happy Path
   context('User is on L2 and imports ERC-20', () => {
-    let l2ERC20bal: string
+    let l1ERC20bal: string, l2ERC20bal: string
+    const l1WethAddress = Cypress.env('L1_WETH_ADDRESS')
     const l2WethAddress = Cypress.env('L2_WETH_ADDRESS')
 
     // log in to metamask before withdrawal
     beforeEach(() => {
+      getInitialERC20Balance({
+        tokenAddress: l1WethAddress,
+        multiCallerAddress: getL1NetworkConfig().multiCall,
+        address: Cypress.env('ADDRESS'),
+        rpcURL: Cypress.env('ETH_RPC_URL')
+      }).then(
+        val =>
+          (l1ERC20bal = formatAmount(val, {
+            symbol: 'WETH'
+          }))
+      )
+
       getInitialERC20Balance({
         tokenAddress: l2WethAddress,
         multiCallerAddress: getL2NetworkConfig().multiCall,
@@ -46,7 +60,7 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should withdraw ERC-20 to the same address successfully', () => {
-      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+      ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'childChain' })
       context('should add ERC-20 correctly', () => {
@@ -99,13 +113,54 @@ describe('Withdraw ERC20 Token', () => {
           .click()
 
         cy.confirmMetamaskTransaction()
-        cy.findByText(
-          `${formatAmount(ERC20AmountToSend, {
-            symbol: 'WETH'
-          })}`
-        ).should('be.visible')
-        cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
+
+        cy.findTransactionInTransactionHistory({
+          duration: 'an hour',
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        })
       })
+    })
+
+    it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
+      // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
+
+      cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
+
+      cy.findByLabelText('Open Transaction History')
+        .should('be.visible')
+        .click()
+
+      cy.findClaimButton(
+        formatAmount(ERC20AmountToSend, {
+          symbol: 'WETH'
+        })
+      ).click()
+
+      cy.confirmMetamaskTransaction()
+
+      cy.findByLabelText('show settled transactions')
+        .should('be.visible')
+        .click()
+
+      cy.findByText(
+        `${formatAmount(ERC20AmountToSend, {
+          symbol: 'WETH'
+        })}`
+      ).should('be.visible')
+
+      cy.findByLabelText('Close side panel').click()
+
+      cy.searchAndSelectToken({
+        tokenName: 'WETH',
+        tokenAddress: l2WethAddress
+      })
+
+      // the balance on the destination chain should not be the same as before
+      cy.findByLabelText('WETH balance amount on parentChain')
+        .should('be.visible')
+        .its('text')
+        .should('not.eq', l1ERC20bal)
     })
 
     it('should withdraw ERC-20 to custom destination address successfully', () => {
@@ -166,29 +221,21 @@ describe('Withdraw ERC20 Token', () => {
           .click()
 
         cy.confirmMetamaskTransaction()
-        cy.findByText(
-          `${formatAmount(ERC20AmountToSend, {
-            symbol: 'WETH'
-          })}`
-        ).should('be.visible')
-        cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
-
-        // open the tx details popup
-        cy.findAllByLabelText('Transaction details button').first().click()
-        cy.findByText('Transaction details').should('be.visible')
-
-        cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-        // custom destination label in pending tx history should be visible
-        cy.findByLabelText(
-          `Custom address: ${shortenAddress(
-            Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-          )}`
-        ).should('be.visible')
+        const txData = {
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: 'an hour',
+          ...txData
+        })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
 
         // close popup
-        cy.findByLabelText('Close transaction details popup').click()
-
+        cy.closeTransactionDetails()
         cy.findByLabelText('Close side panel').click()
 
         // the balance on the source chain should not be the same as before

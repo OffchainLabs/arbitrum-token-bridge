@@ -7,7 +7,6 @@ import {
   getL2NetworkName,
   zeroToLessThanOneETH
 } from '../../support/common'
-import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Deposit ETH', () => {
   const ETHAmountToDeposit = 0.0001
@@ -30,12 +29,11 @@ describe('Deposit ETH', () => {
     cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction()
-    cy.findByText(depositTime).should('be.visible')
-    cy.findByText(
-      `${formatAmount(ETHAmountToDeposit, {
-        symbol: 'ETH'
-      })}`
-    ).should('be.visible')
+    cy.findTransactionInTransactionHistory({
+      duration: depositTime,
+      amount: ETHAmountToDeposit,
+      symbol: 'ETH'
+    })
   })
 
   // TODO
