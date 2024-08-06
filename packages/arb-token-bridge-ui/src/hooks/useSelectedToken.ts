@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
@@ -41,8 +41,8 @@ export const useSelectedToken = () => {
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
 
-  const queryKey = useMemo(() => {
-    return tokensFromLists && tokensFromUser
+  const queryKey =
+    tokensFromLists && tokensFromUser
       ? ([
           parentChain.id,
           childChain.id,
@@ -50,18 +50,11 @@ export const useSelectedToken = () => {
           'useSelectedToken'
         ] as const)
       : null
-  }, [
-    tokensFromLists,
-    tokensFromUser,
-    parentChain.id,
-    childChain.id,
-    tokenFromSearchParams
-  ])
 
   const { data, mutate: refreshSelectedToken } = useSWRImmutable(
     queryKey,
-    async ([parentChainId, childChainId]) => {
-      const tokenAddressLowercased = tokenFromSearchParams?.toLowerCase()
+    async ([parentChainId, childChainId, _tokenFromSearchParams]) => {
+      const tokenAddressLowercased = _tokenFromSearchParams?.toLowerCase()
 
       const parentProvider = getProviderForChainId(parentChainId)
       const childProvider = getProviderForChainId(childChainId)
