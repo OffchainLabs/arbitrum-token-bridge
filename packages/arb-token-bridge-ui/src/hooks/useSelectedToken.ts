@@ -1,5 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
+import { Provider } from '@ethersproject/providers'
+import {
+  getChainIdFromProvider,
+  getProviderForChainId
+} from '@/token-bridge-sdk/utils'
 
 import { useTokenFromSearchParams } from '../components/TransferPanel/TransferPanelUtils'
 import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
@@ -15,8 +20,6 @@ import { useNetworks } from './useNetworks'
 import { isNetwork } from '../util/networks'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { useNetworksRelationship } from './useNetworksRelationship'
-import { Provider } from '@ethersproject/providers'
-import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 import {
   useTokensFromLists,
   useTokensFromUser
@@ -34,14 +37,34 @@ export const useSelectedToken = () => {
   const { tokenFromSearchParams, setTokenQueryParam } =
     useTokenFromSearchParams()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
 
-  const fetcher: () => Promise<ERC20BridgeToken | null> =
-    useCallback(async () => {
+  const queryKey = useMemo(() => {
+    return tokensFromLists && tokensFromUser
+      ? ([
+          parentChain.id,
+          childChain.id,
+          tokenFromSearchParams,
+          'useSelectedToken'
+        ] as const)
+      : null
+  }, [
+    tokensFromLists,
+    tokensFromUser,
+    parentChain.id,
+    childChain.id,
+    tokenFromSearchParams
+  ])
+
+  const { data, mutate: refreshSelectedToken } = useSWRImmutable(
+    queryKey,
+    async ([parentChainId, childChainId]) => {
       const tokenAddressLowercased = tokenFromSearchParams?.toLowerCase()
+
+      const parentProvider = getProviderForChainId(parentChainId)
+      const childProvider = getProviderForChainId(childChainId)
 
       if (!tokenAddressLowercased) {
         return null
@@ -50,8 +73,8 @@ export const useSelectedToken = () => {
       if (isTokenNativeUSDC(tokenAddressLowercased)) {
         return getUsdcToken({
           tokenAddress: tokenAddressLowercased,
-          parentChainProvider,
-          childChainProvider
+          parentProvider,
+          childProvider
         })
       }
 
@@ -64,35 +87,7 @@ export const useSelectedToken = () => {
         tokensFromUser[tokenAddressLowercased] ||
         null
       )
-    }, [
-      childChainProvider,
-      parentChainProvider,
-      tokenFromSearchParams,
-      tokensFromLists,
-      tokensFromUser
-    ])
-
-  const shouldFetch = useMemo(() => {
-    return (
-      typeof tokensFromLists !== 'undefined' &&
-      typeof tokensFromUser !== 'undefined'
-    )
-  }, [tokensFromLists, tokensFromUser])
-
-  const queryKey = useMemo(() => {
-    return shouldFetch
-      ? [
-          'useSelectedToken',
-          parentChain.id,
-          childChain.id,
-          tokenFromSearchParams
-        ]
-      : null
-  }, [shouldFetch, parentChain.id, childChain.id, tokenFromSearchParams])
-
-  const { data, mutate: refreshSelectedToken } = useSWRImmutable(
-    queryKey,
-    fetcher
+    }
   )
 
   const setSelectedToken = useCallback(
@@ -106,15 +101,15 @@ export const useSelectedToken = () => {
 
 async function getUsdcToken({
   tokenAddress,
-  parentChainProvider,
-  childChainProvider
+  parentProvider,
+  childProvider
 }: {
   tokenAddress: string
-  parentChainProvider: Provider
-  childChainProvider: Provider
-}) {
-  const parentChainId = await getChainIdFromProvider(parentChainProvider)
-  const childChainId = await getChainIdFromProvider(childChainProvider)
+  parentProvider: Provider
+  childProvider: Provider
+}): Promise<ERC20BridgeToken | null> {
+  const parentChainId = await getChainIdFromProvider(parentProvider)
+  const childChainId = await getChainIdFromProvider(childProvider)
 
   const {
     isEthereumMainnet: isParentChainEthereumMainnet,
@@ -141,7 +136,7 @@ async function getUsdcToken({
     }
   }
 
-  // Arbitrum One USDC when Ethereum is the parent chain
+  // Arbitrum One USDC when Ethereum is the par
   if (isTokenArbitrumOneNativeUSDC(tokenAddress) && !isParentChainArbitrumOne) {
     return {
       ...commonUSDC,
@@ -174,8 +169,8 @@ async function getUsdcToken({
         ? (
             await getL2ERC20Address({
               erc20L1Address: tokenAddress,
-              l1Provider: parentChainProvider,
-              l2Provider: childChainProvider
+              l1Provider: parentProvider,
+              l2Provider: childProvider
             })
           ).toLowerCase()
         : undefined
