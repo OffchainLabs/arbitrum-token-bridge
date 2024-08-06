@@ -54,8 +54,7 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
-  getWarningTokenDescription,
-  useTokenFromSearchParams
+  getWarningTokenDescription
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransferReadiness } from './useTransferReadiness'
@@ -92,9 +91,7 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const { tokenFromSearchParams, setTokenQueryParam } =
-    useTokenFromSearchParams()
-
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
@@ -110,7 +107,7 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const [selectedToken] = useSelectedToken()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()
@@ -197,7 +194,7 @@ export function TransferPanel() {
   )
 
   function closeWithResetTokenImportDialog() {
-    setTokenQueryParam(null)
+    setSelectedToken(null)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
     tokenImportDialogProps.onClose(false)
   }
@@ -1114,7 +1111,7 @@ export function TransferPanel() {
           )}
         </div>
 
-        {typeof importDialogTokenAddress !== 'undefined' && (
+        {importDialogTokenAddress && (
           <TokenImportDialog
             {...tokenImportDialogProps}
             onClose={closeWithResetTokenImportDialog}

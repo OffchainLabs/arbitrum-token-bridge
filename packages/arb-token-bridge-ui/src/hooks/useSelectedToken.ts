@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
 import {
@@ -6,7 +7,6 @@ import {
   getProviderForChainId
 } from '@/token-bridge-sdk/utils'
 
-import { useTokenFromSearchParams } from '../components/TransferPanel/TransferPanelUtils'
 import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
 import {
   getL2ERC20Address,
@@ -24,6 +24,7 @@ import {
   useTokensFromLists,
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
+import { useArbQueryParams } from './useArbQueryParams'
 
 const commonUSDC = {
   name: 'USD Coin',
@@ -34,8 +35,7 @@ const commonUSDC = {
 }
 
 export const useSelectedToken = () => {
-  const { tokenFromSearchParams, setTokenQueryParam } =
-    useTokenFromSearchParams()
+  const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const tokensFromLists = useTokensFromLists()
@@ -92,11 +92,21 @@ export const useSelectedToken = () => {
 
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) =>
-      setTokenQueryParam(erc20ParentAddress),
-    [setTokenQueryParam]
+      setQueryParams({ token: sanitizeTokenAddress(erc20ParentAddress) }),
+    [setQueryParams]
   )
 
   return [data ?? null, setSelectedToken, refreshSelectedToken] as const
+}
+
+function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
+  if (!tokenAddress) {
+    return undefined
+  }
+  if (utils.isAddress(tokenAddress)) {
+    return tokenAddress
+  }
+  return undefined
 }
 
 async function getUsdcToken({

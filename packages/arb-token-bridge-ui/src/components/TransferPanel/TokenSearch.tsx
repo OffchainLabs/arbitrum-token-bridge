@@ -36,7 +36,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
-import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
@@ -533,7 +532,6 @@ export function TokenSearch({
   } = useNetworksRelationship(networks)
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
-  const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -562,7 +560,7 @@ export function TokenSearch({
 
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
-        setTokenQueryParam(_token.address)
+        setSelectedToken(_token.address)
         return
       }
 
