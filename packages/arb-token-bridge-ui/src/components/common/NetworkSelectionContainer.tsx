@@ -228,7 +228,7 @@ function NetworksPanel({
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
     if (rowItem.network.description) {
-      return 90
+      return 95
     }
     return 60
   }
@@ -286,6 +286,7 @@ function NetworksPanel({
         searchInputValue={networkSearched}
         searchInputOnChange={onSearchInputChange}
         errorMessage={errorMessage}
+        isDialog
       >
         <AutoSizer>
           {({ height, width }) => (
