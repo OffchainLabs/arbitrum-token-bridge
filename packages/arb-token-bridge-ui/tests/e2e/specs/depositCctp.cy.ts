@@ -144,7 +144,9 @@ describe('Deposit USDC through CCTP', () => {
                 ...txData
               })
               cy.openTransactionDetails(txData)
-              cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+              cy.findTransactionDetailsCustomDestinationAddress(
+                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+              )
             })
           }
         )

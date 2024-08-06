@@ -122,9 +122,10 @@ describe('Deposit ERC20 Token', () => {
                 ...txData
               })
               cy.openTransactionDetails(txData)
-              cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
-
-              cy.findByLabelText('Close transaction details popup').click()
+              cy.findTransactionDetailsCustomDestinationAddress(
+                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+              )
+              cy.closeTransactionDetails()
             })
           })
       })
@@ -157,8 +158,10 @@ describe('Deposit ERC20 Token', () => {
             ...txData
           })
           cy.openTransactionDetails(txData)
-          cy.checkCustomAddress(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
-          cy.findByLabelText('Close transaction details popup').click()
+          cy.findTransactionDetailsCustomDestinationAddress(
+            Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+          )
+          cy.closeTransactionDetails()
         })
       })
 

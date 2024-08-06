@@ -357,7 +357,11 @@ export function openTransactionDetails({
   return cy.findByText('Transaction details').should('be.visible')
 }
 
-export function checkCustomAddress(
+export function closeTransactionDetails() {
+  cy.findByLabelText('Close transaction details popup').click()
+}
+
+export function findTransactionDetailsCustomDestinationAddress(
   customAddress: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
@@ -416,7 +420,8 @@ Cypress.Commands.addAll({
   findMoveFundsButton,
   findSelectTokenButton,
   openTransactionDetails,
+  closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
-  checkCustomAddress
+  findTransactionDetailsCustomDestinationAddress
 })
