@@ -2,7 +2,7 @@ import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
+import { trustWallet, okxWallet, imTokenWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import {
   sepolia,
@@ -138,7 +138,8 @@ export function getProps(targetChainKey: string | null) {
       groupName: 'More',
       wallets: [
         trustWallet({ chains, projectId }),
-        okxWallet({ chains, projectId })
+        okxWallet({ chains, projectId }),
+        imTokenWallet({ chains, projectId })
       ]
     }
   ])
