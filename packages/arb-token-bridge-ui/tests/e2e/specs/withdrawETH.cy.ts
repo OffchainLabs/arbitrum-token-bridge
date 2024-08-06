@@ -53,6 +53,7 @@ describe('Withdraw ETH', () => {
         ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
         cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
+        //
         cy.findMoveFundsButton().click()
         cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
@@ -72,7 +73,6 @@ describe('Withdraw ETH', () => {
         })
           .should('be.visible')
           .click()
-
         // the Continue withdrawal button should not be disabled now
         cy.findByRole('button', {
           name: /Continue/i
@@ -88,43 +88,43 @@ describe('Withdraw ETH', () => {
           symbol: 'ETH'
         })
       })
+
+      it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
+        // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
+        cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
+
+        cy.findByLabelText('Open Transaction History')
+          .should('be.visible')
+          .click()
+
+        cy.findClaimButton(
+          formatAmount(ETHToWithdraw, {
+            symbol: 'ETH'
+          })
+        ).click()
+
+        cy.confirmMetamaskTransaction()
+
+        cy.findByLabelText('show settled transactions')
+          .should('be.visible')
+          .click()
+
+        cy.findByText(
+          `${formatAmount(ETHToWithdraw, {
+            symbol: 'ETH'
+          })}`
+        ).should('be.visible')
+
+        cy.findByLabelText('Close side panel').click()
+
+        // the balance on the destination chain should not be the same as before
+        cy.findByLabelText('ETH balance amount on parentChain')
+          .should('be.visible')
+          .its('text')
+          .should('not.eq', l1EthBal)
+      })
     })
 
-    it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
-      // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
-
-      cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
-
-      cy.findByLabelText('Open Transaction History')
-        .should('be.visible')
-        .click()
-
-      cy.findClaimButton(
-        formatAmount(ETHToWithdraw, {
-          symbol: 'ETH'
-        })
-      ).click()
-
-      cy.confirmMetamaskTransaction()
-
-      cy.findByLabelText('show settled transactions')
-        .should('be.visible')
-        .click()
-
-      cy.findByText(
-        `${formatAmount(ETHToWithdraw, {
-          symbol: 'ETH'
-        })}`
-      ).should('be.visible')
-
-      cy.findByLabelText('Close side panel').click()
-
-      // the balance on the destination chain should not be the same as before
-      cy.findByLabelText('ETH balance amount on parentChain')
-        .should('be.visible')
-        .its('text')
-        .should('not.eq', l1EthBal)
-    })
     // TODO => test for bridge amount higher than user's L2 ETH balance
   })
 
