@@ -77,12 +77,11 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(depositTime).should('be.visible')
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                duration: depositTime,
+                amount: ERC20AmountToSend,
+                symbol: 'WETH'
+              })
             })
           })
       })
@@ -118,12 +117,11 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(depositTime).should('be.visible')
-              cy.findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              ).should('be.visible')
+              cy.findTransactionInTransactionHistory({
+                duration: depositTime,
+                amount: ERC20AmountToSend,
+                symbol: 'WETH'
+              })
 
               // open the tx details popup
               cy.findAllByLabelText('Transaction details button')
@@ -150,20 +148,16 @@ describe('Deposit ERC20 Token', () => {
 
       context('deposit should complete successfully', () => {
         // switch to settled transactions
-        cy.findByLabelText('show settled transactions')
-          .should('be.visible')
-          .click()
+        cy.selectTransactionsPanelTab('settled')
 
         //wait for some time for tx to go through and find the new amount in settled transactions
         cy.waitUntil(
           () =>
-            cy
-              .findByText(
-                `${formatAmount(ERC20AmountToSend, {
-                  symbol: 'WETH'
-                })}`
-              )
-              .should('be.visible'),
+            cy.findTransactionInTransactionHistory({
+              duration: 'a few seconds ago',
+              amount: ERC20AmountToSend,
+              symbol: 'WETH'
+            }),
           {
             errorMsg: 'Could not find settled ERC20 Deposit transaction',
             timeout: 60_000,
