@@ -14,14 +14,12 @@ import {
   NetworkName,
   startWebApp,
   getL1NetworkConfig,
-  getL2NetworkConfig,
-  getInitialERC20Balance
+  getL2NetworkConfig
 } from './common'
 import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -160,74 +158,34 @@ export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
   )
 }
 
-const l1RpcUrl = Cypress.env('ETH_SEPOLIA_RPC_URL')
-const l2RpcUrl = Cypress.env('ARB_SEPOLIA_RPC_URL')
-const l1Provider = new StaticJsonRpcProvider(l1RpcUrl)
-const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
-const userWallet = new Wallet(Cypress.env('PRIVATE_KEY'))
+const sepoliaRpcUrl = Cypress.env('ETH_SEPOLIA_RPC_URL')
+const arbSepoliaRpcUrl = Cypress.env('ARB_SEPOLIA_RPC_URL')
 const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
 
-export async function resetCctpAllowance(networkType: NetworkType) {
-  const provider = networkType === 'parentChain' ? l1Provider : l2Provider
-  const { USDC, tokenMessengerContractAddress } =
-    networkType === 'parentChain'
-      ? CommonAddress.Sepolia
-      : CommonAddress.ArbitrumSepolia
-
-  const contract = ERC20__factory.connect(USDC, userWallet.connect(provider))
-  const allowance = await contract.allowance(
-    userWallet.address,
-    tokenMessengerContractAddress
-  )
-  if (allowance.gt(0)) {
-    await contract.decreaseAllowance(tokenMessengerContractAddress, allowance)
-  }
-}
-
-export async function fundUserUsdcTestnet(networkType: NetworkType) {
-  console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
-  const usdcContractAddress =
-    networkType === 'parentChain'
-      ? CommonAddress.Sepolia.USDC
-      : CommonAddress.ArbitrumSepolia.USDC
-
-  const usdcBalance = await getInitialERC20Balance({
-    address: userWallet.address,
-    rpcURL: networkType === 'parentChain' ? l1RpcUrl : l2RpcUrl,
-    tokenAddress: usdcContractAddress,
-    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
-  })
-
-  // Fund only if the balance is less than 0.0001 USDC
-  if (usdcBalance && usdcBalance.lt(utils.parseUnits('0.0001', 6))) {
+export async function fundUserUsdcTestnet(
+  address: string,
+  networkType: 'parentChain' | 'childChain'
+) {
+  try {
     console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
-    const l1Provider = new StaticJsonRpcProvider(l1RpcUrl)
-    const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
-    const provider = networkType === 'parentChain' ? l1Provider : l2Provider
+    const usdcContractAddress =
+      networkType === 'parentChain'
+        ? CommonAddress.Sepolia.USDC
+        : CommonAddress.ArbitrumSepolia.USDC
+
+    const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
+    const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
+    const provider =
+      networkType === 'parentChain' ? sepoliaProvider : arbSepoliaProvider
     const contract = new ERC20__factory().connect(localWallet.connect(provider))
     const token = contract.attach(usdcContractAddress)
     await token.deployed()
-    const tx = await token.transfer(
-      userWallet.address,
-      utils.parseUnits('1', 6)
+    const tx = await token.transfer(address, utils.parseUnits('0.0001', 6))
+    await tx.wait()
+  } catch (e) {
+    console.log(
+      `[fundUserUsdcTestnet]: Error while funding ${address} on ${networkType}`
     )
-    await tx.wait()
-  }
-}
-
-export async function fundUserWalletEth(networkType: NetworkType) {
-  console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
-  const address = await userWallet.getAddress()
-  const provider = networkType === 'parentChain' ? l1Provider : l2Provider
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 0.005 eth
-  const amountToTransfer = '0.005'
-  if (balance.lt(utils.parseEther(amountToTransfer))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther(amountToTransfer)
-    })
-    await tx.wait()
   }
 }
 
@@ -372,15 +330,22 @@ export function findClaimButton(
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
+export function claimCctp(amount: string) {
+  cy.findClaimButton(amount).click()
+  cy.allowMetamaskToSwitchNetwork()
+  cy.findClaimButton(amount).click()
+  cy.confirmMetamaskTransaction()
+
+  cy.findByText('Looks like no transactions here yet!').should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
   openTransactionsPanel,
   selectTransactionsPanelTab,
-  resetCctpAllowance,
   fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -391,5 +356,6 @@ Cypress.Commands.addAll({
   findMoveFundsButton,
   findSelectTokenButton,
   findTransactionInTransactionHistory,
-  findClaimButton
+  findClaimButton,
+  claimCctp
 })

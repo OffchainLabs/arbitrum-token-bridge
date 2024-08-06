@@ -87,56 +87,67 @@ export default defineConfig({
       }
 
       const userWalletAddress = await userWallet.getAddress()
+      if (!process.env.E2E_CCTP) {
+        // Deploy ERC-20 token to L1
+        const l1ERC20Token = await deployERC20ToL1()
 
-      // Deploy ERC-20 token to L1
-      const l1ERC20Token = await deployERC20ToL1()
+        // Deploy ERC-20 token to L2
+        await deployERC20ToL2(l1ERC20Token.address)
 
-      // Deploy ERC-20 token to L2
-      await deployERC20ToL2(l1ERC20Token.address)
+        // Mint ERC-20 token
+        // We need this to test token approval
+        // WETH is pre-approved so we need a new token
+        const mintedL1Erc20Token = await l1ERC20Token.mint()
+        await mintedL1Erc20Token.wait()
 
-      // Mint ERC-20 token
-      // We need this to test token approval
-      // WETH is pre-approved so we need a new token
-      const mintedL1Erc20Token = await l1ERC20Token.mint()
-      await mintedL1Erc20Token.wait()
+        // Send minted ERC-20 to the test userWallet
+        await l1ERC20Token
+          .connect(localWallet.connect(parentProvider))
+          .transfer(userWalletAddress, BigNumber.from(50000000))
 
-      // Send minted ERC-20 to the test userWallet
-      await l1ERC20Token
-        .connect(localWallet.connect(parentProvider))
-        .transfer(userWalletAddress, BigNumber.from(50000000))
+        // Wrap ETH to test ERC-20 transactions
+        await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
+        // Fund the userWallet. We do this to run tests on a small amount of ETH.
+        await Promise.all([
+          fundEth({
+            address: userWalletAddress,
+            provider: parentProvider,
+            sourceWallet: localWallet
+          }),
+          fundEth({
+            address: userWalletAddress,
+            provider: childProvider,
+            sourceWallet: localWallet
+          })
+        ])
 
-      // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([
-        fundEth({
-          networkType: 'parentChain',
-          address: userWalletAddress,
-          parentProvider,
-          childProvider,
-          sourceWallet: localWallet
-        }),
-        fundEth({
-          networkType: 'childChain',
-          address: userWalletAddress,
-          parentProvider,
-          childProvider,
-          sourceWallet: localWallet
+        // Approve WETH
+        await approveWeth()
+        config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
+        config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
+          erc20L1Address: l1ERC20Token.address,
+          l1Provider: parentProvider,
+          l2Provider: childProvider
         })
-      ])
 
-      // Wrap ETH to test ERC-20 transactions
-      await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
+        config.env.REDEEM_RETRYABLE_TEST_TX =
+          await generateTestTxForRedeemRetryable()
 
-      // Approve WETH
-      await approveWeth()
+        config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
+          erc20L1Address: l1ERC20Token.address,
+          l1Provider: parentProvider,
+          l2Provider: childProvider
+        })
 
-      // Generate activity on chains so that assertions get posted and claims can be made
-      generateActivityOnChains({
-        parentProvider,
-        childProvider,
-        wallet: localWallet
-      })
-      // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
-      checkForAssertions({ parentProvider, isOrbitTest })
+        // Generate activity on chains so that assertions get posted and claims can be made
+        generateActivityOnChains({
+          parentProvider,
+          childProvider,
+          wallet: localWallet
+        })
+        // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
+        checkForAssertions({ parentProvider, isOrbitTest })
+      }
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
@@ -146,23 +157,15 @@ export default defineConfig({
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
+
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
 
-      config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
-        erc20L1Address: l1ERC20Token.address,
-        l1Provider: parentProvider,
-        l2Provider: childProvider
-      })
       config.env.L1_WETH_ADDRESS = l1WethAddress
       config.env.L2_WETH_ADDRESS = l2WethAddress
-
-      config.env.REDEEM_RETRYABLE_TEST_TX =
-        await generateTestTxForRedeemRetryable()
 
       synpressPlugins(on, config)
       setupCypressTasks(on)
@@ -332,8 +335,8 @@ function setupCypressTasks(on: Cypress.PluginEvents) {
     getNetworkSetupComplete: () => {
       return networkSetupComplete
     },
-    setWalletConnectedToDapp: () => {
-      walletConnectedToDapp = true
+    setWalletConnectedToDapp: (toggle: boolean) => {
+      walletConnectedToDapp = toggle
       return null
     },
     getWalletConnectedToDapp: () => {

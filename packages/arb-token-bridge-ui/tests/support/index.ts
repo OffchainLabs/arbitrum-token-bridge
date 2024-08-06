@@ -33,13 +33,13 @@ before(() => {
       if (!complete) {
         // L1
         // only CI setup is required, Metamask already has localhost
-        if (Cypress.env('ETH_RPC_URL') !== 'http://localhost:8545') {
-          cy.addMetamaskNetwork(getL1NetworkConfig())
-        }
+        // if (Cypress.env('ETH_RPC_URL') !== 'http://localhost:8545') {
+        //   cy.addMetamaskNetwork(getL1NetworkConfig())
+        // }
 
-        // L2
-        cy.addMetamaskNetwork(getL2NetworkConfig())
-        cy.addMetamaskNetwork(getL2TestnetNetworkConfig())
+        // // L2
+        // cy.addMetamaskNetwork(getL2NetworkConfig())
+        // cy.addMetamaskNetwork(getL2TestnetNetworkConfig())
 
         cy.task('setNetworkSetupComplete')
       }
