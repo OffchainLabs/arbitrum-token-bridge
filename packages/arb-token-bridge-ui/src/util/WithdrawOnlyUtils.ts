@@ -183,6 +183,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27',
       l1Address: '0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB',
       l2Address: '0x07D65C18CECbA423298c0aEB5d2BeDED4DFd5736'
+    },
+    {
+      symbol: 'ATH',
+      l2CustomAddr: '0xc87B37a581ec3257B734886d9d3a581F5A9d056c',
+      l1Address: '0xbe0Ed4138121EcFC5c0E56B40517da27E6c5226B',
+      l2Address: '0xc7dEf82Ba77BAF30BbBc9b6162DC075b49092fb4'
     }
   ],
   [ChainId.ArbitrumNova]: []
