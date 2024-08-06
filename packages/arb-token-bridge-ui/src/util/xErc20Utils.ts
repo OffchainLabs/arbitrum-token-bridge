@@ -34,12 +34,8 @@ export async function xErc20RequiresApprovalOnChildChain(
     l2Provider: childChainProvider
   })
 
-  if (
+  return (
     childChainGatewayAddress.toLowerCase() ===
     gatewayData.childGateway.toLowerCase()
-  ) {
-    return true
-  }
-
-  return false
+  )
 }
