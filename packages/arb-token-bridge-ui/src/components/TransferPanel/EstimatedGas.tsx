@@ -86,6 +86,13 @@ export function EstimatedGas({
     [isBridgingEth, childChain.id]
   )
 
+  const isDestinationArbOne = isNetwork(
+    networks.destinationChain.id
+  ).isArbitrumOne
+  const isDestinationArbSepolia = isNetwork(
+    networks.destinationChain.id
+  ).isArbitrumSepolia
+
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
@@ -119,7 +126,11 @@ export function EstimatedGas({
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
   }
 
-  if (isTokenNativeUSDC(selectedToken?.address) && !isSourceChain) {
+  if (
+    isTokenNativeUSDC(selectedToken?.address) &&
+    !isSourceChain &&
+    (isDestinationArbSepolia || isDestinationArbOne)
+  ) {
     return (
       <GasFeeForClaimTxMessage networkName={networks.destinationChain.name} />
     )

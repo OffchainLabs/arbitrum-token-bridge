@@ -2,7 +2,11 @@ import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
+import {
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../state/app/state'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -18,7 +22,7 @@ type Action =
   | {
       type: 'UPDATE_L1TOL2MSG_DATA'
       txID: string
-      l1ToL2MsgData: L1ToL2MessageData
+      l1ToL2MsgData: ParentToChildMessageData
     }
   | { type: 'SET_TRANSACTIONS'; transactions: Transaction[] }
 
@@ -62,14 +66,22 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   }
 }
 
-export interface L1ToL2MessageData {
-  status: L1ToL2MessageStatus
+export interface ParentToChildMessageData {
+  status: ParentToChildMessageStatus
   retryableCreationTxID: string
-  l2TxID?: string
+  childTxId?: string
   fetchingUpdate: boolean
 }
 
-export type L2ToL1MessageData = {
+export interface L2ToL3MessageData {
+  status: ParentToChildMessageStatus
+  retryableCreationTxID?: string
+  l2ForwarderRetryableTxID?: string
+  l3TxID?: string
+  l2ChainId: number
+}
+
+export type ChildToParentMessageData = {
   uniqueId: BigNumber
 }
 
@@ -88,8 +100,8 @@ type TransactionBase = {
   l2NetworkID?: string
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
-  l1ToL2MsgData?: L1ToL2MessageData
-  l2ToL1MsgData?: L2ToL1MessageData
+  parentToChildMsgData?: ParentToChildMessageData
+  childToParentMsgData?: ChildToParentMessageData
   isClassic?: boolean
 }
 
@@ -102,6 +114,10 @@ export interface Transaction extends TransactionBase {
   nonce?: number
 }
 
+export interface TeleporterTransaction extends Transaction {
+  l2ToL3MsgData: L2ToL3MessageData
+}
+
 export interface NewTransaction extends TransactionBase {
   status: 'pending'
 }
@@ -112,8 +128,14 @@ export interface FailedTransaction extends TransactionBase {
 
 // TODO: enforce this type restriction
 export interface DepositTransaction extends Transaction {
-  l1ToL2MsgData: L1ToL2MessageData
+  parentToChildMsgData: ParentToChildMessageData
   type: 'deposit' | 'deposit-l1'
+}
+
+export function isTeleporterTransaction(
+  tx: Transaction | MergedTransaction
+): tx is TeleporterTransaction | TeleporterMergedTransaction {
+  return (tx as TeleporterTransaction).l2ToL3MsgData !== undefined
 }
 
 function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
@@ -157,7 +179,7 @@ function updateBlockNumber(
 function updateTxnL1ToL2Msg(
   state: Transaction[],
   txID: string,
-  l1ToL2MsgData: L1ToL2MessageData
+  l1ToL2MsgData: ParentToChildMessageData
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -174,11 +196,11 @@ function updateTxnL1ToL2Msg(
     )
   }
 
-  const previousL1ToL2MsgData = transaction.l1ToL2MsgData
+  const previousL1ToL2MsgData = transaction.parentToChildMsgData
   if (!previousL1ToL2MsgData) {
     newState[index] = {
       ...transaction,
-      l1ToL2MsgData: {
+      parentToChildMsgData: {
         status: l1ToL2MsgData.status,
         retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
         fetchingUpdate: false
@@ -189,7 +211,7 @@ function updateTxnL1ToL2Msg(
 
   newState[index] = {
     ...transaction,
-    l1ToL2MsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
+    parentToChildMsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
   }
   return newState
 }
@@ -275,11 +297,11 @@ const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
   // don't cache fetchingUpdate state
   const stateForCache = newState.map(tx => {
-    if (tx.l1ToL2MsgData && tx.l1ToL2MsgData.fetchingUpdate) {
+    if (tx.parentToChildMsgData && tx.parentToChildMsgData.fetchingUpdate) {
       return {
         ...tx,
-        l1ToL2MsgData: {
-          ...tx.l1ToL2MsgData,
+        parentToChildMsgData: {
+          ...tx.parentToChildMsgData,
           fetchingUpdate: false
         }
       }
@@ -318,7 +340,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const updateTxnL1ToL2MsgData = async (
     txID: string,
-    l1ToL2MsgData: L1ToL2MessageData
+    l1ToL2MsgData: ParentToChildMessageData
   ) => {
     dispatch({
       type: 'UPDATE_L1TOL2MSG_DATA',
@@ -361,7 +383,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateTransaction = (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: L1ToL2MessageData
+    l1ToL2MsgData?: ParentToChildMessageData
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(

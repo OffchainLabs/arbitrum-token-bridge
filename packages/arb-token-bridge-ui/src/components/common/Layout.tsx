@@ -6,7 +6,6 @@ import EclipseBottom from '@/images/eclipse_bottom.png'
 
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
-import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -55,12 +54,7 @@ export function Layout(props: LayoutProps) {
         <div className="flex flex-row">
           <AppSidebar />
 
-          <main className="grow">
-            <SiteBanner expiryDate="2024-04-07 12:00">
-              The Arbitrum Bridge has a new look!
-            </SiteBanner>
-            {props.children}
-          </main>
+          <main className="grow">{props.children}</main>
 
           <Toast />
         </div>

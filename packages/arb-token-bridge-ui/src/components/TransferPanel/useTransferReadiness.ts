@@ -4,7 +4,6 @@ import { utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppState } from '../../state'
-import { useBalance } from '../../hooks/useBalance'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -17,13 +16,21 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
+  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage,
+  getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
 import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { isNetwork } from '../../util/networks'
+import { useBalances } from '../../hooks/useBalances'
+
+// Add chains IDs that are currently down or disabled
+// It will block transfers and display an info box in the transfer panel
+export const DISABLED_CHAIN_IDS: number[] = []
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -116,81 +123,88 @@ export function useTransferReadiness({
     layout: { isTransferring }
   } = useAppContextState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
 
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: parentChainProvider, walletAddress })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: childChainProvider, walletAddress })
+    ethParentBalance,
+    erc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances
+  } = useBalances({
+    parentWalletAddress: walletAddress,
+    childWalletAddress: walletAddress
+  })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
-  const ethL1BalanceFloat = useMemo(
-    () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
-    [ethL1Balance]
-  )
+  const ethL1BalanceFloat = ethParentBalance
+    ? parseFloat(utils.formatEther(ethParentBalance))
+    : null
 
-  const ethL2BalanceFloat = useMemo(
-    () => (ethL2Balance ? parseFloat(utils.formatEther(ethL2Balance)) : null),
-    [ethL2Balance]
-  )
+  const ethL2BalanceFloat = ethChildBalance
+    ? parseFloat(utils.formatEther(ethChildBalance))
+    : null
 
   const selectedTokenL1BalanceFloat = useMemo(() => {
     if (!selectedToken) {
       return null
     }
 
-    const balance = erc20L1Balances?.[selectedToken.address.toLowerCase()]
+    const balance = erc20ParentBalances?.[selectedToken.address.toLowerCase()]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L1Balances])
+  }, [selectedToken, erc20ParentBalances])
 
   const selectedTokenL2BalanceFloat = useMemo(() => {
     if (!selectedToken) {
       return null
     }
 
+    const { isOrbitChain } = isNetwork(childChain.id)
+
     const isL2NativeUSDC =
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
 
-    const selectedTokenL2Address = isL2NativeUSDC
-      ? selectedToken.address.toLowerCase()
-      : (selectedToken.l2Address || '').toLowerCase()
+    const selectedTokenL2Address =
+      isL2NativeUSDC && !isOrbitChain
+        ? selectedToken.address.toLowerCase()
+        : (selectedToken.l2Address || '').toLowerCase()
 
-    const balance = erc20L2Balances?.[selectedTokenL2Address]
+    const balance = erc20ChildBalances?.[selectedTokenL2Address]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L2Balances])
+  }, [selectedToken, childChain.id, erc20ChildBalances])
 
   const customFeeTokenL1BalanceFloat = useMemo(() => {
     if (!nativeCurrency.isCustom) {
       return null
     }
 
-    const balance = erc20L1Balances?.[nativeCurrency.address]
+    const balance = erc20ParentBalances?.[nativeCurrency.address]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
-  }, [nativeCurrency, erc20L1Balances])
+  }, [nativeCurrency, erc20ParentBalances])
 
   return useMemo(() => {
     if (isNaN(Number(amount)) || Number(amount) === 0) {
@@ -201,6 +215,10 @@ export function useTransferReadiness({
       return notReady()
     }
 
+    if (DISABLED_CHAIN_IDS.includes(childChain.id)) {
+      return notReady()
+    }
+
     // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
       return notReady({
@@ -208,6 +226,14 @@ export function useTransferReadiness({
           getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
             { asset: nativeCurrency.symbol }
           )
+      })
+    }
+
+    // teleport transfers using SC wallets not enabled yet
+    if (isSmartContractWallet && isTeleportMode) {
+      return notReady({
+        errorMessage:
+          getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
       })
     }
 
@@ -238,10 +264,14 @@ export function useTransferReadiness({
         childChain.id
       )
 
-      const selectedTokenIsDisabled = isTransferDisabledToken(
-        selectedToken.address,
-        childChain.id
-      )
+      const selectedTokenIsDisabled =
+        isTransferDisabledToken(selectedToken.address, childChain.id) ||
+        (isTeleportMode &&
+          !isTeleportEnabledToken(
+            selectedToken.address,
+            parentChain.id,
+            childChain.id
+          ))
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
@@ -414,6 +444,8 @@ export function useTransferReadiness({
     nativeCurrency.symbol,
     gasSummary,
     childChain.id,
-    networks.sourceChain.name
+    parentChain.id,
+    networks.sourceChain.name,
+    isTeleportMode
   ])
 }

@@ -30,3 +30,7 @@ export function getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMe
 }) {
   return `${asset} transfers using smart contract wallets aren't supported yet.`
 }
+
+export function getSmartContractWalletTeleportTransfersNotSupportedErrorMessage() {
+  return `LayerLeap transfers using smart contract wallets aren't supported yet.`
+}

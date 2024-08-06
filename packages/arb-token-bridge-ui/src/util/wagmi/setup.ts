@@ -2,15 +2,16 @@ import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
+import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import {
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  localL3Network as l3Local,
+  holesky
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
@@ -19,10 +20,10 @@ import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 const wagmiOrbitChains = getOrbitChains().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 
 const chainList = isTestingEnvironment
@@ -34,12 +35,13 @@ const chainList = isTestingEnvironment
       // sepolia & arb sepolia are for tx history panel tests
       sepolia,
       arbitrumSepolia,
+      holesky,
       // Orbit chains
-      stylusTestnet,
       ...wagmiOrbitChains,
       // add local environments during testing
       local,
       arbitrumLocal,
+      l3Local,
       // user-added custom chains
       ...customChains
     ]
@@ -49,7 +51,7 @@ const chainList = isTestingEnvironment
       arbitrumNova,
       sepolia,
       arbitrumSepolia,
-      stylusTestnet,
+      holesky,
       ...wagmiOrbitChains,
       ...customChains
     ]
@@ -134,7 +136,10 @@ export function getProps(targetChainKey: string | null) {
     ...wallets,
     {
       groupName: 'More',
-      wallets: [trustWallet({ chains, projectId })]
+      wallets: [
+        trustWallet({ chains, projectId }),
+        okxWallet({ chains, projectId })
+      ]
     }
   ])
 

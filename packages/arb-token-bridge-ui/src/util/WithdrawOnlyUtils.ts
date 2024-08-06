@@ -14,7 +14,7 @@ export type WithdrawOnlyToken = {
   l2Address: string
 }
 
-const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
+export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   [ChainId.ArbitrumOne]: [
     {
       symbol: 'MIM',
@@ -171,6 +171,24 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x211Cc4DD073734dA055fbF44a2b4667d5E5fE5d2',
       l1Address: '0x9D39A5DE30e57443BfF2A8307A4256c8797A3497',
       l2Address: '0x292CbA96fce24f6802dBdA021ED2B05481a3eEdF'
+    },
+    {
+      symbol: 'GHO',
+      l2CustomAddr: '',
+      l1Address: '0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f',
+      l2Address: '0xfeb8670b834d9157864126f5dbd24b25d06882ad'
+    },
+    {
+      symbol: 'ETHFI',
+      l2CustomAddr: '0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27',
+      l1Address: '0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB',
+      l2Address: '0x07D65C18CECbA423298c0aEB5d2BeDED4DFd5736'
+    },
+    {
+      symbol: 'ATH',
+      l2CustomAddr: '0xc87B37a581ec3257B734886d9d3a581F5A9d056c',
+      l1Address: '0xbe0Ed4138121EcFC5c0E56B40517da27E6c5226B',
+      l2Address: '0xc7dEf82Ba77BAF30BbBc9b6162DC075b49092fb4'
     }
   ],
   [ChainId.ArbitrumNova]: []
