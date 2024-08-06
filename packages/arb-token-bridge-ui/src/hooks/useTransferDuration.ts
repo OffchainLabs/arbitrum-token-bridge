@@ -53,8 +53,7 @@ type UseTransferDurationResult = {
 export const useTransferDuration = (
   tx: MergedTransaction
 ): UseTransferDurationResult => {
-  const { estimatedMinutesLeft: estimatedMinutesLeftCctp } =
-    useRemainingTimeCctp(tx)
+  const { estimatedMinutesLeftCctp } = useRemainingTimeCctp(tx)
 
   const { sourceChainId, destinationChainId, isCctp, childChainId } = tx
   const { isTestnet, isOrbitChain } = isNetwork(childChainId)

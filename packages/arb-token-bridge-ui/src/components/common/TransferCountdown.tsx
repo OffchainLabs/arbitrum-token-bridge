@@ -1,4 +1,3 @@
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import {
   getOrbitDepositDuration,
@@ -6,12 +5,14 @@ import {
   useTransferDuration
 } from '../../hooks/useTransferDuration'
 import { isNetwork } from '../../util/networks'
+import { isTeleporterTransaction } from '../../hooks/useTransactions'
 
 /**
  * Displays a transfer countdown for a deposit, withdrawal, or cctp.
  *
  * @param {MergedTransaction} tx - The transaction object.
  * @param {boolean} firstLegOnly - Teleport has 2 txns, this flag will give us estimate of only 1st tx, else it will give consolidated duration.
+ * @param {string} textAfterTime - Text to be displayed after the remaining time, e.g. if this was "remaining", it would result with e.g. "15 minutes remaining".
  */
 export function TransferCountdown({
   tx,
@@ -29,17 +30,13 @@ export function TransferCountdown({
     return <span>Calculating...</span>
   }
 
-  const _isTeleport = isTeleport({
-    sourceChainId: tx.sourceChainId,
-    destinationChainId: tx.destinationChainId
-  })
-
+  const isTeleport = isTeleporterTransaction(tx)
   // To get the first retryable only, we subtract the Orbit deposit time (second retryable)
-  if (_isTeleport && firstLegOnly) {
+  if (isTeleport && firstLegOnly) {
     estimatedMinutesLeft -= getOrbitDepositDuration(isTestnet)
   }
 
-  if (!tx.isWithdrawal && !tx.isCctp && !_isTeleport) {
+  if (!tx.isWithdrawal && !tx.isCctp && !isTeleport) {
     const depositStatus = tx.depositStatus
 
     if (
