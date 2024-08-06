@@ -53,7 +53,6 @@ export function useUpdateUSDCTokenData() {
     isDestinationChainArbitrumOne,
     isDestinationChainArbitrumSepolia,
     selectedToken,
-    setSelectedToken,
     token
   ])
 }
