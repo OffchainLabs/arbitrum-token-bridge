@@ -3,7 +3,7 @@ import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { ChainId, isNetwork, rpcURLs } from '../util/networks'
 import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
-import { isValidTeleportChainPair as isTeleportTransfer } from './teleport'
+import { isValidTeleportChainPair } from './teleport'
 import {
   Erc20Bridger,
   Erc20L1L3Bridger,
@@ -48,7 +48,7 @@ export const getBridgeTransferProperties = (
     (isSourceChainOrbit && isDestinationChainEthereumMainnetOrTestnet) || // l2 orbit chains to l1
     (isSourceChainOrbit && isDestinationChainArbitrum) // l3 orbit chains to l1
 
-  const isTeleport = isTeleportTransfer({
+  const isTeleport = isValidTeleportChainPair({
     sourceChainId,
     destinationChainId
   })
@@ -86,7 +86,7 @@ export const getBridger = async ({
 }) => {
   const destinationChainProvider = getProviderForChainId(destinationChainId)
 
-  if (isTeleportTransfer({ sourceChainId, destinationChainId })) {
+  if (isValidTeleportChainPair({ sourceChainId, destinationChainId })) {
     const l3Network = await getArbitrumNetwork(destinationChainId)
 
     return isNativeCurrencyTransfer
