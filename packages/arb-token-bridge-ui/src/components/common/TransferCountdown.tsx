@@ -36,9 +36,12 @@ export function TransferCountdown({
     estimatedMinutesLeft -= getOrbitDepositDuration(isTestnet)
   }
 
-  if (!tx.isWithdrawal && !tx.isCctp && !isTeleport) {
+  const isStandardDeposit = !tx.isWithdrawal && !tx.isCctp && !isTeleport
+
+  if (isStandardDeposit) {
     const depositStatus = tx.depositStatus
 
+    // Only show when status is Pending
     if (
       !depositStatus ||
       ![DepositStatus.L1_PENDING, DepositStatus.L2_PENDING].includes(
