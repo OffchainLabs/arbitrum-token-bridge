@@ -103,14 +103,12 @@ Cypress.Commands.add(
 
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    cy.resetMetamaskAccount().then(() => {
-      // resetMetamaskAccount doesn't seem to remove the connected network in CI
-      // changeMetamaskNetwork fails if already connected to the desired network
-      // as a workaround we switch to another network after all the tests
-      cy.changeMetamaskNetwork('sepolia')
-    })
-  })
+  cy.disconnectMetamaskWalletFromAllDapps()
+  cy.resetMetamaskAccount()
+  // resetMetamaskAccount doesn't seem to remove the connected network in CI
+  // changeMetamaskNetwork fails if already connected to the desired network
+  // as a workaround we switch to another network after all the tests
+  cy.changeMetamaskNetwork('sepolia')
 }
 
 export const connectToApp = () => {
@@ -246,18 +244,17 @@ export const searchAndSelectToken = ({
   cy.findByPlaceholderText(/Search by token name/i)
     .typeRecursively(tokenAddress)
     .should('be.visible')
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click()
 
-      // Select the USDC token
-      cy.findAllByText(tokenName).first().click()
+  // Click on the Add new token button
+  cy.findByRole('button', { name: 'Add New Token' })
+    .should('be.visible')
+    .click()
 
-      // USDC token should be selected now and popup should be closed after selection
-      cy.findSelectTokenButton(tokenName)
-    })
+  // Select the USDC token
+  cy.findAllByText(tokenName).first().click()
+
+  // USDC token should be selected now and popup should be closed after selection
+  cy.findSelectTokenButton(tokenName)
 }
 
 export const fillCustomDestinationAddress = () => {
