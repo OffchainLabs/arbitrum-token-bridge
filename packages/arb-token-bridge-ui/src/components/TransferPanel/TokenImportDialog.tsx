@@ -71,8 +71,7 @@ export function TokenImportDialog({
       arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
-  const [selectedToken, setSelectedToken, refreshSelectedToken] =
-    useSelectedToken()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -265,19 +264,13 @@ export function TokenImportDialog({
   ])
 
   async function storeNewToken(newToken: string) {
-    return (
-      token
-        .add(newToken)
-        .catch((ex: Error) => {
-          setStatus(ImportStatus.ERROR)
+    return token.add(newToken).catch((ex: Error) => {
+      setStatus(ImportStatus.ERROR)
 
-          if (ex.name === 'TokenDisabledError') {
-            warningToast('This token is currently paused in the bridge')
-          }
-        })
-        // slight timeout to make sure token is added to the list
-        .then(() => setTimeout(refreshSelectedToken, 2_000))
-    )
+      if (ex.name === 'TokenDisabledError') {
+        warningToast('This token is currently paused in the bridge')
+      }
+    })
   }
 
   function handleTokenImport() {

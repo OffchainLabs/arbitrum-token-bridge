@@ -47,11 +47,13 @@ export const useSelectedToken = () => {
           parentChain.id,
           childChain.id,
           tokenFromSearchParams,
+          Object.keys(tokensFromLists),
+          Object.keys(tokensFromUser),
           'useSelectedToken'
         ] as const)
       : null
 
-  const { data, mutate: refreshSelectedToken } = useSWRImmutable(
+  const { data } = useSWRImmutable(
     queryKey,
     async ([parentChainId, childChainId, _tokenFromSearchParams]) => {
       const tokenAddressLowercased = _tokenFromSearchParams?.toLowerCase()
@@ -89,7 +91,7 @@ export const useSelectedToken = () => {
     [setQueryParams]
   )
 
-  return [data ?? null, setSelectedToken, refreshSelectedToken] as const
+  return [data ?? null, setSelectedToken] as const
 }
 
 function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
