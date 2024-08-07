@@ -139,11 +139,18 @@ function NetworkRow({
   )
 }
 
-function AddCustomOrbitChainButton() {
+function AddCustomOrbitChainButton({
+  closeDialog
+}: {
+  closeDialog: (focusableElement?: HTMLElement) => void
+}) {
   const [, setQueryParams] = useArbQueryParams()
   const [isTestnetMode] = useIsTestnetMode()
 
-  const openSettingsPanel = () => setQueryParams({ settingsOpen: true })
+  const openSettingsPanel = () => {
+    setQueryParams({ settingsOpen: true })
+    closeDialog()
+  }
 
   if (!isTestnetMode) {
     return null
@@ -304,7 +311,7 @@ function NetworksPanel({
       </SearchPanelTable>
       <div className="flex justify-between pb-2">
         <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
-        <AddCustomOrbitChainButton />
+        <AddCustomOrbitChainButton closeDialog={close} />
       </div>
     </div>
   )

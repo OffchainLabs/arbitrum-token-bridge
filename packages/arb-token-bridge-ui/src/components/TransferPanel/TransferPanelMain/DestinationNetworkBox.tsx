@@ -64,7 +64,6 @@ export function DestinationNetworkBox({
         customAddress={destinationAddress}
       >
         <NetworkListboxPlusBalancesContainer>
-          {' '}
           <NetworkButton
             type="destination"
             onClick={openDestinationNetworkSelectionDialog}

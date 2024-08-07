@@ -202,7 +202,7 @@ export function SourceNetworkBox({
           )}
         </div>
         <EstimatedGas chainType="source" />
-      </NetworkContainer>{' '}
+      </NetworkContainer>
       <NetworkSelectionContainer
         {...sourceNetworkSelectionDialogProps}
         type="source"

@@ -47,18 +47,12 @@ import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { NetworkType } from './TransferPanelMain/utils'
-import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 
 export type NetworkListboxProps = {
   disabled?: boolean
-  label: string
   options: Chain[]
   value: Chain
   onChange: (value: Chain) => void
-}
-
-type NetworkListboxesProps = {
-  to: Omit<NetworkListboxProps, 'label'>
 }
 
 export function NetworkButton({
@@ -82,11 +76,13 @@ export function NetworkButton({
 
   const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
 
+  const buttonStyle = {
+    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+  }
+
   return (
     <button
-      style={{
-        backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
-      }}
+      style={buttonStyle}
       className={twMerge(
         'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:gap-2 md:text-2xl'
       )}
@@ -94,7 +90,7 @@ export function NetworkButton({
       onClick={onClick}
     >
       <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
-        {type === 'source' ? 'From:' : 'To: '} {getNetworkName(selectedChainId)}
+        {isSource ? 'From:' : 'To: '} {getNetworkName(selectedChainId)}
       </span>
       {!disabled && <ChevronDownIcon width={16} />}
     </button>
@@ -340,13 +336,6 @@ export function TransferPanelMain({
 
   const { address: walletAddress } = useAccount()
 
-  const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
-    useDialog()
-  const [
-    destinationNetworkSelectionDialogProps,
-    openDestinationNetworkSelectionDialog
-  ] = useDialog()
-
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
 
@@ -436,7 +425,9 @@ export function TransferPanelMain({
 
   useUpdateUSDCTokenData()
 
-  const networkListboxProps: NetworkListboxesProps = useMemo(() => {
+  const networkListboxProps: {
+    to: NetworkListboxProps
+  } = useMemo(() => {
     function getDestinationChains() {
       const destinationChainIds = getDestinationChainIds(
         networks.sourceChain.id
