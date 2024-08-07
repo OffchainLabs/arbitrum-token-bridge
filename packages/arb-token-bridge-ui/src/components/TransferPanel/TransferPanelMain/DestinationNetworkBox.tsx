@@ -7,14 +7,13 @@ import {
   ETHBalance,
   NetworkButton,
   NetworkContainer,
-  NetworkListboxPlusBalancesContainer,
-  NetworkListboxProps
+  NetworkListboxPlusBalancesContainer
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
-import { useAccount } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { NetworkType } from './utils'
-import { useAppState } from '../../../state'
+import { useActions, useAppState } from '../../../state'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
@@ -27,24 +26,24 @@ import {
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useDialog } from '../../common/Dialog'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
+import { useCallback } from 'react'
 
 export function DestinationNetworkBox({
   customFeeTokenBalances,
-  showUsdcSpecificInfo,
-  destinationNetworkListboxProps
+  showUsdcSpecificInfo
 }: {
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
-  destinationNetworkListboxProps: Omit<NetworkListboxProps, 'label'>
 }) {
   const { address: walletAddress } = useAccount()
-  const [networks] = useNetworks()
+  const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
   const {
     app: { selectedToken }
   } = useAppState()
+  const actions = useActions()
   const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
     useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
@@ -55,6 +54,17 @@ export function DestinationNetworkBox({
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
+
+  const onChange = useCallback(
+    async (network: Chain) => {
+      setNetworks({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: network.id
+      })
+      actions.app.setSelectedToken(null)
+    },
+    [actions.app, networks.sourceChain.id, setNetworks]
+  )
 
   return (
     <>
@@ -160,7 +170,7 @@ export function DestinationNetworkBox({
       <NetworkSelectionContainer
         {...destinationNetworkSelectionDialogProps}
         type="destination"
-        onChange={destinationNetworkListboxProps.onChange}
+        onChange={onChange}
       />
     </>
   )
