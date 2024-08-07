@@ -23,7 +23,13 @@ export function WelcomeDialog() {
       openConnectModal?.()
     } catch (error) {
       errorToast('Failed to open up RainbowKit Connect Modal')
-      Sentry.captureException(error)
+      Sentry.configureScope(function (scope) {
+        scope.setTag(
+          'origin',
+          'open RainbowKit Connect modal from WelcomeDialog'
+        )
+        Sentry.captureException(error, () => scope)
+      })
     }
   }, [openConnectModal, setTosAccepted])
 

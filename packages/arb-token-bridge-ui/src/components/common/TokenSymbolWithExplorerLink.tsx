@@ -29,7 +29,11 @@ const createBlockExplorerUrlForToken = ({
     url.pathname += `token/${tokenAddress}`
     return url.toString()
   } catch (error) {
-    Sentry.captureException(error)
+    Sentry.configureScope(function (scope) {
+      // tags only allow primitive values
+      scope.setTag('origin function', 'createBlockExplorerUrlForToken')
+      Sentry.captureException(error, () => scope)
+    })
     return undefined
   }
 }

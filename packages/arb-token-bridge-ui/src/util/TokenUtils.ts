@@ -158,8 +158,9 @@ export async function fetchErc20Data({
   } catch (error) {
     // log some extra info on sentry in case multi-caller fails
     Sentry.configureScope(function (scope) {
-      scope.setExtra('token_address', address)
-      Sentry.captureException(error)
+      scope.setTag('origin function', 'fetchErc20Data')
+      scope.setTag('token_address', address)
+      Sentry.captureException(error, () => scope)
     })
     throw error
   }
@@ -210,8 +211,9 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
   } catch (error) {
     // log the issue on sentry, later, fall back if there is no multicall
     Sentry.configureScope(function (scope) {
-      scope.setExtra('token_address', address)
-      Sentry.captureException(error)
+      scope.setTag('origin function', 'fetchErc20Allowance')
+      scope.setTag('token address', address)
+      Sentry.captureException(error, () => scope)
     })
     throw error
   }

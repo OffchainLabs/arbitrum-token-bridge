@@ -569,9 +569,13 @@ export function useClaimCctp(tx: MergedTransaction) {
       if (receiveReceiptTx.status === 0) {
         throw new Error('Transaction failed')
       }
-    } catch (e) {
-      Sentry.captureException(e)
-      throw e
+    } catch (error) {
+      Sentry.configureScope(function (scope) {
+        // tags only allow primitive values
+        scope.setTag('origin function', 'useClaimCctp claim')
+        Sentry.captureException(error, () => scope)
+      })
+      throw error
     } finally {
       setIsClaiming(false)
     }

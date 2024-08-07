@@ -92,8 +92,11 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
       } catch (error) {
         // log some extra info on sentry in case multi-caller fails
         Sentry.configureScope(function (scope) {
-          scope.setExtra('token_addresses', addresses)
-          Sentry.captureException(error)
+          // tags only allow primitive values
+          scope.setTag('origin function', 'useBalance fetchErc20')
+          scope.setTag('token addresses', addresses.toString())
+          scope.setTag('chain id', chainId)
+          Sentry.captureException(error, () => scope)
         })
         return {}
       }

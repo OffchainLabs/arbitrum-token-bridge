@@ -182,7 +182,11 @@ export async function depositTokenEstimateGas(
       estimatedChildChainSubmissionCost: retryableData.maxSubmissionCost
     }
   } catch (error) {
-    Sentry.captureException(error)
+    Sentry.configureScope(function (scope) {
+      // tags only allow primitive values
+      scope.setTag('origin function', 'depositTokenEstimateGas')
+      Sentry.captureException(error, () => scope)
+    })
 
     return fetchTokenFallbackGasEstimates({
       inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,

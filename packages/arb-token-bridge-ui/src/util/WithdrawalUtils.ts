@@ -63,7 +63,18 @@ export async function withdrawInitTxEstimateGas({
       estimatedChildChainGas
     }
   } catch (error) {
-    Sentry.captureException(error)
+    Sentry.configureScope(function (scope) {
+      // tags only allow primitive values
+      scope.setTag('origin function', 'withdrawInitTxEstimateGas')
+      scope.setTag(
+        'withdrawal type',
+        erc20L1Address ? 'token' : 'native currency'
+      )
+      if (erc20L1Address) {
+        scope.setTag('erc20 address on parent chain: ', erc20L1Address)
+      }
+      Sentry.captureException(error, () => scope)
+    })
 
     return {
       estimatedParentChainGas,

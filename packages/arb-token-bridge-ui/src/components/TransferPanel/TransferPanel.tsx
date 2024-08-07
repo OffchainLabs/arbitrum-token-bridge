@@ -374,8 +374,12 @@ export function TransferPanel() {
       const switchTargetChainId = latestNetworks.current.sourceChain.id
       try {
         await switchNetworkAsync?.(switchTargetChainId)
-      } catch (e) {
-        Sentry.captureException(e)
+      } catch (error) {
+        Sentry.configureScope(function (scope) {
+          // tags only allow primitive values
+          scope.setTag('origin function', 'transferCctp switchNetworkAsync')
+          Sentry.captureException(error, () => scope)
+        })
       }
     }
 
@@ -439,7 +443,11 @@ export function TransferPanel() {
           if (isUserRejectedError(error)) {
             return
           }
-          Sentry.captureException(error)
+          Sentry.configureScope(function (scope) {
+            // tags only allow primitive values
+            scope.setTag('origin function', 'cctpTransferStarter.approveToken')
+            Sentry.captureException(error, () => scope)
+          })
           errorToast(
             `USDC approval transaction failed: ${
               (error as Error)?.message ?? error
@@ -465,7 +473,11 @@ export function TransferPanel() {
         if (isUserRejectedError(error)) {
           return
         }
-        Sentry.captureException(error)
+        Sentry.configureScope(function (scope) {
+          // tags only allow primitive values
+          scope.setTag('origin function', 'cctpTransferStarter.transfer')
+          Sentry.captureException(error, () => scope)
+        })
         errorToast(
           `USDC ${
             isDepositMode ? 'Deposit' : 'Withdrawal'
@@ -861,8 +873,12 @@ export function TransferPanel() {
 
       // transaction submitted callback
       onTxSubmit(transfer)
-    } catch (ex) {
-      Sentry.captureException(ex)
+    } catch (error) {
+      Sentry.configureScope(function (scope) {
+        // tags only allow primitive values
+        scope.setTag('origin function', 'bridgeTransferStarter.transfer')
+        Sentry.captureException(error, () => scope)
+      })
     } finally {
       setTransferring(false)
     }

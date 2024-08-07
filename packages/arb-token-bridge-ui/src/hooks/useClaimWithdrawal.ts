@@ -41,7 +41,7 @@ export function useClaimWithdrawal(
       return errorToast("Can't find withdrawal transaction.")
     }
 
-    let res, err
+    let res, err: any
 
     setIsClaiming(true)
 
@@ -106,7 +106,11 @@ export function useClaimWithdrawal(
       return
     }
 
-    Sentry.captureException(err)
+    Sentry.configureScope(function (scope) {
+      // tags only allow primitive values
+      scope.setTag('origin function', 'useClaimWithdrawal claim')
+      Sentry.captureException(err, () => scope)
+    })
     if (!res) {
       errorToast(`Can't claim withdrawal: ${err?.message ?? err}`)
     }

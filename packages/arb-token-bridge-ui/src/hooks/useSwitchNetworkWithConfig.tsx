@@ -46,7 +46,11 @@ function handleSwitchNetworkError(
   if (error.name === 'SwitchChainNotSupportedError') {
     handleSwitchNetworkNotSupported(chainId, isSwitchingNetworkBeforeTx)
   } else {
-    Sentry.captureException(error)
+    Sentry.configureScope(function (scope) {
+      // tags only allow primitive values
+      scope.setTag('origin function', 'handleSwitchNetworkError')
+      Sentry.captureException(error, () => scope)
+    })
   }
 }
 
