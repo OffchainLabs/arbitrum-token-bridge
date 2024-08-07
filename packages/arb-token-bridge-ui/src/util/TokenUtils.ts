@@ -159,7 +159,7 @@ export async function fetchErc20Data({
     // log some extra info on sentry in case multi-caller fails
     Sentry.configureScope(function (scope) {
       scope.setTag('origin function', 'fetchErc20Data')
-      scope.setTag('token_address', address)
+      scope.setTag('token address', address)
       Sentry.captureException(error, () => scope)
     })
     throw error
