@@ -310,6 +310,43 @@ export const defaultL2Network: ArbitrumNetwork = {
   }
 }
 
+// ETH as native token
+// export const defaultL3Network: ArbitrumNetwork = {
+//   chainId: 333333,
+//   parentChainId: ChainId.ArbitrumLocal,
+//   confirmPeriodBlocks: 20,
+//   ethBridge: {
+//     bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
+//     inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
+//     outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
+//     rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
+//       ? '0xdeD540257498027B1De7DFD4fe6cc4CeC030F355'
+//       : '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
+//     sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
+//   },
+//   isCustom: true,
+//   isTestnet: true,
+//   name: 'L3 Local',
+//   retryableLifetimeSeconds: 604800,
+//   tokenBridge: {
+//     parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
+//     parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',
+//     parentGatewayRouter: '0xfE03DBdf7A126994dBd749631D7fbaB58C618c58',
+//     parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
+//     parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
+//     parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
+//     parentWethGateway: '0x77603b0ea6a797C74Fa9ef11b5BdE04A4E03D550',
+//     childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
+//     childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',
+//     childGatewayRouter: '0x8B6BC759226f8Fe687c8aD8Cc0DbF85E095e9297',
+//     childMultiCall: '0x052B15c8Ff0544287AE689C4F2FC53A3905d7Db3',
+//     childProxyAdmin: '0x36C56eC2CF3a3f53db9F01d0A5Ae84b36fb0A1e2',
+//     childWeth: '0x582a8dBc77f665dF2c49Ce0a138978e9267dd968',
+//     childWethGateway: '0xA6AB233B3c7bfd0399834897b5073974A3D467e2'
+//   }
+// }
+
+// Custom native token
 export const defaultL3Network: ArbitrumNetwork = {
   chainId: 333333,
   parentChainId: ChainId.ArbitrumLocal,
@@ -323,25 +360,26 @@ export const defaultL3Network: ArbitrumNetwork = {
       : '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
     sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
   },
+  nativeToken: '0xE069078bA9ACCE4eeAE609d8754515Cf13dd6706',
   isCustom: true,
   isTestnet: true,
   name: 'L3 Local',
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
-    parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
-    parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',
-    parentGatewayRouter: '0xfE03DBdf7A126994dBd749631D7fbaB58C618c58',
+    parentCustomGateway: '0xCe02eA568090ae7d5184B0a98df90f6aa69C1552',
+    parentErc20Gateway: '0x59156b0596689D965Ba707E160e5370AF22461a0',
+    parentGatewayRouter: '0x0C085152C2799834fc1603533ff6916fa1FdA302',
     parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
     parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
-    parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
-    parentWethGateway: '0x77603b0ea6a797C74Fa9ef11b5BdE04A4E03D550',
+    parentWeth: '0x0000000000000000000000000000000000000000',
+    parentWethGateway: '0x0000000000000000000000000000000000000000',
     childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
     childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',
     childGatewayRouter: '0x8B6BC759226f8Fe687c8aD8Cc0DbF85E095e9297',
     childMultiCall: '0x052B15c8Ff0544287AE689C4F2FC53A3905d7Db3',
     childProxyAdmin: '0x36C56eC2CF3a3f53db9F01d0A5Ae84b36fb0A1e2',
-    childWeth: '0x582a8dBc77f665dF2c49Ce0a138978e9267dd968',
-    childWethGateway: '0xA6AB233B3c7bfd0399834897b5073974A3D467e2'
+    childWeth: '0x0000000000000000000000000000000000000000',
+    childWethGateway: '0x0000000000000000000000000000000000000000'
   }
 }
 
