@@ -877,6 +877,13 @@ export function TransferPanel() {
       Sentry.configureScope(function (scope) {
         // tags only allow primitive values
         scope.setTag('origin function', 'bridgeTransferStarter.transfer')
+        scope.setTag(
+          'transfer type',
+          selectedToken ? 'token' : 'native currency'
+        )
+        if (selectedToken) {
+          scope.setTag('erc20 address on parent chain', selectedToken.address)
+        }
         Sentry.captureException(error, () => scope)
       })
     } finally {
