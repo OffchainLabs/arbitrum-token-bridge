@@ -17,7 +17,7 @@ import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
-import { isTeleporterTransaction, Transaction } from './useTransactions'
+import { isTeleportTx, Transaction } from './useTransactions'
 import { MergedTransaction } from '../state/app/state'
 import {
   getStandardizedTimestamp,
@@ -51,7 +51,7 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Address } from '../util/AddressUtils'
 import {
@@ -377,7 +377,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
             try {
               // early check for fetching teleport
               if (
-                isTeleport({
+                isValidTeleportChainPair({
                   sourceChainId: chainPair.parentChainId,
                   destinationChainId: chainPair.childChainId
                 })
@@ -716,7 +716,7 @@ export const useTransactionHistory = (
         return
       }
 
-      if (isTeleport(tx) && isTeleporterTransaction(tx)) {
+      if (isTeleportTx(tx)) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
         updateCachedTransaction(updatedTeleportTransfer)
         return

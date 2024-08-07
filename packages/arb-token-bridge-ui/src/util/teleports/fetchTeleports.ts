@@ -10,7 +10,7 @@ import {
 } from './fetchErc20TeleportsFromSubgraph'
 import {
   getL2ConfigForTeleport,
-  isTeleport
+  isValidTeleportChainPair
 } from '../../token-bridge-sdk/teleport'
 import { getChainIdFromProvider } from '../../token-bridge-sdk/utils'
 
@@ -51,7 +51,7 @@ export const fetchTeleports = async ({
 
   // don't query if not a valid teleport configuration
   if (
-    !isTeleport({
+    !isValidTeleportChainPair({
       sourceChainId: l1ChainId,
       destinationChainId: l3ChainId
     })
