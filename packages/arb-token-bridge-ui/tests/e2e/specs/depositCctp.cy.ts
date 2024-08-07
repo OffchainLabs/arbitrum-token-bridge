@@ -138,31 +138,15 @@ describe('Deposit USDC through CCTP', () => {
             // eslint-disable-next-line
             cy.wait(40_000)
             cy.confirmMetamaskTransaction().then(() => {
+              const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
               cy.findTransactionInTransactionHistory({
                 duration: 'a minute',
-                amount: USDCAmountToSend,
-                symbol: 'USDC'
+                ...txData
               })
-
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
-
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
-
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
+              cy.openTransactionDetails(txData)
+              cy.findTransactionDetailsCustomDestinationAddress(
+                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+              )
             })
           }
         )
