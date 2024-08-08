@@ -88,13 +88,13 @@ function ChainTypeInfoRow({
 
 function NetworkRow({
   chainId,
-  selectedChainId,
+  isSelected,
   style,
   onClick,
   close
 }: {
   chainId: ChainId
-  selectedChainId: ChainId
+  isSelected: boolean
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
@@ -116,7 +116,7 @@ function NetworkRow({
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
         'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
-        chainId === selectedChainId && 'bg-white/10' // selected row
+        isSelected && 'bg-white/10' // selected row
       )}
     >
       <NetworkImage
@@ -269,7 +269,7 @@ function NetworksPanel({
           key={networkOrChainTypeName}
           style={style}
           chainId={networkOrChainTypeName}
-          selectedChainId={selectedChainId}
+          isSelected={networkOrChainTypeName === selectedChainId}
           onClick={onNetworkRowClick}
           close={close}
         />

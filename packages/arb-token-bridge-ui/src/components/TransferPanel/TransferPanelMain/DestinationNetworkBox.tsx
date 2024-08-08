@@ -1,4 +1,6 @@
 import { constants, utils } from 'ethers'
+import { useCallback, useState } from 'react'
+import { Chain, useAccount } from 'wagmi'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useDestinationAddressStore } from '../AdvancedSettings'
@@ -10,14 +12,13 @@ import {
   NetworkListboxPlusBalancesContainer
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
-import { Chain, useAccount } from 'wagmi'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { NetworkType } from './utils'
 import { useActions, useAppState } from '../../../state'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { isNetwork } from '../../../util/networks'
+import { ChainId, isNetwork } from '../../../util/networks'
 import { EstimatedGas } from '../EstimatedGas'
 import {
   Balances,
@@ -26,7 +27,13 @@ import {
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useDialog } from '../../common/Dialog'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
-import { useCallback } from 'react'
+import { OneNovaTransferDialog } from '../OneNovaTransferDialog'
+
+function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
+  return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
+    selectedChainIds.includes(chainId)
+  )
+}
 
 export function DestinationNetworkBox({
   customFeeTokenBalances,
@@ -54,9 +61,20 @@ export function DestinationNetworkBox({
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
+  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+  const [
+    oneNovaTransferDestinationNetworkId,
+    setOneNovaTransferDestinationNetworkId
+  ] = useState<number | null>(null)
 
   const onChange = useCallback(
-    async (network: Chain) => {
+    (network: Chain) => {
+      if (shouldOpenOneNovaDialog([network.id, networks.sourceChain.id])) {
+        setOneNovaTransferDestinationNetworkId(network.id)
+        openOneNovaTransferDialog()
+        return
+      }
+
       setNetworks({
         sourceChainId: networks.sourceChain.id,
         destinationChainId: network.id
@@ -171,6 +189,10 @@ export function DestinationNetworkBox({
         {...destinationNetworkSelectionDialogProps}
         type="destination"
         onChange={onChange}
+      />
+      <OneNovaTransferDialog
+        {...oneNovaTransferDialogProps}
+        destinationChainId={oneNovaTransferDestinationNetworkId}
       />
     </>
   )

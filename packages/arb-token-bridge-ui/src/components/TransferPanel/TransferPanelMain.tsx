@@ -38,18 +38,10 @@ import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { Balances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
-
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { NetworkType } from './TransferPanelMain/utils'
-
-export type NetworkListboxProps = {
-  disabled?: boolean
-  options: Chain[]
-  value: Chain
-  onChange: (value: Chain) => void
-}
 
 export function NetworkButton({
   type,

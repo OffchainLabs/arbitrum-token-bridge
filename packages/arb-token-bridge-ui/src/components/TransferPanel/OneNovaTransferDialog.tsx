@@ -9,32 +9,30 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
 import { ChainId, getNetworkName } from '../../util/networks'
 import { ether } from '../../constants'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function OneNovaTransferDialog(
   props: UseDialogProps & {
     destinationChainId: number | null
-    amount: string
   }
 ) {
   const {
     app: { selectedToken }
   } = useAppState()
+  const [{ amount }] = useArbQueryParams()
+  const [{ sourceChain }] = useNetworks()
 
   const { destinationChainId } = props
 
-  const sourceChainId =
-    destinationChainId === ChainId.ArbitrumNova
-      ? ChainId.ArbitrumOne
-      : ChainId.ArbitrumNova
-
   const sourceNetworkSlug =
-    sourceChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
+    sourceChain.id === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
   const destinationNetworkSlug =
     destinationChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
 
   const bridgeDeepLink = `https://app.hop.exchange/#/send?sourceNetwork=${sourceNetworkSlug}&destNetwork=${destinationNetworkSlug}&token=${
     selectedToken?.symbol || ether.symbol
-  }&amount=${props.amount}`
+  }&amount=${amount}`
 
   // only enable Hop for now
   const fastBridgeList: FastBridgeInfo[] = [
@@ -46,7 +44,7 @@ export function OneNovaTransferDialog(
       {...props}
       onClose={() => props.onClose(false)}
       title={`Move funds from ${getNetworkName(
-        sourceChainId
+        sourceChain.id
       )} to ${getNetworkName(destinationChainId ?? 0)}`}
       actionButtonProps={{ hidden: true }}
       className="max-w-[700px]"

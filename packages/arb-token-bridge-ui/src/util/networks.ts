@@ -498,6 +498,15 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
 
   const validDestinationChainIds = getChildChainIds(chain)
 
+  // if source chain is Arbitrum One, add Arbitrum Nova to destination
+  if (chainId === ChainId.ArbitrumOne) {
+    validDestinationChainIds.push(ChainId.ArbitrumNova)
+  }
+
+  if (chainId === ChainId.ArbitrumNova) {
+    validDestinationChainIds.push(ChainId.ArbitrumOne)
+  }
+
   if (parentChainId) {
     // always make parent chain the first element
     return [parentChainId, ...validDestinationChainIds]
