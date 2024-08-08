@@ -12,7 +12,7 @@ describe('Deposit ETH', () => {
   const ETHAmountToDeposit = 0.0001
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
