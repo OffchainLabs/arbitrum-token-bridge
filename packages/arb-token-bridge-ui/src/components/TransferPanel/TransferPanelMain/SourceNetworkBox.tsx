@@ -178,6 +178,22 @@ export function SourceNetworkBox({
           value={isMaxAmount ? '' : amount}
         />
 
+        {process.env.NEXT_PUBLIC_FEATURE_BATCH_ERC20_ETH === 'true' &&
+          selectedToken && (
+            <TransferPanelMainInput
+              // eslint-disable-next-line
+              maxButtonOnClick={() => {}}
+              errorMessage={undefined}
+              value={''}
+              // eslint-disable-next-line
+              onChange={() => {}}
+              tokenButtonOptions={{
+                symbol: nativeCurrency.symbol,
+                disabled: true
+              }}
+            />
+          )}
+
         {showUsdcSpecificInfo && (
           <p className="mt-1 text-xs font-light text-white">
             Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
