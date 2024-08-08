@@ -876,10 +876,10 @@ export function TransferPanel() {
         originFunction: 'bridgeTransferStarter.transfer',
         additionalData: selectedToken
           ? {
-              'erc20 address on parent chain': selectedToken.address,
-              'transfer type': 'token'
+              erc20_address_on_parent_chain: selectedToken.address,
+              transfer_type: 'token'
             }
-          : { 'transfer type': 'native currency' }
+          : { transfer_type: 'native currency' }
       })
     } finally {
       setTransferring(false)

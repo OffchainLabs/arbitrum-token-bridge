@@ -160,7 +160,7 @@ export async function fetchErc20Data({
       error,
       originFunction: 'fetchErc20Data',
       additionalData: {
-        'token address on this chain': address,
+        token_address_on_this_chain: address,
         chain: chainId.toString()
       }
     })
@@ -216,7 +216,7 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
       error,
       originFunction: 'fetchErc20Allowance',
       additionalData: {
-        'token address on this chain': address,
+        token_address_on_this_chain: address,
         chain: chainId.toString()
       }
     })

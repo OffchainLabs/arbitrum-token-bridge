@@ -94,7 +94,7 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
           error,
           originFunction: 'useBalance fetchErc20',
           additionalData: {
-            'token addresses': addresses.toString(),
+            token_addresses: addresses.toString(),
             chain: chainId.toString()
           }
         })
