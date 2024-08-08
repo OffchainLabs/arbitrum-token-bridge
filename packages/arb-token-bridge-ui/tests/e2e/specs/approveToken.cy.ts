@@ -24,18 +24,18 @@ describe('Approve token and deposit afterwards', () => {
       // ERC-20 token should be selected now and popup should be closed after selection
       cy.findSelectTokenButton(ERC20TokenSymbol)
 
-      cy.findByText('MAX')
-        .click()
-        .then(() => {
-          cy.findGasFeeSummary(zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-        })
+      cy.findByText('MAX').click()
+
+      cy.findGasFeeSummary(zeroToLessThanOneETH)
+      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+
       cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
         errorMsg: 'move funds button is disabled (expected to be enabled)',
         timeout: 50000,
         interval: 500
-      }).then(() => cy.findMoveFundsButton().click())
+      })
+      cy.findMoveFundsButton().click()
       cy.findByText(/pay a one-time approval fee/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
