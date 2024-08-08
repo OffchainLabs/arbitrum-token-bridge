@@ -339,7 +339,19 @@ export const NetworkSelectionContainer = (
         includeTestnets: isTestnetMode
       })
     }
-    return getDestinationChainIds(networks.sourceChain.id)
+
+    const destinationChainIds = getDestinationChainIds(networks.sourceChain.id)
+
+    // if source chain is Arbitrum One, add Arbitrum Nova to destination
+    if (networks.sourceChain.id === ChainId.ArbitrumOne) {
+      destinationChainIds.push(ChainId.ArbitrumNova)
+    }
+
+    if (networks.sourceChain.id === ChainId.ArbitrumNova) {
+      destinationChainIds.push(ChainId.ArbitrumOne)
+    }
+
+    return destinationChainIds
   }, [isSource, isTestnetMode, networks.sourceChain.id])
 
   return (
