@@ -7,13 +7,12 @@ import {
   getL2NetworkName,
   zeroToLessThanOneETH
 } from '../../support/common'
-import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Deposit ETH', () => {
   const ETHAmountToDeposit = 0.0001
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
@@ -33,12 +32,11 @@ describe('Deposit ETH', () => {
       })
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction().then(() => {
-      cy.findByText(depositTime).should('be.visible')
-      cy.findByText(
-        `${formatAmount(ETHAmountToDeposit, {
-          symbol: 'ETH'
-        })}`
-      ).should('be.visible')
+      cy.findTransactionInTransactionHistory({
+        duration: depositTime,
+        amount: ETHAmountToDeposit,
+        symbol: 'ETH'
+      })
     })
   })
 

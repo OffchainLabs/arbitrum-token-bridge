@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { useClaimCctp, useRemainingTime } from '../../state/cctpState'
+import { useClaimCctp } from '../../state/cctpState'
+import {
+  DepositStatus,
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../../state/app/state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getNetworkName } from '../../util/networks'
@@ -12,8 +16,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useNetwork } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
-import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
-import { DepositCountdown } from '../common/DepositCountdown'
+import { TransferCountdown } from '../common/TransferCountdown'
 import { Address } from '../../util/AddressUtils'
 import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
@@ -27,7 +30,7 @@ export function TransactionsTableRowAction({
   type,
   address
 }: {
-  tx: MergedTransaction
+  tx: MergedTransaction | TeleporterMergedTransaction
   isError: boolean
   type: 'deposits' | 'withdrawals'
   address: Address | undefined
@@ -49,8 +52,6 @@ export function TransactionsTableRowAction({
   )
   const { redeem: teleporterRedeem, isRedeeming: isTeleporterRedeeming } =
     useRedeemTeleporter(tx, address)
-
-  const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
   const isRedeeming = isRetryableRedeeming || isTeleporterRedeeming
 
@@ -149,13 +150,7 @@ export function TransactionsTableRowAction({
     return (
       <div className="flex flex-col text-center text-xs">
         <span>Time left:</span>
-        {tx.isCctp && <>{cctpRemainingTime}</>}
-        {!tx.isCctp &&
-          (tx.isWithdrawal ? (
-            <WithdrawalCountdown tx={tx} />
-          ) : (
-            <DepositCountdown tx={tx} />
-          ))}
+        <TransferCountdown tx={tx} />
       </div>
     )
   }
