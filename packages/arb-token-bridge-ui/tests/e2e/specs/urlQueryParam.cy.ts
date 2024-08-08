@@ -35,29 +35,28 @@ describe('User enters site with query params on URL', () => {
           .should('be.visible')
           .should('not.have.text', 'max')
           .should('not.have.text', 'MAX')
-          // it's very hard to get the max amount separately
-          // so this test only asserts the amount set for the input field is less than user's balance
-          // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-          .then(() => {
-            cy.waitUntil(
-              () =>
-                cy
-                  .findByPlaceholderText(/Enter amount/i)
-                  .then($el => Number($el.val()) > 0),
-              // optional timeouts and error messages
-              {
-                errorMsg:
-                  'was expecting a numerical input value greater than 0',
-                timeout: 5000,
-                interval: 500
-              }
-            ).then(() => {
-              cy.findByPlaceholderText(/Enter amount/i)
-                .invoke('val')
-                .then(value => {
-                  cy.wrap(Number(value)).should('be.lt', l1ETHbal)
-                })
-            })
+        // it's very hard to get the max amount separately
+        // so this test only asserts the amount set for the input field is less than user's balance
+        // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
+        cy.waitUntil(
+          () =>
+            cy
+              .findByPlaceholderText(/Enter amount/i)
+              .invoke('val')
+              .should($val => {
+                cy.wrap(Number($val)).should('be.gt', 0)
+              }),
+          // optional timeouts and error messages
+          {
+            errorMsg: 'was expecting a numerical input value greater than 0',
+            timeout: 5000,
+            interval: 500
+          }
+        )
+        cy.findByPlaceholderText(/Enter amount/i)
+          .invoke('val')
+          .should($val => {
+            cy.wrap(Number($val)).should('be.lt', l1ETHbal)
           })
       }
     )
@@ -76,29 +75,25 @@ describe('User enters site with query params on URL', () => {
           .should('be.visible')
           .should('not.have.text', 'max')
           .should('not.have.text', 'MAX')
-          // it's very hard to get the max amount separately
-          // so this test only asserts the amount set for the input field is less than user's balance
-          // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-          .then(() => {
-            cy.waitUntil(
-              () =>
-                cy
-                  .findByPlaceholderText(/Enter amount/i)
-                  .then($el => Number($el.val()) > 0),
-              // optional timeouts and error messages
-              {
-                errorMsg:
-                  'was expecting a numerical input value greater than 0',
-                timeout: 5000,
-                interval: 500
-              }
-            ).then(() => {
-              cy.findByPlaceholderText(/Enter amount/i)
-                .invoke('val')
-                .then(value => {
-                  cy.wrap(Number(value)).should('be.lt', l1ETHbal)
-                })
-            })
+        // it's very hard to get the max amount separately
+        // so this test only asserts the amount set for the input field is less than user's balance
+        // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
+        cy.waitUntil(
+          () =>
+            cy
+              .findByPlaceholderText(/Enter amount/i)
+              .then($el => Number($el.val()) > 0),
+          // optional timeouts and error messages
+          {
+            errorMsg: 'was expecting a numerical input value greater than 0',
+            timeout: 5000,
+            interval: 500
+          }
+        )
+        cy.findByPlaceholderText(/Enter amount/i)
+          .invoke('val')
+          .should($val => {
+            cy.wrap(Number($val)).should('be.lt', l1ETHbal)
           })
       }
     )
@@ -118,29 +113,28 @@ describe('User enters site with query params on URL', () => {
           .should('not.have.text', 'max')
           .should('not.have.text', 'MAX')
           .should('not.have.text', 'MaX')
-          // it's very hard to get the max amount separately
-          // so this test only asserts the amount set for the input field is less than user's balance
-          // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-          .then(() => {
-            cy.waitUntil(
-              () =>
-                cy
-                  .findByPlaceholderText(/Enter amount/i)
-                  .then($el => Number($el.val()) > 0),
-              // optional timeouts and error messages
-              {
-                errorMsg:
-                  'was expecting a numerical input value greater than 0',
-                timeout: 5000,
-                interval: 500
-              }
-            ).then(() => {
-              cy.findByPlaceholderText(/Enter amount/i)
-                .invoke('val')
-                .then(value => {
-                  cy.wrap(Number(value)).should('be.lt', l1ETHbal)
-                })
-            })
+        // it's very hard to get the max amount separately
+        // so this test only asserts the amount set for the input field is less than user's balance
+        // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
+        cy.waitUntil(
+          () =>
+            cy
+              .findByPlaceholderText(/Enter amount/i)
+              .invoke('val')
+              .should($val => {
+                cy.wrap(Number($val)).should('be.gt', 0)
+              }),
+          // optional timeouts and error messages
+          {
+            errorMsg: 'was expecting a numerical input value greater than 0',
+            timeout: 5000,
+            interval: 500
+          }
+        )
+        cy.findByPlaceholderText(/Enter amount/i)
+          .invoke('val')
+          .should($val => {
+            cy.wrap(Number($val)).should('be.lt', l1ETHbal)
           })
       }
     )
