@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
-import * as Sentry from '@sentry/react'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
@@ -75,6 +74,7 @@ import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
+import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -375,10 +375,9 @@ export function TransferPanel() {
       try {
         await switchNetworkAsync?.(switchTargetChainId)
       } catch (error) {
-        Sentry.configureScope(function (scope) {
-          // tags only allow primitive values
-          scope.setTag('origin function', 'transferCctp switchNetworkAsync')
-          Sentry.captureException(error, () => scope)
+        captureSentryErrorWithExtraData({
+          error,
+          originFunction: 'transferCctp switchNetworkAsync'
         })
       }
     }
@@ -443,10 +442,9 @@ export function TransferPanel() {
           if (isUserRejectedError(error)) {
             return
           }
-          Sentry.configureScope(function (scope) {
-            // tags only allow primitive values
-            scope.setTag('origin function', 'cctpTransferStarter.approveToken')
-            Sentry.captureException(error, () => scope)
+          captureSentryErrorWithExtraData({
+            error,
+            originFunction: 'cctpTransferStarter.approveToken'
           })
           errorToast(
             `USDC approval transaction failed: ${
@@ -473,10 +471,9 @@ export function TransferPanel() {
         if (isUserRejectedError(error)) {
           return
         }
-        Sentry.configureScope(function (scope) {
-          // tags only allow primitive values
-          scope.setTag('origin function', 'cctpTransferStarter.transfer')
-          Sentry.captureException(error, () => scope)
+        captureSentryErrorWithExtraData({
+          error,
+          originFunction: 'cctpTransferStarter.transfer'
         })
         errorToast(
           `USDC ${
@@ -874,17 +871,10 @@ export function TransferPanel() {
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (error) {
-      Sentry.configureScope(function (scope) {
-        // tags only allow primitive values
-        scope.setTag('origin function', 'bridgeTransferStarter.transfer')
-        scope.setTag(
-          'transfer type',
-          selectedToken ? 'token' : 'native currency'
-        )
-        if (selectedToken) {
-          scope.setTag('erc20 address on parent chain', selectedToken.address)
-        }
-        Sentry.captureException(error, () => scope)
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'bridgeTransferStarter.transfer',
+        erc20ParentAddress: selectedToken?.address
       })
     } finally {
       setTransferring(false)

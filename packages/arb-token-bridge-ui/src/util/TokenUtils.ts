@@ -9,7 +9,6 @@ import {
   getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
@@ -20,6 +19,7 @@ import {
   getL2ConfigForTeleport,
   isTeleport
 } from '../token-bridge-sdk/teleport'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -156,11 +156,17 @@ export async function fetchErc20Data({
 
     return erc20Data
   } catch (error) {
-    // log some extra info on sentry in case multi-caller fails
-    Sentry.configureScope(function (scope) {
-      scope.setTag('origin function', 'fetchErc20Data')
-      scope.setTag('token address', address)
-      Sentry.captureException(error, () => scope)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'fetchErc20Data',
+      additionalData: [
+        {
+          'token address on this chain': address
+        },
+        {
+          chain: chainId.toString()
+        }
+      ]
     })
     throw error
   }
@@ -209,11 +215,18 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
     })
     return tokenData?.allowance ?? constants.Zero
   } catch (error) {
-    // log the issue on sentry, later, fall back if there is no multicall
-    Sentry.configureScope(function (scope) {
-      scope.setTag('origin function', 'fetchErc20Allowance')
-      scope.setTag('token address', address)
-      Sentry.captureException(error, () => scope)
+    const chainId = await getChainIdFromProvider(provider)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'fetchErc20Allowance',
+      additionalData: [
+        {
+          'token address on this chain': address
+        },
+        {
+          chain: chainId.toString()
+        }
+      ]
     })
     throw error
   }

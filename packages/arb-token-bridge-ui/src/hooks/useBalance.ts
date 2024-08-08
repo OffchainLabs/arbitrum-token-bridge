@@ -7,8 +7,8 @@ import useSWR, {
   SWRHook
 } from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
-import * as Sentry from '@sentry/react'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 type Erc20Balances = {
   [address: string]: BigNumber | undefined
@@ -90,13 +90,13 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
           return acc
         }, {} as Erc20Balances)
       } catch (error) {
-        // log some extra info on sentry in case multi-caller fails
-        Sentry.configureScope(function (scope) {
-          // tags only allow primitive values
-          scope.setTag('origin function', 'useBalance fetchErc20')
-          scope.setTag('token addresses', addresses.toString())
-          scope.setTag('chain id', chainId)
-          Sentry.captureException(error, () => scope)
+        captureSentryErrorWithExtraData({
+          error,
+          originFunction: 'useBalance fetchErc20',
+          additionalData: [
+            { 'token addresses': addresses.toString() },
+            { chain: chainId.toString() }
+          ]
         })
         return {}
       }

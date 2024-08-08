@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import * as Sentry from '@sentry/react'
 import { useAccount, useSigner } from 'wagmi'
 
 import { useAppState } from '../state'
@@ -15,6 +14,7 @@ import dayjs from 'dayjs'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -106,10 +106,9 @@ export function useClaimWithdrawal(
       return
     }
 
-    Sentry.configureScope(function (scope) {
-      // tags only allow primitive values
-      scope.setTag('origin function', 'useClaimWithdrawal claim')
-      Sentry.captureException(err, () => scope)
+    captureSentryErrorWithExtraData({
+      error: err,
+      originFunction: 'useClaimWithdrawal claim'
     })
     if (!res) {
       errorToast(`Can't claim withdrawal: ${err?.message ?? err}`)

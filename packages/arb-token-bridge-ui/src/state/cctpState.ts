@@ -2,7 +2,6 @@ import { BigNumber } from 'ethers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
-import * as Sentry from '@sentry/react'
 import { useInterval } from 'react-use'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
@@ -29,6 +28,7 @@ import { useAccountType } from '../hooks/useAccountType'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Address } from '../util/AddressUtils'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -570,10 +570,9 @@ export function useClaimCctp(tx: MergedTransaction) {
         throw new Error('Transaction failed')
       }
     } catch (error) {
-      Sentry.configureScope(function (scope) {
-        // tags only allow primitive values
-        scope.setTag('origin function', 'useClaimCctp claim')
-        Sentry.captureException(error, () => scope)
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'useClaimCctp claim'
       })
       throw error
     } finally {

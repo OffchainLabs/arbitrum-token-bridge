@@ -5,10 +5,10 @@ import {
 } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import * as Sentry from '@sentry/react'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -63,17 +63,10 @@ export async function withdrawInitTxEstimateGas({
       estimatedChildChainGas
     }
   } catch (error) {
-    Sentry.configureScope(function (scope) {
-      // tags only allow primitive values
-      scope.setTag('origin function', 'withdrawInitTxEstimateGas')
-      scope.setTag(
-        'withdrawal type',
-        erc20L1Address ? 'token' : 'native currency'
-      )
-      if (erc20L1Address) {
-        scope.setTag('erc20 address on parent chain: ', erc20L1Address)
-      }
-      Sentry.captureException(error, () => scope)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'withdrawInitTxEstimateGas',
+      erc20ParentAddress: erc20L1Address
     })
 
     return {
