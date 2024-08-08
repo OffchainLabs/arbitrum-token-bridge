@@ -39,66 +39,57 @@ describe('Withdraw ETH', () => {
       it('should show gas estimations', () => {
         cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(
-              new RegExp(
-                `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-                'i'
-              )
-            )
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          new RegExp(
+            `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
+            'i'
+          )
+        )
       })
 
       it('should show withdrawal confirmation and withdraw', () => {
         ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
         cy.login({ networkType: 'childChain' })
         cy.typeAmount(ETHToWithdraw)
-          //
-          .then(() => {
-            cy.findMoveFundsButton().click()
-            cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
+        cy.findMoveFundsButton().click()
+        cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
-            // the Continue withdrawal button should be disabled at first
-            cy.findByRole('button', {
-              name: /Continue/i
-            }).should('be.disabled')
+        // the Continue withdrawal button should be disabled at first
+        cy.findByRole('button', {
+          name: /Continue/i
+        }).should('be.disabled')
 
-            cy.findByRole('switch', {
-              name: /before I can claim my funds/i
-            })
-              .should('be.visible')
-              .click()
+        cy.findByRole('switch', {
+          name: /before I can claim my funds/i
+        })
+          .should('be.visible')
+          .click()
 
-            cy.findByRole('switch', {
-              name: /after claiming my funds/i
-            })
-              .should('be.visible')
-              .click()
-              .then(() => {
-                // the Continue withdrawal button should not be disabled now
-                cy.findByRole('button', {
-                  name: /Continue/i
-                })
-                  .should('be.enabled')
-                  .click()
+        cy.findByRole('switch', {
+          name: /after claiming my funds/i
+        })
+          .should('be.visible')
+          .click()
+        // the Continue withdrawal button should not be disabled now
+        cy.findByRole('button', {
+          name: /Continue/i
+        })
+          .should('be.enabled')
+          .click()
 
-                cy.confirmMetamaskTransaction()
+        cy.confirmMetamaskTransaction()
 
-                cy.findTransactionInTransactionHistory({
-                  duration: 'an hour',
-                  amount: ETHToWithdraw,
-                  symbol: 'ETH'
-                })
-              })
-          })
+        cy.findTransactionInTransactionHistory({
+          duration: 'an hour',
+          amount: ETHToWithdraw,
+          symbol: 'ETH'
+        })
       })
 
       it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
         // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
-
         cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
 
         cy.findByLabelText('Open Transaction History')
