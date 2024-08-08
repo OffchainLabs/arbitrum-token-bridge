@@ -874,7 +874,12 @@ export function TransferPanel() {
       captureSentryErrorWithExtraData({
         error,
         originFunction: 'bridgeTransferStarter.transfer',
-        erc20ParentAddress: selectedToken?.address
+        additionalData: selectedToken
+          ? {
+              'erc20 address on parent chain': selectedToken.address,
+              'transfer type': 'token'
+            }
+          : { 'transfer type': 'native currency' }
       })
     } finally {
       setTransferring(false)

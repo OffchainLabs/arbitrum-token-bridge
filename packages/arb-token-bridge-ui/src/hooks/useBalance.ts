@@ -93,10 +93,10 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
         captureSentryErrorWithExtraData({
           error,
           originFunction: 'useBalance fetchErc20',
-          additionalData: [
-            { 'token addresses': addresses.toString() },
-            { chain: chainId.toString() }
-          ]
+          additionalData: {
+            'token addresses': addresses.toString(),
+            chain: chainId.toString()
+          }
         })
         return {}
       }

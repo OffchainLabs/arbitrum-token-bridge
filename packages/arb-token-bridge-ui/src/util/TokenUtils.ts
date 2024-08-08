@@ -159,14 +159,10 @@ export async function fetchErc20Data({
     captureSentryErrorWithExtraData({
       error,
       originFunction: 'fetchErc20Data',
-      additionalData: [
-        {
-          'token address on this chain': address
-        },
-        {
-          chain: chainId.toString()
-        }
-      ]
+      additionalData: {
+        'token address on this chain': address,
+        chain: chainId.toString()
+      }
     })
     throw error
   }
@@ -219,14 +215,10 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
     captureSentryErrorWithExtraData({
       error,
       originFunction: 'fetchErc20Allowance',
-      additionalData: [
-        {
-          'token address on this chain': address
-        },
-        {
-          chain: chainId.toString()
-        }
-      ]
+      additionalData: {
+        'token address on this chain': address,
+        chain: chainId.toString()
+      }
     })
     throw error
   }

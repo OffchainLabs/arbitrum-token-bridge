@@ -66,7 +66,12 @@ export async function withdrawInitTxEstimateGas({
     captureSentryErrorWithExtraData({
       error,
       originFunction: 'withdrawInitTxEstimateGas',
-      erc20ParentAddress: erc20L1Address
+      additionalData: isToken
+        ? {
+            erc20_address_on_parent_chain: erc20L1Address,
+            withdrawal_type: 'token'
+          }
+        : { withdrawal_type: 'native currency' }
     })
 
     return {
