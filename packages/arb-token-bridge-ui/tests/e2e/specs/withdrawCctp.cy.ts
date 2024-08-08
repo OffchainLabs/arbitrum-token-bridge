@@ -3,8 +3,6 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { formatAmount } from '../../../src/util/NumberUtils'
-import { shortenAddress } from '../../../src/util/CommonUtils'
 import { zeroToLessThanOneETH } from '../../support/common'
 
 // common function for this cctp withdrawal
@@ -80,33 +78,28 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.typeAmount(USDCAmountToSend).then(() => {
-          cy.findByText(
-            'Gas estimates are not available for this action.'
-          ).should('be.visible')
-          cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
-          cy.findGasFeeForChain(
-            /You'll have to pay Sepolia gas fee upon claiming./i
-          )
-        })
+        cy.typeAmount(USDCAmountToSend)
+        cy.findByText(
+          'Gas estimates are not available for this action.'
+        ).should('be.visible')
+        cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          /You'll have to pay Sepolia gas fee upon claiming./i
+        )
         cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-          () => {
-            // eslint-disable-next-line
-            cy.wait(40_000)
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: 'a minute',
-                amount: USDCAmountToSend,
-                symbol: 'USDC'
-              })
-            })
-          }
-        )
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        })
       })
     })
 
@@ -125,25 +118,22 @@ describe('Withdraw USDC through CCTP', () => {
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-          () => {
-            // eslint-disable-next-line
-            cy.wait(40_000)
-            cy.confirmMetamaskTransaction().then(() => {
-              const txData = {
-                amount: USDCAmountToSend,
-                symbol: 'USDC'
-              }
-              cy.findTransactionInTransactionHistory({
-                duration: 'a minute',
-                ...txData
-              })
-              cy.openTransactionDetails(txData)
-              cy.findTransactionDetailsCustomDestinationAddress(
-                Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-              )
-            })
-          }
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        const txData = {
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          ...txData
+        })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
         )
       })
     })
