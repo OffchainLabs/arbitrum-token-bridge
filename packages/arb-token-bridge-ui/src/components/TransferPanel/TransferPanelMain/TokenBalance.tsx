@@ -38,7 +38,7 @@ export function TokenBalance({
       <span className="font-light">{prefix}</span>
       <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {
-          decimals: forToken.decimals
+          decimals: isParentChain ? forToken.decimals : 18
         })}
       </span>{' '}
       <TokenSymbolWithExplorerLink
