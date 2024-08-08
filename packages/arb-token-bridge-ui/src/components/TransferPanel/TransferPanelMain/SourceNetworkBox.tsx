@@ -1,4 +1,3 @@
-import { Chain } from 'wagmi'
 import { useCallback, useEffect } from 'react'
 
 import { getNetworkName } from '../../../util/networks'
@@ -12,7 +11,7 @@ import {
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
 import { NetworkType } from './utils'
-import { useActions, useAppState } from '../../../state'
+import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
@@ -45,8 +44,7 @@ export function SourceNetworkBox({
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
-  const actions = useActions()
-  const [networks, setNetworks] = useNetworks()
+  const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const {
@@ -78,33 +76,6 @@ export function SourceNetworkBox({
       setAmount(maxAmount)
     }
   }, [maxAmount, setAmount])
-
-  const onChange = useCallback(
-    (network: Chain) => {
-      if (networks.destinationChain.id === network.id) {
-        setNetworks({
-          sourceChainId: networks.destinationChain.id,
-          destinationChainId: networks.sourceChain.id
-        })
-        return
-      }
-
-      // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
-      // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
-      setNetworks({
-        sourceChainId: network.id,
-        destinationChainId: networks.destinationChain.id
-      })
-
-      actions.app.setSelectedToken(null)
-    },
-    [
-      actions.app,
-      networks.destinationChain.id,
-      networks.sourceChain.id,
-      setNetworks
-    ]
-  )
 
   return (
     <>
@@ -206,7 +177,6 @@ export function SourceNetworkBox({
       <NetworkSelectionContainer
         {...sourceNetworkSelectionDialogProps}
         type="source"
-        onChange={onChange}
       />
     </>
   )

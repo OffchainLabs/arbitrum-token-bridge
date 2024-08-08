@@ -1,6 +1,5 @@
 import { constants, utils } from 'ethers'
-import { useCallback, useState } from 'react'
-import { Chain, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useDestinationAddressStore } from '../AdvancedSettings'
@@ -13,12 +12,12 @@ import {
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { NetworkType, shouldOpenOneNovaDialog } from './utils'
-import { useActions, useAppState } from '../../../state'
+import { NetworkType } from './utils'
+import { useAppState } from '../../../state'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { ChainId, isNetwork } from '../../../util/networks'
+import { isNetwork } from '../../../util/networks'
 import { EstimatedGas } from '../EstimatedGas'
 import {
   Balances,
@@ -27,7 +26,6 @@ import {
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useDialog } from '../../common/Dialog'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
-import { OneNovaTransferDialog } from '../OneNovaTransferDialog'
 
 export function DestinationNetworkBox({
   customFeeTokenBalances,
@@ -37,14 +35,13 @@ export function DestinationNetworkBox({
   showUsdcSpecificInfo: boolean
 }) {
   const { address: walletAddress } = useAccount()
-  const [networks, setNetworks] = useNetworks()
+  const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
   const {
     app: { selectedToken }
   } = useAppState()
-  const actions = useActions()
   const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
     useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
@@ -55,28 +52,6 @@ export function DestinationNetworkBox({
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
-  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
-  const [
-    oneNovaTransferDestinationNetworkId,
-    setOneNovaTransferDestinationNetworkId
-  ] = useState<number | null>(null)
-
-  const onChange = useCallback(
-    (network: Chain) => {
-      if (shouldOpenOneNovaDialog([network.id, networks.sourceChain.id])) {
-        setOneNovaTransferDestinationNetworkId(network.id)
-        openOneNovaTransferDialog()
-        return
-      }
-
-      setNetworks({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: network.id
-      })
-      actions.app.setSelectedToken(null)
-    },
-    [actions.app, networks.sourceChain.id, setNetworks]
-  )
 
   return (
     <>
@@ -182,11 +157,6 @@ export function DestinationNetworkBox({
       <NetworkSelectionContainer
         {...destinationNetworkSelectionDialogProps}
         type="destination"
-        onChange={onChange}
-      />
-      <OneNovaTransferDialog
-        {...oneNovaTransferDialogProps}
-        destinationChainId={oneNovaTransferDestinationNetworkId}
       />
     </>
   )

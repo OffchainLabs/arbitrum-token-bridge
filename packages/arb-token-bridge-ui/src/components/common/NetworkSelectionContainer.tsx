@@ -26,8 +26,11 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from './NetworkImage'
-import { Dialog, UseDialogProps } from './Dialog'
+import { Dialog, UseDialogProps, useDialog } from './Dialog'
 import { useNetworks } from '../../hooks/useNetworks'
+import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
+import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
+import { useActions } from '../../state'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -320,11 +323,16 @@ function NetworksPanel({
 export const NetworkSelectionContainer = (
   props: UseDialogProps & {
     type: 'source' | 'destination'
-    onChange: (value: Chain) => void
   }
 ) => {
+  const actions = useActions()
   const [isTestnetMode] = useIsTestnetMode()
-  const [networks] = useNetworks()
+  const [networks, setNetworks] = useNetworks()
+  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+  const [
+    oneNovaTransferDestinationNetworkId,
+    setOneNovaTransferDestinationNetworkId
+  ] = useState<number | null>(null)
 
   const isSource = props.type === 'source'
 
@@ -354,25 +362,61 @@ export const NetworkSelectionContainer = (
     return destinationChainIds
   }, [isSource, isTestnetMode, networks.sourceChain.id])
 
+  const onNetworkRowClick = useCallback(
+    (value: Chain) => {
+      const pairedChain = isSource ? 'destinationChain' : 'sourceChain'
+
+      if (shouldOpenOneNovaDialog([value.id, networks[pairedChain].id])) {
+        setOneNovaTransferDestinationNetworkId(value.id)
+        openOneNovaTransferDialog()
+        return
+      }
+
+      if (networks[pairedChain].id === value.id) {
+        setNetworks({
+          sourceChainId: networks.destinationChain.id,
+          destinationChainId: networks.sourceChain.id
+        })
+        return
+      }
+
+      // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
+      // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
+      setNetworks({
+        sourceChainId: isSource ? value.id : networks.sourceChain.id,
+        destinationChainId: isSource ? networks.destinationChain.id : value.id
+      })
+
+      actions.app.setSelectedToken(null)
+    },
+    [actions.app, isSource, networks, openOneNovaTransferDialog, setNetworks]
+  )
+
   return (
-    <Dialog
-      {...props}
-      onClose={() => props.onClose(false)}
-      title={`Select ${isSource ? 'Source' : 'Destination'} Network`}
-      actionButtonProps={{ hidden: true }}
-      isFooterHidden={true}
-      className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
-    >
-      <SearchPanel>
-        <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
-          <NetworksPanel
-            chainIds={supportedChainIds}
-            selectedChainId={selectedChainId}
-            close={() => props.onClose(false)}
-            onNetworkRowClick={props.onChange}
-          />
-        </SearchPanel.MainPage>
-      </SearchPanel>
-    </Dialog>
+    <>
+      <Dialog
+        {...props}
+        onClose={() => props.onClose(false)}
+        title={`Select ${isSource ? 'Source' : 'Destination'} Network`}
+        actionButtonProps={{ hidden: true }}
+        isFooterHidden={true}
+        className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
+      >
+        <SearchPanel>
+          <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
+            <NetworksPanel
+              chainIds={supportedChainIds}
+              selectedChainId={selectedChainId}
+              close={() => props.onClose(false)}
+              onNetworkRowClick={onNetworkRowClick}
+            />
+          </SearchPanel.MainPage>
+        </SearchPanel>
+      </Dialog>
+      <OneNovaTransferDialog
+        {...oneNovaTransferDialogProps}
+        destinationChainId={oneNovaTransferDestinationNetworkId}
+      />
+    </>
   )
 }
