@@ -2,7 +2,6 @@
  * When user wants to bridge ERC20 from L2 to L1
  */
 
-import { shortenAddress } from '../../../src/util/CommonUtils'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
@@ -73,17 +72,14 @@ describe('Withdraw ERC20 Token', () => {
 
       context('should show summary', () => {
         cy.typeAmount(ERC20AmountToSend)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(
-              new RegExp(
-                `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-                'i'
-              )
-            )
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          new RegExp(
+            `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
+            'i'
+          )
+        )
       })
 
       context('should show clickable withdraw button', () => {
@@ -109,22 +105,20 @@ describe('Withdraw ERC20 Token', () => {
         })
           .should('be.visible')
           .click()
-          .then(() => {
-            // the Continue withdrawal button should not be disabled now
-            cy.findByRole('button', {
-              name: /Continue/i
-            })
-              .should('be.enabled')
-              .click()
+        // the Continue withdrawal button should not be disabled now
+        cy.findByRole('button', {
+          name: /Continue/i
+        })
+          .should('be.enabled')
+          .click()
 
-            cy.confirmMetamaskTransaction()
+        cy.confirmMetamaskTransaction()
 
-            cy.findTransactionInTransactionHistory({
-              duration: 'an hour',
-              amount: ERC20AmountToSend,
-              symbol: 'WETH'
-            })
-          })
+        cy.findTransactionInTransactionHistory({
+          duration: 'an hour',
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        })
       })
     })
 
@@ -184,17 +178,14 @@ describe('Withdraw ERC20 Token', () => {
 
       context('should show summary', () => {
         cy.typeAmount(ERC20AmountToSend)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(
-              new RegExp(
-                `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-                'i'
-              )
-            )
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          new RegExp(
+            `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
+            'i'
+          )
+        )
       })
 
       context('should fill custom destination address successfully', () => {
@@ -224,50 +215,36 @@ describe('Withdraw ERC20 Token', () => {
         })
           .should('be.visible')
           .click()
-          .then(() => {
-            // the Continue withdrawal button should not be disabled now
-            cy.findByRole('button', {
-              name: /Continue/i
-            })
-              .should('be.enabled')
-              .click()
+        // the Continue withdrawal button should not be disabled now
+        cy.findByRole('button', {
+          name: /Continue/i
+        })
+          .should('be.enabled')
+          .click()
 
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: 'an hour',
-                amount: ERC20AmountToSend,
-                symbol: 'WETH'
-              })
+        cy.confirmMetamaskTransaction()
+        const txData = {
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: 'an hour',
+          ...txData
+        })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
 
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
+        // close popup
+        cy.closeTransactionDetails()
+        cy.findByLabelText('Close side panel').click()
 
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
-
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
-
-              cy.findByLabelText('Close side panel').click()
-
-              // the balance on the source chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on childChain')
-                .should('be.visible')
-                .its('text')
-                .should('not.eq', l2ERC20bal)
-            })
-          })
+        // the balance on the source chain should not be the same as before
+        cy.findByLabelText('WETH balance amount on childChain')
+          .should('be.visible')
+          .its('text')
+          .should('not.eq', l2ERC20bal)
       })
     })
 

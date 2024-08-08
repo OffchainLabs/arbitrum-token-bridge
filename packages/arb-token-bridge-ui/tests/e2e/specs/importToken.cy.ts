@@ -122,9 +122,7 @@ describe('Import token', () => {
           .typeRecursively('UNI')
 
         // flaky test can load data too slowly here
-        cy.wait(5000)
-
-        cy.findByText('Uniswap').click()
+        cy.findByText('Uniswap', { timeout: 5_000 }).click()
 
         // UNI token should be selected now and popup should be closed after selection
         cy.findSelectTokenButton('UNI')
@@ -195,14 +193,10 @@ describe('Import token', () => {
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
           .trigger('click')
-          .then(() => {
-            cy.findSelectTokenButton(ERC20TokenSymbol)
+        cy.findSelectTokenButton(ERC20TokenSymbol)
 
-            // Modal is closed
-            cy.findByRole('button', { name: 'Import token' }).should(
-              'not.exist'
-            )
-          })
+        // Modal is closed
+        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
       })
     })
 
@@ -235,9 +229,7 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-          .then(() => {
-            cy.findSelectTokenButton(ERC20TokenSymbol)
-          })
+        cy.findSelectTokenButton(ERC20TokenSymbol)
 
         // Modal is closed
         cy.findByRole('button', { name: 'Import token' }).should('not.exist')
@@ -270,9 +262,7 @@ describe('Import token', () => {
         cy.findByRole('button', { name: 'Dialog Cancel' })
           .should('be.visible')
           .trigger('click')
-          .then(() => {
-            cy.findSelectTokenButton('ETH')
-          })
+        cy.findSelectTokenButton('ETH')
 
         // Modal is closed
         cy.findByRole('button', { name: 'Dialog Cancel' }).should('not.exist')

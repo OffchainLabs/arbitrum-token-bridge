@@ -22,6 +22,7 @@ import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
+import { shortenAddress } from '../../src/util/CommonUtils'
 
 export function login({
   networkType,
@@ -84,14 +85,12 @@ Cypress.Commands.add(
 
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    cy.resetMetamaskAccount().then(() => {
-      // resetMetamaskAccount doesn't seem to remove the connected network in CI
-      // changeMetamaskNetwork fails if already connected to the desired network
-      // as a workaround we switch to another network after all the tests
-      cy.changeMetamaskNetwork('sepolia')
-    })
-  })
+  cy.disconnectMetamaskWalletFromAllDapps()
+  cy.resetMetamaskAccount()
+  // resetMetamaskAccount doesn't seem to remove the connected network in CI
+  // changeMetamaskNetwork fails if already connected to the desired network
+  // as a workaround we switch to another network after all the tests
+  cy.changeMetamaskNetwork('sepolia')
 }
 
 export const connectToApp = (connectMetamask: boolean) => {
@@ -229,18 +228,17 @@ export const searchAndSelectToken = ({
   cy.findByPlaceholderText(/Search by token name/i)
     .typeRecursively(tokenAddress)
     .should('be.visible')
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click()
 
-      // Select the USDC token
-      cy.findAllByText(tokenName).first().click()
+  // Click on the Add new token button
+  cy.findByRole('button', { name: 'Add New Token' })
+    .should('be.visible')
+    .click()
 
-      // USDC token should be selected now and popup should be closed after selection
-      cy.findSelectTokenButton(tokenName)
-    })
+  // Select the USDC token
+  cy.findAllByText(tokenName).first().click()
+
+  // USDC token should be selected now and popup should be closed after selection
+  cy.findSelectTokenButton(tokenName)
 }
 
 export const fillCustomDestinationAddress = () => {
@@ -327,6 +325,34 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function openTransactionDetails({
+  amount,
+  symbol
+}: {
+  amount: number
+  symbol: string
+}): Cypress.Chainable<JQuery<HTMLElement>> {
+  cy.findTransactionInTransactionHistory({ amount, symbol }).within(() => {
+    cy.findByLabelText('Transaction details button').click()
+  })
+  return cy.findByText('Transaction details').should('be.visible')
+}
+
+export function closeTransactionDetails() {
+  cy.findByLabelText('Close transaction details popup').click()
+}
+
+export function findTransactionDetailsCustomDestinationAddress(
+  customAddress: string
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+  // custom destination label in pending tx history should be visible
+  return cy
+    .findByLabelText(`Custom address: ${shortenAddress(customAddress)}`)
+    .should('be.visible')
+}
+
 export function findTransactionInTransactionHistory({
   symbol,
   amount,
@@ -374,6 +400,9 @@ Cypress.Commands.addAll({
   findGasFeeSummary,
   findMoveFundsButton,
   findSelectTokenButton,
+  openTransactionDetails,
+  closeTransactionDetails,
   findTransactionInTransactionHistory,
-  findClaimButton
+  findClaimButton,
+  findTransactionDetailsCustomDestinationAddress
 })
