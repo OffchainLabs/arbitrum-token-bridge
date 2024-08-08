@@ -13,7 +13,7 @@ import {
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { NetworkType } from './utils'
+import { NetworkType, shouldOpenOneNovaDialog } from './utils'
 import { useActions, useAppState } from '../../../state'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useBalances } from '../../../hooks/useBalances'
@@ -28,12 +28,6 @@ import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useDialog } from '../../common/Dialog'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
 import { OneNovaTransferDialog } from '../OneNovaTransferDialog'
-
-function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
-  return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
-    selectedChainIds.includes(chainId)
-  )
-}
 
 export function DestinationNetworkBox({
   customFeeTokenBalances,
