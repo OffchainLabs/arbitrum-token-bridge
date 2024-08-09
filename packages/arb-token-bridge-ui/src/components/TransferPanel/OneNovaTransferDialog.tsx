@@ -12,6 +12,14 @@ import { ether } from '../../constants'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useNetworks } from '../../hooks/useNetworks'
 
+/**
+ * On the UI, user can select the pair Arbitrum One/Arbitrum Nova with the network selection dropdowns.
+ * However, they are not valid pairs for transfer, so the latest selected chain will not be set as query param
+ * and useNetworks will not save it.
+ *
+ * This function will use the currently selected chain in the source & destination chain pair to determine
+ * which chain user has selected (but not stored in the query params or useNetworks).
+ */
 function getSelectedSourceAndDestinationChain({
   sourceChainId,
   destinationChainId
