@@ -91,8 +91,7 @@ export function useGasSummary(): UseGasSummaryResult {
         : token?.l2Address,
       destinationChainErc20Address: isDepositMode
         ? token?.l2Address
-        : token?.address,
-      sourceChainBalance: balance
+        : token?.address
     })
 
   const estimatedParentChainGasFees = useMemo(() => {
@@ -147,13 +146,17 @@ export function useGasSummary(): UseGasSummaryResult {
       return
     }
 
-    if (!balance) {
+    if (typeof walletAddress !== 'undefined' && !balance) {
       setGasSummaryStatus('loading')
       return
     }
 
     // If user has input an amount over their balance, don't estimate gas
-    if (amountBigNumber.gt(balance)) {
+    if (
+      typeof walletAddress !== 'undefined' &&
+      balance &&
+      amountBigNumber.gt(balance)
+    ) {
       setGasSummaryStatus('insufficientBalance')
       return
     }
@@ -166,7 +169,7 @@ export function useGasSummary(): UseGasSummaryResult {
       return
     }
 
-    if (gasEstimatesError) {
+    if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
       setGasSummaryStatus('error')
       return
     }

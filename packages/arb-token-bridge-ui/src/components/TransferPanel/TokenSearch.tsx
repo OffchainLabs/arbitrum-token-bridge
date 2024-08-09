@@ -9,8 +9,8 @@ import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  addBridgeTokenListToBridge,
-  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
+  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID,
+  addBridgeTokenListToBridge
 } from '../../util/TokenListUtils'
 import {
   fetchErc20Data,
@@ -368,16 +368,14 @@ function TokensPanel({
     isDepositMode,
     isArbitrumOne,
     isArbitrumSepolia,
+    isParentChainArbitrumOne,
+    isParentChainArbitrumSepolia,
     isOrbitChain,
-    getBalance,
-    nativeCurrency
+    nativeCurrency,
+    getBalance
   ])
 
   const storeNewToken = async () => {
-    if (!walletAddress) {
-      return
-    }
-
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -603,10 +601,6 @@ export function TokenSearch({
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         setTokenQueryParam(_token.address)
-        return
-      }
-
-      if (!walletAddress) {
         return
       }
 

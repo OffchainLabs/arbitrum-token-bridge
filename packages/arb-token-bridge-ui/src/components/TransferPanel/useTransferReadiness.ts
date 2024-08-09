@@ -207,6 +207,11 @@ export function useTransferReadiness({
   }, [nativeCurrency, erc20ParentBalances])
 
   return useMemo(() => {
+    if (typeof walletAddress === 'undefined') {
+      // show gas estimation without wallet connection
+      return ready()
+    }
+
     if (isNaN(Number(amount)) || Number(amount) === 0) {
       return notReady()
     }

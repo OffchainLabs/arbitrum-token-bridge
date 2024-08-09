@@ -63,6 +63,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { addDepositToCache } from '../TransactionHistory/helpers'
@@ -141,7 +142,9 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const { isArbitrumOne, isArbitrumNova, isArbitrumSepolia } = isNetwork(
+    childChain.id
+  )
 
   const latestEth = useLatest(eth)
 
@@ -154,6 +157,7 @@ export function TransferPanel() {
 
   const setAmount = useSetInputAmount()
 
+  const { openConnectModal } = useConnectModal()
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
@@ -561,9 +565,6 @@ export function TransferPanel() {
       setTransferring(false)
     }
 
-    if (!isConnected) {
-      return
-    }
     if (!walletAddress) {
       return
     }
@@ -990,7 +991,13 @@ export function TransferPanel() {
     }
 
     return false
-  }, [isArbitrumOne, isArbitrumSepolia, isDepositMode, selectedToken])
+  }, [
+    isArbitrumOne,
+    isArbitrumSepolia,
+    isDepositMode,
+    isTeleportMode,
+    selectedToken
+  ])
 
   return (
     <>
@@ -1035,11 +1042,15 @@ export function TransferPanel() {
           token={selectedToken}
         />
         <div className="transfer-panel-stats">
-          {isDepositMode ? (
+          {isConnected ? (
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={!transferReady.deposit}
+              disabled={
+                isDepositMode
+                  ? !transferReady.deposit
+                  : !transferReady.withdrawal
+              }
               onClick={() => {
                 if (isCctpTransfer) {
                   transferCctp()
@@ -1068,30 +1079,14 @@ export function TransferPanel() {
           ) : (
             <Button
               variant="primary"
-              loading={isTransferring}
-              disabled={!transferReady.withdrawal}
-              onClick={() => {
-                if (isCctpTransfer) {
-                  transferCctp()
-                } else {
-                  transfer()
-                }
-              }}
+              onClick={openConnectModal}
               style={{
                 borderColor: destinationChainUIcolor,
                 backgroundColor: `${destinationChainUIcolor}66`
               }}
-              className={twMerge(
-                'w-full border py-3 text-lg',
-                'disabled:!border-white/10 disabled:!bg-white/10',
-                'lg:text-2xl'
-              )}
+              className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(
-                    networks.destinationChain.id
-                  )}`}
+              <span className="block w-[360px] truncate">Connect Wallet</span>
             </Button>
           )}
         </div>

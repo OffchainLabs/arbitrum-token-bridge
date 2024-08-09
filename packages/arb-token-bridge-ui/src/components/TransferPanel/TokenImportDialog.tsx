@@ -64,7 +64,6 @@ export function TokenImportDialog({
   onClose,
   tokenAddress
 }: TokenImportDialogProps): JSX.Element {
-  const { address: walletAddress } = useAccount()
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token },
@@ -126,7 +125,7 @@ export function TokenImportDialog({
   }, [status])
 
   const getL1TokenDataFromL1Address = useCallback(async () => {
-    if (!l1Address || !walletAddress) {
+    if (!l1Address) {
       return
     }
 
@@ -137,7 +136,7 @@ export function TokenImportDialog({
     }
 
     return fetchErc20Data(erc20Params)
-  }, [parentChainProvider, walletAddress, l1Address])
+  }, [parentChainProvider, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
