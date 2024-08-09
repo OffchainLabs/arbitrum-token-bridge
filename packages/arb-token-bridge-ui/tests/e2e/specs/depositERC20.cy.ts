@@ -10,7 +10,6 @@ import {
   getL1NetworkName,
   getL2NetworkName
 } from '../../support/common'
-import { shortenAddress } from '../../../src/util/CommonUtils'
 
 const moreThanZeroBalance = /0(\.\d+)/
 
@@ -20,7 +19,7 @@ describe('Deposit ERC20 Token', () => {
   // because it is cleared between each `it` cypress test
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
   const l1WethAddress = Cypress.env('L1_WETH_ADDRESS')
 
   // Happy Path
@@ -64,26 +63,19 @@ describe('Deposit ERC20 Token', () => {
 
       context('should show gas estimations', () => {
         cy.typeAmount(ERC20AmountToSend)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
       })
 
       context('should deposit successfully', () => {
-        cy.findMoveFundsButton()
-          .click()
-          .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: depositTime,
-                amount: ERC20AmountToSend,
-                symbol: 'WETH'
-              })
-            })
-          })
+        cy.findMoveFundsButton().click()
+        cy.confirmMetamaskTransaction()
+        cy.findTransactionInTransactionHistory({
+          duration: depositTime,
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        })
       })
     })
 
@@ -100,12 +92,9 @@ describe('Deposit ERC20 Token', () => {
 
       context('should show summary', () => {
         cy.typeAmount(ERC20AmountToSend)
-          //
-          .then(() => {
-            cy.findGasFeeSummary(zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-            cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-          })
+        cy.findGasFeeSummary(zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
       })
 
       context('should fill custom destination address successfully', () => {
@@ -113,37 +102,21 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should deposit successfully', () => {
-        cy.findMoveFundsButton()
-          .click()
-          .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findTransactionInTransactionHistory({
-                duration: depositTime,
-                amount: ERC20AmountToSend,
-                symbol: 'WETH'
-              })
-
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
-
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
-
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
-            })
-          })
+        cy.findMoveFundsButton().click()
+        cy.confirmMetamaskTransaction()
+        const txData = {
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: depositTime,
+          ...txData
+        })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
+        cy.closeTransactionDetails()
       })
 
       context('deposit should complete successfully', () => {
@@ -163,27 +136,21 @@ describe('Deposit ERC20 Token', () => {
             timeout: 60_000,
             interval: 500
           }
-        ).then(() => {
-          // open the tx details popup
-          cy.findAllByLabelText('Transaction details button')
-            .first()
-            .click()
-            .then(() => {
-              cy.findByText('Transaction details').should('be.visible')
-
-              cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-              // custom destination label in pending tx history should be visible
-              cy.findByLabelText(
-                `Custom address: ${shortenAddress(
-                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                )}`
-              ).should('be.visible')
-            })
-
-          // close popup
-          cy.findByLabelText('Close transaction details popup').click()
+        )
+        // open the tx details popup
+        const txData = {
+          amount: ERC20AmountToSend,
+          symbol: 'WETH'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: 'a few seconds ago',
+          ...txData
         })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
+        cy.closeTransactionDetails()
       })
 
       context('funds should reach destination account successfully', () => {
