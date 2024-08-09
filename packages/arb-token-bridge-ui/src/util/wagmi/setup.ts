@@ -15,7 +15,7 @@ import {
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
-import { getOrbitChains } from '../orbitChainsList'
+import { getOrbitChains } from '../orbit'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
 

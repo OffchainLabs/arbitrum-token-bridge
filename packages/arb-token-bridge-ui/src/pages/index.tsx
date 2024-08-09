@@ -8,7 +8,7 @@ import {
   getCustomChainsFromLocalStorage,
   mapCustomChainToNetworkData
 } from '../util/networks'
-import { getOrbitChains } from '../util/orbitChainsList'
+import { getOrbitChains } from '../util/orbit'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
