@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
+import { utils } from 'ethers'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
-import { useAppState } from '../../state'
-import { sanitizeImageSrc } from '../../util'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -16,42 +15,19 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { Loader } from '../common/atoms/Loader'
+import { useTokensFromLists } from './TokenSearchUtils'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function TokenButton(): JSX.Element {
-  const {
-    app: {
-      selectedToken,
-      arbTokenBridge: { bridgeTokens },
-      arbTokenBridgeLoaded
-    }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
+  const tokensFromLists = useTokensFromLists()
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const tokenLogo = useMemo<string | undefined>(() => {
-    const selectedAddress = selectedToken?.address
-    if (!selectedAddress) {
-      return nativeCurrency.logoUrl
-    }
-    if (!arbTokenBridgeLoaded) {
-      return undefined
-    }
-    if (typeof bridgeTokens === 'undefined') {
-      return undefined
-    }
-    const logo = bridgeTokens[selectedAddress]?.logoURI
-    if (logo) {
-      return sanitizeImageSrc(logo)
-    }
-    return undefined
-  }, [
-    nativeCurrency,
-    bridgeTokens,
-    selectedToken?.address,
-    arbTokenBridgeLoaded
-  ])
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
@@ -64,6 +40,24 @@ export function TokenButton(): JSX.Element {
     })
   }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
 
+  const isLoadingToken = useMemo(() => {
+    // don't show loader if native currency is selected
+    if (!tokenFromSearchParams) {
+      return false
+    }
+    if (!utils.isAddress(tokenFromSearchParams)) {
+      return false
+    }
+    // show loader for undefined or empty token lists
+    if (!tokensFromLists) {
+      return true
+    }
+    if (Object.keys(tokensFromLists).length === 0) {
+      return true
+    }
+    return false
+  }, [tokensFromLists, tokenFromSearchParams])
+
   return (
     <>
       <Popover className="relative">
@@ -73,6 +67,7 @@ export function TokenButton(): JSX.Element {
               className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
               aria-label="Select Token"
               onClick={onPopoverButtonClick}
+              disabled={isLoadingToken}
             >
               <div className="flex items-center gap-2">
                 {/* Commenting it out until we update the token image source files to be of better quality */}
@@ -88,14 +83,20 @@ export function TokenButton(): JSX.Element {
                   />
                 )} */}
                 <span className="text-xl font-light sm:text-3xl">
-                  {tokenSymbol}
-                </span>
-                <ChevronDownIcon
-                  className={twMerge(
-                    'h-3 w-3 text-gray-6 transition-transform duration-200',
-                    open ? '-rotate-180' : 'rotate-0'
+                  {isLoadingToken ? (
+                    <Loader size="medium" color="white" />
+                  ) : (
+                    tokenSymbol
                   )}
-                />
+                </span>
+                {!isLoadingToken && (
+                  <ChevronDownIcon
+                    className={twMerge(
+                      'h-3 w-3 text-gray-6 transition-transform duration-200',
+                      open ? '-rotate-180' : 'rotate-0'
+                    )}
+                  />
+                )}
               </div>
             </Popover.Button>
 

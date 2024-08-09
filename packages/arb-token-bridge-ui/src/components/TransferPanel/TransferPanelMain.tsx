@@ -6,7 +6,6 @@ import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
-import { useActions, useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
@@ -37,6 +36,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { Balances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
@@ -266,7 +266,6 @@ export function TransferPanelMain({
   amount: string
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
-  const actions = useActions()
   const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
@@ -275,10 +274,7 @@ export function TransferPanelMain({
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
 
   const { address: walletAddress } = useAccount()
 
@@ -426,7 +422,7 @@ export function TransferPanelMain({
             sourceChainId: networks.sourceChain.id,
             destinationChainId: network.id
           })
-          actions.app.setSelectedToken(null)
+          setSelectedToken(null)
         }
       }
     }
@@ -436,6 +432,7 @@ export function TransferPanelMain({
     networks.sourceChain,
     networks.destinationChain,
     setNetworks,
+    setSelectedToken,
     openOneNovaTransferDialog
   ])
 
