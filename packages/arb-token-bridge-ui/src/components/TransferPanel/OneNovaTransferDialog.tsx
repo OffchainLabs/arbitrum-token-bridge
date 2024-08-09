@@ -20,7 +20,7 @@ import { useNetworks } from '../../hooks/useNetworks'
  * This function will use the currently selected chain in the source & destination chain pair to determine
  * which chain user has selected (but not stored in the query params or useNetworks).
  */
-function getSelectedSourceAndDestinationChain({
+function getDialogSourceAndDestinationChains({
   sourceChainId,
   destinationChainId
 }: {
@@ -67,7 +67,7 @@ export function OneNovaTransferDialog(props: UseDialogProps) {
   const [{ sourceChain, destinationChain }] = useNetworks()
 
   const { selectedSourceChainId, selectedDestinationChainId } =
-    getSelectedSourceAndDestinationChain({
+    getDialogSourceAndDestinationChains({
       sourceChainId: sourceChain.id,
       destinationChainId: destinationChain.id
     })
