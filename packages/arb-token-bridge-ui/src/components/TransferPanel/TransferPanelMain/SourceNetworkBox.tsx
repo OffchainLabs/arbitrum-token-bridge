@@ -1,11 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
 import { getNetworkName } from '../../../util/networks'
-import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
+import {
+  NetworkButton,
+  NetworkSelectionContainer
+} from '../../common/NetworkSelectionContainer'
 import {
   BalancesContainer,
   ETHBalance,
-  NetworkButton,
   NetworkContainer,
   NetworkListboxPlusBalancesContainer
 } from '../TransferPanelMain'

@@ -1,9 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import {
-  ArrowsUpDownIcon,
-  ArrowDownIcon,
-  ChevronDownIcon
-} from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
@@ -12,12 +8,7 @@ import { useMedia } from 'react-use'
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  getExplorerUrl,
-  getDestinationChainIds,
-  isNetwork,
-  getNetworkName
-} from '../../util/networks'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useDestinationAddressStore } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -42,48 +33,6 @@ import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { NetworkType } from './TransferPanelMain/utils'
-
-export function NetworkButton({
-  type,
-  onClick
-}: {
-  type: 'source' | 'destination'
-  onClick: () => void
-}) {
-  const [networks] = useNetworks()
-  const { isSmartContractWallet, isLoading } = useAccountType()
-
-  const isSource = type === 'source'
-
-  const selectedChainId = isSource
-    ? networks.sourceChain.id
-    : networks.destinationChain.id
-
-  const hasOneOrLessChain =
-    !isSource && getDestinationChainIds(networks.sourceChain.id).length <= 1
-
-  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
-
-  const buttonStyle = {
-    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
-  }
-
-  return (
-    <button
-      style={buttonStyle}
-      className={twMerge(
-        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:gap-2 md:text-2xl'
-      )}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
-        {isSource ? 'From:' : 'To: '} {getNetworkName(selectedChainId)}
-      </span>
-      {!disabled && <ChevronDownIcon width={16} />}
-    </button>
-  )
-}
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>

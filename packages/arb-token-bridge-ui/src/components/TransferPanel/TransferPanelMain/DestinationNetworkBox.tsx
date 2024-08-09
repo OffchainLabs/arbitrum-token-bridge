@@ -6,7 +6,6 @@ import { useDestinationAddressStore } from '../AdvancedSettings'
 import {
   BalancesContainer,
   ETHBalance,
-  NetworkButton,
   NetworkContainer,
   NetworkListboxPlusBalancesContainer
 } from '../TransferPanelMain'
@@ -25,7 +24,10 @@ import {
 } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useDialog } from '../../common/Dialog'
-import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
+import {
+  NetworkButton,
+  NetworkSelectionContainer
+} from '../../common/NetworkSelectionContainer'
 
 export function DestinationNetworkBox({
   customFeeTokenBalances,

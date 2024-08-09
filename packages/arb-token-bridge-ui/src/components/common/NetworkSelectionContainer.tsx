@@ -8,16 +8,14 @@ import {
 } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from '@uidotdev/usehooks'
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
+import {
+  ChevronDownIcon,
+  ShieldExclamationIcon
+} from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
-import {
-  ChainId,
-  isNetwork,
-  getSupportedChainIds,
-  getDestinationChainIds
-} from '../../util/networks'
+import { ChainId, isNetwork, getNetworkName } from '../../util/networks'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
@@ -31,6 +29,8 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
 import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
 import { useActions } from '../../state'
+import { useChainIdsForTxPanelDropdown } from '../../hooks/TransferPanel/useChainIdsForNetworkSelectionDropdown'
+import { useAccountType } from '../../hooks/useAccountType'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -86,6 +86,47 @@ function ChainTypeInfoRow({
       <p className="text-sm text-white/70">{name}</p>
       {description}
     </div>
+  )
+}
+
+export function NetworkButton({
+  type,
+  onClick
+}: {
+  type: 'source' | 'destination'
+  onClick: () => void
+}) {
+  const [networks] = useNetworks()
+  const { isSmartContractWallet, isLoading } = useAccountType()
+  const isSource = type === 'source'
+  const chains = useChainIdsForTxPanelDropdown({ isSource })
+
+  const selectedChainId = isSource
+    ? networks.sourceChain.id
+    : networks.destinationChain.id
+
+  const hasOneOrLessChain = chains.length <= 1
+
+  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+
+  const buttonStyle = {
+    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+  }
+
+  return (
+    <button
+      style={buttonStyle}
+      className={twMerge(
+        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:gap-2 md:text-2xl'
+      )}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
+        {isSource ? 'From:' : 'To: '} {getNetworkName(selectedChainId)}
+      </span>
+      {!disabled && <ChevronDownIcon width={16} />}
+    </button>
   )
 }
 
@@ -326,13 +367,8 @@ export const NetworkSelectionContainer = (
   }
 ) => {
   const actions = useActions()
-  const [isTestnetMode] = useIsTestnetMode()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
-  const [
-    oneNovaTransferDestinationNetworkId,
-    setOneNovaTransferDestinationNetworkId
-  ] = useState<number | null>(null)
 
   const isSource = props.type === 'source'
 
@@ -340,34 +376,15 @@ export const NetworkSelectionContainer = (
     ? networks.sourceChain.id
     : networks.destinationChain.id
 
-  const supportedChainIds = useMemo(() => {
-    if (isSource) {
-      return getSupportedChainIds({
-        includeMainnets: !isTestnetMode,
-        includeTestnets: isTestnetMode
-      })
-    }
-
-    const destinationChainIds = getDestinationChainIds(networks.sourceChain.id)
-
-    // if source chain is Arbitrum One, add Arbitrum Nova to destination
-    if (networks.sourceChain.id === ChainId.ArbitrumOne) {
-      destinationChainIds.push(ChainId.ArbitrumNova)
-    }
-
-    if (networks.sourceChain.id === ChainId.ArbitrumNova) {
-      destinationChainIds.push(ChainId.ArbitrumOne)
-    }
-
-    return destinationChainIds
-  }, [isSource, isTestnetMode, networks.sourceChain.id])
+  const supportedChainIds = useChainIdsForTxPanelDropdown({
+    isSource
+  })
 
   const onNetworkRowClick = useCallback(
     (value: Chain) => {
       const pairedChain = isSource ? 'destinationChain' : 'sourceChain'
 
       if (shouldOpenOneNovaDialog([value.id, networks[pairedChain].id])) {
-        setOneNovaTransferDestinationNetworkId(value.id)
         openOneNovaTransferDialog()
         return
       }
@@ -413,10 +430,7 @@ export const NetworkSelectionContainer = (
           </SearchPanel.MainPage>
         </SearchPanel>
       </Dialog>
-      <OneNovaTransferDialog
-        {...oneNovaTransferDialogProps}
-        destinationChainId={oneNovaTransferDestinationNetworkId}
-      />
+      <OneNovaTransferDialog {...oneNovaTransferDialogProps} />
     </>
   )
 }
