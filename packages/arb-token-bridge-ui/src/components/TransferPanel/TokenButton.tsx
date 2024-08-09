@@ -83,7 +83,11 @@ export function TokenButton(): JSX.Element {
                   />
                 )} */}
                 <span className="text-xl font-light sm:text-3xl">
-                  {isLoadingToken ? <Loader size="medium" /> : tokenSymbol}
+                  {isLoadingToken ? (
+                    <Loader size="medium" color="white" />
+                  ) : (
+                    tokenSymbol
+                  )}
                 </span>
                 {!isLoadingToken && (
                   <ChevronDownIcon
