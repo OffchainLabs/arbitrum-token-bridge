@@ -15,9 +15,9 @@ import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { SecurityGuaranteed, SecurityNotGuaranteed } from './SecurityLabels'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
 
 function getCalendarUrl(
   withdrawalDate: dayjs.Dayjs,
@@ -65,8 +65,8 @@ export function WithdrawalConfirmationDialog(
   const { isArbitrumOne } = isNetwork(childChain.id)
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
-  const estimatedConfirmationDate = getTxConfirmationDate({
-    createdAt: dayjs(new Date()),
+  const estimatedConfirmationDate = getWithdrawalConfirmationDate({
+    createdAt: null,
     withdrawalFromChainId: childChain.id
   })
 

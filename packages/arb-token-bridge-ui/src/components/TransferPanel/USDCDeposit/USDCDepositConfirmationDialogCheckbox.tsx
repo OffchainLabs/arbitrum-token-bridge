@@ -3,6 +3,8 @@ import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
 import { isNetwork } from '../../../util/networks'
 import { useNetwork } from 'wagmi'
+import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
+import { minutesToHumanReadableTime } from '../../../hooks/useTransferDuration'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
@@ -64,7 +66,10 @@ export function USDCDepositConfirmationDialogCheckbox({
               <span className="select-none font-light">
                 I understand that it will take{' '}
                 <span className="font-medium">
-                  {isTestnet ? '~1 minute' : '~15 minutes'}
+                  ~
+                  {minutesToHumanReadableTime(
+                    getCctpTransferDuration(isTestnet)
+                  )}
                 </span>{' '}
                 before I can claim my USDC on {destinationNetworkName}.
               </span>
