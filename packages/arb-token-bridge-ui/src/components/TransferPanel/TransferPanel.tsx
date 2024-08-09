@@ -220,7 +220,13 @@ export function TransferPanel() {
       return true
     }
 
-    if (!tokensFromLists || !tokensFromUser) {
+    // only show import token dialog if the token is not part of the list
+    // otherwise we show a loader in the TokenButton
+    if (!tokensFromLists || Object.keys(tokensFromLists).length === 0) {
+      return undefined
+    }
+
+    if (!tokensFromUser) {
       return undefined
     }
 
