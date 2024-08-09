@@ -6,7 +6,7 @@ import {
 import { useIsTestnetMode } from '../useIsTestnetMode'
 import { useNetworks } from '../useNetworks'
 
-export function useChainIdsForTxPanelDropdown({
+export function useChainIdsForNetworkSelection({
   isSource
 }: {
   isSource: boolean

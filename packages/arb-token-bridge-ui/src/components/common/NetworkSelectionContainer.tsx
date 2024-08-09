@@ -29,7 +29,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
 import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
 import { useActions } from '../../state'
-import { useChainIdsForTxPanelDropdown } from '../../hooks/TransferPanel/useChainIdsForNetworkSelectionDropdown'
+import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
 
 type NetworkType = 'core' | 'orbit'
@@ -99,7 +99,7 @@ export function NetworkButton({
   const [networks] = useNetworks()
   const { isSmartContractWallet, isLoading } = useAccountType()
   const isSource = type === 'source'
-  const chains = useChainIdsForTxPanelDropdown({ isSource })
+  const chains = useChainIdsForNetworkSelection({ isSource })
 
   const selectedChainId = isSource
     ? networks.sourceChain.id
@@ -376,7 +376,7 @@ export const NetworkSelectionContainer = (
     ? networks.sourceChain.id
     : networks.destinationChain.id
 
-  const supportedChainIds = useChainIdsForTxPanelDropdown({
+  const supportedChainIds = useChainIdsForNetworkSelection({
     isSource
   })
 
