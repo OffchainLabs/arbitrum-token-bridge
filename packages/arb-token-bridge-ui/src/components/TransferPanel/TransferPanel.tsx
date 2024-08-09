@@ -63,6 +63,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { addDepositToCache } from '../TransactionHistory/helpers'
@@ -100,14 +101,11 @@ export function TransferPanel() {
     useState(false)
 
   const {
-    app: {
-      connectionState,
-      selectedToken,
-      arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token },
-      warningTokens
-    }
+    app: { selectedToken, warningTokens }
   } = useAppState()
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()
@@ -142,8 +140,6 @@ export function TransferPanel() {
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
-
-  const latestEth = useLatest(eth)
 
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
@@ -203,8 +199,7 @@ export function TransferPanel() {
   }
 
   useImportTokenModal({
-    importTokenModalStatus,
-    connectionState
+    importTokenModalStatus
   })
 
   const isBridgingANewStandardToken = useMemo(() => {
@@ -666,9 +661,7 @@ export function TransferPanel() {
         // keep checking till we know the connected chain-pair are correct for transfer
         while (
           depositRequiresChainSwitch() ||
-          withdrawalRequiresChainSwitch() ||
-          !latestEth.current ||
-          !arbTokenBridgeLoaded
+          withdrawalRequiresChainSwitch()
         ) {
           await new Promise(r => setTimeout(r, 100))
         }
@@ -948,7 +941,7 @@ export function TransferPanel() {
     await Promise.all([updateEthParentBalance(), updateEthChildBalance()])
 
     if (selectedToken) {
-      token.updateTokenData(selectedToken.address)
+      updateTokenData(selectedToken.address)
     }
 
     if (nativeCurrency.isCustom) {

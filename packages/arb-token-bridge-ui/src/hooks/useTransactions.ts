@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useMemo } from 'react'
+import { useReducer, useEffect, useMemo, useCallback } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
@@ -323,7 +323,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }, [])
 
-  const addTransaction = (transaction: NewTransaction) => {
+  const addTransaction = useCallback((transaction: NewTransaction) => {
     if (!transaction.txID) {
       console.warn(' Cannot add transaction: TxID not included (???)')
       return
@@ -336,40 +336,47 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       type: 'ADD_TRANSACTION',
       transaction: tx
     })
-  }
+  }, [])
 
-  const updateTxnL1ToL2MsgData = async (
-    txID: string,
-    l1ToL2MsgData: ParentToChildMessageData
-  ) => {
-    dispatch({
-      type: 'UPDATE_L1TOL2MSG_DATA',
-      txID: txID,
-      l1ToL2MsgData
-    })
-  }
+  const updateTxnL1ToL2MsgData = useCallback(
+    async (txID: string, l1ToL2MsgData: ParentToChildMessageData) => {
+      dispatch({
+        type: 'UPDATE_L1TOL2MSG_DATA',
+        txID: txID,
+        l1ToL2MsgData
+      })
+    },
+    []
+  )
 
-  const setTransactionSuccess = (txID: string) => {
+  const setTransactionSuccess = useCallback((txID: string) => {
     return dispatch({
       type: 'SET_SUCCESS',
       txID: txID
     })
-  }
-  const setTransactionBlock = (txID: string, blockNumber?: number) => {
-    return dispatch({
-      type: 'SET_BLOCK_NUMBER',
-      txID,
-      blockNumber
-    })
-  }
-  const setResolvedTimestamp = (txID: string, timestamp?: string) => {
-    return dispatch({
-      type: 'SET_RESOLVED_TIMESTAMP',
-      txID,
-      timestamp
-    })
-  }
-  const setTransactionFailure = (txID?: string) => {
+  }, [])
+
+  const setTransactionBlock = useCallback(
+    (txID: string, blockNumber?: number) => {
+      return dispatch({
+        type: 'SET_BLOCK_NUMBER',
+        txID,
+        blockNumber
+      })
+    },
+    []
+  )
+  const setResolvedTimestamp = useCallback(
+    (txID: string, timestamp?: string) => {
+      return dispatch({
+        type: 'SET_RESOLVED_TIMESTAMP',
+        txID,
+        timestamp
+      })
+    },
+    []
+  )
+  const setTransactionFailure = useCallback((txID?: string) => {
     if (!txID) {
       console.warn(' Cannot set transaction failure: TxID not included (???)')
       return
@@ -378,41 +385,54 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       type: 'SET_FAILURE',
       txID: txID
     })
-  }
+  }, [])
 
-  const updateTransaction = (
-    txReceipt: TransactionReceipt,
-    tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: ParentToChildMessageData
-  ) => {
-    if (!txReceipt.transactionHash) {
-      return console.warn(
-        '*** TransactionHash not included in transaction receipt (???) *** '
-      )
-    }
-    switch (txReceipt.status) {
-      case 0: {
-        setTransactionFailure(txReceipt.transactionHash)
-        break
+  const updateTransaction = useCallback(
+    (
+      txReceipt: TransactionReceipt,
+      tx?: ethers.ContractTransaction,
+      l1ToL2MsgData?: ParentToChildMessageData
+    ) => {
+      if (!txReceipt.transactionHash) {
+        return console.warn(
+          '*** TransactionHash not included in transaction receipt (???) *** '
+        )
       }
-      case 1: {
-        setTransactionSuccess(txReceipt.transactionHash)
-        break
+      switch (txReceipt.status) {
+        case 0: {
+          setTransactionFailure(txReceipt.transactionHash)
+          break
+        }
+
+        case 1: {
+          setTransactionSuccess(txReceipt.transactionHash)
+          break
+        }
+        default:
+          console.warn('*** Status not included in transaction receipt *** ')
+          break
       }
-      default:
-        console.warn('*** Status not included in transaction receipt *** ')
-        break
-    }
-    if (tx?.blockNumber) {
-      setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
-    }
-    if (tx) {
-      setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString())
-    }
-    if (l1ToL2MsgData) {
-      updateTxnL1ToL2MsgData(txReceipt.transactionHash, l1ToL2MsgData)
-    }
-  }
+      if (tx?.blockNumber) {
+        setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
+      }
+      if (tx) {
+        setResolvedTimestamp(
+          txReceipt.transactionHash,
+          new Date().toISOString()
+        )
+      }
+      if (l1ToL2MsgData) {
+        updateTxnL1ToL2MsgData(txReceipt.transactionHash, l1ToL2MsgData)
+      }
+    },
+    [
+      setResolvedTimestamp,
+      setTransactionBlock,
+      setTransactionFailure,
+      setTransactionSuccess,
+      updateTxnL1ToL2MsgData
+    ]
+  )
 
   const transactions = useMemo(() => {
     return state.filter(tx => !deprecatedTxTypes.has(tx.type))

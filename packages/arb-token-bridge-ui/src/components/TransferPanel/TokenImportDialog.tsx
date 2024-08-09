@@ -4,7 +4,7 @@ import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
-import { useActions, useAppState } from '../../state'
+import { useActions } from '../../state'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
@@ -20,6 +20,10 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import {
+  useArbTokenBridge,
+  useBridgeTokensStore
+} from '../../hooks/useArbTokenBridge'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
@@ -65,12 +69,10 @@ export function TokenImportDialog({
   tokenAddress
 }: TokenImportDialogProps): JSX.Element {
   const { address: walletAddress } = useAccount()
+  const { bridgeTokens } = useBridgeTokensStore()
   const {
-    app: {
-      arbTokenBridge: { bridgeTokens, token },
-      selectedToken
-    }
-  } = useAppState()
+    token: { add: addToken, updateTokenData }
+  } = useArbTokenBridge()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -178,10 +180,10 @@ export function TokenImportDialog({
 
   const selectToken = useCallback(
     async (_token: ERC20BridgeToken) => {
-      await token.updateTokenData(_token.address)
+      await updateTokenData(_token.address)
       actions.app.setSelectedToken(_token)
     },
-    [token, actions]
+    [updateTokenData, actions]
   )
 
   useEffect(() => {
@@ -233,39 +235,8 @@ export function TokenImportDialog({
     searchForTokenInLists
   ])
 
-  useEffect(() => {
-    if (!isOpen) {
-      return
-    }
-
-    if (isL1AddressLoading && !l1Address) {
-      return
-    }
-
-    const foundToken = tokensFromUser[l1Address || tokenAddress]
-
-    if (typeof foundToken === 'undefined') {
-      return
-    }
-
-    // Listen for the token to be added to the bridge so we can automatically select it
-    if (foundToken.address !== selectedToken?.address) {
-      onClose(true)
-      selectToken(foundToken)
-    }
-  }, [
-    isL1AddressLoading,
-    tokenAddress,
-    isOpen,
-    l1Address,
-    onClose,
-    selectToken,
-    selectedToken,
-    tokensFromUser
-  ])
-
   async function storeNewToken(newToken: string) {
-    return token.add(newToken).catch((ex: Error) => {
+    return addToken(newToken).catch((ex: Error) => {
       setStatus(ImportStatus.ERROR)
 
       if (ex.name === 'TokenDisabledError') {
@@ -295,9 +266,18 @@ export function TokenImportDialog({
       selectToken(tokenToImport!)
     } else {
       // Token is not added to the bridge, so we add it
-      storeNewToken(l1Address).catch(() => {
-        setStatus(ImportStatus.ERROR)
-      })
+      addToken(l1Address)
+        .then(() => {
+          onClose(true)
+          selectToken(tokenToImport!)
+        })
+        .catch(ex => {
+          setStatus(ImportStatus.ERROR)
+
+          if (ex.name === 'TokenDisabledError') {
+            warningToast('This token is currently paused in the bridge')
+          }
+        })
     }
 
     // do not allow import of withdraw-only tokens at deposit mode
