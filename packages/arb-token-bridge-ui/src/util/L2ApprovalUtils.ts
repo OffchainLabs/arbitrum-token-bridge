@@ -1,4 +1,5 @@
 import { ChainId } from '../util/networks'
+import { xErc20RequiresApprovalOnChildChain } from './xErc20Utils'
 
 export type RequireL2ApproveToken = {
   symbol: string
@@ -66,11 +67,22 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
   ]
 }
 
-export function tokenRequiresApprovalOnL2(
-  erc20L1Address: string,
-  l2ChainId: number
+export type TokenWithdrawalApprovalParams = {
+  tokenAddressOnParentChain: string
+  parentChainId: ChainId
+  childChainId: ChainId
+}
+
+export async function tokenRequiresApprovalOnL2(
+  params: TokenWithdrawalApprovalParams
 ) {
-  return (L2ApproveTokens[l2ChainId] ?? [])
+  if (await xErc20RequiresApprovalOnChildChain(params)) {
+    return true
+  }
+
+  const { tokenAddressOnParentChain, childChainId } = params
+
+  return (L2ApproveTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
-    .includes(erc20L1Address.toLowerCase())
+    .includes(tokenAddressOnParentChain.toLowerCase())
 }
