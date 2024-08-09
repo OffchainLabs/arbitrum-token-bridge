@@ -27,31 +27,17 @@ function getDialogSourceAndDestinationChains({
   sourceChainId: ChainId
   destinationChainId: ChainId
 }) {
-  const {
-    isArbitrumOne: isSourceChainArbOne,
-    isArbitrumNova: isSourceChainNova
-  } = isNetwork(sourceChainId)
+  const { isArbitrumNova: isSourceChainNova } = isNetwork(sourceChainId)
   const { isArbitrumOne: isDestinationChainArbOne } =
     isNetwork(destinationChainId)
 
-  if (isSourceChainArbOne) {
-    return {
-      selectedSourceChainId: ChainId.ArbitrumOne,
-      selectedDestinationChainId: ChainId.ArbitrumNova
-    }
-  }
-  if (isSourceChainNova) {
+  if (isSourceChainNova || isDestinationChainArbOne) {
     return {
       selectedSourceChainId: ChainId.ArbitrumNova,
       selectedDestinationChainId: ChainId.ArbitrumOne
     }
   }
-  if (isDestinationChainArbOne) {
-    return {
-      selectedSourceChainId: ChainId.ArbitrumNova,
-      selectedDestinationChainId: ChainId.ArbitrumOne
-    }
-  }
+  // if source chain is Arbitrum One or
   // if destination chain is Arbitrum Nova
   return {
     selectedSourceChainId: ChainId.ArbitrumOne,
@@ -92,7 +78,7 @@ export function OneNovaTransferDialog(props: UseDialogProps) {
       onClose={() => props.onClose(false)}
       title={`Move funds from ${getNetworkName(
         selectedSourceChainId
-      )} to ${getNetworkName(selectedDestinationChainId ?? 0)}`}
+      )} to ${getNetworkName(selectedDestinationChainId)}`}
       actionButtonProps={{ hidden: true }}
       className="max-w-[700px]"
     >
