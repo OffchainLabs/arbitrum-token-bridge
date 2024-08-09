@@ -2,6 +2,7 @@ import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
 import { useCallback, useEffect } from 'react'
 
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
 import { NetworkSelectionContainer } from '../../common/NetworkSelectionContainer'
 import {
@@ -177,6 +178,27 @@ export function SourceNetworkBox({
           errorMessage={errorMessage}
           value={isMaxAmount ? '' : amount}
         />
+
+        {process.env.NEXT_PUBLIC_FEATURE_BATCH_ERC20_ETH === 'true' &&
+          // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
+          !isTeleport({
+            sourceChainId: networks.sourceChain.id,
+            destinationChainId: networks.destinationChain.id
+          }) &&
+          selectedToken && (
+            <TransferPanelMainInput
+              // eslint-disable-next-line
+              maxButtonOnClick={() => {}}
+              errorMessage={undefined}
+              value={''}
+              // eslint-disable-next-line
+              onChange={() => {}}
+              tokenButtonOptions={{
+                symbol: nativeCurrency.symbol,
+                disabled: true
+              }}
+            />
+          )}
 
         {showUsdcSpecificInfo && (
           <p className="mt-1 text-xs font-light text-white">

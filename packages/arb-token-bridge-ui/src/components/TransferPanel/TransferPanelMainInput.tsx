@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge'
 import { useEffect, useMemo } from 'react'
 
-import { TokenButton } from './TokenButton'
+import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
@@ -156,10 +156,11 @@ export type TransferPanelMainInputProps =
     errorMessage?: string | TransferReadinessRichErrorMessage | undefined
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
+    tokenButtonOptions?: TokenButtonOptions
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonOnClick, ...rest } = props
+  const { errorMessage, maxButtonOnClick, tokenButtonOptions, ...rest } = props
 
   return (
     <>
@@ -171,7 +172,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             : 'border-white/30 text-white'
         )}
       >
-        <TokenButton />
+        <TokenButton options={tokenButtonOptions} />
         <div
           className={twMerge(
             'flex grow flex-row items-center justify-center border-l',
