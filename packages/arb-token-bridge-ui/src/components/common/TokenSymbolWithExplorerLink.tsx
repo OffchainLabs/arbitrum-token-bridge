@@ -1,6 +1,4 @@
 import { useMemo } from 'react'
-import * as Sentry from '@sentry/react'
-
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import {
   NativeCurrencyErc20,
@@ -10,6 +8,7 @@ import { isTokenNativeUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { ExternalLink } from './ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 
 const createBlockExplorerUrlForToken = ({
   explorerLink,
@@ -29,7 +28,10 @@ const createBlockExplorerUrlForToken = ({
     url.pathname += `token/${tokenAddress}`
     return url.toString()
   } catch (error) {
-    Sentry.captureException(error)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'createBlockExplorerUrlForToken'
+    })
     return undefined
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
@@ -6,18 +6,11 @@ import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
-import { useActions, useAppState } from '../../state'
+import { useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  ChainId,
-  getExplorerUrl,
-  getDestinationChainIds,
-  isNetwork
-} from '../../util/networks'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useDestinationAddressStore } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
-import { useDialog } from '../common/Dialog'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import {
@@ -27,8 +20,6 @@ import {
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { ether } from '../../constants'
-import { NetworkListboxProps } from './NetworkListbox'
-import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
@@ -266,13 +257,10 @@ export function TransferPanelMain({
   amount: string
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
-  const actions = useActions()
-  const [networks, setNetworks] = useNetworks()
+  const [networks] = useNetworks()
   const { childChain, childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
 
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -351,12 +339,6 @@ export function TransferPanelMain({
     }
   }, [nativeCurrency, ethParentBalance, ethChildBalance, erc20ParentBalances])
 
-  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
-  const [
-    oneNovaTransferDestinationNetworkId,
-    setOneNovaTransferDestinationNetworkId
-  ] = useState<number | null>(null)
-
   const showUSDCSpecificInfo =
     !isTeleportMode &&
     ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
@@ -370,74 +352,6 @@ export function TransferPanelMain({
   }, [selectedToken, setDestinationAddress])
 
   useUpdateUSDCTokenData()
-
-  type NetworkListboxesProps = {
-    to: Omit<NetworkListboxProps, 'label'>
-  }
-
-  const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    function getDestinationChains() {
-      const destinationChainIds = getDestinationChainIds(
-        networks.sourceChain.id
-      )
-
-      // if source chain is Arbitrum One, add Arbitrum Nova to destination
-      if (networks.sourceChain.id === ChainId.ArbitrumOne) {
-        destinationChainIds.push(ChainId.ArbitrumNova)
-      }
-
-      // if source chain is Arbitrum Nova, add Arbitrum One to destination
-      if (networks.sourceChain.id === ChainId.ArbitrumNova) {
-        destinationChainIds.push(ChainId.ArbitrumOne)
-      }
-
-      return (
-        destinationChainIds
-          // remove self
-          .filter(chainId => chainId !== networks.destinationChain.id)
-          .map(getWagmiChain)
-      )
-    }
-
-    function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
-      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
-        selectedChainIds.includes(chainId)
-      )
-    }
-
-    const destinationChains = getDestinationChains()
-
-    return {
-      to: {
-        disabled:
-          isSmartContractWallet ||
-          isLoadingAccountType ||
-          destinationChains.length === 0,
-        options: destinationChains,
-        value: networks.destinationChain,
-        onChange: async network => {
-          if (shouldOpenOneNovaDialog([network.id, networks.sourceChain.id])) {
-            setOneNovaTransferDestinationNetworkId(network.id)
-            openOneNovaTransferDialog()
-            return
-          }
-
-          setNetworks({
-            sourceChainId: networks.sourceChain.id,
-            destinationChainId: network.id
-          })
-          actions.app.setSelectedToken(null)
-        }
-      }
-    }
-  }, [
-    isSmartContractWallet,
-    isLoadingAccountType,
-    networks.sourceChain,
-    networks.destinationChain,
-    setNetworks,
-    openOneNovaTransferDialog
-  ])
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
@@ -453,15 +367,9 @@ export function TransferPanelMain({
       <DestinationNetworkBox
         customFeeTokenBalances={customFeeTokenBalances}
         showUsdcSpecificInfo={showUSDCSpecificInfo}
-        destinationNetworkListboxProps={networkListboxProps.to}
       />
 
       <TransferDisabledDialog />
-      <OneNovaTransferDialog
-        {...oneNovaTransferDialogProps}
-        destinationChainId={oneNovaTransferDestinationNetworkId}
-        amount={amount}
-      />
     </div>
   )
 }

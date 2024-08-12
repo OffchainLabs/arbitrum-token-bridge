@@ -2,7 +2,6 @@ import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import * as Sentry from '@sentry/react'
 
 import {
   fetchErc20Allowance,
@@ -12,6 +11,7 @@ import {
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { addressIsSmartContract } from './AddressUtils'
 import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
@@ -182,7 +182,10 @@ export async function depositTokenEstimateGas(
       estimatedChildChainSubmissionCost: retryableData.maxSubmissionCost
     }
   } catch (error) {
-    Sentry.captureException(error)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'depositTokenEstimateGas'
+    })
 
     return fetchTokenFallbackGasEstimates({
       inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,
