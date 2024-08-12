@@ -1,6 +1,7 @@
 name: Monitor Core Assertion Events
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     # Run every 6 hours
