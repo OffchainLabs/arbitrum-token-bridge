@@ -38,6 +38,7 @@ jobs:
       with:
         repository: OffchainLabs/arbitrum-monitoring
         path: arbitrum-monitoring
+        ref: dl/add-assertion-monitor
 
     - name: Copy chains JSON to Arbitrum Monitoring
       run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-core-chains.json ./arbitrum-monitoring/packages/assertion-monitor/config.json
