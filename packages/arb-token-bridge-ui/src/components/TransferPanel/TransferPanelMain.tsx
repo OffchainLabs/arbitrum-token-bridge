@@ -251,10 +251,8 @@ export function NetworkListboxPlusBalancesContainer({
 }
 
 export function TransferPanelMain({
-  amount,
   errorMessage
 }: {
-  amount: string
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const [networks] = useNetworks()
@@ -356,7 +354,6 @@ export function TransferPanelMain({
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
       <SourceNetworkBox
-        amount={amount}
         errorMessage={errorMessage}
         customFeeTokenBalances={customFeeTokenBalances}
         showUsdcSpecificInfo={showUSDCSpecificInfo}

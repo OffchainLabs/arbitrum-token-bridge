@@ -17,5 +17,10 @@ export function useSetInputAmount() {
     [decimals, setQueryParams]
   )
 
-  return setAmount
+  const setExtraEthAmount = useCallback(
+    (newAmount: string) => setQueryParams({ extraEthAmount: newAmount }),
+    [setQueryParams]
+  )
+
+  return { setAmount, setExtraEthAmount }
 }

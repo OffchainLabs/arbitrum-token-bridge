@@ -30,7 +30,10 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
-import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
@@ -38,12 +41,10 @@ import { FeatureFlags, isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
 
 export function SourceNetworkBox({
-  amount,
   errorMessage,
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  amount: string
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
@@ -57,7 +58,8 @@ export function SourceNetworkBox({
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const setAmount = useSetInputAmount()
+  const [{ amount, extraEthAmount }] = useArbQueryParams()
+  const { setAmount, setExtraEthAmount } = useSetInputAmount()
   const { maxAmount } = useMaxAmount({
     customFeeTokenBalances
   })
@@ -145,6 +147,7 @@ export function SourceNetworkBox({
             maxButtonOnClick={maxButtonOnClick}
             errorMessage={errorMessage}
             value={isMaxAmount ? '' : amount}
+            onChange={e => setAmount(e.target.value)}
           />
 
           {isExperimentalFeatureEnabled(FeatureFlags.Batch) &&
@@ -158,9 +161,8 @@ export function SourceNetworkBox({
                 // eslint-disable-next-line
                 maxButtonOnClick={() => {}}
                 errorMessage={undefined}
-                value={''}
-                // eslint-disable-next-line
-                onChange={() => {}}
+                value={extraEthAmount}
+                onChange={e => setExtraEthAmount(e.target.value)}
                 tokenButtonOptions={{
                   symbol: nativeCurrency.symbol,
                   disabled: true
