@@ -7,10 +7,13 @@ import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
+
+  const isExperimentalMode = isExperimentalFeatureEnabled()
 
   const destinationChainStyle = useDestinationChainStyle()
 
@@ -23,7 +26,12 @@ export function Header({ children }: { children?: React.ReactNode }) {
           : 'sm:bg-transparent',
         destinationChainStyle.borderColor ? 'sm:border-b' : ''
       )}
-      style={destinationChainStyle}
+      style={{
+        ...destinationChainStyle,
+        borderColor: isExperimentalMode
+          ? 'red'
+          : destinationChainStyle.borderColor
+      }}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
         <Image
@@ -31,7 +39,14 @@ export function Header({ children }: { children?: React.ReactNode }) {
           src={ArbitrumLogoSmall}
           alt="Arbitrum"
         />
-        {isTestnet && <span className="grow font-medium">TESTNET MODE</span>}
+        {isTestnet && !isExperimentalMode && (
+          <span className="grow font-medium">TESTNET MODE</span>
+        )}
+        {isExperimentalMode && (
+          <span className="grow font-medium text-red-500">
+            EXPERIMENTAL MODE: features may be incomplete or not work properly
+          </span>
+        )}
         <div className="hidden sm:flex">{children}</div>
       </div>
       <AppMobileSidebar />

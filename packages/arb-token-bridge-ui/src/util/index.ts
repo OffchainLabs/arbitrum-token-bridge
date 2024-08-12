@@ -53,3 +53,23 @@ export const getAPIBaseUrl = () => {
   // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci
   return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 }
+
+export enum FeatureFlags {
+  Batch = 'batch'
+}
+
+export const isExperimentalFeatureEnabled = (flag?: FeatureFlags) => {
+  const query = new URLSearchParams(window.location.search)
+  const featureFlags = query.get('experiments')
+
+  if (!featureFlags) {
+    return false
+  }
+
+  if (!flag) {
+    // we only want to check if any feature flag is enabled
+    return true
+  }
+
+  return featureFlags.split(',').includes(flag)
+}

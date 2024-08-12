@@ -34,6 +34,7 @@ import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
+import { FeatureFlags, isExperimentalFeatureEnabled } from '../../../util'
 
 export function SourceNetworkBox({
   amount,
@@ -179,7 +180,7 @@ export function SourceNetworkBox({
           value={isMaxAmount ? '' : amount}
         />
 
-        {process.env.NEXT_PUBLIC_FEATURE_BATCH_ERC20_ETH === 'true' &&
+        {isExperimentalFeatureEnabled(FeatureFlags.Batch) &&
           // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
           !isTeleport({
             sourceChainId: networks.sourceChain.id,
