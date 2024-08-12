@@ -1537,10 +1537,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@offchainlabs/cobalt@^0.3.6":
-  version "0.3.6"
-  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.6.tgz#e7daa9b20a7ff5897cb57d39927ebbf1ede3ae5f"
-  integrity sha512-7WSP6Mme+pMAoIxO+PHHF1ICKc/htky8xd1QbkzOFQAyMSrkVxqICnKsLr8Pu1nzG597A6BApk//LYv/0EkUjg==
+"@offchainlabs/cobalt@0.3.7":
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.7.tgz#5c525a46d534dd48ee4b603fd1c72d121a95aa91"
+  integrity sha512-rJ2Trpa0P92WezI2icdPynHR5apDPnkQroJYFrxdxBVbJs0vjkU4gRz+hIKFAay4IN7xmovhsCLC4EdSwDGHhA==
 
 "@parcel/watcher-android-arm64@2.4.1":
   version "2.4.1"
