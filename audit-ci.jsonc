@@ -10,6 +10,7 @@
     "GHSA-977x-g7h5-7qgw",
     // https://github.com/advisories/GHSA-f7q4-pwc6-w24p
     "GHSA-f7q4-pwc6-w24p",
+    // axios
     // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
     "GHSA-8hc4-vh64-cxmj"
   ]
