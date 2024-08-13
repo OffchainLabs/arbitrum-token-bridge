@@ -101,7 +101,29 @@ export function useMaxAmount({
     customFeeTokenBalances
   ])
 
+  const maxAmountExtraEth = useMemo(() => {
+    if (!isDepositMode || !ethParentBalance) {
+      return undefined
+    }
+
+    const estimatedTotalGasFees =
+      (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
+
+    const maxAmountExtraEth =
+      parseFloat(utils.formatEther(ethParentBalance)) - estimatedTotalGasFees
+
+    if (maxAmountExtraEth > 0) {
+      return String(maxAmountExtraEth)
+    }
+  }, [
+    estimatedChildChainGasFees,
+    estimatedParentChainGasFees,
+    ethParentBalance,
+    isDepositMode
+  ])
+
   return {
-    maxAmount
+    maxAmount,
+    maxAmountExtraEth
   }
 }

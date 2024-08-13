@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
@@ -58,7 +58,7 @@ export function SourceNetworkBox({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, extraEthAmount }] = useArbQueryParams()
   const { setAmount, setExtraEthAmount } = useSetInputAmount()
-  const { maxAmount } = useMaxAmount({
+  const { maxAmount, maxAmountExtraEth } = useMaxAmount({
     customFeeTokenBalances
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
@@ -68,20 +68,17 @@ export function SourceNetworkBox({
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
-  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
-  useEffect(() => {
-    if (isMaxAmount && typeof maxAmount !== 'undefined') {
-      setAmount(maxAmount)
-    } else {
-      setAmount(amount)
-    }
-  }, [amount, maxAmount, isMaxAmount, setAmount])
-
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
     }
   }, [maxAmount, setAmount])
+
+  const maxExtraEthButtonOnClick = useCallback(() => {
+    if (typeof maxAmountExtraEth !== 'undefined') {
+      setExtraEthAmount(maxAmountExtraEth)
+    }
+  }, [maxAmountExtraEth, setExtraEthAmount])
 
   return (
     <>
@@ -156,10 +153,10 @@ export function SourceNetworkBox({
               sourceChainId: networks.sourceChain.id,
               destinationChainId: networks.destinationChain.id
             }) &&
+            isDepositMode &&
             selectedToken && (
               <TransferPanelMainInput
-                // eslint-disable-next-line
-                maxButtonOnClick={() => {}}
+                maxButtonOnClick={maxExtraEthButtonOnClick}
                 errorMessage={errorMessages?.extraEthInput}
                 value={extraEthAmount}
                 onChange={e => setExtraEthAmount(e.target.value)}
