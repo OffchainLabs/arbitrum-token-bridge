@@ -57,7 +57,6 @@ import {
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransferReadiness } from './useTransferReadiness'
-import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -180,12 +179,7 @@ export function TransferPanel() {
 
   const [isCctp, setIsCctp] = useState(false)
 
-  const gasSummary = useGasSummary()
-
-  const { transferReady, errorMessage } = useTransferReadiness({
-    amount,
-    gasSummary
-  })
+  const { transferReady } = useTransferReadiness()
 
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
@@ -1029,7 +1023,7 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-        <TransferPanelMain errorMessage={errorMessage} />
+        <TransferPanelMain />
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}

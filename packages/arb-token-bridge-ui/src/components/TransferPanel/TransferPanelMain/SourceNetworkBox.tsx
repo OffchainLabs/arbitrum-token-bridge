@@ -34,18 +34,16 @@ import {
   AmountQueryParamEnum,
   useArbQueryParams
 } from '../../../hooks/useArbQueryParams'
-import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
 import { isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
+import { useTransferReadiness } from '../useTransferReadiness'
 
 export function SourceNetworkBox({
-  errorMessage,
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
@@ -65,6 +63,8 @@ export function SourceNetworkBox({
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
+
+  const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -145,7 +145,7 @@ export function SourceNetworkBox({
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonOnClick={maxButtonOnClick}
-            errorMessage={errorMessage}
+            errorMessage={errorMessages?.mainInput}
             value={isMaxAmount ? '' : amount}
             onChange={e => setAmount(e.target.value)}
           />
@@ -160,7 +160,7 @@ export function SourceNetworkBox({
               <TransferPanelMainInput
                 // eslint-disable-next-line
                 maxButtonOnClick={() => {}}
-                errorMessage={undefined}
+                errorMessage={errorMessages?.extraEthInput}
                 value={extraEthAmount}
                 onChange={e => setExtraEthAmount(e.target.value)}
                 tokenButtonOptions={{
