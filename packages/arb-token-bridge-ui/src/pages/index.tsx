@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
+import { decodeString, encodeString } from 'use-query-params'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 
 import { Loader } from '../components/common/atoms/Loader'
@@ -12,7 +13,8 @@ import { getOrbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
-  encodeChainQueryParam
+  encodeChainQueryParam,
+  sanitizeExperimentalFeaturesQueryParam
 } from '../hooks/useArbQueryParams'
 
 const App = dynamic(() => import('../components/App/App'), {
@@ -31,6 +33,7 @@ function getDestinationWithSanitizedQueryParams(
   sanitized: {
     sourceChainId: number
     destinationChainId: number
+    experiments: string | undefined
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -38,7 +41,11 @@ function getDestinationWithSanitizedQueryParams(
 
   for (const key in query) {
     // don't copy "sourceChain" and "destinationChain" query params
-    if (key === 'sourceChain' || key === 'destinationChain') {
+    if (
+      key === 'sourceChain' ||
+      key === 'destinationChain' ||
+      key === 'experiments'
+    ) {
       continue
     }
 
@@ -52,6 +59,7 @@ function getDestinationWithSanitizedQueryParams(
 
   const encodedSource = encodeChainQueryParam(sanitized.sourceChainId)
   const encodedDestination = encodeChainQueryParam(sanitized.destinationChainId)
+  const encodedExperiments = encodeString(sanitized.experiments)
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -59,6 +67,10 @@ function getDestinationWithSanitizedQueryParams(
     if (encodedDestination) {
       params.set('destinationChain', encodedDestination)
     }
+  }
+
+  if (encodedExperiments) {
+    params.set('experiments', encodedExperiments)
   }
 
   return `/?${params.toString()}`
@@ -82,6 +94,7 @@ export function getServerSideProps({
 }: GetServerSidePropsContext): GetServerSidePropsResult<Record<string, never>> {
   const sourceChainId = decodeChainQueryParam(query.sourceChain)
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
+  const experiments = decodeString(query.experiments)
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -94,19 +107,23 @@ export function getServerSideProps({
   addOrbitChainsToArbitrumSDK()
 
   // sanitize the query params
-  const sanitized = sanitizeQueryParams({ sourceChainId, destinationChainId })
+  const sanitized = {
+    ...sanitizeQueryParams({ sourceChainId, destinationChainId }),
+    experiments: sanitizeExperimentalFeaturesQueryParam(experiments)
+  }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
   if (
     sourceChainId !== sanitized.sourceChainId ||
-    destinationChainId !== sanitized.destinationChainId
+    destinationChainId !== sanitized.destinationChainId ||
+    experiments !== sanitized.experiments
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
-      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId} (before)`
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments} (before)`
     )
     console.log(
-      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId} (after)`
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments} (after)`
     )
     return {
       redirect: {

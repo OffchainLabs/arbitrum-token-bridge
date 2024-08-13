@@ -54,11 +54,13 @@ export const getAPIBaseUrl = () => {
   return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 }
 
-export enum FeatureFlags {
-  Batch = 'batch'
-}
+export const featureFlags = {
+  Batch: 'batch'
+} as const
 
-export const isExperimentalFeatureEnabled = (flag?: FeatureFlags) => {
+export type FeatureFlag = (typeof featureFlags)[keyof typeof featureFlags]
+
+export const isExperimentalFeatureEnabled = (flag: FeatureFlag) => {
   const query = new URLSearchParams(window.location.search)
   const featureFlags = query.get('experiments')
 
@@ -66,10 +68,12 @@ export const isExperimentalFeatureEnabled = (flag?: FeatureFlags) => {
     return false
   }
 
-  if (!flag) {
-    // we only want to check if any feature flag is enabled
-    return true
-  }
-
   return featureFlags.split(',').includes(flag)
+}
+
+export const isExperimentalModeEnabled = () => {
+  const query = new URLSearchParams(window.location.search)
+  const featureFlags = query.get('experiments')
+
+  return featureFlags !== null
 }

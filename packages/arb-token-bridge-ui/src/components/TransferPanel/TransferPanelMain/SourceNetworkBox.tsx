@@ -37,7 +37,7 @@ import {
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
-import { FeatureFlags, isExperimentalFeatureEnabled } from '../../../util'
+import { isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
 
 export function SourceNetworkBox({
@@ -150,7 +150,7 @@ export function SourceNetworkBox({
             onChange={e => setAmount(e.target.value)}
           />
 
-          {isExperimentalFeatureEnabled(FeatureFlags.Batch) &&
+          {isExperimentalFeatureEnabled('batch') &&
             // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
             !isTeleport({
               sourceChainId: networks.sourceChain.id,
