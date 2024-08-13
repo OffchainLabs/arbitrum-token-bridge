@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
@@ -67,6 +67,14 @@ export function SourceNetworkBox({
   const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  useEffect(() => {
+    if (isMaxAmount && typeof maxAmount !== 'undefined') {
+      setAmount(maxAmount)
+    } else {
+      setAmount(amount)
+    }
+  }, [amount, maxAmount, isMaxAmount, setAmount])
 
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
