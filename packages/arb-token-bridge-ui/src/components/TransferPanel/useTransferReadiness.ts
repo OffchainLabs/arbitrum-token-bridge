@@ -212,8 +212,46 @@ export function useTransferReadiness(): UseTransferReadinessResult {
   }, [nativeCurrency, erc20ParentBalances])
 
   return useMemo(() => {
-    if (isNaN(Number(amount)) || Number(amount) === 0) {
+    const { estimatedL1GasFees, estimatedL2GasFees } = sanitizeEstimatedGasFees(
+      gasSummary,
+      {
+        isSmartContractWallet,
+        isDepositMode
+      }
+    )
+
+    const ethBalanceFloat = isDepositMode
+      ? ethL1BalanceFloat
+      : ethL2BalanceFloat
+    const selectedTokenBalanceFloat = isDepositMode
+      ? selectedTokenL1BalanceFloat
+      : selectedTokenL2BalanceFloat
+    const customFeeTokenBalanceFloat = isDepositMode
+      ? customFeeTokenL1BalanceFloat
+      : ethL2BalanceFloat
+
+    // No error while loading balance
+    if (ethBalanceFloat === null) {
       return notReady()
+    }
+
+    const sendsExtraEth = Number(extraEthAmount) > 0
+    const notEnoughEthForExtraEthTransfer =
+      Number(extraEthAmount) >
+      ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
+
+    if (isNaN(Number(amount)) || Number(amount) === 0) {
+      return notReady({
+        errorMessages: {
+          extraEthInput:
+            sendsExtraEth && notEnoughEthForExtraEthTransfer
+              ? getInsufficientFundsErrorMessage({
+                  asset: ether.symbol,
+                  chain: networks.sourceChain.name
+                })
+              : undefined
+        }
+      })
     }
 
     if (isTransferring) {
@@ -248,21 +286,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
     // Check if destination address is valid for ERC20 transfers
     if (destinationAddressError) {
-      return notReady()
-    }
-
-    const ethBalanceFloat = isDepositMode
-      ? ethL1BalanceFloat
-      : ethL2BalanceFloat
-    const selectedTokenBalanceFloat = isDepositMode
-      ? selectedTokenL1BalanceFloat
-      : selectedTokenL2BalanceFloat
-    const customFeeTokenBalanceFloat = isDepositMode
-      ? customFeeTokenL1BalanceFloat
-      : ethL2BalanceFloat
-
-    // No error while loading balance
-    if (ethBalanceFloat === null) {
       return notReady()
     }
 
@@ -367,12 +390,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         return notReady()
 
       case 'success': {
-        const { estimatedL1GasFees, estimatedL2GasFees } =
-          sanitizeEstimatedGasFees(gasSummary, {
-            isSmartContractWallet,
-            isDepositMode
-          })
-
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
           if (nativeCurrency.isCustom && isDepositMode) {
@@ -411,11 +428,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           // Everything is paid in ETH, so we sum it up
           const notEnoughEthForGasFees =
             estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat
-
-          const sendsExtraEth = Number(extraEthAmount) > 0
-          const notEnoughEthForExtraEthTransfer =
-            Number(extraEthAmount) >
-            ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
 
           if (
             notEnoughEthForGasFees ||

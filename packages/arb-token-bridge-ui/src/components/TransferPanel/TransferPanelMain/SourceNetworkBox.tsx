@@ -156,6 +156,7 @@ export function SourceNetworkBox({
               sourceChainId: networks.sourceChain.id,
               destinationChainId: networks.destinationChain.id
             }) &&
+            !isDepositMode &&
             selectedToken && (
               <TransferPanelMainInput
                 // eslint-disable-next-line
