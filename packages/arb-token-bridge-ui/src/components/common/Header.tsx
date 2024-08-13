@@ -7,13 +7,13 @@ import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
-import { isExperimentalFeatureEnabled } from '../../util'
+import { isExperimentalModeEnabled } from '../../util'
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 
-  const isExperimentalMode = isExperimentalFeatureEnabled()
+  const isExperimentalMode = isExperimentalModeEnabled()
 
   const destinationChainStyle = useDestinationChainStyle()
 
