@@ -68,6 +68,7 @@ export function SourceNetworkBox({
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
+  // covers MAX string from query params
   useEffect(() => {
     if (isMaxAmount && typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
