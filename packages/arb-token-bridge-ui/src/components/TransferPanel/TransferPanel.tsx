@@ -67,7 +67,6 @@ import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from 
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
-import { useTransferRequiresChainSwitch } from './hooks/useTransferRequiresChainSwitch'
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -145,8 +144,6 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
-  const { depositRequiresChainSwitch, withdrawalRequiresChainSwitch } =
-    useTransferRequiresChainSwitch()
 
   const { destinationAddress } = useDestinationAddressStore()
 
@@ -532,9 +529,33 @@ export function TransferPanel() {
 
     try {
       setTransferring(true)
-      if (chainId !== networks.sourceChain.id) {
-        await switchNetworkAsync?.(networks.sourceChain.id)
+      const isConnectedToTheWrongChain =
+        chainId !== latestNetworks.current.sourceChain.id
+
+      const switchTargetChainId = latestNetworks.current.sourceChain.id
+
+      if (isConnectedToTheWrongChain) {
+        trackEvent('Switch Network and Transfer', {
+          type: isTeleportMode
+            ? 'Teleport'
+            : isDepositMode
+            ? 'Deposit'
+            : 'Withdrawal',
+          tokenSymbol: selectedToken?.symbol,
+          assetType: selectedToken ? 'ERC-20' : 'ETH',
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: getNetworkName(switchTargetChainId),
+          amount: Number(amount),
+          version: 2
+        })
+
+        await switchNetworkAsync?.(switchTargetChainId)
       }
+    } catch (error) {
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'transfer switchNetworkAsync'
+      })
     } finally {
       setTransferring(false)
     }
@@ -595,38 +616,6 @@ export function TransferPanel() {
           `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
         )
         return
-      }
-
-      if (depositRequiresChainSwitch || withdrawalRequiresChainSwitch) {
-        trackEvent('Switch Network and Transfer', {
-          type: isTeleportMode
-            ? 'Teleport'
-            : isDepositMode
-            ? 'Deposit'
-            : 'Withdrawal',
-          tokenSymbol: selectedToken?.symbol,
-          assetType: selectedToken ? 'ERC-20' : 'ETH',
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: childChainName,
-          amount: Number(amount),
-          version: 2
-        })
-
-        const switchTargetChainId = latestNetworks.current.sourceChain.id
-
-        await switchNetworkAsync?.(switchTargetChainId)
-
-        // keep checking till we know the connected chain-pair are correct for transfer
-        while (
-          depositRequiresChainSwitch ||
-          withdrawalRequiresChainSwitch ||
-          !latestEth.current ||
-          !arbTokenBridgeLoaded
-        ) {
-          await new Promise(r => setTimeout(r, 100))
-        }
-
-        await new Promise(r => setTimeout(r, 3000))
       }
 
       const sourceChainId = latestNetworks.current.sourceChain.id
