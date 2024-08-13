@@ -54,7 +54,11 @@ export const getAPIBaseUrl = () => {
   return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 }
 
-type FeatureFlag = 'batch'
+export const featureFlags = {
+  Batch: 'batch'
+} as const
+
+export type FeatureFlag = (typeof featureFlags)[keyof typeof featureFlags]
 
 export const isExperimentalFeatureEnabled = (flag: FeatureFlag) => {
   const query = new URLSearchParams(window.location.search)
@@ -62,11 +66,6 @@ export const isExperimentalFeatureEnabled = (flag: FeatureFlag) => {
 
   if (!featureFlags) {
     return false
-  }
-
-  if (!flag) {
-    // we only want to check if any feature flag is enabled
-    return true
   }
 
   return featureFlags.split(',').includes(flag)
