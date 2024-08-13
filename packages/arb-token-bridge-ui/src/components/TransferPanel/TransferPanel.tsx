@@ -8,7 +8,7 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -23,20 +23,11 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import {
-  isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  isTokenSepoliaUSDC,
-  isTokenMainnetUSDC,
-  isGatewayRegistered
-} from '../../util/TokenUtils'
+import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { errorToast, warningToast } from '../common/atoms/Toast'
-import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN } from '../../constants'
 import {
   AdvancedSettings,
   getDestinationAddressError,
@@ -75,18 +66,8 @@ import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
-
-const networkConnectionWarningToast = () =>
-  warningToast(
-    <>
-      Network connection issue. Please contact{' '}
-      <ExternalLink href={GET_HELP_LINK} className="underline">
-        support
-      </ExternalLink>
-      .
-    </>,
-    { autoClose: false }
-  )
+import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+import { useTransferRequiresChainSwitch } from './hooks/useTransferRequiresChainSwitch'
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -141,12 +122,7 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
-
   const latestEth = useLatest(eth)
-
-  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
-  const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -169,6 +145,8 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
+  const { depositRequiresChainSwitch, withdrawalRequiresChainSwitch } =
+    useTransferRequiresChainSwitch()
 
   const { destinationAddress } = useDestinationAddressStore()
 
@@ -619,32 +597,7 @@ export function TransferPanel() {
         return
       }
 
-      const depositRequiresChainSwitch = () => {
-        const isParentChainEthereum = isNetwork(
-          parentChain.id
-        ).isEthereumMainnetOrTestnet
-
-        return (
-          isDepositMode &&
-          ((isParentChainEthereum && isConnectedToArbitrum.current) ||
-            isConnectedToOrbitChain.current)
-        )
-      }
-
-      const withdrawalRequiresChainSwitch = () => {
-        const isConnectedToEthereum =
-          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-
-        const { isOrbitChain: isSourceChainOrbit } = isNetwork(childChain.id)
-
-        return (
-          !isDepositMode &&
-          (isConnectedToEthereum ||
-            (isConnectedToArbitrum.current && isSourceChainOrbit))
-        )
-      }
-
-      if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
+      if (depositRequiresChainSwitch || withdrawalRequiresChainSwitch) {
         trackEvent('Switch Network and Transfer', {
           type: isTeleportMode
             ? 'Teleport'
@@ -665,8 +618,8 @@ export function TransferPanel() {
 
         // keep checking till we know the connected chain-pair are correct for transfer
         while (
-          depositRequiresChainSwitch() ||
-          withdrawalRequiresChainSwitch() ||
+          depositRequiresChainSwitch ||
+          withdrawalRequiresChainSwitch ||
           !latestEth.current ||
           !arbTokenBridgeLoaded
         ) {
@@ -678,21 +631,6 @@ export function TransferPanel() {
 
       const sourceChainId = latestNetworks.current.sourceChain.id
       const destinationChainId = latestNetworks.current.destinationChain.id
-      const connectedChainId = networks.sourceChain.id
-      const sourceChainEqualsConnectedChain = sourceChainId === connectedChainId
-
-      // Transfer is invalid if the connected chain doesn't mismatches source-destination chain requirements
-      const depositNetworkConnectionWarning =
-        isDepositMode &&
-        (!sourceChainEqualsConnectedChain || isConnectedToOrbitChain.current)
-      const withdrawalNetworkConnectionWarning =
-        !isDepositMode && !sourceChainEqualsConnectedChain
-      if (
-        depositNetworkConnectionWarning ||
-        withdrawalNetworkConnectionWarning
-      ) {
-        return networkConnectionWarningToast()
-      }
 
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
@@ -956,41 +894,7 @@ export function TransferPanel() {
     }
   }
 
-  const isCctpTransfer = useMemo(() => {
-    if (!selectedToken) {
-      return false
-    }
-
-    if (isTeleportMode) {
-      return false
-    }
-
-    if (isDepositMode) {
-      if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
-        return true
-      }
-
-      if (isTokenSepoliaUSDC(selectedToken.address) && isArbitrumSepolia) {
-        return true
-      }
-    } else {
-      if (
-        isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
-        isArbitrumOne
-      ) {
-        return true
-      }
-
-      if (
-        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
-        isArbitrumSepolia
-      ) {
-        return true
-      }
-    }
-
-    return false
-  }, [isArbitrumOne, isArbitrumSepolia, isDepositMode, selectedToken])
+  const isCctpTransfer = useIsCctpTransfer()
 
   return (
     <>
@@ -1028,7 +932,7 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-        <TransferPanelMain amount={amount} errorMessage={errorMessage} />
+        <TransferPanelMain errorMessage={errorMessage} />
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}

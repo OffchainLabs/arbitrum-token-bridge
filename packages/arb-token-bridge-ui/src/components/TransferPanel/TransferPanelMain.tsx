@@ -33,6 +33,7 @@ import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { NetworkType } from './TransferPanelMain/utils'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -251,12 +252,11 @@ export function NetworkListboxPlusBalancesContainer({
 }
 
 export function TransferPanelMain({
-  amount,
   errorMessage
 }: {
-  amount: string
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
+  const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
