@@ -54,26 +54,48 @@ export const getAPIBaseUrl = () => {
   return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 }
 
-export const featureFlags = {
-  Batch: 'batch'
-} as const
+const featureFlags = ['batch'] as const
 
-export type FeatureFlag = (typeof featureFlags)[keyof typeof featureFlags]
+type FeatureFlag = (typeof featureFlags)[number]
 
 export const isExperimentalFeatureEnabled = (flag: FeatureFlag) => {
   const query = new URLSearchParams(window.location.search)
-  const featureFlags = query.get('experiments')
+  const flags = query.get('experiments')
 
-  if (!featureFlags) {
+  if (!flags) {
     return false
   }
 
-  return featureFlags.split(',').includes(flag)
+  return flags.split(',').includes(flag)
 }
 
 export const isExperimentalModeEnabled = () => {
   const query = new URLSearchParams(window.location.search)
-  const featureFlags = query.get('experiments')
+  const flags = query.get('experiments')
 
-  return featureFlags !== null
+  return flags !== null
+}
+
+export const sanitizeExperimentalFeaturesQueryParam = (
+  flags: string | null | undefined
+) => {
+  if (!flags) {
+    return undefined
+  }
+
+  const flagsArray = flags.split(',')
+
+  if (flagsArray.length === 0) {
+    return undefined
+  }
+
+  const validFlagsArray = flagsArray.filter(f =>
+    featureFlags.includes(f as FeatureFlag)
+  )
+
+  if (validFlagsArray.length === 0) {
+    return undefined
+  }
+
+  return validFlagsArray.join(',')
 }

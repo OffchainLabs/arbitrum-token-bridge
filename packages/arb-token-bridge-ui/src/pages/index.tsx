@@ -16,6 +16,7 @@ import {
   encodeChainQueryParam,
   sanitizeExperimentalFeaturesQueryParam
 } from '../hooks/useArbQueryParams'
+import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
