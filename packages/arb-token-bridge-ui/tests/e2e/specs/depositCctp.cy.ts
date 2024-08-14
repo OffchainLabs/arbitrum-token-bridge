@@ -61,86 +61,60 @@ const confirmAndApproveCctpDeposit = () => {
 
 describe('Deposit USDC through CCTP', () => {
   // Happy Path
-  context('User has some USDC and is on L1', () => {
-    let USDCAmountToSend: number = 0
+  let USDCAmountToSend = 0.0001
 
-    // log in to metamask before deposit
-    beforeEach(() => {
-      USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
+  beforeEach(() => {
+    cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
+    cy.findSourceChainButton('Sepolia')
+    cy.findDestinationChainButton('Arbitrum Sepolia')
+    cy.findSelectTokenButton('ETH')
 
-      cy.fundUserWalletEth('parentChain')
-      cy.fundUserUsdcTestnet('parentChain')
-      cy.resetCctpAllowance('parentChain')
-
-      /// common code before all tests
-      cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
-      context('should show L1 and L2 chains, and USD correctly', () => {
-        cy.findSourceChainButton('Sepolia')
-        cy.findDestinationChainButton('Arbitrum Sepolia')
-        cy.findSelectTokenButton('ETH')
-      })
-
-      cy.searchAndSelectToken({
-        tokenName: 'USDC',
-        tokenAddress: CommonAddress.Sepolia.USDC
-      })
-
-      context('should show summary', () => {
-        cy.typeAmount(USDCAmountToSend)
-        cy.findGasFeeSummary(zeroToLessThanOneETH)
-        cy.findGasFeeForChain('Sepolia', zeroToLessThanOneETH)
-        cy.findGasFeeForChain(
-          /You'll have to pay Arbitrum Sepolia gas fee upon claiming./i
-        )
-      })
+    cy.searchAndSelectToken({
+      tokenName: 'USDC',
+      tokenAddress: CommonAddress.Sepolia.USDC
     })
 
-    it('should initiate depositing USDC to the same address through CCTP successfully', () => {
-      context('should show clickable deposit button', () => {
-        cy.findMoveFundsButton().click()
-      })
+    cy.typeAmount(USDCAmountToSend)
+    cy.findGasFeeSummary(zeroToLessThanOneETH)
+    cy.findGasFeeForChain('Sepolia', zeroToLessThanOneETH)
+    cy.findGasFeeForChain(
+      /You'll have to pay Arbitrum Sepolia gas fee upon claiming./i
+    )
+  })
 
-      context('Should display CCTP modal', () => {
-        confirmAndApproveCctpDeposit()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+  it('should initiate depositing USDC to the same address through CCTP successfully', () => {
+    cy.findMoveFundsButton().click()
 
-        // eslint-disable-next-line
-        cy.wait(40_000)
-        cy.confirmMetamaskTransaction()
-        cy.findTransactionInTransactionHistory({
-          duration: 'a minute',
-          amount: USDCAmountToSend,
-          symbol: 'USDC'
-        })
-      })
+    confirmAndApproveCctpDeposit()
+    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+
+    // eslint-disable-next-line
+    cy.wait(40_000)
+    cy.confirmMetamaskTransaction()
+    cy.findTransactionInTransactionHistory({
+      duration: 'a minute',
+      amount: USDCAmountToSend,
+      symbol: 'USDC'
     })
+  })
 
-    it('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
-      context('should fill custom destination address successfully', () => {
-        cy.fillCustomDestinationAddress()
-      })
+  it('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
+    cy.fillCustomDestinationAddress()
+    cy.findMoveFundsButton().click()
+    confirmAndApproveCctpDeposit()
+    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
 
-      context('should click deposit successfully', () => {
-        cy.findMoveFundsButton().click()
-      })
-
-      context('Should display CCTP modal', () => {
-        confirmAndApproveCctpDeposit()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
-
-        // eslint-disable-next-line
-        cy.wait(40_000)
-        cy.confirmMetamaskTransaction()
-        const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
-        cy.findTransactionInTransactionHistory({
-          duration: 'a minute',
-          ...txData
-        })
-        cy.openTransactionDetails(txData)
-        cy.findTransactionDetailsCustomDestinationAddress(
-          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-        )
-      })
+    // eslint-disable-next-line
+    cy.wait(40_000)
+    cy.confirmMetamaskTransaction()
+    const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
+    cy.findTransactionInTransactionHistory({
+      duration: 'a minute',
+      ...txData
     })
+    cy.openTransactionDetails(txData)
+    cy.findTransactionDetailsCustomDestinationAddress(
+      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+    )
   })
 })

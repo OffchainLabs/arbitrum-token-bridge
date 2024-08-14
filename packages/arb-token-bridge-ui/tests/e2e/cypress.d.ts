@@ -5,9 +5,6 @@ import {
   login,
   logout,
   openTransactionsPanel,
-  resetCctpAllowance,
-  fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -44,9 +41,6 @@ declare global {
       logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
-      resetCctpAllowance: typeof resetCctpAllowance
-      fundUserUsdcTestnet: typeof fundUserUsdcTestnet
-      fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
       searchAndSelectToken({
         tokenName,

@@ -51,91 +51,63 @@ export const confirmAndApproveCctpWithdrawal = () => {
 
 describe('Withdraw USDC through CCTP', () => {
   // Happy Path
-  context('User is on L2 and imports USDC', () => {
-    let USDCAmountToSend: number
+  const USDCAmountToSend = 0.0001
 
-    // log in to metamask before withdrawal
-    beforeEach(() => {
-      cy.fundUserWalletEth('childChain')
-      cy.fundUserUsdcTestnet('childChain')
-      cy.resetCctpAllowance('childChain')
-      USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
+  // log in to metamask before withdrawal
+  beforeEach(() => {
+    cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
+    cy.findSourceChainButton('Arbitrum Sepolia')
+    cy.findDestinationChainButton('Sepolia')
+    cy.findSelectTokenButton('ETH')
 
-      cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
-      context('should show L1 and L2 chains, and ETH correctly', () => {
-        cy.findSourceChainButton('Arbitrum Sepolia')
-        cy.findDestinationChainButton('Sepolia')
-        cy.findSelectTokenButton('ETH')
-      })
-
-      context('should add USDC token', () => {
-        cy.searchAndSelectToken({
-          tokenName: 'USDC',
-          tokenAddress: CommonAddress.ArbitrumSepolia.USDC
-        })
-      })
+    cy.searchAndSelectToken({
+      tokenName: 'USDC',
+      tokenAddress: CommonAddress.ArbitrumSepolia.USDC
     })
+  })
 
-    it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
-      context('should show clickable withdraw button', () => {
-        cy.typeAmount(USDCAmountToSend)
-        cy.findByText(
-          'Gas estimates are not available for this action.'
-        ).should('be.visible')
-        cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
-        cy.findGasFeeForChain(
-          /You'll have to pay Sepolia gas fee upon claiming./i
-        )
-        cy.findMoveFundsButton().click()
-      })
+  it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
+    cy.typeAmount(USDCAmountToSend)
+    cy.findByText('Gas estimates are not available for this action.').should(
+      'be.visible'
+    )
+    cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
+    cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
+    cy.findMoveFundsButton().click()
 
-      context('Should display CCTP modal', () => {
-        confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
-        // eslint-disable-next-line
-        cy.wait(40_000)
-        cy.confirmMetamaskTransaction()
-        cy.findTransactionInTransactionHistory({
-          duration: 'a minute',
-          amount: USDCAmountToSend,
-          symbol: 'USDC'
-        })
-      })
+    confirmAndApproveCctpWithdrawal()
+    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+    // eslint-disable-next-line
+    cy.wait(40_000)
+    cy.confirmMetamaskTransaction()
+    cy.findTransactionInTransactionHistory({
+      duration: 'a minute',
+      amount: USDCAmountToSend,
+      symbol: 'USDC'
     })
+  })
 
-    it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
-      context('should show clickable withdraw button', () => {
-        cy.typeAmount(USDCAmountToSend)
-      })
+  it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
+    cy.typeAmount(USDCAmountToSend)
+    cy.fillCustomDestinationAddress()
+    cy.findMoveFundsButton().click()
+    confirmAndApproveCctpWithdrawal()
+    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
 
-      context('should fill custom destination address successfully', () => {
-        cy.fillCustomDestinationAddress()
-      })
-
-      context('should click withdraw successfully', () => {
-        cy.findMoveFundsButton().click()
-      })
-
-      context('Should display CCTP modal', () => {
-        confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
-
-        // eslint-disable-next-line
-        cy.wait(40_000)
-        cy.confirmMetamaskTransaction()
-        const txData = {
-          amount: USDCAmountToSend,
-          symbol: 'USDC'
-        }
-        cy.findTransactionInTransactionHistory({
-          duration: 'a minute',
-          ...txData
-        })
-        cy.openTransactionDetails(txData)
-        cy.findTransactionDetailsCustomDestinationAddress(
-          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-        )
-      })
+    // eslint-disable-next-line
+    cy.wait(40_000)
+    cy.confirmMetamaskTransaction()
+    const txData = {
+      amount: USDCAmountToSend,
+      symbol: 'USDC'
+    }
+    cy.findTransactionInTransactionHistory({
+      duration: 'a minute',
+      ...txData
     })
+    cy.openTransactionDetails(txData)
+    cy.findTransactionDetailsCustomDestinationAddress(
+      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+    )
   })
 })

@@ -8,6 +8,8 @@ import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
+import { CommonAddress } from '../../src/util/CommonAddressUtils'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -183,29 +185,50 @@ export const wait = (ms = 0): Promise<void> => {
 
 export async function fundEth({
   address, // wallet address where funding is required
-  networkType, // parentChain or childChain
-  parentProvider,
-  childProvider,
-  sourceWallet // source wallet that will fund the `address`
+  provider,
+  sourceWallet, // source wallet that will fund the `address`,
+  amount = utils.parseEther('2')
 }: {
   address: string
-  parentProvider: Provider
-  childProvider: Provider
+  provider: Provider
   sourceWallet: Wallet
-  networkType: NetworkType
+  amount?: BigNumber
 }) {
-  console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
+  console.log(`Funding ETH to user wallet...`)
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 2 eth
-  if (balance.lt(utils.parseEther('2'))) {
+  if (balance.lt(amount)) {
     const tx = await sourceWallet.connect(provider).sendTransaction({
       to: address,
-      value: utils.parseEther('2')
+      value: amount
     })
     await tx.wait()
   }
+}
+
+export async function fundUsdc({
+  address, // wallet address where funding is required
+  provider,
+  amount,
+  networkType
+}: {
+  address: string
+  provider: Provider
+  amount: BigNumber
+  networkType: NetworkType
+}) {
+  console.log(`Funding USDC to user wallet...`)
+  const usdcContractAddress =
+    networkType === 'parentChain'
+      ? CommonAddress.Sepolia.USDC
+      : CommonAddress.ArbitrumSepolia.USDC
+
+  const localWallet = new Wallet(Cypress.env('LOCAL_CCTP_WALLET_PRIVATE_KEY'))
+  const contract = new ERC20__factory().connect(localWallet.connect(provider))
+  const token = contract.attach(usdcContractAddress)
+  await token.deployed()
+  const tx = await token.transfer(address, amount)
+  await tx.wait()
 }
 
 export async function generateActivityOnChains({
@@ -236,9 +259,7 @@ export async function generateActivityOnChains({
   const minerParent = Wallet.createRandom().connect(parentProvider)
   await fundEth({
     address: await minerParent.getAddress(),
-    networkType: 'parentChain',
-    parentProvider,
-    childProvider,
+    provider: parentProvider,
     sourceWallet: wallet
   })
 
@@ -246,9 +267,7 @@ export async function generateActivityOnChains({
   const minerChild = Wallet.createRandom().connect(childProvider)
   await fundEth({
     address: await minerChild.getAddress(),
-    networkType: 'childChain',
-    parentProvider,
-    childProvider,
+    provider: childProvider,
     sourceWallet: wallet
   })
 
@@ -292,4 +311,37 @@ export async function checkForAssertions({
       e
     )
   }
+}
+
+export function setupCypressTasks(
+  on: Cypress.PluginEvents,
+  { requiresNetworkSetup }: { requiresNetworkSetup: boolean }
+) {
+  let currentNetworkName: NetworkName | null = null
+  let networkSetupComplete = requiresNetworkSetup
+  let walletConnectedToDapp = false
+
+  on('task', {
+    setCurrentNetworkName: (networkName: NetworkName) => {
+      currentNetworkName = networkName
+      return null
+    },
+    getCurrentNetworkName: () => {
+      return currentNetworkName
+    },
+    setNetworkSetupComplete: () => {
+      networkSetupComplete = true
+      return null
+    },
+    getNetworkSetupComplete: () => {
+      return networkSetupComplete
+    },
+    setWalletConnectedToDapp: () => {
+      walletConnectedToDapp = true
+      return null
+    },
+    getWalletConnectedToDapp: () => {
+      return walletConnectedToDapp
+    }
+  })
 }

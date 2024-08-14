@@ -7,14 +7,14 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
-import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
   checkForAssertions,
   generateActivityOnChains,
   NetworkType,
-  fundEth
+  fundEth,
+  setupCypressTasks
 } from './tests/support/common'
 
 import {
@@ -22,15 +22,11 @@ import {
   defaultL3Network,
   registerLocalNetwork
 } from './src/util/networks'
+import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 
-let tests: string[]
-if (process.env.TEST_FILE) {
-  tests = [process.env.TEST_FILE]
-} else if (process.env.E2E_CCTP) {
-  tests = cctpFiles.map(file => file.file)
-} else {
-  tests = specFiles.map(file => file.file)
-}
+const tests = process.env.TEST_FILE
+  ? [process.env.TEST_FILE]
+  : specFiles.map(file => file.file)
 
 const isOrbitTest = process.env.E2E_ORBIT == 'true'
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
@@ -48,25 +44,8 @@ const l2WethAddress = isOrbitTest
   : defaultL2Network.tokenBridge!.childWeth
 
 export default defineConfig({
-  userAgent: 'synpress',
-  retries: shouldRecordVideo ? 0 : 2,
-  screenshotsFolder: 'cypress/screenshots',
-  videosFolder: 'cypress/videos',
-  video: shouldRecordVideo,
-  screenshotOnRunFailure: true,
-  chromeWebSecurity: true,
-  modifyObstructiveCode: false,
-  scrollBehavior: false,
-  viewportWidth: 1366,
-  viewportHeight: 850,
-  env: {
-    coverage: false
-  },
-  defaultCommandTimeout: 30000,
-  pageLoadTimeout: 30000,
-  requestTimeout: 30000,
+  ...getCommonSynpressConfig(shouldRecordVideo),
   e2e: {
-    // @ts-ignore
     async setupNodeEvents(on, config) {
       require('cypress-terminal-report/src/installLogsPrinter')(on)
       registerLocalNetwork()
@@ -108,18 +87,16 @@ export default defineConfig({
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
       await Promise.all([
         fundEth({
-          networkType: 'parentChain',
           address: userWalletAddress,
-          parentProvider,
-          childProvider,
-          sourceWallet: localWallet
+          provider: parentProvider,
+          sourceWallet: localWallet,
+          amount: utils.parseEther('2')
         }),
         fundEth({
-          networkType: 'childChain',
           address: userWalletAddress,
-          parentProvider,
-          childProvider,
-          sourceWallet: localWallet
+          provider: childProvider,
+          sourceWallet: localWallet,
+          amount: utils.parseEther('2')
         })
       ])
 
@@ -165,7 +142,7 @@ export default defineConfig({
         await generateTestTxForRedeemRetryable()
 
       synpressPlugins(on, config)
-      setupCypressTasks(on)
+      setupCypressTasks(on, { requiresNetworkSetup: true })
       return config
     },
     baseUrl: 'http://localhost:3000',
@@ -310,34 +287,4 @@ async function generateTestTxForRedeemRetryable() {
   })
   const receipt = await tx.wait()
   return receipt.transactionHash
-}
-
-function setupCypressTasks(on: Cypress.PluginEvents) {
-  let currentNetworkName: NetworkName | null = null
-  let networkSetupComplete = false
-  let walletConnectedToDapp = false
-
-  on('task', {
-    setCurrentNetworkName: (networkName: NetworkName) => {
-      currentNetworkName = networkName
-      return null
-    },
-    getCurrentNetworkName: () => {
-      return currentNetworkName
-    },
-    setNetworkSetupComplete: () => {
-      networkSetupComplete = true
-      return null
-    },
-    getNetworkSetupComplete: () => {
-      return networkSetupComplete
-    },
-    setWalletConnectedToDapp: () => {
-      walletConnectedToDapp = true
-      return null
-    },
-    getWalletConnectedToDapp: () => {
-      return walletConnectedToDapp
-    }
-  })
 }
