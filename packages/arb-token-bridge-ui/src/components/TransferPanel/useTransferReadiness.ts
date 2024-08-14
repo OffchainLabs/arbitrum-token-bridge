@@ -119,7 +119,7 @@ export type UseTransferReadinessResult = {
 }
 
 export function useTransferReadiness(): UseTransferReadinessResult {
-  const [{ amount, extraEthAmount }] = useArbQueryParams()
+  const [{ amount, amount2 }] = useArbQueryParams()
   const {
     app: { selectedToken }
   } = useAppState()
@@ -235,9 +235,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
-    const sendsExtraEth = Number(extraEthAmount) > 0
+    const sendsExtraEth = Number(amount2) > 0
     const notEnoughEthForExtraEthTransfer =
-      Number(extraEthAmount) >
+      Number(amount2) >
       ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
 
     if (isNaN(Number(amount)) || Number(amount) === 0) {
@@ -492,7 +492,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     }
   }, [
     amount,
-    extraEthAmount,
+    amount2,
     isTransferring,
     destinationAddressError,
     isSmartContractWallet,
