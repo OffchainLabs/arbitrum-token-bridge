@@ -16,16 +16,31 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 
-export function TokenButton(): JSX.Element {
+export type TokenButtonOptions = {
+  symbol?: string
+  disabled?: boolean
+}
+
+export function TokenButton({
+  options
+}: {
+  options?: TokenButtonOptions
+}): JSX.Element {
   const {
     app: { selectedToken }
   } = useAppState()
+  const disabled = options?.disabled ?? false
+
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokenSymbol = useMemo(() => {
+    if (typeof options?.symbol !== 'undefined') {
+      return options.symbol
+    }
+
     if (!selectedToken) {
       return nativeCurrency.symbol
     }
@@ -34,7 +49,7 @@ export function TokenButton(): JSX.Element {
       erc20L1Address: selectedToken.address,
       chainId: networks.sourceChain.id
     })
-  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
+  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
 
   return (
     <>
@@ -45,17 +60,20 @@ export function TokenButton(): JSX.Element {
               className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
               aria-label="Select Token"
               onClick={onPopoverButtonClick}
+              disabled={disabled}
             >
               <div className="flex items-center gap-2">
                 <span className="text-xl font-light sm:text-3xl">
                   {tokenSymbol}
                 </span>
-                <ChevronDownIcon
-                  className={twMerge(
-                    'h-3 w-3 text-gray-6 transition-transform duration-200',
-                    open ? '-rotate-180' : 'rotate-0'
-                  )}
-                />
+                {!disabled && (
+                  <ChevronDownIcon
+                    className={twMerge(
+                      'h-3 w-3 text-gray-6 transition-transform duration-200',
+                      open ? '-rotate-180' : 'rotate-0'
+                    )}
+                  />
+                )}
               </div>
             </Popover.Button>
 

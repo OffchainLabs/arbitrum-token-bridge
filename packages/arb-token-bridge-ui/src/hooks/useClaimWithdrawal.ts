@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import * as Sentry from '@sentry/react'
 import { useAccount, useSigner } from 'wagmi'
 
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
@@ -15,6 +14,7 @@ import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
 import { useArbTokenBridge } from './useArbTokenBridge'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -42,7 +42,7 @@ export function useClaimWithdrawal(
       return errorToast("Can't find withdrawal transaction.")
     }
 
-    let res, err
+    let res, err: any
 
     setIsClaiming(true)
 
@@ -107,7 +107,10 @@ export function useClaimWithdrawal(
       return
     }
 
-    Sentry.captureException(err)
+    captureSentryErrorWithExtraData({
+      error: err,
+      originFunction: 'useClaimWithdrawal claim'
+    })
     if (!res) {
       errorToast(`Can't claim withdrawal: ${err?.message ?? err}`)
     }

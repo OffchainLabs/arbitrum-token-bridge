@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
-import * as Sentry from '@sentry/react'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
@@ -76,6 +75,7 @@ import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
+import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -369,8 +369,11 @@ export function TransferPanel() {
       const switchTargetChainId = latestNetworks.current.sourceChain.id
       try {
         await switchNetworkAsync?.(switchTargetChainId)
-      } catch (e) {
-        Sentry.captureException(e)
+      } catch (error) {
+        captureSentryErrorWithExtraData({
+          error,
+          originFunction: 'transferCctp switchNetworkAsync'
+        })
       }
     }
 
@@ -434,7 +437,10 @@ export function TransferPanel() {
           if (isUserRejectedError(error)) {
             return
           }
-          Sentry.captureException(error)
+          captureSentryErrorWithExtraData({
+            error,
+            originFunction: 'cctpTransferStarter.approveToken'
+          })
           errorToast(
             `USDC approval transaction failed: ${
               (error as Error)?.message ?? error
@@ -460,7 +466,10 @@ export function TransferPanel() {
         if (isUserRejectedError(error)) {
           return
         }
-        Sentry.captureException(error)
+        captureSentryErrorWithExtraData({
+          error,
+          originFunction: 'cctpTransferStarter.transfer'
+        })
         errorToast(
           `USDC ${
             isDepositMode ? 'Deposit' : 'Withdrawal'
@@ -854,8 +863,17 @@ export function TransferPanel() {
 
       // transaction submitted callback
       onTxSubmit(transfer)
-    } catch (ex) {
-      Sentry.captureException(ex)
+    } catch (error) {
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'bridgeTransferStarter.transfer',
+        additionalData: selectedToken
+          ? {
+              erc20_address_on_parent_chain: selectedToken.address,
+              transfer_type: 'token'
+            }
+          : { transfer_type: 'native currency' }
+      })
     } finally {
       setTransferring(false)
     }
