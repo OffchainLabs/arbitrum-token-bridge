@@ -318,7 +318,7 @@ export function setupCypressTasks(
   { requiresNetworkSetup }: { requiresNetworkSetup: boolean }
 ) {
   let currentNetworkName: NetworkName | null = null
-  let networkSetupComplete = requiresNetworkSetup
+  let networkSetupComplete = !requiresNetworkSetup
   let walletConnectedToDapp = false
 
   on('task', {

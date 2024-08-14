@@ -5,6 +5,7 @@ import synpressPlugins from '@synthetixio/synpress/plugins'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 
 import { fundEth, fundUsdc, setupCypressTasks } from './tests/support/common'
+import { log } from 'console'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 

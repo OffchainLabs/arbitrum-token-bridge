@@ -9,7 +9,6 @@ import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 
 import {
-  NetworkName,
   checkForAssertions,
   generateActivityOnChains,
   NetworkType,
