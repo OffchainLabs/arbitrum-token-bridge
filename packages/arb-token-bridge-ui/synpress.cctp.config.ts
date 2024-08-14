@@ -2,10 +2,9 @@ import { Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
+import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
-
 import { fundEth, fundUsdc, setupCypressTasks } from './tests/support/common'
-import { log } from 'console'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
@@ -37,7 +36,7 @@ export default defineConfig({
   ...getCommonSynpressConfig(shouldRecordVideo),
   e2e: {
     async setupNodeEvents(on, config) {
-      require('cypress-terminal-report/src/installLogsPrinter')(on)
+      logsPrinter(on)
 
       const userWalletAddress = await userWallet.getAddress()
       config.env.ADDRESS = userWalletAddress

@@ -352,7 +352,6 @@ jobs:
   #         SKIP_METAMASK_SETUP: true
   #         CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
   #         PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
-  #         LOCAL_CCTP_WALLET_PRIVATE_KEY:
   #         PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
   #         NEXT_PUBLIC_IS_E2E_TEST: true
   #         NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}

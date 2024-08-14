@@ -5,9 +5,9 @@ import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
+import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
-
 import {
   checkForAssertions,
   generateActivityOnChains,
@@ -46,7 +46,7 @@ export default defineConfig({
   ...getCommonSynpressConfig(shouldRecordVideo),
   e2e: {
     async setupNodeEvents(on, config) {
-      require('cypress-terminal-report/src/installLogsPrinter')(on)
+      logsPrinter(on)
       registerLocalNetwork()
 
       if (!ethRpcUrl && !isOrbitTest) {
