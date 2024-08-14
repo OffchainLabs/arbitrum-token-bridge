@@ -7,8 +7,12 @@ import {
   visitAfterSomeDelay
 } from '../../support/common'
 
-const ERC20TokenAddressL1: string = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
-const ERC20TokenAddressL2: string = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
+const ERC20TokenAddressL1: string = Cypress.env(
+  'ERC20_TOKEN_ADDRESS_PARENTCHAIN'
+)
+const ERC20TokenAddressL2: string = Cypress.env(
+  'ERC20_TOKEN_ADDRESS_CHILDCHAIN'
+)
 
 describe('Import token', () => {
   // we use mainnet to test token lists
@@ -22,7 +26,7 @@ describe('Import token', () => {
     })
     context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'parentChain' })
         importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the ERC-20 token
@@ -35,15 +39,13 @@ describe('Import token', () => {
         })
 
         // ERC-20 token should be selected now and popup should be closed after selection
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', ERC20TokenSymbol)
+        cy.findSelectTokenButton(ERC20TokenSymbol)
       })
     })
 
     context('User uses L2 address', () => {
       it('should import token through its L2 address', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'parentChain' })
         importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
@@ -52,15 +54,13 @@ describe('Import token', () => {
         })
 
         // ERC-20 token should be selected now and popup should be closed after selection
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', ERC20TokenSymbol)
+        cy.findSelectTokenButton(ERC20TokenSymbol)
       })
     })
 
     context('User uses invalid address', () => {
       it('should display an error message after invalid input', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'parentChain' })
         importTokenThroughUI(invalidTokenAddress)
 
         // Error message is displayed
@@ -72,14 +72,11 @@ describe('Import token', () => {
       it('should toggle token list', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           networkName: 'mainnet'
         })
 
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
+        cy.findSelectTokenButton('ETH').click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -99,14 +96,11 @@ describe('Import token', () => {
       it('should import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           networkName: 'mainnet'
         })
 
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
+        cy.findSelectTokenButton('ETH').click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -130,14 +124,10 @@ describe('Import token', () => {
           .typeRecursively('UNI')
 
         // flaky test can load data too slowly here
-        cy.wait(5000)
-
-        cy.findByText('Uniswap').click()
+        cy.findByText('Uniswap', { timeout: 5_000 }).click()
 
         // UNI token should be selected now and popup should be closed after selection
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'UNI')
+        cy.findSelectTokenButton('UNI')
       })
     })
 
@@ -148,11 +138,8 @@ describe('Import token', () => {
           ERC20TokenAddressL1.length - 1
         )
 
-        cy.login({ networkType: 'L1' })
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
+        cy.login({ networkType: 'parentChain' })
+        cy.findSelectTokenButton('ETH').click()
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
@@ -185,7 +172,7 @@ describe('Import token', () => {
     context('User uses L1 address', () => {
       it('should import token through URL using its L1 address', () => {
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           url: '/',
           query: {
             token: ERC20TokenAddressL1
@@ -209,23 +196,17 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
+        cy.findSelectTokenButton(ERC20TokenSymbol)
 
-            // Modal is closed
-            cy.findByRole('button', { name: 'Import token' }).should(
-              'not.exist'
-            )
-          })
+        // Modal is closed
+        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
       })
     })
 
     context('User uses L2 address', () => {
       it('should import token through URL using its L2 address', () => {
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           url: '/',
           query: {
             token: ERC20TokenAddressL2
@@ -250,11 +231,7 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
-          })
+        cy.findSelectTokenButton(ERC20TokenSymbol)
 
         // Modal is closed
         cy.findByRole('button', { name: 'Import token' }).should('not.exist')
@@ -264,7 +241,7 @@ describe('Import token', () => {
     context('User uses invalid address', () => {
       it('should display an error message after invalid URL', () => {
         cy.login({
-          networkType: 'L1',
+          networkType: 'parentChain',
           url: '/',
           query: {
             token: invalidTokenAddress
@@ -288,11 +265,7 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', 'ETH')
-          })
+        cy.findSelectTokenButton('ETH')
 
         // Modal is closed
         cy.findByRole('button', { name: 'Dialog Cancel' }).should('not.exist')

@@ -3,8 +3,7 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { formatAmount } from '../../../src/util/NumberUtils'
-import { shortenAddress } from '../../../src/util/CommonUtils'
+import { zeroToLessThanOneETH } from '../../support/common'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -57,20 +56,16 @@ describe('Withdraw USDC through CCTP', () => {
 
     // log in to metamask before withdrawal
     beforeEach(() => {
-      cy.fundUserWalletEth('L2')
-      cy.fundUserUsdcTestnet('L2')
-      cy.resetCctpAllowance('L2')
+      cy.fundUserWalletEth('childChain')
+      cy.fundUserUsdcTestnet('childChain')
+      cy.resetCctpAllowance('childChain')
       USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
+      cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
       context('should show L1 and L2 chains, and ETH correctly', () => {
-        cy.findByRole('button', { name: /From: Arbitrum Sepolia/i }).should(
-          'be.visible'
-        )
-        cy.findByRole('button', { name: /To: Sepolia/i }).should('be.visible')
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
+        cy.findSourceChainButton('Arbitrum Sepolia')
+        cy.findDestinationChainButton('Sepolia')
+        cy.findSelectTokenButton('ETH')
       })
 
       context('should add USDC token', () => {
@@ -83,41 +78,34 @@ describe('Withdraw USDC through CCTP', () => {
 
     it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.findByPlaceholderText('Enter amount').typeRecursively(
-          String(USDCAmountToSend)
+        cy.typeAmount(USDCAmountToSend)
+        cy.findByText(
+          'Gas estimates are not available for this action.'
+        ).should('be.visible')
+        cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          /You'll have to pay Sepolia gas fee upon claiming./i
         )
-        cy.findByRole('button', {
-          name: /Move funds to Sepolia/i
-        })
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-          () => {
-            // eslint-disable-next-line
-            cy.wait(40_000)
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
-            })
-          }
-        )
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        })
       })
     })
 
     it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
       context('should show clickable withdraw button', () => {
-        cy.findByPlaceholderText('Enter amount').typeRecursively(
-          String(USDCAmountToSend)
-        )
+        cy.typeAmount(USDCAmountToSend)
       })
 
       context('should fill custom destination address successfully', () => {
@@ -125,48 +113,27 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('should click withdraw successfully', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Sepolia/i
-        })
-          .scrollIntoView()
-          .click()
+        cy.findMoveFundsButton().click()
       })
 
       context('Should display CCTP modal', () => {
         confirmAndApproveCctpWithdrawal()
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-          () => {
-            // eslint-disable-next-line
-            cy.wait(40_000)
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-              cy.findByText(
-                `${formatAmount(USDCAmountToSend, {
-                  symbol: 'USDC'
-                })}`
-              ).should('be.visible')
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
 
-              // open the tx details popup
-              cy.findAllByLabelText('Transaction details button')
-                .first()
-                .click()
-                .then(() => {
-                  cy.findByText('Transaction details').should('be.visible')
-
-                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
-
-                  // custom destination label in pending tx history should be visible
-                  cy.findByLabelText(
-                    `Custom address: ${shortenAddress(
-                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                    )}`
-                  ).should('be.visible')
-                })
-
-              // close popup
-              cy.findByLabelText('Close transaction details popup').click()
-            })
-          }
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        const txData = {
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        }
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          ...txData
+        })
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
         )
       })
     })

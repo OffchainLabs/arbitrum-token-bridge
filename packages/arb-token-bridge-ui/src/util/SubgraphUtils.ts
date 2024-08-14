@@ -16,6 +16,7 @@ export function hasL1Subgraph(l2ChainId: number) {
 export function hasL2Subgraph(l2ChainId: number) {
   switch (l2ChainId) {
     case ChainId.ArbitrumOne:
+    case ChainId.ArbitrumNova:
     case ChainId.ArbitrumSepolia:
       return true
 

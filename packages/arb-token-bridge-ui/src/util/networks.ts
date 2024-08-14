@@ -8,7 +8,6 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 import { chainIdToInfuraUrl } from './infura'
 
 export enum ChainId {
@@ -23,30 +22,37 @@ export enum ChainId {
   ArbitrumNova = 42170,
   // L2 Testnets
   ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346
+  ArbitrumLocal = 412346,
+  // L3 Testnets
+  L3Local = 333333
 }
 
 type L1Network = {
   chainId: ChainId
   blockTime: number
+  isTestnet: boolean
 }
 
 const l1Networks: { [chainId: number]: L1Network } = {
   [ChainId.Ethereum]: {
     chainId: ChainId.Ethereum,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: false
   },
   [ChainId.Sepolia]: {
     chainId: ChainId.Sepolia,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: true
   },
   [ChainId.Holesky]: {
     chainId: ChainId.Holesky,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: true
   },
   [ChainId.Local]: {
     chainId: ChainId.Local,
-    blockTime: 12
+    blockTime: 12,
+    isTestnet: true
   }
 }
 
@@ -265,7 +271,8 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
 
 const defaultL1Network: L1Network = {
   blockTime: 10,
-  chainId: 1337
+  chainId: 1337,
+  isTestnet: true
 }
 
 export const defaultL2Network: ArbitrumNetwork = {
@@ -276,10 +283,13 @@ export const defaultL2Network: ArbitrumNetwork = {
     bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
     inbox: '0x9f8c1c641336A371031499e3c362e40d58d0f254',
     outbox: '0x50143333b44Ea46255BEb67255C9Afd35551072F',
-    rollup: '0x46966d871d29e1772c2809459469f849d8AAb1A3',
+    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
+      ? '0xE8A8F50F2a237D06D0087D14E690f6Ff0556259D'
+      : '0x46966d871d29e1772c2809459469f849d8AAb1A3',
     sequencerInbox: '0x18d19C5d3E685f5be5b9C86E097f0E439285D216'
   },
   isCustom: true,
+  isTestnet: true,
   name: 'Arbitrum Local',
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
@@ -300,6 +310,41 @@ export const defaultL2Network: ArbitrumNetwork = {
   }
 }
 
+export const defaultL3Network: ArbitrumNetwork = {
+  chainId: 333333,
+  parentChainId: ChainId.ArbitrumLocal,
+  confirmPeriodBlocks: 20,
+  ethBridge: {
+    bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
+    inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
+    outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
+    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
+      ? '0xdeD540257498027B1De7DFD4fe6cc4CeC030F355'
+      : '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
+    sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
+  },
+  isCustom: true,
+  isTestnet: true,
+  name: 'L3 Local',
+  retryableLifetimeSeconds: 604800,
+  tokenBridge: {
+    parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
+    parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',
+    parentGatewayRouter: '0xfE03DBdf7A126994dBd749631D7fbaB58C618c58',
+    parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
+    parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
+    parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
+    parentWethGateway: '0x77603b0ea6a797C74Fa9ef11b5BdE04A4E03D550',
+    childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
+    childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',
+    childGatewayRouter: '0x8B6BC759226f8Fe687c8aD8Cc0DbF85E095e9297',
+    childMultiCall: '0x052B15c8Ff0544287AE689C4F2FC53A3905d7Db3',
+    childProxyAdmin: '0x36C56eC2CF3a3f53db9F01d0A5Ae84b36fb0A1e2',
+    childWeth: '0x582a8dBc77f665dF2c49Ce0a138978e9267dd968',
+    childWethGateway: '0xA6AB233B3c7bfd0399834897b5073974A3D467e2'
+  }
+}
+
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
   fallback: 'http://127.0.0.1:8545'
@@ -308,23 +353,39 @@ export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
   fallback: 'http://127.0.0.1:8547'
 })
+export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL,
+  fallback: 'http://127.0.0.1:3347'
+})
 
 export function registerLocalNetwork() {
   try {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
+    rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
     registerCustomArbitrumNetwork(defaultL2Network)
+    registerCustomArbitrumNetwork(defaultL3Network)
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
 }
 
-export function isNetwork(chainId: ChainId) {
-  const customChains = getCustomChainsFromLocalStorage()
-  const isMainnetOrbitChain = chainId in orbitMainnets
-  const isTestnetOrbitChain = chainId in orbitTestnets
+function isTestnetChain(chainId: ChainId) {
+  const l1Network = l1Networks[chainId]
+  if (l1Network) {
+    return l1Network.isTestnet
+  }
 
+  try {
+    return getArbitrumNetwork(chainId).isTestnet
+  } catch {
+    // users could have data in local storage for chains that aren't supported anymore, avoid app error
+    return true
+  }
+}
+
+export function isNetwork(chainId: ChainId) {
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
   const isSepolia = chainId === ChainId.Sepolia
@@ -342,31 +403,8 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrum =
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia
 
-  const customChainIds = customChains.map(chain => chain.chainId)
-  const isCustomOrbitChain = customChainIds.includes(chainId)
-
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
   const isOrbitChain = !isCoreChain
-
-  const isTestnet =
-    isLocal ||
-    isArbitrumLocal ||
-    isSepolia ||
-    isHolesky ||
-    isArbitrumSepolia ||
-    isCustomOrbitChain ||
-    isTestnetOrbitChain
-
-  const isSupported =
-    isArbitrumOne ||
-    isArbitrumNova ||
-    isEthereumMainnet ||
-    isSepolia ||
-    isHolesky ||
-    isArbitrumSepolia ||
-    isCustomOrbitChain ||
-    isMainnetOrbitChain ||
-    isTestnetOrbitChain
 
   return {
     // L1
@@ -382,9 +420,8 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia,
     // Orbit chains
     isOrbitChain,
-    isTestnet,
     // General
-    isSupported,
+    isTestnet: isTestnetChain(chainId),
     // Core Chain is a chain category for the UI
     isCoreChain
   }

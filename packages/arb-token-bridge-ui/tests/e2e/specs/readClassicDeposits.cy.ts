@@ -33,7 +33,7 @@ function mockClassicDepositTransaction(
       fetchingUpdate: false,
       status: ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: undefined,
-      l2TxID: undefined
+      childTxId: undefined
     },
     ...params
   }
@@ -48,7 +48,7 @@ describe('Read classic deposit messages', () => {
     it('can read successful ETH deposit', () => {
       // log in to metamask
       cy.login({
-        networkType: 'L1',
+        networkType: 'parentChain',
         networkName: 'mainnet'
       })
       window.localStorage.setItem(
@@ -61,15 +61,7 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.openTransactionsPanel()
-
-      context('settled tab should be selected after click', () => {
-        cy.findByRole('tab', { name: 'show settled transactions' })
-          .should('be.visible')
-          .click()
-          .should('have.attr', 'data-headlessui-state')
-          .and('equal', 'selected')
-      })
+      cy.openTransactionsPanel('settled')
 
       const destinationTxHash =
         '0xd3ff2a70a115411e1ae4917351dca49281368684394d0dcac136fa08d9d9b436'
@@ -85,7 +77,7 @@ describe('Read classic deposit messages', () => {
     it('can read successful ERC-20 deposit', () => {
       // log in to metamask
       cy.login({
-        networkType: 'L1',
+        networkType: 'parentChain',
         networkName: 'mainnet'
       })
       window.localStorage.setItem(
@@ -100,15 +92,7 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.openTransactionsPanel()
-
-      context('settled tab should be selected after click', () => {
-        cy.findByRole('tab', { name: 'show settled transactions' })
-          .should('be.visible')
-          .click()
-          .should('have.attr', 'data-headlessui-state')
-          .and('equal', 'selected')
-      })
+      cy.openTransactionsPanel('settled')
 
       const destinationTxHash =
         '0x6cecd3bfc3ec73181c4ac0253d3f51e5aa8d26157ca7439ff9ab465de14a436f'
