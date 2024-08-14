@@ -56,8 +56,8 @@ export function SourceNetworkBox({
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const [{ amount, extraEthAmount }] = useArbQueryParams()
-  const { setAmount, setExtraEthAmount } = useSetInputAmount()
+  const [{ amount, amount2 }] = useArbQueryParams()
+  const { setAmount, setAmount2 } = useSetInputAmount()
   const { maxAmount } = useMaxAmount({
     customFeeTokenBalances
   })
@@ -162,8 +162,8 @@ export function SourceNetworkBox({
                 // eslint-disable-next-line
                 maxButtonOnClick={() => {}}
                 errorMessage={errorMessages?.extraEthInput}
-                value={extraEthAmount}
-                onChange={e => setExtraEthAmount(e.target.value)}
+                value={amount2}
+                onChange={e => setAmount2(e.target.value)}
                 tokenButtonOptions={{
                   symbol: nativeCurrency.symbol,
                   disabled: true
