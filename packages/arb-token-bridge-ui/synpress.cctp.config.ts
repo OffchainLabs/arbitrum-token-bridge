@@ -43,6 +43,7 @@ export default defineConfig({
       config.env.LOCAL_CCTP_WALLET_PRIVATE_KEY = localWallet.privateKey
 
       // Fund wallet
+      console.log(`Funding user wallet: ${userWalletAddress}`)
       await Promise.all([
         // Sepolia
         fundEth({

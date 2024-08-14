@@ -217,18 +217,19 @@ export async function fundUsdc({
   amount: BigNumber
   networkType: NetworkType
 }) {
-  console.log(`Funding USDC to user wallet...`)
-  const usdcContractAddress =
-    networkType === 'parentChain'
-      ? CommonAddress.Sepolia.USDC
-      : CommonAddress.ArbitrumSepolia.USDC
+  console.log('Funding USDC to user wallet...')
+  console.log('Cypress', Cypress)
+  // const usdcContractAddress =
+  //   networkType === 'parentChain'
+  //     ? CommonAddress.Sepolia.USDC
+  //     : CommonAddress.ArbitrumSepolia.USDC
 
-  const localWallet = new Wallet(Cypress.env('LOCAL_CCTP_WALLET_PRIVATE_KEY'))
-  const contract = new ERC20__factory().connect(localWallet.connect(provider))
-  const token = contract.attach(usdcContractAddress)
-  await token.deployed()
-  const tx = await token.transfer(address, amount)
-  await tx.wait()
+  // const localWallet = new Wallet(Cypress.env('LOCAL_CCTP_WALLET_PRIVATE_KEY'))
+  // const contract = new ERC20__factory().connect(localWallet.connect(provider))
+  // const token = contract.attach(usdcContractAddress)
+  // await token.deployed()
+  // const tx = await token.transfer(address, amount)
+  // await tx.wait()
 }
 
 export async function generateActivityOnChains({
