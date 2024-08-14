@@ -123,7 +123,7 @@ export const sanitizeExperimentalFeaturesQueryParam = (
   }
 
   const validFlagsArray = flagsArray.filter(f =>
-    Object.values(featureFlags).includes(f as FeatureFlag)
+    featureFlags.includes(f as FeatureFlag)
   )
 
   if (validFlagsArray.length === 0) {

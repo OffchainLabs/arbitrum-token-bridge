@@ -54,26 +54,24 @@ export const getAPIBaseUrl = () => {
   return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 }
 
-export const featureFlags = {
-  Batch: 'batch'
-} as const
+export const featureFlags = ['batch'] as const
 
-export type FeatureFlag = (typeof featureFlags)[keyof typeof featureFlags]
+export type FeatureFlag = (typeof featureFlags)[number]
 
 export const isExperimentalFeatureEnabled = (flag: FeatureFlag) => {
   const query = new URLSearchParams(window.location.search)
-  const featureFlags = query.get('experiments')
+  const flags = query.get('experiments')
 
-  if (!featureFlags) {
+  if (!flags) {
     return false
   }
 
-  return featureFlags.split(',').includes(flag)
+  return flags.split(',').includes(flag)
 }
 
 export const isExperimentalModeEnabled = () => {
   const query = new URLSearchParams(window.location.search)
-  const featureFlags = query.get('experiments')
+  const flags = query.get('experiments')
 
-  return featureFlags !== null
+  return flags !== null
 }
