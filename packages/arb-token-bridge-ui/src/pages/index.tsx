@@ -13,8 +13,7 @@ import { getOrbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
-  encodeChainQueryParam,
-  sanitizeExperimentalFeaturesQueryParam
+  encodeChainQueryParam
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 
