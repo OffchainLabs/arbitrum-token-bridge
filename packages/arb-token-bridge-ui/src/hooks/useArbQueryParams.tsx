@@ -33,7 +33,6 @@ import {
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../util/networks'
-import { FeatureFlag, featureFlags } from '../util'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'
@@ -50,10 +49,9 @@ export const useArbQueryParams = () => {
     sourceChain: ChainParam,
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
-    extraEthAmount: withDefault(AmountQueryParam, ''), // extra eth to send together with erc20
+    amount2: withDefault(AmountQueryParam, ''), // extra eth to send together with erc20
     token: StringParam, // import a new token using a Dialog Box
-    settingsOpen: withDefault(BooleanParam, false),
-    experiments: ExperimentalFeaturesQueryParam // comma separated flags for experimental features
+    settingsOpen: withDefault(BooleanParam, false)
   })
 }
 
@@ -107,40 +105,6 @@ export const AmountQueryParam = {
     // toString() casts the potential string array into a string
     const amountStr = amount?.toString() ?? ''
     return sanitizeAmountQueryParam(amountStr)
-  }
-}
-
-export const sanitizeExperimentalFeaturesQueryParam = (
-  flags: string | null | undefined
-) => {
-  if (!flags) {
-    return undefined
-  }
-
-  const flagsArray = flags.split(',')
-
-  if (flagsArray.length === 0) {
-    return undefined
-  }
-
-  const validFlagsArray = flagsArray.filter(f =>
-    Object.values(featureFlags).includes(f as FeatureFlag)
-  )
-
-  if (validFlagsArray.length === 0) {
-    return undefined
-  }
-
-  return validFlagsArray.join(',')
-}
-
-const ExperimentalFeaturesQueryParam = {
-  encode: (flags: string | undefined) =>
-    sanitizeExperimentalFeaturesQueryParam(flags),
-  decode: (flags: string | (string | null)[] | null | undefined) => {
-    // toString() casts the potential string array into a string
-    const flagsStr = flags?.toString() ?? ''
-    return sanitizeExperimentalFeaturesQueryParam(flagsStr)
   }
 }
 
