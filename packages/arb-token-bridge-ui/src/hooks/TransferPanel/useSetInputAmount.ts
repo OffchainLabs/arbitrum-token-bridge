@@ -18,7 +18,11 @@ export function useSetInputAmount() {
   )
 
   const setAmount2 = useCallback(
-    (newAmount: string) => setQueryParams({ amount2: newAmount }),
+    (newAmount: string) => {
+      const correctDecimalsAmount = truncateExtraDecimals(newAmount, 18)
+
+      setQueryParams({ amount2: correctDecimalsAmount })
+    },
     [setQueryParams]
   )
 
