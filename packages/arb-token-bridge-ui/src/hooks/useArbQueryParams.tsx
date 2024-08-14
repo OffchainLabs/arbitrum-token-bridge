@@ -25,6 +25,8 @@ import {
   useQueryParams,
   withDefault
 } from 'use-query-params'
+import { isAddress } from 'ethers/lib/utils.js'
+import { Address } from 'wagmi'
 
 import {
   ChainKeyQueryParam,
@@ -50,7 +52,8 @@ export const useArbQueryParams = () => {
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     token: StringParam, // import a new token using a Dialog Box
-    settingsOpen: withDefault(BooleanParam, false)
+    settingsOpen: withDefault(BooleanParam, false),
+    address: AddressParam
   })
 }
 
@@ -160,6 +163,22 @@ export function decodeChainQueryParam(
 export const ChainParam = {
   encode: encodeChainQueryParam,
   decode: decodeChainQueryParam
+}
+
+export function encodeAddressQueryParam(
+  address: string | null | undefined
+): Address | undefined {
+  if (!address || !isAddress(address)) {
+    return undefined
+  }
+
+  return address
+}
+
+export const AddressParam = {
+  encode: encodeAddressQueryParam,
+  decode: (value: string | (string | null)[] | null | undefined) =>
+    decodeString(value) as Address | undefined
 }
 
 export function ArbQueryParamProvider({

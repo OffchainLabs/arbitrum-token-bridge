@@ -58,7 +58,7 @@ const rainbowkitTheme = merge(darkTheme(), {
   }
 } as Theme)
 
-const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
+export const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
   const {
     app: { selectedToken }
@@ -196,7 +196,7 @@ function getBaseUrl(url: string) {
   }
 }
 
-function AppContent() {
+export function AppContent() {
   const [networks] = useNetworks()
   const { parentChain, childChain } = useNetworksRelationship(networks)
   const { address, isConnected, connector } = useAccount()
@@ -400,7 +400,7 @@ function ConnectedChainSyncer() {
   return null
 }
 
-export default function App() {
+export default function App({ children }: { children: React.ReactNode }) {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
   return (
@@ -412,9 +412,7 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <ConnectedChainSyncer />
-            <AppContextProvider>
-              <AppContent />
-            </AppContextProvider>
+            <AppContextProvider>{children}</AppContextProvider>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>

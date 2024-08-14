@@ -28,8 +28,8 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:slug',
-        destination: '/?destinationChain=:slug',
+        source: '/:path((?!transaction-history$).+)',
+        destination: '/?destinationChain=:path',
         permanent: true
       }
     ]

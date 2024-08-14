@@ -486,7 +486,7 @@ export const useTransactionHistory = (
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+    useAccountType({ address })
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
@@ -520,7 +520,7 @@ export const useTransactionHistory = (
   )
 
   const depositsFromCache = useMemo(() => {
-    if (isLoadingAccountType || !chain) {
+    if (isLoadingAccountType) {
       return []
     }
     return getDepositsWithoutStatusesFromCache(address)
@@ -541,6 +541,9 @@ export const useTransactionHistory = (
         }
 
         if (isSmartContractWallet) {
+          if (!chain) {
+            return []
+          }
           // only include txs for the connected network
           return tx.parentChainId === chain.id
         }
