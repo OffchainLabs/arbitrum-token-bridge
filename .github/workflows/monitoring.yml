@@ -1,6 +1,7 @@
 name: Monitoring
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"  # Run every 6 hours
