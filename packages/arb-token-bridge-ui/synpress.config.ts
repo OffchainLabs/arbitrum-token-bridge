@@ -117,7 +117,7 @@ export default defineConfig({
       const l1ERC20Token = await deployERC20ToParentChain()
       await fundErc20ToParentChain(l1ERC20Token)
       await fundErc20ToChildChain(l1ERC20Token)
-      await approveErc20(l1ERC20Token) // we currently don't cover token approval flows in E2E's
+      await approveErc20(l1ERC20Token)
 
       // Wrap ETH to test WETH transactions and approve it's usage
       await fundWeth('parentChain')
@@ -280,7 +280,7 @@ async function approveErc20(l1ERC20Token: Contract) {
   const approvalTx = await erc20Bridger.approveToken({
     erc20ParentAddress: l1ERC20Token.address,
     parentSigner: userWallet.connect(parentProvider),
-    amount: constants.MaxUint256
+    amount: constants.One
   })
   await approvalTx.wait()
 }
