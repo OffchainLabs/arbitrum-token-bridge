@@ -22,7 +22,6 @@ import {
 import { ether } from '../../constants'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'
@@ -250,11 +249,7 @@ export function NetworkListboxPlusBalancesContainer({
   )
 }
 
-export function TransferPanelMain({
-  errorMessage
-}: {
-  errorMessage?: TransferReadinessRichErrorMessage | string
-}) {
+export function TransferPanelMain() {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
@@ -354,7 +349,6 @@ export function TransferPanelMain({
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
       <SourceNetworkBox
-        errorMessage={errorMessage}
         customFeeTokenBalances={customFeeTokenBalances}
         showUsdcSpecificInfo={showUSDCSpecificInfo}
       />
