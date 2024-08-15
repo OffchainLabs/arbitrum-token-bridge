@@ -36,9 +36,9 @@ import {
 } from '../../../hooks/useArbQueryParams'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
-import { isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
+import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -63,6 +63,7 @@ export function SourceNetworkBox({
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
+  const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const { errorMessages } = useTransferReadiness()
 
@@ -156,25 +157,18 @@ export function SourceNetworkBox({
             onChange={e => setAmount(e.target.value)}
           />
 
-          {isExperimentalFeatureEnabled('batch') &&
-            // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
-            !isTeleport({
-              sourceChainId: networks.sourceChain.id,
-              destinationChainId: networks.destinationChain.id
-            }) &&
-            isDepositMode &&
-            selectedToken && (
-              <TransferPanelMainInput
-                maxButtonOnClick={amount2MaxButtonOnClick}
-                errorMessage={errorMessages?.extraEthInput}
-                value={amount2}
-                onChange={e => setAmount2(e.target.value)}
-                tokenButtonOptions={{
-                  symbol: nativeCurrency.symbol,
-                  disabled: true
-                }}
-              />
-            )}
+          {isBatchTransferSupported && (
+            <TransferPanelMainInput
+              maxButtonOnClick={amount2MaxButtonOnClick}
+              errorMessage={errorMessages?.extraEthInput}
+              value={amount2}
+              onChange={e => setAmount2(e.target.value)}
+              tokenButtonOptions={{
+                symbol: nativeCurrency.symbol,
+                disabled: true
+              }}
+            />
+          )}
 
           {showUsdcSpecificInfo && (
             <p className="mt-1 text-xs font-light text-white">

@@ -74,6 +74,7 @@ import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
+import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -124,6 +125,7 @@ export function TransferPanel() {
     isTeleportMode
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
+  const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -149,7 +151,7 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount }] = useArbQueryParams()
+  const [{ amount, amount2 }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -860,7 +862,14 @@ export function TransferPanel() {
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
-        destinationAddress
+        destinationAddress,
+        overrides: {
+          maxSubmissionCost:
+            isBatchTransferSupported && Number(amount2) > 0
+              ? utils.parseEther(amount2)
+              : undefined,
+          excessFeeRefundAddress: destinationAddress
+        }
       })
 
       // transaction submitted callback

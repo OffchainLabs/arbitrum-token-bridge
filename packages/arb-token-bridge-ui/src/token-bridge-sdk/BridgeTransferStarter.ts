@@ -52,6 +52,10 @@ export type TransferProps = {
   amount: BigNumber
   signer: Signer
   destinationAddress?: string
+  overrides?: {
+    maxSubmissionCost?: BigNumber
+    excessFeeRefundAddress?: string
+  }
 }
 
 export type RequiresNativeCurrencyApprovalProps = {
