@@ -8,14 +8,12 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
-import cctpFiles from './tests/e2e/cctp.json'
 import {
   checkForAssertions,
   generateActivityOnChains,
   NetworkType,
   fundEth,
-  setupCypressTasks,
-  fundUsdc
+  setupCypressTasks
 } from './tests/support/common'
 
 import {
@@ -25,14 +23,9 @@ import {
 } from './src/util/networks'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 
-let tests: string[]
-if (process.env.TEST_FILE) {
-  tests = [process.env.TEST_FILE]
-} else if (process.env.E2E_CCTP) {
-  tests = cctpFiles.map(file => file.file)
-} else {
-  tests = specFiles.map(file => file.file)
-}
+const tests = process.env.TEST_FILE
+  ? [process.env.TEST_FILE]
+  : specFiles.map(file => file.file)
 
 const isOrbitTest = process.env.E2E_ORBIT == 'true'
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
@@ -54,153 +47,98 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
+      registerLocalNetwork()
 
-      const isCctp = process.env.E2E_CCTP
-      const sepoliaProvider = new StaticJsonRpcProvider(SEPOLIA_INFURA_RPC_URL)
-      const arbSepoliaProvider = new StaticJsonRpcProvider(
-        ARB_SEPOLIA_INFURA_RPC_URL
-      )
-
-      if (isCctp) {
-        if (!process.env.PRIVATE_KEY_CCTP) {
-          throw new Error('PRIVATE_KEY_CCTP variable missing.')
-        }
-
-        // Wallet funded on Sepolia and ArbSepolia with ETH and USDC
-        const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
-        // Generate a new wallet every time
-        const randomWallet = Wallet.createRandom()
-        const randomWalletAddress = await randomWallet.getAddress()
-        config.env.LOCAL_CCTP_WALLET_PRIVATE_KEY = localWallet.privateKey
-        await Promise.all([
-          // Sepolia
-          fundEth({
-            address: randomWalletAddress,
-            provider: sepoliaProvider,
-            sourceWallet: localWallet,
-            amount: utils.parseEther('0.01')
-          }),
-          fundUsdc({
-            address: randomWalletAddress,
-            provider: sepoliaProvider,
-            networkType: 'parentChain',
-            sourceWallet: localWallet,
-            amount: utils.parseUnits('0.0001', 6)
-          }),
-          // ArbSepolia
-          fundEth({
-            address: randomWalletAddress,
-            provider: arbSepoliaProvider,
-            sourceWallet: localWallet,
-            amount: utils.parseEther('0.01')
-          }),
-          fundUsdc({
-            address: randomWalletAddress,
-            provider: arbSepoliaProvider,
-            networkType: 'childChain',
-            sourceWallet: localWallet,
-            amount: utils.parseUnits('0.0001', 6)
-          })
-        ])
-      } else {
-        const userWalletAddress = await userWallet.getAddress()
-        registerLocalNetwork()
-
-        if (!ethRpcUrl && !isOrbitTest) {
-          throw new Error(
-            'NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.'
-          )
-        }
-        if (!arbRpcUrl) {
-          throw new Error(
-            'NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.'
-          )
-        }
-        if (!l3RpcUrl && isOrbitTest) {
-          throw new Error('NEXT_PUBLIC_LOCAL_L3_RPC_URL variable missing.')
-        }
-        if (!sepoliaRpcUrl) {
-          throw new Error(
-            'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
-          )
-        }
-
-        // Deploy ERC-20 token to L1
-        const l1ERC20Token = await deployERC20ToL1()
-
-        // Deploy ERC-20 token to L2
-        await deployERC20ToL2(l1ERC20Token.address)
-
-        // Mint ERC-20 token
-        // We need this to test token approval
-        // WETH is pre-approved so we need a new token
-        const mintedL1Erc20Token = await l1ERC20Token.mint()
-        await mintedL1Erc20Token.wait()
-
-        // Send minted ERC-20 to the test userWallet
-        await l1ERC20Token
-          .connect(localWallet.connect(parentProvider))
-          .transfer(userWalletAddress, BigNumber.from(50000000))
-
-        // Fund the userWallet. We do this to run tests on a small amount of ETH.
-        await Promise.all([
-          fundEth({
-            address: userWalletAddress,
-            provider: parentProvider,
-            sourceWallet: localWallet,
-            amount: utils.parseEther('2')
-          }),
-          fundEth({
-            address: userWalletAddress,
-            provider: childProvider,
-            sourceWallet: localWallet,
-            amount: utils.parseEther('2')
-          })
-        ])
-
-        // Wrap ETH to test ERC-20 transactions
-        await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
-
-        // Approve WETH
-        await approveWeth()
-
-        // Generate activity on chains so that assertions get posted and claims can be made
-        generateActivityOnChains({
-          parentProvider,
-          childProvider,
-          wallet: localWallet
-        })
-        // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
-        checkForAssertions({ parentProvider, isOrbitTest })
-
-        config.env.ADDRESS = userWalletAddress
-        config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
-        config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
-          erc20L1Address: l1ERC20Token.address,
-          l1Provider: parentProvider,
-          l2Provider: childProvider
-        })
-
-        config.env.L1_WETH_ADDRESS = l1WethAddress
-        config.env.L2_WETH_ADDRESS = l2WethAddress
-        config.env.REDEEM_RETRYABLE_TEST_TX =
-          await generateTestTxForRedeemRetryable()
+      if (!ethRpcUrl && !isOrbitTest) {
+        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
       }
+      if (!arbRpcUrl) {
+        throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+      }
+      if (!l3RpcUrl && isOrbitTest) {
+        throw new Error('NEXT_PUBLIC_LOCAL_L3_RPC_URL variable missing.')
+      }
+      if (!sepoliaRpcUrl) {
+        throw new Error(
+          'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
+        )
+      }
+
+      const userWalletAddress = await userWallet.getAddress()
+
+      // Deploy ERC-20 token to L1
+      const l1ERC20Token = await deployERC20ToL1()
+
+      // Deploy ERC-20 token to L2
+      await deployERC20ToL2(l1ERC20Token.address)
+
+      // Mint ERC-20 token
+      // We need this to test token approval
+      // WETH is pre-approved so we need a new token
+      const mintedL1Erc20Token = await l1ERC20Token.mint()
+      await mintedL1Erc20Token.wait()
+
+      // Send minted ERC-20 to the test userWallet
+      await l1ERC20Token
+        .connect(localWallet.connect(parentProvider))
+        .transfer(userWalletAddress, BigNumber.from(50000000))
+
+      // Fund the userWallet. We do this to run tests on a small amount of ETH.
+      await Promise.all([
+        fundEth({
+          address: userWalletAddress,
+          provider: parentProvider,
+          sourceWallet: localWallet,
+          amount: utils.parseEther('2')
+        }),
+        fundEth({
+          address: userWalletAddress,
+          provider: childProvider,
+          sourceWallet: localWallet,
+          amount: utils.parseEther('2')
+        })
+      ])
+
+      // Wrap ETH to test ERC-20 transactions
+      await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
+
+      // Approve WETH
+      await approveWeth()
+
+      // Generate activity on chains so that assertions get posted and claims can be made
+      generateActivityOnChains({
+        parentProvider,
+        childProvider,
+        wallet: localWallet
+      })
+      // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
+      checkForAssertions({ parentProvider, isOrbitTest })
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
       config.env.ARB_RPC_URL = isOrbitTest ? l3RpcUrl : arbRpcUrl
       config.env.ETH_SEPOLIA_RPC_URL = sepoliaRpcUrl
       config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
-
+      config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-
+      config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
+
+      config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
+        erc20L1Address: l1ERC20Token.address,
+        l1Provider: parentProvider,
+        l2Provider: childProvider
+      })
+      config.env.L1_WETH_ADDRESS = l1WethAddress
+      config.env.L2_WETH_ADDRESS = l2WethAddress
+
+      config.env.REDEEM_RETRYABLE_TEST_TX =
+        await generateTestTxForRedeemRetryable()
 
       synpressPlugins(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: true })
@@ -219,7 +157,6 @@ if (typeof INFURA_KEY === 'undefined') {
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
-const ARB_SEPOLIA_INFURA_RPC_URL = `https://arbitrum-sepolia.infura.io/v3/${INFURA_KEY}`
 
 const ethRpcUrl = (() => {
   // MetaMask comes with a default http://localhost:8545 network with 'localhost' as network name
