@@ -74,7 +74,7 @@ export default defineConfig({
       // ])
 
       synpressPlugins(on, config)
-      setupCypressTasks(on, { requiresNetworkSetup: false })
+      setupCypressTasks(on)
       return config
     },
     baseUrl: 'http://localhost:3000',
@@ -83,12 +83,9 @@ export default defineConfig({
   }
 })
 
-function setupCypressTasks(
-  on: Cypress.PluginEvents,
-  { requiresNetworkSetup }: { requiresNetworkSetup: boolean }
-) {
+function setupCypressTasks(on: Cypress.PluginEvents) {
   let currentNetworkName: NetworkName | null = null
-  let networkSetupComplete = !requiresNetworkSetup
+  let networkSetupComplete = true
   let walletConnectedToDapp = false
 
   on('task', {
