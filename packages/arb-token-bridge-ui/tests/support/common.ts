@@ -265,15 +265,17 @@ export async function checkForAssertions({
   }
 }
 
-async function fundUsdc({
+export async function fundUsdc({
   address, // wallet address where funding is required
   provider,
   amount,
-  networkType
+  networkType,
+  sourceWallet
 }: {
   address: string
   provider: Provider
   amount: BigNumber
+  sourceWallet: Wallet
   networkType: NetworkType
 }) {
   console.log('Funding USDC to user wallet...')
@@ -282,15 +284,14 @@ async function fundUsdc({
       ? CommonAddress.Sepolia.USDC
       : CommonAddress.ArbitrumSepolia.USDC
 
-  const localWallet = new Wallet(Cypress.env('LOCAL_CCTP_WALLET_PRIVATE_KEY'))
-  const contract = new ERC20__factory().connect(localWallet.connect(provider))
+  const contract = new ERC20__factory().connect(sourceWallet.connect(provider))
   const token = contract.attach(usdcContractAddress)
   await token.deployed()
   const tx = await token.transfer(address, amount)
   await tx.wait()
 }
 
-async function fundEth({
+export async function fundEth({
   address, // wallet address where funding is required
   provider,
   sourceWallet, // source wallet that will fund the `address`,
@@ -342,12 +343,6 @@ export function setupCypressTasks(
     },
     getWalletConnectedToDapp: () => {
       return walletConnectedToDapp
-    },
-    fundEth: (args: Parameters<typeof fundEth>[0]) => {
-      return fundEth(args)
-    },
-    fundUsdc: (args: Parameters<typeof fundUsdc>[0]) => {
-      return fundUsdc(args)
     }
   })
 }

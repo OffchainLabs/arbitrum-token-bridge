@@ -4,7 +4,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
-import { setupCypressTasks } from './tests/support/common'
+import { setupCypressTasks, fundEth, fundUsdc } from './tests/support/common'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
@@ -46,34 +46,36 @@ export default defineConfig({
 
       // Fund wallet
       console.log(`Funding user wallet: ${userWalletAddress}`)
-      // await Promise.all([
-      //   // Sepolia
-      //   cy.task('fundEth', {
-      //     address: userWalletAddress,
-      //     provider: sepoliaProvider,
-      //     sourceWallet: localWallet,
-      //     amount: utils.parseEther('0.01')
-      //   }),
-      //   cy.task('fundUsdc', {
-      //     address: userWalletAddress,
-      //     provider: sepoliaProvider,
-      //     networkType: 'parentChain',
-      //     amount: utils.parseUnits('0.0001', 6)
-      //   }),
-      //   // ArbSepolia
-      //   cy.task('fundEth', {
-      //     address: userWalletAddress,
-      //     provider: arbSepoliaProvider,
-      //     sourceWallet: localWallet,
-      //     amount: utils.parseEther('0.01')
-      //   }),
-      //   cy.task('fundUsdc', {
-      //     address: userWalletAddress,
-      //     provider: arbSepoliaProvider,
-      //     networkType: 'childChain',
-      //     amount: utils.parseUnits('0.0001', 6)
-      //   })
-      // ])
+      await Promise.all([
+        // Sepolia
+        fundEth({
+          address: userWalletAddress,
+          provider: sepoliaProvider,
+          sourceWallet: localWallet,
+          amount: utils.parseEther('0.01')
+        }),
+        fundUsdc({
+          address: userWalletAddress,
+          provider: sepoliaProvider,
+          networkType: 'parentChain',
+          sourceWallet: localWallet,
+          amount: utils.parseUnits('0.0001', 6)
+        }),
+        // ArbSepolia
+        fundEth({
+          address: userWalletAddress,
+          provider: arbSepoliaProvider,
+          sourceWallet: localWallet,
+          amount: utils.parseEther('0.01')
+        }),
+        fundUsdc({
+          address: userWalletAddress,
+          provider: arbSepoliaProvider,
+          networkType: 'childChain',
+          sourceWallet: localWallet,
+          amount: utils.parseUnits('0.0001', 6)
+        })
+      ])
 
       setupCypressTasks(on, { requiresNetworkSetup: false })
       synpressPlugins(on, config)
