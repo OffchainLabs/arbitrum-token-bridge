@@ -6,7 +6,6 @@ import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Loader } from '../components/common/atoms/Loader'
 import { TransactionHistory } from '../components/TransactionHistory/TransactionHistory'
 import { isTxPending } from '../components/TransactionHistory/helpers'
-import { ArbTokenBridgeStoreSyncWrapper } from '../components/App/App'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
@@ -45,7 +44,6 @@ function TransactionHistoryPageContent() {
   return (
     <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
       <h1>Transaction History</h1>
-      {/* <ArbTokenBridgeStoreSyncWrapper /> */}
       <TransactionHistory props={{ ...transactionHistoryProps, address }} />
     </div>
   )

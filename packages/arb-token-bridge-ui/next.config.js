@@ -8,6 +8,11 @@ module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
+  // without this, the app would throw an error from cobalt for next/link
+  // https://github.com/chakra-ui/chakra-ui/issues/7363#issuecomment-1439466358
+  experimental: {
+    esmExternals: false
+  },
   async headers() {
     return [
       {

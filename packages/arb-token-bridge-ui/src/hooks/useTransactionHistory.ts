@@ -254,10 +254,13 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   // We need this because of Smart Contract Wallets
   const cctpTypeToFetch = useCallback(
     (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (isLoadingAccountType || !chain) {
+      if (isLoadingAccountType) {
         return undefined
       }
       if (isSmartContractWallet) {
+        if (!chain) {
+          return undefined
+        }
         // fetch based on the connected network
         if (chain.id === chainPair.parentChainId) {
           return 'deposits'
@@ -336,10 +339,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
 
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
-      if (!chain) {
-        return []
-      }
-
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
       return Promise.all(
@@ -347,6 +346,10 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
           .filter(chainPair => {
             if (isSmartContractWallet) {
               // only fetch txs from the connected network
+              if (!chain) {
+                return []
+              }
+
               return [chainPair.parentChainId, chainPair.childChainId].includes(
                 chain.id
               )
@@ -361,7 +364,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
             // that's why we need to limit shown txs either to sent or received funds
             // otherwise we'd display funds for a different network, which could be someone else's account
             const isConnectedToParentChain =
-              chainPair.parentChainId === chain.id
+              chainPair.parentChainId === chain?.id
 
             const includeSentTxs = shouldIncludeSentTxs({
               type,
@@ -435,7 +438,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
   )
 
-  const shouldFetch = address && chain && !isLoadingAccountType
+  const shouldFetch = address && !isLoadingAccountType
 
   const {
     data: depositsData,
@@ -753,18 +756,25 @@ export const useTransactionHistory = (
   )
 
   useEffect(() => {
-    if (!runFetcher || !connector) {
-      return
-    }
-    connector.on('change', e => {
-      // reset state on account change
-      if (e.account) {
+    function setInitialState(address: Address | undefined) {
+      if (address) {
         setPage(1)
         setPauseCount(0)
         setFetching(true)
       }
+    }
+    if (!runFetcher) {
+      return
+    }
+    if (!connector) {
+      setInitialState(address)
+      return
+    }
+    connector.on('change', e => {
+      // reset state on account change
+      setInitialState(e.account)
     })
-  }, [connector, runFetcher, setPage])
+  }, [connector, runFetcher, setPage, address])
 
   useEffect(() => {
     if (!txPages || !fetching || !runFetcher || isValidating) {

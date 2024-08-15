@@ -291,7 +291,10 @@ export function AppContent() {
 //
 // https://github.com/orgs/WalletConnect/discussions/2733
 // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-const searchParams = new URLSearchParams(window.location.search)
+
+const searchParams = new URLSearchParams(
+  typeof window !== 'undefined' ? window.location.search : ''
+)
 const targetChainKey = searchParams.get('sourceChain')
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
@@ -299,7 +302,7 @@ const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 // Clear cache for everything related to WalletConnect v2.
 //
 // TODO: Remove this once the fix for the infinite loop / memory leak is identified.
-Object.keys(localStorage).forEach(key => {
+Object.keys(typeof window !== 'undefined' ? localStorage : {}).forEach(key => {
   if (
     key === 'wagmi.requestedChains' ||
     key === 'wagmi.store' ||
