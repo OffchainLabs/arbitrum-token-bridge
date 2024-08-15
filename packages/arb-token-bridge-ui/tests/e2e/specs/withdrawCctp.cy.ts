@@ -76,12 +76,8 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmMetamaskPermissionToSpend({
-      spendLimit: USDCAmountToSend.toString()
-    })
-    try {
-      cy.confirmMetamaskDataSignatureRequest()
-    } catch (e) {}
+    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+
     // eslint-disable-next-line
     cy.wait(40_000)
     cy.confirmMetamaskTransaction()
@@ -97,12 +93,7 @@ describe('Withdraw USDC through CCTP', () => {
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpWithdrawal()
-    cy.confirmMetamaskPermissionToSpend({
-      spendLimit: USDCAmountToSend.toString()
-    })
-    try {
-      cy.confirmMetamaskDataSignatureRequest()
-    } catch (e) {}
+    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
 
     // eslint-disable-next-line
     cy.wait(40_000)
