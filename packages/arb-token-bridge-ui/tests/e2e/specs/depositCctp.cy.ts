@@ -86,7 +86,9 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpDeposit()
-    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+    cy.confirmMetamaskPermissionToSpend({
+      spendLimit: USDCAmountToSend.toString()
+    })
 
     // eslint-disable-next-line
     cy.wait(40_000)
@@ -102,7 +104,9 @@ describe('Deposit USDC through CCTP', () => {
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpDeposit()
-    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+    cy.confirmMetamaskPermissionToSpend({
+      spendLimit: USDCAmountToSend.toString()
+    })
 
     // eslint-disable-next-line
     cy.wait(40_000)
