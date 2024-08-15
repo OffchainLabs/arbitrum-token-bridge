@@ -3,8 +3,8 @@ import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
+import { setupCypressTasks } from './tests/support/common'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
-import { fundEth, fundUsdc, setupCypressTasks } from './tests/support/common'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
@@ -46,26 +46,26 @@ export default defineConfig({
       console.log(`Funding user wallet: ${userWalletAddress}`)
       await Promise.all([
         // Sepolia
-        fundEth({
+        cy.fundEth({
           address: userWalletAddress,
           provider: sepoliaProvider,
           sourceWallet: localWallet,
           amount: utils.parseEther('0.01')
         }),
-        fundUsdc({
+        cy.fundUsdc({
           address: userWalletAddress,
           provider: sepoliaProvider,
           networkType: 'parentChain',
           amount: utils.parseUnits('0.0001', 6)
         }),
         // ArbSepolia
-        fundEth({
+        cy.fundEth({
           address: userWalletAddress,
           provider: arbSepoliaProvider,
           sourceWallet: localWallet,
           amount: utils.parseEther('0.01')
         }),
-        fundUsdc({
+        cy.fundUsdc({
           address: userWalletAddress,
           provider: arbSepoliaProvider,
           networkType: 'childChain',

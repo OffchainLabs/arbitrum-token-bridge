@@ -3,13 +3,12 @@
 */
 
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
+import { BigNumber, Signer, Wallet, ethers } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
-import { CommonAddress } from '../../src/util/CommonAddressUtils'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { fundEth } from './commands'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -181,55 +180,6 @@ export const visitAfterSomeDelay = (
 
 export const wait = (ms = 0): Promise<void> => {
   return new Promise(res => setTimeout(res, ms))
-}
-
-export async function fundEth({
-  address, // wallet address where funding is required
-  provider,
-  sourceWallet, // source wallet that will fund the `address`,
-  amount = utils.parseEther('2')
-}: {
-  address: string
-  provider: Provider
-  sourceWallet: Wallet
-  amount?: BigNumber
-}) {
-  console.log(`Funding ETH to user wallet...`)
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 2 eth
-  if (balance.lt(amount)) {
-    const tx = await sourceWallet.connect(provider).sendTransaction({
-      to: address,
-      value: amount
-    })
-    await tx.wait()
-  }
-}
-
-export async function fundUsdc({
-  address, // wallet address where funding is required
-  provider,
-  amount,
-  networkType
-}: {
-  address: string
-  provider: Provider
-  amount: BigNumber
-  networkType: NetworkType
-}) {
-  console.log('Funding USDC to user wallet...')
-  console.log('Cypress', Cypress)
-  // const usdcContractAddress =
-  //   networkType === 'parentChain'
-  //     ? CommonAddress.Sepolia.USDC
-  //     : CommonAddress.ArbitrumSepolia.USDC
-
-  // const localWallet = new Wallet(Cypress.env('LOCAL_CCTP_WALLET_PRIVATE_KEY'))
-  // const contract = new ERC20__factory().connect(localWallet.connect(provider))
-  // const token = contract.attach(usdcContractAddress)
-  // await token.deployed()
-  // const tx = await token.transfer(address, amount)
-  // await tx.wait()
 }
 
 export async function generateActivityOnChains({

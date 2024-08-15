@@ -17,6 +17,10 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
+import { Provider } from '@ethersproject/providers'
+import { BigNumber, Wallet, ethers, utils } from 'ethers'
+import { CommonAddress } from '../../src/util/CommonAddressUtils'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -321,6 +325,54 @@ export function findClaimButton(
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
+export async function fundUsdc({
+  address, // wallet address where funding is required
+  provider,
+  amount,
+  networkType
+}: {
+  address: string
+  provider: Provider
+  amount: BigNumber
+  networkType: NetworkType
+}) {
+  console.log('Funding USDC to user wallet...')
+  const usdcContractAddress =
+    networkType === 'parentChain'
+      ? CommonAddress.Sepolia.USDC
+      : CommonAddress.ArbitrumSepolia.USDC
+
+  const localWallet = new Wallet(Cypress.env('LOCAL_CCTP_WALLET_PRIVATE_KEY'))
+  const contract = new ERC20__factory().connect(localWallet.connect(provider))
+  const token = contract.attach(usdcContractAddress)
+  await token.deployed()
+  const tx = await token.transfer(address, amount)
+  await tx.wait()
+}
+
+export async function fundEth({
+  address, // wallet address where funding is required
+  provider,
+  sourceWallet, // source wallet that will fund the `address`,
+  amount = utils.parseEther('2')
+}: {
+  address: string
+  provider: Provider
+  sourceWallet: Wallet
+  amount?: BigNumber
+}) {
+  console.log(`Funding ETH to user wallet...`)
+  const balance = await provider.getBalance(address)
+  // Fund only if the balance is less than 2 eth
+  if (balance.lt(amount)) {
+    const tx = await sourceWallet.connect(provider).sendTransaction({
+      to: address,
+      value: amount
+    })
+    await tx.wait()
+  }
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -340,5 +392,7 @@ Cypress.Commands.addAll({
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
-  findTransactionDetailsCustomDestinationAddress
+  findTransactionDetailsCustomDestinationAddress,
+  fundUsdc,
+  fundEth
 })
