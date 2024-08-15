@@ -4,6 +4,8 @@
 
 import { zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Wallet, utils } from 'ethers'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -64,6 +66,40 @@ describe('Deposit USDC through CCTP', () => {
   let USDCAmountToSend = 0.0001
 
   beforeEach(() => {
+    const userWalletAddress = Cypress.env('ADDRESS')
+    const sepoliaRpcUrl = Cypress.env('SEPOLIA_INFURA_RPC_URL')
+    const arbSepoliaRpcUrl = Cypress.env('SEPOLIA_INFURA_RPC_URL')
+    const localWalletPrivateKey = Cypress.env('LOCAL_CCTP_WALLET_PRIVATE_KEY')
+    const localWallet = new Wallet(localWalletPrivateKey)
+
+    const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
+    const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
+
+    cy.task('fundEth', {
+      address: userWalletAddress,
+      provider: sepoliaProvider,
+      sourceWallet: localWallet,
+      amount: utils.parseEther('0.01')
+    })
+    cy.task('fundUsdc', {
+      address: userWalletAddress,
+      provider: sepoliaProvider,
+      networkType: 'parentChain',
+      amount: utils.parseUnits('0.0001', 6)
+    })
+    // ArbSepolia
+    cy.task('fundEth', {
+      address: userWalletAddress,
+      provider: arbSepoliaProvider,
+      sourceWallet: localWallet,
+      amount: utils.parseEther('0.01')
+    })
+    cy.task('fundUsdc', {
+      address: userWalletAddress,
+      provider: arbSepoliaProvider,
+      networkType: 'childChain',
+      amount: utils.parseUnits('0.0001', 6)
+    })
     cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
     cy.findSourceChainButton('Sepolia')
     cy.findDestinationChainButton('Arbitrum Sepolia')
