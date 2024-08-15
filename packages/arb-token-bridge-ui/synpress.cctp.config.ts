@@ -1,9 +1,9 @@
-import { Wallet, utils } from 'ethers'
+import { Wallet } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
-import { setupCypressTasks } from './tests/support/common'
+import { NetworkName } from './tests/support/common'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
@@ -82,3 +82,36 @@ export default defineConfig({
     supportFile: 'tests/support/index.ts'
   }
 })
+
+function setupCypressTasks(
+  on: Cypress.PluginEvents,
+  { requiresNetworkSetup }: { requiresNetworkSetup: boolean }
+) {
+  let currentNetworkName: NetworkName | null = null
+  let networkSetupComplete = !requiresNetworkSetup
+  let walletConnectedToDapp = false
+
+  on('task', {
+    setCurrentNetworkName: (networkName: NetworkName) => {
+      currentNetworkName = networkName
+      return null
+    },
+    getCurrentNetworkName: () => {
+      return currentNetworkName
+    },
+    setNetworkSetupComplete: () => {
+      networkSetupComplete = true
+      return null
+    },
+    getNetworkSetupComplete: () => {
+      return networkSetupComplete
+    },
+    setWalletConnectedToDapp: () => {
+      walletConnectedToDapp = true
+      return null
+    },
+    getWalletConnectedToDapp: () => {
+      return walletConnectedToDapp
+    }
+  })
+}
