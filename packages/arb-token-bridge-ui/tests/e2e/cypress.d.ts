@@ -21,8 +21,7 @@ import {
   findClaimButton,
   selectTransactionsPanelTab,
   fundUsdc,
-  fundEth,
-  generateActivityOnChains
+  fundEth
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -67,7 +66,6 @@ declare global {
       findClaimButton: typeof findClaimButton
       fundUsdc: typeof fundUsdc
       fundEth: typeof fundEth
-      generateActivityOnChains: typeof generateActivityOnChains
     }
   }
 }

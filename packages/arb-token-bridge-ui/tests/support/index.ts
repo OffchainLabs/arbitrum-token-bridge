@@ -6,6 +6,7 @@ import {
   getL2NetworkConfig,
   getL2TestnetNetworkConfig
 } from './common'
+import './commands'
 
 Cypress.Keyboard.defaults({
   // tests are flaky in CI with low keystroke delay
