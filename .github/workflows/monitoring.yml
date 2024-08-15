@@ -70,7 +70,7 @@ jobs:
         echo "slack_channel=$(echo $CONFIG | jq -r '.slackChannels.${{ matrix.monitor }}')" >> $GITHUB_OUTPUT
 
     - name: Generate chains JSON
-      run: yarn workspace arb-token-bridge-ui ${{ steps.config.outputs.generate_command }}
+      run: ls && cd ./arbitrum-token-bridge && yarn workspace arb-token-bridge-ui ${{ steps.config.outputs.generate_command }}
       env:
         BATCH_POSTER_MONITORING: ${{ matrix.monitor == 'batch-poster' }}
 
