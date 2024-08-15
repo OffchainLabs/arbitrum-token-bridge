@@ -29,7 +29,6 @@ if (!process.env.TEST_FILE) {
 
 // Wallet funded on Sepolia and ArbSepolia with ETH and USDC
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
-console.log(localWallet.address)
 // Generate a new wallet every time
 const userWallet = Wallet.createRandom()
 

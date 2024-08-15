@@ -18,7 +18,7 @@ import {
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
 import { Provider } from '@ethersproject/providers'
-import { BigNumber, Wallet, ethers, utils } from 'ethers'
+import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
@@ -373,6 +373,52 @@ export async function fundEth({
   }
 }
 
+export const wait = (ms = 0): Promise<void> => {
+  return new Promise(res => setTimeout(res, ms))
+}
+export async function generateActivityOnChains({
+  parentProvider,
+  childProvider,
+  wallet
+}: {
+  parentProvider: Provider
+  childProvider: Provider
+  wallet: Wallet
+}) {
+  const keepMining = async (miner: Signer) => {
+    while (true) {
+      await (
+        await miner.sendTransaction({
+          to: await miner.getAddress(),
+          value: 0,
+          // random data to make the tx heavy, so that batches are posted sooner (since they're posted according to calldata size)
+          data: '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000010c3c627574746f6e20636c6173733d226e61766261722d746f67676c65722220747970653d22627574746f6e2220646174612d746f67676c653d22636f6c6c617073652220646174612d7461726765743d22236e6176626172537570706f72746564436f6e74656e742220617269612d636f6e74726f6c733d226e6176626172537570706f72746564436f6e74656e742220617269612d657870616e6465643d2266616c73652220617269612d6c6162656c3d223c253d20676574746578742822546f67676c65206e617669676174696f6e222920253e223e203c7370616e20636c6173733d226e61766261722d746f67676c65722d69636f6e223e3c2f7370616e3e203c2f627574746f6e3e0000000000000000000000000000000000000000'
+        })
+      ).wait()
+
+      await wait(100)
+    }
+  }
+  // whilst waiting for status we mine on both parentChain and childChain
+  console.log('Generating activity on parentChain...')
+  const minerParent = Wallet.createRandom().connect(parentProvider)
+  await fundEth({
+    address: await minerParent.getAddress(),
+    provider: parentProvider,
+    sourceWallet: wallet
+  })
+
+  console.log('Generating activity on childChain...')
+  const minerChild = Wallet.createRandom().connect(childProvider)
+  await fundEth({
+    address: await minerChild.getAddress(),
+    provider: childProvider,
+    sourceWallet: wallet
+  })
+
+  await Promise.allSettled([keepMining(minerParent), keepMining(minerChild)])
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -394,5 +440,6 @@ Cypress.Commands.addAll({
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
   fundUsdc,
-  fundEth
+  fundEth,
+  generateActivityOnChains
 })

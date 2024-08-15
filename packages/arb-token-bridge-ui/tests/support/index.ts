@@ -1,4 +1,3 @@
-import './commands'
 import '@synthetixio/synpress/support'
 import logCollector from 'cypress-terminal-report/src/installLogsCollector'
 
