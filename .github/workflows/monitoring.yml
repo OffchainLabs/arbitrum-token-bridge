@@ -13,8 +13,12 @@ env:
   NODE_ENV: "CI"
 
 jobs:
-  setup:
+  run-monitoring:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chain: [core, orbit]
+        monitor: [assertion, batch-poster, retryable]
     steps:
     - name: Checkout repositories
       uses: actions/checkout@v4
@@ -36,32 +40,6 @@ jobs:
         node-version: latest
     - run: cd ./arbitrum-monitoring && yarn install
 
-    - name: Cache Arbitrum Monitoring setup
-      uses: actions/cache@v2
-      with:
-        path: |
-          ./arbitrum-token-bridge
-          ./arbitrum-monitoring
-          ./node_modules
-        key: ${{ runner.os }}-arbitrum-monitoring-${{ hashFiles('**/yarn.lock') }}
-
-  run-monitoring:
-    needs: setup
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chain: [core, orbit]
-        monitor: [assertion, batch-poster, retryable]
-    steps:
-    - name: Restore cached Arbitrum Monitoring setup
-      uses: actions/cache@v2
-      with:
-        path: |
-          ./arbitrum-token-bridge
-          ./arbitrum-monitoring
-          ./node_modules
-        key: ${{ runner.os }}-arbitrum-monitoring-${{ hashFiles('**/yarn.lock') }}
-
     - name: Load configuration
       id: config
       run: |
@@ -72,7 +50,7 @@ jobs:
         echo "slack_channel=$(echo $CONFIG | jq -r '.slackChannels.${{ matrix.monitor }}')" >> $GITHUB_OUTPUT
 
     - name: Generate chains JSON
-      run: ls && cd ./arbitrum-token-bridge && yarn workspace arb-token-bridge-ui ${{ steps.config.outputs.generate_command }}
+      run: yarn workspace arb-token-bridge-ui ${{ steps.config.outputs.generate_command }}
       env:
         BATCH_POSTER_MONITORING: ${{ matrix.monitor == 'batch-poster' }}
 
