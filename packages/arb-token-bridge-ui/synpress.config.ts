@@ -113,16 +113,15 @@ export default defineConfig({
         })
       ])
 
-      // Deploy and fund ERC20 to L1 and L2
-      const l1ERC20Token = await deployERC20ToL1()
-      await Promise.all([
-        fundErc20ToParentChain(l1ERC20Token),
-        fundErc20ToChildChain(l1ERC20Token)
-      ])
+      // Deploy and fund ERC20 to Parent and Child chains
+      const l1ERC20Token = await deployERC20ToParentChain()
+      await fundErc20ToParentChain(l1ERC20Token)
+      await fundErc20ToChildChain(l1ERC20Token)
       await approveErc20(l1ERC20Token) // we currently don't cover token approval flows in E2E's
 
       // Wrap ETH to test WETH transactions and approve it's usage
-      await Promise.all([fundWeth('parentChain'), fundWeth('childChain')])
+      await fundWeth('parentChain')
+      await fundWeth('childChain')
       await approveWeth()
 
       // Generate activity on chains so that assertions get posted and claims can be made
@@ -217,7 +216,7 @@ if (!process.env.PRIVATE_KEY_USER) {
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
-async function deployERC20ToL1() {
+async function deployERC20ToParentChain() {
   console.log('Deploying ERC20...')
   const signer = localWallet.connect(parentProvider)
   const factory = new ContractFactory(contractAbi, contractByteCode, signer)
@@ -236,7 +235,7 @@ async function deployERC20ToL1() {
   return l1TokenContract
 }
 
-async function deployERC20ToL2(erc20L1Address: string) {
+async function deployERC20ToChildChain(erc20L1Address: string) {
   const bridger = await Erc20Bridger.fromProvider(childProvider)
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
@@ -287,7 +286,7 @@ async function approveErc20(l1ERC20Token: Contract) {
 }
 
 async function fundErc20ToParentChain(l1ERC20Token: Contract) {
-  console.log('Funding ERC20 to L1...')
+  console.log('Funding ERC20 on Parent Chain...')
   // Send deployed ERC-20 to the test userWallet
   const transferTx = await l1ERC20Token
     .connect(localWallet.connect(parentProvider))
@@ -296,9 +295,9 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
 }
 
 async function fundErc20ToChildChain(l1ERC20Token: Contract) {
-  console.log('Funding ERC20 to L2...')
+  console.log('Funding ERC20 on ChildChain...')
   // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
-  await deployERC20ToL2(l1ERC20Token.address)
+  await deployERC20ToChildChain(l1ERC20Token.address)
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
   const ethSigner = localWallet.connect(parentProvider)
 
