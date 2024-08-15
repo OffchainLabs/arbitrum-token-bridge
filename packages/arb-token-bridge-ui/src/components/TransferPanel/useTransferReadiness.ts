@@ -333,7 +333,14 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             mainInput: getInsufficientFundsErrorMessage({
               asset: selectedToken.symbol,
               chain: networks.sourceChain.name
-            })
+            }),
+            extraEthInput:
+              sendsExtraEth && notEnoughEthForExtraEthTransfer
+                ? getInsufficientFundsErrorMessage({
+                    asset: ether.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                : undefined
           }
         })
       }
