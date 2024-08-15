@@ -1,0 +1,19 @@
+name: 6-Hour Monitoring
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"  # Run every 6 hours
+
+jobs:
+  run-monitoring:
+    strategy:
+      matrix:
+        chain: [core, orbit]
+        monitor: [assertion, batch-poster]
+    uses: ./.github/workflows/monitoring.yml
+    with:
+      chain: ${{ matrix.chain }}
+      monitor: ${{ matrix.monitor }}
+    secrets: inherit
