@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
 import {
   NetworkButton,
@@ -33,6 +34,7 @@ import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
+import { isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
 
 export function SourceNetworkBox({
@@ -144,6 +146,27 @@ export function SourceNetworkBox({
             errorMessage={errorMessage}
             value={isMaxAmount ? '' : amount}
           />
+
+          {isExperimentalFeatureEnabled('batch') &&
+            // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
+            !isTeleport({
+              sourceChainId: networks.sourceChain.id,
+              destinationChainId: networks.destinationChain.id
+            }) &&
+            selectedToken && (
+              <TransferPanelMainInput
+                // eslint-disable-next-line
+                maxButtonOnClick={() => {}}
+                errorMessage={undefined}
+                value={''}
+                // eslint-disable-next-line
+                onChange={() => {}}
+                tokenButtonOptions={{
+                  symbol: nativeCurrency.symbol,
+                  disabled: true
+                }}
+              />
+            )}
 
           {showUsdcSpecificInfo && (
             <p className="mt-1 text-xs font-light text-white">
