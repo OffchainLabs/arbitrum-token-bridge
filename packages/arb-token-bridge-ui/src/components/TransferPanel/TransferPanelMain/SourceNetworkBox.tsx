@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
 import {
   NetworkButton,
@@ -29,19 +30,21 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
-import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../../hooks/useArbQueryParams'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
+import { isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
 
 export function SourceNetworkBox({
-  amount,
   errorMessage,
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  amount: string
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
@@ -55,7 +58,8 @@ export function SourceNetworkBox({
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const setAmount = useSetInputAmount()
+  const [{ amount, amount2 }] = useArbQueryParams()
+  const { setAmount, setAmount2 } = useSetInputAmount()
   const { maxAmount } = useMaxAmount({
     customFeeTokenBalances
   })
@@ -143,7 +147,28 @@ export function SourceNetworkBox({
             maxButtonOnClick={maxButtonOnClick}
             errorMessage={errorMessage}
             value={isMaxAmount ? '' : amount}
+            onChange={e => setAmount(e.target.value)}
           />
+
+          {isExperimentalFeatureEnabled('batch') &&
+            // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
+            !isTeleport({
+              sourceChainId: networks.sourceChain.id,
+              destinationChainId: networks.destinationChain.id
+            }) &&
+            selectedToken && (
+              <TransferPanelMainInput
+                // eslint-disable-next-line
+                maxButtonOnClick={() => {}}
+                errorMessage={undefined}
+                value={amount2}
+                onChange={e => setAmount2(e.target.value)}
+                tokenButtonOptions={{
+                  symbol: nativeCurrency.symbol,
+                  disabled: true
+                }}
+              />
+            )}
 
           {showUsdcSpecificInfo && (
             <p className="mt-1 text-xs font-light text-white">
