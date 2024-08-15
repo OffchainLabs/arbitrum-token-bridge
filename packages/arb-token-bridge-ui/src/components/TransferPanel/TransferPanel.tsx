@@ -152,7 +152,7 @@ export function TransferPanel() {
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount }] = useArbQueryParams()
 
-  const setAmount = useSetInputAmount()
+  const { setAmount, setAmount2 } = useSetInputAmount()
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -200,6 +200,7 @@ export function TransferPanel() {
   function clearAmountInput() {
     // clear amount input on transfer panel
     setAmount('')
+    setAmount2('')
   }
 
   useImportTokenModal({
@@ -1028,7 +1029,7 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-        <TransferPanelMain amount={amount} errorMessage={errorMessage} />
+        <TransferPanelMain errorMessage={errorMessage} />
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}
