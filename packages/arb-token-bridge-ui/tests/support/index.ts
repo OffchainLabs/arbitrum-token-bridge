@@ -14,15 +14,7 @@ Cypress.Keyboard.defaults({
 })
 
 logCollector({
-  collectTypes: [
-    'cy:command',
-    'cy:log',
-    'cons:debug',
-    'cons:error',
-    'cons:info',
-    'cons:log',
-    'cons:warn'
-  ]
+  collectTypes: ['cy:log', 'cons:debug', 'cons:error', 'cons:info', 'cons:warn']
 })
 
 before(() => {

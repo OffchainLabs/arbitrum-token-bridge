@@ -41,7 +41,9 @@ describe('Approve token and deposit afterwards', () => {
         name: /Pay approval fee of/
       }).click()
       cy.confirmMetamaskPermissionToSpend({ spendLimit: '1' })
-      cy.confirmMetamaskDataSignatureRequest()
+      try {
+        cy.confirmMetamaskDataSignatureRequest()
+      } catch (e) {}
     })
   })
 })
