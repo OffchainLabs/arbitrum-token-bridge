@@ -89,6 +89,7 @@ describe('Deposit USDC through CCTP', () => {
     cy.confirmMetamaskPermissionToSpend({
       spendLimit: USDCAmountToSend.toString()
     })
+    cy.confirmMetamaskDataSignatureRequest()
 
     // eslint-disable-next-line
     cy.wait(40_000)
@@ -107,6 +108,7 @@ describe('Deposit USDC through CCTP', () => {
     cy.confirmMetamaskPermissionToSpend({
       spendLimit: USDCAmountToSend.toString()
     })
+    cy.confirmMetamaskDataSignatureRequest()
 
     // eslint-disable-next-line
     cy.wait(40_000)
