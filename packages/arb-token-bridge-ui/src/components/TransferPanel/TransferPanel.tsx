@@ -68,6 +68,8 @@ import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 
+const signerUndefinedError = 'Signer is undefined'
+
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
     useTokenFromSearchParams()
@@ -83,8 +85,7 @@ export function TransferPanel() {
     app: {
       connectionState,
       selectedToken,
-      arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token },
+      arbTokenBridge: { token },
       warningTokens
     }
   } = useAppState()
@@ -108,20 +109,15 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
-  const { data: parentSigner } = useSigner({
-    chainId: parentChain.id
-  })
-  const { data: childSigner } = useSigner({
-    chainId: childChain.id
+  const { data: sourceChainSigner } = useSigner({
+    chainId: networks.sourceChain.id
   })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-
-  const latestEth = useLatest(eth)
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -181,6 +177,19 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
+
+  function isWarningToken(): boolean {
+    const warningToken =
+      selectedToken && warningTokens[selectedToken.address.toLowerCase()]
+    if (warningToken) {
+      const description = getWarningTokenDescription(warningToken.type)
+      warningToast(
+        `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
+      )
+      return true
+    }
+    return false
+  }
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -322,40 +331,18 @@ export function TransferPanel() {
     if (!selectedToken) {
       return
     }
-    if (!walletAddress) {
-      return
+    if (!sourceChainSigner) {
+      throw Error(signerUndefinedError)
     }
-    const signer = isDepositMode ? parentSigner : childSigner
-    if (!signer) {
-      throw 'Signer is undefined'
+    const signer = sourceChainSigner
+
+    if (!(await isTransferAllowed(true))) {
+      return
     }
 
     setTransferring(true)
+
     const childChainName = getNetworkName(childChain.id)
-    const isConnectedToTheWrongChain =
-      chainId !== latestNetworks.current.sourceChain.id
-
-    if (isConnectedToTheWrongChain) {
-      trackEvent('Switch Network and Transfer', {
-        type: isDepositMode ? 'Deposit' : 'Withdrawal',
-        tokenSymbol: 'USDC',
-        assetType: 'ERC-20',
-        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: childChainName,
-        amount: Number(amount),
-        version: 2
-      })
-
-      const switchTargetChainId = latestNetworks.current.sourceChain.id
-      try {
-        await switchNetworkAsync?.(switchTargetChainId)
-      } catch (error) {
-        captureSentryErrorWithExtraData({
-          error,
-          originFunction: 'transferCctp switchNetworkAsync'
-        })
-      }
-    }
 
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
@@ -376,16 +363,6 @@ export function TransferPanel() {
       } else {
         const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
         if (!withdrawalConfirmation) return
-      }
-
-      const destinationAddressError = await getDestinationAddressError({
-        destinationAddress,
-        isSmartContractWallet,
-        isTeleportMode
-      })
-      if (destinationAddressError) {
-        console.error(destinationAddressError)
-        return
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -524,54 +501,7 @@ export function TransferPanel() {
     }
   }
 
-  const transfer = async () => {
-    const signerUndefinedError = 'Signer is undefined'
-
-    try {
-      setTransferring(true)
-      const isConnectedToTheWrongChain =
-        chainId !== latestNetworks.current.sourceChain.id
-
-      const switchTargetChainId = latestNetworks.current.sourceChain.id
-
-      if (isConnectedToTheWrongChain) {
-        trackEvent('Switch Network and Transfer', {
-          type: isTeleportMode
-            ? 'Teleport'
-            : isDepositMode
-            ? 'Deposit'
-            : 'Withdrawal',
-          tokenSymbol: selectedToken?.symbol,
-          assetType: selectedToken ? 'ERC-20' : 'ETH',
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: getNetworkName(switchTargetChainId),
-          amount: Number(amount),
-          version: 2
-        })
-
-        await switchNetworkAsync?.(switchTargetChainId)
-      }
-    } catch (error) {
-      captureSentryErrorWithExtraData({
-        error,
-        originFunction: 'transfer switchNetworkAsync'
-      })
-    } finally {
-      setTransferring(false)
-    }
-
-    if (!isConnected) {
-      return
-    }
-    if (!walletAddress) {
-      return
-    }
-
-    const hasBothSigners = parentSigner && childSigner
-    if (isEOA && !hasBothSigners) {
-      throw signerUndefinedError
-    }
-
+  async function hasDestinationAddressError() {
     const destinationAddressError = await getDestinationAddressError({
       destinationAddress,
       isSmartContractWallet,
@@ -579,8 +509,75 @@ export function TransferPanel() {
     })
     if (destinationAddressError) {
       console.error(destinationAddressError)
+      return true
+    }
+    return false
+  }
+
+  async function isTransferAllowed(isCctp: boolean) {
+    if (!isConnected) {
+      return false
+    }
+    if (!walletAddress) {
+      return false
+    }
+    if (isWarningToken()) {
+      return false
+    }
+    const childChainName = getNetworkName(childChain.id)
+    const isConnectedToTheWrongChain =
+      chainId !== latestNetworks.current.sourceChain.id
+
+    if (isConnectedToTheWrongChain) {
+      trackEvent('Switch Network and Transfer', {
+        type: isTeleportMode
+          ? 'Teleport'
+          : isDepositMode
+          ? 'Deposit'
+          : 'Withdrawal',
+        tokenSymbol: isCctp ? 'USDC' : selectedToken?.symbol,
+        assetType: selectedToken ? 'ERC-20' : 'ETH',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        network: childChainName,
+        amount: Number(amount),
+        version: 2
+      })
+      const switchTargetChainId = latestNetworks.current.sourceChain.id
+
+      try {
+        await switchNetworkAsync?.(switchTargetChainId)
+
+        return true
+      } catch (error) {
+        captureSentryErrorWithExtraData({
+          error,
+          originFunction: `transfer${isCctp ? 'Cctp' : ''} switchNetworkAsync`
+        })
+      }
+      return false
+    }
+
+    if (await hasDestinationAddressError()) {
+      return false
+    }
+
+    return true
+  }
+
+  const transfer = async () => {
+    if (!sourceChainSigner) {
+      throw Error(signerUndefinedError)
+    }
+
+    const signer = sourceChainSigner
+
+    if (!(await isTransferAllowed(false))) {
       return
     }
+
+    setTransferring(true)
+
+    const childChainName = getNetworkName(childChain.id)
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && !selectedToken) {
@@ -596,28 +593,9 @@ export function TransferPanel() {
       return
     }
 
-    const childChainName = getNetworkName(childChain.id)
-
     setTransferring(true)
 
     try {
-      if (
-        (isDepositMode && !parentSigner) ||
-        (!isDepositMode && !childSigner)
-      ) {
-        throw signerUndefinedError
-      }
-
-      const warningToken =
-        selectedToken && warningTokens[selectedToken.address.toLowerCase()]
-      if (warningToken) {
-        const description = getWarningTokenDescription(warningToken.type)
-        warningToast(
-          `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
-        )
-        return
-      }
-
       const sourceChainId = latestNetworks.current.sourceChain.id
       const destinationChainId = latestNetworks.current.destinationChain.id
 
@@ -628,8 +606,6 @@ export function TransferPanel() {
       const destinationChainErc20Address = isDepositMode
         ? selectedToken?.l2Address
         : selectedToken?.address
-
-      const signer = isDepositMode ? parentSigner : childSigner
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
@@ -644,8 +620,6 @@ export function TransferPanel() {
           sourceChainErc20Address,
           destinationChainId
         })
-
-      if (!signer) throw Error('Signer not connected!')
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
@@ -666,17 +640,6 @@ export function TransferPanel() {
         console.error(
           "ETH transfers aren't enabled for smart contract wallets."
         )
-        return
-      }
-
-      // if destination address is added, validate it
-      const destinationAddressError = await getDestinationAddressError({
-        destinationAddress,
-        isSmartContractWallet,
-        isTeleportMode
-      })
-      if (destinationAddressError) {
-        console.error(destinationAddressError)
         return
       }
 
@@ -707,17 +670,6 @@ export function TransferPanel() {
 
         // is selected token deployed on parent-chain?
         if (!tokenAddress) Error('Token not deployed on source chain.')
-
-        // warning token handling
-        const warningToken =
-          selectedToken && warningTokens[selectedToken.address.toLowerCase()]
-        if (warningToken) {
-          const description = getWarningTokenDescription(warningToken.type)
-          warningToast(
-            `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
-          )
-          return
-        }
 
         // token suspension handling
         const isTokenSuspended = !(await isGatewayRegistered({
