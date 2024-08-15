@@ -151,7 +151,7 @@ export function SourceNetworkBox({
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonOnClick={maxButtonOnClick}
-            errorMessage={errorMessages?.mainInput}
+            errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
             onChange={e => setAmount(e.target.value)}
           />
@@ -166,7 +166,7 @@ export function SourceNetworkBox({
             selectedToken && (
               <TransferPanelMainInput
                 maxButtonOnClick={amount2MaxButtonOnClick}
-                errorMessage={errorMessages?.extraEthInput}
+                errorMessage={errorMessages?.inputAmount2}
                 value={amount2}
                 onChange={e => setAmount2(e.target.value)}
                 tokenButtonOptions={{

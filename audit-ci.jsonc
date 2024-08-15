@@ -1,17 +1,5 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": [
-    // elliptic
-    // waiting for it to release a fix but low severity so we can ignore it
-    // https://github.com/advisories/GHSA-49q7-c7j4-3p7m
-    "GHSA-49q7-c7j4-3p7m",
-    // https://github.com/advisories/GHSA-977x-g7h5-7qgw
-    "GHSA-977x-g7h5-7qgw",
-    // https://github.com/advisories/GHSA-f7q4-pwc6-w24p
-    "GHSA-f7q4-pwc6-w24p",
-    // axios
-    // https://github.com/advisories/GHSA-8hc4-vh64-cxmj
-    "GHSA-8hc4-vh64-cxmj"
-  ]
+  "allowlist": []
 }
