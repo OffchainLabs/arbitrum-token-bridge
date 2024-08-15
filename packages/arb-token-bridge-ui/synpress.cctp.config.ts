@@ -54,19 +54,21 @@ export default defineConfig({
           sourceWallet: localWallet,
           amount: utils.parseEther('0.01')
         }),
-        fundUsdc({
-          address: userWalletAddress,
-          provider: sepoliaProvider,
-          networkType: 'parentChain',
-          sourceWallet: localWallet,
-          amount: utils.parseUnits('0.0001', 6)
-        }),
         // ArbSepolia
         fundEth({
           address: userWalletAddress,
           provider: arbSepoliaProvider,
           sourceWallet: localWallet,
           amount: utils.parseEther('0.01')
+        })
+      ])
+      await Promise.all([
+        fundUsdc({
+          address: userWalletAddress,
+          provider: sepoliaProvider,
+          networkType: 'parentChain',
+          sourceWallet: localWallet,
+          amount: utils.parseUnits('0.0001', 6)
         }),
         fundUsdc({
           address: userWalletAddress,
