@@ -40,6 +40,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
+          ./arbitrum-token-bridge
           ./arbitrum-monitoring
           ./node_modules
         key: ${{ runner.os }}-arbitrum-monitoring-${{ hashFiles('**/yarn.lock') }}
@@ -56,6 +57,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
+          ./arbitrum-token-bridge
           ./arbitrum-monitoring
           ./node_modules
         key: ${{ runner.os }}-arbitrum-monitoring-${{ hashFiles('**/yarn.lock') }}
