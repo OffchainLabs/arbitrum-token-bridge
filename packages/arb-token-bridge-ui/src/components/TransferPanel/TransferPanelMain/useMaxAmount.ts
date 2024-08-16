@@ -31,23 +31,7 @@ export function useMaxAmount({
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
 
-  const maxAmount = useMemo(() => {
-    if (selectedToken) {
-      const tokenBalance = isDepositMode
-        ? selectedTokenBalances.parentBalance
-        : selectedTokenBalances.childBalance
-
-      if (!tokenBalance) {
-        return undefined
-      }
-
-      // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
-      return utils.formatUnits(
-        tokenBalance,
-        selectedToken?.decimals ?? defaultErc20Decimals
-      )
-    }
-
+  const nativeCurrencyMaxAmount = useMemo(() => {
     const customFeeTokenParentBalance = customFeeTokenBalances.parentBalance
     // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
     if (
@@ -61,8 +45,7 @@ export function useMaxAmount({
       )
     }
 
-    // We have already handled token deposits and deposits of the custom fee token
-    // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
+    // ETH deposits and ETH/custom fee token withdrawals
     const nativeCurrencyBalance = isDepositMode
       ? ethParentBalance
       : ethChildBalance
@@ -97,50 +80,52 @@ export function useMaxAmount({
 
     return nativeCurrencyBalanceFormatted
   }, [
-    nativeCurrency,
-    ethParentBalance,
-    ethChildBalance,
-    isDepositMode,
-    selectedToken,
-    selectedTokenBalances,
-    estimatedParentChainGasFees,
+    customFeeTokenBalances.parentBalance,
     estimatedChildChainGasFees,
-    customFeeTokenBalances
+    estimatedParentChainGasFees,
+    ethChildBalance,
+    ethParentBalance,
+    isDepositMode,
+    nativeCurrency.decimals,
+    nativeCurrency.isCustom
+  ])
+
+  const maxAmount = useMemo(() => {
+    if (selectedToken) {
+      const tokenBalance = isDepositMode
+        ? selectedTokenBalances.parentBalance
+        : selectedTokenBalances.childBalance
+
+      if (!tokenBalance) {
+        return undefined
+      }
+
+      // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
+      return utils.formatUnits(
+        tokenBalance,
+        selectedToken?.decimals ?? defaultErc20Decimals
+      )
+    }
+
+    return nativeCurrencyMaxAmount
+  }, [
+    selectedToken,
+    isDepositMode,
+    nativeCurrencyMaxAmount,
+    selectedTokenBalances.parentBalance,
+    selectedTokenBalances.childBalance
   ])
 
   const maxAmount2 = useMemo(() => {
-    if (!isDepositMode || !ethParentBalance) {
+    if (!isDepositMode) {
+      return undefined
+    }
+    if (nativeCurrency.isCustom) {
       return undefined
     }
 
-    if (
-      typeof estimatedParentChainGasFees === 'undefined' ||
-      typeof estimatedChildChainGasFees === 'undefined'
-    ) {
-      return undefined
-    }
-
-    const ethBalanceFormatted = utils.formatEther(ethParentBalance)
-
-    const estimatedTotalGasFees =
-      estimatedParentChainGasFees + estimatedChildChainGasFees
-
-    const maxAmount2 =
-      parseFloat(utils.formatEther(ethParentBalance)) - estimatedTotalGasFees
-
-    // make sure it's always a positive number
-    // if it's negative, set it to user's balance to show insufficient for gas error
-    if (maxAmount2 > 0) {
-      return String(maxAmount2)
-    }
-
-    return ethBalanceFormatted
-  }, [
-    estimatedChildChainGasFees,
-    estimatedParentChainGasFees,
-    ethParentBalance,
-    isDepositMode
-  ])
+    return nativeCurrencyMaxAmount
+  }, [isDepositMode, nativeCurrency.isCustom, nativeCurrencyMaxAmount])
 
   return {
     maxAmount,
