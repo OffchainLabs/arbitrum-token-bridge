@@ -280,7 +280,7 @@ async function approveErc20(l1ERC20Token: Contract) {
   const approvalTx = await erc20Bridger.approveToken({
     erc20ParentAddress: l1ERC20Token.address,
     parentSigner: userWallet.connect(parentProvider),
-    amount: constants.One
+    amount: parseEther('1') // only approve 1 token for deposits, later we will need MAX amount approval during approve tests
   })
   await approvalTx.wait()
 }
