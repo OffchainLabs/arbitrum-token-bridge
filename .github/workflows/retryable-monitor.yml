@@ -3,7 +3,7 @@ name: Retryable Monitor
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"  # Run every 24 hours at midnight UTC
+    - cron: "3 8 * * *" # Run once a day at 08:03am GMT
 
 jobs:
   run-retryable-monitoring:
