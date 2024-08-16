@@ -76,6 +76,13 @@ export function useMaxAmount({
       nativeCurrency.decimals
     )
 
+    if (
+      typeof estimatedParentChainGasFees === 'undefined' ||
+      typeof estimatedChildChainGasFees === 'undefined'
+    ) {
+      return
+    }
+
     const estimatedTotalGasFees =
       (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
 
