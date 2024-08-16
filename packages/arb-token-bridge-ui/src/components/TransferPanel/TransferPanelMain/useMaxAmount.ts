@@ -84,7 +84,7 @@ export function useMaxAmount({
     }
 
     const estimatedTotalGasFees =
-      (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
+      estimatedParentChainGasFees + estimatedChildChainGasFees
 
     const maxAmount =
       parseFloat(nativeCurrencyBalanceFormatted) - estimatedTotalGasFees * 1.4
