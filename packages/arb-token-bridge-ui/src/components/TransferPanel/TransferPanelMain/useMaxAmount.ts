@@ -120,10 +120,6 @@ export function useMaxAmount({
       return undefined
     }
 
-    if (!ethParentBalance) {
-      return undefined
-    }
-
     const ethBalanceFormatted = utils.formatEther(ethParentBalance)
 
     const estimatedTotalGasFees =
