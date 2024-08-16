@@ -1,4 +1,4 @@
-name: 6-Hour Monitoring
+name: Assertion Monitoring
 
 on:
   push:
@@ -11,9 +11,8 @@ jobs:
     strategy:
       matrix:
         chain: [core, orbit]
-        monitor: [assertion, batch-poster]
     uses: ./.github/workflows/monitoring.yml
     with:
       chain: ${{ matrix.chain }}
-      monitor: ${{ matrix.monitor }}
+      monitor: assertion
     secrets: inherit

@@ -39,7 +39,6 @@ jobs:
       with:
         repository: OffchainLabs/arbitrum-monitoring
         path: arbitrum-monitoring
-        ref: main
 
     - name: Setup Node and install dependencies
       uses: actions/setup-node@v4
@@ -60,7 +59,7 @@ jobs:
         BATCH_POSTER_MONITORING: ${{ inputs.monitor == 'batch-poster' }}
 
     - name: Copy chains JSON to Arbitrum Monitoring
-      run: cd ./arbitrum-monitoring/packages && ls  && cp ./packages/arb-token-bridge-ui/public/${{ steps.config.outputs.config_file }} ./arbitrum-monitoring/packages/${{ inputs.monitor }}-monitor/config.json
+      run: cp ./packages/arb-token-bridge-ui/public/${{ steps.config.outputs.config_file }} ./arbitrum-monitoring/packages/${{ inputs.monitor }}-monitor/config.json
 
     - name: Run monitoring command
       run: cd ./arbitrum-monitoring && yarn ${{ inputs.monitor }}-monitor --enableAlerting
