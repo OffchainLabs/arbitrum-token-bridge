@@ -48,7 +48,6 @@ import {
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransferReadiness } from './useTransferReadiness'
-import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -123,7 +122,7 @@ export function TransferPanel() {
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount }] = useArbQueryParams()
 
-  const setAmount = useSetInputAmount()
+  const { setAmount, setAmount2 } = useSetInputAmount()
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -151,12 +150,7 @@ export function TransferPanel() {
 
   const [isCctp, setIsCctp] = useState(false)
 
-  const gasSummary = useGasSummary()
-
-  const { transferReady, errorMessage } = useTransferReadiness({
-    amount,
-    gasSummary
-  })
+  const { transferReady } = useTransferReadiness()
 
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
@@ -171,6 +165,7 @@ export function TransferPanel() {
   function clearAmountInput() {
     // clear amount input on transfer panel
     setAmount('')
+    setAmount2('')
   }
 
   useImportTokenModal({
@@ -873,7 +868,7 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-        <TransferPanelMain errorMessage={errorMessage} />
+        <TransferPanelMain />
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}

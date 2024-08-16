@@ -30,21 +30,20 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
-import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
-import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../../hooks/useArbQueryParams'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
 import { isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
+import { useTransferReadiness } from '../useTransferReadiness'
 
 export function SourceNetworkBox({
-  amount,
-  errorMessage,
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  amount: string
-  errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
@@ -57,12 +56,15 @@ export function SourceNetworkBox({
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const setAmount = useSetInputAmount()
+  const [{ amount, amount2 }] = useArbQueryParams()
+  const { setAmount, setAmount2 } = useSetInputAmount()
   const { maxAmount } = useMaxAmount({
     customFeeTokenBalances
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
+
+  const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -143,8 +145,9 @@ export function SourceNetworkBox({
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonOnClick={maxButtonOnClick}
-            errorMessage={errorMessage}
+            errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
+            onChange={e => setAmount(e.target.value)}
           />
 
           {isExperimentalFeatureEnabled('batch') &&
@@ -153,14 +156,14 @@ export function SourceNetworkBox({
               sourceChainId: networks.sourceChain.id,
               destinationChainId: networks.destinationChain.id
             }) &&
+            isDepositMode &&
             selectedToken && (
               <TransferPanelMainInput
                 // eslint-disable-next-line
                 maxButtonOnClick={() => {}}
-                errorMessage={undefined}
-                value={''}
-                // eslint-disable-next-line
-                onChange={() => {}}
+                errorMessage={errorMessages?.inputAmount2}
+                value={amount2}
+                onChange={e => setAmount2(e.target.value)}
                 tokenButtonOptions={{
                   symbol: nativeCurrency.symbol,
                   disabled: true
