@@ -58,7 +58,7 @@ export function SourceNetworkBox({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
-  const { maxAmount } = useMaxAmount({
+  const { maxAmount, maxAmount2 } = useMaxAmount({
     customFeeTokenBalances
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
@@ -67,6 +67,7 @@ export function SourceNetworkBox({
   const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+  const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
 
   // covers MAX string from query params
   useEffect(() => {
@@ -75,6 +76,12 @@ export function SourceNetworkBox({
     }
   }, [amount, maxAmount, isMaxAmount, setAmount])
 
+  useEffect(() => {
+    if (isMaxAmount2 && typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
+    }
+  }, [amount2, maxAmount2, isMaxAmount2, setAmount2])
+
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
@@ -82,10 +89,10 @@ export function SourceNetworkBox({
   }, [maxAmount, setAmount])
 
   const amount2MaxButtonOnClick = useCallback(() => {
-    if (typeof amount2 !== 'undefined') {
-      setAmount2(amount2)
+    if (typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
     }
-  }, [amount2, setAmount2])
+  }, [maxAmount2, setAmount2])
 
   return (
     <>
