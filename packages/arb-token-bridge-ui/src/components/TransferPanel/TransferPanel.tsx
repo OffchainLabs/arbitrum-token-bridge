@@ -30,7 +30,6 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN } from '../../constants'
 import {
   AdvancedSettings,
-  getDestinationAddressError,
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
@@ -66,6 +65,7 @@ import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from 
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -141,6 +141,8 @@ export function TransferPanel() {
   ] = useDialog()
 
   const { destinationAddress } = useDestinationAddressStore()
+
+  const { destinationAddressError } = useDestinationAddressError()
 
   const {
     updateEthParentBalance,
@@ -331,7 +333,7 @@ export function TransferPanel() {
     }
     const signer = sourceChainSigner
 
-    if (!(await isTransferAllowed(true))) {
+    if (!(await isTransferAllowed())) {
       return
     }
 
@@ -496,20 +498,7 @@ export function TransferPanel() {
     }
   }
 
-  async function hasDestinationAddressError() {
-    const destinationAddressError = await getDestinationAddressError({
-      destinationAddress,
-      isSmartContractWallet,
-      isTeleportMode
-    })
-    if (destinationAddressError) {
-      console.error(destinationAddressError)
-      return true
-    }
-    return false
-  }
-
-  async function isTransferAllowed(isCctp: boolean) {
+  async function isTransferAllowed() {
     if (!isConnected) {
       return false
     }
@@ -552,7 +541,7 @@ export function TransferPanel() {
       return false
     }
 
-    if (await hasDestinationAddressError()) {
+    if (!!destinationAddressError) {
       return false
     }
 
@@ -566,7 +555,7 @@ export function TransferPanel() {
 
     const signer = sourceChainSigner
 
-    if (!(await isTransferAllowed(false))) {
+    if (!(await isTransferAllowed())) {
       return
     }
 

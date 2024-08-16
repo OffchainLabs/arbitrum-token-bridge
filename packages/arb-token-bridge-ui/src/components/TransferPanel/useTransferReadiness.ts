@@ -31,6 +31,7 @@ import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
 import { useBalances } from '../../hooks/useBalances'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -148,7 +149,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     parentWalletAddress: walletAddress,
     childWalletAddress: walletAddress
   })
-  const { error: destinationAddressError } = useDestinationAddressStore()
+  const { destinationAddressError } = useDestinationAddressError()
 
   const ethL1BalanceFloat = ethParentBalance
     ? parseFloat(utils.formatEther(ethParentBalance))
