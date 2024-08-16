@@ -72,8 +72,6 @@ export function SourceNetworkBox({
   useEffect(() => {
     if (isMaxAmount && typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
-    } else {
-      setAmount(amount)
     }
   }, [amount, maxAmount, isMaxAmount, setAmount])
 
