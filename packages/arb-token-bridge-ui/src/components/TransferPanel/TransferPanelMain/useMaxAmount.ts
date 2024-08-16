@@ -89,11 +89,13 @@ export function useMaxAmount({
     const maxAmount =
       parseFloat(nativeCurrencyBalanceFormatted) - estimatedTotalGasFees * 1.4
 
-    if (maxAmount <= 0) {
-      return undefined
+    // make sure it's always a positive number
+    // if it's negative, set it to user's balance to show insufficient for gas error
+    if (maxAmount > 0) {
+      return String(maxAmount)
     }
 
-    return String(maxAmount)
+    return nativeCurrencyBalanceFormatted
   }, [
     nativeCurrency,
     ethParentBalance,
