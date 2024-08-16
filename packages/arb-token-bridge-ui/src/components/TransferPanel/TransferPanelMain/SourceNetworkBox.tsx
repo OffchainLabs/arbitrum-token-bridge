@@ -58,7 +58,7 @@ export function SourceNetworkBox({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
-  const { maxAmount } = useMaxAmount({
+  const { maxAmount, maxAmount2 } = useMaxAmount({
     customFeeTokenBalances
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
@@ -67,19 +67,32 @@ export function SourceNetworkBox({
   const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+  const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
 
-  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  // covers MAX string from query params
   useEffect(() => {
     if (isMaxAmount && typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
     }
   }, [amount, maxAmount, isMaxAmount, setAmount])
 
+  useEffect(() => {
+    if (isMaxAmount2 && typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
+    }
+  }, [amount2, maxAmount2, isMaxAmount2, setAmount2])
+
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
     }
   }, [maxAmount, setAmount])
+
+  const amount2MaxButtonOnClick = useCallback(() => {
+    if (typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
+    }
+  }, [maxAmount2, setAmount2])
 
   return (
     <>
@@ -157,8 +170,7 @@ export function SourceNetworkBox({
             isDepositMode &&
             selectedToken && (
               <TransferPanelMainInput
-                // eslint-disable-next-line
-                maxButtonOnClick={() => {}}
+                maxButtonOnClick={amount2MaxButtonOnClick}
                 errorMessage={errorMessages?.inputAmount2}
                 value={amount2}
                 onChange={e => setAmount2(e.target.value)}
