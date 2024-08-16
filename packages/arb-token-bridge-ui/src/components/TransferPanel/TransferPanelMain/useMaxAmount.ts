@@ -80,7 +80,7 @@ export function useMaxAmount({
       typeof estimatedParentChainGasFees === 'undefined' ||
       typeof estimatedChildChainGasFees === 'undefined'
     ) {
-      return
+      return undefined
     }
 
     const estimatedTotalGasFees =
