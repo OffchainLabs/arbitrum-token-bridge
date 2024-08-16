@@ -1,18 +1,17 @@
-name: Assertion Monitoring
+name: Retryable Monitor
 
 on:
-  push:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"  # Run every 6 hours
+    - cron: "0 0 * * *"  # Run every 24 hours at midnight UTC
 
 jobs:
-  run-monitoring:
+  run-retryable-monitoring:
     strategy:
       matrix:
         chain: [core, orbit]
     uses: ./.github/workflows/monitoring.yml
     with:
       chain: ${{ matrix.chain }}
-      monitor: assertion
+      monitor: retryable
     secrets: inherit
