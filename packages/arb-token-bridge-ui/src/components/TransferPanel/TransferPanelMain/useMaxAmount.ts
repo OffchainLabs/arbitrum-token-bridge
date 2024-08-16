@@ -38,7 +38,7 @@ export function useMaxAmount({
         : selectedTokenBalances.childBalance
 
       if (!tokenBalance) {
-        return
+        return undefined
       }
 
       // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
@@ -68,7 +68,7 @@ export function useMaxAmount({
       : ethChildBalance
 
     if (!nativeCurrencyBalance) {
-      return
+      return undefined
     }
 
     const nativeCurrencyBalanceFormatted = utils.formatUnits(
@@ -76,8 +76,15 @@ export function useMaxAmount({
       nativeCurrency.decimals
     )
 
+    if (
+      typeof estimatedParentChainGasFees === 'undefined' ||
+      typeof estimatedChildChainGasFees === 'undefined'
+    ) {
+      return undefined
+    }
+
     const estimatedTotalGasFees =
-      (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
+      estimatedParentChainGasFees + estimatedChildChainGasFees
 
     const maxAmount =
       parseFloat(nativeCurrencyBalanceFormatted) - estimatedTotalGasFees * 1.4
