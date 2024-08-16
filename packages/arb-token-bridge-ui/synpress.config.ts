@@ -28,7 +28,7 @@ import {
   defaultL3Network,
   registerLocalNetwork
 } from './src/util/networks'
-import { formatEther, parseEther } from 'ethers/lib/utils.js'
+import { formatUnits, parseUnits } from 'ethers/lib/utils.js'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -141,14 +141,14 @@ export default defineConfig({
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.ERC20_TOKEN_ADDRESS_PARENTCHAIN = l1ERC20Token.address
+      config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
 
-      config.env.ERC20_TOKEN_ADDRESS_CHILDCHAIN = await getL2ERC20Address({
+      config.env.ERC20_TOKEN_ADDRESS_CHILD_CHAIN = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
         l1Provider: parentProvider,
         l2Provider: childProvider
@@ -223,13 +223,14 @@ async function deployERC20ToParentChain() {
   const l1TokenContract = await factory.deploy(
     'Test Arb Token',
     'TESTARB',
-    parseEther('100').toString()
+    parseUnits('100', 18).toString()
   )
   console.log('Deployed ERC20:', {
     symbol: await l1TokenContract.symbol(),
     address: l1TokenContract.address,
-    supply: formatEther(
-      await l1TokenContract.balanceOf(await signer.getAddress())
+    supply: formatUnits(
+      await l1TokenContract.balanceOf(localWallet.address),
+      18
     )
   })
   return l1TokenContract
@@ -280,7 +281,7 @@ async function approveErc20(l1ERC20Token: Contract) {
   const approvalTx = await erc20Bridger.approveToken({
     erc20ParentAddress: l1ERC20Token.address,
     parentSigner: userWallet.connect(parentProvider),
-    amount: parseEther('1') // only approve 1 token for deposits, later we will need MAX amount approval during approve tests
+    amount: parseUnits('1', 18) // only approve 1 token for deposits, later we will need MAX amount approval during approve tests
   })
   await approvalTx.wait()
 }
@@ -290,32 +291,32 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
   // Send deployed ERC-20 to the test userWallet
   const transferTx = await l1ERC20Token
     .connect(localWallet.connect(parentProvider))
-    .transfer(await userWallet.getAddress(), parseEther('5'))
+    .transfer(userWallet.address, parseUnits('5', 18))
   await transferTx.wait()
 }
 
 async function fundErc20ToChildChain(l1ERC20Token: Contract) {
-  console.log('Funding ERC20 on ChildChain...')
+  console.log('Funding ERC20 on Child Chain...')
   // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
   await deployERC20ToChildChain(l1ERC20Token.address)
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
-  const ethSigner = localWallet.connect(parentProvider)
+  const parentSigner = localWallet.connect(parentProvider)
 
   // approve the ERC20 token for spending
   const approvalTx = await erc20Bridger.approveToken({
     erc20ParentAddress: l1ERC20Token.address,
-    parentSigner: ethSigner,
+    parentSigner,
     amount: constants.MaxUint256
   })
   await approvalTx.wait()
 
   // deposit the ERC20 token to L2 (fund the L2 account)
   const depositTx = await erc20Bridger.deposit({
-    parentSigner: ethSigner,
-    childProvider: childProvider,
+    parentSigner,
+    childProvider,
     erc20ParentAddress: l1ERC20Token.address,
-    amount: parseEther('5'),
-    destinationAddress: await userWallet.getAddress()
+    amount: parseUnits('5', 18),
+    destinationAddress: userWallet.address
   })
   const depositRec = await depositTx.wait()
 
@@ -331,7 +332,7 @@ async function getCustomDestinationAddress() {
 async function generateTestTxForRedeemRetryable() {
   console.log('Adding a test transaction for redeeming retryable...')
 
-  const walletAddress = await userWallet.getAddress()
+  const walletAddress = userWallet.address
   const erc20Token = {
     symbol: 'WETH',
     decimals: 18,

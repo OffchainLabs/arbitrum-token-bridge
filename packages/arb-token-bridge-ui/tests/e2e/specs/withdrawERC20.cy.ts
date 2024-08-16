@@ -13,13 +13,11 @@ import {
   ERC20TokenSymbol
 } from '../../support/common'
 
-const { _ } = Cypress
-
 const withdrawalTestCases = {
   'Standard ERC20': {
     symbol: ERC20TokenSymbol,
-    l1Address: Cypress.env('ERC20_TOKEN_ADDRESS_PARENTCHAIN'),
-    l2Address: Cypress.env('ERC20_TOKEN_ADDRESS_CHILDCHAIN')
+    l1Address: Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN'),
+    l2Address: Cypress.env('ERC20_TOKEN_ADDRESS_CHILD_CHAIN')
   },
   WETH: {
     symbol: 'WETH',
@@ -34,7 +32,8 @@ describe('Withdraw ERC20 Token', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
-  _.each(withdrawalTestCases, (testCase, tokenType) => {
+  Object.keys(withdrawalTestCases).forEach(tokenType => {
+    const testCase = withdrawalTestCases[tokenType]
     // Happy Path
     context(`User is on L2 and imports ${tokenType}`, () => {
       let l1ERC20bal: string, l2ERC20bal: string

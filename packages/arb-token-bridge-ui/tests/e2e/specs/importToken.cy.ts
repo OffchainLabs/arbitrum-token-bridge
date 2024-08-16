@@ -8,10 +8,10 @@ import {
 } from '../../support/common'
 
 const ERC20TokenAddressL1: string = Cypress.env(
-  'ERC20_TOKEN_ADDRESS_PARENTCHAIN'
+  'ERC20_TOKEN_ADDRESS_PARENT_CHAIN'
 )
 const ERC20TokenAddressL2: string = Cypress.env(
-  'ERC20_TOKEN_ADDRESS_CHILDCHAIN'
+  'ERC20_TOKEN_ADDRESS_CHILD_CHAIN'
 )
 
 describe('Import token', () => {

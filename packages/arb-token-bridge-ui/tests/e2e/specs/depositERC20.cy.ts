@@ -12,15 +12,13 @@ import {
   ERC20TokenSymbol
 } from '../../support/common'
 
-const { _ } = Cypress
-
 const moreThanZeroBalance = /0(\.\d+)/
 
 const depositTestCases = {
   'Standard ERC20': {
     symbol: ERC20TokenSymbol,
-    l1Address: Cypress.env('ERC20_TOKEN_ADDRESS_PARENTCHAIN'),
-    l2Address: Cypress.env('ERC20_TOKEN_ADDRESS_CHILDCHAIN')
+    l1Address: Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN'),
+    l2Address: Cypress.env('ERC20_TOKEN_ADDRESS_CHILD_CHAIN')
   },
   WETH: {
     symbol: 'WETH',
@@ -38,7 +36,8 @@ describe('Deposit Token', () => {
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
 
   // Happy Path
-  _.each(depositTestCases, (testCase, tokenType) => {
+  Object.keys(depositTestCases).forEach(tokenType => {
+    const testCase = depositTestCases[tokenType]
     context(`User has some ${tokenType} and is on L1`, () => {
       let l1ERC20bal: string
 
