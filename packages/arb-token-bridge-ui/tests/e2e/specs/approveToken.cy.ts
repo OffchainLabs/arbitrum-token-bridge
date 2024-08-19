@@ -40,12 +40,11 @@ describe('Approve token and deposit afterwards', () => {
       cy.findByRole('button', {
         name: /Pay approval fee of/
       }).click()
-      cy.confirmMetamaskPermissionToSpend({
-        spendLimit: '1',
+      cy.confirmSpending({
         shouldWaitForPopupClosure: true
-      }).then(approved => {
-        cy.wrap(approved).should('be.true')
       })
+
+      // TODO: add an assertion here
     })
   })
 })

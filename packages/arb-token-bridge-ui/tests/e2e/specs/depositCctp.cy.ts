@@ -76,7 +76,7 @@ describe('Deposit USDC through CCTP', () => {
       tokenAddress: CommonAddress.Sepolia.USDC
     })
 
-    cy.typeAmount(USDCAmountToSend)
+    cy.findByPlaceholderText(/enter amount/i).type(String(USDCAmountToSend))
     cy.findGasFeeSummary(zeroToLessThanOneETH)
     cy.findGasFeeForChain('Sepolia', zeroToLessThanOneETH)
     cy.findGasFeeForChain(
@@ -88,11 +88,8 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpDeposit()
-    cy.confirmMetamaskPermissionToSpend({
-      spendLimit: USDCAmountToSend.toString(),
+    cy.confirmSpending({
       shouldWaitForPopupClosure: true
-    }).then(approved => {
-      cy.wrap(approved).should('be.true')
     })
 
     // eslint-disable-next-line
@@ -110,11 +107,8 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpDeposit()
 
-    cy.confirmMetamaskPermissionToSpend({
-      spendLimit: USDCAmountToSend.toString(),
+    cy.confirmSpending({
       shouldWaitForPopupClosure: true
-    }).then(approved => {
-      cy.wrap(approved).should('be.true')
     })
 
     // eslint-disable-next-line

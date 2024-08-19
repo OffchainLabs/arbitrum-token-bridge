@@ -19,7 +19,8 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
-  selectTransactionsPanelTab
+  selectTransactionsPanelTab,
+  confirmSpending
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -62,6 +63,7 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      confirmSpending: typeof confirmSpending
     }
   }
 }

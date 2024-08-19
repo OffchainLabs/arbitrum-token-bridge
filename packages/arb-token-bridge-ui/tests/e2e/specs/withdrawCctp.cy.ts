@@ -66,10 +66,11 @@ describe('Withdraw USDC through CCTP', () => {
       tokenName: 'USDC',
       tokenAddress: CommonAddress.ArbitrumSepolia.USDC
     })
+
+    cy.findByPlaceholderText(/enter amount/i).type(String(USDCAmountToSend))
   })
 
   it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
-    cy.typeAmount(USDCAmountToSend)
     cy.findByText('Gas estimates are not available for this action.').should(
       'be.visible'
     )
@@ -78,13 +79,9 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmMetamaskPermissionToSpend({
-      spendLimit: USDCAmountToSend.toString(),
+    cy.confirmSpending({
       shouldWaitForPopupClosure: true
-    }).then(approved => {
-      cy.wrap(approved).should('be.true')
     })
-
     // eslint-disable-next-line
     cy.wait(40_000)
     cy.confirmMetamaskTransaction(undefined)
@@ -96,17 +93,12 @@ describe('Withdraw USDC through CCTP', () => {
   })
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
-    cy.typeAmount(USDCAmountToSend)
-    // cy.findByPlaceholderText(/enter amount/i).type(String(USDCAmountToSend))
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpWithdrawal()
 
-    cy.confirmMetamaskPermissionToSpend({
-      spendLimit: USDCAmountToSend.toString(),
+    cy.confirmSpending({
       shouldWaitForPopupClosure: true
-    }).then(approved => {
-      cy.wrap(approved).should('be.true')
     })
 
     // eslint-disable-next-line

@@ -70,14 +70,14 @@ export default defineConfig({
           provider: sepoliaProvider,
           networkType: 'parentChain',
           sourceWallet: localWallet,
-          amount: utils.parseUnits('0.0001', 6)
+          amount: utils.parseUnits('0.0002', 6)
         }),
         fundUsdc({
           address: userWalletAddress,
           provider: arbSepoliaProvider,
           networkType: 'childChain',
           sourceWallet: localWallet,
-          amount: utils.parseUnits('0.0001', 6)
+          amount: utils.parseUnits('0.0002', 6)
         })
       ])
 

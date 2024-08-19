@@ -321,6 +321,17 @@ export function findClaimButton(
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
+/**
+ * Currently, Synpress confirmMetamaskPermissionToSpend is clicking only once
+ * We need to call it twice to confirm it
+ */
+export function confirmSpending(
+  params: Parameters<typeof cy.confirmMetamaskPermissionToSpend>[0]
+) {
+  cy.confirmMetamaskPermissionToSpend(params)
+  cy.confirmMetamaskPermissionToSpend(params)
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -340,5 +351,6 @@ Cypress.Commands.addAll({
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
-  findTransactionDetailsCustomDestinationAddress
+  findTransactionDetailsCustomDestinationAddress,
+  confirmSpending
 })
