@@ -113,6 +113,7 @@ export const updateAdditionalDepositData = async ({
 
   let { value2 } = depositTx
 
+  // value2 not found in local storage, we fetch it instead
   if (!value2) {
     try {
       // Get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
