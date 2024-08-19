@@ -273,7 +273,12 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+  public async transfer({
+    amount,
+    signer,
+    destinationAddress,
+    overrides
+  }: TransferProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -292,7 +297,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
         // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
         // the 30% gas limit increase should cover the difference
         gasLimit: { percentIncrease: BigNumber.from(30) }
-      }
+      },
+      ...overrides
     })
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
