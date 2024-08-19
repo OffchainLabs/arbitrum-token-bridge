@@ -40,13 +40,12 @@ describe('Approve token and deposit afterwards', () => {
       cy.findByRole('button', {
         name: /Pay approval fee of/
       }).click()
-      // cy.confirmMetamaskPermissionToSpend({ spendLimit: '1' })
-      cy.wait(2_000)
-      cy.switchToMetamaskNotification()
-      cy.findByTestId('page-container-footer-next').should('be.visible').click()
-      cy.wait(1_000)
-      cy.findByTestId('page-container-footer-next').should('be.visible').click()
-      cy.switchToCypressWindow()
+      cy.confirmMetamaskPermissionToSpend({
+        spendLimit: '1',
+        shouldWaitForPopupClosure: true
+      }).then(approved => {
+        cy.wrap(approved).should('be.true')
+      })
     })
   })
 })

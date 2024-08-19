@@ -78,13 +78,12 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-
-    cy.wait(2_000)
-    cy.switchToMetamaskWindow()
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.wait(1_000)
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.switchToCypressWindow()
+    cy.confirmMetamaskPermissionToSpend({
+      spendLimit: USDCAmountToSend.toString(),
+      shouldWaitForPopupClosure: true
+    }).then(approved => {
+      cy.wrap(approved).should('be.true')
+    })
 
     // eslint-disable-next-line
     cy.wait(40_000)
@@ -98,16 +97,17 @@ describe('Withdraw USDC through CCTP', () => {
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
     cy.typeAmount(USDCAmountToSend)
+    // cy.findByPlaceholderText(/enter amount/i).type(String(USDCAmountToSend))
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpWithdrawal()
 
-    cy.wait(2_000)
-    cy.switchToMetamaskWindow()
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.wait(1_000)
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.switchToCypressWindow()
+    cy.confirmMetamaskPermissionToSpend({
+      spendLimit: USDCAmountToSend.toString(),
+      shouldWaitForPopupClosure: true
+    }).then(approved => {
+      cy.wrap(approved).should('be.true')
+    })
 
     // eslint-disable-next-line
     cy.wait(40_000)

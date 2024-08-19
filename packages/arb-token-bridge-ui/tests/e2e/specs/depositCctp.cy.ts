@@ -88,17 +88,12 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpDeposit()
-
-    // cy.confirmMetamaskPermissionToSpend({
-    //   spendLimit: USDCAmountToSend.toString(),
-    //   shouldWaitForPopupClosure: true
-    // })
-    cy.wait(2_000)
-    cy.switchToMetamaskNotification()
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.wait(1_000)
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.switchToCypressWindow()
+    cy.confirmMetamaskPermissionToSpend({
+      spendLimit: USDCAmountToSend.toString(),
+      shouldWaitForPopupClosure: true
+    }).then(approved => {
+      cy.wrap(approved).should('be.true')
+    })
 
     // eslint-disable-next-line
     cy.wait(40_000)
@@ -114,12 +109,13 @@ describe('Deposit USDC through CCTP', () => {
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpDeposit()
-    cy.wait(2_000)
-    cy.switchToMetamaskWindow()
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.wait(1_000)
-    cy.findByTestId('page-container-footer-next').should('be.visible').click()
-    cy.switchToCypressWindow()
+
+    cy.confirmMetamaskPermissionToSpend({
+      spendLimit: USDCAmountToSend.toString(),
+      shouldWaitForPopupClosure: true
+    }).then(approved => {
+      cy.wrap(approved).should('be.true')
+    })
 
     // eslint-disable-next-line
     cy.wait(40_000)
