@@ -117,7 +117,7 @@ export const updateAdditionalDepositData = async ({
   if (!value2) {
     try {
       // Get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
-      value2 = await getMaxSubmissionCost({
+      const maxSubmissionCost = await getMaxSubmissionCost({
         l2Provider,
         l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
       })
@@ -130,7 +130,9 @@ export const updateAdditionalDepositData = async ({
         throw 'failed to calculate gas cost, value2 will be undefined'
       }
 
-      value2 = String(Number(value2) - Number(utils.formatEther(gasCost)))
+      value2 = String(
+        Number(maxSubmissionCost) - Number(utils.formatEther(gasCost))
+      )
 
       if (Number(value2) < 0.0001) {
         // ETH amount too little to distinguish between gas used, won't show
