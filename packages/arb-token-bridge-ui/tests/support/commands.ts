@@ -17,10 +17,6 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
-import { Provider } from '@ethersproject/providers'
-import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
-import { CommonAddress } from '../../src/util/CommonAddressUtils'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
