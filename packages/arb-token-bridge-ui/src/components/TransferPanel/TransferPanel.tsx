@@ -39,7 +39,10 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
+import {
+  AssetType,
+  DepositGasEstimates
+} from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -53,7 +56,10 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
+import {
+  BridgeTransfer,
+  TransferOverrides
+} from '@/token-bridge-sdk/BridgeTransferStarter'
 import { addDepositToCache } from '../TransactionHistory/helpers'
 import {
   convertBridgeSdkToMergedTransaction,
@@ -66,6 +72,7 @@ import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -105,6 +112,7 @@ export function TransferPanel() {
     isTeleportMode
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
+  const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -120,7 +128,7 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount }] = useArbQueryParams()
+  const [{ amount, amount2 }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -753,11 +761,34 @@ export function TransferPanel() {
         )
       }
 
+      const overrides: TransferOverrides = {}
+
+      const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+      if (isBatchTransfer) {
+        // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
+        const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
+          amount: amountBigNumber,
+          signer
+        })) as DepositGasEstimates
+
+        if (!gasEstimates.estimatedChildChainSubmissionCost) {
+          errorToast('Failed to estimate deposit maxSubmissionCost')
+          throw 'Failed to estimate deposit maxSubmissionCost'
+        }
+
+        overrides.maxSubmissionCost = utils
+          .parseEther(amount2)
+          .add(gasEstimates.estimatedChildChainSubmissionCost)
+        overrides.excessFeeRefundAddress = destinationAddress
+      }
+
       // finally, call the transfer function
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
-        destinationAddress
+        destinationAddress,
+        overrides: Object.keys(overrides).length > 0 ? overrides : undefined
       })
 
       // transaction submitted callback
