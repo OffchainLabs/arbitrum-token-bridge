@@ -930,6 +930,8 @@ export function TransferPanel() {
 
     const { sourceChainTransaction } = bridgeTransfer
 
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
     const timestampCreated = Math.floor(Date.now() / 1000).toString()
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
@@ -941,10 +943,7 @@ export function TransferPanel() {
       destinationAddress,
       nativeCurrency,
       amount: amountBigNumber,
-      amount2:
-        isBatchTransferSupported && Number(amount2) > 0
-          ? utils.parseEther(amount2)
-          : undefined,
+      amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
       timestampCreated
     })
 
@@ -963,10 +962,7 @@ export function TransferPanel() {
           destinationAddress,
           nativeCurrency,
           amount: amountBigNumber,
-          amount2:
-            isBatchTransferSupported && Number(amount2) > 0
-              ? utils.parseEther(amount2)
-              : undefined,
+          amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
           timestampCreated
         })
       )

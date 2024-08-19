@@ -8,6 +8,7 @@ import {
   EthL1L3DepositStatus,
   Erc20L1L3DepositStatus
 } from '@arbitrum/sdk'
+import { utils } from 'ethers'
 
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -110,14 +111,107 @@ export const updateAdditionalDepositData = async ({
     })
   }
 
-  // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
-  return updateTokenDepositStatusData({
+  let { value2 } = depositTx
+
+  if (!value2) {
+    try {
+      // Get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
+      value2 = await getMaxSubmissionCost({
+        l2Provider,
+        l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
+      })
+
+      const gasCost = await getGasCostOnChildChain({
+        l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
+      })
+
+      if (!gasCost) {
+        throw 'failed to calculate gas cost, value2 will be undefined'
+      }
+
+      value2 = String(Number(value2) - Number(utils.formatEther(gasCost)))
+
+      if (Number(value2) < 0.0001) {
+        // ETH amount too little to distinguish between gas used, won't show
+        value2 = undefined
+      }
+    } catch {
+      value2 = undefined
+    }
+  }
+
+  const tokenDeposit = await updateTokenDepositStatusData({
     depositTx,
     l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader,
     timestampCreated,
     l1Provider,
     l2Provider
   })
+
+  // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
+  return {
+    ...tokenDeposit,
+    value2
+  }
+}
+
+const getMaxSubmissionCost = async ({
+  l2Provider,
+  l1ToL2Msg
+}: {
+  l2Provider: Provider
+  l1ToL2Msg: ParentToChildMessageReader
+}) => {
+  const txData = (
+    await l2Provider.getTransaction(l1ToL2Msg.retryableCreationId)
+  ).data
+
+  // Generate the function selector for submitRetryable
+  const functionSignature =
+    'submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)'
+  const functionSelector = utils.id(functionSignature).slice(0, 10)
+
+  // Check if this transaction is a submitRetryable call
+  if (txData.slice(0, 10) !== functionSelector) {
+    return undefined
+  }
+
+  const abiCoder = new utils.AbiCoder()
+  const decodedData = abiCoder.decode(
+    [
+      'bytes32',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint64',
+      'uint256',
+      'address',
+      'address',
+      'address',
+      'bytes'
+    ],
+    utils.hexDataSlice(txData, 4)
+  )
+
+  // maxSubmissionFee is the 7th parameter (index 6) in the submitRetryable function
+  return utils.formatEther(decodedData[6])
+}
+
+const getGasCostOnChildChain = async ({
+  l1ToL2Msg
+}: {
+  l1ToL2Msg: ParentToChildMessageReader
+}) => {
+  const childReceipt = await l1ToL2Msg.getRetryableCreationReceipt()
+
+  if (!childReceipt) {
+    return undefined
+  }
+
+  const { gasUsed, effectiveGasPrice } = childReceipt
+
+  return utils.formatEther(gasUsed.mul(effectiveGasPrice))
 }
 
 const updateETHDepositStatusData = async ({
