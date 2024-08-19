@@ -66,7 +66,10 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
+import {
+  BridgeTransfer,
+  TransferOverrides
+} from '@/token-bridge-sdk/BridgeTransferStarter'
 import { addDepositToCache } from '../TransactionHistory/helpers'
 import {
   convertBridgeSdkToMergedTransaction,
@@ -861,24 +864,26 @@ export function TransferPanel() {
         )
       }
 
-      // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
-      let maxSubmissionCostOverride: BigNumber | undefined
-      const isValidBatchTransfer =
-        isBatchTransferSupported && Number(amount2) > 0
+      const overrides: TransferOverrides = {}
 
-      if (isValidBatchTransfer) {
+      const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+      if (isBatchTransfer) {
+        // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
           signer
         })) as DepositGasEstimates
 
         if (!gasEstimates.estimatedChildChainSubmissionCost) {
+          errorToast('Failed to estimate deposit maxSubmissionCost')
           throw 'Failed to estimate deposit maxSubmissionCost'
         }
 
-        maxSubmissionCostOverride = utils
+        overrides.maxSubmissionCost = utils
           .parseEther(amount2)
           .add(gasEstimates.estimatedChildChainSubmissionCost)
+        overrides.excessFeeRefundAddress = destinationAddress
       }
 
       // finally, call the transfer function
@@ -886,14 +891,7 @@ export function TransferPanel() {
         amount: amountBigNumber,
         signer,
         destinationAddress,
-        overrides: {
-          maxSubmissionCost: isValidBatchTransfer
-            ? maxSubmissionCostOverride
-            : undefined,
-          excessFeeRefundAddress: isValidBatchTransfer
-            ? destinationAddress
-            : undefined
-        }
+        overrides: Object.keys(overrides).length > 0 ? overrides : undefined
       })
 
       // transaction submitted callback
