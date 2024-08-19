@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
@@ -175,18 +175,26 @@ export function TransferPanel() {
     connectionState
   })
 
-  function isWarningToken(): boolean {
+  const isWarningToken = useMemo(() => {
+    if (!selectedToken) {
+      return false
+    }
+    return !!warningTokens[selectedToken.address.toLowerCase()]
+  }, [selectedToken, warningTokens])
+
+  const showWarningTokenToast = useCallback(() => {
     const warningToken =
       selectedToken && warningTokens[selectedToken.address.toLowerCase()]
-    if (warningToken) {
-      const description = getWarningTokenDescription(warningToken.type)
-      warningToast(
-        `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
-      )
-      return true
+
+    if (!warningToken) {
+      return
     }
-    return false
-  }
+
+    const description = getWarningTokenDescription(warningToken.type)
+    warningToast(
+      `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
+    )
+  }, [selectedToken, warningTokens])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -333,9 +341,16 @@ export function TransferPanel() {
     }
     const signer = sourceChainSigner
 
-    if (!(await isTransferAllowed())) {
+    if (!isTransferAllowed) {
       return
     }
+
+    if (isWarningToken) {
+      showWarningTokenToast()
+      return
+    }
+
+    await connectedToWrongChainHandler()
 
     setTransferring(true)
 
@@ -498,55 +513,62 @@ export function TransferPanel() {
     }
   }
 
-  async function isTransferAllowed() {
+  const isTransferAllowed = useMemo(() => {
     if (!isConnected) {
       return false
     }
     if (!walletAddress) {
       return false
     }
-    if (isWarningToken()) {
+    if (!!destinationAddressError) {
       return false
     }
+    return true
+  }, [isConnected, walletAddress, destinationAddressError])
+
+  const connectedToWrongChainHandler = useCallback(async () => {
     const childChainName = getNetworkName(childChain.id)
     const isConnectedToTheWrongChain =
       chainId !== latestNetworks.current.sourceChain.id
 
-    if (isConnectedToTheWrongChain) {
-      trackEvent('Switch Network and Transfer', {
-        type: isTeleportMode
-          ? 'Teleport'
-          : isDepositMode
-          ? 'Deposit'
-          : 'Withdrawal',
-        tokenSymbol: isCctp ? 'USDC' : selectedToken?.symbol,
-        assetType: selectedToken ? 'ERC-20' : 'ETH',
-        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: childChainName,
-        amount: Number(amount),
-        version: 2
+    if (!isConnectedToTheWrongChain) {
+      return
+    }
+    trackEvent('Switch Network and Transfer', {
+      type: isTeleportMode
+        ? 'Teleport'
+        : isDepositMode
+        ? 'Deposit'
+        : 'Withdrawal',
+      tokenSymbol: isCctp ? 'USDC' : selectedToken?.symbol,
+      assetType: selectedToken ? 'ERC-20' : 'ETH',
+      accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+      network: childChainName,
+      amount: Number(amount),
+      version: 2
+    })
+    const switchTargetChainId = latestNetworks.current.sourceChain.id
+
+    try {
+      await switchNetworkAsync?.(switchTargetChainId)
+    } catch (error) {
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: `transfer${isCctp ? 'Cctp' : ''} switchNetworkAsync`
       })
-      const switchTargetChainId = latestNetworks.current.sourceChain.id
-
-      try {
-        await switchNetworkAsync?.(switchTargetChainId)
-
-        return true
-      } catch (error) {
-        captureSentryErrorWithExtraData({
-          error,
-          originFunction: `transfer${isCctp ? 'Cctp' : ''} switchNetworkAsync`
-        })
-      }
-      return false
     }
-
-    if (!!destinationAddressError) {
-      return false
-    }
-
-    return true
-  }
+  }, [
+    amount,
+    chainId,
+    childChain.id,
+    isCctp,
+    isDepositMode,
+    isSmartContractWallet,
+    isTeleportMode,
+    latestNetworks,
+    selectedToken,
+    switchNetworkAsync
+  ])
 
   const transfer = async () => {
     if (!sourceChainSigner) {
@@ -555,9 +577,16 @@ export function TransferPanel() {
 
     const signer = sourceChainSigner
 
-    if (!(await isTransferAllowed())) {
+    if (!isTransferAllowed) {
       return
     }
+
+    if (isWarningToken) {
+      showWarningTokenToast()
+      return
+    }
+
+    await connectedToWrongChainHandler()
 
     setTransferring(true)
 
