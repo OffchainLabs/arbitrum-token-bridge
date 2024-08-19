@@ -1,6 +1,7 @@
 name: Retryable Monitor
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: "3 8 * * *" # Run once a day at 08:03am GMT
