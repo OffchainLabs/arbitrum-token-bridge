@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -941,6 +941,10 @@ export function TransferPanel() {
       destinationAddress,
       nativeCurrency,
       amount: amountBigNumber,
+      amount2:
+        isBatchTransferSupported && Number(amount2) > 0
+          ? utils.parseEther(amount2)
+          : undefined,
       timestampCreated
     })
 
@@ -959,6 +963,10 @@ export function TransferPanel() {
           destinationAddress,
           nativeCurrency,
           amount: amountBigNumber,
+          amount2:
+            isBatchTransferSupported && Number(amount2) > 0
+              ? utils.parseEther(amount2)
+              : undefined,
           timestampCreated
         })
       )
