@@ -94,7 +94,7 @@ describe('Deposit USDC through CCTP', () => {
     //   shouldWaitForPopupClosure: true
     // })
     cy.wait(2_000)
-    cy.switchToMetamaskWindow()
+    cy.switchToMetamaskNotification()
     cy.findByTestId('page-container-footer-next').should('be.visible').click()
     cy.wait(1_000)
     cy.findByTestId('page-container-footer-next').should('be.visible').click()

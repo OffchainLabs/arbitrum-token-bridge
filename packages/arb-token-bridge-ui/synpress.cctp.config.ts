@@ -42,6 +42,7 @@ export default defineConfig({
       const userWalletAddress = await userWallet.getAddress()
       config.env.ADDRESS = userWalletAddress
       config.env.LOCAL_CCTP_WALLET_PRIVATE_KEY = localWallet.privateKey
+      config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.SEPOLIA_INFURA_RPC_URL = SEPOLIA_INFURA_RPC_URL
       config.env.ARB_SEPOLIA_INFURA_RPC_URL = ARB_SEPOLIA_INFURA_RPC_URL
 
