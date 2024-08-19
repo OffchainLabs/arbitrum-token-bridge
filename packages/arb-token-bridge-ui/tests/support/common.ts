@@ -89,7 +89,7 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const ERC20TokenName = 'TESTARB'
+export const ERC20TokenName = 'Test Arbitrum Token'
 export const ERC20TokenSymbol = 'TESTARB'
 export const ERC20TokenDecimals = 18
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
