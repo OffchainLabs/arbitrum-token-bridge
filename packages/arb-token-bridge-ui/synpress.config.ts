@@ -20,7 +20,10 @@ import {
   checkForAssertions,
   generateActivityOnChains,
   NetworkType,
-  fundEth
+  fundEth,
+  ERC20TokenSymbol,
+  ERC20TokenDecimals,
+  ERC20TokenName
 } from './tests/support/common'
 
 import {
@@ -221,16 +224,16 @@ async function deployERC20ToParentChain() {
   const signer = localWallet.connect(parentProvider)
   const factory = new ContractFactory(contractAbi, contractByteCode, signer)
   const l1TokenContract = await factory.deploy(
-    'Test Arb Token',
-    'TESTARB',
-    parseUnits('100', 18).toString()
+    ERC20TokenName,
+    ERC20TokenSymbol,
+    parseUnits('100', ERC20TokenDecimals).toString()
   )
   console.log('Deployed ERC20:', {
     symbol: await l1TokenContract.symbol(),
     address: l1TokenContract.address,
     supply: formatUnits(
       await l1TokenContract.balanceOf(localWallet.address),
-      18
+      ERC20TokenDecimals
     )
   })
   return l1TokenContract
@@ -281,7 +284,7 @@ async function approveErc20(l1ERC20Token: Contract) {
   const approvalTx = await erc20Bridger.approveToken({
     erc20ParentAddress: l1ERC20Token.address,
     parentSigner: userWallet.connect(parentProvider),
-    amount: parseUnits('1', 18) // only approve 1 token for deposits, later we will need MAX amount approval during approve tests
+    amount: parseUnits('1', ERC20TokenDecimals) // only approve 1 token for deposits, later we will need MAX amount approval during approve tests
   })
   await approvalTx.wait()
 }
@@ -291,7 +294,7 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
   // Send deployed ERC-20 to the test userWallet
   const transferTx = await l1ERC20Token
     .connect(localWallet.connect(parentProvider))
-    .transfer(userWallet.address, parseUnits('5', 18))
+    .transfer(userWallet.address, parseUnits('5', ERC20TokenDecimals))
   await transferTx.wait()
 }
 
@@ -315,7 +318,7 @@ async function fundErc20ToChildChain(l1ERC20Token: Contract) {
     parentSigner,
     childProvider,
     erc20ParentAddress: l1ERC20Token.address,
-    amount: parseUnits('5', 18),
+    amount: parseUnits('5', ERC20TokenDecimals),
     destinationAddress: userWallet.address
   })
   const depositRec = await depositTx.wait()
