@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
-import { constants, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -49,7 +49,10 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
+import {
+  AssetType,
+  DepositGasEstimates
+} from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -858,17 +861,38 @@ export function TransferPanel() {
         )
       }
 
+      // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
+      let maxSubmissionCostOverride: BigNumber | undefined
+      const isValidBatchTransfer =
+        isBatchTransferSupported && Number(amount2) > 0
+
+      if (isValidBatchTransfer) {
+        const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
+          amount: amountBigNumber,
+          signer
+        })) as DepositGasEstimates
+
+        if (!gasEstimates.estimatedChildChainSubmissionCost) {
+          throw 'Failed to estimate deposit maxSubmissionCost'
+        }
+
+        maxSubmissionCostOverride = utils
+          .parseEther(amount2)
+          .add(gasEstimates.estimatedChildChainSubmissionCost)
+      }
+
       // finally, call the transfer function
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
         destinationAddress,
         overrides: {
-          maxSubmissionCost:
-            isBatchTransferSupported && Number(amount2) > 0
-              ? utils.parseEther(amount2)
-              : undefined,
-          excessFeeRefundAddress: destinationAddress
+          maxSubmissionCost: isValidBatchTransfer
+            ? maxSubmissionCostOverride
+            : undefined,
+          excessFeeRefundAddress: isValidBatchTransfer
+            ? destinationAddress
+            : undefined
         }
       })
 
