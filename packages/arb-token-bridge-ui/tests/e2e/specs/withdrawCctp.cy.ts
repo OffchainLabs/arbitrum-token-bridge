@@ -42,7 +42,9 @@ export const confirmAndApproveCctpWithdrawal = () => {
     .should('be.enabled')
     .click()
 
-  cy.findByText(/I understand that I have to/).click()
+  cy.findByText(/I understand that I have to/)
+    .should('be.visible')
+    .click()
   cy.findByRole('button', {
     name: /Pay approval fee of/
   }).click()
@@ -76,11 +78,17 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+
+    cy.wait(2_000)
+    cy.switchToMetamaskWindow()
+    cy.findByTestId('page-container-footer-next').should('be.visible').click()
+    cy.wait(1_000)
+    cy.findByTestId('page-container-footer-next').should('be.visible').click()
+    cy.switchToCypressWindow()
 
     // eslint-disable-next-line
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction()
+    cy.confirmMetamaskTransaction(undefined)
     cy.findTransactionInTransactionHistory({
       duration: 'a minute',
       amount: USDCAmountToSend,
@@ -93,11 +101,17 @@ describe('Withdraw USDC through CCTP', () => {
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpWithdrawal()
-    cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+
+    cy.wait(2_000)
+    cy.switchToMetamaskWindow()
+    cy.findByTestId('page-container-footer-next').should('be.visible').click()
+    cy.wait(1_000)
+    cy.findByTestId('page-container-footer-next').should('be.visible').click()
+    cy.switchToCypressWindow()
 
     // eslint-disable-next-line
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction()
+    cy.confirmMetamaskTransaction(undefined)
     const txData = {
       amount: USDCAmountToSend,
       symbol: 'USDC'
