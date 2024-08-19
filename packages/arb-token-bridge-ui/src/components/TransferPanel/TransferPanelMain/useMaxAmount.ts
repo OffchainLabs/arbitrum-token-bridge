@@ -31,23 +31,7 @@ export function useMaxAmount({
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
 
-  const maxAmount = useMemo(() => {
-    if (selectedToken) {
-      const tokenBalance = isDepositMode
-        ? selectedTokenBalances.parentBalance
-        : selectedTokenBalances.childBalance
-
-      if (!tokenBalance) {
-        return
-      }
-
-      // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
-      return utils.formatUnits(
-        tokenBalance,
-        selectedToken?.decimals ?? defaultErc20Decimals
-      )
-    }
-
+  const nativeCurrencyMaxAmount = useMemo(() => {
     const customFeeTokenParentBalance = customFeeTokenBalances.parentBalance
     // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
     if (
@@ -61,14 +45,13 @@ export function useMaxAmount({
       )
     }
 
-    // We have already handled token deposits and deposits of the custom fee token
-    // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
+    // ETH deposits and ETH/custom fee token withdrawals
     const nativeCurrencyBalance = isDepositMode
       ? ethParentBalance
       : ethChildBalance
 
     if (!nativeCurrencyBalance) {
-      return
+      return undefined
     }
 
     const nativeCurrencyBalanceFormatted = utils.formatUnits(
@@ -76,8 +59,15 @@ export function useMaxAmount({
       nativeCurrency.decimals
     )
 
+    if (
+      typeof estimatedParentChainGasFees === 'undefined' ||
+      typeof estimatedChildChainGasFees === 'undefined'
+    ) {
+      return undefined
+    }
+
     const estimatedTotalGasFees =
-      (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
+      estimatedParentChainGasFees + estimatedChildChainGasFees
 
     const maxAmount =
       parseFloat(nativeCurrencyBalanceFormatted) - estimatedTotalGasFees * 1.4
@@ -90,40 +80,55 @@ export function useMaxAmount({
 
     return nativeCurrencyBalanceFormatted
   }, [
-    nativeCurrency,
-    ethParentBalance,
-    ethChildBalance,
-    isDepositMode,
-    selectedToken,
-    selectedTokenBalances,
-    estimatedParentChainGasFees,
+    customFeeTokenBalances.parentBalance,
     estimatedChildChainGasFees,
-    customFeeTokenBalances
+    estimatedParentChainGasFees,
+    ethChildBalance,
+    ethParentBalance,
+    isDepositMode,
+    nativeCurrency.decimals,
+    nativeCurrency.isCustom
   ])
 
-  const maxAmountExtraEth = useMemo(() => {
-    if (!isDepositMode || !ethParentBalance) {
+  const maxAmount = useMemo(() => {
+    if (selectedToken) {
+      const tokenBalance = isDepositMode
+        ? selectedTokenBalances.parentBalance
+        : selectedTokenBalances.childBalance
+
+      if (!tokenBalance) {
+        return undefined
+      }
+
+      // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
+      return utils.formatUnits(
+        tokenBalance,
+        selectedToken?.decimals ?? defaultErc20Decimals
+      )
+    }
+
+    return nativeCurrencyMaxAmount
+  }, [
+    selectedToken,
+    isDepositMode,
+    nativeCurrencyMaxAmount,
+    selectedTokenBalances.parentBalance,
+    selectedTokenBalances.childBalance
+  ])
+
+  const maxAmount2 = useMemo(() => {
+    if (!isDepositMode) {
+      return undefined
+    }
+    if (nativeCurrency.isCustom) {
       return undefined
     }
 
-    const estimatedTotalGasFees =
-      (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
-
-    const maxAmountExtraEth =
-      parseFloat(utils.formatEther(ethParentBalance)) - estimatedTotalGasFees
-
-    if (maxAmountExtraEth > 0) {
-      return String(maxAmountExtraEth)
-    }
-  }, [
-    estimatedChildChainGasFees,
-    estimatedParentChainGasFees,
-    ethParentBalance,
-    isDepositMode
-  ])
+    return nativeCurrencyMaxAmount
+  }, [isDepositMode, nativeCurrency.isCustom, nativeCurrencyMaxAmount])
 
   return {
     maxAmount,
-    maxAmountExtraEth
+    maxAmount2
   }
 }

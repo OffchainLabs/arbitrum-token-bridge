@@ -58,7 +58,7 @@ export function SourceNetworkBox({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
-  const { maxAmount } = useMaxAmount({
+  const { maxAmount, maxAmount2 } = useMaxAmount({
     customFeeTokenBalances
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
@@ -68,15 +68,20 @@ export function SourceNetworkBox({
   const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+  const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
 
   // covers MAX string from query params
   useEffect(() => {
     if (isMaxAmount && typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
-    } else {
-      setAmount(amount)
     }
   }, [amount, maxAmount, isMaxAmount, setAmount])
+
+  useEffect(() => {
+    if (isMaxAmount2 && typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
+    }
+  }, [amount2, maxAmount2, isMaxAmount2, setAmount2])
 
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
@@ -85,10 +90,10 @@ export function SourceNetworkBox({
   }, [maxAmount, setAmount])
 
   const amount2MaxButtonOnClick = useCallback(() => {
-    if (typeof amount2 !== 'undefined') {
-      setAmount2(amount2)
+    if (typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
     }
-  }, [amount2, setAmount2])
+  }, [maxAmount2, setAmount2])
 
   return (
     <>
@@ -152,7 +157,7 @@ export function SourceNetworkBox({
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonOnClick={maxButtonOnClick}
-            errorMessage={errorMessages?.mainInput}
+            errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
             onChange={e => setAmount(e.target.value)}
           />
@@ -160,7 +165,7 @@ export function SourceNetworkBox({
           {isBatchTransferSupported && (
             <TransferPanelMainInput
               maxButtonOnClick={amount2MaxButtonOnClick}
-              errorMessage={errorMessages?.extraEthInput}
+              errorMessage={errorMessages?.inputAmount2}
               value={amount2}
               onChange={e => setAmount2(e.target.value)}
               tokenButtonOptions={{
