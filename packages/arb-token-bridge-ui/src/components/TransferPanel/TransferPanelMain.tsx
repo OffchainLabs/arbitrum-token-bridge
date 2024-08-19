@@ -22,7 +22,6 @@ import {
 import { ether } from '../../constants'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'

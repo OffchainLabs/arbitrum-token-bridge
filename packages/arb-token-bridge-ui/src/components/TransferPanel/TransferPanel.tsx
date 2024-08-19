@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
-import { constants, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -49,7 +49,10 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
+import {
+  AssetType,
+  DepositGasEstimates
+} from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -63,7 +66,10 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
+import {
+  BridgeTransfer,
+  TransferOverrides
+} from '@/token-bridge-sdk/BridgeTransferStarter'
 import { addDepositToCache } from '../TransactionHistory/helpers'
 import {
   convertBridgeSdkToMergedTransaction,
@@ -858,18 +864,34 @@ export function TransferPanel() {
         )
       }
 
+      const overrides: TransferOverrides = {}
+
+      const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+      if (isBatchTransfer) {
+        // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
+        const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
+          amount: amountBigNumber,
+          signer
+        })) as DepositGasEstimates
+
+        if (!gasEstimates.estimatedChildChainSubmissionCost) {
+          errorToast('Failed to estimate deposit maxSubmissionCost')
+          throw 'Failed to estimate deposit maxSubmissionCost'
+        }
+
+        overrides.maxSubmissionCost = utils
+          .parseEther(amount2)
+          .add(gasEstimates.estimatedChildChainSubmissionCost)
+        overrides.excessFeeRefundAddress = destinationAddress
+      }
+
       // finally, call the transfer function
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
         destinationAddress,
-        overrides: {
-          maxSubmissionCost:
-            isBatchTransferSupported && Number(amount2) > 0
-              ? utils.parseEther(amount2)
-              : undefined,
-          excessFeeRefundAddress: destinationAddress
-        }
+        overrides: Object.keys(overrides).length > 0 ? overrides : undefined
       })
 
       // transaction submitted callback
