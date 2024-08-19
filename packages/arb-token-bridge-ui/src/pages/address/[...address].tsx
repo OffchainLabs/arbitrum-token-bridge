@@ -1,13 +1,14 @@
 import dynamic from 'next/dynamic'
 import { useEffect, useMemo } from 'react'
 
-import { useArbQueryParams } from '../hooks/useArbQueryParams'
-import { useTransactionHistory } from '../hooks/useTransactionHistory'
-import { Loader } from '../components/common/atoms/Loader'
-import { TransactionHistory } from '../components/TransactionHistory/TransactionHistory'
-import { isTxPending } from '../components/TransactionHistory/helpers'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { Loader } from '../../components/common/atoms/Loader'
+import { TransactionHistory } from '../../components/TransactionHistory/TransactionHistory'
+import { isTxPending } from '../../components/TransactionHistory/helpers'
+import { useRouter } from 'next/router'
+import { Address } from 'wagmi'
 
-const App = dynamic(() => import('../components/App/App'), {
+const App = dynamic(() => import('../../components/App/App'), {
   ssr: false,
   loading: () => (
     <>
@@ -20,14 +21,15 @@ const App = dynamic(() => import('../components/App/App'), {
 })
 
 function TransactionHistoryPageContent() {
-  const [{ address }] = useArbQueryParams()
+  const router = useRouter()
+
+  const address = router.query.address?.toString().toLowerCase() as Address
 
   const transactionHistoryProps = useTransactionHistory(address, {
     runFetcher: true
   })
 
   const { transactions, updatePendingTransaction } = transactionHistoryProps
-  console.log('transactions? ', transactions)
 
   const pendingTransactions = useMemo(() => {
     return transactions.filter(isTxPending)

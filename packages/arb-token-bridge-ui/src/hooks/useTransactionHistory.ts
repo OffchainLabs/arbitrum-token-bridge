@@ -486,10 +486,11 @@ export const useTransactionHistory = (
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): UseTransactionHistoryResult => {
+  const addressLowercased = address?.toLowerCase() as Address
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType({ address })
+    useAccountType({ address: addressLowercased })
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
@@ -504,7 +505,7 @@ export const useTransactionHistory = (
     loading: isLoadingTxsWithoutStatus,
     error,
     failedChainPairs
-  } = useTransactionHistoryWithoutStatuses(address)
+  } = useTransactionHistoryWithoutStatuses(addressLowercased)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -515,18 +516,20 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
-        ? (['complete_tx_list', address, pageNumber, data] as const)
+      return addressLowercased &&
+        !isLoadingTxsWithoutStatus &&
+        !isLoadingAccountType
+        ? (['complete_tx_list', addressLowercased, pageNumber, data] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
+    [addressLowercased, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
   )
 
   const depositsFromCache = useMemo(() => {
     if (isLoadingAccountType) {
       return []
     }
-    return getDepositsWithoutStatusesFromCache(address)
+    return getDepositsWithoutStatusesFromCache(addressLowercased)
       .filter(tx => isNetwork(tx.parentChainId).isTestnet === isTestnetMode)
       .filter(tx => {
         const chainPairExists = getMultiChainFetchList().some(chainPair => {
@@ -553,9 +556,9 @@ export const useTransactionHistory = (
         return true
       })
   }, [
-    address,
-    isTestnetMode,
     isLoadingAccountType,
+    addressLowercased,
+    isTestnetMode,
     isSmartContractWallet,
     chain
   ])

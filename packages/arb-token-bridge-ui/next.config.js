@@ -33,7 +33,7 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:slug((?!transaction-history$).+)',
+        source: '/:slug',
         destination: '/?destinationChain=:slug',
         permanent: true
       }
