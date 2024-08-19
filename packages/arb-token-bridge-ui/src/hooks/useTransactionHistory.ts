@@ -164,8 +164,8 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
     return transformDeposit(
       await updateAdditionalDepositData({
         depositTx: tx,
-        l1Provider: parentChainProvider,
-        l2Provider: childChainProvider
+        parentProvider: parentChainProvider,
+        childProvider: childChainProvider
       })
     )
   }
