@@ -622,7 +622,7 @@ export const useTransactionHistory = (
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
   const { data: newTransactionsData, mutate: mutateNewTransactionsData } =
     useSWRImmutable<MergedTransaction[]>(
-      address ? ['new_tx_list', address] : null
+      addressLowercased ? ['new_tx_list', addressLowercased] : null
     )
 
   const transactions: MergedTransaction[] = useMemo(() => {
@@ -630,10 +630,10 @@ export const useTransactionHistory = (
     // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
     return txs.filter(tx =>
       [tx.sender?.toLowerCase(), tx.destination?.toLowerCase()].includes(
-        address?.toLowerCase()
+        addressLowercased
       )
     )
-  }, [newTransactionsData, txPages, address])
+  }, [newTransactionsData, txPages, addressLowercased])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -770,14 +770,14 @@ export const useTransactionHistory = (
       return
     }
     if (!connector) {
-      setInitialState(address)
+      setInitialState(addressLowercased)
       return
     }
     connector.on('change', e => {
       // reset state on account change
       setInitialState(e.account)
     })
-  }, [connector, runFetcher, setPage, address])
+  }, [connector, runFetcher, setPage, addressLowercased])
 
   useEffect(() => {
     if (!txPages || !fetching || !runFetcher || isValidating) {
