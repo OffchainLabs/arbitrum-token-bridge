@@ -8,6 +8,7 @@ on:
 
 jobs:
   run-retryable-monitoring:
+    name: Retryables Monitor (${{ matrix.chain }})
     strategy:
       matrix:
         chain: [core, orbit]

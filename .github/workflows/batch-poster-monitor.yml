@@ -8,6 +8,7 @@ on:
 
 jobs:
   run-monitoring:
+    name: Batch Poster Monitor (${{ matrix.chain }})
     strategy:
       matrix:
         chain: [core, orbit]
