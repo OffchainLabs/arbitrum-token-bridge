@@ -30,21 +30,20 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
-import { AmountQueryParamEnum } from '../../../hooks/useArbQueryParams'
-import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../../hooks/useArbQueryParams'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
-import { isExperimentalFeatureEnabled } from '../../../util'
 import { useDialog } from '../../common/Dialog'
+import { useTransferReadiness } from '../useTransferReadiness'
+import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 
 export function SourceNetworkBox({
-  amount,
-  errorMessage,
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  amount: string
-  errorMessage: string | TransferReadinessRichErrorMessage | undefined
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
@@ -57,29 +56,44 @@ export function SourceNetworkBox({
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const setAmount = useSetInputAmount()
-  const { maxAmount } = useMaxAmount({
+  const [{ amount, amount2 }] = useArbQueryParams()
+  const { setAmount, setAmount2 } = useSetInputAmount()
+  const { maxAmount, maxAmount2 } = useMaxAmount({
     customFeeTokenBalances
   })
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
+  const isBatchTransferSupported = useIsBatchTransferSupported()
+
+  const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+  const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
 
-  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  // covers MAX string from query params
   useEffect(() => {
     if (isMaxAmount && typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
-    } else {
-      setAmount(amount)
     }
   }, [amount, maxAmount, isMaxAmount, setAmount])
+
+  useEffect(() => {
+    if (isMaxAmount2 && typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
+    }
+  }, [amount2, maxAmount2, isMaxAmount2, setAmount2])
 
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
     }
   }, [maxAmount, setAmount])
+
+  const amount2MaxButtonOnClick = useCallback(() => {
+    if (typeof maxAmount2 !== 'undefined') {
+      setAmount2(maxAmount2)
+    }
+  }, [maxAmount2, setAmount2])
 
   return (
     <>
@@ -143,30 +157,23 @@ export function SourceNetworkBox({
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonOnClick={maxButtonOnClick}
-            errorMessage={errorMessage}
+            errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
+            onChange={e => setAmount(e.target.value)}
           />
 
-          {isExperimentalFeatureEnabled('batch') &&
-            // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
-            !isTeleport({
-              sourceChainId: networks.sourceChain.id,
-              destinationChainId: networks.destinationChain.id
-            }) &&
-            selectedToken && (
-              <TransferPanelMainInput
-                // eslint-disable-next-line
-                maxButtonOnClick={() => {}}
-                errorMessage={undefined}
-                value={''}
-                // eslint-disable-next-line
-                onChange={() => {}}
-                tokenButtonOptions={{
-                  symbol: nativeCurrency.symbol,
-                  disabled: true
-                }}
-              />
-            )}
+          {isBatchTransferSupported && (
+            <TransferPanelMainInput
+              maxButtonOnClick={amount2MaxButtonOnClick}
+              errorMessage={errorMessages?.inputAmount2}
+              value={amount2}
+              onChange={e => setAmount2(e.target.value)}
+              tokenButtonOptions={{
+                symbol: nativeCurrency.symbol,
+                disabled: true
+              }}
+            />
+          )}
 
           {showUsdcSpecificInfo && (
             <p className="mt-1 text-xs font-light text-white">
