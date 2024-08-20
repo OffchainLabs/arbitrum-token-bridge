@@ -96,7 +96,7 @@ export const updateAdditionalDepositData = async ({
       parentToChildMsg: parentToChildMsg as ParentToChildMessageReaderClassic,
       isEthDeposit,
       timestampCreated,
-      childProvider: childProvider
+      childProvider
     })
   }
 
@@ -105,7 +105,7 @@ export const updateAdditionalDepositData = async ({
     return updateETHDepositStatusData({
       depositTx,
       ethDepositMessage: parentToChildMsg as EthDepositMessage,
-      childProvider: childProvider,
+      childProvider,
       timestampCreated
     })
   }
@@ -115,8 +115,8 @@ export const updateAdditionalDepositData = async ({
     depositTx,
     parentToChildMsg: parentToChildMsg as ParentToChildMessageReader,
     timestampCreated,
-    parentProvider: parentProvider,
-    childProvider: childProvider
+    parentProvider,
+    childProvider
   })
 }
 
@@ -234,7 +234,7 @@ const updateTokenDepositStatusData = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    parentToChildMsgData: parentToChildMsgData
+    parentToChildMsgData
   }
 
   return completeDepositTx
@@ -298,7 +298,7 @@ const updateClassicDepositStatusData = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    parentToChildMsgData: parentToChildMsgData
+    parentToChildMsgData
   }
 
   return completeDepositTx
