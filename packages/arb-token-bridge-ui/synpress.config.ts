@@ -6,6 +6,7 @@ import {
   constants,
   utils
 } from 'ethers'
+import { formatUnits, parseUnits } from 'ethers/lib/utils'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -31,7 +32,6 @@ import {
   defaultL3Network,
   registerLocalNetwork
 } from './src/util/networks'
-import { formatUnits, parseUnits } from 'ethers/lib/utils.js'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
