@@ -58,7 +58,7 @@ export const updateAdditionalDepositData = async ({
 
   const isEthDeposit = depositTx.assetType === AssetType.ETH
 
-  const { parentToChildMsg: parentToChildMsg } =
+  const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: depositTx.txID,
       parentProvider: parentProvider,
@@ -73,7 +73,7 @@ export const updateAdditionalDepositData = async ({
       destinationChainId: depositTx.childChainId
     })
   ) {
-    const { status, timestampResolved, parentToChildMsgData, l2ToL3MsgData } =
+    const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
       await fetchTeleporterDepositStatusData({
         ...depositTx,
         txId: depositTx.txID,
@@ -85,7 +85,7 @@ export const updateAdditionalDepositData = async ({
       ...depositTx,
       status,
       timestampResolved,
-      parentToChildMsgData,
+      parentToChildMsgData: l1ToL2MsgData,
       l2ToL3MsgData
     }
   }

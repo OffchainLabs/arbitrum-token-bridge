@@ -74,8 +74,8 @@ export async function transformTeleportFromSubgraph(
     return transformDeposit(
       await updateAdditionalDepositData({
         depositTx,
-        l1Provider: parentChainProvider,
-        l2Provider: childChainProvider
+        parentProvider: parentChainProvider,
+        childProvider: childChainProvider
       })
     )
   }
@@ -119,8 +119,8 @@ export async function transformTeleportFromSubgraph(
   return transformDeposit(
     await updateAdditionalDepositData({
       depositTx,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider
+      parentProvider: parentChainProvider,
+      childProvider: childChainProvider
     })
   )
 }
