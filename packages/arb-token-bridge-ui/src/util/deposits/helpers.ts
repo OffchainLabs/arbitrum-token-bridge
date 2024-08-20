@@ -138,7 +138,7 @@ export const updateAdditionalDepositData = async ({
         // ETH amount too little to distinguish between gas used, won't show
         value2 = undefined
       }
-    } catch {
+    } catch (_) {
       value2 = undefined
     }
   }
