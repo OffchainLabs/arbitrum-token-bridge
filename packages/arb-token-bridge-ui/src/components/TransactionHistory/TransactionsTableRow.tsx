@@ -31,7 +31,7 @@ import { useTxDetailsStore } from './TransactionHistory'
 import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
 import { Address } from '../../util/AddressUtils'
 import { ether } from '../../constants'
-import { isBatchedEthTransfer } from '../../util/TokenDepositUtils'
+import { isBatchTransfer } from '../../util/TokenDepositUtils'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   const { sourceChainId, destinationChainId } = tx
@@ -188,7 +188,7 @@ export function TransactionsTableRow({
             </span>
           </TransactionsTableExternalLink>
         </div>
-        {isBatchedEthTransfer(tx) && (
+        {isBatchTransfer(tx) && (
           <div className="flex items-center pr-3 align-middle">
             <Image
               height={20}

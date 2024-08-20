@@ -219,7 +219,7 @@ async function addressIsCustomGatewayToken({
   )
 }
 
-export function isBatchedEthTransfer(tx: MergedTransaction) {
+export function isBatchTransfer(tx: MergedTransaction) {
   return (
     isExperimentalFeatureEnabled('batch') &&
     !tx.isCctp &&

@@ -23,7 +23,7 @@ import { shortenAddress } from '../../util/CommonUtils'
 import { isTxCompleted } from './helpers'
 import { Address } from '../../util/AddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { isBatchedEthTransfer } from '../../util/TokenDepositUtils'
+import { isBatchTransfer } from '../../util/TokenDepositUtils'
 
 const DetailsBox = ({
   children,
@@ -151,7 +151,7 @@ export const TransactionsTableDetails = ({
                           </span>
                         )}
                       </div>
-                      {isBatchedEthTransfer(tx) && (
+                      {isBatchTransfer(tx) && (
                         <div className="flex items-center space-x-2">
                           <Image
                             height={20}
