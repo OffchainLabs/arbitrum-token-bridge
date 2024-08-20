@@ -1,6 +1,6 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
 import {
   NetworkButton,
@@ -39,6 +39,26 @@ import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmoun
 import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { Button } from '../../common/Button'
+
+function Amount2ToggleButton({
+  onClick
+}: {
+  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
+}) {
+  return (
+    <Button
+      variant="secondary"
+      className="border-white/30 shadow-2"
+      onClick={onClick}
+    >
+      <div className="flex items-center space-x-1">
+        <PlusCircleIcon width={18} />
+        <span>Add ETH</span>
+      </div>
+    </Button>
+  )
+}
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -47,6 +67,8 @@ export function SourceNetworkBox({
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
+  const [isAmount2InputVisible, setIsAmount2InputVisible] = useState(false)
+
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -162,17 +184,33 @@ export function SourceNetworkBox({
             onChange={e => setAmount(e.target.value)}
           />
 
-          {isBatchTransferSupported && (
-            <TransferPanelMainInput
-              maxButtonOnClick={amount2MaxButtonOnClick}
-              errorMessage={errorMessages?.inputAmount2}
-              value={amount2}
-              onChange={e => setAmount2(e.target.value)}
-              tokenButtonOptions={{
-                symbol: nativeCurrency.symbol,
-                disabled: true
-              }}
-            />
+          {isBatchTransferSupported && !isAmount2InputVisible && (
+            <div className="flex justify-end">
+              <Amount2ToggleButton
+                onClick={() => setIsAmount2InputVisible(true)}
+              />
+            </div>
+          )}
+
+          {isBatchTransferSupported && isAmount2InputVisible && (
+            <>
+              <TransferPanelMainInput
+                maxButtonOnClick={amount2MaxButtonOnClick}
+                inputCollapseOnClick={() => setIsAmount2InputVisible(false)}
+                errorMessage={errorMessages?.inputAmount2}
+                value={amount2}
+                onChange={e => setAmount2(e.target.value)}
+                tokenButtonOptions={{
+                  symbol: nativeCurrency.symbol,
+                  disabled: true
+                }}
+              />
+              <p className="mt-1 text-xs font-light text-white">
+                You are able to move ETH in the same transaction, but you are
+                not required to do so. This is the minimum ETH amount you will
+                get, but you may get a bit more dependent on the gas usage.
+              </p>
+            </>
           )}
 
           {showUsdcSpecificInfo && (

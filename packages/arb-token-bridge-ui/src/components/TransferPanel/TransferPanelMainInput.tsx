@@ -1,5 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -10,6 +11,18 @@ import { useBalances } from '../../hooks/useBalances'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+
+function CollapseInputButton({
+  onClick
+}: {
+  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
+}) {
+  return (
+    <button onClick={onClick} className="arb-hover text-gray-6">
+      <XMarkIcon width={18} />
+    </button>
+  )
+}
 
 function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const { className = '', ...rest } = props
@@ -138,12 +151,19 @@ export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     errorMessage?: string | TransferReadinessRichErrorMessage | undefined
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
+    inputCollapseOnClick?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
     tokenButtonOptions?: TokenButtonOptions
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonOnClick, tokenButtonOptions, ...rest } = props
+  const {
+    errorMessage,
+    maxButtonOnClick,
+    inputCollapseOnClick,
+    tokenButtonOptions,
+    ...rest
+  } = props
 
   return (
     <>
@@ -163,6 +183,9 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
           )}
         >
           <TransferPanelInputField {...rest} />
+          {typeof inputCollapseOnClick !== 'undefined' && (
+            <CollapseInputButton onClick={inputCollapseOnClick} />
+          )}
           <MaxButton onClick={maxButtonOnClick} />
         </div>
       </div>
