@@ -128,16 +128,13 @@ export const updateAdditionalDepositData = async ({
 
       if (depositTx.status === 'pending') {
         // when pending we don't know the final gas cost yet so we show an estimate
-        value2 = String(
-          Number(maxSubmissionCost) -
-            Number(
-              utils.formatEther(
-                _l1ToL2Msg.messageData.gasLimit.mul(
-                  _l1ToL2Msg.messageData.maxFeePerGas
-                )
-              )
-            )
+        const estimatedGasCost = utils.formatEther(
+          _l1ToL2Msg.messageData.gasLimit.mul(
+            _l1ToL2Msg.messageData.maxFeePerGas
+          )
         )
+
+        value2 = String(Number(maxSubmissionCost) - Number(estimatedGasCost))
       } else {
         const gasCost = await getGasCostOnChildChain({
           l1ToL2Msg: _l1ToL2Msg
