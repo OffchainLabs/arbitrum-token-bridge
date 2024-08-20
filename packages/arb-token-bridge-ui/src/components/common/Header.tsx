@@ -10,6 +10,7 @@ import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
+import { isExperimentalModeEnabled } from '../../util'
 
 function HeaderAccountOrConnectWalletButton() {
   const { isConnected } = useAccount()
@@ -24,18 +25,25 @@ export function Header() {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 
+  const isExperimentalMode = isExperimentalModeEnabled()
+
   const destinationChainStyle = useDestinationChainStyle()
 
   return (
     <header
       className={twMerge(
         'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:relative sm:h-16 sm:px-6 sm:backdrop-blur-none [body.menu-open_&]:fixed',
-        isTestnet
+        isTestnet || isExperimentalMode
           ? 'sm:border-b sm:border-white sm:bg-white/20'
           : 'sm:bg-transparent',
         destinationChainStyle.borderColor ? 'sm:border-b' : ''
       )}
-      style={destinationChainStyle}
+      style={{
+        ...destinationChainStyle,
+        borderColor: isExperimentalMode
+          ? 'red'
+          : destinationChainStyle.borderColor
+      }}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
         <Image
@@ -43,7 +51,14 @@ export function Header() {
           src={ArbitrumLogoSmall}
           alt="Arbitrum"
         />
-        {isTestnet && <span className="grow font-medium">TESTNET MODE</span>}
+        {isTestnet && !isExperimentalMode && (
+          <span className="grow font-medium">TESTNET MODE</span>
+        )}
+        {isExperimentalMode && (
+          <span className="grow font-medium text-red-500">
+            EXPERIMENTAL MODE: features may be incomplete or not work properly
+          </span>
+        )}
         <div className="hidden sm:flex">
           <HeaderAccountOrConnectWalletButton />
         </div>

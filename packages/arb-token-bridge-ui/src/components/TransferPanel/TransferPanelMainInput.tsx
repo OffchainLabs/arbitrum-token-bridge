@@ -1,14 +1,11 @@
 import { twMerge } from 'tailwind-merge'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import { TokenButton } from './TokenButton'
+import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
-import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { countDecimals } from '../../util/NumberUtils'
-import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 import { useBalances } from '../../hooks/useBalances'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
@@ -74,17 +71,7 @@ function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
 function TransferPanelInputField(
   props: React.InputHTMLAttributes<HTMLInputElement>
 ) {
-  const { value = '', onChange, ...rest } = props
-  const setAmount = useSetInputAmount()
-  const decimals = useSelectedTokenDecimals()
-
-  useEffect(() => {
-    // if number of decimals of query param value is greater than token decimals,
-    // truncate the decimals and update the amount query param value
-    if (countDecimals(String(value)) > decimals) {
-      setAmount(String(value))
-    }
-  }, [value, decimals, setAmount])
+  const { value = '', ...rest } = props
 
   return (
     <input
@@ -93,10 +80,6 @@ function TransferPanelInputField(
       placeholder="Enter amount"
       className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
       value={value}
-      onChange={event => {
-        onChange?.(event)
-        setAmount(event.target.value)
-      }}
       {...rest}
     />
   )
@@ -156,10 +139,11 @@ export type TransferPanelMainInputProps =
     errorMessage?: string | TransferReadinessRichErrorMessage | undefined
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
+    tokenButtonOptions?: TokenButtonOptions
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonOnClick, ...rest } = props
+  const { errorMessage, maxButtonOnClick, tokenButtonOptions, ...rest } = props
 
   return (
     <>
@@ -171,7 +155,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             : 'border-white/30 text-white'
         )}
       >
-        <TokenButton />
+        <TokenButton options={tokenButtonOptions} />
         <div
           className={twMerge(
             'flex grow flex-row items-center justify-center border-l',
