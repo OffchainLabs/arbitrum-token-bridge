@@ -27,6 +27,10 @@ import {
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 
+// max amount that will be consider gas only for max submission fee
+// anything above that we assume users sent extra ETH in amount2
+const MAX_SUBMISSION_FEE_THRESHOLD = 0.0001
+
 export const updateAdditionalDepositData = async ({
   depositTx,
   l1Provider,
@@ -146,7 +150,7 @@ export const updateAdditionalDepositData = async ({
         value2 = String(Number(maxSubmissionCost) - Number(gasCost))
       }
 
-      if (Number(value2) < 0.0001) {
+      if (Number(value2) < MAX_SUBMISSION_FEE_THRESHOLD) {
         // ETH amount too little to distinguish between gas used, won't show
         value2 = undefined
       }
