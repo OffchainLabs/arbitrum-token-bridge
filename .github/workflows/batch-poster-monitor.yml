@@ -1,14 +1,13 @@
 name: Batch Poster Monitor
 
 on:
-  push:
   workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"  # Run every 6 hours
 
 jobs:
   run-monitoring:
-    name: Batch Poster Monitor (${{ matrix.chain }})
+    name: Batch Poster Monitor (${{ matrix.chain == 'orbit' && 'Orbit' || matrix.chain == 'core' && 'Core' || matrix.chain }})
     strategy:
       matrix:
         chain: [core, orbit]
