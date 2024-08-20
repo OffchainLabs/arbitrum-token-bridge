@@ -115,49 +115,7 @@ export const updateAdditionalDepositData = async ({
     })
   }
 
-  let { value2 } = depositTx
-
-  // value2 not found in local storage, we fetch it instead
-  if (!value2) {
-    const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
-    try {
-      // get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
-      const maxSubmissionCost = Number(
-        utils.formatEther(_l1ToL2Msg.messageData.maxSubmissionFee.toString())
-      )
-
-      // we deduct gas cost from max submission fee, which leaves us with amount2 (extra ETH sent with ERC-20)
-      if (depositTx.status === 'success') {
-        // if success, we use the actual gas cost
-        const gasCost = await getGasCostOnChildChain({
-          l1ToL2Msg: _l1ToL2Msg
-        })
-
-        if (!gasCost) {
-          throw 'failed to calculate gas cost, value2 will be undefined'
-        }
-
-        value2 = String(Number(maxSubmissionCost) - Number(gasCost))
-      } else {
-        // when not success, we don't know the final gas cost yet so we use estimates
-        const estimatedGasCost = utils.formatEther(
-          _l1ToL2Msg.messageData.gasLimit.mul(
-            _l1ToL2Msg.messageData.maxFeePerGas
-          )
-        )
-
-        value2 = String(Number(maxSubmissionCost) - Number(estimatedGasCost))
-      }
-
-      if (Number(value2) < MAX_SUBMISSION_FEE_THRESHOLD) {
-        // ETH amount too little to distinguish between gas used, won't show
-        value2 = undefined
-      }
-    } catch (_) {
-      value2 = undefined
-    }
-  }
-
+  // ERC-20 deposit
   const tokenDeposit = await updateTokenDepositStatusData({
     depositTx,
     l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader,
@@ -166,19 +124,73 @@ export const updateAdditionalDepositData = async ({
     l2Provider
   })
 
-  // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
+  // check local storage first, fallback to fetching on chain
+  if (depositTx.value2) {
+    return { ...tokenDeposit, value2: depositTx.value2 }
+  }
+
+  const { value2 } = await getBatchTransferDepositData({
+    l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader,
+    depositStatus: depositTx.status
+  })
+
   return {
     ...tokenDeposit,
     value2
   }
 }
 
-const getGasCostOnChildChain = async ({
+const getBatchTransferDepositData = async ({
+  l1ToL2Msg,
+  depositStatus
+}: {
+  l1ToL2Msg: ParentToChildMessageReader
+  depositStatus: TxnStatus | undefined
+}): Promise<{
+  value2: Transaction['value2']
+}> => {
+  let value2: Transaction['value2']
+
+  // get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
+  const maxSubmissionCost = Number(
+    utils.formatEther(l1ToL2Msg.messageData.maxSubmissionFee.toString())
+  )
+
+  // we deduct gas cost from max submission fee, which leaves us with amount2 (extra ETH sent with ERC-20)
+  if (depositStatus === 'success') {
+    // if success, we use the actual gas cost
+    const gasCost = await getRetryableExecutionTxFeeOnChildChain({
+      l1ToL2Msg
+    })
+
+    if (!gasCost) {
+      return { value2: undefined }
+    }
+
+    value2 = String(Number(maxSubmissionCost) - Number(gasCost))
+  } else {
+    // when not success, we don't know the final gas cost yet so we use estimates
+    const estimatedGasCost = utils.formatEther(
+      l1ToL2Msg.messageData.gasLimit.mul(l1ToL2Msg.messageData.maxFeePerGas)
+    )
+
+    value2 = String(Number(maxSubmissionCost) - Number(estimatedGasCost))
+  }
+
+  if (Number(value2) < MAX_SUBMISSION_FEE_THRESHOLD) {
+    // ETH amount too little to distinguish between gas used, won't show
+    return { value2: undefined }
+  }
+
+  return { value2 }
+}
+
+const getRetryableExecutionTxFeeOnChildChain = async ({
   l1ToL2Msg
 }: {
   l1ToL2Msg: ParentToChildMessageReader
 }) => {
-  const childReceipt = await l1ToL2Msg.getRetryableCreationReceipt()
+  const childReceipt = await l1ToL2Msg.getAutoRedeemAttempt()
 
   if (!childReceipt) {
     return undefined
