@@ -117,10 +117,11 @@ export const updateAdditionalDepositData = async ({
   if (!value2) {
     try {
       // Get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
-      const maxSubmissionCost = await getMaxSubmissionCost({
-        l2Provider,
-        l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
-      })
+      const maxSubmissionCost = utils.formatEther(
+        (
+          l1ToL2Msg as ParentToChildMessageReader
+        ).messageData.maxSubmissionFee.toString()
+      )
 
       const gasCost = await getGasCostOnChildChain({
         l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
@@ -130,9 +131,7 @@ export const updateAdditionalDepositData = async ({
         throw 'failed to calculate gas cost, value2 will be undefined'
       }
 
-      value2 = String(
-        Number(maxSubmissionCost) - Number(utils.formatEther(gasCost))
-      )
+      value2 = String(Number(maxSubmissionCost) - Number(gasCost))
 
       if (Number(value2) < 0.0001) {
         // ETH amount too little to distinguish between gas used, won't show
@@ -156,49 +155,6 @@ export const updateAdditionalDepositData = async ({
     ...tokenDeposit,
     value2
   }
-}
-
-const getMaxSubmissionCost = async ({
-  l2Provider,
-  l1ToL2Msg
-}: {
-  l2Provider: Provider
-  l1ToL2Msg: ParentToChildMessageReader
-}) => {
-  const txData = (
-    await l2Provider.getTransaction(l1ToL2Msg.retryableCreationId)
-  ).data
-
-  // Generate the function selector for submitRetryable
-  const functionSignature =
-    'submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)'
-  const functionSelector = utils.id(functionSignature).slice(0, 10)
-
-  // Check if this transaction is a submitRetryable call
-  if (txData.slice(0, 10) !== functionSelector) {
-    return undefined
-  }
-
-  const abiCoder = new utils.AbiCoder()
-  const decodedData = abiCoder.decode(
-    [
-      'bytes32',
-      'uint256',
-      'uint256',
-      'uint256',
-      'uint256',
-      'uint64',
-      'uint256',
-      'address',
-      'address',
-      'address',
-      'bytes'
-    ],
-    utils.hexDataSlice(txData, 4)
-  )
-
-  // maxSubmissionFee is the 7th parameter (index 6) in the submitRetryable function
-  return utils.formatEther(decodedData[6])
 }
 
 const getGasCostOnChildChain = async ({
