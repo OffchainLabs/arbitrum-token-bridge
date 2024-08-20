@@ -126,8 +126,8 @@ export const updateAdditionalDepositData = async ({
         _l1ToL2Msg.messageData.maxSubmissionFee.toString()
       )
 
-      if (depositTx.status === 'pending') {
-        // when pending we don't know the final gas cost yet so we show an estimate
+      if (depositTx.status !== 'success') {
+        // when not success we don't know the final gas cost yet so we show an estimate
         const estimatedGasCost = utils.formatEther(
           _l1ToL2Msg.messageData.gasLimit.mul(
             _l1ToL2Msg.messageData.maxFeePerGas
