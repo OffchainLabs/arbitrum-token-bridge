@@ -9,10 +9,10 @@ import {
 
 const ERC20TokenAddressL1: string = Cypress.env(
   'ERC20_TOKEN_ADDRESS_PARENT_CHAIN'
-)
+).trim()
 const ERC20TokenAddressL2: string = Cypress.env(
   'ERC20_TOKEN_ADDRESS_CHILD_CHAIN'
-)
+).trim()
 
 describe('Import token', () => {
   // we use mainnet to test token lists
