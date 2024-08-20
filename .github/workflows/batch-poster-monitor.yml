@@ -1,0 +1,19 @@
+name: Batch Poster Monitor
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"  # Run every 6 hours
+
+jobs:
+  run-monitoring:
+    name: Batch Poster Monitor (${{ matrix.chain }})
+    strategy:
+      matrix:
+        chain: [core, orbit]
+    uses: ./.github/workflows/monitoring.yml
+    with:
+      chain: ${{ matrix.chain }}
+      monitor: batch-poster
+    secrets: inherit
