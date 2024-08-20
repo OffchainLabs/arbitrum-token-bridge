@@ -115,23 +115,36 @@ export const updateAdditionalDepositData = async ({
 
   // value2 not found in local storage, we fetch it instead
   if (!value2) {
+    const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
     try {
       // Get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
       const maxSubmissionCost = utils.formatEther(
-        (
-          l1ToL2Msg as ParentToChildMessageReader
-        ).messageData.maxSubmissionFee.toString()
+        _l1ToL2Msg.messageData.maxSubmissionFee.toString()
       )
 
-      const gasCost = await getGasCostOnChildChain({
-        l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
-      })
+      if (depositTx.status === 'pending') {
+        // when pending we don't know the final gas cost yet so we show an estimate
+        value2 = String(
+          Number(maxSubmissionCost) -
+            Number(
+              utils.formatEther(
+                _l1ToL2Msg.messageData.gasLimit.mul(
+                  _l1ToL2Msg.messageData.maxFeePerGas
+                )
+              )
+            )
+        )
+      } else {
+        const gasCost = await getGasCostOnChildChain({
+          l1ToL2Msg: _l1ToL2Msg
+        })
 
-      if (!gasCost) {
-        throw 'failed to calculate gas cost, value2 will be undefined'
+        if (!gasCost) {
+          throw 'failed to calculate gas cost, value2 will be undefined'
+        }
+
+        value2 = String(Number(maxSubmissionCost) - Number(gasCost))
       }
-
-      value2 = String(Number(maxSubmissionCost) - Number(gasCost))
 
       if (Number(value2) < 0.0001) {
         // ETH amount too little to distinguish between gas used, won't show

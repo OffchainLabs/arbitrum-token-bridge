@@ -31,6 +31,14 @@ import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { Address } from '../../util/AddressUtils'
 
+export const EstimatedAmountTooltip = ({ children }: PropsWithChildren) => {
+  return (
+    <Tooltip content="This is an estimate amount. The final amount may have minor fluctuations based on the total gas used.">
+      {children}
+    </Tooltip>
+  )
+}
+
 export const ContentWrapper = ({
   children,
   className = ''

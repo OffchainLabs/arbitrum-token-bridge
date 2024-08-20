@@ -24,6 +24,7 @@ import { isTxCompleted } from './helpers'
 import { Address } from '../../util/AddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
+import { EstimatedAmountTooltip } from './TransactionHistoryTable'
 
 const DetailsBox = ({
   children,
@@ -152,24 +153,26 @@ export const TransactionsTableDetails = ({
                         )}
                       </div>
                       {isBatchTransfer(tx) && (
-                        <div className="flex items-center space-x-2">
-                          <Image
-                            height={20}
-                            width={20}
-                            alt="ETH logo"
-                            src={EthereumLogoRoundLight}
-                          />
-                          <span className="ml-2">
-                            {formatAmount(Number(tx.value2), {
-                              symbol: ether.symbol
-                            })}
-                          </span>
-                          {isNetwork(tx.sourceChainId).isEthereumMainnet && (
-                            <span className="text-white/70">
-                              {formatUSD(ethToUSD(Number(tx.value2)))}
+                        <EstimatedAmountTooltip>
+                          <div className="flex items-center space-x-2">
+                            <Image
+                              height={20}
+                              width={20}
+                              alt="ETH logo"
+                              src={EthereumLogoRoundLight}
+                            />
+                            <span className="ml-2">
+                              {formatAmount(Number(tx.value2), {
+                                symbol: ether.symbol
+                              })}
                             </span>
-                          )}
-                        </div>
+                            {isNetwork(tx.sourceChainId).isEthereumMainnet && (
+                              <span className="text-white/70">
+                                {formatUSD(ethToUSD(Number(tx.value2)))}
+                              </span>
+                            )}
+                          </div>
+                        </EstimatedAmountTooltip>
                       )}
                     </div>
                   </div>
