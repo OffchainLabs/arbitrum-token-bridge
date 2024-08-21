@@ -161,7 +161,7 @@ describe('Import token', () => {
         cy.get('@addButton').should('be.enabled')
 
         // Add one more character
-        cy.get('@searchInput').typeRecursively(`${moveToEnd}a`)
+        cy.get('@searchInput').typeRecursively(`${moveToEnd}x`)
         // Add button should be disabled
         cy.get('@addButton').should('be.disabled')
       })
