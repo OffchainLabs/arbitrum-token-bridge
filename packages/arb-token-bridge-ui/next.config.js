@@ -28,7 +28,7 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:slug',
+        source: '/:slug(\\[^Wd_]+)',
         destination: '/?destinationChain=:slug',
         permanent: true
       }
