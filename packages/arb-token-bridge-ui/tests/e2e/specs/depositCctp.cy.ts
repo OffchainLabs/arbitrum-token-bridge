@@ -65,13 +65,13 @@ const confirmAndApproveCctpDeposit = () => {
 
 describe('Deposit USDC through CCTP', () => {
   // Happy Path
-  let USDCAmountToSend = 0.0001
+  const USDCAmountToSend = 0.0001
 
   beforeEach(() => {
     cy.log('Creating new wallet')
     const userWallet = Wallet.createRandom()
     const userWalletAddress = userWallet.address
-    const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
+    const localWallet = new Wallet(Cypress.env('PRIVATE_KEY_CCTP'))
     const sepoliaProvider = new StaticJsonRpcProvider(
       Cypress.env('SEPOLIA_INFURA_RPC_URL')
     )
@@ -88,16 +88,24 @@ describe('Deposit USDC through CCTP', () => {
         sourceWallet: localWallet,
         amount: utils.parseEther('0.01')
       })
-    ).then(() => {})
-    cy.wrap(
+    ).then(() => {
       fundUsdc({
         address: userWalletAddress,
         provider: sepoliaProvider,
         networkType: 'parentChain',
         sourceWallet: localWallet,
-        amount: BigNumber.from(USDCAmountToSend * 2)
+        amount: utils.parseUnits('0.0002', 6)
       })
-    ).then(() => {})
+    })
+    // cy.wrap(
+    //   fundUsdc({
+    //     address: userWalletAddress,
+    //     provider: sepoliaProvider,
+    //     networkType: 'parentChain',
+    //     sourceWallet: localWallet,
+    //     amount: utils.parseUnits('0.0002', 6)
+    //   })
+    // ).then(() => {})
 
     cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
     cy.findSourceChainButton('Sepolia')
