@@ -1,6 +1,6 @@
 import { constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'
 
 import { useAppState } from '../../state'
@@ -19,12 +19,6 @@ import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
-
-const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
-  status: 'loading',
-  estimatedParentChainGasFees: undefined,
-  estimatedChildChainGasFees: undefined
-}
 
 export type GasEstimationStatus =
   | 'loading'
@@ -50,9 +44,6 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
-  const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
-    INITIAL_GAS_SUMMARY_RESULT
-  )
   const decimals = useSelectedTokenDecimals()
 
   const amountBigNumber = useMemo(() => {
@@ -68,15 +59,6 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
-
-  const setGasSummaryStatus = useCallback(
-    (status: GasEstimationStatus) =>
-      setGasSummary(previousGasSummary => ({
-        ...previousGasSummary,
-        status
-      })),
-    []
-  )
 
   const balance = useBalanceOnSourceChain(token)
 
@@ -136,19 +118,25 @@ export function useGasSummary(): UseGasSummaryResult {
     )
   }, [childChainGasPrice, estimateGasResult, isDepositMode])
 
-  useEffect(() => {
+  const gasSummary: UseGasSummaryResult = useMemo(() => {
     if (
       !isDepositMode &&
       (isTokenArbitrumOneNativeUSDC(token?.address) ||
         isTokenArbitrumSepoliaNativeUSDC(token?.address))
     ) {
-      setGasSummaryStatus('unavailable')
-      return
+      return {
+        status: 'unavailable',
+        estimatedParentChainGasFees: undefined,
+        estimatedChildChainGasFees: undefined
+      }
     }
 
     if (typeof walletAddress !== 'undefined' && !balance) {
-      setGasSummaryStatus('loading')
-      return
+      return {
+        status: 'loading',
+        estimatedParentChainGasFees: undefined,
+        estimatedChildChainGasFees: undefined
+      }
     }
 
     // If user has input an amount over their balance, don't estimate gas
@@ -157,39 +145,46 @@ export function useGasSummary(): UseGasSummaryResult {
       balance &&
       amountBigNumber.gt(balance)
     ) {
-      setGasSummaryStatus('insufficientBalance')
-      return
+      return {
+        status: 'insufficientBalance',
+        estimatedParentChainGasFees: undefined,
+        estimatedChildChainGasFees: undefined
+      }
     }
 
     if (
       typeof estimatedParentChainGasFees === 'undefined' ||
       typeof estimatedChildChainGasFees === 'undefined'
     ) {
-      setGasSummaryStatus('loading')
-      return
+      return {
+        status: 'loading',
+        estimatedParentChainGasFees: undefined,
+        estimatedChildChainGasFees: undefined
+      }
     }
 
     if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
-      setGasSummaryStatus('error')
-      return
+      return {
+        status: 'error',
+        estimatedParentChainGasFees: undefined,
+        estimatedChildChainGasFees: undefined
+      }
     }
 
-    setGasSummary({
+    return {
       status: 'success',
       estimatedParentChainGasFees,
       estimatedChildChainGasFees
-    })
+    }
   }, [
+    isDepositMode,
+    token?.address,
     walletAddress,
     balance,
-    token,
-    childChainProvider,
-    setGasSummaryStatus,
-    isDepositMode,
+    amountBigNumber,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
-    gasEstimatesError,
-    amountBigNumber
+    gasEstimatesError
   ])
 
   return gasSummary
