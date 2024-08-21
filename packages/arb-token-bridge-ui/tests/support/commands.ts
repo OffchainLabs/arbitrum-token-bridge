@@ -354,6 +354,6 @@ Cypress.Commands.addAll({
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
-  findTransactionDetailsCustomDestinationAddress
+  findTransactionDetailsCustomDestinationAddress,
   confirmSpending
 })
