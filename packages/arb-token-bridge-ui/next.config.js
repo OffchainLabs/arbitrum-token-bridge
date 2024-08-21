@@ -28,7 +28,7 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:slug',
+        source: '/:slug((?!.*\\.[a-zA-Z0-9]+$).*)',
         has: [
           {
             type: 'header',
