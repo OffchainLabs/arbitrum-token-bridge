@@ -28,6 +28,10 @@ if (!process.env.PRIVATE_KEY_CCTP) {
   throw new Error('PRIVATE_KEY_CCTP variable missing.')
 }
 
+if (!process.env.PRIVATE_KEY_USER) {
+  throw new Error('PRIVATE_KEY_USER variable missing.')
+}
+
 // Wallet funded on Sepolia and ArbSepolia with ETH and USDC
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
 // Generate a new wallet every time
@@ -42,44 +46,14 @@ export default defineConfig({
       const userWalletAddress = await userWallet.getAddress()
       config.env.ADDRESS = userWalletAddress
       config.env.LOCAL_CCTP_WALLET_PRIVATE_KEY = localWallet.privateKey
-      config.env.PRIVATE_KEY = userWallet.privateKey
+      // config.env.PRIVATE_KEY = userWallet.privateKey
+      config.env.PRIVATE_KEY = process.env.PRIVATE_KEY_USER
+      config.env.PRIVATE_KEY_CCTP = process.env.PRIVATE_KEY_CCTP
       config.env.SEPOLIA_INFURA_RPC_URL = SEPOLIA_INFURA_RPC_URL
       config.env.ARB_SEPOLIA_INFURA_RPC_URL = ARB_SEPOLIA_INFURA_RPC_URL
 
       // Fund wallet
       console.log(`Funding user wallet: ${userWalletAddress}`)
-      await Promise.all([
-        // Sepolia
-        fundEth({
-          address: userWalletAddress,
-          provider: sepoliaProvider,
-          sourceWallet: localWallet,
-          amount: utils.parseEther('0.01')
-        }),
-        // ArbSepolia
-        fundEth({
-          address: userWalletAddress,
-          provider: arbSepoliaProvider,
-          sourceWallet: localWallet,
-          amount: utils.parseEther('0.01')
-        })
-      ])
-      await Promise.all([
-        fundUsdc({
-          address: userWalletAddress,
-          provider: sepoliaProvider,
-          networkType: 'parentChain',
-          sourceWallet: localWallet,
-          amount: utils.parseUnits('0.0002', 6)
-        }),
-        fundUsdc({
-          address: userWalletAddress,
-          provider: arbSepoliaProvider,
-          networkType: 'childChain',
-          sourceWallet: localWallet,
-          amount: utils.parseUnits('0.0002', 6)
-        })
-      ])
 
       setupCypressTasks(on, { requiresNetworkSetup: false })
       synpressPlugins(on, config)

@@ -2,8 +2,10 @@
  * When user wants to bridge USDC through CCTP from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import { fundEth, fundUsdc, zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
+import { BigNumber, Wallet, utils } from 'ethers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -66,6 +68,37 @@ describe('Deposit USDC through CCTP', () => {
   let USDCAmountToSend = 0.0001
 
   beforeEach(() => {
+    cy.log('Creating new wallet')
+    const userWallet = Wallet.createRandom()
+    const userWalletAddress = userWallet.address
+    const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
+    const arbSepoliaProvider = new StaticJsonRpcProvider(
+      Cypress.env('ARB_SEPOLIA_INFURA_RPC_URL')
+    )
+
+    cy.importMetamaskAccount(userWallet.privateKey)
+    cy.switchMetamaskAccount(3 + Cypress.currentRetry)
+
+    cy.log(`Funding wallet ${userWallet.address}`)
+    // Arbitrum Sepolia
+    cy.wrap(
+      fundEth({
+        address: userWalletAddress,
+        provider: arbSepoliaProvider,
+        sourceWallet: localWallet,
+        amount: utils.parseEther('0.01')
+      })
+    ).then(() => {})
+    cy.wrap(
+      fundUsdc({
+        address: userWalletAddress,
+        provider: arbSepoliaProvider,
+        networkType: 'childChain',
+        sourceWallet: localWallet,
+        amount: BigNumber.from(USDCAmountToSend * 2)
+      })
+    ).then(() => {})
+
     cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
     cy.findSourceChainButton('Sepolia')
     cy.findDestinationChainButton('Arbitrum Sepolia')
