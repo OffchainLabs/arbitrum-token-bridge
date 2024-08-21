@@ -11,7 +11,6 @@ import {
   getCustomDestinationAddress
 } from './tests/support/common'
 import specFiles from './tests/e2e/cctp.json'
-import { log } from 'console'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
