@@ -178,7 +178,7 @@ jobs:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
           tool-cache: false
-          
+
           # all of these default to true, but feel free to set to
           # "false" if necessary for your workflow
           android: true
@@ -214,11 +214,10 @@ jobs:
           DISPLAY: :0.0
 
       - name: Run nitro testnode
-        uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
+        uses: OffchainLabs/actions/run-nitro-test-node@feat-simplify
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
-          l3-node: ${{ matrix.orbit-test == '1' }}
-          no-l3-token-bridge: ${{ matrix.orbit-test == '0' }}
+          args: --tokenbridge ${{ matrix.orbit-test == '1' && '--l3node --l3-token-bridge' || '' }}
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
