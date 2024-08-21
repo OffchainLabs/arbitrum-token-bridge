@@ -61,8 +61,8 @@ export const updateAdditionalDepositData = async ({
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: depositTx.txID,
-      parentProvider: parentProvider,
-      childProvider: childProvider,
+      parentProvider,
+      childProvider,
       isEthDeposit,
       isClassic
     })
