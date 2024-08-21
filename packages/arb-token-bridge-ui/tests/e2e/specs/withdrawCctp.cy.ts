@@ -3,9 +3,7 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { fundEth, fundUsdc, zeroToLessThanOneETH } from '../../support/common'
-import { BigNumber, Wallet, utils } from 'ethers'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { zeroToLessThanOneETH } from '../../support/common'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -57,49 +55,7 @@ describe('Withdraw USDC through CCTP', () => {
   // Happy Path
   const USDCAmountToSend = 0.0001
 
-  // log in to metamask before withdrawal
   beforeEach(() => {
-    const userWallet = Wallet.createRandom()
-    const userWalletAddress = userWallet.address
-    const localWallet = new Wallet(Cypress.env('PRIVATE_KEY_CCTP'))
-
-    const arbSepoliaProvider = new StaticJsonRpcProvider(
-      Cypress.env('ARB_SEPOLIA_INFURA_RPC_URL')
-    )
-
-    cy.importMetamaskAccount(userWallet.privateKey)
-    cy.switchMetamaskAccount(3 + Cypress.currentRetry)
-
-    cy.log(`Funding wallet ${userWallet.address}`)
-    // Arbitrum Sepolia
-    cy.wrap(
-      fundEth({
-        address: userWalletAddress,
-        provider: arbSepoliaProvider,
-        sourceWallet: localWallet,
-        amount: utils.parseEther('0.01')
-      })
-    ).then(() => {
-      cy.wrap(
-        fundUsdc({
-          address: userWalletAddress,
-          provider: arbSepoliaProvider,
-          networkType: 'childChain',
-          sourceWallet: localWallet,
-          amount: utils.parseUnits('0.0002', 6)
-        })
-      )
-    })
-    // cy.wrap(
-    //   fundUsdc({
-    //     address: userWalletAddress,
-    //     provider: arbSepoliaProvider,
-    //     networkType: 'childChain',
-    //     sourceWallet: localWallet,
-    //     amount: utils.parseUnits('0.0002', 6)
-    //   })
-    // ).then(() => {})
-
     cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
     cy.findSourceChainButton('Arbitrum Sepolia')
     cy.findDestinationChainButton('Sepolia')
@@ -111,14 +67,15 @@ describe('Withdraw USDC through CCTP', () => {
     })
 
     cy.typeAmount(USDCAmountToSend)
-  })
 
-  it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
     cy.findByText('Gas estimates are not available for this action.').should(
       'be.visible'
     )
     cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
+  })
+
+  it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
@@ -138,8 +95,8 @@ describe('Withdraw USDC through CCTP', () => {
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
-    confirmAndApproveCctpWithdrawal()
 
+    confirmAndApproveCctpWithdrawal()
     cy.confirmSpending({
       shouldWaitForPopupClosure: true
     })

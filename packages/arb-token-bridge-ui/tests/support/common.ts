@@ -314,6 +314,11 @@ export async function fundEth({
   }
 }
 
+export async function getCustomDestinationAddress() {
+  console.log('Getting custom destination address...')
+  return (await Wallet.createRandom().getAddress()).toLowerCase()
+}
+
 export function setupCypressTasks(
   on: Cypress.PluginEvents,
   { requiresNetworkSetup }: { requiresNetworkSetup: boolean }

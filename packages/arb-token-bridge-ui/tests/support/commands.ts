@@ -189,7 +189,7 @@ export const fillCustomDestinationAddress = () => {
     .should('be.visible')
     .click()
 
-  cy.findByPlaceholderText(Cypress.env('ADDRESS'))
+  cy.findByLabelText('Custom Destination Address Input')
     .should('be.visible')
     .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }

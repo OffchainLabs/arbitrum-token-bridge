@@ -13,7 +13,8 @@ import {
   generateActivityOnChains,
   NetworkType,
   fundEth,
-  setupCypressTasks
+  setupCypressTasks,
+  getCustomDestinationAddress
 } from './tests/support/common'
 
 import {
@@ -246,11 +247,6 @@ async function approveWeth() {
     constants.MaxInt256
   )
   await tx.wait()
-}
-
-async function getCustomDestinationAddress() {
-  console.log('Getting custom destination address...')
-  return (await Wallet.createRandom().getAddress()).toLowerCase()
 }
 
 async function generateTestTxForRedeemRetryable() {
