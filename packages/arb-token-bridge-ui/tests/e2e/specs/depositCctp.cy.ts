@@ -72,8 +72,8 @@ describe('Deposit USDC through CCTP', () => {
     const userWallet = Wallet.createRandom()
     const userWalletAddress = userWallet.address
     const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
-    const arbSepoliaProvider = new StaticJsonRpcProvider(
-      Cypress.env('ARB_SEPOLIA_INFURA_RPC_URL')
+    const sepoliaProvider = new StaticJsonRpcProvider(
+      Cypress.env('SEPOLIA_INFURA_RPC_URL')
     )
 
     cy.importMetamaskAccount(userWallet.privateKey)
@@ -84,7 +84,7 @@ describe('Deposit USDC through CCTP', () => {
     cy.wrap(
       fundEth({
         address: userWalletAddress,
-        provider: arbSepoliaProvider,
+        provider: sepoliaProvider,
         sourceWallet: localWallet,
         amount: utils.parseEther('0.01')
       })
@@ -92,8 +92,8 @@ describe('Deposit USDC through CCTP', () => {
     cy.wrap(
       fundUsdc({
         address: userWalletAddress,
-        provider: arbSepoliaProvider,
-        networkType: 'childChain',
+        provider: sepoliaProvider,
+        networkType: 'parentChain',
         sourceWallet: localWallet,
         amount: BigNumber.from(USDCAmountToSend * 2)
       })

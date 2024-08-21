@@ -3,7 +3,9 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { zeroToLessThanOneETH } from '../../support/common'
+import { fundEth, fundUsdc, zeroToLessThanOneETH } from '../../support/common'
+import { BigNumber, Wallet, utils } from 'ethers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -57,6 +59,37 @@ describe('Withdraw USDC through CCTP', () => {
 
   // log in to metamask before withdrawal
   beforeEach(() => {
+    const userWallet = Wallet.createRandom()
+    const userWalletAddress = userWallet.address
+    const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
+
+    const arbSepoliaProvider = new StaticJsonRpcProvider(
+      Cypress.env('ARB_SEPOLIA_INFURA_RPC_URL')
+    )
+
+    cy.importMetamaskAccount(userWallet.privateKey)
+    cy.switchMetamaskAccount(3 + Cypress.currentRetry)
+
+    cy.log(`Funding wallet ${userWallet.address}`)
+    // Arbitrum Sepolia
+    cy.wrap(
+      fundEth({
+        address: userWalletAddress,
+        provider: arbSepoliaProvider,
+        sourceWallet: localWallet,
+        amount: utils.parseEther('0.01')
+      })
+    ).then(() => {})
+    cy.wrap(
+      fundUsdc({
+        address: userWalletAddress,
+        provider: arbSepoliaProvider,
+        networkType: 'childChain',
+        sourceWallet: localWallet,
+        amount: BigNumber.from(USDCAmountToSend * 2)
+      })
+    ).then(() => {})
+
     cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
     cy.findSourceChainButton('Arbitrum Sepolia')
     cy.findDestinationChainButton('Sepolia')
