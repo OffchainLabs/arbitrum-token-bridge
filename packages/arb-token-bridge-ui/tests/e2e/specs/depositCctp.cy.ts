@@ -97,7 +97,10 @@ describe('Deposit USDC through CCTP', () => {
     cy.findTransactionInTransactionHistory({
       duration: 'a minute',
       amount: USDCAmountToSend,
-      symbol: 'USDC'
+      symbol: 'USDC',
+      options: {
+        timeout: 60_000
+      }
     })
   })
 
@@ -115,7 +118,10 @@ describe('Deposit USDC through CCTP', () => {
     const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
     cy.findTransactionInTransactionHistory({
       duration: 'a minute',
-      ...txData
+      ...txData,
+      options: {
+        timeout: 60_000
+      }
     })
     cy.openTransactionDetails(txData)
     cy.findTransactionDetailsCustomDestinationAddress(

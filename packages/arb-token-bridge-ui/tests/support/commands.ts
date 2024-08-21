@@ -17,6 +17,7 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
+import { MatcherOptions } from '@testing-library/cypress'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -295,16 +296,18 @@ export function findTransactionDetailsCustomDestinationAddress(
 export function findTransactionInTransactionHistory({
   symbol,
   amount,
-  duration
+  duration,
+  options
 }: {
   symbol: string
   amount: number
   duration?: string
+  options?: MatcherOptions
 }) {
   const rowId = new RegExp(
     `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
   )
-  cy.findByTestId(rowId).as('row')
+  cy.findByTestId(rowId, options).as('row')
   if (duration) {
     cy.get('@row').findAllByText(duration).first().should('be.visible')
   }
