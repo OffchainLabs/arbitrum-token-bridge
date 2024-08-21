@@ -65,7 +65,7 @@ describe('Deposit USDC through CCTP', () => {
   // Happy Path
   const USDCAmountToSend = 0.0001
 
-  before(() => {
+  beforeEach(() => {
     cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
     cy.findSourceChainButton('Sepolia')
     cy.findDestinationChainButton('Arbitrum Sepolia')
