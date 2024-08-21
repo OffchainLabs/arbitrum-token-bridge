@@ -18,6 +18,7 @@ env:
 
 jobs:
   run-monitoring:
+    name: Run
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repositories
