@@ -1,14 +1,15 @@
 import { Chain } from 'wagmi'
-import { mainnet, goerli, arbitrum, arbitrumGoerli } from 'wagmi/chains'
+import { mainnet, arbitrum } from 'wagmi/chains'
 
 import {
   chainToWagmiChain,
   sepolia,
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
   localL1Network,
-  localL2Network
+  localL2Network,
+  localL3Network
 } from './wagmiAdditionalNetworks'
 import { ChainId } from '../networks'
 import { getCustomChainFromLocalStorageById } from '../networks'
@@ -16,7 +17,6 @@ import { orbitChains } from '../orbitChainsList'
 
 export function getWagmiChain(chainId: number): Chain {
   const customChain = getCustomChainFromLocalStorageById(chainId)
-  // excluding Stylus because its part of the SDK
   const orbitChain = orbitChains[chainId]
 
   if (customChain) {
@@ -38,20 +38,14 @@ export function getWagmiChain(chainId: number): Chain {
       return arbitrumNova
 
     // Testnets
-    case ChainId.Goerli:
-      return goerli
-
-    case ChainId.ArbitrumGoerli:
-      return arbitrumGoerli
-
     case ChainId.Sepolia:
       return sepolia
 
+    case ChainId.Holesky:
+      return holesky
+
     case ChainId.ArbitrumSepolia:
       return arbitrumSepolia
-
-    case ChainId.StylusTestnet:
-      return stylusTestnet
 
     // Local networks
     case ChainId.Local:
@@ -59,6 +53,9 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.ArbitrumLocal:
       return localL2Network
+
+    case ChainId.L3Local:
+      return localL3Network
 
     default:
       throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)

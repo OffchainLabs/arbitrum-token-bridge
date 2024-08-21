@@ -3,180 +3,139 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { formatAmount } from '../../../src/util/NumberUtils'
-import {
-  getInitialERC20Balance,
-  getL1TestnetNetworkConfig,
-  getL2TestnetNetworkConfig
-} from '../../support/common'
+import { zeroToLessThanOneETH } from '../../support/common'
+
+// common function for this cctp withdrawal
+export const confirmAndApproveCctpWithdrawal = () => {
+  cy.findByRole('tab', {
+    name: 'Native USDC',
+    selected: true
+  }).should('exist')
+  cy.findByRole('tab', {
+    name: 'Native USDC (Third Party Bridge)',
+    selected: false
+  }).should('exist')
+
+  // By default, confirm button is disabled
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.disabled')
+
+  // Checkbox
+  cy.findByRole('switch', {
+    name: /I understand that I'll have to send/i
+  })
+    .should('be.visible')
+    .click()
+  cy.findByRole('switch', {
+    name: /I understand that it will take/i
+  })
+    .should('be.visible')
+    .click()
+
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.enabled')
+    .click()
+
+  cy.findByText(/I understand that I have to/).click()
+  cy.findByRole('button', {
+    name: /Pay approval fee of/
+  }).click()
+  cy.log('Approving USDC...')
+}
 
 describe('Withdraw USDC through CCTP', () => {
-  const USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
-
   // Happy Path
   context('User is on L2 and imports USDC', () => {
-    let l1USDCBal: string
-    let l2USDCBal: string
+    let USDCAmountToSend: number
 
     // log in to metamask before withdrawal
     beforeEach(() => {
-      cy.fundUserWalletEth('L2')
-      cy.fundUserUsdcTestnet('L2')
-      cy.resetCctpAllowance('L2')
+      cy.fundUserWalletEth('childChain')
+      cy.fundUserUsdcTestnet('childChain')
+      cy.resetCctpAllowance('childChain')
+      USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      const address = Cypress.env('ADDRESS')
-      getInitialERC20Balance({
-        tokenAddress: CommonAddress.Sepolia.USDC,
-        multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ETH_SEPOLIA_RPC_URL'),
-        address
-      }).then(
-        val =>
-          (l1USDCBal = formatAmount(val, {
-            symbol: 'USDC',
-            decimals: 6
-          }))
-      )
-      getInitialERC20Balance({
-        tokenAddress: CommonAddress.ArbitrumSepolia.USDC,
-        multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ARB_SEPOLIA_RPC_URL'),
-        address
-      }).then(
-        val =>
-          (l2USDCBal = formatAmount(val, {
-            symbol: 'USDC',
-            decimals: 6
-          }))
-      )
+      cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
+      context('should show L1 and L2 chains, and ETH correctly', () => {
+        cy.findSourceChainButton('Arbitrum Sepolia')
+        cy.findDestinationChainButton('Sepolia')
+        cy.findSelectTokenButton('ETH')
+      })
+
+      context('should add USDC token', () => {
+        cy.searchAndSelectToken({
+          tokenName: 'USDC',
+          tokenAddress: CommonAddress.ArbitrumSepolia.USDC
+        })
+      })
     })
 
-    it(
-      'should bridge USDC through CCTP successfully',
-      {
-        retries: {
-          runMode: 1,
-          openMode: 1
+    it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
+      context('should show clickable withdraw button', () => {
+        cy.typeAmount(USDCAmountToSend)
+        cy.findByText(
+          'Gas estimates are not available for this action.'
+        ).should('be.visible')
+        cy.findGasFeeForChain('Arbitrum Sepolia', zeroToLessThanOneETH)
+        cy.findGasFeeForChain(
+          /You'll have to pay Sepolia gas fee upon claiming./i
+        )
+        cy.findMoveFundsButton().click()
+      })
+
+      context('Should display CCTP modal', () => {
+        confirmAndApproveCctpWithdrawal()
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
+        })
+      })
+    })
+
+    it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
+      context('should show clickable withdraw button', () => {
+        cy.typeAmount(USDCAmountToSend)
+      })
+
+      context('should fill custom destination address successfully', () => {
+        cy.fillCustomDestinationAddress()
+      })
+
+      context('should click withdraw successfully', () => {
+        cy.findMoveFundsButton().click()
+      })
+
+      context('Should display CCTP modal', () => {
+        confirmAndApproveCctpWithdrawal()
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
+
+        // eslint-disable-next-line
+        cy.wait(40_000)
+        cy.confirmMetamaskTransaction()
+        const txData = {
+          amount: USDCAmountToSend,
+          symbol: 'USDC'
         }
-      },
-      () => {
-        cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
-        context('should show L1 and L2 chains, and ETH correctly', () => {
-          cy.findByRole('button', { name: /From: Arbitrum Sepolia/i }).should(
-            'be.visible'
-          )
-          cy.findByRole('button', { name: /To: Sepolia/i }).should('be.visible')
-          cy.findByRole('button', { name: 'Select Token' })
-            .should('be.visible')
-            .should('have.text', 'ETH')
+        cy.findTransactionInTransactionHistory({
+          duration: 'a minute',
+          ...txData
         })
-
-        context('should add USDC token', () => {
-          // Click on the ETH dropdown (Select token button)
-          cy.findByRole('button', { name: 'Select Token' })
-            .should('be.visible')
-            .should('have.text', 'ETH')
-            .click()
-
-          // open the Select Token popup
-          cy.findByPlaceholderText(/Search by token name/i)
-            .typeRecursively(CommonAddress.ArbitrumSepolia.USDC)
-            .should('be.visible')
-            .then(() => {
-              // Click on the Add new token button
-              cy.findByRole('button', { name: 'Add New Token' })
-                .should('be.visible')
-                .click()
-
-              // Select the USDC token
-              cy.findAllByText('USDC').first().click()
-
-              // USDC token should be selected now and popup should be closed after selection
-              cy.findByRole('button', { name: 'Select Token' })
-                .should('be.visible')
-                .should('have.text', 'USDC')
-            })
-        })
-
-        context('should show USDC balance correctly', () => {
-          cy.findByLabelText('USDC balance on l1')
-            .should('be.visible')
-            .contains(l1USDCBal)
-          cy.findByLabelText('USDC balance on l2')
-            .should('be.visible')
-            .contains(l2USDCBal)
-        })
-
-        context('should show clickable withdraw button', () => {
-          cy.findByPlaceholderText('Enter amount').typeRecursively(
-            String(USDCAmountToSend)
-          )
-          cy.findByRole('button', {
-            name: /Move funds to Sepolia/i
-          })
-            .should('be.visible')
-            .should('be.enabled')
-            .click()
-        })
-
-        context('Should display CCTP modal', () => {
-          // Tabs
-          cy.findByRole('tab', {
-            name: 'Third party (USDC)',
-            selected: true
-          })
-          cy.findByRole('tab', {
-            name: 'Circle (USDC)',
-            selected: false
-          }).click()
-
-          // By default, confirm button is disabled
-          cy.findByRole('button', {
-            name: 'Confirm'
-          })
-            .should('be.visible')
-            .should('be.disabled')
-
-          // Checkbox
-          cy.findByRole('switch', {
-            name: /I understand that I'll have to send/i
-          })
-            .should('be.visible')
-            .click()
-          cy.findByRole('switch', {
-            name: /I understand that it will take/i
-          })
-            .should('be.visible')
-            .click()
-
-          cy.findByRole('button', {
-            name: 'Confirm'
-          })
-            .should('be.visible')
-            .should('be.enabled')
-            .click()
-
-          cy.findByText(/pay a one-time approval fee/).click()
-          cy.findByRole('button', {
-            name: /Pay approval fee of/
-          }).click()
-          cy.log('Approving USDC...')
-          cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-            () => {
-              // eslint-disable-next-line
-              cy.wait(40_000)
-              cy.confirmMetamaskTransaction().then(() => {
-                cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-                cy.findByText(
-                  `${formatAmount(USDCAmountToSend, {
-                    symbol: 'USDC'
-                  })}`
-                ).should('be.visible')
-              })
-            }
-          )
-        })
-      }
-    )
+        cy.openTransactionDetails(txData)
+        cy.findTransactionDetailsCustomDestinationAddress(
+          Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+        )
+      })
+    })
   })
 })

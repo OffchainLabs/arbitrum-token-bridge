@@ -1,10 +1,7 @@
 import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
-import {
-  addCustomNetwork,
-  constants as arbitrumSdkConstants
-} from '@arbitrum/sdk'
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
@@ -20,11 +17,12 @@ import {
   removeCustomChainFromLocalStorage,
   saveCustomChainToLocalStorage,
   supportedCustomOrbitParentChains,
-  rpcURLs
+  rpcURLs,
+  isNetwork
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
-import { getProviderForChainId } from '../../hooks/useNetworks'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Transition } from './Transition'
 import { Button } from './Button'
 
@@ -180,8 +178,10 @@ async function mapOrbitConfigToOrbitChain(
   )
   const confirmPeriodBlocks =
     (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
+  const { isTestnet } = isNetwork(data.chainInfo.parentChainId)
+
   return {
-    chainID: data.chainInfo.chainId,
+    chainId: data.chainInfo.chainId,
     confirmPeriodBlocks,
     ethBridge: {
       bridge: data.coreContracts.bridge,
@@ -193,31 +193,26 @@ async function mapOrbitConfigToOrbitChain(
     rpcUrl: data.chainInfo.rpcUrl,
     explorerUrl: data.chainInfo.explorerUrl,
     isCustom: true,
+    isTestnet,
     name: data.chainInfo.chainName,
-    partnerChainID: data.chainInfo.parentChainId,
-    partnerChainIDs: [],
+    parentChainId: data.chainInfo.parentChainId,
     retryableLifetimeSeconds: 604800,
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 900000,
-    blockTime: arbitrumSdkConstants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     nativeToken: data.chainInfo.nativeToken,
-    isArbitrum: true,
     tokenBridge: {
-      l1CustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
-      l1ERC20Gateway: data.tokenBridgeContracts.l2Contracts.standardGateway,
-      l1GatewayRouter: data.tokenBridgeContracts.l2Contracts.router,
-      l1MultiCall: data.tokenBridgeContracts.l2Contracts.multicall,
-      l1ProxyAdmin: data.tokenBridgeContracts.l2Contracts.proxyAdmin,
-      l1Weth: data.tokenBridgeContracts.l2Contracts.weth,
-      l1WethGateway: data.tokenBridgeContracts.l2Contracts.wethGateway,
-      l2CustomGateway: data.tokenBridgeContracts.l3Contracts.customGateway,
-      l2ERC20Gateway: data.tokenBridgeContracts.l3Contracts.standardGateway,
-      l2GatewayRouter: data.tokenBridgeContracts.l3Contracts.router,
-      l2Multicall: data.tokenBridgeContracts.l3Contracts.multicall,
-      l2ProxyAdmin: data.tokenBridgeContracts.l3Contracts.proxyAdmin,
-      l2Weth: data.tokenBridgeContracts.l3Contracts.weth,
-      l2WethGateway: data.tokenBridgeContracts.l3Contracts.wethGateway
+      parentCustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
+      parentErc20Gateway: data.tokenBridgeContracts.l2Contracts.standardGateway,
+      parentGatewayRouter: data.tokenBridgeContracts.l2Contracts.router,
+      parentMultiCall: data.tokenBridgeContracts.l2Contracts.multicall,
+      parentProxyAdmin: data.tokenBridgeContracts.l2Contracts.proxyAdmin,
+      parentWeth: data.tokenBridgeContracts.l2Contracts.weth,
+      parentWethGateway: data.tokenBridgeContracts.l2Contracts.wethGateway,
+      childCustomGateway: data.tokenBridgeContracts.l3Contracts.customGateway,
+      childErc20Gateway: data.tokenBridgeContracts.l3Contracts.standardGateway,
+      childGatewayRouter: data.tokenBridgeContracts.l3Contracts.router,
+      childMultiCall: data.tokenBridgeContracts.l3Contracts.multicall,
+      childProxyAdmin: data.tokenBridgeContracts.l3Contracts.proxyAdmin,
+      childWeth: data.tokenBridgeContracts.l3Contracts.weth,
+      childWethGateway: data.tokenBridgeContracts.l3Contracts.wethGateway
     }
   }
 }
@@ -271,7 +266,7 @@ export const AddCustomChain = () => {
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomNetwork({ customL2Network: customChain })
+      registerCustomArbitrumNetwork(customChain)
       saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
@@ -333,20 +328,20 @@ export const AddCustomChain = () => {
             <tbody>
               {customChains.map(customChain => (
                 <tr
-                  key={customChain.chainID}
+                  key={customChain.chainId}
                   className="border-b border-gray-dark"
                 >
                   <th className="max-w-[100px] truncate py-3 text-sm font-normal">
                     {customChain.name}
                   </th>
                   <th className="py-3 text-sm font-normal">
-                    {customChain.chainID}
+                    {customChain.chainId}
                   </th>
                   <th className="py-3 text-sm font-normal">
-                    {getNetworkName(customChain.partnerChainID)}
+                    {getNetworkName(customChain.parentChainId)}
                   </th>
                   <th className="py-3 text-sm font-normal">
-                    {customChain.partnerChainID}
+                    {customChain.parentChainId}
                   </th>
                   <th className="py-3">
                     <Popover className="relative">
@@ -359,10 +354,10 @@ export const AddCustomChain = () => {
                             className="rounded-t p-4 text-left transition duration-300 hover:bg-[#333333]"
                             onClick={() => {
                               removeCustomChainFromLocalStorage(
-                                customChain.chainID
+                                customChain.chainId
                               )
                               removeOrbitConfigFromLocalStorage(
-                                customChain.chainID
+                                customChain.chainId
                               )
                               // reload to apply changes
                               location.reload()
@@ -375,7 +370,7 @@ export const AddCustomChain = () => {
                             href={`data:text/json;charset=utf-8,${encodeURIComponent(
                               JSON.stringify(
                                 getOrbitConfigFromLocalStorageById(
-                                  customChain.chainID
+                                  customChain.chainId
                                 )
                               )
                             )}`}

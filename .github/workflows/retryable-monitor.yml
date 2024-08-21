@@ -1,0 +1,18 @@
+name: Retryable Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "3 8 * * *" # Run once a day at 08:03am GMT
+
+jobs:
+  run-retryable-monitoring:
+    name: Retryable Monitor (${{ matrix.chain == 'orbit' && 'Orbit' || matrix.chain == 'core' && 'Core' || matrix.chain }})
+    strategy:
+      matrix:
+        chain: [core, orbit]
+    uses: ./.github/workflows/monitoring.yml
+    with:
+      chain: ${{ matrix.chain }}
+      monitor: retryable
+    secrets: inherit

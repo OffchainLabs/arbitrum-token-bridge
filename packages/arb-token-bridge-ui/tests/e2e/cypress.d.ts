@@ -7,7 +7,22 @@ import {
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
-  fundUserWalletEth
+  fundUserWalletEth,
+  searchAndSelectToken,
+  fillCustomDestinationAddress,
+  typeAmount,
+  findSourceChainButton,
+  findDestinationChainButton,
+  findGasFeeSummary,
+  findGasFeeForChain,
+  findMoveFundsButton,
+  findSelectTokenButton,
+  openTransactionDetails,
+  closeTransactionDetails,
+  findTransactionDetailsCustomDestinationAddress,
+  findTransactionInTransactionHistory,
+  findClaimButton,
+  selectTransactionsPanelTab
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -27,11 +42,32 @@ declare global {
         query?: { [s: string]: string }
       }): typeof login
       logout(): typeof logout
-      openTransactionsPanel(): typeof openTransactionsPanel
+      selectTransactionsPanelTab: typeof selectTransactionsPanelTab
+      openTransactionsPanel: typeof openTransactionsPanel
       resetCctpAllowance: typeof resetCctpAllowance
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
+      searchAndSelectToken({
+        tokenName,
+        tokenAddress
+      }: {
+        tokenName: string
+        tokenAddress: string
+      }): typeof searchAndSelectToken
+      fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
+      typeAmount: typeof typeAmount
+      findSourceChainButton: typeof findSourceChainButton
+      findDestinationChainButton: typeof findDestinationChainButton
+      findGasFeeForChain: typeof findGasFeeForChain
+      findGasFeeSummary: typeof findGasFeeSummary
+      findMoveFundsButton: typeof findMoveFundsButton
+      findSelectTokenButton: typeof findSelectTokenButton
+      openTransactionDetails: typeof openTransactionDetails
+      closeTransactionDetails: typeof closeTransactionDetails
+      findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
+      findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
+      findClaimButton: typeof findClaimButton
     }
   }
 }

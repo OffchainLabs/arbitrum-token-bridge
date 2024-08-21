@@ -49,6 +49,7 @@ export const useArbQueryParams = () => {
     sourceChain: ChainParam,
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
+    amount2: withDefault(AmountQueryParam, ''), // extra eth to send together with erc20
     token: StringParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false)
   })
@@ -88,10 +89,10 @@ const sanitizeAmountQueryParam = (amount: string) => {
     return String(Math.abs(Number(parsedAmount)))
   }
 
-  // replace leading zeros
+  // replace leading zeros and spaces
   // this regex finds 1 or more 0s before any digits including 0
   // but the digits are not captured into the result string
-  return parsedAmount.replace(/^0+(?=\d)/, '')
+  return parsedAmount.replace(/(^0+(?=\d))| /g, '')
 }
 
 // Our custom query param type for Amount field - will be parsed and returned as a string,
@@ -108,7 +109,7 @@ export const AmountQueryParam = {
 }
 
 // Parse chainId to ChainQueryParam or ChainId for orbit chain
-function encodeChainQueryParam(
+export function encodeChainQueryParam(
   chainId: number | null | undefined
 ): string | undefined {
   if (!chainId) {
@@ -133,7 +134,7 @@ function isValidNumber(value: number | null | undefined): value is number {
 
 // Parse ChainQueryParam/ChainId to ChainId
 // URL accept both chainId and chainQueryParam (string)
-function decodeChainQueryParam(
+export function decodeChainQueryParam(
   value: string | (string | null)[] | null | undefined
   // ChainId type doesn't include custom orbit chain, we need to add number type
 ): ChainId | number | undefined {

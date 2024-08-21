@@ -1,5 +1,6 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import React, { PropsWithChildren } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 type SearchPanelTableProps = {
   searchInputPlaceholder: string
@@ -9,6 +10,7 @@ type SearchPanelTableProps = {
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
   dataCy?: string
+  isDialog: boolean
 }
 
 export const SearchPanelTable = ({
@@ -21,10 +23,11 @@ export const SearchPanelTable = ({
   },
   errorMessage,
   children,
-  dataCy
+  dataCy,
+  isDialog
 }: PropsWithChildren<SearchPanelTableProps>) => {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex w-[calc(100vw_-_60px)] flex-col gap-3 md:w-full">
       <form onSubmit={onSubmit} className="flex flex-col">
         <div className="flex items-stretch gap-2">
           <div className="relative flex h-full w-full grow items-center rounded border-[1px] border-gray-dark bg-black/30 px-2 text-white shadow-input">
@@ -44,7 +47,10 @@ export const SearchPanelTable = ({
         )}
       </form>
       <div
-        className="sm:shadow-search-panel h-[calc(100vh_-_190px)] overflow-hidden rounded border border-gray-dark bg-black/30 sm:h-[400px]"
+        className={twMerge(
+          'sm:shadow-search-panel h-[calc(100vh_-_200px)] rounded border border-gray-dark bg-black/30 md:h-[calc(100vh_-_390px)]',
+          isDialog ? 'md:max-h-[700px]' : 'md:max-h-[400px]'
+        )}
         data-cy={dataCy}
       >
         {children}

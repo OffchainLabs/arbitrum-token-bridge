@@ -1,4 +1,4 @@
-import { getL1SubgraphClient } from '../SubgraphUtils'
+import { hasL1Subgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchDepositsFromSubgraphResult = {
@@ -26,7 +26,7 @@ export type FetchDepositsFromSubgraphResult = {
  * Fetches initiated deposits (ETH + Tokens) from subgraph in range of [fromBlock, toBlock] and pageParams.
  *
  * @param query Query params
- * @param query.sender Address that initiated the withdrawal
+ * @param query.sender Address that initiated the deposit
  * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
@@ -49,13 +49,13 @@ export const fetchDepositsFromSubgraph = async ({
   sender?: string
   receiver?: string
   fromBlock: number
-  toBlock: number
+  toBlock?: number
   l2ChainId: number
   pageSize?: number
   pageNumber?: number
   searchString?: string
 }): Promise<FetchDepositsFromSubgraphResult[]> => {
-  if (fromBlock >= toBlock) {
+  if (toBlock && fromBlock >= toBlock) {
     // if fromBlock > toBlock or both are equal / 0
     return []
   }
@@ -73,11 +73,8 @@ export const fetchDepositsFromSubgraph = async ({
     })
   )
 
-  // don't call API if trying to query an unsupported network
-  try {
-    getL1SubgraphClient(Number(l2ChainId))
-  } catch (error: any) {
-    throw error
+  if (!hasL1Subgraph(Number(l2ChainId))) {
+    throw new Error(`L1 subgraph not available for network: ${l2ChainId}`)
   }
 
   if (pageSize === 0) return [] // don't query subgraph if nothing requested

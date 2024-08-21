@@ -1,4 +1,5 @@
 import { ChainId } from '../util/networks'
+import { xErc20RequiresApprovalOnChildChain } from './xErc20Utils'
 
 export type RequireL2ApproveToken = {
   symbol: string
@@ -22,6 +23,11 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       symbol: 'ARB',
       l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
       l2Address: '0x912CE59144191C1204E64559FE8253a0e49E6548'
+    },
+    {
+      symbol: 'saETH',
+      l1Address: '0xF1617882A71467534D14EEe865922de1395c9E89',
+      l2Address: '0xF1617882A71467534D14EEe865922de1395c9E89'
     }
   ],
   [ChainId.ArbitrumNova]: [
@@ -36,25 +42,47 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l2Address: '0x0057Ac2d777797d31CD3f8f13bF5e927571D6Ad0'
     }
   ],
-  [ChainId.ArbitrumGoerli]: [
-    {
-      symbol: 'GRT',
-      l1Address: '0x5c946740441C12510a167B447B7dE565C20b9E3C',
-      l2Address: '0x18C924BD5E8b83b47EFaDD632b7178E2Fd36073D'
-    },
+  [ChainId.ArbitrumSepolia]: [
     {
       symbol: 'ARB',
-      l1Address: '0xECCc8dE9b0a0F1074D8dc6E1092964A3Bc400a41',
-      l2Address: '0xF861378B543525ae0C47d33C90C954Dc774Ac1F9'
+      l1Address: '0xfa898E8d38B008F3bAc64dce019A9480d4F06863',
+      l2Address: '0xc275b23c035a9d4ec8867b47f55427e0bdce14cb'
+    }
+  ],
+  // xai mainnet
+  [660279]: [
+    {
+      symbol: 'wCU',
+      l1Address: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02',
+      l2Address: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02'
+    }
+  ],
+  // xai testnet
+  [37714555429]: [
+    {
+      symbol: 'CU',
+      l1Address: '0xd781cea0b8D5dDd0aeeD1dF7aC109C974A221B00',
+      l2Address: '0xe267c440dbfb1e185d506c2cc3c44eb21340e046'
     }
   ]
 }
 
-export function tokenRequiresApprovalOnL2(
-  erc20L1Address: string,
-  l2ChainId: number
+export type TokenWithdrawalApprovalParams = {
+  tokenAddressOnParentChain: string
+  parentChainId: ChainId
+  childChainId: ChainId
+}
+
+export async function tokenRequiresApprovalOnL2(
+  params: TokenWithdrawalApprovalParams
 ) {
-  return (L2ApproveTokens[l2ChainId] ?? [])
+  if (await xErc20RequiresApprovalOnChildChain(params)) {
+    return true
+  }
+
+  const { tokenAddressOnParentChain, childChainId } = params
+
+  return (L2ApproveTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
-    .includes(erc20L1Address.toLowerCase())
+    .includes(tokenAddressOnParentChain.toLowerCase())
 }
