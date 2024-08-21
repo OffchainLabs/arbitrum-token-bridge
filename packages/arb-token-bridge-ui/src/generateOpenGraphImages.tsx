@@ -3,6 +3,8 @@ import satori, { Font } from 'satori'
 import sharp from 'sharp'
 import fs from 'fs'
 
+import OgImage from '@/images/og-image.jpg'
+
 const dimensions = {
   width: 1200,
   height: 627
@@ -75,71 +77,86 @@ async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
       style={{
         ...dimensions,
         display: 'flex',
-        flexDirection: 'column',
-        color: 'black',
-        justifyContent: 'space-between',
-        padding: '2rem'
+        position: 'relative',
+        width: dimensions.width,
+        height: dimensions.height
       }}
     >
+      <img
+        src="https://bridge.arbitrum.io/og-image.jpg"
+        width={1200}
+        height={627}
+      />
       <div
         style={{
+          ...dimensions,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
           display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between'
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '2rem'
         }}
       >
-        <div />
         <div
           style={{
             display: 'flex',
-            background: 'white',
-            borderRadius: '50%',
-            padding: '0.5rem'
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between'
           }}
         >
-          <img
-            src="https://arbitrum.foundation/logo.png"
-            width={64}
-            height={64}
-          />
-        </div>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <span style={{ color: 'white', fontSize: '6rem' }}>ARBITRUM</span>
-        <span style={{ color: 'white', fontSize: '4rem' }}>BRIDGE</span>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}
-      >
-        <span style={{ color: 'white', fontSize: '2rem' }}>
-          Bridge from {from.name} to {to.name}
-        </span>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
+          <div />
           <div
             style={{
               display: 'flex',
               background: 'white',
               borderRadius: '50%',
-              padding: '1rem'
+              padding: '0.5rem'
             }}
           >
-            <img src={from.logo} width={128} height={128} />
+            <img
+              src="https://arbitrum.foundation/logo.png"
+              width={64}
+              height={64}
+            />
           </div>
-          <div
-            style={{
-              display: 'flex',
-              background: 'white',
-              borderRadius: '50%',
-              padding: '1rem'
-            }}
-          >
-            <img src={to.logo} width={128} height={128} />
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <span style={{ color: 'white', fontSize: '2rem' }}>
+            Bridge from {from.name} to {to.name}
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                background: 'white',
+                borderRadius: '50%',
+                padding: '1rem'
+              }}
+            >
+              <img src={from.logo} width={128} height={128} />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                background: 'white',
+                borderRadius: '50%',
+                padding: '1rem'
+              }}
+            >
+              <img src={to.logo} width={128} height={128} />
+            </div>
           </div>
         </div>
       </div>
