@@ -34,7 +34,6 @@ jobs:
       with:
         repository: OffchainLabs/arbitrum-monitoring
         path: arbitrum-monitoring
-        ref:  dl/move-config-to-root
 
     - name: Setup Node and install dependencies
       uses: actions/setup-node@v4
