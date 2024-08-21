@@ -93,7 +93,7 @@ describe('Deposit USDC through CCTP', () => {
     })
 
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction({ gasConfig: 'aggressive' })
+    cy.confirmMetamaskTransaction(undefined)
     cy.findTransactionInTransactionHistory({
       duration: 'a minute',
       amount: USDCAmountToSend,
@@ -109,12 +109,10 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpDeposit()
 
-    cy.confirmSpending({
-      shouldWaitForPopupClosure: true
-    })
+    cy.confirmSpending({ shouldWaitForPopupClosure: true })
 
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction({ gasConfig: 'aggressive' })
+    cy.confirmMetamaskTransaction(undefined)
     const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
     cy.findTransactionInTransactionHistory({
       duration: 'a minute',

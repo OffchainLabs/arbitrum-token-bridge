@@ -3,7 +3,6 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { zeroToLessThanOneETH } from '../../support/common'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {

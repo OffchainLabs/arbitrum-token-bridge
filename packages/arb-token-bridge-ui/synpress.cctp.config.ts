@@ -55,7 +55,8 @@ async function fundWallets() {
    * And in the worst case, we run each tests 3 time
    */
   const usdcAmount = utils.parseUnits('0.0006', 6)
-  const ethAmount = utils.parseEther('0.006')
+  const ethAmountSepolia = utils.parseEther('0.01')
+  const ethAmountArbSepolia = utils.parseEther('0.0002')
   const ethPromises: (() => Promise<void>)[] = []
   const usdcPromises: (() => Promise<void>)[] = []
 
@@ -65,7 +66,7 @@ async function fundWallets() {
         address: userWalletAddress,
         provider: sepoliaProvider,
         sourceWallet: localWallet,
-        amount: ethAmount
+        amount: ethAmountSepolia
       })
     )
     ethPromises.push(() =>
@@ -73,7 +74,7 @@ async function fundWallets() {
         address: userWalletAddress,
         provider: arbSepoliaProvider,
         sourceWallet: localWallet,
-        amount: ethAmount
+        amount: ethAmountArbSepolia
       })
     )
     usdcPromises.push(
@@ -100,7 +101,7 @@ async function fundWallets() {
         address: userWalletAddress,
         provider: sepoliaProvider,
         sourceWallet: localWallet,
-        amount: ethAmount
+        amount: ethAmountSepolia
       })
     )
     usdcPromises.push(() =>
@@ -118,7 +119,7 @@ async function fundWallets() {
         address: userWalletAddress,
         provider: arbSepoliaProvider,
         sourceWallet: localWallet,
-        amount: ethAmount
+        amount: ethAmountArbSepolia
       })
     )
     usdcPromises.push(() =>
