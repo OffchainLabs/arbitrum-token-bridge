@@ -9,10 +9,10 @@ import {
 
 const ERC20TokenAddressL1: string = Cypress.env(
   'ERC20_TOKEN_ADDRESS_PARENT_CHAIN'
-).trim()
+)
 const ERC20TokenAddressL2: string = Cypress.env(
   'ERC20_TOKEN_ADDRESS_CHILD_CHAIN'
-).trim()
+)
 
 describe('Import token', () => {
   // we use mainnet to test token lists
@@ -160,7 +160,7 @@ describe('Import token', () => {
         // Add button should be enabled
         cy.get('@addButton').should('be.enabled')
 
-        // Add one more character
+        // Add one more character to make the address invalid
         cy.get('@searchInput').typeRecursively(`${moveToEnd}x`)
         // Add button should be disabled
         cy.get('@addButton').should('be.disabled')
