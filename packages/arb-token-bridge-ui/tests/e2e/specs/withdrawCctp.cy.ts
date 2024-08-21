@@ -67,7 +67,7 @@ describe('Withdraw USDC through CCTP', () => {
       tokenAddress: CommonAddress.ArbitrumSepolia.USDC
     })
 
-    cy.findByPlaceholderText(/enter amount/i).type(String(USDCAmountToSend))
+    cy.typeAmount(USDCAmountToSend)
   })
 
   it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {

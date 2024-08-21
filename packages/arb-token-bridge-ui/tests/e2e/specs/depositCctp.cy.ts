@@ -76,7 +76,7 @@ describe('Deposit USDC through CCTP', () => {
       tokenAddress: CommonAddress.Sepolia.USDC
     })
 
-    cy.findByPlaceholderText(/enter amount/i).type(String(USDCAmountToSend))
+    cy.typeAmount(USDCAmountToSend)
     cy.findGasFeeSummary(zeroToLessThanOneETH)
     cy.findGasFeeForChain('Sepolia', zeroToLessThanOneETH)
     cy.findGasFeeForChain(
