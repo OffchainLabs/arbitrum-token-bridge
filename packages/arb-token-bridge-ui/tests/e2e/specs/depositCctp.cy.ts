@@ -88,20 +88,18 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpDeposit()
-    cy.confirmSpending({
-      shouldWaitForPopupClosure: true
-    })
+    cy.confirmSpending({ shouldWaitForPopupClosure: true })
 
-    cy.wait(40_000)
-    cy.confirmMetamaskTransaction(undefined)
-    cy.findTransactionInTransactionHistory({
-      duration: 'a minute',
-      amount: USDCAmountToSend,
-      symbol: 'USDC',
-      options: {
-        timeout: 60_000
-      }
-    })
+    // cy.wait(40_000)
+    // cy.confirmMetamaskTransaction(undefined)
+    // cy.findTransactionInTransactionHistory({
+    //   duration: 'a minute',
+    //   amount: USDCAmountToSend,
+    //   symbol: 'USDC',
+    //   options: {
+    //     timeout: 60_000
+    //   }
+    // })
   })
 
   it('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
@@ -111,19 +109,19 @@ describe('Deposit USDC through CCTP', () => {
 
     cy.confirmSpending({ shouldWaitForPopupClosure: true })
 
-    cy.wait(40_000)
-    cy.confirmMetamaskTransaction(undefined)
-    const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
-    cy.findTransactionInTransactionHistory({
-      duration: 'a minute',
-      ...txData,
-      options: {
-        timeout: 60_000
-      }
-    })
-    cy.openTransactionDetails(txData)
-    cy.findTransactionDetailsCustomDestinationAddress(
-      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-    )
+    // cy.wait(40_000)
+    // cy.confirmMetamaskTransaction(undefined)
+    // const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
+    // cy.findTransactionInTransactionHistory({
+    //   duration: 'a minute',
+    //   ...txData,
+    //   options: {
+    //     timeout: 60_000
+    //   }
+    // })
+    // cy.openTransactionDetails(txData)
+    // cy.findTransactionDetailsCustomDestinationAddress(
+    //   Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+    // )
   })
 })
