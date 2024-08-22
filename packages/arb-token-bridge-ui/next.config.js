@@ -29,6 +29,13 @@ module.exports = {
     return [
       {
         source: '/:slug((?!.*\\.[a-zA-Z0-9]+$).*)',
+        has: [
+          {
+            type: 'header',
+            key: 'x-is-file',
+            value: false
+          }
+        ],
         destination: '/?destinationChain=:slug',
         permanent: true
       }
