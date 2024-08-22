@@ -19,7 +19,6 @@ export type NetworkName =
   | 'arbitrum-sepolia'
   | 'mainnet'
   | 'sepolia'
-  | 'custom-sepolia'
 
 type NetworkConfig = {
   networkName: NetworkName
