@@ -126,7 +126,7 @@ export const updateAdditionalDepositData = async ({
   }
 
   const { value2 } = await getBatchTransferDepositData({
-    l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader,
+    l1ToL2Msg: parentToChildMsg as ParentToChildMessageReader,
     depositStatus: tokenDeposit.status
   })
 
