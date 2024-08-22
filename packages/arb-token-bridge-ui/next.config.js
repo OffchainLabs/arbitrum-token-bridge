@@ -33,7 +33,7 @@ module.exports = {
           {
             type: 'header',
             key: 'x-is-file',
-            value: false
+            value: 'false'
           }
         ],
         destination: '/?destinationChain=:slug',
