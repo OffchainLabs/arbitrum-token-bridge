@@ -19,11 +19,12 @@ export type NetworkName =
   | 'arbitrum-sepolia'
   | 'mainnet'
   | 'sepolia'
+  | 'custom-sepolia'
 
 type NetworkConfig = {
   networkName: NetworkName
   rpcUrl: string
-  chainId: string
+  chainId: number
   symbol: string
   isTestnet: boolean
   multiCall: string
@@ -45,7 +46,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
   return {
     networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
-    chainId: isOrbitTest ? '412346' : '1337',
+    chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: isOrbitTest
@@ -60,7 +61,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
   return {
     networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
-    chainId: isOrbitTest ? '333333' : '412346',
+    chainId: isOrbitTest ? 333333 : 412346,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: isOrbitTest
@@ -73,7 +74,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
-    chainId: '11155111',
+    chainId: 11155111,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: MULTICALL_TESTNET_ADDRESS
@@ -84,7 +85,7 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'arbitrum-sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
-    chainId: '421614',
+    chainId: 421614,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: MULTICALL_TESTNET_ADDRESS

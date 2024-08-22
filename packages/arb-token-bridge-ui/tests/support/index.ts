@@ -7,6 +7,7 @@ import {
   getL2TestnetNetworkConfig
 } from './common'
 import './commands'
+import { ChainId } from '../../src/util/networks'
 
 Cypress.Keyboard.defaults({
   // tests are flaky in CI with low keystroke delay
@@ -26,7 +27,17 @@ logCollector({
 
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing
-  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'sepolia')
+  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'mainnet')
+    .then(() => {
+      // Add custom Sepolia Network
+      cy.addMetamaskNetwork({
+        networkName: 'custom-sepolia',
+        rpcUrl: Cypress.env('SEPOLIA_INFURA_RPC_URL'),
+        chainId: ChainId.Sepolia,
+        symbol: 'ETH',
+        isTestnet: true
+      })
+    })
     .task('getNetworkSetupComplete')
     .then(complete => {
       if (!complete) {
