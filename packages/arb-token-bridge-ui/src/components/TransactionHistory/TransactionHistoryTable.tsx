@@ -33,7 +33,7 @@ import { Address } from '../../util/AddressUtils'
 
 export const EstimatedAmountTooltip = ({ children }: PropsWithChildren) => {
   return (
-    <Tooltip content="This is an estimate amount. The final amount may have minor fluctuations based on the total gas used.">
+    <Tooltip content="This is any additional ETH you might have deposited along with your ERC-20, plus the refunded excess gas fee.">
       {children}
     </Tooltip>
   )

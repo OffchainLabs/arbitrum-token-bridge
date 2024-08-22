@@ -27,10 +27,6 @@ import {
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 
-// max amount that will be consider gas only for max submission fee
-// anything above that we assume users sent extra ETH in amount2
-const MAX_SUBMISSION_FEE_THRESHOLD = 0.0001
-
 export const updateAdditionalDepositData = async ({
   depositTx,
   l1Provider,
@@ -130,7 +126,8 @@ export const updateAdditionalDepositData = async ({
   }
 
   const { value2 } = await getBatchTransferDepositData({
-    l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
+    l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader,
+    depositStatus: depositTx.status
   })
 
   return {
@@ -140,30 +137,106 @@ export const updateAdditionalDepositData = async ({
 }
 
 const getBatchTransferDepositData = async ({
-  l1ToL2Msg
+  l1ToL2Msg,
+  depositStatus
 }: {
   l1ToL2Msg: ParentToChildMessageReader
+  depositStatus: TxnStatus | undefined
 }): Promise<{
   value2: Transaction['value2']
 }> => {
+  let value2: Transaction['value2']
+
   // get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
   const maxSubmissionCost = Number(
     utils.formatEther(l1ToL2Msg.messageData.maxSubmissionFee.toString())
   )
 
   // we deduct gas cost from max submission fee, which leaves us with amount2 (extra ETH sent with ERC-20)
-  const estimatedGasCost = utils.formatEther(
-    l1ToL2Msg.messageData.gasLimit.mul(l1ToL2Msg.messageData.maxFeePerGas)
-  )
+  if (depositStatus === 'success') {
+    // if success, we use the actual gas cost
+    const gasCost = await getRetryableFeeOnChildChain({
+      l1ToL2Msg
+    })
 
-  const value2 = String(Number(maxSubmissionCost) - Number(estimatedGasCost))
+    if (!gasCost) {
+      return { value2: undefined }
+    }
 
-  if (Number(value2) < MAX_SUBMISSION_FEE_THRESHOLD) {
-    // ETH amount too little to distinguish between gas used, won't show
+    value2 = String(Number(maxSubmissionCost) - Number(gasCost))
+  } else {
+    // when not success, we don't know the final gas cost yet so we use estimates
+    const estimatedGasCost = utils.formatEther(
+      l1ToL2Msg.messageData.gasLimit.mul(l1ToL2Msg.messageData.maxFeePerGas)
+    )
+
+    value2 = String(Number(maxSubmissionCost) - Number(estimatedGasCost))
+  }
+
+  if (!isPotentialBatchTransfer({ l1ToL2Msg })) {
     return { value2: undefined }
   }
 
   return { value2 }
+}
+
+const isPotentialBatchTransfer = ({
+  l1ToL2Msg
+}: {
+  l1ToL2Msg: ParentToChildMessageReader
+}) => {
+  const { maxSubmissionFee, gasLimit, maxFeePerGas } = l1ToL2Msg.messageData
+
+  const estimatedGas = gasLimit.mul(maxFeePerGas)
+
+  const maxSubmissionFeeNumber = Number(utils.formatEther(maxSubmissionFee))
+  const estimatedGasNumber = Number(utils.formatEther(estimatedGas))
+
+  const excessGas = maxSubmissionFeeNumber - estimatedGasNumber
+
+  // based on averages and min/max values from previous hundreds of txs
+  if (excessGas < 0.001) {
+    return false
+  }
+
+  const estimatedGasUsedPercentage =
+    (estimatedGasNumber / maxSubmissionFeeNumber) * 100
+
+  if (estimatedGasUsedPercentage > 10) {
+    return false
+  }
+
+  return true
+}
+
+const getRetryableFeeOnChildChain = async ({
+  l1ToL2Msg
+}: {
+  l1ToL2Msg: ParentToChildMessageReader
+}) => {
+  const autoRedeemReceipt = await l1ToL2Msg.getAutoRedeemAttempt()
+
+  if (!autoRedeemReceipt) {
+    return undefined
+  }
+
+  const autoRedeemGas = autoRedeemReceipt.gasUsed.mul(
+    autoRedeemReceipt.effectiveGasPrice
+  )
+
+  const retryableCreationReceipt = await l1ToL2Msg.getRetryableCreationReceipt()
+
+  if (!retryableCreationReceipt) {
+    return undefined
+  }
+
+  const retryableCreationGas = retryableCreationReceipt.gasUsed.mul(
+    retryableCreationReceipt.effectiveGasPrice
+  )
+
+  const gasUsed = autoRedeemGas.add(retryableCreationGas)
+
+  return utils.formatEther(gasUsed)
 }
 
 const updateETHDepositStatusData = async ({
