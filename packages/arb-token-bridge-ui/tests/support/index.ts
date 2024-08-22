@@ -7,11 +7,10 @@ import {
   getL2TestnetNetworkConfig
 } from './common'
 import './commands'
-import { ChainId } from '../../src/util/networks'
 
 Cypress.Keyboard.defaults({
   // tests are flaky in CI with low keystroke delay
-  keystrokeDelay: 150
+  keystrokeDelay: 250
 })
 
 logCollector({
