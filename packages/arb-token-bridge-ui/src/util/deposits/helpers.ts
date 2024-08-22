@@ -130,8 +130,7 @@ export const updateAdditionalDepositData = async ({
   }
 
   const { value2 } = await getBatchTransferDepositData({
-    l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader,
-    depositStatus: depositTx.status
+    l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader
   })
 
   return {
@@ -141,41 +140,23 @@ export const updateAdditionalDepositData = async ({
 }
 
 const getBatchTransferDepositData = async ({
-  l1ToL2Msg,
-  depositStatus
+  l1ToL2Msg
 }: {
   l1ToL2Msg: ParentToChildMessageReader
-  depositStatus: TxnStatus | undefined
 }): Promise<{
   value2: Transaction['value2']
 }> => {
-  let value2: Transaction['value2']
-
   // get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
   const maxSubmissionCost = Number(
     utils.formatEther(l1ToL2Msg.messageData.maxSubmissionFee.toString())
   )
 
   // we deduct gas cost from max submission fee, which leaves us with amount2 (extra ETH sent with ERC-20)
-  if (depositStatus === 'success') {
-    // if success, we use the actual gas cost
-    const gasCost = await getRetryableExecutionTxFeeOnChildChain({
-      l1ToL2Msg
-    })
+  const estimatedGasCost = utils.formatEther(
+    l1ToL2Msg.messageData.gasLimit.mul(l1ToL2Msg.messageData.maxFeePerGas)
+  )
 
-    if (!gasCost) {
-      return { value2: undefined }
-    }
-
-    value2 = String(Number(maxSubmissionCost) - Number(gasCost))
-  } else {
-    // when not success, we don't know the final gas cost yet so we use estimates
-    const estimatedGasCost = utils.formatEther(
-      l1ToL2Msg.messageData.gasLimit.mul(l1ToL2Msg.messageData.maxFeePerGas)
-    )
-
-    value2 = String(Number(maxSubmissionCost) - Number(estimatedGasCost))
-  }
+  const value2 = String(Number(maxSubmissionCost) - Number(estimatedGasCost))
 
   if (Number(value2) < MAX_SUBMISSION_FEE_THRESHOLD) {
     // ETH amount too little to distinguish between gas used, won't show
@@ -183,22 +164,6 @@ const getBatchTransferDepositData = async ({
   }
 
   return { value2 }
-}
-
-const getRetryableExecutionTxFeeOnChildChain = async ({
-  l1ToL2Msg
-}: {
-  l1ToL2Msg: ParentToChildMessageReader
-}) => {
-  const childReceipt = await l1ToL2Msg.getAutoRedeemAttempt()
-
-  if (!childReceipt) {
-    return undefined
-  }
-
-  const { gasUsed, effectiveGasPrice } = childReceipt
-
-  return utils.formatEther(gasUsed.mul(effectiveGasPrice))
 }
 
 const updateETHDepositStatusData = async ({
