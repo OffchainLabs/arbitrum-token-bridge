@@ -24,7 +24,7 @@ import { isTxCompleted } from './helpers'
 import { Address } from '../../util/AddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
-import { EstimatedAmountTooltip } from './TransactionHistoryTable'
+import { BatchTransferEthTooltip } from './TransactionHistoryTable'
 
 const DetailsBox = ({
   children,
@@ -153,7 +153,7 @@ export const TransactionsTableDetails = ({
                         )}
                       </div>
                       {isBatchTransfer(tx) && (
-                        <EstimatedAmountTooltip>
+                        <BatchTransferEthTooltip>
                           <div className="flex items-center space-x-2">
                             <Image
                               height={20}
@@ -172,7 +172,7 @@ export const TransactionsTableDetails = ({
                               </span>
                             )}
                           </div>
-                        </EstimatedAmountTooltip>
+                        </BatchTransferEthTooltip>
                       )}
                     </div>
                   </div>
