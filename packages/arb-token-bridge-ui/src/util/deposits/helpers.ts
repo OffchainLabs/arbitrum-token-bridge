@@ -8,8 +8,9 @@ import {
   EthL1L3DepositStatus,
   Erc20L1L3DepositStatus
 } from '@arbitrum/sdk'
+import { utils } from 'ethers'
 
-import { Provider } from '@ethersproject/providers'
+import { Provider, TransactionReceipt } from '@ethersproject/providers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
   ParentToChildMessageData,
@@ -110,14 +111,125 @@ export const updateAdditionalDepositData = async ({
     })
   }
 
-  // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
-  return updateTokenDepositStatusData({
+  // ERC-20 deposit
+  const tokenDeposit = await updateTokenDepositStatusData({
     depositTx,
     parentToChildMsg: parentToChildMsg as ParentToChildMessageReader,
     timestampCreated,
     parentProvider,
     childProvider
   })
+
+  // check local storage first, fallback to fetching on chain
+  if (depositTx.value2) {
+    return { ...tokenDeposit, value2: depositTx.value2 }
+  }
+
+  const { value2 } = await getBatchTransferDepositData({
+    l1ToL2Msg: l1ToL2Msg as ParentToChildMessageReader,
+    depositStatus: tokenDeposit.status
+  })
+
+  return {
+    ...tokenDeposit,
+    value2
+  }
+}
+
+const getBatchTransferDepositData = async ({
+  l1ToL2Msg,
+  depositStatus
+}: {
+  l1ToL2Msg: ParentToChildMessageReader
+  depositStatus: TxnStatus | undefined
+}): Promise<{
+  value2: Transaction['value2']
+}> => {
+  if (!isPotentialBatchTransfer({ l1ToL2Msg })) {
+    return { value2: undefined }
+  }
+
+  // get maxSubmissionCost, which is the amount of ETH sent in batched ERC-20 deposit + max gas cost
+  const maxSubmissionCost = Number(
+    utils.formatEther(l1ToL2Msg.messageData.maxSubmissionFee.toString())
+  )
+
+  // we deduct gas cost from max submission fee, which leaves us with amount2 (extra ETH sent with ERC-20)
+  if (depositStatus === 'success') {
+    // if success, we use the actual gas cost
+    const retryableFee = await getRetryableFee({
+      l1ToL2Msg
+    })
+
+    if (!retryableFee) {
+      return { value2: undefined }
+    }
+
+    return { value2: String(Number(maxSubmissionCost) - Number(retryableFee)) }
+  }
+
+  // when not success, we don't know the final gas cost yet so we use estimates
+  const estimatedRetryableFee = utils.formatEther(
+    l1ToL2Msg.messageData.gasLimit.mul(l1ToL2Msg.messageData.maxFeePerGas)
+  )
+
+  return {
+    value2: String(Number(maxSubmissionCost) - Number(estimatedRetryableFee))
+  }
+}
+
+const isPotentialBatchTransfer = ({
+  l1ToL2Msg
+}: {
+  l1ToL2Msg: ParentToChildMessageReader
+}) => {
+  const { maxSubmissionFee, gasLimit, maxFeePerGas } = l1ToL2Msg.messageData
+
+  const estimatedGas = gasLimit.mul(maxFeePerGas)
+
+  const maxSubmissionFeeNumber = Number(utils.formatEther(maxSubmissionFee))
+  const estimatedGasNumber = Number(utils.formatEther(estimatedGas))
+
+  const excessGasFee = maxSubmissionFeeNumber - estimatedGasNumber
+  const percentageGasUsed = (estimatedGasNumber / maxSubmissionFeeNumber) * 100
+
+  // heuristic for determining if it's a batch transfer (based on maxSubmissionFee)
+  return excessGasFee >= 0.001 && percentageGasUsed < 10
+}
+
+const getRetryableFee = async ({
+  l1ToL2Msg
+}: {
+  l1ToL2Msg: ParentToChildMessageReader
+}) => {
+  const autoRedeemReceipt = (
+    (await l1ToL2Msg.getSuccessfulRedeem()) as {
+      status: ParentToChildMessageStatus.REDEEMED
+      childTxReceipt: TransactionReceipt
+    }
+  ).childTxReceipt
+
+  if (!autoRedeemReceipt) {
+    return undefined
+  }
+
+  const autoRedeemGas = autoRedeemReceipt.gasUsed.mul(
+    autoRedeemReceipt.effectiveGasPrice
+  )
+
+  const retryableCreationReceipt = await l1ToL2Msg.getRetryableCreationReceipt()
+
+  if (!retryableCreationReceipt) {
+    return undefined
+  }
+
+  const retryableCreationGas = retryableCreationReceipt.gasUsed.mul(
+    retryableCreationReceipt.effectiveGasPrice
+  )
+
+  const gasUsed = autoRedeemGas.add(retryableCreationGas)
+
+  return utils.formatEther(gasUsed)
 }
 
 const updateETHDepositStatusData = async ({

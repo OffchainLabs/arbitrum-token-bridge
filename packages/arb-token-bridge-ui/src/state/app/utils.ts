@@ -153,6 +153,7 @@ export const transformDeposit = (
     asset: tx.assetName || '',
     assetType: tx.assetType,
     value: tx.value,
+    value2: tx.value2,
     uniqueId: null, // not needed
     isWithdrawal: false,
     blockNum: tx.blockNumber || null,
