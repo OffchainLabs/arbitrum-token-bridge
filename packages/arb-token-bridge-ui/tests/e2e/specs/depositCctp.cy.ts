@@ -93,6 +93,10 @@ describe('Deposit USDC through CCTP', () => {
       shouldWaitForPopupClosure: true
     })
 
+    /**
+     * Currently synpress cy.confirmMetamaskTransaction doesn't work on Sepolia
+     * CCTP flow is tested in withdrawCctp.cy.ts
+     */
     // cy.wait(40_000)
     // cy.confirmMetamaskTransaction(undefined)
     // cy.findTransactionInTransactionHistory({
@@ -105,6 +109,10 @@ describe('Deposit USDC through CCTP', () => {
     // })
   })
 
+  /**
+   * Because the previous test doesn't send any transaction, allowance is still valid here.
+   * Skipping the test for now
+   */
   it.skip('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
