@@ -29,11 +29,11 @@ module.exports = {
     return [
       {
         source: '/:slug((?!.*\\.[a-zA-Z0-9]+$).*)',
-        has: [
+        missing: [
           {
             type: 'header',
-            key: 'x-is-file',
-            value: 'false'
+            key: 'accept',
+            value: 'image/(\\w+)'
           }
         ],
         destination: '/?destinationChain=:slug',
