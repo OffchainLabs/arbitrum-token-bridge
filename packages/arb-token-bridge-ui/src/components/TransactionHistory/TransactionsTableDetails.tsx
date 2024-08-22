@@ -6,6 +6,7 @@ import Image from 'next/image'
 import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
+import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 
 import { useTxDetailsStore } from './TransactionHistory'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
@@ -22,6 +23,8 @@ import { shortenAddress } from '../../util/CommonUtils'
 import { isTxCompleted } from './helpers'
 import { Address } from '../../util/AddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { isBatchTransfer } from '../../util/TokenDepositUtils'
+import { BatchTransferEthTooltip } from './TransactionHistoryTable'
 
 const DetailsBox = ({
   children,
@@ -135,17 +138,41 @@ export const TransactionsTableDetails = ({
                       <span>{dayjs(tx.createdAt).format('MMMM DD, YYYY')}</span>
                       <span>{dayjs(tx.createdAt).format('h:mma')}</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <TransactionsTableTokenImage tx={tx} />
-                      <span>
-                        {formatAmount(Number(tx.value), {
-                          symbol: tokenSymbol
-                        })}
-                      </span>
-                      {showPriceInUsd && (
-                        <span className="text-white/70">
-                          {formatUSD(ethToUSD(Number(tx.value)))}
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <TransactionsTableTokenImage tx={tx} />
+                        <span>
+                          {formatAmount(Number(tx.value), {
+                            symbol: tokenSymbol
+                          })}
                         </span>
+                        {showPriceInUsd && (
+                          <span className="text-white/70">
+                            {formatUSD(ethToUSD(Number(tx.value)))}
+                          </span>
+                        )}
+                      </div>
+                      {isBatchTransfer(tx) && (
+                        <BatchTransferEthTooltip>
+                          <div className="flex items-center space-x-2">
+                            <Image
+                              height={20}
+                              width={20}
+                              alt="ETH logo"
+                              src={EthereumLogoRoundLight}
+                            />
+                            <span className="ml-2">
+                              {formatAmount(Number(tx.value2), {
+                                symbol: ether.symbol
+                              })}
+                            </span>
+                            {isNetwork(tx.sourceChainId).isEthereumMainnet && (
+                              <span className="text-white/70">
+                                {formatUSD(ethToUSD(Number(tx.value2)))}
+                              </span>
+                            )}
+                          </div>
+                        </BatchTransferEthTooltip>
                       )}
                     </div>
                   </div>

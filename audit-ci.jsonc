@@ -1,5 +1,10 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": []
+  "allowlist": [
+    // micromatch
+    // no patched version for now
+    // https://github.com/advisories/GHSA-952p-6rrq-rcjv
+    "GHSA-952p-6rrq-rcjv"
+  ]
 }
