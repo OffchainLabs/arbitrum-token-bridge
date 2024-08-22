@@ -83,7 +83,6 @@ export function DestinationNetworkBox({
                         : NetworkType.parentChain
                     }
                     forToken={selectedToken}
-                    prefix={selectedToken ? 'Balance: ' : ''}
                     tokenSymbolOverride={
                       // we need to send the proper, sanitized token-name to the component
                       selectedToken?.symbol
@@ -128,7 +127,6 @@ export function DestinationNetworkBox({
                             : customFeeTokenBalances.parentBalance
                         }
                         forToken={nativeCurrency}
-                        prefix={selectedToken ? '' : 'Balance: '}
                       />
                       {!isDepositMode && (
                         <ETHBalance
@@ -142,7 +140,6 @@ export function DestinationNetworkBox({
                       balance={
                         isDepositMode ? ethChildBalance : ethParentBalance
                       }
-                      prefix={selectedToken ? '' : 'Balance: '}
                       on={
                         isDepositMode
                           ? NetworkType.childChain

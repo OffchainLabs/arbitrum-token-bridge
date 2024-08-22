@@ -38,6 +38,7 @@ export const formatAmount = <T extends number | BigNumber | undefined>(
   options: {
     decimals?: T extends number ? never : number
     symbol?: string
+    blockExplorerChainId?: number
   } = {}
 ): string => {
   const { decimals, symbol } = options
@@ -49,6 +50,7 @@ export const formatAmount = <T extends number | BigNumber | undefined>(
   const value: number = BigNumber.isBigNumber(balance)
     ? parseFloat(utils.formatUnits(balance, decimals))
     : balance
+
   const suffix = symbol ? ` ${symbol}` : ''
 
   if (value === 0) {

@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react'
 
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
 import {
   NetworkButton,
@@ -104,18 +103,6 @@ export function SourceNetworkBox({
             onClick={openSourceNetworkSelectionDialog}
           />
           <BalancesContainer>
-            <TokenBalance
-              on={
-                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
-              }
-              balance={
-                isDepositMode
-                  ? selectedTokenBalances.parentBalance
-                  : selectedTokenBalances.childBalance
-              }
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
             {nativeCurrency.isCustom ? (
               <>
                 <TokenBalance
@@ -130,7 +117,6 @@ export function SourceNetworkBox({
                       : customFeeTokenBalances.childBalance
                   }
                   forToken={nativeCurrency}
-                  prefix={selectedToken ? '' : 'Balance: '}
                 />
                 {/* Only show ETH balance on parent chain */}
                 {isDepositMode && (
@@ -143,7 +129,6 @@ export function SourceNetworkBox({
             ) : (
               <ETHBalance
                 balance={isDepositMode ? ethParentBalance : ethChildBalance}
-                prefix={selectedToken ? '' : 'Balance: '}
                 on={
                   isDepositMode
                     ? NetworkType.parentChain
@@ -160,6 +145,7 @@ export function SourceNetworkBox({
             errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
             onChange={e => setAmount(e.target.value)}
+            customFeeTokenBalances={customFeeTokenBalances}
           />
 
           {isBatchTransferSupported && (
@@ -172,6 +158,7 @@ export function SourceNetworkBox({
                 symbol: nativeCurrency.symbol,
                 disabled: true
               }}
+              customFeeTokenBalances={customFeeTokenBalances}
             />
           )}
 

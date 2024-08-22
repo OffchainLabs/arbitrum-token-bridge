@@ -4,31 +4,45 @@ import { useMemo } from 'react'
 import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import {
+  Balances,
+  useSelectedTokenBalances
+} from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
 import { useBalances } from '../../hooks/useBalances'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { formatAmount } from '../../util/NumberUtils'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { Loader } from '../common/atoms/Loader'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { getExplorerUrl } from '../../util/networks'
 
-function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { className = '', ...rest } = props
+function MaxButton(
+  props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    customFeeTokenBalances: Balances
+  }
+) {
+  const { customFeeTokenBalances, className = '', ...rest } = props
 
   const {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const { isDepositMode, childChainProvider } =
+    useNetworksRelationship(networks)
 
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
+  const tokenBalance = isDepositMode
+    ? selectedTokenBalances.parentBalance
+    : selectedTokenBalances.childBalance
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
-    const tokenBalance = isDepositMode
-      ? selectedTokenBalances.parentBalance
-      : selectedTokenBalances.childBalance
-
     if (selectedToken) {
       if (!tokenBalance) {
         return false
@@ -37,17 +51,24 @@ function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
       return !tokenBalance.isZero()
     }
 
+    if (nativeCurrency.isCustom) {
+      return (
+        customFeeTokenBalances.parentBalance &&
+        !customFeeTokenBalances.parentBalance.isZero()
+      )
+    }
+
     if (!ethBalance) {
       return false
     }
 
     return !ethBalance.isZero()
   }, [
-    ethParentBalance,
-    ethChildBalance,
-    selectedTokenBalances,
     selectedToken,
-    isDepositMode
+    nativeCurrency.isCustom,
+    ethBalance,
+    tokenBalance,
+    customFeeTokenBalances
   ])
 
   if (!maxButtonVisible) {
@@ -57,14 +78,74 @@ function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"
-      className={twMerge(
-        'arb-hover px-2 py-2 text-sm font-light text-gray-6 sm:px-4',
-        className
-      )}
+      className={twMerge('arb-hover text-right text-xs text-gray-6', className)}
       {...rest}
     >
       MAX
     </button>
+  )
+}
+
+function TokenExplorerLink({ token }: { token: ERC20BridgeToken }) {
+  const [networks] = useNetworks()
+
+  return (
+    <ExternalLink
+      href={`${getExplorerUrl(networks.sourceChain.id)}/token/${token.address}`}
+      className="arb-hover underline"
+    >
+      {token.symbol}
+    </ExternalLink>
+  )
+}
+
+function SelectedTokenBalance({
+  customFeeTokenBalances
+}: {
+  customFeeTokenBalances: Balances
+}) {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { isDepositMode, childChainProvider } =
+    useNetworksRelationship(networks)
+
+  const { ethParentBalance, ethChildBalance } = useBalances()
+  const selectedTokenBalances = useSelectedTokenBalances()
+
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const tokenBalance = isDepositMode
+    ? selectedTokenBalances.parentBalance
+    : selectedTokenBalances.childBalance
+
+  const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
+
+  const nativeCurrencyBalance = nativeCurrency.isCustom
+    ? customFeeTokenBalances.parentBalance
+    : ethBalance
+  const balance = selectedToken ? tokenBalance : nativeCurrencyBalance
+
+  const formattedBalance = balance
+    ? formatAmount(balance, {
+        decimals: selectedToken?.decimals ?? nativeCurrency.decimals,
+        symbol: selectedToken ? undefined : nativeCurrency.symbol
+      })
+    : null
+
+  return (
+    <span className="flex whitespace-nowrap text-xs text-white">
+      Balance:{' '}
+      {formattedBalance ? (
+        <>
+          {formattedBalance}&nbsp;
+          {selectedToken && <TokenExplorerLink token={selectedToken} />}
+        </>
+      ) : (
+        <Loader wrapperClass="ml-1" color="white" size={12} />
+      )}
+    </span>
   )
 }
 
@@ -78,7 +159,7 @@ function TransferPanelInputField(
       type="text"
       inputMode="decimal"
       placeholder="Enter amount"
-      className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
+      className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-300 sm:text-3xl"
       value={value}
       {...rest}
     />
@@ -140,10 +221,17 @@ export type TransferPanelMainInputProps =
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
     tokenButtonOptions?: TokenButtonOptions
+    customFeeTokenBalances: Balances
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonOnClick, tokenButtonOptions, ...rest } = props
+  const {
+    errorMessage,
+    maxButtonOnClick,
+    tokenButtonOptions,
+    customFeeTokenBalances,
+    ...rest
+  } = props
 
   return (
     <>
@@ -155,15 +243,25 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             : 'border-white/30 text-white'
         )}
       >
-        <TokenButton options={tokenButtonOptions} />
         <div
           className={twMerge(
-            'flex grow flex-row items-center justify-center border-l',
+            'flex grow flex-row items-center justify-center',
             errorMessage ? 'border-brick' : 'border-white/30'
           )}
         >
           <TransferPanelInputField {...rest} />
-          <MaxButton onClick={maxButtonOnClick} />
+          <div className="flex flex-col items-end">
+            <TokenButton options={tokenButtonOptions} />
+            <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+              <SelectedTokenBalance
+                customFeeTokenBalances={customFeeTokenBalances}
+              />
+              <MaxButton
+                onClick={maxButtonOnClick}
+                customFeeTokenBalances={customFeeTokenBalances}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
