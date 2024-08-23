@@ -28,12 +28,16 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:slug((?!.*\\.[a-zA-Z0-9]+$).*)',
-        has: [
+        source: '/:slug((?!^$)(?!.*\\.[a-zA-Z0-9]+$).+)',
+        missing: [
+          {
+            type: 'query',
+            key: 'destinationChain'
+          },
           {
             type: 'header',
-            key: 'x-is-file',
-            value: 'false'
+            key: 'accept',
+            value: 'image/.*'
           }
         ],
         destination: '/?destinationChain=:slug',
