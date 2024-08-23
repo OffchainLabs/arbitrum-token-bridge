@@ -208,9 +208,11 @@ function StyledLoader() {
 
 export function ETHBalance({
   balance,
+  prefix,
   on
 }: {
   balance: BigNumber | null
+  prefix?: string
   on: NetworkType
 }) {
   if (!balance) {
@@ -218,9 +220,12 @@ export function ETHBalance({
   }
 
   return (
-    <span aria-label={`ETH balance amount on ${on}`}>
-      {formatAmount(balance, { symbol: ether.symbol })}
-    </span>
+    <p>
+      <span className="font-light">{prefix}</span>
+      <span aria-label={`ETH balance amount on ${on}`}>
+        {formatAmount(balance, { symbol: ether.symbol })}
+      </span>
+    </p>
   )
 }
 

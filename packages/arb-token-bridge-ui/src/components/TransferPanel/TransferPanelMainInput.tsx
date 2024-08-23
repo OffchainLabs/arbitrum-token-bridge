@@ -16,8 +16,6 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import { getExplorerUrl } from '../../util/networks'
 
 function MaxButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -78,24 +76,14 @@ function MaxButton(
   return (
     <button
       type="button"
-      className={twMerge('arb-hover text-right text-xs text-gray-6', className)}
+      className={twMerge(
+        'arb-hover text-right text-xs font-bold text-gray-6',
+        className
+      )}
       {...rest}
     >
       MAX
     </button>
-  )
-}
-
-function TokenExplorerLink({ token }: { token: ERC20BridgeToken }) {
-  const [networks] = useNetworks()
-
-  return (
-    <ExternalLink
-      href={`${getExplorerUrl(networks.sourceChain.id)}/token/${token.address}`}
-      className="arb-hover underline"
-    >
-      {token.symbol}
-    </ExternalLink>
   )
 }
 
@@ -129,8 +117,7 @@ function SelectedTokenBalance({
 
   const formattedBalance = balance
     ? formatAmount(balance, {
-        decimals: selectedToken?.decimals ?? nativeCurrency.decimals,
-        symbol: selectedToken ? undefined : nativeCurrency.symbol
+        decimals: selectedToken?.decimals ?? nativeCurrency.decimals
       })
     : null
 
@@ -138,10 +125,7 @@ function SelectedTokenBalance({
     <span className="flex whitespace-nowrap text-xs text-white">
       Balance:{' '}
       {formattedBalance ? (
-        <>
-          {formattedBalance}&nbsp;
-          {selectedToken && <TokenExplorerLink token={selectedToken} />}
-        </>
+        formattedBalance
       ) : (
         <Loader wrapperClass="ml-1" color="white" size={12} />
       )}

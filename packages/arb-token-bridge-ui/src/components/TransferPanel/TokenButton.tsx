@@ -79,7 +79,7 @@ export function TokenButton({
                 {!disabled && (
                   <ChevronDownIcon
                     className={twMerge(
-                      'h-[12px] w-[12px] text-gray-6 transition-transform duration-200',
+                      'h-3 w-3 text-gray-6 transition-transform duration-200',
                       open ? '-rotate-180' : 'rotate-0'
                     )}
                   />

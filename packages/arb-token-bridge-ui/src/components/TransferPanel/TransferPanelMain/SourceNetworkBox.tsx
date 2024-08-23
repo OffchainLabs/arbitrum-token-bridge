@@ -97,47 +97,10 @@ export function SourceNetworkBox({
   return (
     <>
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
-        <NetworkListboxPlusBalancesContainer>
-          <NetworkButton
-            type="source"
-            onClick={openSourceNetworkSelectionDialog}
-          />
-          <BalancesContainer>
-            {nativeCurrency.isCustom ? (
-              <>
-                <TokenBalance
-                  on={
-                    isDepositMode
-                      ? NetworkType.parentChain
-                      : NetworkType.childChain
-                  }
-                  balance={
-                    isDepositMode
-                      ? customFeeTokenBalances.parentBalance
-                      : customFeeTokenBalances.childBalance
-                  }
-                  forToken={nativeCurrency}
-                />
-                {/* Only show ETH balance on parent chain */}
-                {isDepositMode && (
-                  <ETHBalance
-                    balance={ethParentBalance}
-                    on={NetworkType.parentChain}
-                  />
-                )}
-              </>
-            ) : (
-              <ETHBalance
-                balance={isDepositMode ? ethParentBalance : ethChildBalance}
-                on={
-                  isDepositMode
-                    ? NetworkType.parentChain
-                    : NetworkType.childChain
-                }
-              />
-            )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
+        <NetworkButton
+          type="source"
+          onClick={openSourceNetworkSelectionDialog}
+        />
 
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
