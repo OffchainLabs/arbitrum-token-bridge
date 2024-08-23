@@ -38,7 +38,6 @@ export const formatAmount = <T extends number | BigNumber | undefined>(
   options: {
     decimals?: T extends number ? never : number
     symbol?: string
-    blockExplorerChainId?: number
   } = {}
 ): string => {
   const { decimals, symbol } = options

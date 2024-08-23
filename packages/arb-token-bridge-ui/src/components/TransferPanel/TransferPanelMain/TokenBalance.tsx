@@ -12,6 +12,7 @@ export function TokenBalance({
   forToken,
   balance,
   on,
+  prefix,
   tokenSymbolOverride
 }: {
   forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
@@ -34,6 +35,7 @@ export function TokenBalance({
 
   return (
     <p>
+      <span className="font-light">{prefix}</span>
       <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {
           decimals: forToken.decimals
