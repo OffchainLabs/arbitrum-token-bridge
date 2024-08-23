@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
 
-import { TokenButton, TokenButtonOptions } from './TokenButton'
+import { TokenButton, TokenButtonOverrides } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import {
@@ -35,12 +35,12 @@ function MaxButton(
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
-  const tokenBalance = isDepositMode
-    ? selectedTokenBalances.parentBalance
-    : selectedTokenBalances.childBalance
-
   const maxButtonVisible = useMemo(() => {
+    const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
+    const tokenBalance = isDepositMode
+      ? selectedTokenBalances.parentBalance
+      : selectedTokenBalances.childBalance
+
     if (selectedToken) {
       if (!tokenBalance) {
         return false
@@ -62,11 +62,14 @@ function MaxButton(
 
     return !ethBalance.isZero()
   }, [
+    isDepositMode,
+    ethParentBalance,
+    ethChildBalance,
+    selectedTokenBalances.parentBalance,
+    selectedTokenBalances.childBalance,
     selectedToken,
     nativeCurrency.isCustom,
-    ethBalance,
-    tokenBalance,
-    customFeeTokenBalances
+    customFeeTokenBalances.parentBalance
   ])
 
   if (!maxButtonVisible) {
@@ -87,10 +90,12 @@ function MaxButton(
   )
 }
 
-function SelectedTokenBalance({
-  customFeeTokenBalances
+function TokenBalance({
+  customFeeTokenBalances,
+  balanceOverride
 }: {
   customFeeTokenBalances: Balances
+  balanceOverride?: AmountInputOverrides['balance']
 }) {
   const {
     app: { selectedToken }
@@ -113,7 +118,8 @@ function SelectedTokenBalance({
   const nativeCurrencyBalance = nativeCurrency.isCustom
     ? customFeeTokenBalances.parentBalance
     : ethBalance
-  const balance = selectedToken ? tokenBalance : nativeCurrencyBalance
+  const balance =
+    balanceOverride ?? (selectedToken ? tokenBalance : nativeCurrencyBalance)
 
   const formattedBalance = balance
     ? formatAmount(balance, {
@@ -199,12 +205,16 @@ function ErrorMessage({
   }
 }
 
+type AmountInputOverrides = TokenButtonOverrides & {
+  balance?: number | undefined
+}
+
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     errorMessage?: string | TransferReadinessRichErrorMessage | undefined
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
-    tokenButtonOptions?: TokenButtonOptions
+    overrides?: AmountInputOverrides
     customFeeTokenBalances: Balances
   }
 
@@ -212,7 +222,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const {
     errorMessage,
     maxButtonOnClick,
-    tokenButtonOptions,
+    overrides,
     customFeeTokenBalances,
     ...rest
   } = props
@@ -235,10 +245,11 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         >
           <TransferPanelInputField {...rest} />
           <div className="flex flex-col items-end">
-            <TokenButton options={tokenButtonOptions} />
+            <TokenButton overrides={overrides} />
             <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-              <SelectedTokenBalance
+              <TokenBalance
                 customFeeTokenBalances={customFeeTokenBalances}
+                balanceOverride={overrides?.balance}
               />
               <MaxButton
                 onClick={maxButtonOnClick}

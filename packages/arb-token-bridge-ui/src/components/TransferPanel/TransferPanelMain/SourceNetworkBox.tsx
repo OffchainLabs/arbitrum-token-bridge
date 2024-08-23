@@ -27,6 +27,8 @@ import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmoun
 import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useBalances } from '../../../hooks/useBalances'
+import { utils } from 'ethers'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -41,6 +43,7 @@ export function SourceNetworkBox({
   const {
     app: { selectedToken }
   } = useAppState()
+  const { ethParentBalance } = useBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
@@ -104,9 +107,12 @@ export function SourceNetworkBox({
               errorMessage={errorMessages?.inputAmount2}
               value={amount2}
               onChange={e => setAmount2(e.target.value)}
-              tokenButtonOptions={{
+              overrides={{
                 symbol: nativeCurrency.symbol,
-                disabled: true
+                tokenButtonDisabled: true,
+                balance: ethParentBalance
+                  ? Number(utils.formatEther(ethParentBalance))
+                  : undefined
               }}
               customFeeTokenBalances={customFeeTokenBalances}
             />
