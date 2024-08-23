@@ -28,7 +28,7 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:slug((?!^$)(?!.*\\.[a-zA-Z0-9]+$).+)',
+        source: '/:slug((?!^$|api/|_next/|public/)(?!.*\\.[^/]+$).+)',
         missing: [
           {
             type: 'query',
