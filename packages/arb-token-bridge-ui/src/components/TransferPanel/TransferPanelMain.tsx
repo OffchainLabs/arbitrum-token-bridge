@@ -208,7 +208,7 @@ function StyledLoader() {
 
 export function ETHBalance({
   balance,
-  prefix,
+  prefix = '',
   on
 }: {
   balance: BigNumber | null

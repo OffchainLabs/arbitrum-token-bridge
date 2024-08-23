@@ -5,23 +5,12 @@ import {
   NetworkButton,
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
-import {
-  BalancesContainer,
-  ETHBalance,
-  NetworkContainer,
-  NetworkListboxPlusBalancesContainer
-} from '../TransferPanelMain'
-import { TokenBalance } from './TokenBalance'
-import { NetworkType } from './utils'
+import { NetworkContainer } from '../TransferPanelMain'
 import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import {
-  Balances,
-  useSelectedTokenBalances
-} from '../../../hooks/TransferPanel/useSelectedTokenBalances'
-import { useBalances } from '../../../hooks/useBalances'
+import { Balances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import {
   ETH_BALANCE_ARTICLE_LINK,
   USDC_LEARN_MORE_LINK
@@ -52,8 +41,6 @@ export function SourceNetworkBox({
   const {
     app: { selectedToken }
   } = useAppState()
-  const { ethParentBalance, ethChildBalance } = useBalances()
-  const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()

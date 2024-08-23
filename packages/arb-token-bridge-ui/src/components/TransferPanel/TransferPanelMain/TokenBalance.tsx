@@ -12,7 +12,7 @@ export function TokenBalance({
   forToken,
   balance,
   on,
-  prefix,
+  prefix = '',
   tokenSymbolOverride
 }: {
   forToken: ERC20BridgeToken | NativeCurrencyErc20 | null

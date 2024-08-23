@@ -49,7 +49,6 @@ export const formatAmount = <T extends number | BigNumber | undefined>(
   const value: number = BigNumber.isBigNumber(balance)
     ? parseFloat(utils.formatUnits(balance, decimals))
     : balance
-
   const suffix = symbol ? ` ${symbol}` : ''
 
   if (value === 0) {
