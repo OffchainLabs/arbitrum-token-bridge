@@ -11,6 +11,7 @@ import {
   getCustomDestinationAddress
 } from './tests/support/common'
 import specFiles from './tests/e2e/cctp.json'
+import { sepolia } from 'wagmi'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
@@ -50,6 +51,40 @@ async function fundWallets() {
   const userWalletAddress = await userWallet.getAddress()
   console.log(`Funding wallet ${userWalletAddress}`)
 
+  const fundEthHelper = (network: 'sepolia' | 'arbSepolia') => {
+    return () =>
+      fundEth({
+        address: userWalletAddress,
+        sourceWallet: localWallet,
+        ...(network === 'sepolia'
+          ? {
+              provider: sepoliaProvider,
+              amount: ethAmountSepolia
+            }
+          : {
+              provider: arbSepoliaProvider,
+              amount: ethAmountArbSepolia
+            })
+      })
+  }
+  const fundUsdcHelper = (network: 'sepolia' | 'arbSepolia') => {
+    return () =>
+      fundUsdc({
+        address: userWalletAddress,
+        sourceWallet: localWallet,
+        amount: usdcAmount,
+        ...(network === 'sepolia'
+          ? {
+              provider: sepoliaProvider,
+              networkType: 'parentChain'
+            }
+          : {
+              provider: arbSepoliaProvider,
+              networkType: 'childChain'
+            })
+      })
+  }
+
   /**
    * We need 0.0002 USDC per test (0.0001 for same address and 0.0001 for custom address)
    * And in the worst case, we run each tests 3 time
@@ -60,77 +95,14 @@ async function fundWallets() {
   const ethPromises: (() => Promise<void>)[] = []
   const usdcPromises: (() => Promise<void>)[] = []
 
-  if (tests.length === 2) {
-    ethPromises.push(() =>
-      fundEth({
-        address: userWalletAddress,
-        provider: sepoliaProvider,
-        sourceWallet: localWallet,
-        amount: ethAmountSepolia
-      })
-    )
-    ethPromises.push(() =>
-      fundEth({
-        address: userWalletAddress,
-        provider: arbSepoliaProvider,
-        sourceWallet: localWallet,
-        amount: ethAmountArbSepolia
-      })
-    )
-    usdcPromises.push(
-      () =>
-        fundUsdc({
-          address: userWalletAddress,
-          provider: sepoliaProvider,
-          networkType: 'parentChain',
-          sourceWallet: localWallet,
-          amount: usdcAmount
-        }),
-      () =>
-        fundUsdc({
-          address: userWalletAddress,
-          provider: arbSepoliaProvider,
-          networkType: 'childChain',
-          sourceWallet: localWallet,
-          amount: usdcAmount
-        })
-    )
-  } else if (tests[0].includes('deposit')) {
-    ethPromises.push(() =>
-      fundEth({
-        address: userWalletAddress,
-        provider: sepoliaProvider,
-        sourceWallet: localWallet,
-        amount: ethAmountSepolia
-      })
-    )
-    usdcPromises.push(() =>
-      fundUsdc({
-        address: userWalletAddress,
-        provider: sepoliaProvider,
-        networkType: 'parentChain',
-        sourceWallet: localWallet,
-        amount: usdcAmount
-      })
-    )
-  } else {
-    ethPromises.push(() =>
-      fundEth({
-        address: userWalletAddress,
-        provider: arbSepoliaProvider,
-        sourceWallet: localWallet,
-        amount: ethAmountArbSepolia
-      })
-    )
-    usdcPromises.push(() =>
-      fundUsdc({
-        address: userWalletAddress,
-        provider: arbSepoliaProvider,
-        networkType: 'childChain',
-        sourceWallet: localWallet,
-        amount: usdcAmount
-      })
-    )
+  if (tests.some(testFile => testFile.includes('deposit'))) {
+    ethPromises.push(fundEthHelper('sepolia'))
+    usdcPromises.push(fundUsdcHelper('sepolia'))
+  }
+
+  if (tests.some(testFile => testFile.includes('withdraw'))) {
+    ethPromises.push(fundEthHelper('arbSepolia'))
+    usdcPromises.push(fundUsdcHelper('arbSepolia'))
   }
 
   await Promise.all(ethPromises.map(fn => fn()))
