@@ -43,6 +43,7 @@ describe('Approve token for deposit', () => {
       cy.confirmSpending({
         shouldWaitForPopupClosure: true
       })
+      cy.wait(10_000)
       cy.confirmMetamaskTransaction(undefined)
     })
   })
