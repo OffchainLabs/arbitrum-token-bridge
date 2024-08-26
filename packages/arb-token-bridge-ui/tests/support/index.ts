@@ -26,7 +26,7 @@ logCollector({
 
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing
-  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'mainnet')
+  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'sepolia')
     .task('getNetworkSetupComplete')
     .then(complete => {
       if (!complete) {
