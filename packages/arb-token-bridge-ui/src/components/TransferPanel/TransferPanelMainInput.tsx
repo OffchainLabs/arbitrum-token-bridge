@@ -136,7 +136,9 @@ function TokenBalance({
             className="text-xs"
             aria-label={`${
               selectedToken?.symbol ?? nativeCurrency.symbol
-            } balance amount on parentChain`}
+            } balance amount on ${
+              isDepositMode ? 'parentChain' : 'childChain'
+            }`}
           >
             {formattedBalance}
           </span>
