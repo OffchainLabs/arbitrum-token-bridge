@@ -1,4 +1,3 @@
-import './commands'
 import '@synthetixio/synpress/support'
 import logCollector from 'cypress-terminal-report/src/installLogsCollector'
 
@@ -7,10 +6,11 @@ import {
   getL2NetworkConfig,
   getL2TestnetNetworkConfig
 } from './common'
+import './commands'
 
 Cypress.Keyboard.defaults({
   // tests are flaky in CI with low keystroke delay
-  keystrokeDelay: 150
+  keystrokeDelay: 250
 })
 
 logCollector({
@@ -20,14 +20,13 @@ logCollector({
     'cons:debug',
     'cons:error',
     'cons:info',
-    'cons:log',
     'cons:warn'
   ]
 })
 
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing
-  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'sepolia')
+  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'mainnet')
     .task('getNetworkSetupComplete')
     .then(complete => {
       if (!complete) {

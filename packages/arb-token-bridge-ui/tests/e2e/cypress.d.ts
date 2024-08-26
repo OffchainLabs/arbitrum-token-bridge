@@ -5,9 +5,6 @@ import {
   login,
   logout,
   openTransactionsPanel,
-  resetCctpAllowance,
-  fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -22,7 +19,8 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
-  selectTransactionsPanelTab
+  selectTransactionsPanelTab,
+  confirmSpending
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -44,9 +42,6 @@ declare global {
       logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
-      resetCctpAllowance: typeof resetCctpAllowance
-      fundUserUsdcTestnet: typeof fundUserUsdcTestnet
-      fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
       searchAndSelectToken({
         tokenName,
@@ -68,6 +63,7 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      confirmSpending: typeof confirmSpending
     }
   }
 }
