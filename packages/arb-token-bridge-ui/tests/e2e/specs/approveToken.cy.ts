@@ -41,6 +41,8 @@ describe('Approve token for deposit', () => {
         name: /Pay approval fee of/
       }).click()
       cy.confirmSpending({ spendLimit: '1' })
+      cy.wait(10_000)
+      cy.confirmMetamaskTransaction(undefined)
     })
   })
 })
