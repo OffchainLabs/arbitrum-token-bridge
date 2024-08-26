@@ -16,7 +16,6 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
-import { getNetworkName } from '../../util/networks'
 
 function MaxButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -105,8 +104,6 @@ function TokenBalance({
   const { isDepositMode, childChainProvider } =
     useNetworksRelationship(networks)
 
-  const networkName = getNetworkName(networks.sourceChain.id)
-
   const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
@@ -139,7 +136,7 @@ function TokenBalance({
             className="text-xs"
             aria-label={`${
               selectedToken?.symbol ?? nativeCurrency.symbol
-            } balance amount on ${networkName}`}
+            } balance amount on parentChain`}
           >
             {formattedBalance}
           </span>
