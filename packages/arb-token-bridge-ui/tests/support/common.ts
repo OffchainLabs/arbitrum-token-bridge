@@ -303,7 +303,7 @@ export async function fundEth({
   sourceWallet: Wallet
   amount?: BigNumber
 }) {
-  console.log(`Funding ETH to user wallet...`)
+  console.log(`Funding ETH to user wallet ${address}...`)
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 2 eth
   if (balance.lt(amount)) {
