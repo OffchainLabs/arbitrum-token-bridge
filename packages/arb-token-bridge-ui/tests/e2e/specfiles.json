@@ -32,7 +32,7 @@
   {
     "name": "Approve ERC20",
     "file": "tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "Import test ERC20",
