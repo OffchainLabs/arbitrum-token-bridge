@@ -11,7 +11,6 @@ import {
   getCustomDestinationAddress
 } from './tests/support/common'
 import specFiles from './tests/e2e/cctp.json'
-import { sepolia } from 'wagmi'
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
@@ -25,10 +24,12 @@ if (typeof INFURA_KEY === 'undefined') {
 }
 
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
-const ARB_SEPOLIA_INFURA_RPC_URL = `https://arbitrum-sepolia.infura.io/v3/${INFURA_KEY}`
+const sepoliaRpcUrl =
+  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
-const sepoliaProvider = new StaticJsonRpcProvider(SEPOLIA_INFURA_RPC_URL)
-const arbSepoliaProvider = new StaticJsonRpcProvider(ARB_SEPOLIA_INFURA_RPC_URL)
+const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
+const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
 
 if (!process.env.PRIVATE_KEY_CCTP) {
   throw new Error('PRIVATE_KEY_CCTP variable missing.')
@@ -39,16 +40,12 @@ const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
 // Generate a new wallet every time
 const userWallet = Wallet.createRandom()
 
-if (!process.env.PRIVATE_KEY_CCTP) {
-  throw new Error('PRIVATE_KEY_CCTP variable missing.')
-}
-
 if (!process.env.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
 
 async function fundWallets() {
-  const userWalletAddress = await userWallet.getAddress()
+  const userWalletAddress = userWallet.address
   console.log(`Funding wallet ${userWalletAddress}`)
 
   const fundEthHelper = (network: 'sepolia' | 'arbSepolia') => {
@@ -119,8 +116,8 @@ export default defineConfig({
 
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.PRIVATE_KEY_CCTP = process.env.PRIVATE_KEY_CCTP
-      config.env.SEPOLIA_INFURA_RPC_URL = SEPOLIA_INFURA_RPC_URL
-      config.env.ARB_SEPOLIA_INFURA_RPC_URL = ARB_SEPOLIA_INFURA_RPC_URL
+      config.env.SEPOLIA_INFURA_RPC_URL = sepoliaRpcUrl
+      config.env.ARB_SEPOLIA_INFURA_RPC_URL = arbSepoliaRpcUrl
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
 
