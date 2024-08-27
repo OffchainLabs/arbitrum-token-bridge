@@ -59,7 +59,7 @@ describe('Deposit Token', () => {
       })
 
       it(`should deposit ${tokenType} successfully to the same address`, () => {
-        const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+        const ERC20AmountToSend = Number((Math.random() * 10).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
         cy.login({ networkType: 'parentChain' })
         context('should add a new token', () => {

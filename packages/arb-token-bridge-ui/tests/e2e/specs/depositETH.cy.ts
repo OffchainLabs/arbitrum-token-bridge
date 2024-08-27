@@ -9,7 +9,7 @@ import {
 } from '../../support/common'
 
 describe('Deposit ETH', () => {
-  const ETHAmountToDeposit = 0.0001
+  const ETHAmountToDeposit = 1 + Number(Math.random().toFixed(5))
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'

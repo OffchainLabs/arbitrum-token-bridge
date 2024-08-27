@@ -74,7 +74,7 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       it(`should withdraw ${tokenType} to the same address successfully`, () => {
-        ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+        ERC20AmountToSend = Number((Math.random() * 10).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
         cy.login({ networkType: 'childChain' })
         context(`should add ${tokenType} correctly`, () => {

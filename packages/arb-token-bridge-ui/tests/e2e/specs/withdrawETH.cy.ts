@@ -11,7 +11,7 @@ import {
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
-  let ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+  let ETHToWithdraw = 1 + Number(Math.random().toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
   let l1EthBal: string
 
   beforeEach(() => {
