@@ -323,13 +323,22 @@ export function findClaimButton(
 
 /**
  * Currently, Synpress confirmMetamaskPermissionToSpend is clicking only once
- * We need to call it twice to confirm it
+ * We need to call it twice to confirm it.
+ * shouldWaitForPopupClosure needs to be set to true for the test to pass
  */
 export function confirmSpending(
-  params: Parameters<typeof cy.confirmMetamaskPermissionToSpend>[0]
+  spendLimit: Parameters<
+    typeof cy.confirmMetamaskPermissionToSpend
+  >[0]['spendLimit']
 ) {
-  cy.confirmMetamaskPermissionToSpend(params)
-  cy.confirmMetamaskPermissionToSpend(params)
+  cy.confirmMetamaskPermissionToSpend({
+    spendLimit,
+    shouldWaitForPopupClosure: true
+  })
+  cy.confirmMetamaskPermissionToSpend({
+    spendLimit,
+    shouldWaitForPopupClosure: true
+  })
 }
 
 Cypress.Commands.addAll({
