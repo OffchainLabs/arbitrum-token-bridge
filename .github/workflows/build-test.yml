@@ -249,6 +249,7 @@ jobs:
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots
+          if-no-files-found: 'ignore'
         continue-on-error: true
 
       - name: Throw error if tests failed
