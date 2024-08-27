@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { getOrbitChains } from '../src/util/orbitChainsList'
+import { getOrbitChains } from '../src/util/orbit'
 import { getChainToMonitor } from './utils'
 
 async function generateOrbitChainsToMonitor() {
