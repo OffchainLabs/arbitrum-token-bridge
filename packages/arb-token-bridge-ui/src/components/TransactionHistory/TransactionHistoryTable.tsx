@@ -31,6 +31,14 @@ import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { Address } from '../../util/AddressUtils'
 
+export const BatchTransferEthTooltip = ({ children }: PropsWithChildren) => {
+  return (
+    <Tooltip content="This is any additional ETH you might have deposited along with your ERC-20, plus the refunded excess gas fee.">
+      {children}
+    </Tooltip>
+  )
+}
+
 export const ContentWrapper = ({
   children,
   className = ''

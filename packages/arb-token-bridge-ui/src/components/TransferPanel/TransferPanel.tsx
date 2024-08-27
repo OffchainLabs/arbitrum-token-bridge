@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -930,6 +930,8 @@ export function TransferPanel() {
 
     const { sourceChainTransaction } = bridgeTransfer
 
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
     const timestampCreated = Math.floor(Date.now() / 1000).toString()
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
@@ -941,6 +943,7 @@ export function TransferPanel() {
       destinationAddress,
       nativeCurrency,
       amount: amountBigNumber,
+      amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
       timestampCreated
     })
 
@@ -959,6 +962,7 @@ export function TransferPanel() {
           destinationAddress,
           nativeCurrency,
           amount: amountBigNumber,
+          amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
           timestampCreated
         })
       )
