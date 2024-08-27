@@ -40,11 +40,9 @@ describe('Approve token for deposit', () => {
       cy.findByRole('button', {
         name: /Pay approval fee of/
       }).click()
-      cy.confirmSpending({
-        shouldWaitForPopupClosure: true
-      })
+      cy.confirmSpending('5')
       cy.wait(10_000)
-      cy.confirmMetamaskTransaction(undefined)
+      cy.rejectMetamaskTransaction()
     })
   })
 })
