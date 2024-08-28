@@ -133,10 +133,7 @@ describe('Import token', () => {
 
     context('Add button is grayed', () => {
       it('should disable Add button if address is too long/short', () => {
-        const moveToEnd = ERC20TokenAddressL1.substring(
-          0,
-          ERC20TokenAddressL1.length - 1
-        )
+        const addressWithoutLastChar = ERC20TokenAddressL1.slice(0, -1) // Remove the last character
 
         cy.login({ networkType: 'parentChain' })
         cy.findSelectTokenButton('ETH').click()
@@ -145,7 +142,7 @@ describe('Import token', () => {
         cy.findByPlaceholderText(/Search by token name/i)
           .as('searchInput')
           .should('be.visible')
-          .type(ERC20TokenAddressL1.slice(0, -1))
+          .type(addressWithoutLastChar)
 
         // Add button should be disabled
         cy.findByRole('button', { name: 'Add New Token' })
@@ -154,14 +151,13 @@ describe('Import token', () => {
           .as('addButton')
 
         // Add last character
-        cy.get('@searchInput').type(
-          `${moveToEnd}${ERC20TokenAddressL1.slice(-1)}`
-        )
+        cy.get('@searchInput').type(ERC20TokenAddressL1.slice(-1))
+
         // Add button should be enabled
         cy.get('@addButton').should('be.enabled')
 
         // Add one more character to make the address invalid
-        cy.get('@searchInput').type(`${moveToEnd}x`)
+        cy.get('@searchInput').type('x')
         // Add button should be disabled
         cy.get('@addButton').should('be.disabled')
       })
