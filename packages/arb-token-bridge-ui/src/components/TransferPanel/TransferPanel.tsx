@@ -81,7 +81,7 @@ import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from 
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
-import { getStandardizedTimestamp } from '../../state/app/utils'
+import { normalizeTimestamp } from '../../state/app/utils'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -933,9 +933,7 @@ export function TransferPanel() {
 
     const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
-    const timestampCreated = String(
-      getStandardizedTimestamp(Date.now().toString())
-    )
+    const timestampCreated = String(normalizeTimestamp(Date.now().toString()))
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,

@@ -144,10 +144,10 @@ export const transformDeposit = (
     direction: tx.type,
     status: tx.status,
     createdAt: tx.timestampCreated
-      ? getStandardizedTimestamp(tx.timestampCreated)
+      ? normalizeTimestamp(tx.timestampCreated)
       : null,
     resolvedAt: tx.timestampResolved
-      ? getStandardizedTimestamp(tx.timestampResolved)
+      ? normalizeTimestamp(tx.timestampResolved)
       : null,
     txId: tx.txID,
     asset: tx.assetName || '',
@@ -190,7 +190,7 @@ export const transformWithdrawal = (
       NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
         ? 'Failure'
         : outgoingStateToString[tx.outgoingMessageState],
-    createdAt: getStandardizedTimestamp(tx.timestamp),
+    createdAt: normalizeTimestamp(tx.timestamp),
     resolvedAt: null,
     txId: tx.l2TxHash || 'l2-tx-hash-not-found',
     asset: tx.symbol || '',
@@ -305,7 +305,7 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const getStandardizedTimestamp = (date: string | BigNumber) => {
+export const normalizeTimestamp = (date: string | BigNumber) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
   const TIMESTAMP_LENGTH = 13
   let timestamp

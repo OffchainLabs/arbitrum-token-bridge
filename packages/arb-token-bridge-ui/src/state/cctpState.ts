@@ -13,7 +13,7 @@ import {
 } from '../util/networks'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
-import { getStandardizedTimestamp } from './app/utils'
+import { normalizeTimestamp } from './app/utils'
 import { useAccount, useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import {
@@ -101,7 +101,7 @@ function parseTransferToMergedTransaction(
   if ('messageReceived' in transfer) {
     const { messageReceived } = transfer
     status = 'Executed'
-    resolvedAt = getStandardizedTimestamp(
+    resolvedAt = normalizeTimestamp(
       parseInt(messageReceived.blockTimestamp, 10).toString()
     )
     receiveMessageTransactionHash = messageReceived.transactionHash
@@ -122,7 +122,7 @@ function parseTransferToMergedTransaction(
     destination: messageSent.recipient,
     direction: isDeposit ? 'deposit' : 'withdraw',
     status,
-    createdAt: getStandardizedTimestamp(
+    createdAt: normalizeTimestamp(
       parseInt(messageSent.blockTimestamp, 10).toString()
     ),
     resolvedAt,
@@ -535,7 +535,7 @@ export function useClaimCctp(tx: MergedTransaction) {
 
       const resolvedAt =
         receiveReceiptTx.status === 1
-          ? getStandardizedTimestamp(BigNumber.from(Date.now()).toString())
+          ? normalizeTimestamp(BigNumber.from(Date.now()).toString())
           : null
       await updatePendingTransaction({
         ...tx,

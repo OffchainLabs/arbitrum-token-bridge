@@ -26,7 +26,7 @@ import {
   isTeleport
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import { getStandardizedTimestamp } from '../../state/app/utils'
+import { normalizeTimestamp } from '../../state/app/utils'
 
 export const updateAdditionalDepositData = async ({
   depositTx,
@@ -44,13 +44,11 @@ export const updateAdditionalDepositData = async ({
   let timestampCreated = new Date().toISOString()
   if (depositTx.timestampCreated) {
     // if timestamp is already there in Subgraphs, take it from there
-    timestampCreated = String(
-      getStandardizedTimestamp(depositTx.timestampCreated)
-    )
+    timestampCreated = String(normalizeTimestamp(depositTx.timestampCreated))
   } else if (depositTx.blockNumber) {
     // if timestamp not in subgraph, fallback to onchain data
     timestampCreated = String(
-      getStandardizedTimestamp(
+      normalizeTimestamp(
         String((await parentProvider.getBlock(depositTx.blockNumber)).timestamp)
       )
     )
@@ -262,7 +260,7 @@ const updateETHDepositStatusData = async ({
     : null
 
   const timestampResolved = childBlockNum
-    ? getStandardizedTimestamp(
+    ? normalizeTimestamp(
         String((await childProvider.getBlock(childBlockNum)).timestamp)
       )
     : null
@@ -343,7 +341,7 @@ const updateTokenDepositStatusData = async ({
     : null
 
   const timestampResolved = childBlockNum
-    ? getStandardizedTimestamp(
+    ? normalizeTimestamp(
         String((await childProvider.getBlock(childBlockNum)).timestamp)
       )
     : null
@@ -409,7 +407,7 @@ const updateClassicDepositStatusData = async ({
     : null
 
   const timestampResolved = l2BlockNum
-    ? getStandardizedTimestamp(
+    ? normalizeTimestamp(
         String((await childProvider.getBlock(l2BlockNum)).timestamp)
       )
     : null
@@ -438,7 +436,7 @@ async function getTimestampResolved(
     .getTransactionReceipt(l3TxHash)
     .then(tx => tx.blockNumber)
     .then(blockNumber => destinationChainProvider.getBlock(blockNumber))
-    .then(block => getStandardizedTimestamp(String(block.timestamp)))
+    .then(block => normalizeTimestamp(String(block.timestamp)))
 }
 
 export async function fetchTeleporterDepositStatusData({

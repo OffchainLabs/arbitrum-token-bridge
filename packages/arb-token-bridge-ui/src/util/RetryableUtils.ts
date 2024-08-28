@@ -13,7 +13,7 @@ import {
   TeleporterMergedTransaction
 } from '../state/app/state'
 import { isTeleporterTransaction } from '../hooks/useTransactions'
-import { getStandardizedTimestamp } from '../state/app/utils'
+import { normalizeTimestamp } from '../state/app/utils'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
@@ -86,7 +86,7 @@ export const getRetryableTicketExpiration = async ({
     const now = dayjs()
 
     const expiryDateResponse = await parentToChildMsg!.getTimeout()
-    expirationDate = getStandardizedTimestamp(expiryDateResponse)
+    expirationDate = normalizeTimestamp(expiryDateResponse)
 
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
 
