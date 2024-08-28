@@ -42,7 +42,7 @@ export const useSelectedToken = () => {
   const tokensFromUser = useTokensFromUser()
 
   const queryKey =
-    tokensFromLists && tokensFromUser
+    tokensFromLists && Object.keys(tokensFromLists).length > 0 && tokensFromUser
       ? ([
           parentChain.id,
           childChain.id,
