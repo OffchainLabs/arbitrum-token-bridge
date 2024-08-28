@@ -77,16 +77,13 @@ function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
 
 const TransferPanelInputField = React.memo(
   (props: React.InputHTMLAttributes<HTMLInputElement>) => {
-    const { value = '', ...rest } = props
-
     return (
       <input
         type="text"
         inputMode="decimal"
         placeholder="Enter amount"
         className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-        value={sanitizeAmountQueryParam(value.toString())}
-        {...rest}
+        {...props}
       />
     )
   }
@@ -177,7 +174,7 @@ export const TransferPanelMainInput = React.memo(
        * If user types anything before we receive the amount, isMaxAmount is set to false in the parent
        */
       setLocalValue(maxAmount)
-    }, [isMaxAmount, setLocalValue, maxAmount])
+    }, [isMaxAmount, maxAmount])
 
     const handleMaxButtonClick: React.MouseEventHandler<HTMLButtonElement> =
       useCallback(
@@ -192,7 +189,7 @@ export const TransferPanelMainInput = React.memo(
 
     const handleInputChange: ChangeEventHandler<HTMLInputElement> = useCallback(
       e => {
-        setLocalValue(e.target.value)
+        setLocalValue(sanitizeAmountQueryParam(e.target.value))
         onChange?.(e)
       },
       [onChange]
