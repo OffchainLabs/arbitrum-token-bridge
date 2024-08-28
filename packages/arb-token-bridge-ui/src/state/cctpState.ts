@@ -102,7 +102,7 @@ function parseTransferToMergedTransaction(
     const { messageReceived } = transfer
     status = 'Executed'
     resolvedAt = getStandardizedTimestamp(
-      (parseInt(messageReceived.blockTimestamp, 10) * 1_000).toString()
+      parseInt(messageReceived.blockTimestamp, 10).toString()
     )
     receiveMessageTransactionHash = messageReceived.transactionHash
   }
@@ -123,7 +123,7 @@ function parseTransferToMergedTransaction(
     direction: isDeposit ? 'deposit' : 'withdraw',
     status,
     createdAt: getStandardizedTimestamp(
-      (parseInt(messageSent.blockTimestamp, 10) * 1_000).toString()
+      parseInt(messageSent.blockTimestamp, 10).toString()
     ),
     resolvedAt,
     txId: messageSent.transactionHash,

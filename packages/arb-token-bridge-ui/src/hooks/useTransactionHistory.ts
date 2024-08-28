@@ -92,15 +92,15 @@ export type Transfer =
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
-    return (tx.createdAt ?? 0) / 1_000
+    return getStandardizedTimestamp(String(tx.createdAt) ?? '0')
   }
 
   if (isTransferTeleportFromSubgraph(tx)) {
-    return tx.timestamp
+    return getStandardizedTimestamp(tx.timestamp)
   }
 
   if (isDeposit(tx)) {
-    return tx.timestampCreated ?? 0
+    return getStandardizedTimestamp(tx.timestampCreated ?? '0')
   }
 
   if (isWithdrawalFromSubgraph(tx)) {

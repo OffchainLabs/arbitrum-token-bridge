@@ -5,6 +5,7 @@ import {
   getInitialERC20Balance,
   getL2NetworkConfig
 } from '../../support/common'
+import { getStandardizedTimestamp } from 'packages/arb-token-bridge-ui/src/state/app/utils'
 
 const wethAmountToDeposit = 0.001
 
@@ -26,7 +27,7 @@ function mockErc20RedeemDepositTransaction(): Transaction {
     destination: Cypress.env('ADDRESS'),
     l1NetworkID: isOrbitTest ? '412346' : '1337',
     l2NetworkID: isOrbitTest ? '333333' : '412346',
-    timestampCreated: Math.floor(Date.now() / 1000).toString()
+    timestampCreated: String(getStandardizedTimestamp(Date.now().toString()))
   }
 }
 
