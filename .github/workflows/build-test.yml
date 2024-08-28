@@ -245,10 +245,11 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}
+          name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}-${{ matrix.tests.name }}
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots
+          if-no-files-found: 'ignore'
         continue-on-error: true
 
       - name: Throw error if tests failed
