@@ -31,6 +31,7 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -367,6 +368,7 @@ export const NetworkSelectionContainer = (
   }
 ) => {
   const actions = useActions()
+  const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
 
@@ -404,9 +406,15 @@ export const NetworkSelectionContainer = (
         destinationChainId: isSource ? networks.destinationChain.id : value.id
       })
 
-      actions.app.setSelectedToken(null)
+      setSelectedToken(null)
     },
-    [actions.app, isSource, networks, openOneNovaTransferDialog, setNetworks]
+    [
+      isSource,
+      networks,
+      openOneNovaTransferDialog,
+      setNetworks,
+      setSelectedToken
+    ]
   )
 
   return (

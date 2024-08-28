@@ -47,7 +47,6 @@ export const useSelectedToken = () => {
           parentChain.id,
           childChain.id,
           tokenFromSearchParams,
-          Object.keys(tokensFromLists),
           Object.keys(tokensFromUser),
           'useSelectedToken'
         ] as const)

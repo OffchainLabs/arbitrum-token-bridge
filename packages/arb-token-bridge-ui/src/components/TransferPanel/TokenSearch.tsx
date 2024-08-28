@@ -549,12 +549,6 @@ export function TokenSearch({
     }
 
     try {
-      if (isTokenNativeUSDC(_token.address)) {
-        // We don't need to fetch token data because USDC will be hardcoded
-        setSelectedToken(_token.address)
-        return
-      }
-
       if (typeof bridgeTokens === 'undefined') {
         return
       }
