@@ -49,6 +49,7 @@ export const useArbQueryParams = () => {
     sourceChain: ChainParam,
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
+    amount2: withDefault(AmountQueryParam, ''), // extra eth to send together with erc20
     token: StringParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false)
   })

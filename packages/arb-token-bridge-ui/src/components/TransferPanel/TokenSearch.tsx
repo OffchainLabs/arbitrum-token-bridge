@@ -492,6 +492,7 @@ function TokensPanel({
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
       dataCy="tokenSearchList"
+      isDialog={false}
     >
       <AutoSizer>
         {({ height, width }) => (
@@ -547,14 +548,14 @@ export function TokenSearch({
       return
     }
 
-    if (typeof bridgeTokens === 'undefined') {
-      return
-    }
-
     try {
       if (isTokenNativeUSDC(_token.address)) {
         // We don't need to fetch token data because USDC will be hardcoded
         setSelectedToken(_token.address)
+        return
+      }
+
+      if (typeof bridgeTokens === 'undefined') {
         return
       }
 

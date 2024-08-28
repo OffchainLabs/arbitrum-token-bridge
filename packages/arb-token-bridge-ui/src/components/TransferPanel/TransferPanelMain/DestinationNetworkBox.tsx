@@ -1,8 +1,8 @@
 import { constants, utils } from 'ethers'
+import { useAccount } from 'wagmi'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useDestinationAddressStore } from '../AdvancedSettings'
-import { NetworkListbox, NetworkListboxProps } from '../NetworkListbox'
 import {
   BalancesContainer,
   ETHBalance,
@@ -10,7 +10,6 @@ import {
   NetworkListboxPlusBalancesContainer
 } from '../TransferPanelMain'
 import { TokenBalance } from './TokenBalance'
-import { useAccount } from 'wagmi'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { NetworkType } from './utils'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
@@ -24,15 +23,18 @@ import {
 } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { useDialog } from '../../common/Dialog'
+import {
+  NetworkButton,
+  NetworkSelectionContainer
+} from '../../common/NetworkSelectionContainer'
 
 export function DestinationNetworkBox({
   customFeeTokenBalances,
-  showUsdcSpecificInfo,
-  destinationNetworkListboxProps
+  showUsdcSpecificInfo
 }: {
   customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
-  destinationNetworkListboxProps: Omit<NetworkListboxProps, 'label'>
 }) {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
@@ -46,101 +48,116 @@ export function DestinationNetworkBox({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const { destinationAddress } = useDestinationAddressStore()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+  const [
+    destinationNetworkSelectionDialogProps,
+    openDestinationNetworkSelectionDialog
+  ] = useDialog()
 
   return (
-    <NetworkContainer
-      bgLogoHeight={58}
-      network={networks.destinationChain}
-      customAddress={destinationAddress}
-    >
-      <NetworkListboxPlusBalancesContainer>
-        <NetworkListbox label="To:" {...destinationNetworkListboxProps} />
-        <BalancesContainer>
-          {destinationAddressOrWalletAddress &&
-            utils.isAddress(destinationAddressOrWalletAddress) && (
-              <>
-                <TokenBalance
-                  balance={
-                    isDepositMode
-                      ? selectedTokenBalances.childBalance
-                      : selectedTokenBalances.parentBalance
-                  }
-                  on={
-                    isDepositMode
-                      ? NetworkType.childChain
-                      : NetworkType.parentChain
-                  }
-                  forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
-                  tokenSymbolOverride={
-                    // we need to send the proper, sanitized token-name to the component
-                    selectedToken?.symbol
-                      ? sanitizeTokenSymbol(selectedToken?.symbol, {
-                          chainId: networks.destinationChain.id,
-                          erc20L1Address: selectedToken?.address
-                        })
-                      : undefined
-                  }
-                />
-                {/* In deposit mode, when user selected USDC on mainnet,
-              the UI shows the Arb One balance of both USDC.e and native USDC */}
-                {isDepositMode && showUsdcSpecificInfo && (
+    <>
+      <NetworkContainer
+        bgLogoHeight={58}
+        network={networks.destinationChain}
+        customAddress={destinationAddress}
+      >
+        <NetworkListboxPlusBalancesContainer>
+          <NetworkButton
+            type="destination"
+            onClick={openDestinationNetworkSelectionDialog}
+          />
+          <BalancesContainer>
+            {destinationAddressOrWalletAddress &&
+              utils.isAddress(destinationAddressOrWalletAddress) && (
+                <>
                   <TokenBalance
                     balance={
-                      (isArbitrumOne
-                        ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
-                        : erc20ChildBalances?.[
-                            CommonAddress.ArbitrumSepolia.USDC
-                          ]) ?? constants.Zero
+                      isDepositMode
+                        ? selectedTokenBalances.childBalance
+                        : selectedTokenBalances.parentBalance
                     }
-                    on={NetworkType.childChain}
-                    forToken={
-                      selectedToken
-                        ? { ...selectedToken, symbol: 'USDC' }
-                        : null
-                    }
-                    tokenSymbolOverride="USDC"
-                  />
-                )}
-                {nativeCurrency.isCustom ? (
-                  <>
-                    <TokenBalance
-                      on={
-                        isDepositMode
-                          ? NetworkType.childChain
-                          : NetworkType.parentChain
-                      }
-                      balance={
-                        isDepositMode
-                          ? customFeeTokenBalances.childBalance
-                          : customFeeTokenBalances.parentBalance
-                      }
-                      forToken={nativeCurrency}
-                      prefix={selectedToken ? '' : 'Balance: '}
-                    />
-                    {!isDepositMode && (
-                      <ETHBalance
-                        balance={ethParentBalance}
-                        on={NetworkType.parentChain}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <ETHBalance
-                    balance={isDepositMode ? ethChildBalance : ethParentBalance}
-                    prefix={selectedToken ? '' : 'Balance: '}
                     on={
                       isDepositMode
                         ? NetworkType.childChain
                         : NetworkType.parentChain
                     }
+                    forToken={selectedToken}
+                    prefix={selectedToken ? 'Balance: ' : ''}
+                    tokenSymbolOverride={
+                      // we need to send the proper, sanitized token-name to the component
+                      selectedToken?.symbol
+                        ? sanitizeTokenSymbol(selectedToken?.symbol, {
+                            chainId: networks.destinationChain.id,
+                            erc20L1Address: selectedToken?.address
+                          })
+                        : undefined
+                    }
                   />
-                )}
-              </>
-            )}
-        </BalancesContainer>
-      </NetworkListboxPlusBalancesContainer>
-      <EstimatedGas chainType="destination" />
-    </NetworkContainer>
+                  {/* In deposit mode, when user selected USDC on mainnet,
+              the UI shows the Arb One balance of both USDC.e and native USDC */}
+                  {isDepositMode && showUsdcSpecificInfo && (
+                    <TokenBalance
+                      balance={
+                        (isArbitrumOne
+                          ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
+                          : erc20ChildBalances?.[
+                              CommonAddress.ArbitrumSepolia.USDC
+                            ]) ?? constants.Zero
+                      }
+                      on={NetworkType.childChain}
+                      forToken={
+                        selectedToken
+                          ? { ...selectedToken, symbol: 'USDC' }
+                          : null
+                      }
+                      tokenSymbolOverride="USDC"
+                    />
+                  )}
+                  {nativeCurrency.isCustom ? (
+                    <>
+                      <TokenBalance
+                        on={
+                          isDepositMode
+                            ? NetworkType.childChain
+                            : NetworkType.parentChain
+                        }
+                        balance={
+                          isDepositMode
+                            ? customFeeTokenBalances.childBalance
+                            : customFeeTokenBalances.parentBalance
+                        }
+                        forToken={nativeCurrency}
+                        prefix={selectedToken ? '' : 'Balance: '}
+                      />
+                      {!isDepositMode && (
+                        <ETHBalance
+                          balance={ethParentBalance}
+                          on={NetworkType.parentChain}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <ETHBalance
+                      balance={
+                        isDepositMode ? ethChildBalance : ethParentBalance
+                      }
+                      prefix={selectedToken ? '' : 'Balance: '}
+                      on={
+                        isDepositMode
+                          ? NetworkType.childChain
+                          : NetworkType.parentChain
+                      }
+                    />
+                  )}
+                </>
+              )}
+          </BalancesContainer>
+        </NetworkListboxPlusBalancesContainer>
+        <EstimatedGas chainType="destination" />
+      </NetworkContainer>
+      <NetworkSelectionContainer
+        {...destinationNetworkSelectionDialogProps}
+        type="destination"
+      />
+    </>
   )
 }

@@ -1,4 +1,3 @@
-import { Popover } from '@headlessui/react'
 import {
   CSSProperties,
   useCallback,
@@ -9,28 +8,29 @@ import {
 } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from '@uidotdev/usehooks'
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
+import {
+  ChevronDownIcon,
+  ShieldExclamationIcon
+} from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
-import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
-import { useAccountType } from '../../hooks/useAccountType'
+import { ChainId, isNetwork, getNetworkName } from '../../util/networks'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import {
-  panelWrapperClassnames,
-  onPopoverButtonClick,
-  onPopoverClose
-} from './SearchPanel/SearchPanelUtils'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { useNetworks } from '../../hooks/useNetworks'
-import { Transition } from './Transition'
 import { NetworkImage } from './NetworkImage'
+import { Dialog, UseDialogProps, useDialog } from './Dialog'
+import { useNetworks } from '../../hooks/useNetworks'
+import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
+import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
+import { useActions } from '../../state'
+import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
+import { useAccountType } from '../../hooks/useAccountType'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -89,20 +89,62 @@ function ChainTypeInfoRow({
   )
 }
 
+export function NetworkButton({
+  type,
+  onClick
+}: {
+  type: 'source' | 'destination'
+  onClick: () => void
+}) {
+  const [networks] = useNetworks()
+  const { isSmartContractWallet, isLoading } = useAccountType()
+  const isSource = type === 'source'
+  const chains = useChainIdsForNetworkSelection({ isSource })
+
+  const selectedChainId = isSource
+    ? networks.sourceChain.id
+    : networks.destinationChain.id
+
+  const hasOneOrLessChain = chains.length <= 1
+
+  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+
+  const buttonStyle = {
+    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+  }
+
+  return (
+    <button
+      style={buttonStyle}
+      className={twMerge(
+        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:gap-2 md:text-2xl'
+      )}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
+        {isSource ? 'From:' : 'To: '} {getNetworkName(selectedChainId)}
+      </span>
+      {!disabled && <ChevronDownIcon width={16} />}
+    </button>
+  )
+}
+
 function NetworkRow({
   chainId,
+  isSelected,
   style,
   onClick,
   close
 }: {
   chainId: ChainId
+  isSelected: boolean
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
   const { network, nativeTokenData } = getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
-  const [{ sourceChain }] = useNetworks()
 
   function handleClick() {
     onClick(chain)
@@ -118,7 +160,7 @@ function NetworkRow({
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
         'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
-        chainId === sourceChain.id && 'bg-white/10' // selected row
+        isSelected && 'bg-white/10' // selected row
       )}
     >
       <NetworkImage
@@ -141,11 +183,18 @@ function NetworkRow({
   )
 }
 
-function AddCustomOrbitChainButton() {
+function AddCustomOrbitChainButton({
+  closeDialog
+}: {
+  closeDialog: (focusableElement?: HTMLElement) => void
+}) {
   const [, setQueryParams] = useArbQueryParams()
   const [isTestnetMode] = useIsTestnetMode()
 
-  const openSettingsPanel = () => setQueryParams({ settingsOpen: true })
+  const openSettingsPanel = () => {
+    setQueryParams({ settingsOpen: true })
+    closeDialog()
+  }
 
   if (!isTestnetMode) {
     return null
@@ -159,9 +208,13 @@ function AddCustomOrbitChainButton() {
 }
 
 function NetworksPanel({
+  chainIds,
+  selectedChainId,
   onNetworkRowClick,
   close
 }: {
+  chainIds: ChainId[]
+  selectedChainId: ChainId
   onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
@@ -170,15 +223,6 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
-
-  const chainIds = useMemo(
-    () =>
-      getSupportedChainIds({
-        includeMainnets: !isTestnetMode,
-        includeTestnets: isTestnetMode
-      }),
-    [isTestnetMode]
-  )
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -206,17 +250,24 @@ function NetworksPanel({
 
   const isNetworkSearchResult = Array.isArray(networksToShow)
 
-  const networkRowsWithChainInfoRows = useMemo(() => {
-    if (isNetworkSearchResult) {
-      return networksToShow
-    }
-    return [
-      ChainGroupName.core,
-      ...networksToShow.core,
-      ChainGroupName.orbit,
-      ...networksToShow.orbit
-    ]
-  }, [isNetworkSearchResult, networksToShow])
+  const networkRowsWithChainInfoRows: (ChainId | ChainGroupName)[] =
+    useMemo(() => {
+      if (isNetworkSearchResult) {
+        return networksToShow
+      }
+
+      const groupedNetworks = []
+
+      if (networksToShow.core.length > 0) {
+        groupedNetworks.push(ChainGroupName.core, ...networksToShow.core)
+      }
+
+      if (networksToShow.orbit.length > 0) {
+        groupedNetworks.push(ChainGroupName.orbit, ...networksToShow.orbit)
+      }
+
+      return groupedNetworks
+    }, [isNetworkSearchResult, networksToShow])
 
   function getRowHeight({ index }: { index: number }) {
     const rowItemOrChainId = networkRowsWithChainInfoRows[index]
@@ -228,7 +279,7 @@ function NetworksPanel({
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
     if (rowItem.network.description) {
-      return 90
+      return 95
     }
     return 60
   }
@@ -262,12 +313,13 @@ function NetworksPanel({
           key={networkOrChainTypeName}
           style={style}
           chainId={networkOrChainTypeName}
+          isSelected={networkOrChainTypeName === selectedChainId}
           onClick={onNetworkRowClick}
           close={close}
         />
       )
     },
-    [close, networkRowsWithChainInfoRows, onNetworkRowClick]
+    [close, networkRowsWithChainInfoRows, onNetworkRowClick, selectedChainId]
   )
 
   const onSearchInputChange = useCallback(
@@ -285,6 +337,7 @@ function NetworksPanel({
         searchInputValue={networkSearched}
         searchInputOnChange={onSearchInputChange}
         errorMessage={errorMessage}
+        isDialog
       >
         <AutoSizer>
           {({ height, width }) => (
@@ -302,77 +355,82 @@ function NetworksPanel({
       </SearchPanelTable>
       <div className="flex justify-between pb-2">
         <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
-        <AddCustomOrbitChainButton />
+        <AddCustomOrbitChainButton closeDialog={close} />
       </div>
     </div>
   )
 }
 
-export const NetworkSelectionContainer = ({
-  children,
-  buttonClassName,
-  buttonStyle,
-  onChange
-}: {
-  children: React.ReactNode
-  buttonClassName: string
-  buttonStyle?: CSSProperties
-  onChange: (value: Chain) => void
-}) => {
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+export const NetworkSelectionContainer = (
+  props: UseDialogProps & {
+    type: 'source' | 'destination'
+  }
+) => {
+  const actions = useActions()
+  const [networks, setNetworks] = useNetworks()
+  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+
+  const isSource = props.type === 'source'
+
+  const selectedChainId = isSource
+    ? networks.sourceChain.id
+    : networks.destinationChain.id
+
+  const supportedChainIds = useChainIdsForNetworkSelection({
+    isSource
+  })
+
+  const onNetworkRowClick = useCallback(
+    (value: Chain) => {
+      const pairedChain = isSource ? 'destinationChain' : 'sourceChain'
+
+      if (shouldOpenOneNovaDialog([value.id, networks[pairedChain].id])) {
+        openOneNovaTransferDialog()
+        return
+      }
+
+      if (networks[pairedChain].id === value.id) {
+        setNetworks({
+          sourceChainId: networks.destinationChain.id,
+          destinationChainId: networks.sourceChain.id
+        })
+        return
+      }
+
+      // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
+      // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
+      setNetworks({
+        sourceChainId: isSource ? value.id : networks.sourceChain.id,
+        destinationChainId: isSource ? networks.destinationChain.id : value.id
+      })
+
+      actions.app.setSelectedToken(null)
+    },
+    [actions.app, isSource, networks, openOneNovaTransferDialog, setNetworks]
+  )
 
   return (
-    <Popover className="relative w-max">
-      {({ open }) => (
-        <>
-          <Popover.Button
-            style={buttonStyle}
-            disabled={isSmartContractWallet || isLoadingAccountType}
-            className={buttonClassName}
-            onClick={onPopoverButtonClick}
-          >
-            {children}
-            {!isSmartContractWallet && (
-              <ChevronDownIcon
-                className={twMerge(
-                  'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
-                  open ? '-rotate-180' : 'rotate-0'
-                )}
-              />
-            )}
-          </Popover.Button>
-
-          <Transition
-            className="fixed left-0 top-0 z-50 sm:absolute sm:top-[54px]"
-            // we don't unmount on leave here because otherwise transition won't work with virtualized lists
-            options={{ unmountOnLeave: false }}
-            afterLeave={onPopoverClose}
-          >
-            <Popover.Panel className={twMerge(panelWrapperClassnames)}>
-              {({ close }) => {
-                function onClose() {
-                  onPopoverClose()
-                  close()
-                }
-                return (
-                  <SearchPanel>
-                    <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
-                      <SearchPanel.PageTitle title="Select Network">
-                        <SearchPanel.CloseButton onClick={onClose} />
-                      </SearchPanel.PageTitle>
-                      <NetworksPanel
-                        close={onClose}
-                        onNetworkRowClick={onChange}
-                      />
-                    </SearchPanel.MainPage>
-                  </SearchPanel>
-                )
-              }}
-            </Popover.Panel>
-          </Transition>
-        </>
-      )}
-    </Popover>
+    <>
+      <Dialog
+        {...props}
+        onClose={() => props.onClose(false)}
+        title={`Select ${isSource ? 'Source' : 'Destination'} Network`}
+        actionButtonProps={{ hidden: true }}
+        isFooterHidden={true}
+        className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
+      >
+        <SearchPanel>
+          <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
+            <NetworksPanel
+              chainIds={supportedChainIds}
+              selectedChainId={selectedChainId}
+              close={() => props.onClose(false)}
+              onNetworkRowClick={onNetworkRowClick}
+            />
+          </SearchPanel.MainPage>
+        </SearchPanel>
+      </Dialog>
+      <OneNovaTransferDialog {...oneNovaTransferDialogProps} />
+    </>
   )
 }

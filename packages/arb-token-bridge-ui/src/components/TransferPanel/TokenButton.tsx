@@ -20,8 +20,19 @@ import { Loader } from '../common/atoms/Loader'
 import { useTokensFromLists } from './TokenSearchUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
-export function TokenButton(): JSX.Element {
+export type TokenButtonOptions = {
+  symbol?: string
+  disabled?: boolean
+}
+
+export function TokenButton({
+  options
+}: {
+  options?: TokenButtonOptions
+}): JSX.Element {
   const [selectedToken] = useSelectedToken()
+  const disabled = options?.disabled ?? false
+
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
   const tokensFromLists = useTokensFromLists()
@@ -30,6 +41,10 @@ export function TokenButton(): JSX.Element {
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokenSymbol = useMemo(() => {
+    if (typeof options?.symbol !== 'undefined') {
+      return options.symbol
+    }
+
     if (!selectedToken) {
       return nativeCurrency.symbol
     }
@@ -38,7 +53,7 @@ export function TokenButton(): JSX.Element {
       erc20L1Address: selectedToken.address,
       chainId: networks.sourceChain.id
     })
-  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
+  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
 
   const isLoadingToken = useMemo(() => {
     // don't show loader if native currency is selected
@@ -67,7 +82,7 @@ export function TokenButton(): JSX.Element {
               className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
               aria-label="Select Token"
               onClick={onPopoverButtonClick}
-              disabled={isLoadingToken}
+              disabled={disabled}
             >
               <div className="flex items-center gap-2">
                 {/* Commenting it out until we update the token image source files to be of better quality */}
