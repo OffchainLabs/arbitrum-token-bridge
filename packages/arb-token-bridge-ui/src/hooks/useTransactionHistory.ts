@@ -90,7 +90,7 @@ export type Transfer =
   | MergedTransaction
   | TeleportFromSubgraph
 
-function normalizeTimestampByTx(tx: Transfer) {
+function getTransactionTimestamp(tx: Transfer) {
   if (isCctpTransfer(tx)) {
     return normalizeTimestamp(String(tx.createdAt) ?? '0')
   }
@@ -111,7 +111,7 @@ function normalizeTimestampByTx(tx: Transfer) {
 }
 
 function sortByTimestampDescending(a: Transfer, b: Transfer) {
-  return normalizeTimestampByTx(a) > normalizeTimestampByTx(b) ? -1 : 1
+  return getTransactionTimestamp(a) > getTransactionTimestamp(b) ? -1 : 1
 }
 
 function getMultiChainFetchList(): ChainPair[] {
