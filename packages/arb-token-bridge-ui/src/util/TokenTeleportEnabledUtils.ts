@@ -13,7 +13,12 @@ const teleportEnabledTokens: {
     {
       symbol: 'WETH',
       l1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-      allowedL3ChainIds: [1380012617, 70700]
+      allowedL3ChainIds: [1380012617, 70700, 70701]
+    },
+    {
+      symbol: 'USDC',
+      l1Address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      allowedL3ChainIds: [70701]
     },
     {
       symbol: 'RARI',
