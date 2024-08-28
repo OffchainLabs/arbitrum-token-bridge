@@ -8,7 +8,6 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { recurse } from 'cypress-recurse'
 import {
   NetworkType,
   NetworkName,
