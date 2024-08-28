@@ -121,7 +121,7 @@ describe('Import token', () => {
         // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .typeRecursively('UNI')
+          .type('UNI')
 
         // flaky test can load data too slowly here
         cy.findByText('Uniswap', { timeout: 5_000 }).click()
@@ -145,7 +145,7 @@ describe('Import token', () => {
         cy.findByPlaceholderText(/Search by token name/i)
           .as('searchInput')
           .should('be.visible')
-          .typeRecursively(ERC20TokenAddressL1.slice(0, -1))
+          .type(ERC20TokenAddressL1.slice(0, -1))
 
         // Add button should be disabled
         cy.findByRole('button', { name: 'Add New Token' })
@@ -154,14 +154,14 @@ describe('Import token', () => {
           .as('addButton')
 
         // Add last character
-        cy.get('@searchInput').typeRecursively(
+        cy.get('@searchInput').type(
           `${moveToEnd}${ERC20TokenAddressL1.slice(-1)}`
         )
         // Add button should be enabled
         cy.get('@addButton').should('be.enabled')
 
         // Add one more character to make the address invalid
-        cy.get('@searchInput').typeRecursively(`${moveToEnd}x`)
+        cy.get('@searchInput').type(`${moveToEnd}x`)
         // Add button should be disabled
         cy.get('@addButton').should('be.disabled')
       })
