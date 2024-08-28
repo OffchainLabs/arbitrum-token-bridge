@@ -16,6 +16,7 @@ import { useBalances } from '../../hooks/useBalances'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 
 function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const { className = '', ...rest } = props
@@ -84,7 +85,7 @@ const TransferPanelInputField = React.memo(
         inputMode="decimal"
         placeholder="Enter amount"
         className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-        value={value}
+        value={sanitizeAmountQueryParam(value.toString())}
         {...rest}
       />
     )
