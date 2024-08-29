@@ -1,16 +1,44 @@
-import { Wallet, utils } from 'ethers'
+import { BigNumber, Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 import {
   setupCypressTasks,
   fundEth,
-  fundUsdc,
-  getCustomDestinationAddress
+  getCustomDestinationAddress,
+  NetworkType
 } from './tests/support/common'
 import specFiles from './tests/e2e/cctp.json'
+import { CommonAddress } from './src/util/CommonAddressUtils'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+
+export async function fundUsdc({
+  address, // wallet address where funding is required
+  provider,
+  amount,
+  networkType,
+  sourceWallet
+}: {
+  address: string
+  provider: Provider
+  amount: BigNumber
+  sourceWallet: Wallet
+  networkType: NetworkType
+}) {
+  console.log(`Funding USDC ${address} on ${networkType}...`)
+  const usdcContractAddress =
+    networkType === 'parentChain'
+      ? CommonAddress.Sepolia.USDC
+      : CommonAddress.ArbitrumSepolia.USDC
+
+  const contract = new ERC20__factory().connect(sourceWallet.connect(provider))
+  const token = contract.attach(usdcContractAddress)
+  await token.deployed()
+  const tx = await token.transfer(address, amount)
+  await tx.wait()
+}
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
@@ -63,11 +91,13 @@ async function fundWallets() {
         ...(network === 'sepolia'
           ? {
               provider: sepoliaProvider,
-              amount: ethAmountSepolia
+              amount: ethAmountSepolia,
+              networkType: 'parentChain'
             }
           : {
               provider: arbSepoliaProvider,
-              amount: ethAmountArbSepolia
+              amount: ethAmountArbSepolia,
+              networkType: 'childChain'
             })
       })
   }
