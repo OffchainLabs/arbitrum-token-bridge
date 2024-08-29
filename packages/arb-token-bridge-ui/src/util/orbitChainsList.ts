@@ -206,6 +206,49 @@ export const orbitMainnets: {
       }
     }
   },
+  70701: {
+    chainId: 70701,
+    confirmPeriodBlocks: 43200,
+    ethBridge: {
+      bridge: '0x53D82686BC9827fEc03bcEe661B37b855A18EcA9',
+      inbox: '0xEe30EfcaF812d10e1EFE25E9458f76a39DAD3239',
+      outbox: '0xa4270256B160C3Ebec2d6914a906c7EC38D8d072',
+      rollup: '0x330F8fEB25f3427cABA32446728C36ae67f2135b',
+      sequencerInbox: '0x6eE94AD8057Fd7Ba4d47bb6278a261c8a9FD4E3f'
+    },
+    explorerUrl: 'https://explorer-proofofplay-boss-mainnet.t.conduit.xyz',
+    rpcUrl: 'https://rpc.boss.proofofplay.com',
+    name: 'Proof of Play Boss',
+    slug: 'pop-boss',
+    parentChainId: 42161,
+    isCustom: true,
+    isTestnet: false,
+    tokenBridge: {
+      parentCustomGateway: '0x7D25Cc5b71AC932F696F3f4Da109e867395f4F05',
+      parentErc20Gateway: '0x410a210d51597be9e575F9b46c11eB865c0Ee073',
+      parentGatewayRouter: '0x48e067CC8eedc2f6E6dfB7192E7E32158A7de0E2',
+      parentMultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      parentProxyAdmin: '0x490C4c92Ea9FF02EE8277222C66afD80Bfb1b7c1',
+      parentWeth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      parentWethGateway: '0x7480A89d1e360e512493489711EC7bc8eE7acfD6',
+      childCustomGateway: '0xA534bFDaBBac7F0511E97bDFCE8aB72bd7380355',
+      childErc20Gateway: '0xb7B9a171D4B318e87e198A028b0650Bf3Fa16615',
+      childGatewayRouter: '0x2DDb10B368c5D31BEb395Cbb16f0bC6Ffea7eE08',
+      childMultiCall: '0xFcA54035D5CceE942674721E8Ab5aB37d88D82b9',
+      childProxyAdmin: '0x63a766C4C8f1c54cD818A7Ab67A9AF54a78cB82F',
+      childWeth: '0x993232978869f1772Fb5D282Fdbcb0f6C5ef744D',
+      childWethGateway: '0x9c0c007880e04685947d13533dCa27BF2AAEc0Ec'
+    },
+    bridgeUiConfig: {
+      color: '#3E63DD',
+      network: {
+        name: 'Proof of Play Boss',
+        description:
+          'Proof of Play Boss is a gaming-focused L3 settling on Arbitrum using the Orbit Stack and AnyTrust DA.',
+        logo: '/images/PopApexLogo.svg'
+      }
+    }
+  },
   42001: {
     chainId: 42001,
     confirmPeriodBlocks: 7200,
