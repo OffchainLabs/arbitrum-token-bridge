@@ -2,13 +2,11 @@ name: Build, Test
 
 on:
   pull_request:
-    branches: ["master"]
     types:
       - opened
-      - edited
       - synchronize
+      - reopened
   push:
-    branches: ["master"]
   workflow_dispatch:
   merge_group:
 
