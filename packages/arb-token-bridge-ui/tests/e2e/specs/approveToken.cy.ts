@@ -7,9 +7,9 @@ import {
   getL2NetworkName
 } from '../../support/common'
 
-const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
+const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN')
 
-describe('Approve token and deposit afterwards', () => {
+describe('Approve token for deposit', () => {
   // log in to metamask
 
   it('should approve and deposit ERC-20 token', () => {

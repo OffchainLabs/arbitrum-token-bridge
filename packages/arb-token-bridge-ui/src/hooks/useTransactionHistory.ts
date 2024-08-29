@@ -153,8 +153,8 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
     return await transformTeleportFromSubgraph(tx)
   }
 
-  const parentChainProvider = getProviderForChainId(tx.parentChainId)
-  const childChainProvider = getProviderForChainId(tx.childChainId)
+  const parentProvider = getProviderForChainId(tx.parentChainId)
+  const childProvider = getProviderForChainId(tx.childChainId)
 
   if (isCctpTransfer(tx)) {
     return tx
@@ -164,8 +164,8 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
     return transformDeposit(
       await updateAdditionalDepositData({
         depositTx: tx,
-        l1Provider: parentChainProvider,
-        l2Provider: childChainProvider
+        parentProvider,
+        childProvider
       })
     )
   }
@@ -175,21 +175,21 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   if (isWithdrawalFromSubgraph(tx)) {
     withdrawal = await mapWithdrawalToL2ToL1EventResult({
       withdrawal: tx,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider
+      l1Provider: parentProvider,
+      l2Provider: childProvider
     })
   } else {
     if (isTokenWithdrawal(tx)) {
       withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
         result: tx,
-        l1Provider: parentChainProvider,
-        l2Provider: childChainProvider
+        l1Provider: parentProvider,
+        l2Provider: childProvider
       })
     } else {
       withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
         event: tx,
-        l1Provider: parentChainProvider,
-        l2Provider: childChainProvider
+        l1Provider: parentProvider,
+        l2Provider: childProvider
       })
     }
   }

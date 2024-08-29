@@ -24,9 +24,10 @@ async function generateCoreChainsToMonitor() {
   }
 
   // don't need to monitor arbOne chain in case of retryable-monitoring
-  const chains = process.env.BATCH_POSTER_MONITORING
-    ? [arbOneChain, novaChain]
-    : [novaChain]
+  const chains =
+    process.env.INCLUDE_ARB_ONE_AS_CORE_CHAIN === 'true'
+      ? [arbOneChain, novaChain]
+      : [novaChain]
 
   // make the chain data compatible with that required by the monitoring script
   const coreChainsToMonitor = chains.map(coreChain =>
