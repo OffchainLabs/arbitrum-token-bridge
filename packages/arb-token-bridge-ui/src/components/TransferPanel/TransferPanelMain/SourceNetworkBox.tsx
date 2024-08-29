@@ -38,6 +38,7 @@ import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmoun
 import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -63,7 +64,7 @@ export function SourceNetworkBox({
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
   const isBatchTransferSupported = useIsBatchTransferSupported()
-
+  const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
@@ -180,6 +181,7 @@ export function SourceNetworkBox({
             onChange={handleAmountChange}
             maxAmount={maxAmount}
             isMaxAmount={isMaxAmount}
+            decimals={decimals}
           />
 
           {isBatchTransferSupported && (
@@ -191,6 +193,7 @@ export function SourceNetworkBox({
               tokenButtonOptions={tokenButtonOptions}
               maxAmount={maxAmount2}
               isMaxAmount={isMaxAmount2}
+              decimals={nativeCurrency.decimals}
             />
           )}
 

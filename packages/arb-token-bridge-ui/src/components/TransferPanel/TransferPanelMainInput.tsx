@@ -18,7 +18,6 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
-import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const { className = '', ...rest } = props
@@ -150,6 +149,7 @@ export type TransferPanelMainInputProps =
     tokenButtonOptions?: TokenButtonOptions
     maxAmount: string | undefined
     isMaxAmount: boolean
+    decimals: number
   }
 
 export const TransferPanelMainInput = React.memo(
@@ -161,10 +161,10 @@ export const TransferPanelMainInput = React.memo(
     maxAmount,
     value,
     isMaxAmount,
+    decimals,
     ...rest
   }: TransferPanelMainInputProps) => {
     const [localValue, setLocalValue] = useState(value)
-    const decimals = useSelectedTokenDecimals()
 
     useEffect(() => {
       if (!isMaxAmount || !maxAmount) {
