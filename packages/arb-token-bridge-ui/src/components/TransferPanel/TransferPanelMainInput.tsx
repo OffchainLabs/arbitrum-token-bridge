@@ -134,9 +134,9 @@ function TokenBalance({
     <>
       {formattedBalance ? (
         <>
-          <span className="text-sm font-light">Balance: </span>
+          <span className="text-sm font-light text-white">Balance: </span>
           <span
-            className="text-sm"
+            className="text-sm text-white"
             aria-label={`${
               selectedToken?.symbol ?? nativeCurrency.symbol
             } balance amount on ${
