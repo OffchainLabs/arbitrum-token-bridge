@@ -17,6 +17,8 @@ import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const { className = '', ...rest } = props
@@ -152,16 +154,17 @@ export type TransferPanelMainInputProps =
 
 export const TransferPanelMainInput = React.memo(
   ({
-      errorMessage,
-      maxButtonOnClick,
-      tokenButtonOptions,
-      onChange,
-      maxAmount,
-      value,
-      isMaxAmount,
-      ...rest
-    }: TransferPanelMainInputProps) => {
+    errorMessage,
+    maxButtonOnClick,
+    tokenButtonOptions,
+    onChange,
+    maxAmount,
+    value,
+    isMaxAmount,
+    ...rest
+  }: TransferPanelMainInputProps) => {
     const [localValue, setLocalValue] = useState(value)
+    const decimals = useSelectedTokenDecimals()
 
     useEffect(() => {
       if (!isMaxAmount || !maxAmount) {
@@ -188,10 +191,14 @@ export const TransferPanelMainInput = React.memo(
 
     const handleInputChange: ChangeEventHandler<HTMLInputElement> = useCallback(
       e => {
-        setLocalValue(sanitizeAmountQueryParam(e.target.value))
+        setLocalValue(
+          sanitizeAmountQueryParam(
+            truncateExtraDecimals(e.target.value, decimals)
+          )
+        )
         onChange?.(e)
       },
-      [onChange]
+      [decimals, onChange]
     )
 
     return (
