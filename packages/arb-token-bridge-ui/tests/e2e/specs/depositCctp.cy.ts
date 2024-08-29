@@ -88,10 +88,7 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpDeposit()
-    cy.confirmSpending({
-      spendLimit: USDCAmountToSend.toString(),
-      shouldWaitForPopupClosure: true
-    })
+    cy.confirmSpending(USDCAmountToSend.toString())
 
     /**
      * Currently synpress cy.confirmMetamaskTransaction doesn't work on Sepolia
@@ -118,7 +115,7 @@ describe('Deposit USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
     confirmAndApproveCctpDeposit()
 
-    cy.confirmSpending({ shouldWaitForPopupClosure: true })
+    cy.confirmSpending(USDCAmountToSend.toString())
 
     cy.wait(40_000)
     cy.confirmMetamaskTransaction(undefined)

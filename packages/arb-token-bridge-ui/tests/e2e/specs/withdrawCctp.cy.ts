@@ -77,9 +77,7 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending({
-      shouldWaitForPopupClosure: true
-    })
+    cy.confirmSpending(USDCAmountToSend.toString())
     // eslint-disable-next-line
     cy.wait(40_000)
     cy.confirmMetamaskTransaction(undefined)
@@ -95,12 +93,10 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending({
-      shouldWaitForPopupClosure: true
-    })
+    cy.confirmSpending(USDCAmountToSend.toString())
 
     // eslint-disable-next-line
-    cy.wait(40_000)
+    cy.wait(10_000)
     cy.confirmMetamaskTransaction(undefined)
     const txData = {
       amount: USDCAmountToSend,
