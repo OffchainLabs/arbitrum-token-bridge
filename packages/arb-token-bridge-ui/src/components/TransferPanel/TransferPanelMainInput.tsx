@@ -157,7 +157,7 @@ function TransferPanelInputField({
     <input
       type="text"
       inputMode="decimal"
-      placeholder="Enter amount"
+      placeholder="0"
       className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-300 sm:text-3xl"
       value={value}
       {...rest}
@@ -236,19 +236,9 @@ export function TransferPanelMainInput({
 }: TransferPanelMainInputProps) {
   return (
     <>
-      <div
-        className={twMerge(
-          'flex flex-row rounded border bg-black/40 shadow-2',
-          errorMessage
-            ? 'border-brick text-brick'
-            : 'border-white/30 text-white'
-        )}
-      >
+      <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
         <div
-          className={twMerge(
-            'flex grow flex-row items-center justify-center',
-            errorMessage ? 'border-brick' : 'border-white/30'
-          )}
+          className={twMerge('flex grow flex-row items-center justify-center')}
         >
           <TransferPanelInputField {...rest} />
           <div className="flex flex-col items-end">
