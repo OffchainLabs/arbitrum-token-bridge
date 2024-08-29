@@ -151,8 +151,7 @@ export type TransferPanelMainInputProps =
   }
 
 export const TransferPanelMainInput = React.memo(
-  (props: TransferPanelMainInputProps) => {
-    const {
+  ({
       errorMessage,
       maxButtonOnClick,
       tokenButtonOptions,
@@ -161,7 +160,7 @@ export const TransferPanelMainInput = React.memo(
       value,
       isMaxAmount,
       ...rest
-    } = props
+    }: TransferPanelMainInputProps) => {
     const [localValue, setLocalValue] = useState(value)
 
     useEffect(() => {
