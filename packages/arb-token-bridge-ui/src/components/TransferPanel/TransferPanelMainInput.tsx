@@ -37,6 +37,9 @@ function MaxButton(
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
+    const customFeeTokenBalance = isDepositMode
+      ? customFeeTokenBalances.parentBalance
+      : customFeeTokenBalances.childBalance
     const tokenBalance = isDepositMode
       ? selectedTokenBalances.parentBalance
       : selectedTokenBalances.childBalance
@@ -50,10 +53,7 @@ function MaxButton(
     }
 
     if (nativeCurrency.isCustom) {
-      return (
-        customFeeTokenBalances.parentBalance &&
-        !customFeeTokenBalances.parentBalance.isZero()
-      )
+      return customFeeTokenBalance && !customFeeTokenBalance.isZero()
     }
 
     if (!ethBalance) {
@@ -65,11 +65,10 @@ function MaxButton(
     isDepositMode,
     ethParentBalance,
     ethChildBalance,
-    selectedTokenBalances.parentBalance,
-    selectedTokenBalances.childBalance,
+    customFeeTokenBalances,
+    selectedTokenBalances,
     selectedToken,
-    nativeCurrency.isCustom,
-    customFeeTokenBalances.parentBalance
+    nativeCurrency.isCustom
   ])
 
   if (!maxButtonVisible) {
@@ -80,7 +79,7 @@ function MaxButton(
     <button
       type="button"
       className={twMerge(
-        'arb-hover text-right text-xs font-bold text-gray-6',
+        'rounded bg-white/30 p-1 text-right text-xs font-bold text-white opacity-80 transition-opacity hover:opacity-60',
         className
       )}
       {...rest}
@@ -114,10 +113,14 @@ function TokenBalance({
     : selectedTokenBalances.childBalance
 
   const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
+  const customFeeTokenBalance = isDepositMode
+    ? customFeeTokenBalances.parentBalance
+    : customFeeTokenBalances.childBalance
 
   const nativeCurrencyBalance = nativeCurrency.isCustom
-    ? customFeeTokenBalances.parentBalance
+    ? customFeeTokenBalance
     : ethBalance
+
   const balance =
     balanceOverride ?? (selectedToken ? tokenBalance : nativeCurrencyBalance)
 
@@ -131,9 +134,9 @@ function TokenBalance({
     <>
       {formattedBalance ? (
         <>
-          <span className="text-xs font-light">Balance: </span>
+          <span className="text-sm font-light">Balance: </span>
           <span
-            className="text-xs"
+            className="text-sm"
             aria-label={`${
               selectedToken?.symbol ?? nativeCurrency.symbol
             } balance amount on ${
