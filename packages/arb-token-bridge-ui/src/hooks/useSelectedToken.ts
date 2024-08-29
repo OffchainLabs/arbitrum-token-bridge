@@ -25,6 +25,7 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
+import { useTokenLists } from './useTokenLists'
 
 const commonUSDC = {
   name: 'USD Coin',
@@ -40,21 +41,21 @@ export const useSelectedToken = () => {
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
+  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
 
-  const queryKey =
-    tokensFromLists && Object.keys(tokensFromLists).length > 0 && tokensFromUser
-      ? ([
-          parentChain.id,
-          childChain.id,
-          tokenFromSearchParams,
-          Object.keys(tokensFromUser),
-          'useSelectedToken'
-        ] as const)
-      : null
+  const queryKey = !isLoadingTokenLists
+    ? ([
+        parentChain.id,
+        childChain.id,
+        tokenFromSearchParams,
+        Object.keys(tokensFromUser),
+        'useSelectedToken'
+      ] as const)
+    : null
 
   const { data } = useSWRImmutable(
     queryKey,
-    async ([parentChainId, childChainId, _tokenFromSearchParams]) => {
+    async ([parentChainId, childChainId, _tokenFromSearchParams, _keys]) => {
       const tokenAddressLowercased = _tokenFromSearchParams?.toLowerCase()
 
       const parentProvider = getProviderForChainId(parentChainId)

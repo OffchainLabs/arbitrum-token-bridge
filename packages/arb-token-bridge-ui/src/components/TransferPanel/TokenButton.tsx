@@ -17,8 +17,8 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { Loader } from '../common/atoms/Loader'
-import { useTokensFromLists } from './TokenSearchUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useTokenLists } from '../../hooks/useTokenLists'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -34,8 +34,8 @@ export function TokenButton({
   const disabled = options?.disabled ?? false
 
   const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
-  const tokensFromLists = useTokensFromLists()
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -63,15 +63,8 @@ export function TokenButton({
     if (!utils.isAddress(tokenFromSearchParams)) {
       return false
     }
-    // show loader for undefined or empty token lists
-    if (!tokensFromLists) {
-      return true
-    }
-    if (Object.keys(tokensFromLists).length === 0) {
-      return true
-    }
-    return false
-  }, [tokensFromLists, tokenFromSearchParams])
+    return isLoadingTokenLists
+  }, [tokenFromSearchParams, isLoadingTokenLists])
 
   return (
     <>
