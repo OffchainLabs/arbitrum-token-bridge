@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+import { utils } from 'ethers'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -28,7 +29,6 @@ import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useBalances } from '../../../hooks/useBalances'
-import { utils } from 'ethers'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,

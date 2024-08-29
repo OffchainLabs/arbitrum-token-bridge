@@ -17,13 +17,13 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
 
-function MaxButton(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    customFeeTokenBalances: Balances
-  }
-) {
-  const { customFeeTokenBalances, className = '', ...rest } = props
-
+function MaxButton({
+  customFeeTokenBalances,
+  className = '',
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  customFeeTokenBalances: Balances
+}) {
   const {
     app: { selectedToken }
   } = useAppState()
@@ -79,7 +79,7 @@ function MaxButton(
     <button
       type="button"
       className={twMerge(
-        'rounded bg-white/30 p-1 text-right text-xs font-bold text-white opacity-80 transition-opacity hover:opacity-60',
+        'rounded bg-white/30 px-1 py-0.5 text-right text-xs font-medium leading-none text-white opacity-80 transition-opacity hover:opacity-60',
         className
       )}
       {...rest}
@@ -130,34 +130,29 @@ function TokenBalance({
       })
     : null
 
-  return (
-    <>
-      {formattedBalance ? (
-        <>
-          <span className="text-sm font-light text-white">Balance: </span>
-          <span
-            className="text-sm text-white"
-            aria-label={`${
-              selectedToken?.symbol ?? nativeCurrency.symbol
-            } balance amount on ${
-              isDepositMode ? 'parentChain' : 'childChain'
-            }`}
-          >
-            {formattedBalance}
-          </span>
-        </>
-      ) : (
-        <Loader wrapperClass="ml-1" color="white" size={12} />
-      )}
-    </>
-  )
+  if (formattedBalance) {
+    return (
+      <>
+        <span className="text-sm font-light text-white">Balance: </span>
+        <span
+          className="whitespace-nowrap text-sm text-white"
+          aria-label={`${
+            selectedToken?.symbol ?? nativeCurrency.symbol
+          } balance amount on ${isDepositMode ? 'parentChain' : 'childChain'}`}
+        >
+          {formattedBalance}
+        </span>
+      </>
+    )
+  }
+
+  return <Loader wrapperClass="ml-1" color="white" size={12} />
 }
 
-function TransferPanelInputField(
-  props: React.InputHTMLAttributes<HTMLInputElement>
-) {
-  const { value = '', ...rest } = props
-
+function TransferPanelInputField({
+  value = '',
+  ...rest
+}: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       type="text"
@@ -232,15 +227,13 @@ export type TransferPanelMainInputProps =
     customFeeTokenBalances: Balances
   }
 
-export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const {
-    errorMessage,
-    maxButtonOnClick,
-    overrides,
-    customFeeTokenBalances,
-    ...rest
-  } = props
-
+export function TransferPanelMainInput({
+  errorMessage,
+  maxButtonOnClick,
+  overrides,
+  customFeeTokenBalances,
+  ...rest
+}: TransferPanelMainInputProps) {
   return (
     <>
       <div

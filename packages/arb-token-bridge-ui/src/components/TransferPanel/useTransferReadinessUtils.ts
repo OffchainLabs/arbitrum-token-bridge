@@ -9,12 +9,11 @@ type GetInsufficientFundsErrorMessageParams = {
   chain: string
 }
 
-type GetInsufficientFundsForGasFeesErrorMessageParams = {
-  asset: string
-  chain: string
-  balance: string
-  requiredBalance: string
-}
+type GetInsufficientFundsForGasFeesErrorMessageParams =
+  GetInsufficientFundsErrorMessageParams & {
+    balance: string
+    requiredBalance: string
+  }
 
 export function getInsufficientFundsErrorMessage({
   asset,
@@ -29,13 +28,17 @@ export function getInsufficientFundsForGasFeesErrorMessage({
   balance,
   requiredBalance
 }: GetInsufficientFundsForGasFeesErrorMessageParams) {
+  const errorMessage = `Please add more ${asset} on ${chain} to pay for gas fees.`
+
   if (balance === requiredBalance) {
-    // if our formatAmount method rounds these to the same amount, we add a little buffer to the required balance
-    // TODO: this may need to be rescaled for non-18 decimal chains
-    requiredBalance = String(Number(requiredBalance) + 0.0001)
+    // An edge case where formatAmount returns the same value. In this case we don't want to show balances because in the UI it's the same as requiredBalance.
+    return errorMessage
   }
 
-  return `Insufficient ${asset} to pay for gas fees. You currently have ${balance} ${asset}, but the transaction requires ${requiredBalance} ${asset}. Please add more funds to ${chain}.`
+  return (
+    errorMessage +
+    ` You currently have ${balance} ${asset}, but the transaction requires ${requiredBalance} ${asset}.`
+  )
 }
 
 export function getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage({
