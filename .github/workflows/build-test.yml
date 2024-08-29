@@ -155,13 +155,13 @@ jobs:
 
       - id: set-matrix
         run: |
-          e2e_content=$(cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json)
-          cctp_content=$(cat packages/arb-token-bridge-ui/tests/e2e/cctp.json)
+          e2e_content=$(cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output .)
+          cctp_content=$(cat packages/arb-token-bridge-ui/tests/e2e/cctp.json | jq --compact-output .)
           
-          e2e_with_orbit=$(echo "$e2e_content" | jq '[.[] | {type: "regular", name: .name, file: .file, recordVideo: .recordVideo, orbitTest: "0"}, {type: "regular", name: .name, file: .file, recordVideo: .recordVideo, orbitTest: "1"}]')
-          cctp_formatted=$(echo "$cctp_content" | jq '[.[] | {type: "cctp", name: .name, file: .file, recordVideo: .recordVideo, orbitTest: null}]')
+          e2e_with_orbit=$(echo "$e2e_content" | jq '[.[] | {type: "regular", name: .name, file: .file, recordVideo: .recordVideo, orbitTest: "0"}, {type: "regular", name: .name, file: .file, recordVideo: .recordVideo, orbitTest: "1"}]' | jq . --compact-output)
+          cctp_formatted=$(echo "$cctp_content" | jq '[.[] | {type: "cctp", name: .name, file: .file, recordVideo: .recordVideo, orbitTest: null}]' | jq . --compact-output)
           
-          combined_content=$(echo "$e2e_with_orbit $cctp_formatted" | jq -s 'add')
+          combined_content=$(echo "$e2e_with_orbit $cctp_formatted" | jq -s 'add' --compact-output)
           echo "e2eFiles=$combined_content" >> $GITHUB_OUTPUT
 
   test-e2e:
