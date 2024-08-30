@@ -63,7 +63,7 @@ const isMax = (amount: string | undefined) =>
  * @param amount - transfer amount value from the input field or from the URL
  * @returns sanitised value
  */
-const sanitizeAmountQueryParam = (amount: string) => {
+export const sanitizeAmountQueryParam = (amount: string) => {
   // no need to process empty string
   if (amount.length === 0) {
     return amount
@@ -175,7 +175,8 @@ export function ArbQueryParamProvider({
         searchStringToObject: queryString.parse,
         objectToSearchString: queryString.stringify,
         updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
-        removeDefaultsFromUrl: true
+        removeDefaultsFromUrl: true,
+        enableBatching: true
       }}
     >
       {children}

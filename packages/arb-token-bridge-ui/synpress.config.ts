@@ -1,20 +1,30 @@
-import { BigNumber, Wallet, constants, utils } from 'ethers'
+import {
+  BigNumber,
+  Contract,
+  ContractFactory,
+  Wallet,
+  constants,
+  utils
+} from 'ethers'
+import { formatUnits, parseUnits } from 'ethers/lib/utils'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
-import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import cctpFiles from './tests/e2e/cctp.json'
-
+import { contractAbi, contractByteCode } from './testErc20Token'
 import {
   NetworkName,
   checkForAssertions,
   generateActivityOnChains,
   NetworkType,
-  fundEth
+  fundEth,
+  ERC20TokenSymbol,
+  ERC20TokenDecimals,
+  ERC20TokenName
 } from './tests/support/common'
 
 import {
@@ -88,23 +98,6 @@ export default defineConfig({
 
       const userWalletAddress = await userWallet.getAddress()
 
-      // Deploy ERC-20 token to L1
-      const l1ERC20Token = await deployERC20ToL1()
-
-      // Deploy ERC-20 token to L2
-      await deployERC20ToL2(l1ERC20Token.address)
-
-      // Mint ERC-20 token
-      // We need this to test token approval
-      // WETH is pre-approved so we need a new token
-      const mintedL1Erc20Token = await l1ERC20Token.mint()
-      await mintedL1Erc20Token.wait()
-
-      // Send minted ERC-20 to the test userWallet
-      await l1ERC20Token
-        .connect(localWallet.connect(parentProvider))
-        .transfer(userWalletAddress, BigNumber.from(50000000))
-
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
       await Promise.all([
         fundEth({
@@ -123,10 +116,15 @@ export default defineConfig({
         })
       ])
 
-      // Wrap ETH to test ERC-20 transactions
-      await Promise.all([wrapEth('parentChain'), wrapEth('childChain')])
+      // Deploy and fund ERC20 to Parent and Child chains
+      const l1ERC20Token = await deployERC20ToParentChain()
+      await fundErc20ToParentChain(l1ERC20Token)
+      await fundErc20ToChildChain(l1ERC20Token)
+      await approveErc20(l1ERC20Token)
 
-      // Approve WETH
+      // Wrap ETH to test WETH transactions and approve it's usage
+      await fundWeth('parentChain')
+      await fundWeth('childChain')
       await approveWeth()
 
       // Generate activity on chains so that assertions get posted and claims can be made
@@ -146,14 +144,14 @@ export default defineConfig({
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
+      config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
 
-      config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
+      config.env.ERC20_TOKEN_ADDRESS_CHILD_CHAIN = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
         l1Provider: parentProvider,
         l2Provider: childProvider
@@ -221,19 +219,27 @@ if (!process.env.PRIVATE_KEY_USER) {
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
-async function deployERC20ToL1() {
-  console.log('Deploying ERC20 to L1...')
-  const contract = new TestERC20__factory().connect(
-    localWallet.connect(parentProvider)
+async function deployERC20ToParentChain() {
+  console.log('Deploying ERC20...')
+  const signer = localWallet.connect(parentProvider)
+  const factory = new ContractFactory(contractAbi, contractByteCode, signer)
+  const l1TokenContract = await factory.deploy(
+    ERC20TokenName,
+    ERC20TokenSymbol,
+    parseUnits('100', ERC20TokenDecimals).toString()
   )
-  const token = await contract.deploy()
-  await token.deployed()
-
-  return token
+  console.log('Deployed ERC20:', {
+    symbol: await l1TokenContract.symbol(),
+    address: l1TokenContract.address,
+    supply: formatUnits(
+      await l1TokenContract.balanceOf(localWallet.address),
+      ERC20TokenDecimals
+    )
+  })
+  return l1TokenContract
 }
 
-async function deployERC20ToL2(erc20L1Address: string) {
-  console.log('Deploying ERC20 to L2...')
+async function deployERC20ToChildChain(erc20L1Address: string) {
   const bridger = await Erc20Bridger.fromProvider(childProvider)
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
@@ -251,8 +257,8 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
-async function wrapEth(networkType: NetworkType) {
-  console.log(`Wrapping ETH: ${networkType}...`)
+async function fundWeth(networkType: NetworkType) {
+  console.log(`Funding WETH: ${networkType}...`)
   const amount = networkType === 'parentChain' ? '0.2' : '0.1'
   const address = networkType === 'parentChain' ? l1WethAddress : l2WethAddress
   const provider =
@@ -272,6 +278,55 @@ async function approveWeth() {
   await tx.wait()
 }
 
+async function approveErc20(l1ERC20Token: Contract) {
+  console.log('Approving ERC20...')
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  const approvalTx = await erc20Bridger.approveToken({
+    erc20ParentAddress: l1ERC20Token.address,
+    parentSigner: userWallet.connect(parentProvider),
+    amount: parseUnits('1', ERC20TokenDecimals) // only approve 1 token for deposits, later we will need MAX amount approval during approve tests
+  })
+  await approvalTx.wait()
+}
+
+async function fundErc20ToParentChain(l1ERC20Token: Contract) {
+  console.log('Funding ERC20 on Parent Chain...')
+  // Send deployed ERC-20 to the test userWallet
+  const transferTx = await l1ERC20Token
+    .connect(localWallet.connect(parentProvider))
+    .transfer(userWallet.address, parseUnits('5', ERC20TokenDecimals))
+  await transferTx.wait()
+}
+
+async function fundErc20ToChildChain(l1ERC20Token: Contract) {
+  console.log('Funding ERC20 on Child Chain...')
+  // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
+  await deployERC20ToChildChain(l1ERC20Token.address)
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  const parentSigner = localWallet.connect(parentProvider)
+
+  // approve the ERC20 token for spending
+  const approvalTx = await erc20Bridger.approveToken({
+    erc20ParentAddress: l1ERC20Token.address,
+    parentSigner,
+    amount: constants.MaxUint256
+  })
+  await approvalTx.wait()
+
+  // deposit the ERC20 token to L2 (fund the L2 account)
+  const depositTx = await erc20Bridger.deposit({
+    parentSigner,
+    childProvider,
+    erc20ParentAddress: l1ERC20Token.address,
+    amount: parseUnits('5', ERC20TokenDecimals),
+    destinationAddress: userWallet.address
+  })
+  const depositRec = await depositTx.wait()
+
+  // wait for funds to reach L2
+  await depositRec.waitForChildTransactionReceipt(childProvider)
+}
+
 async function getCustomDestinationAddress() {
   console.log('Getting custom destination address...')
   return (await Wallet.createRandom().getAddress()).toLowerCase()
@@ -280,7 +335,7 @@ async function getCustomDestinationAddress() {
 async function generateTestTxForRedeemRetryable() {
   console.log('Adding a test transaction for redeeming retryable...')
 
-  const walletAddress = await userWallet.getAddress()
+  const walletAddress = userWallet.address
   const erc20Token = {
     symbol: 'WETH',
     decimals: 18,

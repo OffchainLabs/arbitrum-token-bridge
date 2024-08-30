@@ -51,6 +51,7 @@ export interface MergedTransaction {
   asset: string
   assetType: AssetType
   value: string | null
+  value2?: string
   uniqueId: BigNumber | null
   isWithdrawal: boolean
   blockNum: number | null

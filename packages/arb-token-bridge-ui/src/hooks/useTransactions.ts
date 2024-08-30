@@ -89,6 +89,7 @@ type TransactionBase = {
   type: TxnType
   status?: TxnStatus
   value: string | null
+  value2?: string
   txID?: string
   assetName: string
   assetType: AssetType
