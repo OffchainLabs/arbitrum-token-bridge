@@ -89,7 +89,7 @@ function MaxButton({
   )
 }
 
-function TokenBalance({
+function SourceChainTokenBalance({
   customFeeTokenBalances,
   balanceOverride
 }: {
@@ -249,7 +249,7 @@ export function TransferPanelMainInput({
           <div className="flex flex-col items-end">
             <TokenButton overrides={overrides} />
             <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-              <TokenBalance
+              <SourceChainTokenBalance
                 customFeeTokenBalances={customFeeTokenBalances}
                 balanceOverride={overrides?.balance}
               />
