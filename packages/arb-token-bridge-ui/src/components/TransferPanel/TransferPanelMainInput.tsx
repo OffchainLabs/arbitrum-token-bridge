@@ -146,7 +146,12 @@ function TokenBalance({
     )
   }
 
-  return <Loader wrapperClass="ml-1" color="white" size={12} />
+  return (
+    <>
+      <span className="text-sm font-light text-white">Balance: </span>
+      <Loader wrapperClass="ml-1" color="white" size={12} />
+    </>
+  )
 }
 
 function TransferPanelInputField({
