@@ -1,6 +1,5 @@
-import { useCallback, useEffect } from 'react'
+import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getNetworkName } from '../../../util/networks'
 import {
   NetworkButton,
@@ -39,6 +38,7 @@ import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmoun
 import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -64,7 +64,7 @@ export function SourceNetworkBox({
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
   const isBatchTransferSupported = useIsBatchTransferSupported()
-
+  const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
@@ -94,6 +94,25 @@ export function SourceNetworkBox({
       setAmount2(maxAmount2)
     }
   }, [maxAmount2, setAmount2])
+
+  const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    e => setAmount(e.target.value),
+    [setAmount]
+  )
+  const handleAmount2Change: ChangeEventHandler<HTMLInputElement> = useCallback(
+    e => {
+      setAmount2(e.target.value)
+    },
+    [setAmount2]
+  )
+
+  const tokenButtonOptionsAmount2 = useMemo(
+    () => ({
+      symbol: nativeCurrency.symbol,
+      disabled: true
+    }),
+    [nativeCurrency.symbol]
+  )
 
   return (
     <>
@@ -159,7 +178,10 @@ export function SourceNetworkBox({
             maxButtonOnClick={maxButtonOnClick}
             errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
-            onChange={e => setAmount(e.target.value)}
+            onChange={handleAmountChange}
+            maxAmount={maxAmount}
+            isMaxAmount={isMaxAmount}
+            decimals={decimals}
           />
 
           {isBatchTransferSupported && (
@@ -167,11 +189,11 @@ export function SourceNetworkBox({
               maxButtonOnClick={amount2MaxButtonOnClick}
               errorMessage={errorMessages?.inputAmount2}
               value={amount2}
-              onChange={e => setAmount2(e.target.value)}
-              tokenButtonOptions={{
-                symbol: nativeCurrency.symbol,
-                disabled: true
-              }}
+              onChange={handleAmount2Change}
+              tokenButtonOptions={tokenButtonOptionsAmount2}
+              maxAmount={maxAmount2}
+              isMaxAmount={isMaxAmount2}
+              decimals={nativeCurrency.decimals}
             />
           )}
 
