@@ -1,14 +1,9 @@
-import { Chain } from 'wagmi'
-import * as chains from 'wagmi/chains'
-
 import {
   ChainId,
   getCustomChainFromLocalStorageById,
   getSupportedChainIds
 } from '../util/networks'
-import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
 import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
-import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
   'ethereum',
@@ -80,51 +75,6 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
 
       throw new Error(
         `[getChainQueryParamForChain] Unexpected chain id: ${chainId}`
-      )
-  }
-}
-
-export function getChainForChainKeyQueryParam(
-  chainKeyQueryParam: ChainKeyQueryParam
-): Chain {
-  switch (chainKeyQueryParam) {
-    case 'ethereum':
-      return chains.mainnet
-
-    case 'sepolia':
-      return chains.sepolia
-
-    case 'arbitrum-one':
-      return chains.arbitrum
-
-    case 'arbitrum-nova':
-      return customChains.arbitrumNova
-
-    case 'arbitrum-sepolia':
-      return customChains.arbitrumSepolia
-
-    case 'custom-localhost':
-      return customChains.localL1Network
-
-    case 'arbitrum-localhost':
-      return customChains.localL2Network
-
-    case 'l3-localhost':
-      return customChains.localL3Network
-
-    default:
-      const orbitChain = getOrbitChains().find(
-        chain =>
-          chain.slug === chainKeyQueryParam ??
-          chain.chainId === Number(chainKeyQueryParam)
-      )
-
-      if (orbitChain) {
-        return chainToWagmiChain(orbitChain)
-      }
-
-      throw new Error(
-        `[getChainForChainKeyQueryParam] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
       )
   }
 }

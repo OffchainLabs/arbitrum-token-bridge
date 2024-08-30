@@ -19,8 +19,11 @@ import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
-import { getChainForChainKeyQueryParam } from '../types/ChainQueryParam'
+import { ChainKeyQueryParam } from '../types/ChainQueryParam'
 import { isUserRejectedError } from '../util/isUserRejectedError'
+import { getChainForChainKeyQueryParam } from '../util/chainQueryParamUtils'
+
+const siteTitle = 'Bridge to Arbitrum'
 
 if (
   process.env.NODE_ENV !== 'production' ||
@@ -83,22 +86,29 @@ if (
   })
 }
 
-type Something = {
+type ChainBlob = {
   name: string
   slug: string
 }
 
-function Meta({
-  sourceChain,
-  destinationChain
+function DynamicMetaData({
+  sourceChainSlug,
+  destinationChainSlug
 }: {
-  sourceChain: Something
-  destinationChain: Something
+  sourceChainSlug: ChainKeyQueryParam
+  destinationChainSlug: ChainKeyQueryParam
 }) {
-  const siteTitle = `Bridge from ${sourceChain.name} to ${destinationChain.name}`
+  const sourceChain: ChainBlob = {
+    name: getChainForChainKeyQueryParam(sourceChainSlug).name,
+    slug: sourceChainSlug
+  }
+  const destinationChain: ChainBlob = {
+    name: getChainForChainKeyQueryParam(destinationChainSlug).name,
+    slug: destinationChainSlug
+  }
+
   const siteDescription = `Bridge from ${sourceChain.name} to ${destinationChain.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
-  const siteDomain =
-    'https://arbitrum-token-bridge-git-feat-dynamic-meta-offchain-labs.vercel.app'
+  const siteDomain = 'https://bridge.arbitrum.io'
 
   return (
     <>
@@ -106,19 +116,28 @@ function Meta({
       <meta name="description" content={siteDescription} />
 
       {/* <!-- Facebook Meta Tags --> */}
-      <meta property="og:url" content={siteDomain} />
-      <meta property="og:type" content="website" />
-      <meta property="og:title" content={siteTitle} />
-      <meta property="og:description" content={siteDescription} />
+      <meta name="og:url" property="og:url" content={siteDomain} />
+      <meta name="og:type" property="og:type" content="website" />
+      <meta name="og:title" property="og:title" content={siteTitle} />
       <meta
+        name="og:description"
+        property="og:description"
+        content={siteDescription}
+      />
+      <meta
+        name="og:image"
         property="og:image"
         content={`${siteDomain}/images/__auto-generated/open-graph/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
       />
 
       {/* <!-- Twitter Meta Tags --> */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta property="twitter:domain" content="bridge.arbitrum.io" />
-      <meta property="twitter:url" content={siteDomain} />
+      <meta
+        name="twitter:domain"
+        property="twitter:domain"
+        content="bridge.arbitrum.io"
+      />
+      <meta name="twitter:url" property="twitter:url" content={siteDomain} />
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={siteDescription} />
       <meta
@@ -130,22 +149,19 @@ function Meta({
 }
 
 export default function App({ Component, pageProps, router }: AppProps) {
-  const { sourceChain = 'ethereum', destinationChain = 'arbitrum-one' } =
-    router.query
+  const sourceChainSlug = (router.query.sourceChain?.toString() ??
+    'ethereum') as ChainKeyQueryParam
+  const destinationChainSlug = (router.query.destinationChain?.toString() ??
+    'arbitrum-one') as ChainKeyQueryParam
 
   return (
     <>
       <Head>
-        <Meta
-          sourceChain={{
-            name: getChainForChainKeyQueryParam(sourceChain as any).name,
-            slug: sourceChain as string
-          }}
-          destinationChain={{
-            name: getChainForChainKeyQueryParam(destinationChain as any).name,
-            slug: destinationChain as string
-          }}
+        <DynamicMetaData
+          sourceChainSlug={sourceChainSlug}
+          destinationChainSlug={destinationChainSlug}
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Layout>
         <Component {...pageProps} />

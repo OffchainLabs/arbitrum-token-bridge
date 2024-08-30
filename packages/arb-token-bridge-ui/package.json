@@ -51,6 +51,7 @@
     "zustand": "^4.3.9"
   },
   "scripts": {
+    "predev": "yarn generateDenylist && yarn generateOpenGraphImages",
     "dev": "next dev",
     "prebuild": "yarn generateDenylist && yarn generateOpenGraphImages",
     "postinstall": "patch-package",
@@ -63,10 +64,6 @@
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
     "generateOpenGraphImages": "ts-node --project ./scripts/tsconfig.json ./src/generateOpenGraphImages.tsx",
-    "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
-    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
-    "e2e:run:cctp": "E2E_CCTP=true yarn e2e:run",
-    "e2e:install": "cypress install",
     "generateCoreChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateCoreChainsToMonitor.ts",
     "generateOrbitChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts"
   },
@@ -119,7 +116,6 @@
     "prettier-plugin-tailwindcss": "^0.1.11",
     "satori": "^0.10.11",
     "start-server-and-test": "^2.0.0",
-    "stream": "^0.0.2",
     "tailwindcss": "^3.2.4",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
