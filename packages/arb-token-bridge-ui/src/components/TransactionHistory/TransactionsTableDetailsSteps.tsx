@@ -1,5 +1,4 @@
 import { ReactNode, useMemo } from 'react'
-import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
@@ -8,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import {
   getDestinationNetworkTxId,
   isTxClaimable,
@@ -19,12 +18,7 @@ import {
 } from './helpers'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
-import {
-  WithdrawalCountdown,
-  getTxConfirmationDate
-} from '../common/WithdrawalCountdown'
-import { DepositCountdown } from '../common/DepositCountdown'
-import { useRemainingTime } from '../../state/cctpState'
+import { TransferCountdown } from '../common/TransferCountdown'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
@@ -33,29 +27,11 @@ import {
   secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
 import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDetailsTeleporterSteps'
+import {
+  minutesToHumanReadableTime,
+  useTransferDuration
+} from '../../hooks/useTransferDuration'
 import { isTeleporterTransaction } from '../../hooks/useTransactions'
-
-function getTransferDurationText(tx: MergedTransaction) {
-  const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
-
-  if (tx.isCctp) {
-    return isTestnet ? 'a minute' : '10 minutes'
-  }
-
-  if (!tx.isWithdrawal) {
-    if (isOrbitChain && !isTeleport(tx)) {
-      return 'a minute'
-    }
-    return isTestnet ? '10 minutes' : '15 minutes'
-  }
-
-  // withdrawals
-  return getTxConfirmationDate({
-    createdAt: dayjs(),
-    withdrawalFromChainId: tx.childChainId
-    // we set from to current time so that we get the full withdrawal confirmation time
-  }).from(dayjs(), true)
-}
 
 function needsToClaimTransfer(tx: MergedTransaction) {
   return tx.isCctp || tx.isWithdrawal
@@ -193,7 +169,7 @@ export const TransactionsTableDetailsSteps = ({
   tx: MergedTransaction
   address: Address | undefined
 }) => {
-  const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
+  const { approximateDurationInMinutes } = useTransferDuration(tx)
 
   const { sourceChainId } = tx
 
@@ -254,19 +230,12 @@ export const TransactionsTableDetailsSteps = ({
         <Step
           pending={isTxPending(tx)}
           done={!isTxPending(tx) && !isSourceChainDepositFailure}
-          text={`Wait ~${getTransferDurationText(tx)}`}
+          text={`Wait ~${minutesToHumanReadableTime(
+            approximateDurationInMinutes
+          )}`}
           endItem={
             isTxPending(tx) && (
-              <div>
-                {tx.isCctp && <>{cctpRemainingTime}</>}
-                {!tx.isCctp &&
-                  (tx.isWithdrawal ? (
-                    <WithdrawalCountdown tx={tx} />
-                  ) : (
-                    <DepositCountdown tx={tx} />
-                  ))}
-                <span> remaining</span>
-              </div>
+              <TransferCountdown tx={tx} textAfterTime="remaining" />
             )
           }
         />

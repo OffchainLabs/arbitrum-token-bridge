@@ -89,8 +89,9 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const ERC20TokenName = 'IntArbTestToken'
-export const ERC20TokenSymbol = 'IARB'
+export const ERC20TokenName = 'Test Arbitrum Token'
+export const ERC20TokenSymbol = 'TESTARB'
+export const ERC20TokenDecimals = 18
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
@@ -100,16 +101,15 @@ export const importTokenThroughUI = (address: string) => {
   cy.findSelectTokenButton('ETH').click()
 
   // open the Select Token popup
-  return cy
-    .findByPlaceholderText(/Search by token name/i)
+  cy.findByPlaceholderText(/Search by token name/i)
     .should('be.visible')
-    .typeRecursively(address)
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click()
-    })
+    .type(address)
+
+  // Click on the Add new token button
+  return cy
+    .findByRole('button', { name: 'Add New Token' })
+    .should('be.visible')
+    .click()
 }
 
 export async function getInitialETHBalance(

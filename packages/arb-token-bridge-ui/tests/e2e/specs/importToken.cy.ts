@@ -7,8 +7,12 @@ import {
   visitAfterSomeDelay
 } from '../../support/common'
 
-const ERC20TokenAddressL1: string = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
-const ERC20TokenAddressL2: string = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
+const ERC20TokenAddressL1: string = Cypress.env(
+  'ERC20_TOKEN_ADDRESS_PARENT_CHAIN'
+)
+const ERC20TokenAddressL2: string = Cypress.env(
+  'ERC20_TOKEN_ADDRESS_CHILD_CHAIN'
+)
 
 describe('Import token', () => {
   // we use mainnet to test token lists
@@ -117,12 +121,10 @@ describe('Import token', () => {
         // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .typeRecursively('UNI')
+          .type('UNI')
 
         // flaky test can load data too slowly here
-        cy.wait(5000)
-
-        cy.findByText('Uniswap').click()
+        cy.findByText('Uniswap', { timeout: 5_000 }).click()
 
         // UNI token should be selected now and popup should be closed after selection
         cy.findSelectTokenButton('UNI')
@@ -131,10 +133,7 @@ describe('Import token', () => {
 
     context('Add button is grayed', () => {
       it('should disable Add button if address is too long/short', () => {
-        const moveToEnd = ERC20TokenAddressL1.substring(
-          0,
-          ERC20TokenAddressL1.length - 1
-        )
+        const addressWithoutLastChar = ERC20TokenAddressL1.slice(0, -1) // Remove the last character
 
         cy.login({ networkType: 'parentChain' })
         cy.findSelectTokenButton('ETH').click()
@@ -143,7 +142,7 @@ describe('Import token', () => {
         cy.findByPlaceholderText(/Search by token name/i)
           .as('searchInput')
           .should('be.visible')
-          .typeRecursively(ERC20TokenAddressL1.slice(0, -1))
+          .type(addressWithoutLastChar)
 
         // Add button should be disabled
         cy.findByRole('button', { name: 'Add New Token' })
@@ -152,14 +151,13 @@ describe('Import token', () => {
           .as('addButton')
 
         // Add last character
-        cy.get('@searchInput').typeRecursively(
-          `${moveToEnd}${ERC20TokenAddressL1.slice(-1)}`
-        )
+        cy.get('@searchInput').type(ERC20TokenAddressL1.slice(-1))
+
         // Add button should be enabled
         cy.get('@addButton').should('be.enabled')
 
-        // Add one more character
-        cy.get('@searchInput').typeRecursively(`${moveToEnd}a`)
+        // Add one more character to make the address invalid
+        cy.get('@searchInput').type('x')
         // Add button should be disabled
         cy.get('@addButton').should('be.disabled')
       })
@@ -194,14 +192,10 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-          .then(() => {
-            cy.findSelectTokenButton(ERC20TokenSymbol)
+        cy.findSelectTokenButton(ERC20TokenSymbol)
 
-            // Modal is closed
-            cy.findByRole('button', { name: 'Import token' }).should(
-              'not.exist'
-            )
-          })
+        // Modal is closed
+        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
       })
     })
 
@@ -233,9 +227,7 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-          .then(() => {
-            cy.findSelectTokenButton(ERC20TokenSymbol)
-          })
+        cy.findSelectTokenButton(ERC20TokenSymbol)
 
         // Modal is closed
         cy.findByRole('button', { name: 'Import token' }).should('not.exist')
@@ -269,9 +261,7 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-          .then(() => {
-            cy.findSelectTokenButton('ETH')
-          })
+        cy.findSelectTokenButton('ETH')
 
         // Modal is closed
         cy.findByRole('button', { name: 'Dialog Cancel' }).should('not.exist')

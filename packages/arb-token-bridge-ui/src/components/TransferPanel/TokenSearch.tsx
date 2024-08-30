@@ -493,6 +493,7 @@ function TokensPanel({
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
       dataCy="tokenSearchList"
+      isDialog={false}
     >
       <AutoSizer>
         {({ height, width }) => (
@@ -554,10 +555,6 @@ export function TokenSearch({
       return
     }
 
-    if (typeof bridgeTokens === 'undefined') {
-      return
-    }
-
     try {
       // Native USDC on L2 won't have a corresponding L1 address
       const isNativeUSDC =
@@ -596,6 +593,10 @@ export function TokenSearch({
           decimals: 6,
           listIds: new Set()
         })
+        return
+      }
+
+      if (typeof bridgeTokens === 'undefined') {
         return
       }
 
