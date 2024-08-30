@@ -8,7 +8,6 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { recurse } from 'cypress-recurse'
 import {
   NetworkType,
   NetworkName,
@@ -79,27 +78,6 @@ export function login({
     cy.task('setCurrentNetworkName', networkNameWithDefault)
   })
 }
-
-Cypress.Commands.add(
-  'typeRecursively',
-  { prevSubject: true },
-  (subject, text: string) => {
-    recurse(
-      // the commands to repeat, and they yield the input element
-      () => cy.wrap(subject).clear().type(text),
-      // the predicate takes the output of the above commands
-      // and returns a boolean. If it returns true, the recursion stops
-      $input => $input.val() === text,
-      {
-        log: false,
-        timeout: 180_000
-      }
-    )
-      // the recursion yields whatever the command function yields
-      // and we can confirm that the text was entered correctly
-      .should('have.value', text)
-  }
-)
 
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
@@ -242,7 +220,7 @@ export const searchAndSelectToken = ({
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
-    .typeRecursively(tokenAddress)
+    .type(tokenAddress)
     .should('be.visible')
 
   // Click on the Add new token button
@@ -268,15 +246,13 @@ export const fillCustomDestinationAddress = () => {
 
   cy.findByPlaceholderText(Cypress.env('ADDRESS'))
     .should('be.visible')
-    .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+    .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
 
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy
-    .findByPlaceholderText(/enter amount/i)
-    .typeRecursively(String(amount))
+  return cy.findByPlaceholderText(/enter amount/i).type(String(amount))
 }
 
 export function findSourceChainButton(
