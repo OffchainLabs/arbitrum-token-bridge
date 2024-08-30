@@ -106,7 +106,7 @@ export function SourceNetworkBox({
     [setAmount2]
   )
 
-  const tokenButtonOptions = useMemo(
+  const tokenButtonOptionsAmount2 = useMemo(
     () => ({
       symbol: nativeCurrency.symbol,
       disabled: true
@@ -190,7 +190,7 @@ export function SourceNetworkBox({
               errorMessage={errorMessages?.inputAmount2}
               value={amount2}
               onChange={handleAmount2Change}
-              tokenButtonOptions={tokenButtonOptions}
+              tokenButtonOptions={tokenButtonOptionsAmount2}
               maxAmount={maxAmount2}
               isMaxAmount={isMaxAmount2}
               decimals={nativeCurrency.decimals}
