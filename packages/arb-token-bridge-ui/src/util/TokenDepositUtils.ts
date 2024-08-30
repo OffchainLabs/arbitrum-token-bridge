@@ -1,16 +1,19 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import * as Sentry from '@sentry/react'
 
 import {
   fetchErc20Allowance,
   fetchErc20ParentChainGatewayAddress,
   getL2ERC20Address
 } from './TokenUtils'
-import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
+import { AssetType, DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { addressIsSmartContract } from './AddressUtils'
+import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
+import { MergedTransaction } from '../state/app/state'
+import { isExperimentalFeatureEnabled } from '.'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
@@ -56,11 +59,12 @@ async function fetchTokenFallbackGasEstimates({
     l2Provider: childChainProvider
   })
 
+  const childChainId = await getChainIdFromProvider(childChainProvider)
+
   const isFirstTimeTokenBridging = !(await addressIsSmartContract(
     childChainTokenAddress,
-    childChainProvider
+    childChainId
   ))
-
   if (isFirstTimeTokenBridging) {
     return {
       estimatedParentChainGas,
@@ -68,6 +72,21 @@ async function fetchTokenFallbackGasEstimates({
       // https://explorer.xai-chain.net/tx/0x9b069c244e6c1ebb3eebfe9f653eb4c9fcb171ab56c68770509c86c16bb078a0
       // https://explorer.xai-chain.net/tx/0x68203e316c690878e35a8aa77db32108cd9afcc02eb7488ce3d2869a87e84492
       estimatedChildChainGas: BigNumber.from(800_000),
+      estimatedChildChainSubmissionCost
+    }
+  }
+
+  // custom gateway token deposits have a higher gas limit in the @arbitrum/sdk : https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/assetBridger/erc20Bridger.ts#L181
+  // tx example: https://arbiscan.io/tx/0x8f52daffdd97af8130d667a74a89234cd9ce838d23214d61818bd9743a2f64f8 // 275_000
+  const isCustomGatewayTokenDeposit = await addressIsCustomGatewayToken({
+    parentChainErc20Address,
+    parentChainProvider,
+    childChainProvider
+  })
+  if (isCustomGatewayTokenDeposit) {
+    return {
+      estimatedParentChainGas,
+      estimatedChildChainGas: BigNumber.from(300_000),
       estimatedChildChainSubmissionCost
     }
   }
@@ -139,7 +158,7 @@ export async function depositTokenEstimateGas(
       )
 
       return fetchTokenFallbackGasEstimates({
-        inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+        inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,
         parentChainErc20Address,
         parentChainProvider,
         childChainProvider
@@ -148,9 +167,9 @@ export async function depositTokenEstimateGas(
 
     const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
       amount,
-      erc20L1Address: parentChainErc20Address,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider,
+      erc20ParentAddress: parentChainErc20Address,
+      parentProvider: parentChainProvider,
+      childProvider: childChainProvider,
       from: address,
       retryableGasOverrides: {
         // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
@@ -165,13 +184,48 @@ export async function depositTokenEstimateGas(
       estimatedChildChainSubmissionCost: retryableData.maxSubmissionCost
     }
   } catch (error) {
-    Sentry.captureException(error)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'depositTokenEstimateGas'
+    })
 
     return fetchTokenFallbackGasEstimates({
-      inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+      inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,
       parentChainErc20Address,
       parentChainProvider,
       childChainProvider
     })
   }
+}
+
+async function addressIsCustomGatewayToken({
+  parentChainErc20Address,
+  parentChainProvider,
+  childChainProvider
+}: {
+  parentChainErc20Address: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}) {
+  const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress({
+    erc20ParentChainAddress: parentChainErc20Address,
+    parentChainProvider,
+    childChainProvider
+  })
+  const childChainNetwork = await getArbitrumNetwork(childChainProvider)
+  return (
+    parentChainGatewayAddress.toLowerCase() ===
+    childChainNetwork.tokenBridge?.parentCustomGateway.toLowerCase()
+  )
+}
+
+export function isBatchTransfer(tx: MergedTransaction) {
+  return (
+    isExperimentalFeatureEnabled('batch') &&
+    !tx.isCctp &&
+    !tx.isWithdrawal &&
+    tx.assetType === AssetType.ERC20 &&
+    typeof tx.value2 !== 'undefined' &&
+    Number(tx.value2) > 0
+  )
 }

@@ -23,6 +23,7 @@ type SdkToUiConversionProps = {
   destinationAddress?: string
   nativeCurrency: NativeCurrency
   amount: BigNumber
+  amount2?: BigNumber
   timestampCreated: string
 }
 
@@ -34,10 +35,15 @@ export const convertBridgeSdkToMergedTransaction = ({
   walletAddress,
   destinationAddress,
   nativeCurrency,
-  amount
+  amount,
+  amount2
 }: SdkToUiConversionProps): MergedTransaction => {
   const { transferType } = bridgeTransfer
-  const isDeposit = transferType.includes('deposit')
+  const isDeposit =
+    transferType === 'eth_deposit' ||
+    transferType === 'erc20_deposit' ||
+    transferType === 'eth_teleport' ||
+    transferType === 'erc20_teleport'
 
   return {
     sender: walletAddress!,
@@ -53,6 +59,7 @@ export const convertBridgeSdkToMergedTransaction = ({
       amount,
       selectedToken ? selectedToken.decimals : nativeCurrency.decimals
     ),
+    value2: amount2 ? utils.formatEther(amount2) : undefined,
     depositStatus: isDeposit ? DepositStatus.L1_PENDING : undefined,
     uniqueId: null,
     isWithdrawal: !isDeposit,
@@ -74,6 +81,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
   nativeCurrency,
   destinationAddress,
   amount,
+  amount2,
   timestampCreated
 }: SdkToUiConversionProps): Deposit => {
   const transaction =
@@ -91,6 +99,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
       amount,
       selectedToken ? selectedToken.decimals : nativeCurrency.decimals
     ),
+    value2: amount2 ? utils.formatEther(amount2) : undefined,
     parentChainId,
     childChainId,
     direction: 'deposit',

@@ -101,9 +101,17 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
+    const destinationChainId = await getChainIdFromProvider(
+      this.destinationChainProvider
+    )
+
     // check first if token is even eligible for allowance check on l2
     if (
-      tokenRequiresApprovalOnL2(destinationChainErc20Address, sourceChainId) &&
+      (await tokenRequiresApprovalOnL2({
+        tokenAddressOnParentChain: destinationChainErc20Address,
+        parentChainId: destinationChainId,
+        childChainId: sourceChainId
+      })) &&
       this.sourceChainErc20Address
     ) {
       const token = ERC20__factory.connect(
@@ -189,9 +197,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+
     const isSmartContractWallet = await addressIsSmartContract(
       address,
-      this.sourceChainProvider
+      sourceChainId
     )
 
     if (isSmartContractWallet && !destinationAddress) {
@@ -204,14 +214,14 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const request = await erc20Bridger.getWithdrawalRequest({
       from: address,
-      erc20l1Address: destinationChainErc20Address,
+      erc20ParentAddress: destinationChainErc20Address,
       destinationAddress: destinationAddress ?? address,
       amount
     })
 
     const tx = await erc20Bridger.withdraw({
       ...request,
-      l2Signer: signer,
+      childSigner: signer,
       overrides: {
         gasLimit: percentIncrease(
           await this.sourceChainProvider.estimateGas(request.txRequest),

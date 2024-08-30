@@ -22,7 +22,6 @@ import {
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
@@ -42,6 +41,8 @@ import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { useBalances } from '../../hooks/useBalances'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -176,21 +177,17 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
   const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
-  const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: parentChainProvider, walletAddress })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: childChainProvider, walletAddress })
+    ethParentBalance,
+    erc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances
+  } = useBalances({
+    parentWalletAddress: walletAddress,
+    childWalletAddress: walletAddress
+  })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -213,15 +210,15 @@ function TokensPanel({
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
         if (nativeCurrency.isCustom) {
           return isDepositMode
-            ? erc20L1Balances?.[nativeCurrency.address]
-            : ethL2Balance
+            ? erc20ParentBalances?.[nativeCurrency.address]
+            : ethChildBalance
         }
 
-        return isDepositMode ? ethL1Balance : ethL2Balance
+        return isDepositMode ? ethParentBalance : ethChildBalance
       }
 
       if (isDepositMode) {
-        return erc20L1Balances?.[address.toLowerCase()]
+        return erc20ParentBalances?.[address.toLowerCase()]
       }
 
       if (typeof bridgeTokens === 'undefined') {
@@ -232,19 +229,19 @@ function TokensPanel({
         isTokenArbitrumOneNativeUSDC(address) ||
         isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
-        return erc20L2Balances?.[address.toLowerCase()]
+        return erc20ChildBalances?.[address.toLowerCase()]
       }
 
       const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
-      return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
+      return l2Address ? erc20ChildBalances?.[l2Address.toLowerCase()] : null
     },
     [
       nativeCurrency,
       bridgeTokens,
-      erc20L1Balances,
-      erc20L2Balances,
-      ethL1Balance,
-      ethL2Balance,
+      erc20ParentBalances,
+      erc20ChildBalances,
+      ethParentBalance,
+      ethChildBalance,
       isDepositMode
     ]
   )
@@ -496,6 +493,7 @@ function TokensPanel({
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
       dataCy="tokenSearchList"
+      isDialog={false}
     >
       <AutoSizer>
         {({ height, width }) => (
@@ -529,8 +527,14 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
@@ -548,10 +552,6 @@ export function TokenSearch({
     }
 
     if (!_token.address) {
-      return
-    }
-
-    if (typeof bridgeTokens === 'undefined') {
       return
     }
 
@@ -596,6 +596,10 @@ export function TokenSearch({
         return
       }
 
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
+
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         setTokenQueryParam(_token.address)
@@ -626,6 +630,14 @@ export function TokenSearch({
       }
 
       if (isTransferDisabledToken(_token.address, childChain.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (
+        isTeleportMode &&
+        !isTeleportEnabledToken(_token.address, parentChain.id, childChain.id)
+      ) {
         openTransferDisabledDialog()
         return
       }

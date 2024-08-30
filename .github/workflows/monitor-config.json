@@ -1,0 +1,30 @@
+{
+  "core": {
+    "generateCommand": "generateCoreChainsToMonitor",
+    "configFile": "__auto-generated-core-chains.json",
+    "slackTokens": {
+      "assertion": "CORE_CHAIN_ASSERTION_MONITORING_SLACK_TOKEN",
+      "batch-poster": "CORE_CHAIN_BATCH_POSTER_MONITORING_SLACK_TOKEN",
+      "retryable": "CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN"
+    },
+    "slackChannels": {
+      "assertion": "CORE_CHAIN_ASSERTION_MONITORING_SLACK_CHANNEL",
+      "batch-poster": "CORE_CHAIN_BATCH_POSTER_MONITORING_SLACK_CHANNEL",
+      "retryable": "CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL"
+    }
+  },
+  "orbit": {
+    "generateCommand": "generateOrbitChainsToMonitor",
+    "configFile": "__auto-generated-orbit-chains.json",
+    "slackTokens": {
+      "assertion": "ORBIT_CHAIN_ASSERTION_MONITORING_SLACK_TOKEN",
+      "batch-poster": "ORBIT_CHAIN_BATCH_POSTER_MONITORING_SLACK_TOKEN",
+      "retryable": "ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN"
+    },
+    "slackChannels": {
+      "assertion": "ORBIT_CHAIN_ASSERTION_MONITORING_SLACK_CHANNEL",
+      "batch-poster": "ORBIT_CHAIN_BATCH_POSTER_MONITORING_SLACK_CHANNEL",
+      "retryable": "ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL"
+    }
+  }
+}

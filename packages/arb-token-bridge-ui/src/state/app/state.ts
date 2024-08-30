@@ -6,8 +6,9 @@ import {
   NodeBlockDeadlineStatus
 } from '../../hooks/arbTokenBridge.types'
 import {
-  L1ToL2MessageData,
-  L2ToL1MessageData,
+  ParentToChildMessageData,
+  ChildToParentMessageData,
+  L2ToL3MessageData,
   TxnType
 } from '../../hooks/useTransactions'
 import { ConnectionState } from '../../util'
@@ -52,14 +53,15 @@ export interface MergedTransaction {
   asset: string
   assetType: AssetType
   value: string | null
+  value2?: string
   uniqueId: BigNumber | null
   isWithdrawal: boolean
   blockNum: number | null
   tokenAddress: string | null
   isCctp?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  l1ToL2MsgData?: L1ToL2MessageData
-  l2ToL1MsgData?: L2ToL1MessageData
+  parentToChildMsgData?: ParentToChildMessageData
+  childToParentMsgData?: ChildToParentMessageData
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number
@@ -72,6 +74,11 @@ export interface MergedTransaction {
     receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
+}
+
+export interface TeleporterMergedTransaction extends MergedTransaction {
+  l1ToL2MsgData?: ParentToChildMessageData
+  l2ToL3MsgData: L2ToL3MessageData
 }
 
 export interface WarningTokens {

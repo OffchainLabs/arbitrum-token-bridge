@@ -1,4 +1,5 @@
 import { ChainId } from '../util/networks'
+import { xErc20RequiresApprovalOnChildChain } from './xErc20Utils'
 
 export type RequireL2ApproveToken = {
   symbol: string
@@ -22,6 +23,11 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       symbol: 'ARB',
       l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
       l2Address: '0x912CE59144191C1204E64559FE8253a0e49E6548'
+    },
+    {
+      symbol: 'saETH',
+      l1Address: '0xF1617882A71467534D14EEe865922de1395c9E89',
+      l2Address: '0xF1617882A71467534D14EEe865922de1395c9E89'
     }
   ],
   [ChainId.ArbitrumNova]: [
@@ -61,11 +67,22 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
   ]
 }
 
-export function tokenRequiresApprovalOnL2(
-  erc20L1Address: string,
-  l2ChainId: number
+export type TokenWithdrawalApprovalParams = {
+  tokenAddressOnParentChain: string
+  parentChainId: ChainId
+  childChainId: ChainId
+}
+
+export async function tokenRequiresApprovalOnL2(
+  params: TokenWithdrawalApprovalParams
 ) {
-  return (L2ApproveTokens[l2ChainId] ?? [])
+  if (await xErc20RequiresApprovalOnChildChain(params)) {
+    return true
+  }
+
+  const { tokenAddressOnParentChain, childChainId } = params
+
+  return (L2ApproveTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
-    .includes(erc20L1Address.toLowerCase())
+    .includes(tokenAddressOnParentChain.toLowerCase())
 }

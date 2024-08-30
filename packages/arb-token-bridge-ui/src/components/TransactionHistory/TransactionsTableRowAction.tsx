@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { useClaimCctp, useRemainingTime } from '../../state/cctpState'
+import { useClaimCctp } from '../../state/cctpState'
+import {
+  DepositStatus,
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from '../../state/app/state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getNetworkName } from '../../util/networks'
@@ -12,9 +16,13 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useNetwork } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
-import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
-import { DepositCountdown } from '../common/DepositCountdown'
+import { TransferCountdown } from '../common/TransferCountdown'
 import { Address } from '../../util/AddressUtils'
+import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { formatAmount } from '../../util/NumberUtils'
 
 export function TransactionsTableRowAction({
   tx,
@@ -22,7 +30,7 @@ export function TransactionsTableRowAction({
   type,
   address
 }: {
-  tx: MergedTransaction
+  tx: MergedTransaction | TeleporterMergedTransaction
   isError: boolean
   type: 'deposits' | 'withdrawals'
   address: Address | undefined
@@ -31,32 +39,52 @@ export function TransactionsTableRowAction({
   const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
 
+  const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
+    erc20L1Address: tx.tokenAddress,
+    chainId: tx.sourceChainId
+  })
+
   const { claim, isClaiming } = useClaimWithdrawal(tx)
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
-  const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
-  const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
+  const { redeem, isRedeeming: isRetryableRedeeming } = useRedeemRetryable(
+    tx,
+    address
+  )
+  const { redeem: teleporterRedeem, isRedeeming: isTeleporterRedeeming } =
+    useRedeemTeleporter(tx, address)
 
-  const isConnectedToCorrectNetworkForAction =
-    chain?.id === tx.destinationChainId
+  const isRedeeming = isRetryableRedeeming || isTeleporterRedeeming
+
+  const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
+
+  const isConnectedToCorrectNetworkForAction = isDepositReadyToRedeem(tx)
+    ? chain?.id === chainIdForRedeemingRetryable // for redemption actions, we can have different chain id
+    : chain?.id === tx.destinationChainId // for claims, we need to be on the destination chain
 
   const handleRedeemRetryable = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchNetworkAsync?.(tx.destinationChainId)
+        await switchNetworkAsync?.(chainIdForRedeemingRetryable)
       }
-      await redeem()
+
+      if (isTeleport(tx)) {
+        await teleporterRedeem()
+      } else {
+        await redeem()
+      }
     } catch (error: any) {
       if (isUserRejectedError(error)) {
         return
       }
-
       errorToast(`Can't retry the deposit: ${error?.message ?? error}`)
     }
   }, [
+    tx,
     isConnectedToCorrectNetworkForAction,
+    chainIdForRedeemingRetryable,
     redeem,
     switchNetworkAsync,
-    tx.destinationChainId
+    teleporterRedeem
   ])
 
   const handleClaim = useCallback(async () => {
@@ -76,7 +104,7 @@ export function TransactionsTableRowAction({
       }
 
       errorToast(
-        `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
+        `Can't claim ${type === 'deposits' ? 'deposit' : 'withdrawal'}: ${
           error?.message ?? error
         }`
       )
@@ -122,13 +150,7 @@ export function TransactionsTableRowAction({
     return (
       <div className="flex flex-col text-center text-xs">
         <span>Time left:</span>
-        {tx.isCctp && <>{cctpRemainingTime}</>}
-        {!tx.isCctp &&
-          (tx.isWithdrawal ? (
-            <WithdrawalCountdown tx={tx} />
-          ) : (
-            <DepositCountdown tx={tx} />
-          ))}
+        <TransferCountdown tx={tx} />
       </div>
     )
   }
@@ -142,6 +164,9 @@ export function TransactionsTableRowAction({
       <span className="my-2 animate-pulse text-xs">Claiming...</span>
     ) : (
       <Button
+        aria-label={`Claim ${formatAmount(Number(tx.value), {
+          symbol: tokenSymbol
+        })}`}
         variant="primary"
         className="w-14 rounded bg-green-400 p-2 text-xs text-black"
         onClick={handleClaim}

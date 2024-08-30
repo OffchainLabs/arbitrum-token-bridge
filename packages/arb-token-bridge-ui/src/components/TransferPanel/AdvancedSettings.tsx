@@ -3,7 +3,6 @@ import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
-import { Provider } from '@ethersproject/providers'
 import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
@@ -23,7 +22,8 @@ import { Transition } from '../common/Transition'
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
   REQUIRED_ADDRESS = 'The destination address is required.',
-  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.'
+  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.',
+  TELEPORT_DISABLED = 'LayerLeap transfers to custom destination addresses are not supported yet.'
 }
 
 enum DestinationAddressWarnings {
@@ -49,10 +49,12 @@ export const useDestinationAddressStore = create<DestinationAddressStore>(
 
 export async function getDestinationAddressError({
   destinationAddress,
-  isSmartContractWallet
+  isSmartContractWallet,
+  isTeleportMode
 }: {
   destinationAddress?: string
   isSmartContractWallet: boolean
+  isTeleportMode: boolean
 }): Promise<DestinationAddressErrors | null> {
   if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
@@ -70,6 +72,10 @@ export async function getDestinationAddressError({
     return DestinationAddressErrors.DENYLISTED_ADDRESS
   }
 
+  if (isTeleportMode) {
+    return DestinationAddressErrors.TELEPORT_DISABLED
+  }
+
   // no error
   return null
 }
@@ -77,11 +83,11 @@ export async function getDestinationAddressError({
 async function getDestinationAddressWarning({
   destinationAddress,
   isEOA,
-  destinationProvider
+  destinationChainId
 }: {
   destinationAddress: string | undefined
   isEOA: boolean
-  destinationProvider: Provider
+  destinationChainId: number
 }) {
   if (!destinationAddress) {
     return null
@@ -93,7 +99,7 @@ async function getDestinationAddressWarning({
 
   const destinationIsSmartContract = await addressIsSmartContract(
     destinationAddress,
-    destinationProvider
+    destinationChainId
   )
 
   // checks if trying to send to a contract address, only checks EOA
@@ -115,7 +121,8 @@ export const AdvancedSettings = () => {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
@@ -139,12 +146,13 @@ export const AdvancedSettings = () => {
       setError(
         await getDestinationAddressError({
           destinationAddress,
-          isSmartContractWallet
+          isSmartContractWallet,
+          isTeleportMode
         })
       )
     }
     updateError()
-  }, [destinationAddress, isSmartContractWallet, setError])
+  }, [destinationAddress, isSmartContractWallet, setError, isTeleportMode])
 
   useEffect(() => {
     // isSubscribed makes sure that only the latest state is written
@@ -154,9 +162,7 @@ export const AdvancedSettings = () => {
       const result = await getDestinationAddressWarning({
         destinationAddress,
         isEOA,
-        destinationProvider: isDepositMode
-          ? childChainProvider
-          : parentChainProvider
+        destinationChainId: networks.destinationChain.id
       })
       if (isSubscribed) {
         setWarning(result)
@@ -172,7 +178,9 @@ export const AdvancedSettings = () => {
     isDepositMode,
     isEOA,
     childChainProvider,
-    parentChainProvider
+    parentChainProvider,
+    childChain.id,
+    parentChain.id
   ])
 
   const collapsible = useMemo(() => {

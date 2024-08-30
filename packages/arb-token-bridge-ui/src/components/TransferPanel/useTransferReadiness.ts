@@ -4,7 +4,6 @@ import { utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppState } from '../../state'
-import { useBalance } from '../../hooks/useBalance'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -17,13 +16,30 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
+  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage,
+  getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
-import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
+import {
+  UseGasSummaryResult,
+  useGasSummary
+} from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { isNetwork } from '../../util/networks'
+import { useBalances } from '../../hooks/useBalances'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+
+// Add chains IDs that are currently down or disabled
+// It will block transfers and display an info box in the transfer panel
+export const DISABLED_CHAIN_IDS: number[] = []
+
+type ErrorMessages = {
+  inputAmount1?: string | TransferReadinessRichErrorMessage
+  inputAmount2?: string | TransferReadinessRichErrorMessage
+}
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -80,9 +96,9 @@ function ready() {
 
 function notReady(
   params: {
-    errorMessage: string | TransferReadinessRichErrorMessage | undefined
+    errorMessages: ErrorMessages | undefined
   } = {
-    errorMessage: undefined
+    errorMessages: undefined
   }
 ) {
   const result: UseTransferReadinessResult = {
@@ -99,16 +115,11 @@ export type UseTransferReadinessTransferReady = {
 
 export type UseTransferReadinessResult = {
   transferReady: UseTransferReadinessTransferReady
-  errorMessage?: string | TransferReadinessRichErrorMessage
+  errorMessages?: ErrorMessages
 }
 
-export function useTransferReadiness({
-  amount,
-  gasSummary
-}: {
-  amount: string
-  gasSummary: UseGasSummaryResult
-}): UseTransferReadinessResult {
+export function useTransferReadiness(): UseTransferReadinessResult {
+  const [{ amount, amount2 }] = useArbQueryParams()
   const {
     app: { selectedToken }
   } = useAppState()
@@ -116,105 +127,98 @@ export function useTransferReadiness({
     layout: { isTransferring }
   } = useAppContextState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
 
+  const gasSummary = useGasSummary()
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: parentChainProvider, walletAddress })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: childChainProvider, walletAddress })
+    ethParentBalance,
+    erc20ParentBalances,
+    ethChildBalance,
+    erc20ChildBalances
+  } = useBalances({
+    parentWalletAddress: walletAddress,
+    childWalletAddress: walletAddress
+  })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
-  const ethL1BalanceFloat = useMemo(
-    () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
-    [ethL1Balance]
-  )
+  const ethL1BalanceFloat = ethParentBalance
+    ? parseFloat(utils.formatEther(ethParentBalance))
+    : null
 
-  const ethL2BalanceFloat = useMemo(
-    () => (ethL2Balance ? parseFloat(utils.formatEther(ethL2Balance)) : null),
-    [ethL2Balance]
-  )
+  const ethL2BalanceFloat = ethChildBalance
+    ? parseFloat(utils.formatEther(ethChildBalance))
+    : null
 
   const selectedTokenL1BalanceFloat = useMemo(() => {
     if (!selectedToken) {
       return null
     }
 
-    const balance = erc20L1Balances?.[selectedToken.address.toLowerCase()]
+    const balance = erc20ParentBalances?.[selectedToken.address.toLowerCase()]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L1Balances])
+  }, [selectedToken, erc20ParentBalances])
 
   const selectedTokenL2BalanceFloat = useMemo(() => {
     if (!selectedToken) {
       return null
     }
 
+    const { isOrbitChain } = isNetwork(childChain.id)
+
     const isL2NativeUSDC =
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
 
-    const selectedTokenL2Address = isL2NativeUSDC
-      ? selectedToken.address.toLowerCase()
-      : (selectedToken.l2Address || '').toLowerCase()
+    const selectedTokenL2Address =
+      isL2NativeUSDC && !isOrbitChain
+        ? selectedToken.address.toLowerCase()
+        : (selectedToken.l2Address || '').toLowerCase()
 
-    const balance = erc20L2Balances?.[selectedTokenL2Address]
+    const balance = erc20ChildBalances?.[selectedTokenL2Address]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L2Balances])
+  }, [selectedToken, childChain.id, erc20ChildBalances])
 
   const customFeeTokenL1BalanceFloat = useMemo(() => {
     if (!nativeCurrency.isCustom) {
       return null
     }
 
-    const balance = erc20L1Balances?.[nativeCurrency.address]
+    const balance = erc20ParentBalances?.[nativeCurrency.address]
 
     if (!balance) {
       return null
     }
 
     return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
-  }, [nativeCurrency, erc20L1Balances])
+  }, [nativeCurrency, erc20ParentBalances])
 
   return useMemo(() => {
-    if (isNaN(Number(amount)) || Number(amount) === 0) {
-      return notReady()
-    }
-
-    if (isTransferring) {
-      return notReady()
-    }
-
-    // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
-    if (isSmartContractWallet && !selectedToken) {
-      return notReady({
-        errorMessage:
-          getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
-            { asset: nativeCurrency.symbol }
-          )
-      })
-    }
-
-    // Check if destination address is valid for ERC20 transfers
-    if (destinationAddressError) {
-      return notReady()
-    }
+    const { estimatedL1GasFees, estimatedL2GasFees } = sanitizeEstimatedGasFees(
+      gasSummary,
+      {
+        isSmartContractWallet,
+        isDepositMode
+      }
+    )
 
     const ethBalanceFloat = isDepositMode
       ? ethL1BalanceFloat
@@ -231,6 +235,60 @@ export function useTransferReadiness({
       return notReady()
     }
 
+    const sendsAdditionalEth = Number(amount2) > 0
+    const notEnoughEthForAdditionalEthTransfer =
+      Number(amount2) >
+      ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
+
+    if (isNaN(Number(amount)) || Number(amount) === 0) {
+      return notReady({
+        errorMessages: {
+          inputAmount2:
+            sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+              ? getInsufficientFundsErrorMessage({
+                  asset: ether.symbol,
+                  chain: networks.sourceChain.name
+                })
+              : undefined
+        }
+      })
+    }
+
+    if (isTransferring) {
+      return notReady()
+    }
+
+    if (DISABLED_CHAIN_IDS.includes(childChain.id)) {
+      return notReady()
+    }
+
+    // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
+    if (isSmartContractWallet && !selectedToken) {
+      return notReady({
+        errorMessages: {
+          inputAmount1:
+            getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
+              { asset: nativeCurrency.symbol }
+            )
+        }
+      })
+    }
+
+    // teleport transfers using SC wallets not enabled yet
+    if (isSmartContractWallet && isTeleportMode) {
+      return notReady({
+        errorMessages: {
+          inputAmount1:
+            getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
+        }
+      })
+    }
+
+    // Check if destination address is valid for ERC20 transfers
+    if (destinationAddressError) {
+      return notReady()
+    }
+
     // ERC-20
     if (selectedToken) {
       const selectedTokenIsWithdrawOnly = isWithdrawOnlyToken(
@@ -238,19 +296,27 @@ export function useTransferReadiness({
         childChain.id
       )
 
-      const selectedTokenIsDisabled = isTransferDisabledToken(
-        selectedToken.address,
-        childChain.id
-      )
+      const selectedTokenIsDisabled =
+        isTransferDisabledToken(selectedToken.address, childChain.id) ||
+        (isTeleportMode &&
+          !isTeleportEnabledToken(
+            selectedToken.address,
+            parentChain.id,
+            childChain.id
+          ))
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
-          errorMessage: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
+          errorMessages: {
+            inputAmount1: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
+          }
         })
       } else if (selectedTokenIsDisabled) {
         return notReady({
-          errorMessage:
-            TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED
+          errorMessages: {
+            inputAmount1:
+              TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED
+          }
         })
       } else if (withdrawalDisabled(selectedToken.address)) {
         return notReady()
@@ -264,10 +330,19 @@ export function useTransferReadiness({
       // Check amount against ERC-20 balance
       if (Number(amount) > selectedTokenBalanceFloat) {
         return notReady({
-          errorMessage: getInsufficientFundsErrorMessage({
-            asset: selectedToken.symbol,
-            chain: networks.sourceChain.name
-          })
+          errorMessages: {
+            inputAmount1: getInsufficientFundsErrorMessage({
+              asset: selectedToken.symbol,
+              chain: networks.sourceChain.name
+            }),
+            inputAmount2:
+              sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+                ? getInsufficientFundsErrorMessage({
+                    asset: ether.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                : undefined
+          }
         })
       }
     }
@@ -281,10 +356,12 @@ export function useTransferReadiness({
       // Check amount against custom fee token balance
       if (Number(amount) > customFeeTokenBalanceFloat) {
         return notReady({
-          errorMessage: getInsufficientFundsErrorMessage({
-            asset: nativeCurrency.symbol,
-            chain: networks.sourceChain.name
-          })
+          errorMessages: {
+            inputAmount1: getInsufficientFundsErrorMessage({
+              asset: nativeCurrency.symbol,
+              chain: networks.sourceChain.name
+            })
+          }
         })
       }
     }
@@ -292,10 +369,12 @@ export function useTransferReadiness({
     // Check amount against ETH balance
     else if (Number(amount) > ethBalanceFloat) {
       return notReady({
-        errorMessage: getInsufficientFundsErrorMessage({
-          asset: ether.symbol,
-          chain: networks.sourceChain.name
-        })
+        errorMessages: {
+          inputAmount1: getInsufficientFundsErrorMessage({
+            asset: ether.symbol,
+            chain: networks.sourceChain.name
+          })
+        }
       })
     }
 
@@ -310,19 +389,16 @@ export function useTransferReadiness({
 
       case 'error':
         return notReady({
-          errorMessage: TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
+          errorMessages: {
+            inputAmount1:
+              TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
+          }
         })
 
       case 'insufficientBalance':
         return notReady()
 
       case 'success': {
-        const { estimatedL1GasFees, estimatedL2GasFees } =
-          sanitizeEstimatedGasFees(gasSummary, {
-            isSmartContractWallet,
-            isDepositMode
-          })
-
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
           if (nativeCurrency.isCustom && isDepositMode) {
@@ -334,20 +410,24 @@ export function useTransferReadiness({
             // We have to check if there's enough ETH to cover L1 gas
             if (estimatedL1GasFees > ethBalanceFloat) {
               return notReady({
-                errorMessage: getInsufficientFundsForGasFeesErrorMessage({
-                  asset: ether.symbol,
-                  chain: networks.sourceChain.name
-                })
+                errorMessages: {
+                  inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+                    asset: ether.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                }
               })
             }
 
             // We have to check if there's enough of the custom fee token to cover L2 gas
             if (estimatedL2GasFees > customFeeTokenL1BalanceFloat) {
               return notReady({
-                errorMessage: getInsufficientFundsForGasFeesErrorMessage({
-                  asset: nativeCurrency.symbol,
-                  chain: networks.sourceChain.name
-                })
+                errorMessages: {
+                  inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+                    asset: nativeCurrency.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                }
               })
             }
 
@@ -355,12 +435,29 @@ export function useTransferReadiness({
           }
 
           // Everything is paid in ETH, so we sum it up
-          if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
+          const notEnoughEthForGasFees =
+            estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat
+
+          if (
+            notEnoughEthForGasFees ||
+            (sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer)
+          ) {
             return notReady({
-              errorMessage: getInsufficientFundsForGasFeesErrorMessage({
-                asset: ether.symbol,
-                chain: networks.sourceChain.name
-              })
+              errorMessages: {
+                inputAmount1: notEnoughEthForGasFees
+                  ? getInsufficientFundsForGasFeesErrorMessage({
+                      asset: ether.symbol,
+                      chain: networks.sourceChain.name
+                    })
+                  : undefined,
+                inputAmount2:
+                  sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+                    ? getInsufficientFundsErrorMessage({
+                        asset: ether.symbol,
+                        chain: networks.sourceChain.name
+                      })
+                    : undefined
+              }
             })
           }
 
@@ -372,10 +469,12 @@ export function useTransferReadiness({
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
           if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
             return notReady({
-              errorMessage: getInsufficientFundsForGasFeesErrorMessage({
-                asset: ether.symbol,
-                chain: networks.sourceChain.name
-              })
+              errorMessages: {
+                inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+                  asset: ether.symbol,
+                  chain: networks.sourceChain.name
+                })
+              }
             })
           }
 
@@ -388,10 +487,12 @@ export function useTransferReadiness({
 
         if (total > ethBalanceFloat) {
           return notReady({
-            errorMessage: getInsufficientFundsForGasFeesErrorMessage({
-              asset: nativeCurrency.symbol,
-              chain: networks.sourceChain.name
-            })
+            errorMessages: {
+              inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+                asset: nativeCurrency.symbol,
+                chain: networks.sourceChain.name
+              })
+            }
           })
         }
 
@@ -400,6 +501,7 @@ export function useTransferReadiness({
     }
   }, [
     amount,
+    amount2,
     isTransferring,
     destinationAddressError,
     isSmartContractWallet,
@@ -414,6 +516,8 @@ export function useTransferReadiness({
     nativeCurrency.symbol,
     gasSummary,
     childChain.id,
-    networks.sourceChain.name
+    parentChain.id,
+    networks.sourceChain.name,
+    isTeleportMode
   ])
 }

@@ -1,11 +1,14 @@
-import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  EthBridger,
+  ChildToParentTransactionRequest
+} from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import * as Sentry from '@sentry/react'
-import { L2ToL1TransactionRequest } from '@arbitrum/sdk/dist/lib/dataEntities/transactionRequest'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -27,7 +30,7 @@ export async function withdrawInitTxEstimateGas({
   const estimatedParentChainGas = BigNumber.from(0)
 
   try {
-    let withdrawalRequest: L2ToL1TransactionRequest
+    let withdrawalRequest: ChildToParentTransactionRequest
 
     if (isToken) {
       const bridger = await Erc20Bridger.fromProvider(childChainProvider)
@@ -35,7 +38,7 @@ export async function withdrawInitTxEstimateGas({
         amount,
         destinationAddress: address,
         from: address,
-        erc20l1Address: erc20L1Address
+        erc20ParentAddress: erc20L1Address
       })
     } else {
       const bridger = await EthBridger.fromProvider(childChainProvider)
@@ -60,7 +63,16 @@ export async function withdrawInitTxEstimateGas({
       estimatedChildChainGas
     }
   } catch (error) {
-    Sentry.captureException(error)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'withdrawInitTxEstimateGas',
+      additionalData: isToken
+        ? {
+            erc20_address_on_parent_chain: erc20L1Address,
+            withdrawal_type: 'token'
+          }
+        : { withdrawal_type: 'native currency' }
+    })
 
     return {
       estimatedParentChainGas,

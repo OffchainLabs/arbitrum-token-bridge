@@ -16,10 +16,20 @@ const Container = ({ children }: PropsWithChildren<unknown>) => (
   <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>
 )
 
+const provider = new StaticJsonRpcProvider(
+  process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
+  1
+)
+jest.mock('../../token-bridge-sdk/utils', () => ({
+  getProviderForChainId: function getProviderForChainIdMock() {
+    return provider
+  }
+}))
+
 const walletAddress = '0x58b6a8a3302369daec383334672404ee733ab239'
 
 const renderHookAsyncUseBalance = async ({
-  provider,
+  chainId = 1,
   walletAddress
 }: UseBalanceProps) => {
   let hook:
@@ -27,7 +37,7 @@ const renderHookAsyncUseBalance = async ({
     | undefined
 
   await act(async () => {
-    hook = renderHook(() => useBalance({ provider, walletAddress }), {
+    hook = renderHook(() => useBalance({ chainId, walletAddress }), {
       wrapper: Container
     })
   })
@@ -45,11 +55,6 @@ describe('useBalance', () => {
   })
 
   it('getter return null for undefined walletAddress', async () => {
-    const provider = new StaticJsonRpcProvider(
-      process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-      1
-    )
-
     // This should not be called. It's here to avoid false positive
     const getBalanceSpy = jest.spyOn(provider, 'getBalance')
     getBalanceSpy.mockImplementationOnce(() =>
@@ -65,7 +70,7 @@ describe('useBalance', () => {
     )
 
     const { result } = await renderHookAsyncUseBalance({
-      provider,
+      chainId: 1,
       walletAddress: undefined
     })
 
@@ -82,54 +87,8 @@ describe('useBalance', () => {
     expect(erc20Balances).toBeNull()
   })
 
-  it('getter return null for missing chainId', async () => {
-    const provider = new StaticJsonRpcProvider(
-      process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL
-    )
-
-    // @ts-ignore: ignore typescript in test
-    jest.spyOn(provider, 'getNetwork').mockImplementation(() => ({
-      chainId: undefined
-    }))
-    // This should not be called. It's here to avoid false positive
-    const getBalanceSpy = jest.spyOn(provider, 'getBalance')
-    getBalanceSpy.mockImplementationOnce(() =>
-      Promise.resolve(BigNumber.from(22))
-    )
-    const getTokenDataSpy = jest.spyOn(MultiCaller.prototype, 'getTokenData')
-    getTokenDataSpy.mockImplementationOnce(() =>
-      Promise.resolve([
-        {
-          balance: BigNumber.from(20)
-        }
-      ])
-    )
-
-    const { result } = await renderHookAsyncUseBalance({
-      provider,
-      walletAddress
-    })
-
-    const {
-      current: {
-        eth: [ethBalance],
-        erc20: [erc20Balances]
-      }
-    } = result
-
-    expect(ethBalance).toBeNull()
-    expect(erc20Balances).toBeNull()
-    expect(getBalanceSpy).not.toHaveBeenCalled()
-    expect(getTokenDataSpy).not.toHaveBeenCalled()
-  })
-
   describe('ETH Balance', () => {
     it('getter return ETH balance for valid tuple (walletAddress, chainId)', async () => {
-      const provider = new StaticJsonRpcProvider(
-        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-        1
-      )
-
       const getBalanceSpy = jest.spyOn(provider, 'getBalance')
       getBalanceSpy.mockImplementationOnce(() =>
         Promise.resolve(BigNumber.from(32))
@@ -144,7 +103,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
 
@@ -155,11 +114,6 @@ describe('useBalance', () => {
     })
 
     it('setter update ETH balance', async () => {
-      const provider = new StaticJsonRpcProvider(
-        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-        1
-      )
-
       const getBalanceSpy = jest.spyOn(provider, 'getBalance')
       getBalanceSpy
         .mockImplementationOnce(() => Promise.resolve(BigNumber.from(42)))
@@ -174,7 +128,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
 
@@ -207,11 +161,6 @@ describe('useBalance', () => {
 
   describe('ERC20 Balance', () => {
     it('getter return ERC20 balance for valid tuple (walletAddress, chainId)', async () => {
-      const provider = new StaticJsonRpcProvider(
-        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-        1
-      )
-
       const getBalanceSpy = jest.spyOn(provider, 'getBalance')
       getBalanceSpy.mockImplementationOnce(() =>
         Promise.resolve(BigNumber.from(62))
@@ -232,7 +181,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
       const {
@@ -262,10 +211,6 @@ describe('useBalance', () => {
     })
 
     it('setter update ERC20 balance and merge data', async () => {
-      const provider = new StaticJsonRpcProvider(
-        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-        1
-      )
       const getBalanceSpy = jest.spyOn(provider, 'getBalance')
       getBalanceSpy.mockImplementationOnce(() =>
         Promise.resolve(BigNumber.from(72))
@@ -283,7 +228,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
       const {

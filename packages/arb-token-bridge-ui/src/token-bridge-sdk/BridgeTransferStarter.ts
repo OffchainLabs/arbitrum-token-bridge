@@ -8,7 +8,7 @@ import {
 import { Address } from '../util/AddressUtils'
 
 type Asset = 'erc20' | 'eth'
-type TxType = 'deposit' | 'withdrawal'
+type TxType = 'deposit' | 'withdrawal' | 'teleport'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
@@ -48,10 +48,16 @@ export type TransferEstimateGas = {
   signer: Signer
 }
 
+export type TransferOverrides = {
+  maxSubmissionCost?: BigNumber
+  excessFeeRefundAddress?: string
+}
+
 export type TransferProps = {
   amount: BigNumber
   signer: Signer
   destinationAddress?: string
+  overrides?: TransferOverrides
 }
 
 export type RequiresNativeCurrencyApprovalProps = {

@@ -24,5 +24,25 @@ module.exports = {
         ]
       }
     ]
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:slug((?!^$|api/|_next/|public/)(?!.*\\.[^/]+$).+)',
+        missing: [
+          {
+            type: 'query',
+            key: 'destinationChain'
+          },
+          {
+            type: 'header',
+            key: 'accept',
+            value: 'image/.*'
+          }
+        ],
+        destination: '/?destinationChain=:slug',
+        permanent: true
+      }
+    ]
   }
 }

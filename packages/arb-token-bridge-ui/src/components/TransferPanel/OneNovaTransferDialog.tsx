@@ -7,34 +7,65 @@ import { BridgesTable } from '../common/BridgesTable'
 import { SecurityNotGuaranteed } from './SecurityLabels'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
-import { ChainId, getNetworkName } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ether } from '../../constants'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useNetworks } from '../../hooks/useNetworks'
 
-export function OneNovaTransferDialog(
-  props: UseDialogProps & {
-    destinationChainId: number | null
-    amount: string
+/**
+ * On the UI, user can select the pair Arbitrum One/Arbitrum Nova with the network selection dropdowns.
+ * However, they are not valid pairs for transfer, so the latest selected chain will not be set as query param
+ * and useNetworks will not save it.
+ *
+ * This function will use the currently selected chain in the source & destination chain pair to determine
+ * which chain user has selected (but not stored in the query params or useNetworks).
+ */
+function getDialogSourceAndDestinationChains({
+  sourceChainId,
+  destinationChainId
+}: {
+  sourceChainId: ChainId
+  destinationChainId: ChainId
+}) {
+  const { isArbitrumNova: isSourceChainNova } = isNetwork(sourceChainId)
+  const { isArbitrumOne: isDestinationChainArbOne } =
+    isNetwork(destinationChainId)
+
+  if (isSourceChainNova || isDestinationChainArbOne) {
+    return {
+      selectedSourceChainId: ChainId.ArbitrumNova,
+      selectedDestinationChainId: ChainId.ArbitrumOne
+    }
   }
-) {
+  // if source chain is Arbitrum One or
+  // if destination chain is Arbitrum Nova
+  return {
+    selectedSourceChainId: ChainId.ArbitrumOne,
+    selectedDestinationChainId: ChainId.ArbitrumNova
+  }
+}
+
+export function OneNovaTransferDialog(props: UseDialogProps) {
   const {
     app: { selectedToken }
   } = useAppState()
+  const [{ amount }] = useArbQueryParams()
+  const [{ sourceChain, destinationChain }] = useNetworks()
 
-  const { destinationChainId } = props
-
-  const sourceChainId =
-    destinationChainId === ChainId.ArbitrumNova
-      ? ChainId.ArbitrumOne
-      : ChainId.ArbitrumNova
+  const { selectedSourceChainId, selectedDestinationChainId } =
+    getDialogSourceAndDestinationChains({
+      sourceChainId: sourceChain.id,
+      destinationChainId: destinationChain.id
+    })
 
   const sourceNetworkSlug =
-    sourceChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
+    selectedSourceChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
   const destinationNetworkSlug =
-    destinationChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
+    selectedDestinationChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
 
   const bridgeDeepLink = `https://app.hop.exchange/#/send?sourceNetwork=${sourceNetworkSlug}&destNetwork=${destinationNetworkSlug}&token=${
     selectedToken?.symbol || ether.symbol
-  }&amount=${props.amount}`
+  }&amount=${amount}`
 
   // only enable Hop for now
   const fastBridgeList: FastBridgeInfo[] = [
@@ -46,8 +77,8 @@ export function OneNovaTransferDialog(
       {...props}
       onClose={() => props.onClose(false)}
       title={`Move funds from ${getNetworkName(
-        sourceChainId
-      )} to ${getNetworkName(destinationChainId ?? 0)}`}
+        selectedSourceChainId
+      )} to ${getNetworkName(selectedDestinationChainId)}`}
       actionButtonProps={{ hidden: true }}
       className="max-w-[700px]"
     >

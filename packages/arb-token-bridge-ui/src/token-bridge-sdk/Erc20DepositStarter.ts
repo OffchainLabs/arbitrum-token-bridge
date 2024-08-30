@@ -84,7 +84,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
 
     const erc20Bridger = await this.getBridger()
-    const l2Network = erc20Bridger.l2Network
+    const l2Network = erc20Bridger.childNetwork
 
     if (typeof l2Network.nativeToken === 'undefined') {
       return false // native currency doesn't require approval
@@ -143,8 +143,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await this.getBridger()
 
     const txRequest = await erc20Bridger.getApproveGasTokenRequest({
-      erc20L1Address: this.sourceChainErc20Address,
-      l1Provider: this.sourceChainProvider,
+      erc20ParentAddress: this.sourceChainErc20Address,
+      parentProvider: this.sourceChainProvider,
       amount
     })
 
@@ -161,7 +161,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const erc20Bridger = await this.getBridger()
 
-    const l2Network = erc20Bridger.l2Network
+    const l2Network = erc20Bridger.childNetwork
 
     if (typeof l2Network.nativeToken === 'undefined') {
       throw Error('Network does not have a custom native token')
@@ -196,8 +196,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     )
 
     return erc20Bridger.approveGasToken({
-      erc20L1Address: this.sourceChainErc20Address,
-      l1Signer: signer,
+      erc20ParentAddress: this.sourceChainErc20Address,
+      parentSigner: signer,
       amount: estimatedDestinationChainGasFee
     })
   }
@@ -251,8 +251,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await this.getBridger()
 
     return erc20Bridger.approveToken({
-      erc20L1Address: this.sourceChainErc20Address,
-      l1Signer: signer,
+      erc20ParentAddress: this.sourceChainErc20Address,
+      parentSigner: signer,
       amount: amount ?? constants.MaxUint256
     })
   }
@@ -273,7 +273,12 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+  public async transfer({
+    amount,
+    signer,
+    destinationAddress,
+    overrides
+  }: TransferProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -282,17 +287,18 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await this.getBridger()
 
     const depositRequest = await erc20Bridger.getDepositRequest({
-      l1Provider: this.sourceChainProvider,
-      l2Provider: this.destinationChainProvider,
+      parentProvider: this.sourceChainProvider,
+      childProvider: this.destinationChainProvider,
       from: address,
-      erc20L1Address: this.sourceChainErc20Address,
+      erc20ParentAddress: this.sourceChainErc20Address,
       destinationAddress,
       amount,
       retryableGasOverrides: {
         // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
         // the 30% gas limit increase should cover the difference
         gasLimit: { percentIncrease: BigNumber.from(30) }
-      }
+      },
+      ...overrides
     })
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
@@ -301,7 +307,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const sourceChainTransaction = await erc20Bridger.deposit({
       ...depositRequest,
-      l1Signer: signer,
+      parentSigner: signer,
+      childProvider: this.destinationChainProvider,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
 

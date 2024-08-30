@@ -1,10 +1,10 @@
 import { useSwitchNetwork } from 'wagmi'
 import { SwitchNetworkArgs } from '@wagmi/core'
-import * as Sentry from '@sentry/react'
 
 import { getNetworkName, isNetwork } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { warningToast } from '../components/common/atoms/Toast'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 type SwitchNetworkConfig = {
   isSwitchingNetworkBeforeTx?: boolean
@@ -46,7 +46,10 @@ function handleSwitchNetworkError(
   if (error.name === 'SwitchChainNotSupportedError') {
     handleSwitchNetworkNotSupported(chainId, isSwitchingNetworkBeforeTx)
   } else {
-    Sentry.captureException(error)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'handleSwitchNetworkError'
+    })
   }
 }
 

@@ -8,12 +8,17 @@ import {
   getL2TestnetNetworkConfig
 } from './common'
 
-Cypress.Keyboard.defaults({
-  // tests are flaky in CI with low keystroke delay
-  keystrokeDelay: 150
+logCollector({
+  collectTypes: [
+    'cy:command',
+    'cy:log',
+    'cons:debug',
+    'cons:error',
+    'cons:info',
+    'cons:log',
+    'cons:warn'
+  ]
 })
-
-logCollector()
 
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing
