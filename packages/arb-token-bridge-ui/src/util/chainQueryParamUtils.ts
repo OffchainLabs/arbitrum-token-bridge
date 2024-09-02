@@ -14,7 +14,7 @@ import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 export function getChainForChainKeyQueryParam(
   chainKeyQueryParam: ChainKeyQueryParam
-) {
+): Chain {
   switch (chainKeyQueryParam) {
     case 'ethereum':
       return chains.mainnet
@@ -25,20 +25,20 @@ export function getChainForChainKeyQueryParam(
     case 'arbitrum-one':
       return chains.arbitrum
 
-    // case 'arbitrum-nova':
-    //   return arbitrumNova
+    case 'arbitrum-nova':
+      return arbitrumNova
 
-    // case 'arbitrum-sepolia':
-    //   return arbitrumSepolia
+    case 'arbitrum-sepolia':
+      return arbitrumSepolia
 
-    // case 'custom-localhost':
-    //   return localL1Network
+    case 'custom-localhost':
+      return localL1Network
 
-    // case 'arbitrum-localhost':
-    //   return localL2Network
+    case 'arbitrum-localhost':
+      return localL2Network
 
-    // case 'l3-localhost':
-    //   return localL3Network
+    case 'l3-localhost':
+      return localL3Network
 
     default:
       const orbitChain = getOrbitChains().find(
