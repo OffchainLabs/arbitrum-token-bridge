@@ -249,10 +249,14 @@ export const fillCustomDestinationAddress = () => {
     .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
 
+export function findAmountInput(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText('Amount input')
+}
+
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findByPlaceholderText(/enter amount/i).type(String(amount))
+  return cy.findAmountInput().type(String(amount))
 }
 
 export function findSourceChainButton(
@@ -386,6 +390,7 @@ Cypress.Commands.addAll({
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  findAmountInput,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeForChain,

@@ -11,6 +11,7 @@ import {
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  findAmountInput,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeSummary,
@@ -56,6 +57,7 @@ declare global {
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
       typeAmount: typeof typeAmount
+      findAmountInput: typeof findAmountInput
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
       findGasFeeForChain: typeof findGasFeeForChain
