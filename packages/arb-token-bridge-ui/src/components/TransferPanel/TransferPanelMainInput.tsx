@@ -169,6 +169,7 @@ const TransferPanelInputField = React.memo(
         type="text"
         inputMode="decimal"
         placeholder="0"
+        aria-label="Amount input"
         className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-300 sm:text-3xl"
         {...props}
       />
