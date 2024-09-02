@@ -15,7 +15,7 @@ describe('Login Account', () => {
 
   before(() => {
     getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
-      val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
+      val => (l1ETHbal = formatAmount(val))
     )
     getInitialETHBalance(Cypress.env('ARB_RPC_URL')).then(
       val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
