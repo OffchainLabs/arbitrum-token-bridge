@@ -1,4 +1,5 @@
 import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
+import { utils } from 'ethers'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -28,6 +29,7 @@ import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -53,6 +55,7 @@ export function SourceNetworkBox({
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
+  const ethBalanceSourceChain = useBalanceOnSourceChain(null)
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -96,9 +99,12 @@ export function SourceNetworkBox({
   const tokenButtonOptionsAmount2 = useMemo(
     () => ({
       symbol: nativeCurrency.symbol,
-      disabled: true
+      disabled: true,
+      balance: ethBalanceSourceChain
+        ? Number(utils.formatEther(ethBalanceSourceChain))
+        : undefined
     }),
-    [nativeCurrency.symbol]
+    [ethBalanceSourceChain, nativeCurrency.symbol]
   )
 
   return (
