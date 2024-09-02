@@ -4,20 +4,14 @@ import { utils } from 'ethers'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useAppState } from '../../../state'
-import {
-  Balances,
-  useSelectedTokenBalances
-} from '../../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useBalances } from '../../../hooks/useBalances'
+import { useCustomFeeTokenBalances } from './useCustomFeeTokenBalances'
 
-export function useMaxAmount({
-  customFeeTokenBalances
-}: {
-  customFeeTokenBalances: Balances
-}) {
+export function useMaxAmount() {
   const {
     app: { selectedToken }
   } = useAppState()
@@ -30,6 +24,8 @@ export function useMaxAmount({
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
+
+  const customFeeTokenBalances = useCustomFeeTokenBalances()
 
   const nativeCurrencyMaxAmount = useMemo(() => {
     const customFeeTokenParentBalance = customFeeTokenBalances.parentBalance
