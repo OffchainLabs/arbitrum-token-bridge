@@ -1,27 +1,17 @@
 import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
+import { utils } from 'ethers'
 
 import { getNetworkName } from '../../../util/networks'
 import {
   NetworkButton,
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
-import {
-  BalancesContainer,
-  ETHBalance,
-  NetworkContainer,
-  NetworkListboxPlusBalancesContainer
-} from '../TransferPanelMain'
-import { TokenBalance } from './TokenBalance'
-import { NetworkType } from './utils'
+import { NetworkContainer } from '../TransferPanelMain'
 import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import {
-  Balances,
-  useSelectedTokenBalances
-} from '../../../hooks/TransferPanel/useSelectedTokenBalances'
-import { useBalances } from '../../../hooks/useBalances'
+import { Balances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import {
   ETH_BALANCE_ARTICLE_LINK,
   USDC_LEARN_MORE_LINK
@@ -39,6 +29,7 @@ import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -53,8 +44,6 @@ export function SourceNetworkBox({
   const {
     app: { selectedToken }
   } = useAppState()
-  const { ethParentBalance, ethChildBalance } = useBalances()
-  const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
@@ -66,6 +55,7 @@ export function SourceNetworkBox({
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
+  const ethBalanceSourceChain = useBalanceOnSourceChain(null)
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -109,69 +99,21 @@ export function SourceNetworkBox({
   const tokenButtonOptionsAmount2 = useMemo(
     () => ({
       symbol: nativeCurrency.symbol,
-      disabled: true
+      disabled: true,
+      balance: ethBalanceSourceChain
+        ? Number(utils.formatEther(ethBalanceSourceChain))
+        : undefined
     }),
-    [nativeCurrency.symbol]
+    [ethBalanceSourceChain, nativeCurrency.symbol]
   )
 
   return (
     <>
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
-        <NetworkListboxPlusBalancesContainer>
-          <NetworkButton
-            type="source"
-            onClick={openSourceNetworkSelectionDialog}
-          />
-          <BalancesContainer>
-            <TokenBalance
-              on={
-                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
-              }
-              balance={
-                isDepositMode
-                  ? selectedTokenBalances.parentBalance
-                  : selectedTokenBalances.childBalance
-              }
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            {nativeCurrency.isCustom ? (
-              <>
-                <TokenBalance
-                  on={
-                    isDepositMode
-                      ? NetworkType.parentChain
-                      : NetworkType.childChain
-                  }
-                  balance={
-                    isDepositMode
-                      ? customFeeTokenBalances.parentBalance
-                      : customFeeTokenBalances.childBalance
-                  }
-                  forToken={nativeCurrency}
-                  prefix={selectedToken ? '' : 'Balance: '}
-                />
-                {/* Only show ETH balance on parent chain */}
-                {isDepositMode && (
-                  <ETHBalance
-                    balance={ethParentBalance}
-                    on={NetworkType.parentChain}
-                  />
-                )}
-              </>
-            ) : (
-              <ETHBalance
-                balance={isDepositMode ? ethParentBalance : ethChildBalance}
-                prefix={selectedToken ? '' : 'Balance: '}
-                on={
-                  isDepositMode
-                    ? NetworkType.parentChain
-                    : NetworkType.childChain
-                }
-              />
-            )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
+        <NetworkButton
+          type="source"
+          onClick={openSourceNetworkSelectionDialog}
+        />
 
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
@@ -182,6 +124,7 @@ export function SourceNetworkBox({
             maxAmount={maxAmount}
             isMaxAmount={isMaxAmount}
             decimals={decimals}
+            customFeeTokenBalances={customFeeTokenBalances}
           />
 
           {isBatchTransferSupported && (
@@ -190,10 +133,11 @@ export function SourceNetworkBox({
               errorMessage={errorMessages?.inputAmount2}
               value={amount2}
               onChange={handleAmount2Change}
-              tokenButtonOptions={tokenButtonOptionsAmount2}
+              options={tokenButtonOptionsAmount2}
               maxAmount={maxAmount2}
               isMaxAmount={isMaxAmount2}
               decimals={nativeCurrency.decimals}
+              customFeeTokenBalances={customFeeTokenBalances}
             />
           )}
 
