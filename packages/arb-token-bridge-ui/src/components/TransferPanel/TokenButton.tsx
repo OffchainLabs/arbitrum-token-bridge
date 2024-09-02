@@ -16,20 +16,20 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 
-export type TokenButtonOverrides = {
+export type TokenButtonOptions = {
   symbol?: string
   tokenButtonDisabled?: boolean
 }
 
 export function TokenButton({
-  overrides
+  options
 }: {
-  overrides?: TokenButtonOverrides
+  options?: TokenButtonOptions
 }): JSX.Element {
   const {
     app: { selectedToken }
   } = useAppState()
-  const disabled = overrides?.tokenButtonDisabled ?? false
+  const disabled = options?.tokenButtonDisabled ?? false
 
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
@@ -37,8 +37,8 @@ export function TokenButton({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokenSymbol = useMemo(() => {
-    if (typeof overrides?.symbol !== 'undefined') {
-      return overrides.symbol
+    if (typeof options?.symbol !== 'undefined') {
+      return options.symbol
     }
 
     if (!selectedToken) {
@@ -49,7 +49,7 @@ export function TokenButton({
       erc20L1Address: selectedToken.address,
       chainId: networks.sourceChain.id
     })
-  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, overrides])
+  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
 
   return (
     <>
