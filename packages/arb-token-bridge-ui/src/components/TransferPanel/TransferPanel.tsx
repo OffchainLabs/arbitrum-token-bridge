@@ -83,6 +83,7 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useTokenLists } from '../../hooks/useTokenLists'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -133,6 +134,7 @@ export function TransferPanel() {
   const latestNetworks = useLatest(networks)
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
+  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -223,9 +225,13 @@ export function TransferPanel() {
       return true
     }
 
+    if (isLoadingTokenLists) {
+      return undefined
+    }
+
     // only show import token dialog if the token is not part of the list
     // otherwise we show a loader in the TokenButton
-    if (!tokensFromLists || Object.keys(tokensFromLists).length === 0) {
+    if (!tokensFromLists) {
       return undefined
     }
 
@@ -237,7 +243,12 @@ export function TransferPanel() {
       typeof tokensFromLists[tokenLowercased] !== 'undefined' ||
       typeof tokensFromUser[tokenLowercased] !== 'undefined'
     )
-  }, [tokenFromSearchParams, tokensFromLists, tokensFromUser])
+  }, [
+    isLoadingTokenLists,
+    tokenFromSearchParams,
+    tokensFromLists,
+    tokensFromUser
+  ])
 
   const importDialogTokenAddress = useMemo(() => {
     if (
