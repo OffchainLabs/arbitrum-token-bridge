@@ -67,14 +67,6 @@ const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
 const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
 
-if (!process.env.PRIVATE_KEY_CCTP) {
-  throw new Error('PRIVATE_KEY_CCTP variable missing.')
-}
-
-if (!process.env.PRIVATE_KEY_USER) {
-  throw new Error('PRIVATE_KEY_USER variable missing.')
-}
-
 // Wallet funded on Sepolia and ArbSepolia with ETH and USDC
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
 // Generate a new wallet every time
