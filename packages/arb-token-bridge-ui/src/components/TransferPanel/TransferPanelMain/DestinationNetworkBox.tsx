@@ -29,7 +29,7 @@ import {
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
 
-function DestinationChainBalance({
+function DestinationNetworkBalance({
   customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
@@ -44,9 +44,9 @@ function DestinationChainBalance({
     useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
 
-  const selectedTokenBalances = useSelectedTokenBalances()
   const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
     useBalances()
+  const selectedTokenBalances = useSelectedTokenBalances()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -136,7 +136,6 @@ export function DestinationNetworkBox({
   return (
     <>
       <NetworkContainer
-        bgLogoHeight={58}
         network={networks.destinationChain}
         customAddress={destinationAddress}
       >
@@ -148,7 +147,7 @@ export function DestinationNetworkBox({
           <BalancesContainer>
             {destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (
-                <DestinationChainBalance
+                <DestinationNetworkBalance
                   customFeeTokenBalances={customFeeTokenBalances}
                   showUsdcSpecificInfo={showUsdcSpecificInfo}
                 />

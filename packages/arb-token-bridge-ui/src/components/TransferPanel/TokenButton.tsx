@@ -18,7 +18,7 @@ import { Transition } from '../common/Transition'
 
 export type TokenButtonOptions = {
   symbol?: string
-  tokenButtonDisabled?: boolean
+  disabled?: boolean
 }
 
 export function TokenButton({
@@ -29,7 +29,7 @@ export function TokenButton({
   const {
     app: { selectedToken }
   } = useAppState()
-  const disabled = options?.tokenButtonDisabled ?? false
+  const disabled = options?.disabled ?? false
 
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)

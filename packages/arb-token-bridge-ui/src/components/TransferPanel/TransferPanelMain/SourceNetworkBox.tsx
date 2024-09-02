@@ -1,4 +1,3 @@
-import { utils } from 'ethers'
 import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 
 import { getNetworkName } from '../../../util/networks'
@@ -28,7 +27,6 @@ import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmoun
 import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
-import { useBalances } from '../../../hooks/useBalances'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 export function SourceNetworkBox({
@@ -44,7 +42,6 @@ export function SourceNetworkBox({
   const {
     app: { selectedToken }
   } = useAppState()
-  const { ethParentBalance } = useBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
@@ -130,7 +127,7 @@ export function SourceNetworkBox({
               errorMessage={errorMessages?.inputAmount2}
               value={amount2}
               onChange={handleAmount2Change}
-              tokenButtonOptions={tokenButtonOptionsAmount2}
+              options={tokenButtonOptionsAmount2}
               maxAmount={maxAmount2}
               isMaxAmount={isMaxAmount2}
               decimals={nativeCurrency.decimals}

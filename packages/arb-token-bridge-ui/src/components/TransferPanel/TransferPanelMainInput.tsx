@@ -102,7 +102,7 @@ function SourceChainTokenBalance({
   balanceOverride
 }: {
   customFeeTokenBalances: Balances
-  balanceOverride?: AmountInputOverrides['balance']
+  balanceOverride?: AmountInputOptions['balance']
 }) {
   const {
     app: { selectedToken }
@@ -227,7 +227,7 @@ function ErrorMessage({
   }
 }
 
-type AmountInputOverrides = TokenButtonOptions & {
+type AmountInputOptions = TokenButtonOptions & {
   balance?: number | undefined
 }
 
@@ -236,9 +236,8 @@ export type TransferPanelMainInputProps =
     errorMessage?: string | TransferReadinessRichErrorMessage | undefined
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
-    overrides?: AmountInputOverrides
+    options?: AmountInputOptions
     customFeeTokenBalances: Balances
-    tokenButtonOptions?: TokenButtonOptions
     maxAmount: string | undefined
     isMaxAmount: boolean
     decimals: number
@@ -248,13 +247,12 @@ export const TransferPanelMainInput = React.memo(
   ({
     errorMessage,
     maxButtonOnClick,
-    tokenButtonOptions,
     onChange,
     maxAmount,
     value,
     isMaxAmount,
     decimals,
-    overrides,
+    options,
     customFeeTokenBalances,
     ...rest
   }: TransferPanelMainInputProps) => {
@@ -309,11 +307,11 @@ export const TransferPanelMainInput = React.memo(
               onChange={handleInputChange}
             />
             <div className="flex flex-col items-end">
-              <TokenButton options={tokenButtonOptions} />
+              <TokenButton options={options} />
               <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
                 <SourceChainTokenBalance
                   customFeeTokenBalances={customFeeTokenBalances}
-                  balanceOverride={overrides?.balance}
+                  balanceOverride={options?.balance}
                 />
                 <MaxButton
                   onClick={handleMaxButtonClick}

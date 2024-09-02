@@ -252,7 +252,7 @@ export const fillCustomDestinationAddress = () => {
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findByPlaceholderText(/enter amount/i).type(String(amount))
+  return cy.findByPlaceholderText(/0/i).type(String(amount))
 }
 
 export function findSourceChainButton(

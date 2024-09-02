@@ -31,7 +31,7 @@ describe('User enters site with query params on URL', () => {
           }
         })
 
-        cy.findByPlaceholderText(/Enter amount/i)
+        cy.findByPlaceholderText(/0/i)
           .should('be.visible')
           .should('not.have.text', 'max')
           .should('not.have.text', 'MAX')
@@ -41,7 +41,7 @@ describe('User enters site with query params on URL', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByPlaceholderText(/Enter amount/i)
+              .findByPlaceholderText(/0/i)
               .invoke('val')
               .should($val => {
                 cy.wrap(Number($val)).should('be.gt', 0)
@@ -53,7 +53,7 @@ describe('User enters site with query params on URL', () => {
             interval: 500
           }
         )
-        cy.findByPlaceholderText(/Enter amount/i)
+        cy.findByPlaceholderText(/0/i)
           .invoke('val')
           .should($val => {
             cy.wrap(Number($val)).should('be.lt', l1ETHbal)
@@ -71,7 +71,7 @@ describe('User enters site with query params on URL', () => {
           }
         })
 
-        cy.findByPlaceholderText(/Enter amount/i)
+        cy.findByPlaceholderText(/0/i)
           .should('be.visible')
           .should('not.have.text', 'max')
           .should('not.have.text', 'MAX')
@@ -80,9 +80,7 @@ describe('User enters site with query params on URL', () => {
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         cy.waitUntil(
           () =>
-            cy
-              .findByPlaceholderText(/Enter amount/i)
-              .then($el => Number($el.val()) > 0),
+            cy.findByPlaceholderText(/0/i).then($el => Number($el.val()) > 0),
           // optional timeouts and error messages
           {
             errorMsg: 'was expecting a numerical input value greater than 0',
@@ -90,7 +88,7 @@ describe('User enters site with query params on URL', () => {
             interval: 500
           }
         )
-        cy.findByPlaceholderText(/Enter amount/i)
+        cy.findByPlaceholderText(/0/i)
           .invoke('val')
           .should($val => {
             cy.wrap(Number($val)).should('be.lt', l1ETHbal)
@@ -108,7 +106,7 @@ describe('User enters site with query params on URL', () => {
           }
         })
 
-        cy.findByPlaceholderText(/Enter amount/i)
+        cy.findByPlaceholderText(/0/i)
           .should('be.visible')
           .should('not.have.text', 'max')
           .should('not.have.text', 'MAX')
@@ -119,7 +117,7 @@ describe('User enters site with query params on URL', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByPlaceholderText(/Enter amount/i)
+              .findByPlaceholderText(/0/i)
               .invoke('val')
               .should($val => {
                 cy.wrap(Number($val)).should('be.gt', 0)
@@ -131,7 +129,7 @@ describe('User enters site with query params on URL', () => {
             interval: 500
           }
         )
-        cy.findByPlaceholderText(/Enter amount/i)
+        cy.findByPlaceholderText(/0/i)
           .invoke('val')
           .should($val => {
             cy.wrap(Number($val)).should('be.lt', l1ETHbal)
@@ -147,7 +145,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '56')
+      cy.findByPlaceholderText(/0/i).should('have.value', '56')
     })
     context('?amount=1.6678 should set transfer panel amount to 1.6678', () => {
       visitAfterSomeDelay('/', {
@@ -158,7 +156,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '1.6678')
+      cy.findByPlaceholderText(/0/i).should('have.value', '1.6678')
     })
     context('?amount=6 should set transfer panel amount to 6', () => {
       visitAfterSomeDelay('/', {
@@ -169,7 +167,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '6')
+      cy.findByPlaceholderText(/0/i).should('have.value', '6')
     })
     context('?amount=0.123 should set transfer panel amount to 0.123', () => {
       visitAfterSomeDelay('/', {
@@ -181,7 +179,7 @@ describe('User enters site with query params on URL', () => {
       })
 
       cy.url().should('include', 'amount=0.123')
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
+      cy.findByPlaceholderText(/0/i).should('have.value', '0.123')
     })
     context('?amount=-0.123 should set transfer panel amount to 0.123', () => {
       visitAfterSomeDelay('/', {
@@ -192,7 +190,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
+      cy.findByPlaceholderText(/0/i).should('have.value', '0.123')
     })
     it('?amount=asdfs should not set transfer panel amount', () => {
       visitAfterSomeDelay('/', {
@@ -203,7 +201,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
+      cy.findByPlaceholderText(/0/i).should('be.empty')
     })
     context('?amount=0 should set transfer panel amount to 0', () => {
       visitAfterSomeDelay('/', {
@@ -214,7 +212,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
+      cy.findByPlaceholderText(/0/i).should('have.value', '0')
     })
     context('?amount=0.0001 should set transfer panel amount to 0.0001', () => {
       visitAfterSomeDelay('/', {
@@ -225,7 +223,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.0001')
+      cy.findByPlaceholderText(/0/i).should('have.value', '0.0001')
     })
     context('?amount=123,3,43 should not set transfer panel amount', () => {
       visitAfterSomeDelay('/', {
@@ -236,7 +234,7 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
+      cy.findByPlaceholderText(/0/i).should('be.empty')
     })
     context(
       '?amount=0, 123.222, 0.3 should not set transfer panel amount',
@@ -249,7 +247,7 @@ describe('User enters site with query params on URL', () => {
           }
         })
 
-        cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
+        cy.findByPlaceholderText(/0/i).should('be.empty')
       }
     )
   })
