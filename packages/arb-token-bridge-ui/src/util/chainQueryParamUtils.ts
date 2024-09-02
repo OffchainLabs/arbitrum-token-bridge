@@ -40,19 +40,19 @@ export function getChainForChainKeyQueryParam(
     // case 'l3-localhost':
     //   return localL3Network
 
-    // default:
-    //   const orbitChain = getOrbitChains().find(
-    //     chain =>
-    //       chain.slug === chainKeyQueryParam ??
-    //       chain.chainId === Number(chainKeyQueryParam)
-    //   )
+    default:
+      const orbitChain = getOrbitChains().find(
+        chain =>
+          chain.slug === chainKeyQueryParam ??
+          chain.chainId === Number(chainKeyQueryParam)
+      )
 
-    //   if (orbitChain) {
-    //     return chainToWagmiChain(orbitChain)
-    //   }
+      if (orbitChain) {
+        return chainToWagmiChain(orbitChain)
+      }
 
-    //   throw new Error(
-    //     `[getChainForChainKeyQueryParam] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
-    //   )
+      throw new Error(
+        `[getChainForChainKeyQueryParam] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
+      )
   }
 }
