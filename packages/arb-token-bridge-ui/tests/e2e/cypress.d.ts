@@ -5,9 +5,6 @@ import {
   login,
   logout,
   openTransactionsPanel,
-  resetCctpAllowance,
-  fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -23,7 +20,8 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
-  selectTransactionsPanelTab
+  selectTransactionsPanelTab,
+  confirmSpending
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -45,9 +43,6 @@ declare global {
       logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
-      resetCctpAllowance: typeof resetCctpAllowance
-      fundUserUsdcTestnet: typeof fundUserUsdcTestnet
-      fundUserWalletEth: typeof fundUserWalletEth
       searchAndSelectToken({
         tokenName,
         tokenAddress
@@ -69,6 +64,7 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      confirmSpending: typeof confirmSpending
     }
   }
 }
