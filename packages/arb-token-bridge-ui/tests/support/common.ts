@@ -8,8 +8,6 @@ import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
-import { CommonAddress } from '../../../arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -263,32 +261,6 @@ export async function checkForAssertions({
       e
     )
   }
-}
-
-export async function fundUsdc({
-  address, // wallet address where funding is required
-  provider,
-  amount,
-  networkType,
-  sourceWallet
-}: {
-  address: string
-  provider: Provider
-  amount: BigNumber
-  sourceWallet: Wallet
-  networkType: NetworkType
-}) {
-  console.log('Funding USDC to user wallet...')
-  const usdcContractAddress =
-    networkType === 'parentChain'
-      ? CommonAddress.Sepolia.USDC
-      : CommonAddress.ArbitrumSepolia.USDC
-
-  const contract = new ERC20__factory().connect(sourceWallet.connect(provider))
-  const token = contract.attach(usdcContractAddress)
-  await token.deployed()
-  const tx = await token.transfer(address, amount)
-  await tx.wait()
 }
 
 export async function fundEth({
