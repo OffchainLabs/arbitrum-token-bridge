@@ -1,5 +1,5 @@
-import { useCallback, useEffect } from 'react'
 import { utils } from 'ethers'
+import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -29,6 +29,7 @@ import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useBalances } from '../../../hooks/useBalances'
+import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 export function SourceNetworkBox({
   customFeeTokenBalances,
@@ -53,7 +54,7 @@ export function SourceNetworkBox({
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
   const isBatchTransferSupported = useIsBatchTransferSupported()
-
+  const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
@@ -84,6 +85,25 @@ export function SourceNetworkBox({
     }
   }, [maxAmount2, setAmount2])
 
+  const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    e => setAmount(e.target.value),
+    [setAmount]
+  )
+  const handleAmount2Change: ChangeEventHandler<HTMLInputElement> = useCallback(
+    e => {
+      setAmount2(e.target.value)
+    },
+    [setAmount2]
+  )
+
+  const tokenButtonOptionsAmount2 = useMemo(
+    () => ({
+      symbol: nativeCurrency.symbol,
+      disabled: true
+    }),
+    [nativeCurrency.symbol]
+  )
+
   return (
     <>
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
@@ -97,7 +117,10 @@ export function SourceNetworkBox({
             maxButtonOnClick={maxButtonOnClick}
             errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
-            onChange={e => setAmount(e.target.value)}
+            onChange={handleAmountChange}
+            maxAmount={maxAmount}
+            isMaxAmount={isMaxAmount}
+            decimals={decimals}
             customFeeTokenBalances={customFeeTokenBalances}
           />
 
@@ -106,14 +129,11 @@ export function SourceNetworkBox({
               maxButtonOnClick={amount2MaxButtonOnClick}
               errorMessage={errorMessages?.inputAmount2}
               value={amount2}
-              onChange={e => setAmount2(e.target.value)}
-              overrides={{
-                symbol: nativeCurrency.symbol,
-                tokenButtonDisabled: true,
-                balance: ethParentBalance
-                  ? Number(utils.formatEther(ethParentBalance))
-                  : undefined
-              }}
+              onChange={handleAmount2Change}
+              tokenButtonOptions={tokenButtonOptionsAmount2}
+              maxAmount={maxAmount2}
+              isMaxAmount={isMaxAmount2}
+              decimals={nativeCurrency.decimals}
               customFeeTokenBalances={customFeeTokenBalances}
             />
           )}

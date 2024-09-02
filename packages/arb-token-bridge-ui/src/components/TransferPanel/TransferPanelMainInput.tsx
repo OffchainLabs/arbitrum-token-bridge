@@ -1,7 +1,13 @@
+import React, {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useState
+} from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
 
-import { TokenButton, TokenButtonOverrides } from './TokenButton'
+import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import {
@@ -16,6 +22,8 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
+import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
 
 function MaxButton({
   customFeeTokenBalances,
@@ -154,21 +162,21 @@ function SourceChainTokenBalance({
   )
 }
 
-function TransferPanelInputField({
-  value = '',
-  ...rest
-}: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      type="text"
-      inputMode="decimal"
-      placeholder="0"
-      className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-300 sm:text-3xl"
-      value={value}
-      {...rest}
-    />
-  )
-}
+const TransferPanelInputField = React.memo(
+  (props: React.InputHTMLAttributes<HTMLInputElement>) => {
+    return (
+      <input
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-300 sm:text-3xl"
+        {...props}
+      />
+    )
+  }
+)
+
+TransferPanelInputField.displayName = 'TransferPanelInputField'
 
 function ErrorMessage({
   errorMessage
@@ -219,7 +227,7 @@ function ErrorMessage({
   }
 }
 
-type AmountInputOverrides = TokenButtonOverrides & {
+type AmountInputOverrides = TokenButtonOptions & {
   balance?: number | undefined
 }
 
@@ -230,39 +238,96 @@ export type TransferPanelMainInputProps =
     value: string
     overrides?: AmountInputOverrides
     customFeeTokenBalances: Balances
+    tokenButtonOptions?: TokenButtonOptions
+    maxAmount: string | undefined
+    isMaxAmount: boolean
+    decimals: number
   }
 
-export function TransferPanelMainInput({
-  errorMessage,
-  maxButtonOnClick,
-  overrides,
-  customFeeTokenBalances,
-  ...rest
-}: TransferPanelMainInputProps) {
-  return (
-    <>
-      <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
-        <div
-          className={twMerge('flex grow flex-row items-center justify-center')}
-        >
-          <TransferPanelInputField {...rest} />
-          <div className="flex flex-col items-end">
-            <TokenButton overrides={overrides} />
-            <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-              <SourceChainTokenBalance
-                customFeeTokenBalances={customFeeTokenBalances}
-                balanceOverride={overrides?.balance}
-              />
-              <MaxButton
-                onClick={maxButtonOnClick}
-                customFeeTokenBalances={customFeeTokenBalances}
-              />
+export const TransferPanelMainInput = React.memo(
+  ({
+    errorMessage,
+    maxButtonOnClick,
+    tokenButtonOptions,
+    onChange,
+    maxAmount,
+    value,
+    isMaxAmount,
+    decimals,
+    overrides,
+    customFeeTokenBalances,
+    ...rest
+  }: TransferPanelMainInputProps) => {
+    const [localValue, setLocalValue] = useState(value)
+
+    useEffect(() => {
+      if (!isMaxAmount || !maxAmount) {
+        return
+      }
+
+      /**
+       * On first render, maxAmount is not defined, once we receive max amount value, we set the localValue
+       * If user types anything before we receive the amount, isMaxAmount is set to false in the parent
+       */
+      setLocalValue(maxAmount)
+    }, [isMaxAmount, maxAmount])
+
+    const handleMaxButtonClick: React.MouseEventHandler<HTMLButtonElement> =
+      useCallback(
+        e => {
+          maxButtonOnClick?.(e)
+          if (maxAmount) {
+            setLocalValue(maxAmount)
+          }
+        },
+        [maxAmount, maxButtonOnClick]
+      )
+
+    const handleInputChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+      e => {
+        setLocalValue(
+          sanitizeAmountQueryParam(
+            truncateExtraDecimals(e.target.value, decimals)
+          )
+        )
+        onChange?.(e)
+      },
+      [decimals, onChange]
+    )
+
+    return (
+      <>
+        <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
+          <div
+            className={twMerge(
+              'flex grow flex-row items-center justify-center'
+            )}
+          >
+            <TransferPanelInputField
+              {...rest}
+              value={localValue}
+              onChange={handleInputChange}
+            />
+            <div className="flex flex-col items-end">
+              <TokenButton options={tokenButtonOptions} />
+              <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                <SourceChainTokenBalance
+                  customFeeTokenBalances={customFeeTokenBalances}
+                  balanceOverride={overrides?.balance}
+                />
+                <MaxButton
+                  onClick={handleMaxButtonClick}
+                  customFeeTokenBalances={customFeeTokenBalances}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <ErrorMessage errorMessage={errorMessage} />
-    </>
-  )
-}
+        <ErrorMessage errorMessage={errorMessage} />
+      </>
+    )
+  }
+)
+
+TransferPanelMainInput.displayName = 'TransferPanelMainInput'
