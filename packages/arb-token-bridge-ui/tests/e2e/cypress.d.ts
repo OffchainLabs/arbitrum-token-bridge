@@ -42,7 +42,6 @@ declare global {
       logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
-      typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
       searchAndSelectToken({
         tokenName,
         tokenAddress
