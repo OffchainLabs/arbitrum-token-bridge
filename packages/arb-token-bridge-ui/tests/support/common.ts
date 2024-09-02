@@ -210,7 +210,8 @@ export async function generateActivityOnChains({
   await fundEth({
     address: await minerParent.getAddress(),
     provider: parentProvider,
-    sourceWallet: wallet
+    sourceWallet: wallet,
+    networkType: 'parentChain'
   })
 
   console.log('Generating activity on childChain...')
@@ -218,7 +219,8 @@ export async function generateActivityOnChains({
   await fundEth({
     address: await minerChild.getAddress(),
     provider: childProvider,
-    sourceWallet: wallet
+    sourceWallet: wallet,
+    networkType: 'childChain'
   })
 
   await Promise.allSettled([keepMining(minerParent), keepMining(minerChild)])
@@ -267,14 +269,16 @@ export async function fundEth({
   address, // wallet address where funding is required
   provider,
   sourceWallet, // source wallet that will fund the `address`,
+  networkType,
   amount = utils.parseEther('2')
 }: {
   address: string
   provider: Provider
   sourceWallet: Wallet
+  networkType: NetworkType
   amount?: BigNumber
 }) {
-  console.log(`Funding ETH to user wallet ${address}...`)
+  console.log(`Funding ETH ${address} on ${networkType}...`)
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 2 eth
   if (balance.lt(amount)) {

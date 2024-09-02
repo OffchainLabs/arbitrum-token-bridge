@@ -84,13 +84,15 @@ export default defineConfig({
           address: userWalletAddress,
           provider: parentProvider,
           sourceWallet: localWallet,
-          amount: utils.parseEther('2')
+          amount: utils.parseEther('2'),
+          networkType: 'parentChain'
         }),
         fundEth({
           address: userWalletAddress,
           provider: childProvider,
           sourceWallet: localWallet,
-          amount: utils.parseEther('2')
+          amount: utils.parseEther('2'),
+          networkType: 'childChain'
         })
       ])
 

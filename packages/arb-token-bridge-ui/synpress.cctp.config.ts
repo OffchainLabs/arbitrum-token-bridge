@@ -84,11 +84,13 @@ async function fundWallets() {
         ...(network === 'sepolia'
           ? {
               provider: sepoliaProvider,
-              amount: ethAmountSepolia
+              amount: ethAmountSepolia,
+              networkType: 'parentChain'
             }
           : {
               provider: arbSepoliaProvider,
-              amount: ethAmountArbSepolia
+              amount: ethAmountArbSepolia,
+              networkType: 'childChain'
             })
       })
   }
