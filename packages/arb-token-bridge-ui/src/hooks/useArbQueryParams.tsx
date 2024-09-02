@@ -63,7 +63,7 @@ const isMax = (amount: string | undefined) =>
  * @param amount - transfer amount value from the input field or from the URL
  * @returns sanitised value
  */
-const sanitizeAmountQueryParam = (amount: string) => {
+export const sanitizeAmountQueryParam = (amount: string) => {
   // no need to process empty string
   if (amount.length === 0) {
     return amount
