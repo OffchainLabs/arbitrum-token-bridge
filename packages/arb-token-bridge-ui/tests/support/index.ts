@@ -8,11 +8,6 @@ import {
 } from './common'
 import './commands'
 
-Cypress.Keyboard.defaults({
-  // tests are flaky in CI with low keystroke delay
-  keystrokeDelay: 250
-})
-
 logCollector({
   collectTypes: [
     'cy:command',

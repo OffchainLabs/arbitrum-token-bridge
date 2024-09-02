@@ -103,16 +103,15 @@ export const importTokenThroughUI = (address: string) => {
   cy.findSelectTokenButton('ETH').click()
 
   // open the Select Token popup
-  return cy
-    .findByPlaceholderText(/Search by token name/i)
+  cy.findByPlaceholderText(/Search by token name/i)
     .should('be.visible')
-    .typeRecursively(address)
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click()
-    })
+    .type(address)
+
+  // Click on the Add new token button
+  return cy
+    .findByRole('button', { name: 'Add New Token' })
+    .should('be.visible')
+    .click()
 }
 
 export async function getInitialETHBalance(
