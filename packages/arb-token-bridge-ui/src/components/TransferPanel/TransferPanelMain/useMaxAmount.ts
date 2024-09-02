@@ -8,8 +8,7 @@ import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelect
 import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
-import { useBalances } from '../../../hooks/useBalances'
-import { useCustomFeeTokenBalances } from './useCustomFeeTokenBalances'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 export function useMaxAmount() {
   const {
@@ -20,38 +19,30 @@ export function useMaxAmount() {
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const { ethParentBalance, ethChildBalance } = useBalances()
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
 
-  const customFeeTokenBalances = useCustomFeeTokenBalances()
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
 
   const nativeCurrencyMaxAmount = useMemo(() => {
-    const customFeeTokenParentBalance = customFeeTokenBalances.parentBalance
+    const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
+
+    if (!nativeCurrencySourceBalance) {
+      return undefined
+    }
+
     // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
-    if (
-      nativeCurrency.isCustom &&
-      isDepositMode &&
-      customFeeTokenParentBalance
-    ) {
+    if (nativeCurrency.isCustom && isDepositMode) {
       return utils.formatUnits(
-        customFeeTokenParentBalance,
+        nativeCurrencySourceBalance,
         nativeCurrency.decimals
       )
     }
 
     // ETH deposits and ETH/custom fee token withdrawals
-    const nativeCurrencyBalance = isDepositMode
-      ? ethParentBalance
-      : ethChildBalance
-
-    if (!nativeCurrencyBalance) {
-      return undefined
-    }
-
     const nativeCurrencyBalanceFormatted = utils.formatUnits(
-      nativeCurrencyBalance,
+      nativeCurrencySourceBalance,
       nativeCurrency.decimals
     )
 
@@ -76,14 +67,12 @@ export function useMaxAmount() {
 
     return nativeCurrencyBalanceFormatted
   }, [
-    customFeeTokenBalances.parentBalance,
     estimatedChildChainGasFees,
     estimatedParentChainGasFees,
-    ethChildBalance,
-    ethParentBalance,
     isDepositMode,
     nativeCurrency.decimals,
-    nativeCurrency.isCustom
+    nativeCurrency.isCustom,
+    nativeCurrencyBalances.sourceBalance
   ])
 
   const maxAmount = useMemo(() => {

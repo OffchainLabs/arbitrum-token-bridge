@@ -25,7 +25,7 @@ import {
   NetworkButton,
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
-import { useCustomFeeTokenBalances } from './useCustomFeeTokenBalances'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 function DestinationNetworkBalance({
   showUsdcSpecificInfo
@@ -42,7 +42,7 @@ function DestinationNetworkBalance({
 
   const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
     useBalances()
-  const customFeeTokenBalances = useCustomFeeTokenBalances()
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -94,11 +94,7 @@ function DestinationNetworkBalance({
     return (
       <TokenBalance
         on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-        balance={
-          isDepositMode
-            ? customFeeTokenBalances.childBalance
-            : customFeeTokenBalances.parentBalance
-        }
+        balance={nativeCurrencyBalances.sourceBalance}
         forToken={nativeCurrency}
         prefix="Balance: "
       />
