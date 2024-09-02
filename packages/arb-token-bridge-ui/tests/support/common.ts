@@ -8,8 +8,6 @@ import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
-import { CommonAddress } from '../../../arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
