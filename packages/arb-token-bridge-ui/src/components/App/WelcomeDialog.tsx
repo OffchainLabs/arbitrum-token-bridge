@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useCallback } from 'react'
 import { useLocalStorage } from '@uidotdev/usehooks'
@@ -7,6 +6,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { errorToast } from '../common/atoms/Toast'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { Button } from '../common/Button'
+import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 
 export function WelcomeDialog() {
   const [, setTosAccepted] = useLocalStorage<boolean>(
@@ -23,7 +23,10 @@ export function WelcomeDialog() {
       openConnectModal?.()
     } catch (error) {
       errorToast('Failed to open up RainbowKit Connect Modal')
-      Sentry.captureException(error)
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'WelcomeDialog closeHandler'
+      })
     }
   }, [openConnectModal, setTosAccepted])
 

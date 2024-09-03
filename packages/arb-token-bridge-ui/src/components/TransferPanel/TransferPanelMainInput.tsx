@@ -1,56 +1,58 @@
+import React, {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useState
+} from 'react'
 import { twMerge } from 'tailwind-merge'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import { TokenButton } from './TokenButton'
+import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
-import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { countDecimals } from '../../util/NumberUtils'
-import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useBalances } from '../../hooks/useBalances'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { formatAmount } from '../../util/NumberUtils'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { Loader } from '../common/atoms/Loader'
+import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 
-function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { className = '', ...rest } = props
-
+function MaxButton({
+  className = '',
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
 
-  const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
+    const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
+
     const tokenBalance = isDepositMode
       ? selectedTokenBalances.parentBalance
       : selectedTokenBalances.childBalance
 
     if (selectedToken) {
-      if (!tokenBalance) {
-        return false
-      }
-
-      return !tokenBalance.isZero()
+      return tokenBalance && !tokenBalance.isZero()
     }
 
-    if (!ethBalance) {
-      return false
-    }
-
-    return !ethBalance.isZero()
+    return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
-    ethParentBalance,
-    ethChildBalance,
-    selectedTokenBalances,
-    selectedToken,
-    isDepositMode
+    nativeCurrencyBalances.sourceBalance,
+    isDepositMode,
+    selectedTokenBalances.parentBalance,
+    selectedTokenBalances.childBalance,
+    selectedToken
   ])
 
   if (!maxButtonVisible) {
@@ -61,7 +63,7 @@ function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
     <button
       type="button"
       className={twMerge(
-        'arb-hover px-2 py-2 text-sm font-light text-gray-6 sm:px-4',
+        'rounded bg-white/30 px-1 py-0.5 text-right text-xs font-medium leading-none text-white opacity-80 transition-opacity hover:opacity-60',
         className
       )}
       {...rest}
@@ -71,36 +73,77 @@ function MaxButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   )
 }
 
-function TransferPanelInputField(
-  props: React.InputHTMLAttributes<HTMLInputElement>
-) {
-  const { value = '', onChange, ...rest } = props
-  const setAmount = useSetInputAmount()
-  const decimals = useSelectedTokenDecimals()
+function SourceChainTokenBalance({
+  balanceOverride
+}: {
+  balanceOverride?: AmountInputOptions['balance']
+}) {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { isDepositMode, childChainProvider } =
+    useNetworksRelationship(networks)
 
-  useEffect(() => {
-    // if number of decimals of query param value is greater than token decimals,
-    // truncate the decimals and update the amount query param value
-    if (countDecimals(String(value)) > decimals) {
-      setAmount(String(value))
-    }
-  }, [value, decimals, setAmount])
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
+  const selectedTokenBalances = useSelectedTokenBalances()
+
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const tokenBalance = isDepositMode
+    ? selectedTokenBalances.parentBalance
+    : selectedTokenBalances.childBalance
+
+  const balance =
+    balanceOverride ??
+    (selectedToken ? tokenBalance : nativeCurrencyBalances.sourceBalance)
+
+  const formattedBalance = balance
+    ? formatAmount(balance, {
+        decimals: selectedToken?.decimals ?? nativeCurrency.decimals
+      })
+    : null
+
+  if (formattedBalance) {
+    return (
+      <>
+        <span className="text-sm font-light text-white">Balance: </span>
+        <span
+          className="whitespace-nowrap text-sm text-white"
+          aria-label={`${
+            selectedToken?.symbol ?? nativeCurrency.symbol
+          } balance amount on ${isDepositMode ? 'parentChain' : 'childChain'}`}
+        >
+          {formattedBalance}
+        </span>
+      </>
+    )
+  }
 
   return (
-    <input
-      type="text"
-      inputMode="decimal"
-      placeholder="Enter amount"
-      className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-      value={value}
-      onChange={event => {
-        onChange?.(event)
-        setAmount(event.target.value)
-      }}
-      {...rest}
-    />
+    <>
+      <span className="text-sm font-light text-white">Balance: </span>
+      <Loader wrapperClass="ml-1" color="white" size={12} />
+    </>
   )
 }
+
+const TransferPanelInputField = React.memo(
+  (props: React.InputHTMLAttributes<HTMLInputElement>) => {
+    return (
+      <input
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        aria-label="Amount input"
+        className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-300 sm:text-3xl"
+        {...props}
+      />
+    )
+  }
+)
+
+TransferPanelInputField.displayName = 'TransferPanelInputField'
 
 function ErrorMessage({
   errorMessage
@@ -151,39 +194,97 @@ function ErrorMessage({
   }
 }
 
+type AmountInputOptions = TokenButtonOptions & {
+  balance?: number | undefined
+}
+
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     errorMessage?: string | TransferReadinessRichErrorMessage | undefined
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
+    options?: AmountInputOptions
+    maxAmount: string | undefined
+    isMaxAmount: boolean
+    decimals: number
   }
 
-export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonOnClick, ...rest } = props
+export const TransferPanelMainInput = React.memo(
+  ({
+    errorMessage,
+    maxButtonOnClick,
+    onChange,
+    maxAmount,
+    value,
+    isMaxAmount,
+    decimals,
+    options,
+    ...rest
+  }: TransferPanelMainInputProps) => {
+    const [localValue, setLocalValue] = useState(value)
 
-  return (
-    <>
-      <div
-        className={twMerge(
-          'flex flex-row rounded border bg-black/40 shadow-2',
-          errorMessage
-            ? 'border-brick text-brick'
-            : 'border-white/30 text-white'
-        )}
-      >
-        <TokenButton />
-        <div
-          className={twMerge(
-            'flex grow flex-row items-center justify-center border-l',
-            errorMessage ? 'border-brick' : 'border-white/30'
-          )}
-        >
-          <TransferPanelInputField {...rest} />
-          <MaxButton onClick={maxButtonOnClick} />
+    useEffect(() => {
+      if (!isMaxAmount || !maxAmount) {
+        return
+      }
+
+      /**
+       * On first render, maxAmount is not defined, once we receive max amount value, we set the localValue
+       * If user types anything before we receive the amount, isMaxAmount is set to false in the parent
+       */
+      setLocalValue(maxAmount)
+    }, [isMaxAmount, maxAmount])
+
+    const handleMaxButtonClick: React.MouseEventHandler<HTMLButtonElement> =
+      useCallback(
+        e => {
+          maxButtonOnClick?.(e)
+          if (maxAmount) {
+            setLocalValue(maxAmount)
+          }
+        },
+        [maxAmount, maxButtonOnClick]
+      )
+
+    const handleInputChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+      e => {
+        setLocalValue(
+          sanitizeAmountQueryParam(
+            truncateExtraDecimals(e.target.value, decimals)
+          )
+        )
+        onChange?.(e)
+      },
+      [decimals, onChange]
+    )
+
+    return (
+      <>
+        <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
+          <div
+            className={twMerge(
+              'flex grow flex-row items-center justify-center'
+            )}
+          >
+            <TransferPanelInputField
+              {...rest}
+              value={localValue}
+              onChange={handleInputChange}
+            />
+            <div className="flex flex-col items-end">
+              <TokenButton options={options} />
+              <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                <SourceChainTokenBalance balanceOverride={options?.balance} />
+                <MaxButton onClick={handleMaxButtonClick} />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <ErrorMessage errorMessage={errorMessage} />
-    </>
-  )
-}
+        <ErrorMessage errorMessage={errorMessage} />
+      </>
+    )
+  }
+)
+
+TransferPanelMainInput.displayName = 'TransferPanelMainInput'

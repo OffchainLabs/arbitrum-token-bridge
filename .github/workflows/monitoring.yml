@@ -1,0 +1,69 @@
+name: Reusable Monitoring Workflow
+
+on:
+  workflow_call:
+    inputs:
+      chain:
+        required: true
+        type: string
+      monitor:
+        required: true
+        type: string
+
+env:
+  NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+  NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
+  ARB_ONE_MONITOR_RPC_URL: ${{ secrets.ARB_ONE_MONITOR_RPC_URL }}
+  NODE_ENV: "CI"
+
+jobs:
+  run-monitoring:
+    name: Run
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repositories
+      uses: actions/checkout@v4
+      with:
+        repository: OffchainLabs/arbitrum-token-bridge
+
+    - name: Install node_modules
+      uses: OffchainLabs/actions/node-modules/install@main
+
+    - name: Checkout Arbitrum Monitoring repository
+      uses: actions/checkout@v4
+      with:
+        repository: OffchainLabs/arbitrum-monitoring
+        path: arbitrum-monitoring
+
+    - name: Setup Node and install dependencies
+      uses: actions/setup-node@v4
+      with:
+        node-version: latest
+    - run: cd ./arbitrum-monitoring && yarn install
+
+    - name: Load configuration
+      id: config
+      run: |
+        CONFIG=$(cat .github/workflows/monitor-config.json | jq -r '.${{ inputs.chain }}')
+        echo "generate_command=$(echo $CONFIG | jq -r '.generateCommand')" >> $GITHUB_OUTPUT
+        echo "config_file=$(echo $CONFIG | jq -r '.configFile')" >> $GITHUB_OUTPUT
+        echo "slack_token=$(echo $CONFIG | jq -r '.slackTokens.${{ inputs.monitor }}')" >> $GITHUB_OUTPUT
+        echo "slack_channel=$(echo $CONFIG | jq -r '.slackChannels.${{ inputs.monitor }}')" >> $GITHUB_OUTPUT
+
+    - name: Generate chains JSON
+      run: yarn workspace arb-token-bridge-ui ${{ steps.config.outputs.generate_command }}
+      env:
+        INCLUDE_ARB_ONE_AS_CORE_CHAIN: ${{ inputs.monitor != 'retryable' }}
+
+    - name: Copy chains JSON to Arbitrum Monitoring
+      run: cp ./packages/arb-token-bridge-ui/public/${{ steps.config.outputs.config_file }} ./arbitrum-monitoring/config.json
+
+    - name: Run monitoring command
+      run: cd ./arbitrum-monitoring && yarn ${{ inputs.monitor }}-monitor --enableAlerting
+      env:
+        RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
+        RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
+        BATCH_POSTER_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
+        BATCH_POSTER_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
+        ASSERTION_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
+        ASSERTION_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}

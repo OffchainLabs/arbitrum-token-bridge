@@ -475,7 +475,7 @@ function isArbitrumChain(
 }
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
-  [ChainId.Ethereum]: [1380012617, 70700], // Rari and PopApex
+  [ChainId.Ethereum]: [1380012617, 70700, 70701], // Rari, PopApex and PopBoss
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 

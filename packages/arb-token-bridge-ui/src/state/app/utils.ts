@@ -61,19 +61,18 @@ export const getDepositStatus = (
     return DepositStatus.L1_PENDING
   }
 
-  // for teleport txn
   if (isTeleportTx(tx)) {
-    const { l2ToL3MsgData, l1ToL2MsgData } = tx as TeleporterMergedTransaction
+    const { l2ToL3MsgData, parentToChildMsgData } = tx
 
     // if any of the retryable info is missing, first fetch might be pending
-    if (!l1ToL2MsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
+    if (!parentToChildMsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
 
     // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
     if (l2ToL3MsgData.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
 
     // if we find first retryable leg failing, then no need to check for the second leg
     const firstLegDepositStatus = getDepositStatusFromL1ToL2MessageStatus(
-      l1ToL2MsgData.status
+      parentToChildMsgData.status
     )
     if (firstLegDepositStatus !== DepositStatus.L2_SUCCESS) {
       return firstLegDepositStatus
@@ -85,11 +84,13 @@ export const getDepositStatus = (
     if (typeof secondLegDepositStatus !== 'undefined') {
       return secondLegDepositStatus
     }
-    switch (l1ToL2MsgData.status) {
+    switch (parentToChildMsgData.status) {
       case ParentToChildMessageStatus.REDEEMED:
         return DepositStatus.L2_PENDING // tx is still pending if `l1ToL2MsgData` is redeemed (but l2ToL3MsgData is not)
       default:
-        return getDepositStatusFromL1ToL2MessageStatus(l1ToL2MsgData.status)
+        return getDepositStatusFromL1ToL2MessageStatus(
+          parentToChildMsgData.status
+        )
     }
   }
 
@@ -151,6 +152,7 @@ export const transformDeposit = (
     asset: tx.assetName || '',
     assetType: tx.assetType,
     value: tx.value,
+    value2: tx.value2,
     uniqueId: null, // not needed
     isWithdrawal: false,
     blockNum: tx.blockNumber || null,
