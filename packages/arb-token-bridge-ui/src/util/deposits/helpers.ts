@@ -49,7 +49,7 @@ export const updateAdditionalDepositData = async ({
     // if timestamp not in subgraph, fallback to onchain data
     timestampCreated = String(
       normalizeTimestamp(
-        String((await parentProvider.getBlock(depositTx.blockNumber)).timestamp)
+        (await parentProvider.getBlock(depositTx.blockNumber)).timestamp
       )
     )
   }
