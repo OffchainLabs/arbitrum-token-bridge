@@ -5,7 +5,7 @@ import {
   useTransferDuration
 } from '../../hooks/useTransferDuration'
 import { isNetwork } from '../../util/networks'
-import { isTeleporterTransaction } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../hooks/useTransactions'
 
 /**
  * Displays a transfer countdown for a deposit, withdrawal, or cctp.
@@ -30,7 +30,7 @@ export function TransferCountdown({
     return <span>Calculating...</span>
   }
 
-  const isTeleport = isTeleporterTransaction(tx)
+  const isTeleport = isTeleportTx(tx)
   // To get the first retryable only, we subtract the Orbit deposit time (second retryable)
   if (isTeleport && firstLegOnly) {
     estimatedMinutesLeft -= getOrbitDepositDuration(isTestnet)
