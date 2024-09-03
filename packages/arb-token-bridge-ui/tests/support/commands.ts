@@ -15,7 +15,6 @@ import {
   getL1NetworkConfig,
   getL2NetworkConfig
 } from './common'
-import { MatcherOptions } from '@testing-library/cypress'
 import { shortenAddress } from '../../src/util/CommonUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
@@ -276,18 +275,16 @@ export function findTransactionDetailsCustomDestinationAddress(
 export function findTransactionInTransactionHistory({
   symbol,
   amount,
-  duration,
-  options
+  duration
 }: {
   symbol: string
   amount: number
   duration?: string
-  options?: MatcherOptions
 }) {
   const rowId = new RegExp(
     `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
   )
-  cy.findByTestId(rowId, options).as('row')
+  cy.findByTestId(rowId).as('row')
   if (duration) {
     cy.get('@row').findAllByText(duration).first().should('be.visible')
   }
