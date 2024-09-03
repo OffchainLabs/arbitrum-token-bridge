@@ -261,7 +261,7 @@ const updateETHDepositStatusData = async ({
 
   const timestampResolved = childBlockNum
     ? normalizeTimestamp(
-        String((await childProvider.getBlock(childBlockNum)).timestamp)
+        (await childProvider.getBlock(childBlockNum)).timestamp
       )
     : null
 
@@ -342,7 +342,7 @@ const updateTokenDepositStatusData = async ({
 
   const timestampResolved = childBlockNum
     ? normalizeTimestamp(
-        String((await childProvider.getBlock(childBlockNum)).timestamp)
+        (await childProvider.getBlock(childBlockNum)).timestamp
       )
     : null
 
@@ -407,9 +407,7 @@ const updateClassicDepositStatusData = async ({
     : null
 
   const timestampResolved = l2BlockNum
-    ? normalizeTimestamp(
-        String((await childProvider.getBlock(l2BlockNum)).timestamp)
-      )
+    ? normalizeTimestamp((await childProvider.getBlock(l2BlockNum)).timestamp)
     : null
 
   const completeDepositTx: Transaction = {
@@ -436,7 +434,7 @@ async function getTimestampResolved(
     .getTransactionReceipt(l3TxHash)
     .then(tx => tx.blockNumber)
     .then(blockNumber => destinationChainProvider.getBlock(blockNumber))
-    .then(block => normalizeTimestamp(String(block.timestamp)))
+    .then(block => normalizeTimestamp(block.timestamp))
 }
 
 export async function fetchTeleporterDepositStatusData({

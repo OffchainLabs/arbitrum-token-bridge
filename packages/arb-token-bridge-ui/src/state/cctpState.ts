@@ -102,7 +102,7 @@ function parseTransferToMergedTransaction(
     const { messageReceived } = transfer
     status = 'Executed'
     resolvedAt = normalizeTimestamp(
-      parseInt(messageReceived.blockTimestamp, 10).toString()
+      parseInt(messageReceived.blockTimestamp, 10)
     )
     receiveMessageTransactionHash = messageReceived.transactionHash
   }
@@ -122,9 +122,7 @@ function parseTransferToMergedTransaction(
     destination: messageSent.recipient,
     direction: isDeposit ? 'deposit' : 'withdraw',
     status,
-    createdAt: normalizeTimestamp(
-      parseInt(messageSent.blockTimestamp, 10).toString()
-    ),
+    createdAt: normalizeTimestamp(parseInt(messageSent.blockTimestamp, 10)),
     resolvedAt,
     txId: messageSent.transactionHash,
     asset: 'USDC',
@@ -535,7 +533,7 @@ export function useClaimCctp(tx: MergedTransaction) {
 
       const resolvedAt =
         receiveReceiptTx.status === 1
-          ? normalizeTimestamp(BigNumber.from(Date.now()).toString())
+          ? normalizeTimestamp(BigNumber.from(Date.now()))
           : null
       await updatePendingTransaction({
         ...tx,

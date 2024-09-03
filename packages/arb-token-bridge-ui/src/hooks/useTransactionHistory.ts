@@ -92,7 +92,7 @@ export type Transfer =
 
 function getTransactionTimestamp(tx: Transfer) {
   if (isCctpTransfer(tx)) {
-    return normalizeTimestamp(String(tx.createdAt) ?? '0')
+    return normalizeTimestamp(tx.createdAt ?? 0)
   }
 
   if (isTransferTeleportFromSubgraph(tx)) {
@@ -100,14 +100,14 @@ function getTransactionTimestamp(tx: Transfer) {
   }
 
   if (isDeposit(tx)) {
-    return normalizeTimestamp(tx.timestampCreated ?? '0')
+    return normalizeTimestamp(tx.timestampCreated ?? 0)
   }
 
   if (isWithdrawalFromSubgraph(tx)) {
     return normalizeTimestamp(tx.l2BlockTimestamp)
   }
 
-  return normalizeTimestamp(tx.timestamp ?? '0')
+  return normalizeTimestamp(tx.timestamp ?? 0)
 }
 
 function sortByTimestampDescending(a: Transfer, b: Transfer) {

@@ -305,7 +305,7 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const normalizeTimestamp = (date: string | BigNumber) => {
+export const normalizeTimestamp = (date: number | string | BigNumber) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
   const TIMESTAMP_LENGTH = 13
   let timestamp
@@ -314,7 +314,7 @@ export const normalizeTimestamp = (date: string | BigNumber) => {
     timestamp = isNaN(Number(date))
       ? dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
       : Number(date) // for timestamp type of date -> dayjs timestamp
-  } else {
+  } else if (typeof date !== 'number') {
     // BigNumber
     timestamp = date.toNumber()
   }
