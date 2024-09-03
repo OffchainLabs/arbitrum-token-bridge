@@ -11,7 +11,6 @@ import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { Balances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import {
   ETH_BALANCE_ARTICLE_LINK,
   USDC_LEARN_MORE_LINK
@@ -32,10 +31,8 @@ import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelect
 import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
 
 export function SourceNetworkBox({
-  customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
   const [networks] = useNetworks()
@@ -47,9 +44,7 @@ export function SourceNetworkBox({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
-  const { maxAmount, maxAmount2 } = useMaxAmount({
-    customFeeTokenBalances
-  })
+  const { maxAmount, maxAmount2 } = useMaxAmount()
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
   const isBatchTransferSupported = useIsBatchTransferSupported()
@@ -124,7 +119,6 @@ export function SourceNetworkBox({
             maxAmount={maxAmount}
             isMaxAmount={isMaxAmount}
             decimals={decimals}
-            customFeeTokenBalances={customFeeTokenBalances}
           />
 
           {isBatchTransferSupported && (
@@ -137,7 +131,6 @@ export function SourceNetworkBox({
               maxAmount={maxAmount2}
               isMaxAmount={isMaxAmount2}
               decimals={nativeCurrency.decimals}
-              customFeeTokenBalances={customFeeTokenBalances}
             />
           )}
 
