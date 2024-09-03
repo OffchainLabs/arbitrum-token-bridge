@@ -27,7 +27,7 @@ function mockErc20RedeemDepositTransaction(): Transaction {
     destination: Cypress.env('ADDRESS'),
     l1NetworkID: isOrbitTest ? '412346' : '1337',
     l2NetworkID: isOrbitTest ? '333333' : '412346',
-    timestampCreated: String(normalizeTimestamp(Math.floor(Date.now())))
+    timestampCreated: String(normalizeTimestamp(Date.now()))
   }
 }
 
