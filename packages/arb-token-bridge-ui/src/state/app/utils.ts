@@ -323,16 +323,16 @@ export const normalizeTimestamp = (date: number | string | BigNumber) => {
 
   if (timestampString.length === TIMESTAMP_LENGTH) {
     // correct timestamp length
-    return Math.floor(Number(timestampString))
+    return Number(timestampString)
   }
 
   if (timestampString.length < TIMESTAMP_LENGTH) {
     // add zeros at the end until correct timestamp length
-    return Math.floor(Number(timestampString.padEnd(TIMESTAMP_LENGTH, '0')))
+    return Number(timestampString.padEnd(TIMESTAMP_LENGTH, '0'))
   }
 
   // remove end digits until correct timestamp length
-  return Math.floor(Number(timestampString.slice(0, TIMESTAMP_LENGTH)))
+  return Number(timestampString.slice(0, TIMESTAMP_LENGTH))
 }
 
 export const getStandardizedTime = (standardizedTimestamp: number) => {
