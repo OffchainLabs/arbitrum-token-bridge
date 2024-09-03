@@ -2,10 +2,16 @@ import { TailSpin } from 'react-loader-spinner'
 import { BaseProps } from 'react-loader-spinner/dist/type'
 
 export type LoaderProps = BaseProps & {
-  size: 'small' | 'medium' | 'large'
+  size: 'small' | 'medium' | 'large' | number
 }
 
-const getSizeByLoaderProps = (loaderSize: LoaderProps['size'] | undefined) => {
+const getSizeByLoaderProps = (
+  loaderSize: LoaderProps['size'] | number | undefined
+) => {
+  if (typeof loaderSize === 'number') {
+    return loaderSize
+  }
+
   switch (loaderSize) {
     case 'small':
       return 16
