@@ -220,7 +220,7 @@ jobs:
         uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
         with:
           start: yarn start
-          command: ommand: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.orbitTest == '1' && ':orbit') }} --browser chromium"
+          command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.orbitTest == '1' && ':orbit') }} --browser chromium"
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
