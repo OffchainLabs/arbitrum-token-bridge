@@ -157,7 +157,7 @@ jobs:
         run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js | jq . --compact-output)" >> $GITHUB_OUTPUT
 
   test-e2e:
-    name: "Test E2E ${{ (matrix.test.type == 'cctp' && 'CCTP') || (matrix.test.orbitTest == '1' && 'with L3') }} - ${{ matrix.test.name }}"
+    name: "Test E2E ${{ (matrix.test.type == 'cctp' && 'CCTP') || (matrix.test.orbitTest == '1' && 'with L3') || '' }} - ${{ matrix.test.name }}"
     runs-on: ubuntu-latest
     needs: [build, check-files, check-is-hotfix, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
