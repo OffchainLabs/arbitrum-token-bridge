@@ -1,6 +1,6 @@
 import { constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'
 
 import { useAppState } from '../../state'
@@ -67,14 +67,16 @@ export function useGasSummary(): UseGasSummaryResult {
       walletAddress,
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id,
-      amount: amountBigNumber,
+      amount:
+        balance !== null && amountBigNumber.gte(balance)
+          ? balance
+          : amountBigNumber,
       sourceChainErc20Address: isDepositMode
         ? token?.address
         : token?.l2Address,
       destinationChainErc20Address: isDepositMode
         ? token?.l2Address
-        : token?.address,
-      sourceChainBalance: balance
+        : token?.address
     })
 
   const estimatedParentChainGasFees = useMemo(() => {
@@ -135,17 +137,8 @@ export function useGasSummary(): UseGasSummaryResult {
     if (!balance) {
       return {
         status: 'loading',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
-      }
-    }
-
-    // If user has input an amount over their balance, don't estimate gas
-    if (amountBigNumber.gt(balance)) {
-      return {
-        status: 'insufficientBalance',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
       }
     }
 
@@ -155,16 +148,24 @@ export function useGasSummary(): UseGasSummaryResult {
     ) {
       return {
         status: 'loading',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
+      }
+    }
+
+    if (amountBigNumber.gt(balance)) {
+      return {
+        status: 'insufficientBalance',
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
       }
     }
 
     if (gasEstimatesError) {
       return {
         status: 'error',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
       }
     }
 
