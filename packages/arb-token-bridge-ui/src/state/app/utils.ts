@@ -14,12 +14,11 @@ import {
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
 import {
-  isTeleporterTransaction,
+  isTeleportTx,
   TeleporterTransaction,
   Transaction
 } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
-import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
@@ -62,7 +61,7 @@ export const getDepositStatus = (
     return DepositStatus.L1_PENDING
   }
 
-  if (isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     const { l2ToL3MsgData, parentToChildMsgData } = tx
 
     // if any of the retryable info is missing, first fetch might be pending
@@ -166,7 +165,7 @@ export const transformDeposit = (
     sourceChainId: Number(tx.l1NetworkID),
     destinationChainId: Number(tx.l2NetworkID)
   }
-  if (isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     return {
       ...transaction,
       l2ToL3MsgData: tx.l2ToL3MsgData
@@ -298,7 +297,7 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
-  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     return (
       firstRetryableLegRequiresRedeem(tx) ||
       secondRetryableLegForTeleportRequiresRedeem(tx)

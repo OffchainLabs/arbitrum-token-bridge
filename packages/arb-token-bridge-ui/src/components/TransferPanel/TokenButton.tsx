@@ -57,7 +57,7 @@ export function TokenButton({
         {({ open }) => (
           <>
             <Popover.Button
-              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
+              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 pb-1 pt-2 text-white"
               aria-label="Select Token"
               onClick={onPopoverButtonClick}
               disabled={disabled}
@@ -75,9 +75,7 @@ export function TokenButton({
                     className="h-5 w-5 sm:h-7 sm:w-7"
                   />
                 )} */}
-                <span className="text-xl font-light sm:text-3xl">
-                  {tokenSymbol}
-                </span>
+                <span className="text-xl font-light">{tokenSymbol}</span>
                 {!disabled && (
                   <ChevronDownIcon
                     className={twMerge(
@@ -92,7 +90,7 @@ export function TokenButton({
             <Transition
               // we don't unmount on leave here because otherwise transition won't work with virtualized lists
               options={{ unmountOnLeave: false }}
-              className="fixed left-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
+              className="fixed right-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
               afterLeave={onPopoverClose}
             >
               <Popover.Panel

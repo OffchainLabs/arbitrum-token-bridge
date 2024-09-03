@@ -4,10 +4,16 @@ export enum TransferReadinessRichErrorMessage {
   TOKEN_TRANSFER_DISABLED
 }
 
-export type GetInsufficientFundsErrorMessageParams = {
+type GetInsufficientFundsErrorMessageParams = {
   asset: string
   chain: string
 }
+
+type GetInsufficientFundsForGasFeesErrorMessageParams =
+  GetInsufficientFundsErrorMessageParams & {
+    balance: string
+    requiredBalance: string
+  }
 
 export function getInsufficientFundsErrorMessage({
   asset,
@@ -18,9 +24,21 @@ export function getInsufficientFundsErrorMessage({
 
 export function getInsufficientFundsForGasFeesErrorMessage({
   asset,
-  chain
-}: GetInsufficientFundsErrorMessageParams) {
-  return `Insufficient ${asset} to pay for gas fees. Please add more funds to ${chain}.`
+  chain,
+  balance,
+  requiredBalance
+}: GetInsufficientFundsForGasFeesErrorMessageParams) {
+  const errorMessage = `Please add more ${asset} on ${chain} to pay for gas fees.`
+
+  if (balance === requiredBalance) {
+    // An edge case where formatAmount returns the same value. In this case we don't want to show balances because in the UI it's the same as requiredBalance.
+    return errorMessage
+  }
+
+  return (
+    errorMessage +
+    ` You currently have ${balance} ${asset}, but the transaction requires ${requiredBalance} ${asset}.`
+  )
 }
 
 export function getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage({

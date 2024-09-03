@@ -17,13 +17,13 @@ import {
   L2ToL3MessageData,
   Transaction,
   TxnStatus,
-  TeleporterTransaction
+  TeleporterTransaction,
+  isTeleportTx
 } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   getL2ConfigForTeleport,
-  fetchTeleportStatusFromTxId,
-  isTeleport
+  fetchTeleportStatusFromTxId
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 
@@ -68,12 +68,7 @@ export const updateAdditionalDepositData = async ({
       isClassic
     })
 
-  if (
-    isTeleport({
-      sourceChainId: depositTx.parentChainId,
-      destinationChainId: depositTx.childChainId
-    })
-  ) {
+  if (isTeleportTx(depositTx)) {
     const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
       await fetchTeleporterDepositStatusData({
         ...depositTx,
