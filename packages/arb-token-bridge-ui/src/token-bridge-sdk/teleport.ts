@@ -14,7 +14,7 @@ import { getChainIdFromProvider, getProviderForChainId } from './utils'
 import { TELEPORT_ALLOWLIST } from '../util/networks'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
-export const isTeleport = ({
+export const isValidTeleportChainPair = ({
   sourceChainId,
   destinationChainId
 }: {

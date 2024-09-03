@@ -1,4 +1,4 @@
-import { isTeleport } from '../../token-bridge-sdk/teleport'
+import { isValidTeleportChainPair } from '../../token-bridge-sdk/teleport'
 import { hasL1Subgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from '../index'
 
@@ -81,7 +81,7 @@ export const fetchEthTeleportsFromSubgraph = async ({
 
   // don't query if not a valid teleport configuration
   if (
-    !isTeleport({
+    !isValidTeleportChainPair({
       sourceChainId: Number(l1ChainId),
       destinationChainId: Number(l3ChainId)
     })
