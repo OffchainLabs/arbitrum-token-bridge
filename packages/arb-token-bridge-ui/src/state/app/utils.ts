@@ -143,10 +143,10 @@ export const transformDeposit = (
     direction: tx.type,
     status: tx.status,
     createdAt: tx.timestampCreated
-      ? getStandardizedTimestamp(tx.timestampCreated)
+      ? normalizeTimestamp(tx.timestampCreated)
       : null,
     resolvedAt: tx.timestampResolved
-      ? getStandardizedTimestamp(tx.timestampResolved)
+      ? normalizeTimestamp(tx.timestampResolved)
       : null,
     txId: tx.txID,
     asset: tx.assetName || '',
@@ -189,9 +189,7 @@ export const transformWithdrawal = (
       NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
         ? 'Failure'
         : outgoingStateToString[tx.outgoingMessageState],
-    createdAt: getStandardizedTimestamp(
-      String(BigNumber.from(tx.timestamp).toNumber() * 1000)
-    ),
+    createdAt: normalizeTimestamp(tx.timestamp.toNumber()),
     resolvedAt: null,
     txId: tx.l2TxHash || 'l2-tx-hash-not-found',
     asset: tx.symbol || '',
@@ -306,15 +304,31 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const getStandardizedTimestamp = (date: string | BigNumber) => {
+export const normalizeTimestamp = (date: number | string) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
+  const TIMESTAMP_LENGTH = 13
+  let timestamp = date
+
   if (typeof date === 'string') {
-    if (isNaN(Number(date))) return dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
-    return Number(date) // for timestamp type of date -> dayjs timestamp
+    timestamp = isNaN(Number(date))
+      ? dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
+      : Number(date) // for timestamp type of date -> dayjs timestamp
   }
 
-  // BigNumber
-  return date.toNumber()
+  const timestampString = String(timestamp)
+
+  if (timestampString.length === TIMESTAMP_LENGTH) {
+    // correct timestamp length
+    return Number(timestampString)
+  }
+
+  if (timestampString.length < TIMESTAMP_LENGTH) {
+    // add zeros at the end until correct timestamp length
+    return Number(timestampString.padEnd(TIMESTAMP_LENGTH, '0'))
+  }
+
+  // remove end digits until correct timestamp length
+  return Number(timestampString.slice(0, TIMESTAMP_LENGTH))
 }
 
 export const getStandardizedTime = (standardizedTimestamp: number) => {
