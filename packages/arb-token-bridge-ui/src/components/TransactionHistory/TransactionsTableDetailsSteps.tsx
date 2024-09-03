@@ -21,7 +21,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { TransferCountdown } from '../common/TransferCountdown'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { isTeleportTx } from '../../hooks/useTransactions'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
@@ -31,7 +31,6 @@ import {
   minutesToHumanReadableTime,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
-import { isTeleporterTransaction } from '../../hooks/useTransactions'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
   return tx.isCctp || tx.isWithdrawal
@@ -119,7 +118,7 @@ const LastStepEndItem = ({
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
-  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
+  const isTeleport = isTeleportTx(tx)
 
   if (destinationNetworkTxId) {
     return (
@@ -134,8 +133,8 @@ const LastStepEndItem = ({
   }
 
   if (
-    (!isTeleportTx && isDepositReadyToRedeem(tx)) ||
-    (isTeleportTx && secondRetryableLegForTeleportRequiresRedeem(tx))
+    (!isTeleport && isDepositReadyToRedeem(tx)) ||
+    (isTeleport && secondRetryableLegForTeleportRequiresRedeem(tx))
   ) {
     return (
       <TransactionsTableRowAction
@@ -181,9 +180,9 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
-  const isTeleportTx = isTeleport(tx) && isTeleporterTransaction(tx)
+  const isTeleport = isTeleportTx(tx)
 
-  const isDestinationChainFailure = isTeleportTx
+  const isDestinationChainFailure = isTeleport
     ? secondRetryableLegForTeleportRequiresRedeem(tx)
     : !isSourceChainDepositFailure && isTxFailed(tx)
 
@@ -194,7 +193,7 @@ export const TransactionsTableDetailsSteps = ({
     if (isTxExpired(tx)) {
       return `Transaction expired on ${networkName}`
     }
-    if (isTeleportTx && firstRetryableLegRequiresRedeem(tx)) {
+    if (isTeleport && firstRetryableLegRequiresRedeem(tx)) {
       return fundsArrivedText
     }
 
@@ -205,7 +204,7 @@ export const TransactionsTableDetailsSteps = ({
       return `Transaction failed on ${networkName}.`
     }
     return fundsArrivedText
-  }, [tx, isDestinationChainFailure, isTeleportTx])
+  }, [tx, isDestinationChainFailure, isTeleport])
 
   return (
     <div className="flex flex-col text-xs">
@@ -226,7 +225,7 @@ export const TransactionsTableDetailsSteps = ({
       />
 
       {/* Pending transfer showing the remaining time */}
-      {!isTeleport(tx) && (
+      {!isTeleportTx(tx) && (
         <Step
           pending={isTxPending(tx)}
           done={!isTxPending(tx) && !isSourceChainDepositFailure}
@@ -241,7 +240,7 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
-      {isTeleport(tx) && isTeleporterTransaction(tx) && (
+      {isTeleportTx(tx) && (
         <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
       )}
 
