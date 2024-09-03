@@ -933,7 +933,7 @@ export function TransferPanel() {
 
     const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
-    const timestampCreated = String(normalizeTimestamp(Date.now().toString()))
+    const timestampCreated = String(normalizeTimestamp(Date.now()))
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,

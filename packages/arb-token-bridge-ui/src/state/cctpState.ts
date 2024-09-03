@@ -532,9 +532,7 @@ export function useClaimCctp(tx: MergedTransaction) {
       const receiveReceiptTx = await receiveTx.wait()
 
       const resolvedAt =
-        receiveReceiptTx.status === 1
-          ? normalizeTimestamp(BigNumber.from(Date.now()))
-          : null
+        receiveReceiptTx.status === 1 ? normalizeTimestamp(Date.now()) : null
       await updatePendingTransaction({
         ...tx,
         resolvedAt,

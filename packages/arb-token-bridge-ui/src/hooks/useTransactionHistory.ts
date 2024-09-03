@@ -107,7 +107,7 @@ function getTransactionTimestamp(tx: Transfer) {
     return normalizeTimestamp(tx.l2BlockTimestamp)
   }
 
-  return normalizeTimestamp(tx.timestamp ?? 0)
+  return normalizeTimestamp(tx.timestamp?.toNumber() ?? 0)
 }
 
 function sortByTimestampDescending(a: Transfer, b: Transfer) {

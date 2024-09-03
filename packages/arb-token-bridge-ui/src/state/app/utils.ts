@@ -190,7 +190,7 @@ export const transformWithdrawal = (
       NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
         ? 'Failure'
         : outgoingStateToString[tx.outgoingMessageState],
-    createdAt: normalizeTimestamp(tx.timestamp),
+    createdAt: normalizeTimestamp(tx.timestamp.toNumber()),
     resolvedAt: null,
     txId: tx.l2TxHash || 'l2-tx-hash-not-found',
     asset: tx.symbol || '',
@@ -305,18 +305,15 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const normalizeTimestamp = (date: number | string | BigNumber) => {
+export const normalizeTimestamp = (date: number | string) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
   const TIMESTAMP_LENGTH = 13
-  let timestamp
+  let timestamp = date
 
   if (typeof date === 'string') {
     timestamp = isNaN(Number(date))
       ? dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
       : Number(date) // for timestamp type of date -> dayjs timestamp
-  } else if (typeof date !== 'number') {
-    // BigNumber
-    timestamp = date.toNumber()
   }
 
   const timestampString = String(timestamp)

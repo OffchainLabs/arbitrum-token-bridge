@@ -86,7 +86,7 @@ export const getRetryableTicketExpiration = async ({
     const now = dayjs()
 
     const expiryDateResponse = await parentToChildMsg!.getTimeout()
-    expirationDate = normalizeTimestamp(expiryDateResponse)
+    expirationDate = normalizeTimestamp(expiryDateResponse.toNumber())
 
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
 
