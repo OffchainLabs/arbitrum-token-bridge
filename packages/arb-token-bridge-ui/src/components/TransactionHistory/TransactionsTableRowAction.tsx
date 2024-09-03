@@ -19,7 +19,7 @@ import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { TransferCountdown } from '../common/TransferCountdown'
 import { Address } from '../../util/AddressUtils'
 import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { isTeleportTx } from '../../hooks/useTransactions'
 import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { formatAmount } from '../../util/NumberUtils'
@@ -67,7 +67,7 @@ export function TransactionsTableRowAction({
         await switchNetworkAsync?.(chainIdForRedeemingRetryable)
       }
 
-      if (isTeleport(tx)) {
+      if (isTeleportTx(tx)) {
         await teleporterRedeem()
       } else {
         await redeem()

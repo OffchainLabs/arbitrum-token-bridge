@@ -18,22 +18,18 @@ import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
 import { EstimatedGas } from '../EstimatedGas'
-import {
-  Balances,
-  useSelectedTokenBalances
-} from '../../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useDialog } from '../../common/Dialog'
 import {
   NetworkButton,
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 function DestinationNetworkBalance({
-  customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
   const {
@@ -46,6 +42,7 @@ function DestinationNetworkBalance({
 
   const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
     useBalances()
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -97,11 +94,7 @@ function DestinationNetworkBalance({
     return (
       <TokenBalance
         on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-        balance={
-          isDepositMode
-            ? customFeeTokenBalances.childBalance
-            : customFeeTokenBalances.parentBalance
-        }
+        balance={nativeCurrencyBalances.destinationBalance}
         forToken={nativeCurrency}
         prefix="Balance: "
       />
@@ -110,7 +103,7 @@ function DestinationNetworkBalance({
 
   return (
     <ETHBalance
-      balance={isDepositMode ? ethChildBalance : ethParentBalance}
+      balance={nativeCurrencyBalances.destinationBalance}
       on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
       prefix="Balance: "
     />
@@ -118,10 +111,8 @@ function DestinationNetworkBalance({
 }
 
 export function DestinationNetworkBox({
-  customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
   const { address: walletAddress } = useAccount()
@@ -148,7 +139,6 @@ export function DestinationNetworkBox({
             {destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (
                 <DestinationNetworkBalance
-                  customFeeTokenBalances={customFeeTokenBalances}
                   showUsdcSpecificInfo={showUsdcSpecificInfo}
                 />
               )}

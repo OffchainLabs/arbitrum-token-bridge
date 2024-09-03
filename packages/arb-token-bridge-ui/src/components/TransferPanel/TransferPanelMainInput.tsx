@@ -10,12 +10,8 @@ import { useMemo } from 'react'
 import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import {
-  Balances,
-  useSelectedTokenBalances
-} from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
-import { useBalances } from '../../hooks/useBalances'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
@@ -24,59 +20,39 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
 import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 
 function MaxButton({
-  customFeeTokenBalances,
   className = '',
   ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  customFeeTokenBalances: Balances
-}) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode, childChainProvider } =
-    useNetworksRelationship(networks)
+  const { isDepositMode } = useNetworksRelationship(networks)
 
-  const { ethParentBalance, ethChildBalance } = useBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
-    const customFeeTokenBalance = isDepositMode
-      ? customFeeTokenBalances.parentBalance
-      : customFeeTokenBalances.childBalance
+    const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
+
     const tokenBalance = isDepositMode
       ? selectedTokenBalances.parentBalance
       : selectedTokenBalances.childBalance
 
     if (selectedToken) {
-      if (!tokenBalance) {
-        return false
-      }
-
-      return !tokenBalance.isZero()
+      return tokenBalance && !tokenBalance.isZero()
     }
 
-    if (nativeCurrency.isCustom) {
-      return customFeeTokenBalance && !customFeeTokenBalance.isZero()
-    }
-
-    if (!ethBalance) {
-      return false
-    }
-
-    return !ethBalance.isZero()
+    return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
+    nativeCurrencyBalances.sourceBalance,
     isDepositMode,
-    ethParentBalance,
-    ethChildBalance,
-    customFeeTokenBalances,
-    selectedTokenBalances,
-    selectedToken,
-    nativeCurrency.isCustom
+    selectedTokenBalances.parentBalance,
+    selectedTokenBalances.childBalance,
+    selectedToken
   ])
 
   if (!maxButtonVisible) {
@@ -98,10 +74,8 @@ function MaxButton({
 }
 
 function SourceChainTokenBalance({
-  customFeeTokenBalances,
   balanceOverride
 }: {
-  customFeeTokenBalances: Balances
   balanceOverride?: AmountInputOptions['balance']
 }) {
   const {
@@ -111,7 +85,7 @@ function SourceChainTokenBalance({
   const { isDepositMode, childChainProvider } =
     useNetworksRelationship(networks)
 
-  const { ethParentBalance, ethChildBalance } = useBalances()
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -120,17 +94,9 @@ function SourceChainTokenBalance({
     ? selectedTokenBalances.parentBalance
     : selectedTokenBalances.childBalance
 
-  const ethBalance = isDepositMode ? ethParentBalance : ethChildBalance
-  const customFeeTokenBalance = isDepositMode
-    ? customFeeTokenBalances.parentBalance
-    : customFeeTokenBalances.childBalance
-
-  const nativeCurrencyBalance = nativeCurrency.isCustom
-    ? customFeeTokenBalance
-    : ethBalance
-
   const balance =
-    balanceOverride ?? (selectedToken ? tokenBalance : nativeCurrencyBalance)
+    balanceOverride ??
+    (selectedToken ? tokenBalance : nativeCurrencyBalances.sourceBalance)
 
   const formattedBalance = balance
     ? formatAmount(balance, {
@@ -238,7 +204,6 @@ export type TransferPanelMainInputProps =
     maxButtonOnClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
     value: string
     options?: AmountInputOptions
-    customFeeTokenBalances: Balances
     maxAmount: string | undefined
     isMaxAmount: boolean
     decimals: number
@@ -254,7 +219,6 @@ export const TransferPanelMainInput = React.memo(
     isMaxAmount,
     decimals,
     options,
-    customFeeTokenBalances,
     ...rest
   }: TransferPanelMainInputProps) => {
     const [localValue, setLocalValue] = useState(value)
@@ -310,14 +274,8 @@ export const TransferPanelMainInput = React.memo(
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
               <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-                <SourceChainTokenBalance
-                  customFeeTokenBalances={customFeeTokenBalances}
-                  balanceOverride={options?.balance}
-                />
-                <MaxButton
-                  onClick={handleMaxButtonClick}
-                  customFeeTokenBalances={customFeeTokenBalances}
-                />
+                <SourceChainTokenBalance balanceOverride={options?.balance} />
+                <MaxButton onClick={handleMaxButtonClick} />
               </div>
             </div>
           </div>
