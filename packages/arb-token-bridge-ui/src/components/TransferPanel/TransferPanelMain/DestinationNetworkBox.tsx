@@ -94,7 +94,7 @@ function DestinationNetworkBalance({
     return (
       <TokenBalance
         on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-        balance={nativeCurrencyBalances.sourceBalance}
+        balance={nativeCurrencyBalances.destinationBalance}
         forToken={nativeCurrency}
         prefix="Balance: "
       />
@@ -103,7 +103,7 @@ function DestinationNetworkBalance({
 
   return (
     <ETHBalance
-      balance={isDepositMode ? ethChildBalance : ethParentBalance}
+      balance={nativeCurrencyBalances.destinationBalance}
       on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
       prefix="Balance: "
     />
