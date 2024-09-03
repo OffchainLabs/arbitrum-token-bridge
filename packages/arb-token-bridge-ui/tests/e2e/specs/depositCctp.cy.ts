@@ -120,12 +120,10 @@ describe('Deposit USDC through CCTP', () => {
     cy.wait(40_000)
     cy.confirmMetamaskTransaction(undefined)
     const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
+    cy.wait(15_000)
     cy.findTransactionInTransactionHistory({
       duration: 'a minute',
-      ...txData,
-      options: {
-        timeout: 60_000
-      }
+      ...txData
     })
     cy.openTransactionDetails(txData)
     cy.findTransactionDetailsCustomDestinationAddress(
