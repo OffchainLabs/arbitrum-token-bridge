@@ -1,5 +1,4 @@
 import { constants, utils } from 'ethers'
-import { useAccount } from 'wagmi'
 import { useMemo } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'
 
@@ -40,7 +39,6 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const { address: walletAddress } = useAccount()
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
@@ -64,13 +62,7 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
-      walletAddress,
-      sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id,
-      amount:
-        balance !== null && amountBigNumber.gte(balance)
-          ? balance
-          : amountBigNumber,
+      amount: amountBigNumber,
       sourceChainErc20Address: isDepositMode
         ? token?.address
         : token?.l2Address,
@@ -134,18 +126,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (!balance) {
-      return {
-        status: 'loading',
-        estimatedParentChainGasFees,
-        estimatedChildChainGasFees
-      }
-    }
-
-    if (
-      typeof estimatedParentChainGasFees === 'undefined' ||
-      typeof estimatedChildChainGasFees === 'undefined'
-    ) {
+    if (balance === null) {
       return {
         status: 'loading',
         estimatedParentChainGasFees,

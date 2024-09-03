@@ -1,10 +1,13 @@
 import { BigNumber, Signer } from 'ethers'
 import useSWR from 'swr'
-import { useSigner } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useAppState } from '../../state'
+import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
+import { useNetworks } from '../useNetworks'
 
 async function fetcher([
   signer,
@@ -36,16 +39,10 @@ async function fetcher([
 }
 
 export function useGasEstimates({
-  walletAddress,
-  sourceChainId,
-  destinationChainId,
   sourceChainErc20Address,
   destinationChainErc20Address,
   amount
 }: {
-  walletAddress?: string
-  sourceChainId: number
-  destinationChainId: number
   sourceChainErc20Address?: string
   destinationChainErc20Address?: string
   amount: BigNumber
@@ -53,16 +50,25 @@ export function useGasEstimates({
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
   error: any
 } {
+  const [{ sourceChain, destinationChain }] = useNetworks()
+  const {
+    app: { selectedToken: token }
+  } = useAppState()
+  const { address: walletAddress } = useAccount()
+  const balance = useBalanceOnSourceChain(token)
   const { data: signer } = useSigner()
+
+  const amountToTransfer =
+    balance !== null && amount.gte(balance) ? balance : amount
 
   const { data: gasEstimates, error } = useSWR(
     signer
       ? ([
-          sourceChainId,
-          destinationChainId,
+          sourceChain.id,
+          destinationChain.id,
           sourceChainErc20Address,
           destinationChainErc20Address,
-          amount.toString(), // BigNumber is not serializable
+          amountToTransfer.toString(), // BigNumber is not serializable
           walletAddress,
           'gasEstimates'
         ] as const)
