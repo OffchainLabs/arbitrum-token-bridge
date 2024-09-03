@@ -189,6 +189,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0xc87B37a581ec3257B734886d9d3a581F5A9d056c',
       l1Address: '0xbe0Ed4138121EcFC5c0E56B40517da27E6c5226B',
       l2Address: '0xc7dEf82Ba77BAF30BbBc9b6162DC075b49092fb4'
+    },
+    {
+      symbol: 'DMT',
+      l2CustomAddr: '0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8',
+      l1Address: '0x0B7f0e51Cd1739D6C96982D55aD8fA634dd43A9C',
+      l2Address: '0x6Ab317237cc72B2cdb54EcfcC180b61E00F7df76'
     }
   ],
   [ChainId.ArbitrumNova]: []
