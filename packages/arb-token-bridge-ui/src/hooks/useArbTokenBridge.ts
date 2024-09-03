@@ -34,7 +34,7 @@ import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
-import { isTeleport } from '../token-bridge-sdk/teleport'
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export const wait = (ms = 0) => {
@@ -315,7 +315,7 @@ export const useArbTokenBridge = (
       // while deriving the child-chain address, it can be a teleport transfer too, in that case derive L3 address from L1 address
       // else, derive the L2 address from L1 address OR L3 address from L2 address
       if (
-        isTeleport({
+        isValidTeleportChainPair({
           sourceChainId: l1.network.id,
           destinationChainId: l2.network.id
         })

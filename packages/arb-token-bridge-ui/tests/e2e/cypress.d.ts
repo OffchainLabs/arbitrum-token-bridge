@@ -5,12 +5,10 @@ import {
   login,
   logout,
   openTransactionsPanel,
-  resetCctpAllowance,
-  fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  findAmountInput,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeSummary,
@@ -22,7 +20,8 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
-  selectTransactionsPanelTab
+  selectTransactionsPanelTab,
+  confirmSpending
 } from '../support/commands'
 
 declare global {
@@ -38,9 +37,6 @@ declare global {
       logout: typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
-      resetCctpAllowance: typeof resetCctpAllowance
-      fundUserUsdcTestnet: typeof fundUserUsdcTestnet
-      fundUserWalletEth: typeof fundUserWalletEth
       searchAndSelectToken({
         tokenName,
         tokenAddress
@@ -50,6 +46,7 @@ declare global {
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
       typeAmount: typeof typeAmount
+      findAmountInput: typeof findAmountInput
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
       findGasFeeForChain: typeof findGasFeeForChain
@@ -61,6 +58,7 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      confirmSpending: typeof confirmSpending
     }
   }
 }
