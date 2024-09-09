@@ -63,9 +63,6 @@ export function TokenButton({
               disabled={disabled}
             >
               <div className="flex items-center gap-2">
-                <span className="text-xl font-light sm:text-3xl">
-                  {tokenSymbol}
-                </span>
                 <span className="text-xl font-light">{tokenSymbol}</span>
                 {!disabled && (
                   <ChevronDownIcon
