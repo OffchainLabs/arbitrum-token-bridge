@@ -3,6 +3,7 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -86,7 +87,12 @@ describe('Withdraw USDC through CCTP', () => {
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
-    cy.findClaimButton(USDCAmountToSend.toString(), { timeout: 60_000 }).click()
+    cy.findClaimButton(
+      formatAmount(USDCAmountToSend, {
+        symbol: 'USDC'
+      }),
+      { timeout: 60_000 }
+    ).click()
     cy.allowMetamaskToSwitchNetwork()
     cy.rejectMetamaskTransaction()
   })
@@ -113,7 +119,12 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )
-    cy.findClaimButton(USDCAmountToSend.toString(), { timeout: 60_000 }).click()
+    cy.findClaimButton(
+      formatAmount(USDCAmountToSend, {
+        symbol: 'USDC'
+      }),
+      { timeout: 60_000 }
+    ).click()
     cy.allowMetamaskToSwitchNetwork()
     cy.rejectMetamaskTransaction()
   })
