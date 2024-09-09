@@ -8,6 +8,7 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { SelectorMatcherOptions } from '@testing-library/cypress'
 import {
   NetworkType,
   NetworkName,
@@ -296,8 +297,13 @@ export function findTransactionInTransactionHistory({
 }
 
 export function findClaimButton(
-  amountToClaim: string
+  amountToClaim: string,
+  options?: SelectorMatcherOptions
 ): Cypress.Chainable<JQuery<HTMLElement>> {
+  if (options) {
+    return cy.findByLabelText(`Claim ${amountToClaim}`, options)
+  }
+
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 

@@ -86,6 +86,9 @@ describe('Withdraw USDC through CCTP', () => {
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
+    cy.findClaimButton(USDCAmountToSend.toString(), { timeout: 60_000 }).click()
+    cy.allowMetamaskToSwitchNetwork()
+    cy.rejectMetamaskTransaction()
   })
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
@@ -110,5 +113,8 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )
+    cy.findClaimButton(USDCAmountToSend.toString(), { timeout: 60_000 }).click()
+    cy.allowMetamaskToSwitchNetwork()
+    cy.rejectMetamaskTransaction()
   })
 })
