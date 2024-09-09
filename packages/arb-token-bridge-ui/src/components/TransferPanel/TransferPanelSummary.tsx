@@ -16,6 +16,7 @@ import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { NoteBox } from '../common/NoteBox'
 import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -179,7 +180,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
-  const [{ amount }] = useArbQueryParams()
+  const [{ amount, amount2 }] = useArbQueryParams()
+  const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const {
     isArbitrumOne: isDestinationChainArbitrumOne,
@@ -245,6 +247,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
           {isBridgingEth && (
             <NativeCurrencyPrice amount={Number(amount)} showBrackets />
+          )}
+          {isBatchTransferSupported && Number(amount2) > 0 && (
+            <span> + {amount2} ETH</span>
           )}
         </span>
       </div>
