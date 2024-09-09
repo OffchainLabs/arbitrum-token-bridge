@@ -7,12 +7,12 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
 import dayjs from 'dayjs'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import {
   MergedTransaction,
   TeleporterMergedTransaction
 } from '../state/app/state'
-import { isTeleporterTransaction } from '../hooks/useTransactions'
+import { normalizeTimestamp } from '../state/app/utils'
+import { isTeleportTx } from '../hooks/useTransactions'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
@@ -85,7 +85,7 @@ export const getRetryableTicketExpiration = async ({
     const now = dayjs()
 
     const expiryDateResponse = await parentToChildMsg!.getTimeout()
-    expirationDate = Number(expiryDateResponse.toString()) * 1000
+    expirationDate = normalizeTimestamp(expiryDateResponse.toNumber())
 
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
 
@@ -144,11 +144,7 @@ export const secondRetryableLegForTeleportRequiresRedeem = (
 
 export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
   // which chain id needs to be connected to, to redeem the retryable ticket
-  if (
-    isTeleport(tx) &&
-    isTeleporterTransaction(tx) &&
-    firstRetryableLegRequiresRedeem(tx)
-  ) {
+  if (isTeleportTx(tx) && firstRetryableLegRequiresRedeem(tx)) {
     // in teleport, unless it's the final retryable being redeemed, we need to connect to the l2 chain
     if (!tx.l2ToL3MsgData) {
       throw Error(

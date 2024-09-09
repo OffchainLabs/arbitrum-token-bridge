@@ -32,14 +32,14 @@ function isTransactionEthTeleportFromSubgraph(
 export async function transformTeleportFromSubgraph(
   tx: TeleportFromSubgraph
 ): Promise<MergedTransaction> {
-  const parentChainProvider = getProviderForChainId(Number(tx.parentChainId))
+  const parentProvider = getProviderForChainId(Number(tx.parentChainId))
 
   // Eth transfers
   if (isTransactionEthTeleportFromSubgraph(tx)) {
     // to get the exact value of the ETH deposit we need to fetch the teleport parameters, otherwise tx.value will also include all the L2,L3 gas fee paid
     const depositParameters = (await fetchTeleportInputParametersFromTxId({
       txId: tx.transactionHash,
-      sourceChainProvider: parentChainProvider,
+      sourceChainProvider: parentProvider,
       destinationChainProvider: getProviderForChainId(Number(tx.childChainId)),
       isNativeCurrencyTransfer: true
     })) as {
@@ -70,12 +70,12 @@ export async function transformTeleportFromSubgraph(
       childChainId: Number(tx.childChainId)
     } as Transaction
 
-    const childChainProvider = getProviderForChainId(Number(tx.childChainId))
+    const childProvider = getProviderForChainId(Number(tx.childChainId))
     return transformDeposit(
       await updateAdditionalDepositData({
         depositTx,
-        l1Provider: parentChainProvider,
-        l2Provider: childChainProvider
+        parentProvider,
+        childProvider
       })
     )
   }
@@ -84,13 +84,10 @@ export async function transformTeleportFromSubgraph(
   const l1TokenAddress = tx.l1Token
   const { symbol, decimals } = await fetchErc20Data({
     address: l1TokenAddress,
-    provider: parentChainProvider
+    provider: parentProvider
   })
-  const l3ChainId = await getL3ChainIdFromTeleportEvents(
-    tx,
-    parentChainProvider
-  )
-  const transactionDetails = await parentChainProvider.getTransaction(
+  const l3ChainId = await getL3ChainIdFromTeleportEvents(tx, parentProvider)
+  const transactionDetails = await parentProvider.getTransaction(
     tx.transactionHash
   ) // we need to fetch the transaction details to get the blockNumber
 
@@ -115,12 +112,12 @@ export async function transformTeleportFromSubgraph(
     childChainId: l3ChainId
   } as Transaction
 
-  const childChainProvider = getProviderForChainId(l3ChainId)
+  const childProvider = getProviderForChainId(l3ChainId)
   return transformDeposit(
     await updateAdditionalDepositData({
       depositTx,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider
+      parentProvider,
+      childProvider
     })
   )
 }

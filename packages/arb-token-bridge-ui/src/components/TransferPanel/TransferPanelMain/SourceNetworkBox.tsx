@@ -1,28 +1,23 @@
-import { useCallback, useEffect, useState } from 'react'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
+import {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
+import { utils } from 'ethers'
 
 import { getNetworkName } from '../../../util/networks'
 import {
   NetworkButton,
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
-import {
-  BalancesContainer,
-  ETHBalance,
-  NetworkContainer,
-  NetworkListboxPlusBalancesContainer
-} from '../TransferPanelMain'
-import { TokenBalance } from './TokenBalance'
-import { NetworkType } from './utils'
+import { NetworkContainer } from '../TransferPanelMain'
 import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import {
-  Balances,
-  useSelectedTokenBalances
-} from '../../../hooks/TransferPanel/useSelectedTokenBalances'
-import { useBalances } from '../../../hooks/useBalances'
 import {
   ETH_BALANCE_ARTICLE_LINK,
   USDC_LEARN_MORE_LINK
@@ -40,6 +35,8 @@ import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
+import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
 
 function Amount2ToggleButton({
   onClick
@@ -61,10 +58,8 @@ function Amount2ToggleButton({
 }
 
 export function SourceNetworkBox({
-  customFeeTokenBalances,
   showUsdcSpecificInfo
 }: {
-  customFeeTokenBalances: Balances
   showUsdcSpecificInfo: boolean
 }) {
   const [isAmount2InputVisible, setIsAmount2InputVisible] = useState(false)
@@ -75,19 +70,16 @@ export function SourceNetworkBox({
   const {
     app: { selectedToken }
   } = useAppState()
-  const { ethParentBalance, ethChildBalance } = useBalances()
-  const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
-  const { maxAmount, maxAmount2 } = useMaxAmount({
-    customFeeTokenBalances
-  })
+  const { maxAmount, maxAmount2 } = useMaxAmount()
   const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
     useDialog()
   const isBatchTransferSupported = useIsBatchTransferSupported()
-
+  const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
+  const ethBalanceSourceChain = useBalanceOnSourceChain(null)
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -117,71 +109,45 @@ export function SourceNetworkBox({
     }
   }, [maxAmount2, setAmount2])
 
+  const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    e => setAmount(e.target.value),
+    [setAmount]
+  )
+  const handleAmount2Change: ChangeEventHandler<HTMLInputElement> = useCallback(
+    e => {
+      setAmount2(e.target.value)
+    },
+    [setAmount2]
+  )
+
+  const tokenButtonOptionsAmount2 = useMemo(
+    () => ({
+      symbol: nativeCurrency.symbol,
+      disabled: true,
+      balance: ethBalanceSourceChain
+        ? Number(utils.formatEther(ethBalanceSourceChain))
+        : undefined
+    }),
+    [ethBalanceSourceChain, nativeCurrency.symbol]
+  )
+
   return (
     <>
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
-        <NetworkListboxPlusBalancesContainer>
-          <NetworkButton
-            type="source"
-            onClick={openSourceNetworkSelectionDialog}
-          />
-          <BalancesContainer>
-            <TokenBalance
-              on={
-                isDepositMode ? NetworkType.parentChain : NetworkType.childChain
-              }
-              balance={
-                isDepositMode
-                  ? selectedTokenBalances.parentBalance
-                  : selectedTokenBalances.childBalance
-              }
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            {nativeCurrency.isCustom ? (
-              <>
-                <TokenBalance
-                  on={
-                    isDepositMode
-                      ? NetworkType.parentChain
-                      : NetworkType.childChain
-                  }
-                  balance={
-                    isDepositMode
-                      ? customFeeTokenBalances.parentBalance
-                      : customFeeTokenBalances.childBalance
-                  }
-                  forToken={nativeCurrency}
-                  prefix={selectedToken ? '' : 'Balance: '}
-                />
-                {/* Only show ETH balance on parent chain */}
-                {isDepositMode && (
-                  <ETHBalance
-                    balance={ethParentBalance}
-                    on={NetworkType.parentChain}
-                  />
-                )}
-              </>
-            ) : (
-              <ETHBalance
-                balance={isDepositMode ? ethParentBalance : ethChildBalance}
-                prefix={selectedToken ? '' : 'Balance: '}
-                on={
-                  isDepositMode
-                    ? NetworkType.parentChain
-                    : NetworkType.childChain
-                }
-              />
-            )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
+        <NetworkButton
+          type="source"
+          onClick={openSourceNetworkSelectionDialog}
+        />
 
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonOnClick={maxButtonOnClick}
             errorMessage={errorMessages?.inputAmount1}
             value={isMaxAmount ? '' : amount}
-            onChange={e => setAmount(e.target.value)}
+            onChange={handleAmountChange}
+            maxAmount={maxAmount}
+            isMaxAmount={isMaxAmount}
+            decimals={decimals}
           />
 
           {isBatchTransferSupported && !isAmount2InputVisible && (
@@ -196,14 +162,13 @@ export function SourceNetworkBox({
             <>
               <TransferPanelMainInput
                 maxButtonOnClick={amount2MaxButtonOnClick}
-                inputCollapseOnClick={() => setIsAmount2InputVisible(false)}
                 errorMessage={errorMessages?.inputAmount2}
                 value={amount2}
-                onChange={e => setAmount2(e.target.value)}
-                tokenButtonOptions={{
-                  symbol: nativeCurrency.symbol,
-                  disabled: true
-                }}
+                onChange={handleAmount2Change}
+                options={tokenButtonOptionsAmount2}
+                maxAmount={maxAmount2}
+                isMaxAmount={isMaxAmount2}
+                decimals={nativeCurrency.decimals}
               />
               <p className="mt-1 text-xs font-light text-white">
                 You are able to move ETH in the same transaction, but you are

@@ -32,6 +32,7 @@ import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
 import { Address } from '../../util/AddressUtils'
 import { ether } from '../../constants'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
+import { BatchTransferEthTooltip } from './TransactionHistoryTable'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   const { sourceChainId, destinationChainId } = tx
@@ -189,19 +190,21 @@ export function TransactionsTableRow({
           </TransactionsTableExternalLink>
         </div>
         {isBatchTransfer(tx) && (
-          <div className="flex items-center pr-3 align-middle">
-            <Image
-              height={20}
-              width={20}
-              alt="ETH logo"
-              src={EthereumLogoRoundLight}
-            />
-            <span className="ml-2">
-              {formatAmount(Number(tx.value2), {
-                symbol: ether.symbol
-              })}
-            </span>
-          </div>
+          <BatchTransferEthTooltip>
+            <div className="flex items-center pr-3 align-middle">
+              <Image
+                height={20}
+                width={20}
+                alt="ETH logo"
+                src={EthereumLogoRoundLight}
+              />
+              <span className="ml-2">
+                {formatAmount(Number(tx.value2), {
+                  symbol: ether.symbol
+                })}
+              </span>
+            </div>
+          </BatchTransferEthTooltip>
         )}
       </div>
       <div className="flex items-center space-x-2">
