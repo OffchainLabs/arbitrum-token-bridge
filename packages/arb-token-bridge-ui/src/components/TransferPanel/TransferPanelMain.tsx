@@ -27,7 +27,6 @@ import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { Balances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
@@ -265,13 +264,7 @@ export function TransferPanelMain() {
 
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
-  const {
-    ethParentBalance,
-    erc20ParentBalances,
-    updateErc20ParentBalances,
-    ethChildBalance,
-    updateErc20ChildBalances
-  } = useBalances()
+  const { updateErc20ParentBalances, updateErc20ChildBalances } = useBalances()
 
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
@@ -316,19 +309,6 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
-  // TODO: move into a hook (FS-714)
-  // when customFeeTokenBalances is moved to an independent hook file, use `setAmount` directly in useMaxAmount and do not pass `customFeeTokenBalances` as a prop
-  const customFeeTokenBalances: Balances = useMemo(() => {
-    if (!nativeCurrency.isCustom) {
-      return { parentBalance: ethParentBalance, childBalance: ethChildBalance }
-    }
-
-    return {
-      parentBalance: erc20ParentBalances?.[nativeCurrency.address] ?? null,
-      childBalance: ethChildBalance
-    }
-  }, [nativeCurrency, ethParentBalance, ethChildBalance, erc20ParentBalances])
-
   const showUSDCSpecificInfo =
     !isTeleportMode &&
     ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
@@ -345,17 +325,11 @@ export function TransferPanelMain() {
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <SourceNetworkBox
-        customFeeTokenBalances={customFeeTokenBalances}
-        showUsdcSpecificInfo={showUSDCSpecificInfo}
-      />
+      <SourceNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
 
       <SwitchNetworksButton />
 
-      <DestinationNetworkBox
-        customFeeTokenBalances={customFeeTokenBalances}
-        showUsdcSpecificInfo={showUSDCSpecificInfo}
-      />
+      <DestinationNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
 
       <TransferDisabledDialog />
     </div>

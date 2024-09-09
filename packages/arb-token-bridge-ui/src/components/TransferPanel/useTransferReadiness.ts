@@ -31,6 +31,7 @@ import { isNetwork } from '../../util/networks'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { formatAmount } from '../../util/NumberUtils'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -411,7 +412,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
                 errorMessages: {
                   inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
                     asset: ether.symbol,
-                    chain: networks.sourceChain.name
+                    chain: networks.sourceChain.name,
+                    balance: formatAmount(ethBalanceFloat),
+                    requiredBalance: formatAmount(estimatedL1GasFees)
                   })
                 }
               })
@@ -423,7 +426,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
                 errorMessages: {
                   inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
                     asset: nativeCurrency.symbol,
-                    chain: networks.sourceChain.name
+                    chain: networks.sourceChain.name,
+                    balance: formatAmount(customFeeTokenL1BalanceFloat),
+                    requiredBalance: formatAmount(estimatedL2GasFees)
                   })
                 }
               })
@@ -445,7 +450,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
                 inputAmount1: notEnoughEthForGasFees
                   ? getInsufficientFundsForGasFeesErrorMessage({
                       asset: ether.symbol,
-                      chain: networks.sourceChain.name
+                      chain: networks.sourceChain.name,
+                      balance: formatAmount(ethBalanceFloat),
+                      requiredBalance: formatAmount(
+                        estimatedL1GasFees + estimatedL2GasFees
+                      )
                     })
                   : undefined,
                 inputAmount2:
@@ -470,7 +479,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
               errorMessages: {
                 inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
                   asset: ether.symbol,
-                  chain: networks.sourceChain.name
+                  chain: networks.sourceChain.name,
+                  balance: formatAmount(ethBalanceFloat),
+                  requiredBalance: formatAmount(
+                    estimatedL1GasFees + estimatedL2GasFees
+                  )
                 })
               }
             })
@@ -488,7 +501,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             errorMessages: {
               inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
                 asset: nativeCurrency.symbol,
-                chain: networks.sourceChain.name
+                chain: networks.sourceChain.name,
+                balance: formatAmount(ethBalanceFloat),
+                requiredBalance: formatAmount(total)
               })
             }
           })

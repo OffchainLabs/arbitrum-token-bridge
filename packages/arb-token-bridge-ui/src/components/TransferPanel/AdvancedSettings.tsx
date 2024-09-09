@@ -261,6 +261,7 @@ export const AdvancedSettings = () => {
               onChange={e =>
                 setDestinationAddress(e.target.value?.toLowerCase().trim())
               }
+              aria-label="Custom Destination Address Input"
             />
             {isEOA && (
               <button
