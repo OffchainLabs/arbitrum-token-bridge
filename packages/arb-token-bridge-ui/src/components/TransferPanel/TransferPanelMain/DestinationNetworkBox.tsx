@@ -116,7 +116,7 @@ function DestinationNetworkBalance({
     )
   }
 
-  return <NativeCurrencyDestinationBalance prefix="Balance :" />
+  return <NativeCurrencyDestinationBalance prefix="Balance: " />
 }
 
 export function DestinationNetworkBox({
