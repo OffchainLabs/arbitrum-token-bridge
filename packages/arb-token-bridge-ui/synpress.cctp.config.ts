@@ -51,14 +51,6 @@ if (typeof INFURA_KEY === 'undefined') {
   throw new Error('Infura API key not provided')
 }
 
-const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
-const sepoliaRpcUrl =
-  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
-const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
-
-const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
-const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
-
 if (!process.env.PRIVATE_KEY_CCTP) {
   throw new Error('PRIVATE_KEY_CCTP variable missing.')
 }
@@ -66,6 +58,14 @@ if (!process.env.PRIVATE_KEY_CCTP) {
 if (!process.env.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
+
+const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
+const sepoliaRpcUrl =
+  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
+
+const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
+const arbSepoliaProvider = new StaticJsonRpcProvider(arbSepoliaRpcUrl)
 
 // Wallet funded on Sepolia and ArbSepolia with ETH and USDC
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CCTP)
