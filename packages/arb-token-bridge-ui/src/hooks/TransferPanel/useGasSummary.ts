@@ -1,5 +1,4 @@
 import { constants, utils } from 'ethers'
-import { useAccount } from 'wagmi'
 import { useMemo } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'
 
@@ -40,7 +39,6 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const { address: walletAddress } = useAccount()
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
@@ -64,9 +62,6 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
-      walletAddress,
-      sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id,
       amount: amountBigNumber,
       sourceChainErc20Address: isDepositMode
         ? token?.address
@@ -131,43 +126,27 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (typeof walletAddress !== 'undefined' && !balance) {
+    if (balance === null) {
       return {
         status: 'loading',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
       }
     }
 
-    // If user has input an amount over their balance, don't estimate gas
-    if (
-      typeof walletAddress !== 'undefined' &&
-      balance &&
-      amountBigNumber.gt(balance)
-    ) {
+    if (balance && amountBigNumber.gt(balance)) {
       return {
         status: 'insufficientBalance',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
-      }
-    }
-
-    if (
-      typeof estimatedParentChainGasFees === 'undefined' ||
-      typeof estimatedChildChainGasFees === 'undefined'
-    ) {
-      return {
-        status: 'loading',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
       }
     }
 
     if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
       return {
         status: 'error',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
       }
     }
 
@@ -179,7 +158,6 @@ export function useGasSummary(): UseGasSummaryResult {
   }, [
     isDepositMode,
     token?.address,
-    walletAddress,
     balance,
     amountBigNumber,
     estimatedParentChainGasFees,
