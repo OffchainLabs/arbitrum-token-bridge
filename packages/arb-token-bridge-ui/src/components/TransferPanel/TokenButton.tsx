@@ -90,7 +90,7 @@ export function TokenButton({
                     className="h-5 w-5 sm:h-7 sm:w-7"
                   />
                 )} */}
-                <span className="text-xl font-light sm:text-3xl">
+                <span className="text-xl font-light">
                   {isLoadingToken ? (
                     <Loader size="medium" color="white" />
                   ) : (
