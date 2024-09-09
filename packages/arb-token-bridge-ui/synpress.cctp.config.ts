@@ -1,4 +1,4 @@
-import { BigNumber, Wallet, utils } from 'ethers'
+import { BigNumber, Contract, ContractFactory, Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -13,6 +13,9 @@ import {
 import specFiles from './tests/e2e/cctp.json'
 import { CommonAddress } from './src/util/CommonAddressUtils'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { TokenMessengerAbi } from './src/util/cctp/TokenMessengerAbi'
+import { ChainDomain } from './src/pages/api/cctp/[type]'
+import { Address } from 'wagmi'
 
 export async function fundUsdc({
   address, // wallet address where funding is required
@@ -119,21 +122,53 @@ async function fundWallets() {
   const usdcAmount = utils.parseUnits('0.0006', 6)
   const ethAmountSepolia = utils.parseEther('0.01')
   const ethAmountArbSepolia = utils.parseEther('0.002')
-  const ethPromises: (() => Promise<void>)[] = []
-  const usdcPromises: (() => Promise<void>)[] = []
+  // const ethPromises: (() => Promise<void>)[] = []
+  // const usdcPromises: (() => Promise<void>)[] = []
 
-  if (tests.some(testFile => testFile.includes('deposit'))) {
-    ethPromises.push(fundEthHelper('sepolia'))
-    usdcPromises.push(fundUsdcHelper('sepolia'))
-  }
+  // if (tests.some(testFile => testFile.includes('deposit'))) {
+  //   ethPromises.push(fundEthHelper('sepolia'))
+  //   usdcPromises.push(fundUsdcHelper('sepolia'))
+  // }
 
-  if (tests.some(testFile => testFile.includes('withdraw'))) {
-    ethPromises.push(fundEthHelper('arbSepolia'))
-    usdcPromises.push(fundUsdcHelper('arbSepolia'))
-  }
+  // if (tests.some(testFile => testFile.includes('withdraw'))) {
+  //   ethPromises.push(fundEthHelper('arbSepolia'))
+  //   usdcPromises.push(fundUsdcHelper('arbSepolia'))
+  // }
 
-  await Promise.all(ethPromises.map(fn => fn()))
-  await Promise.all(usdcPromises.map(fn => fn()))
+  // await Promise.all(ethPromises.map(fn => fn()))
+  // await Promise.all(usdcPromises.map(fn => fn()))
+  await fundEthHelper('sepolia')()
+  await fundUsdcHelper('sepolia')()
+}
+
+async function createDepositTx(destinationAddress: Address) {
+  const signer = userWallet.connect(sepoliaProvider)
+  const usdcContract = ERC20__factory.connect(
+    CommonAddress.Sepolia.USDC,
+    signer
+  )
+
+  const tx = await usdcContract.functions.approve(
+    CommonAddress.Sepolia.tokenMessengerContractAddress,
+    utils.parseUnits('0.00011', 6)
+  )
+
+  await tx.wait()
+
+  const tokenMessenger = new Contract(
+    CommonAddress.Sepolia.tokenMessengerContractAddress,
+    TokenMessengerAbi,
+    signer
+  )
+
+  await tokenMessenger.deployed()
+
+  return await tokenMessenger.depositForBurn(
+    utils.parseUnits('0.00011', 6),
+    ChainDomain.ArbitrumOne,
+    utils.hexlify(utils.zeroPad(destinationAddress, 32)),
+    CommonAddress.Sepolia.USDC
+  )
 }
 
 export default defineConfig({
@@ -144,12 +179,21 @@ export default defineConfig({
 
       await fundWallets()
 
+      const customAddress = await getCustomDestinationAddress()
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.PRIVATE_KEY_CCTP = process.env.PRIVATE_KEY_CCTP
       config.env.SEPOLIA_INFURA_RPC_URL = sepoliaRpcUrl
       config.env.ARB_SEPOLIA_INFURA_RPC_URL = arbSepoliaRpcUrl
-      config.env.CUSTOM_DESTINATION_ADDRESS =
-        await getCustomDestinationAddress()
+      config.env.CUSTOM_DESTINATION_ADDRESS = customAddress
+
+      /**
+       * Currently, we can't confirm transaction on Sepolia, we need to programmatically deposit on Sepolia
+       * And claim on ArbSepolia
+       */
+      await Promise.all([
+        createDepositTx(userWallet.address as Address),
+        createDepositTx(customAddress as Address)
+      ])
 
       setupCypressTasks(on, { requiresNetworkSetup: false })
       synpressPlugins(on, config)
