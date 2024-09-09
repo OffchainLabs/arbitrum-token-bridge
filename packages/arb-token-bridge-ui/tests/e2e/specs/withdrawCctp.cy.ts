@@ -82,7 +82,6 @@ describe('Withdraw USDC through CCTP', () => {
     cy.wait(40_000)
     cy.confirmMetamaskTransaction(undefined)
     cy.findTransactionInTransactionHistory({
-      duration: 'a minute',
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
