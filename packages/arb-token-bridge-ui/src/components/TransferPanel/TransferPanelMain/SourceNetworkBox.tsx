@@ -171,9 +171,9 @@ export function SourceNetworkBox({
                 decimals={nativeCurrency.decimals}
               />
               <p className="mt-1 text-xs font-light text-white">
-                You are able to move ETH in the same transaction, but you are
-                not required to do so. This is the minimum ETH amount you will
-                get, but you may get a bit more dependent on the gas usage.
+                You can transfer ETH in the same transaction if you wish to.
+                This is the approximate amount you will receive. The final
+                amount depends on actual gas usage.
               </p>
             </>
           )}
