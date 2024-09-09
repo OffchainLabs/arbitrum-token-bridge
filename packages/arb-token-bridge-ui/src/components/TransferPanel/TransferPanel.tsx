@@ -73,6 +73,7 @@ import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { normalizeTimestamp } from '../../state/app/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -829,7 +830,7 @@ export function TransferPanel() {
 
     const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
-    const timestampCreated = Math.floor(Date.now() / 1000).toString()
+    const timestampCreated = String(normalizeTimestamp(Date.now()))
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,

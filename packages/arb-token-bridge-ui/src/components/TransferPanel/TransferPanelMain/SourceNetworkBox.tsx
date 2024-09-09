@@ -1,5 +1,12 @@
-import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
+import {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { utils } from 'ethers'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -27,14 +34,36 @@ import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmoun
 import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
+
+function Amount2ToggleButton({
+  onClick
+}: {
+  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
+}) {
+  return (
+    <Button
+      variant="secondary"
+      className="border-white/30 shadow-2"
+      onClick={onClick}
+    >
+      <div className="flex items-center space-x-1">
+        <PlusCircleIcon width={18} />
+        <span>Add ETH</span>
+      </div>
+    </Button>
+  )
+}
 
 export function SourceNetworkBox({
   showUsdcSpecificInfo
 }: {
   showUsdcSpecificInfo: boolean
 }) {
+  const [isAmount2InputVisible, setIsAmount2InputVisible] = useState(false)
+
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -121,17 +150,32 @@ export function SourceNetworkBox({
             decimals={decimals}
           />
 
-          {isBatchTransferSupported && (
-            <TransferPanelMainInput
-              maxButtonOnClick={amount2MaxButtonOnClick}
-              errorMessage={errorMessages?.inputAmount2}
-              value={amount2}
-              onChange={handleAmount2Change}
-              options={tokenButtonOptionsAmount2}
-              maxAmount={maxAmount2}
-              isMaxAmount={isMaxAmount2}
-              decimals={nativeCurrency.decimals}
-            />
+          {isBatchTransferSupported && !isAmount2InputVisible && (
+            <div className="flex justify-end">
+              <Amount2ToggleButton
+                onClick={() => setIsAmount2InputVisible(true)}
+              />
+            </div>
+          )}
+
+          {isBatchTransferSupported && isAmount2InputVisible && (
+            <>
+              <TransferPanelMainInput
+                maxButtonOnClick={amount2MaxButtonOnClick}
+                errorMessage={errorMessages?.inputAmount2}
+                value={amount2}
+                onChange={handleAmount2Change}
+                options={tokenButtonOptionsAmount2}
+                maxAmount={maxAmount2}
+                isMaxAmount={isMaxAmount2}
+                decimals={nativeCurrency.decimals}
+              />
+              <p className="mt-1 text-xs font-light text-white">
+                You can transfer ETH in the same transaction if you wish to.
+                This is the approximate amount you will receive. The final
+                amount depends on actual gas usage.
+              </p>
+            </>
           )}
 
           {showUsdcSpecificInfo && (

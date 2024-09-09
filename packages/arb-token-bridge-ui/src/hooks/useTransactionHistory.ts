@@ -20,7 +20,7 @@ import {
 import { isTeleportTx, Transaction } from './useTransactions'
 import { MergedTransaction } from '../state/app/state'
 import {
-  getStandardizedTimestamp,
+  normalizeTimestamp,
   transformDeposit,
   transformWithdrawal
 } from '../state/app/utils'
@@ -90,30 +90,28 @@ export type Transfer =
   | MergedTransaction
   | TeleportFromSubgraph
 
-function getStandardizedTimestampByTx(tx: Transfer) {
+function getTransactionTimestamp(tx: Transfer) {
   if (isCctpTransfer(tx)) {
-    return (tx.createdAt ?? 0) / 1_000
+    return normalizeTimestamp(tx.createdAt ?? 0)
   }
 
   if (isTransferTeleportFromSubgraph(tx)) {
-    return tx.timestamp
+    return normalizeTimestamp(tx.timestamp)
   }
 
   if (isDeposit(tx)) {
-    return tx.timestampCreated ?? 0
+    return normalizeTimestamp(tx.timestampCreated ?? 0)
   }
 
   if (isWithdrawalFromSubgraph(tx)) {
-    return getStandardizedTimestamp(tx.l2BlockTimestamp)
+    return normalizeTimestamp(tx.l2BlockTimestamp)
   }
 
-  return getStandardizedTimestamp(tx.timestamp ?? '0')
+  return normalizeTimestamp(tx.timestamp?.toNumber() ?? 0)
 }
 
 function sortByTimestampDescending(a: Transfer, b: Transfer) {
-  return getStandardizedTimestampByTx(a) > getStandardizedTimestampByTx(b)
-    ? -1
-    : 1
+  return getTransactionTimestamp(a) > getTransactionTimestamp(b) ? -1 : 1
 }
 
 function getMultiChainFetchList(): ChainPair[] {
