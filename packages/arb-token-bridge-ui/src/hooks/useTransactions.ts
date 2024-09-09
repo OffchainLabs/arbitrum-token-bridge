@@ -133,7 +133,7 @@ export interface DepositTransaction extends Transaction {
   type: 'deposit' | 'deposit-l1'
 }
 
-export function isTeleporterTransaction(
+export function isTeleportTx(
   tx: Transaction | MergedTransaction
 ): tx is TeleporterTransaction | TeleporterMergedTransaction {
   return (tx as TeleporterTransaction).l2ToL3MsgData !== undefined

@@ -38,8 +38,8 @@ import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { BridgeTokenList, fetchTokenListFromURL } from '../util/TokenListUtils'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -220,7 +220,7 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
         // while deriving the child-chain address, it can be a teleport transfer too, in that case derive L3 address from L1 address
         // else, derive the L2 address from L1 address OR L3 address from L2 address
         if (
-          isTeleport({
+          isValidTeleportChainPair({
             sourceChainId: parentChain.id,
             destinationChainId: childChain.id
           })
