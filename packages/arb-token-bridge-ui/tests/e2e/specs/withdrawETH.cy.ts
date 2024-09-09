@@ -86,12 +86,12 @@ describe('Withdraw ETH', () => {
           amount: ETHToWithdraw,
           symbol: 'ETH'
         })
-      })
 
-      it('transfer panel amount should be reset', () => {
-        cy.closeTransactionHistoryPanel()
-        cy.findAmountInput().should('have.value', '')
-        cy.findMoveFundsButton().should('be.disabled')
+        context('transfer panel amount should be reset', () => {
+          cy.closeTransactionHistoryPanel()
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
+        })
       })
 
       it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
