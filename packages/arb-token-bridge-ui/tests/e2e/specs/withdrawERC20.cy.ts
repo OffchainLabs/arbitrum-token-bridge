@@ -134,6 +134,12 @@ describe('Withdraw ERC20 Token', () => {
             symbol: testCase.symbol
           })
         })
+
+        context('transfer panel amount should be reset', () => {
+          cy.closeTransactionHistoryPanel()
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
+        })
       })
 
       it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
@@ -163,7 +169,7 @@ describe('Withdraw ERC20 Token', () => {
           })}`
         ).should('be.visible')
 
-        cy.findByLabelText('Close side panel').click()
+        cy.closeTransactionHistoryPanel()
 
         cy.searchAndSelectToken({
           tokenName: testCase.symbol,
@@ -250,13 +256,16 @@ describe('Withdraw ERC20 Token', () => {
 
           // close popup
           cy.closeTransactionDetails()
-          cy.findByLabelText('Close side panel').click()
+          cy.closeTransactionHistoryPanel()
 
           // the balance on the source chain should not be the same as before
           cy.findByLabelText(`${testCase.symbol} balance amount on childChain`)
             .should('be.visible')
             .its('text')
             .should('not.eq', l2ERC20bal)
+
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
         })
       })
 

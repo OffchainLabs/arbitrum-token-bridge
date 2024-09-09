@@ -88,6 +88,12 @@ describe('Withdraw ETH', () => {
         })
       })
 
+      it('transfer panel amount should be reset', () => {
+        cy.closeTransactionHistoryPanel()
+        cy.findAmountInput().should('have.value', '')
+        cy.findMoveFundsButton().should('be.disabled')
+      })
+
       it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
         // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
         cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
@@ -114,7 +120,7 @@ describe('Withdraw ETH', () => {
           })}`
         ).should('be.visible')
 
-        cy.findByLabelText('Close side panel').click()
+        cy.closeTransactionHistoryPanel()
 
         // the balance on the destination chain should not be the same as before
         cy.findByLabelText('ETH balance amount on parentChain')
