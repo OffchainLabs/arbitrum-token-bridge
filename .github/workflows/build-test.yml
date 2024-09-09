@@ -154,22 +154,17 @@ jobs:
         uses: actions/checkout@v4
 
       - id: set-matrix
-        run: |
-          content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output .`
-          echo "e2eFiles=$content" >> $GITHUB_OUTPUT
+        run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js | jq . --compact-output)" >> $GITHUB_OUTPUT
 
-  # based on https://github.com/Synthetixio/synpress/blob/dev/.github/workflows/e2e_cypress-action.yml
   test-e2e:
-    name: "Test E2E${{ matrix.orbit-test == '1' && ' with L3' || '' }} - ${{ matrix.tests.name }}"
+    name: "Test E2E ${{ (matrix.test.type == 'cctp' && 'CCTP') || (matrix.test.orbitTest == '1' && 'with L3') || '' }} - ${{ matrix.test.name }}"
     runs-on: ubuntu-latest
     needs: [build, check-files, check-is-hotfix, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
     strategy:
       fail-fast: false # If one test fails, let the other tests run
       matrix:
-        tests:
-          ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
-        orbit-test: ['0', '1']
+        test: ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -214,27 +209,29 @@ jobs:
           DISPLAY: :0.0
 
       - name: Run nitro testnode
+        if: matrix.test.type == 'regular'
         uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
-          l3-node: ${{ matrix.orbit-test == '1' }}
-          no-l3-token-bridge: ${{ matrix.orbit-test == '0' }}
+          l3-node: ${{ matrix.test.orbitTest == '1' }}
+          no-l3-token-bridge: ${{ matrix.test.orbitTest == '0' }}
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
         with:
           start: yarn start
-          command: ${{ matrix.orbit-test == '1' && 'yarn test:e2e:orbit --browser chromium' || 'yarn test:e2e --browser chromium' }}
+          command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.orbitTest == '1' && ':orbit') || '' }} --browser chromium"
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
         env:
           DISPLAY: :0.0
-          TEST_FILE: ${{ matrix.tests.file }}
+          TEST_FILE: ${{ matrix.test.file }}
           SKIP_METAMASK_SETUP: true
-          CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
+          CYPRESS_RECORD_VIDEO: ${{ matrix.test.recordVideo }}
           PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
           PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
           NEXT_PUBLIC_IS_E2E_TEST: true
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
@@ -245,17 +242,16 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}-${{ matrix.tests.name }}
+          name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}-${{ matrix.test.name }}-${{ matrix.test.type }}-${{ matrix.test.orbitTest }}
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots
           if-no-files-found: 'ignore'
         continue-on-error: true
-
       - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1
-
+  
   test-e2e-success:
     name: "Test E2E Success"
     runs-on: ubuntu-latest
@@ -269,7 +265,6 @@ jobs:
       - name: E2E Failed
         if: needs.test-e2e.result != 'success' && needs.test-e2e.result != 'skipped'
         run: exit 1
-
   clean-up:
     name: "Clean Up"
     runs-on: ubuntu-latest
