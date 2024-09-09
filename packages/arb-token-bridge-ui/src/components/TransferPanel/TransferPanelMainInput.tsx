@@ -6,7 +6,6 @@ import React, {
 } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 
 import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -22,18 +21,6 @@ import { Loader } from '../common/atoms/Loader'
 import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
-
-function CollapseInputButton({
-  onClick
-}: {
-  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
-}) {
-  return (
-    <button onClick={onClick} className="arb-hover text-gray-6">
-      <XMarkIcon width={18} />
-    </button>
-  )
-}
 
 function MaxButton({
   className = '',

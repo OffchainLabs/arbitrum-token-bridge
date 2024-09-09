@@ -1,4 +1,3 @@
-import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import {
   ChangeEventHandler,
   useCallback,
@@ -7,6 +6,7 @@ import {
   useState
 } from 'react'
 import { utils } from 'ethers'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 
 import { getNetworkName } from '../../../util/networks'
 import {
