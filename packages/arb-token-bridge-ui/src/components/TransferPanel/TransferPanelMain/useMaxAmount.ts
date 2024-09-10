@@ -3,17 +3,15 @@ import { utils } from 'ethers'
 
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useAppState } from '../../../state'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 export function useMaxAmount() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const selectedTokenBalances = useSelectedTokenBalances()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =

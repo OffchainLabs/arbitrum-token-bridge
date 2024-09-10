@@ -1,16 +1,14 @@
-import { useAppState } from '../../state'
 import { isExperimentalFeatureEnabled } from '../../util'
 import { useNativeCurrency } from '../useNativeCurrency'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
+import { useSelectedToken } from '../useSelectedToken'
 
 export const useIsBatchTransferSupported = () => {
   const [networks] = useNetworks()
   const { isDepositMode, isTeleportMode, childChainProvider } =
     useNetworksRelationship(networks)
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   if (!isExperimentalFeatureEnabled('batch')) {

@@ -6,7 +6,6 @@ import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
-import { useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useDestinationAddressStore } from './AdvancedSettings'
@@ -27,6 +26,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
@@ -255,10 +255,7 @@ export function TransferPanelMain() {
 
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   const { address: walletAddress } = useAccount()
 

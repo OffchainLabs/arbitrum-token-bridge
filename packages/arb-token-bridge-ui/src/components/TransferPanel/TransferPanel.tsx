@@ -28,7 +28,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  isGatewayRegistered
+  isGatewayRegistered,
+  isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -55,8 +56,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
-  getWarningTokenDescription,
-  useTokenFromSearchParams
+  getWarningTokenDescription
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransferReadiness } from './useTransferReadiness'
@@ -78,9 +78,12 @@ import {
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useTokenLists } from '../../hooks/useTokenLists'
 import { normalizeTimestamp } from '../../state/app/utils'
 
 const networkConnectionWarningToast = () =>
@@ -96,9 +99,7 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const { tokenFromSearchParams, setTokenQueryParam } =
-    useTokenFromSearchParams()
-
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
@@ -109,12 +110,12 @@ export function TransferPanel() {
   const {
     app: {
       connectionState,
-      selectedToken,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token },
       warningTokens
     }
   } = useAppState()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()
@@ -132,6 +133,9 @@ export function TransferPanel() {
     isTeleportMode
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
+  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -195,7 +199,7 @@ export function TransferPanel() {
   )
 
   function closeWithResetTokenImportDialog() {
-    setTokenQueryParam(undefined)
+    setSelectedToken(null)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
     tokenImportDialogProps.onClose(false)
   }
@@ -210,6 +214,52 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
+
+  const isTokenAlreadyImported = useMemo(() => {
+    const tokenLowercased = tokenFromSearchParams?.toLowerCase()
+
+    if (!tokenLowercased) {
+      return true
+    }
+
+    if (isTokenNativeUSDC(tokenLowercased)) {
+      return true
+    }
+
+    if (isLoadingTokenLists) {
+      return undefined
+    }
+
+    // only show import token dialog if the token is not part of the list
+    // otherwise we show a loader in the TokenButton
+    if (!tokensFromLists) {
+      return undefined
+    }
+
+    if (!tokensFromUser) {
+      return undefined
+    }
+
+    return (
+      typeof tokensFromLists[tokenLowercased] !== 'undefined' ||
+      typeof tokensFromUser[tokenLowercased] !== 'undefined'
+    )
+  }, [
+    isLoadingTokenLists,
+    tokenFromSearchParams,
+    tokensFromLists,
+    tokensFromUser
+  ])
+
+  const importDialogTokenAddress = useMemo(() => {
+    if (
+      typeof isTokenAlreadyImported === 'undefined' ||
+      isTokenAlreadyImported
+    ) {
+      return undefined
+    }
+    return tokenFromSearchParams
+  }, [isTokenAlreadyImported, tokenFromSearchParams])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -1127,11 +1177,11 @@ export function TransferPanel() {
           )}
         </div>
 
-        {typeof tokenFromSearchParams !== 'undefined' && (
+        {importDialogTokenAddress && (
           <TokenImportDialog
             {...tokenImportDialogProps}
             onClose={closeWithResetTokenImportDialog}
-            tokenAddress={tokenFromSearchParams}
+            tokenAddress={importDialogTokenAddress}
           />
         )}
 

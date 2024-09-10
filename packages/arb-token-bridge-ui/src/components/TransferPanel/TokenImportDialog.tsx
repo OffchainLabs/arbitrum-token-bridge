@@ -4,7 +4,7 @@ import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
-import { useActions, useAppState } from '../../state'
+import { useAppState } from '../../state'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
@@ -23,6 +23,7 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 enum ImportStatus {
   LOADING,
@@ -67,10 +68,10 @@ export function TokenImportDialog({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token },
-      selectedToken
+      arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -80,7 +81,6 @@ export function TokenImportDialog({
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
-  const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
   const latestTokensFromUser = useLatest(tokensFromUser)
@@ -179,9 +179,9 @@ export function TokenImportDialog({
   const selectToken = useCallback(
     async (_token: ERC20BridgeToken) => {
       await token.updateTokenData(_token.address)
-      actions.app.setSelectedToken(_token)
+      setSelectedToken(_token.address)
     },
-    [token, actions]
+    [token, setSelectedToken]
   )
 
   useEffect(() => {
@@ -260,7 +260,6 @@ export function TokenImportDialog({
     l1Address,
     onClose,
     selectToken,
-    selectedToken,
     tokensFromUser
   ])
 
