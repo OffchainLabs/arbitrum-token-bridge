@@ -7,7 +7,6 @@ import {
 import { Chain } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
-import { useAppState } from '../../state'
 import {
   listIdsToNames,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
@@ -30,6 +29,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useBridgeTokensStore } from '../../hooks/useArbTokenBridge'
 import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
 
@@ -237,11 +237,7 @@ function ArbitrumTokenBadge() {
 }
 
 function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens }
-    }
-  } = useAppState()
+  const { bridgeTokens } = useBridgeTokensStore()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { balance, symbol } = useTokenInfo(token)
 

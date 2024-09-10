@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useAccount, useSigner } from 'wagmi'
 
-import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
@@ -13,6 +12,7 @@ import { useTransactionHistory } from './useTransactionHistory'
 import dayjs from 'dayjs'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
+import { useArbTokenBridge } from './useArbTokenBridge'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
@@ -25,8 +25,9 @@ export function useClaimWithdrawal(
   tx: MergedTransaction
 ): UseClaimWithdrawalResult {
   const {
-    app: { arbTokenBridge }
-  } = useAppState()
+    eth: { triggerOutbox: ethTriggerOutbox },
+    token: { triggerOutbox: erc20TriggerOutbox }
+  } = useArbTokenBridge()
   const { address } = useAccount()
   const { data: signer } = useSigner({ chainId: tx.parentChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
@@ -85,12 +86,12 @@ export function useClaimWithdrawal(
         throw 'Signer is undefined'
       }
       if (tx.assetType === AssetType.ETH) {
-        res = await arbTokenBridge.eth.triggerOutbox({
+        res = await ethTriggerOutbox({
           event: extendedEvent,
           l1Signer: signer
         })
       } else {
-        res = await arbTokenBridge.token.triggerOutbox({
+        res = await erc20TriggerOutbox({
           event: extendedEvent,
           l1Signer: signer
         })
@@ -127,8 +128,8 @@ export function useClaimWithdrawal(
       setParentChainTxDetailsOfWithdrawalClaimTx(tx, txHash)
     }
   }, [
-    arbTokenBridge.eth,
-    arbTokenBridge.token,
+    erc20TriggerOutbox,
+    ethTriggerOutbox,
     isClaiming,
     signer,
     tx,
