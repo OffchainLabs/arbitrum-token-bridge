@@ -1,5 +1,6 @@
 import { useAppState } from '../../state'
 import { isExperimentalFeatureEnabled } from '../../util'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../useNativeCurrency'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
@@ -20,6 +21,9 @@ export const useIsBatchTransferSupported = () => {
     return false
   }
   if (!isDepositMode) {
+    return false
+  }
+  if (isTokenNativeUSDC(selectedToken.address)) {
     return false
   }
   // TODO: teleport is disabled for now but it needs to be looked into more to check whether it is or can be supported
