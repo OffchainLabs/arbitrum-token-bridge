@@ -251,7 +251,10 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             <NativeCurrencyPrice amount={Number(amount)} showBrackets />
           )}
           {isBatchTransferSupported && Number(amount2) > 0 && (
-            <span> + {amount2} ETH</span>
+            <span>
+              {' '}
+              + {amount2} {childChainNativeCurrency.symbol}
+            </span>
           )}
         </span>
       </div>

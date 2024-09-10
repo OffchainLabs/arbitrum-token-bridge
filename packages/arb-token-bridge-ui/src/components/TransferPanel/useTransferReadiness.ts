@@ -236,16 +236,17 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
-    const sendsAdditionalEth = Number(amount2) > 0
-    const notEnoughEthForAdditionalEthTransfer =
-      Number(amount2) >
-      ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
+    const sendsAmount2 = Number(amount2) > 0
+    const notEnoughAmount2 = nativeCurrency.isCustom
+      ? Number(amount2) > Number(customFeeTokenL1BalanceFloat)
+      : Number(amount2) >
+        ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
 
     if (isNaN(Number(amount)) || Number(amount) === 0) {
       return notReady({
         errorMessages: {
           inputAmount2:
-            sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+            sendsAmount2 && notEnoughAmount2
               ? getInsufficientFundsErrorMessage({
                   asset: ether.symbol,
                   chain: networks.sourceChain.name
@@ -337,7 +338,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
               chain: networks.sourceChain.name
             }),
             inputAmount2:
-              sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+              sendsAmount2 && notEnoughAmount2
                 ? getInsufficientFundsErrorMessage({
                     asset: ether.symbol,
                     chain: networks.sourceChain.name
@@ -443,10 +444,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           const notEnoughEthForGasFees =
             estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat
 
-          if (
-            notEnoughEthForGasFees ||
-            (sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer)
-          ) {
+          if (notEnoughEthForGasFees || (sendsAmount2 && notEnoughAmount2)) {
             return notReady({
               errorMessages: {
                 inputAmount1: notEnoughEthForGasFees
@@ -460,7 +458,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
                     })
                   : undefined,
                 inputAmount2:
-                  sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+                  sendsAmount2 && notEnoughAmount2
                     ? getInsufficientFundsErrorMessage({
                         asset: ether.symbol,
                         chain: networks.sourceChain.name
