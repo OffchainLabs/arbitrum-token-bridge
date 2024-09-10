@@ -118,7 +118,7 @@ async function fundWallets() {
    */
   const usdcAmount = utils.parseUnits('0.0006', 6)
   const ethAmountSepolia = utils.parseEther('0.025')
-  const ethAmountArbSepolia = utils.parseEther('0.004')
+  const ethAmountArbSepolia = utils.parseEther('0.006')
   const ethPromises: (() => Promise<void>)[] = []
   const usdcPromises: (() => Promise<void>)[] = []
 
