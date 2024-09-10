@@ -98,11 +98,13 @@ describe('Withdraw USDC through CCTP', () => {
     cy.wait(10_000)
     cy.confirmMetamaskTransaction(undefined)
     const txData = {
-      duration: 'Less than a minute',
       amount: USDCAmountToSend,
       symbol: 'USDC'
     }
-    cy.findTransactionInTransactionHistory(txData)
+    cy.findTransactionInTransactionHistory({
+      duration: 'Less than a minute',
+      ...txData
+    })
     cy.openTransactionDetails(txData)
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
