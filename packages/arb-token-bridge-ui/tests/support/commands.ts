@@ -244,6 +244,10 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function closeTransactionHistoryPanel() {
+  cy.findByLabelText('Close side panel').click()
+}
+
 export function openTransactionDetails({
   amount,
   symbol
@@ -337,6 +341,7 @@ Cypress.Commands.addAll({
   findGasFeeSummary,
   findMoveFundsButton,
   findSelectTokenButton,
+  closeTransactionHistoryPanel,
   openTransactionDetails,
   closeTransactionDetails,
   findTransactionInTransactionHistory,
