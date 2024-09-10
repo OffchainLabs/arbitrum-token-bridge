@@ -92,6 +92,12 @@ describe('Deposit Token', () => {
             symbol: testCase.symbol
           })
         })
+
+        context('transfer panel amount should be reset', () => {
+          cy.closeTransactionHistoryPanel()
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
+        })
       })
 
       it('should deposit ERC-20 to custom destination address successfully', () => {
@@ -170,7 +176,7 @@ describe('Deposit Token', () => {
 
         context('funds should reach destination account successfully', () => {
           // close transaction history
-          cy.findByLabelText('Close side panel').click()
+          cy.closeTransactionHistoryPanel()
 
           // the custom destination address should now have some balance greater than zero
           cy.findByLabelText(`${testCase.symbol} balance amount on childChain`)
@@ -182,6 +188,11 @@ describe('Deposit Token', () => {
             .should('be.visible')
             .its('text')
             .should('not.eq', l1ERC20bal)
+        })
+
+        context('transfer panel amount should be reset', () => {
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
         })
       })
 
