@@ -727,7 +727,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         name: 'tXR',
         symbol: 'tXR',
         decimals: 18,
-        logoUrl: '/images/xrLogo.png'
+        logoUrl: '/images/xrTokenLogo.png'
       }
     }
   }
