@@ -63,6 +63,9 @@ export type TransferProps = {
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
   signer: Signer
+  options?: {
+    approvalAmountIncrease?: BigNumber
+  }
 }
 
 export type ApproveNativeCurrencyEstimateGasProps = {
@@ -73,6 +76,9 @@ export type ApproveNativeCurrencyEstimateGasProps = {
 export type ApproveNativeCurrencyProps = {
   signer: Signer
   amount: BigNumber
+  options?: {
+    approvalAmountIncrease?: BigNumber
+  }
 }
 
 export type RequiresTokenApprovalProps = {
