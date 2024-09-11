@@ -356,13 +356,26 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       }
 
       // Check amount against custom fee token balance
-      if (Number(amount) > customFeeTokenBalanceFloat) {
+      if (
+        Number(amount) > customFeeTokenBalanceFloat ||
+        (sendsAmount2 && notEnoughAmount2)
+      ) {
         return notReady({
           errorMessages: {
-            inputAmount1: getInsufficientFundsErrorMessage({
-              asset: nativeCurrency.symbol,
-              chain: networks.sourceChain.name
-            })
+            inputAmount1:
+              Number(amount) > customFeeTokenBalanceFloat
+                ? getInsufficientFundsErrorMessage({
+                    asset: nativeCurrency.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                : undefined,
+            inputAmount2:
+              sendsAmount2 && notEnoughAmount2
+                ? getInsufficientFundsErrorMessage({
+                    asset: nativeCurrency.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                : undefined
           }
         })
       }
@@ -410,29 +423,55 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             }
 
             // We have to check if there's enough ETH to cover L1 gas
-            if (estimatedL1GasFees > ethBalanceFloat) {
+            if (
+              estimatedL1GasFees > ethBalanceFloat ||
+              (sendsAmount2 && notEnoughAmount2)
+            ) {
               return notReady({
                 errorMessages: {
-                  inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-                    asset: ether.symbol,
-                    chain: networks.sourceChain.name,
-                    balance: formatAmount(ethBalanceFloat),
-                    requiredBalance: formatAmount(estimatedL1GasFees)
-                  })
+                  inputAmount1:
+                    estimatedL1GasFees > ethBalanceFloat
+                      ? getInsufficientFundsForGasFeesErrorMessage({
+                          asset: ether.symbol,
+                          chain: networks.sourceChain.name,
+                          balance: formatAmount(ethBalanceFloat),
+                          requiredBalance: formatAmount(estimatedL1GasFees)
+                        })
+                      : undefined,
+                  inputAmount2:
+                    sendsAmount2 && notEnoughAmount2
+                      ? getInsufficientFundsErrorMessage({
+                          asset: nativeCurrency.symbol,
+                          chain: networks.sourceChain.name
+                        })
+                      : undefined
                 }
               })
             }
 
             // We have to check if there's enough of the custom fee token to cover L2 gas
-            if (estimatedL2GasFees > customFeeTokenL1BalanceFloat) {
+            if (
+              estimatedL2GasFees > customFeeTokenL1BalanceFloat ||
+              (sendsAmount2 && notEnoughAmount2)
+            ) {
               return notReady({
                 errorMessages: {
-                  inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-                    asset: nativeCurrency.symbol,
-                    chain: networks.sourceChain.name,
-                    balance: formatAmount(customFeeTokenL1BalanceFloat),
-                    requiredBalance: formatAmount(estimatedL2GasFees)
-                  })
+                  inputAmount1:
+                    estimatedL2GasFees > customFeeTokenL1BalanceFloat
+                      ? getInsufficientFundsForGasFeesErrorMessage({
+                          asset: nativeCurrency.symbol,
+                          chain: networks.sourceChain.name,
+                          balance: formatAmount(customFeeTokenL1BalanceFloat),
+                          requiredBalance: formatAmount(estimatedL2GasFees)
+                        })
+                      : undefined,
+                  inputAmount2:
+                    sendsAmount2 && notEnoughAmount2
+                      ? getInsufficientFundsErrorMessage({
+                          asset: nativeCurrency.symbol,
+                          chain: networks.sourceChain.name
+                        })
+                      : undefined
                 }
               })
             }
