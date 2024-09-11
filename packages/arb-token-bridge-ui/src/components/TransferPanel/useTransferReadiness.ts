@@ -248,7 +248,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           inputAmount2:
             sendsAmount2 && notEnoughAmount2
               ? getInsufficientFundsErrorMessage({
-                  asset: ether.symbol,
+                  asset: nativeCurrency.symbol,
                   chain: networks.sourceChain.name
                 })
               : undefined
@@ -340,7 +340,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             inputAmount2:
               sendsAmount2 && notEnoughAmount2
                 ? getInsufficientFundsErrorMessage({
-                    asset: ether.symbol,
+                    asset: nativeCurrency.symbol,
                     chain: networks.sourceChain.name
                   })
                 : undefined
@@ -460,7 +460,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
                 inputAmount2:
                   sendsAmount2 && notEnoughAmount2
                     ? getInsufficientFundsErrorMessage({
-                        asset: ether.symbol,
+                        asset: nativeCurrency.symbol,
                         chain: networks.sourceChain.name
                       })
                     : undefined
