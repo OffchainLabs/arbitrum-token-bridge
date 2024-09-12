@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 
 import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
@@ -61,7 +61,7 @@ export const useTransferDuration = (
   const standardDepositDuration = getStandardDepositDuration(isTestnet)
   const orbitDepositDuration = getOrbitDepositDuration(isTestnet)
 
-  if (isTeleport({ sourceChainId, destinationChainId })) {
+  if (isValidTeleportChainPair({ sourceChainId, destinationChainId })) {
     // Deposit only
     return {
       approximateDurationInMinutes:

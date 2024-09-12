@@ -679,6 +679,57 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         logoUrl: '/images/AtlasLogo.png'
       }
     }
+  },
+  2730: {
+    chainId: 2730,
+    confirmPeriodBlocks: 64,
+    ethBridge: {
+      bridge: '0x34C1428F66bB2E418f72DEa75a1f601E0698dEC5',
+      inbox: '0xbC9C0dcb21C53681E6451AB910d78Bc0a3D24742',
+      outbox: '0xBf3226Af95b8603200BdECE1592eA3a6f30a1969',
+      rollup: '0x57af9E93648f7F8c795A0a7D0049B3ef30198bc8',
+      sequencerInbox: '0x45DeF8701582EE64014E6cc9E3039820Ac20349F'
+    },
+    nativeToken: '0x555BF0d9394CC86F0D0D4102916cC6851439dDd0',
+    explorerUrl: 'https://testnet-explorer.xrone.network',
+    rpcUrl: 'https://xr-sepolia-testnet.rpc.caldera.xyz/http',
+    isCustom: true,
+    isTestnet: true,
+    name: 'XR Sepolia',
+    slug: 'xr-sepolia',
+    parentChainId: 421614,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      parentCustomGateway: '0x5F1ac3cd4553bA45fccF135d057795717b37B9Ef',
+      parentErc20Gateway: '0xd0CD7B9F4cB10B21abBfFA874F0d0ad1a41bD51C',
+      parentGatewayRouter: '0x29216c76510df5e90626d39B49e5098ad6e1b4ed',
+      parentMultiCall: '0x3AFeb1Ea760EED35D224C531D531C30eC6aE13e5',
+      parentProxyAdmin: '0xC6333aa27314D5a18f95bca1D54aC1cDc1CD96A0',
+      parentWeth: '0x0000000000000000000000000000000000000000',
+      parentWethGateway: '0x0000000000000000000000000000000000000000',
+      childCustomGateway: '0x8A13D96EFd45923eFAC61cB28740662Ac32C3cD8',
+      childErc20Gateway: '0x84c736079527f13093cDB4382e4A273751904334',
+      childGatewayRouter: '0xFFaD917b6DD1593F8bA36aE2943097deE22EbC9a',
+      childMultiCall: '0x736C61d3b852b42421631A57af78E35E37c784E3',
+      childProxyAdmin: '0x0497357278c9B079e314De0efC48202a2224b374',
+      childWeth: '0x0000000000000000000000000000000000000000',
+      childWethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    bridgeUiConfig: {
+      color: '#03AB2A',
+      network: {
+        name: 'XR Sepolia',
+        logo: '/images/xrLogo.png',
+        description:
+          'XR One is home to the next wave of high impact competitive Web3 & Web2 games.'
+      },
+      nativeTokenData: {
+        name: 'tXR',
+        symbol: 'tXR',
+        decimals: 18,
+        logoUrl: '/images/xrTokenLogo.png'
+      }
+    }
   }
 }
 

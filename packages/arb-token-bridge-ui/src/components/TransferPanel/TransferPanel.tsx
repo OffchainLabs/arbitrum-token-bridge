@@ -81,6 +81,7 @@ import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from 
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { normalizeTimestamp } from '../../state/app/utils'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -756,10 +757,20 @@ export function TransferPanel() {
         return
       }
 
+      const isCustomNativeTokenAmount2 =
+        nativeCurrency.isCustom &&
+        isBatchTransferSupported &&
+        Number(amount2) > 0
+
       const isNativeCurrencyApprovalRequired =
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
-          amount: amountBigNumber
+          amount: amountBigNumber,
+          options: {
+            approvalAmountIncrease: isCustomNativeTokenAmount2
+              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              : undefined
+          }
         })
 
       if (isNativeCurrencyApprovalRequired) {
@@ -769,7 +780,12 @@ export function TransferPanel() {
 
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
-          amount: amountBigNumber
+          amount: amountBigNumber,
+          options: {
+            approvalAmountIncrease: isCustomNativeTokenAmount2
+              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              : undefined
+          }
         })
 
         if (approvalTx) {
@@ -932,7 +948,7 @@ export function TransferPanel() {
 
     const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
-    const timestampCreated = Math.floor(Date.now() / 1000).toString()
+    const timestampCreated = String(normalizeTimestamp(Date.now()))
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
