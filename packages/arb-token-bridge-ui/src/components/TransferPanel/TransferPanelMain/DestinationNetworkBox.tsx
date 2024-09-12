@@ -25,10 +25,10 @@ import {
 } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { ether } from '../../../constants'
 import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
+import { useIsAmount2InputVisible } from './SourceNetworkBox'
 
 function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -156,12 +156,12 @@ export function DestinationNetworkBox({
 }) {
   const [networks] = useNetworks()
   const { destinationAddress } = useDestinationAddressStore()
-  const [{ amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const [
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
+  const { isAmount2InputVisible } = useIsAmount2InputVisible()
 
   return (
     <>
@@ -178,7 +178,7 @@ export function DestinationNetworkBox({
             <DestinationNetworkBalance
               showUsdcSpecificInfo={showUsdcSpecificInfo}
             />
-            {isBatchTransferSupported && Number(amount2) > 0 && (
+            {isBatchTransferSupported && isAmount2InputVisible && (
               <NativeCurrencyDestinationBalance />
             )}
           </BalancesContainer>

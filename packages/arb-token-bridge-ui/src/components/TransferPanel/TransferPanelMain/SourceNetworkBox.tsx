@@ -1,12 +1,7 @@
-import {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
+import { create } from 'zustand'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -57,12 +52,24 @@ function Amount2ToggleButton({
   )
 }
 
+export const useIsAmount2InputVisible = create<{
+  isAmount2InputVisible: boolean
+  showAmount2Input: () => void
+}>(set => ({
+  isAmount2InputVisible: false,
+  showAmount2Input: () => {
+    set(() => ({
+      isAmount2InputVisible: true
+    }))
+  }
+}))
+
 export function SourceNetworkBox({
   showUsdcSpecificInfo
 }: {
   showUsdcSpecificInfo: boolean
 }) {
-  const [isAmount2InputVisible, setIsAmount2InputVisible] = useState(false)
+  const { isAmount2InputVisible, showAmount2Input } = useIsAmount2InputVisible()
 
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
@@ -99,7 +106,7 @@ export function SourceNetworkBox({
 
   useEffect(() => {
     if (isBatchTransferSupported && Number(amount2) > 0) {
-      setIsAmount2InputVisible(true)
+      showAmount2Input()
     }
   }, [isBatchTransferSupported, amount2])
 
@@ -158,9 +165,7 @@ export function SourceNetworkBox({
 
           {isBatchTransferSupported && !isAmount2InputVisible && (
             <div className="flex justify-end">
-              <Amount2ToggleButton
-                onClick={() => setIsAmount2InputVisible(true)}
-              />
+              <Amount2ToggleButton onClick={showAmount2Input} />
             </div>
           )}
 
