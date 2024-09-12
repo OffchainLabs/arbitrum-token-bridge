@@ -253,7 +253,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           {isBatchTransferSupported && Number(amount2) > 0 && (
             <span>
               {' '}
-              and {amount2} {childChainNativeCurrency.symbol}
+              and {formatAmount(Number(amount2))}{' '}
+              {childChainNativeCurrency.symbol}
             </span>
           )}
         </span>
