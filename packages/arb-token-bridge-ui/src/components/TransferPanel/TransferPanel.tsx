@@ -409,7 +409,7 @@ export function TransferPanel() {
 
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet,
+        isSenderSmartContractWallet: isSmartContractWallet,
         isTeleportMode
       })
       if (destinationAddressError) {
@@ -579,7 +579,7 @@ export function TransferPanel() {
 
     const destinationAddressError = await getDestinationAddressError({
       destinationAddress,
-      isSmartContractWallet,
+      isSenderSmartContractWallet: isSmartContractWallet,
       isTeleportMode
     })
     if (destinationAddressError) {
@@ -749,7 +749,7 @@ export function TransferPanel() {
       // if destination address is added, validate it
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet,
+        isSenderSmartContractWallet: isSmartContractWallet,
         isTeleportMode
       })
       if (destinationAddressError) {
