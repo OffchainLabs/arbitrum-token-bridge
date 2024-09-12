@@ -49,7 +49,12 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
     )
   }
   if (!nativeCurrencyBalances.destinationBalance) {
-    return <Loader color="white" size="small" />
+    return (
+      <p className="flex items-center gap-1">
+        <span className="font-light">{prefix}</span>
+        <Loader color="white" size="small" />
+      </p>
+    )
   }
 
   return (
