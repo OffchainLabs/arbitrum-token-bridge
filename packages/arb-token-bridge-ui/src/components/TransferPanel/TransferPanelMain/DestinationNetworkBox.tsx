@@ -28,7 +28,7 @@ import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsB
 import { ether } from '../../../constants'
 import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
-import { useIsAmount2InputVisible } from './SourceNetworkBox'
+import { useAmount2InputVisibility } from './SourceNetworkBox'
 
 function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -161,7 +161,7 @@ export function DestinationNetworkBox({
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
-  const { isAmount2InputVisible } = useIsAmount2InputVisible()
+  const { isAmount2InputVisible } = useAmount2InputVisibility()
 
   return (
     <>

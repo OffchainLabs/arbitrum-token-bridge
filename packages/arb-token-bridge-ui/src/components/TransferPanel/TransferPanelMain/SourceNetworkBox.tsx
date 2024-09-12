@@ -52,7 +52,7 @@ function Amount2ToggleButton({
   )
 }
 
-export const useIsAmount2InputVisible = create<{
+export const useAmount2InputVisibility = create<{
   isAmount2InputVisible: boolean
   showAmount2Input: () => void
 }>(set => ({
@@ -69,7 +69,8 @@ export function SourceNetworkBox({
 }: {
   showUsdcSpecificInfo: boolean
 }) {
-  const { isAmount2InputVisible, showAmount2Input } = useIsAmount2InputVisible()
+  const { isAmount2InputVisible, showAmount2Input } =
+    useAmount2InputVisibility()
 
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
