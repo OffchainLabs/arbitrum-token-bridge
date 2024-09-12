@@ -32,7 +32,21 @@ import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const [networks] = useNetworks()
+  const nativeCurrency = useNativeCurrency({
+    provider: networks.destinationChainProvider
+  })
   const { isDepositMode } = useNetworksRelationship(networks)
+
+  if (nativeCurrency.isCustom) {
+    return (
+      <TokenBalance
+        forToken={nativeCurrency}
+        balance={nativeCurrencyBalances.destinationBalance}
+        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+        prefix={prefix}
+      />
+    )
+  }
 
   return (
     <ETHBalance

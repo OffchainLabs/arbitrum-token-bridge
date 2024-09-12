@@ -13,6 +13,7 @@ import {
   PlusCircleIcon
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 import {
   getStandardizedDate,
@@ -30,10 +31,20 @@ import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { Address } from '../../util/AddressUtils'
+import { MergedTransaction } from '../../state/app/state'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
-export const BatchTransferEthTooltip = ({ children }: PropsWithChildren) => {
+export const BatchTransferNativeTokenTooltip = ({
+  children,
+  tx
+}: PropsWithChildren<{ tx: MergedTransaction }>) => {
+  const childProvider = getProviderForChainId(tx.childChainId)
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
+
   return (
-    <Tooltip content="This is any additional ETH you might have deposited along with your ERC-20, plus the refunded excess gas fee.">
+    <Tooltip
+      content={`This is any additional ${nativeCurrency.symbol} you might have deposited along with your ERC-20, plus the refunded excess gas fee.`}
+    >
       {children}
     </Tooltip>
   )

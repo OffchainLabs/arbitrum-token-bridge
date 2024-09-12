@@ -105,12 +105,9 @@ export function useMaxAmount() {
     if (!isDepositMode) {
       return undefined
     }
-    if (nativeCurrency.isCustom) {
-      return undefined
-    }
 
     return nativeCurrencyMaxAmount
-  }, [isDepositMode, nativeCurrency.isCustom, nativeCurrencyMaxAmount])
+  }, [isDepositMode, nativeCurrencyMaxAmount])
 
   return {
     maxAmount,
