@@ -16,6 +16,8 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { shortenAddress } from '../../util/CommonUtils'
 import { NoteBox } from '../common/NoteBox'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
+import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -34,6 +36,10 @@ export function CustomFeeTokenApprovalDialog(
   const { sourceChain, destinationChain } = networks
   const { parentChain, parentChainProvider } = useNetworksRelationship(networks)
   const { isEthereumMainnet } = isNetwork(parentChain.id)
+  const isBatchTransferSupported = useIsBatchTransferSupported()
+  const [{ amount2 }] = useArbQueryParams()
+
+  const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
   const { data: l1Signer } = useSigner({ chainId: parentChain.id })
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
@@ -141,6 +147,16 @@ export function CustomFeeTokenApprovalDialog(
           as the fee token. Before continuing with your deposit, you must first
           allow the bridge contract to access your{' '}
           <span className="font-medium">{customFeeToken.symbol}</span>.
+          {isBatchTransfer && (
+            <span>
+              {' '}
+              This includes your deposit of{' '}
+              <span className="font-medium">
+                {amount2} {customFeeToken.symbol}
+              </span>{' '}
+              and gas fees.
+            </span>
+          )}
         </span>
 
         <Checkbox

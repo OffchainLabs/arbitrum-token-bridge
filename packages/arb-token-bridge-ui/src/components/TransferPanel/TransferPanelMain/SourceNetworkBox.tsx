@@ -177,7 +177,8 @@ export function SourceNetworkBox({
                 decimals={nativeCurrency.decimals}
               />
               <p className="mt-1 text-xs font-light text-white">
-                You can transfer ETH in the same transaction if you wish to.
+                You can transfer {nativeCurrency.symbol} in the same transaction
+                if you wish to.
               </p>
             </>
           )}
