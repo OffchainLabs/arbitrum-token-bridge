@@ -26,6 +26,36 @@ import {
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+
+function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
+  const [networks] = useNetworks()
+  const nativeCurrency = useNativeCurrency({
+    provider: networks.destinationChainProvider
+  })
+  const { isDepositMode } = useNetworksRelationship(networks)
+
+  if (nativeCurrency.isCustom) {
+    return (
+      <TokenBalance
+        forToken={nativeCurrency}
+        balance={nativeCurrencyBalances.destinationBalance}
+        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+        prefix={prefix}
+      />
+    )
+  }
+
+  return (
+    <ETHBalance
+      balance={nativeCurrencyBalances.destinationBalance}
+      on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+      prefix={prefix}
+    />
+  )
+}
 
 function DestinationNetworkBalance({
   showUsdcSpecificInfo
@@ -40,8 +70,7 @@ function DestinationNetworkBalance({
     useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
 
-  const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
-    useBalances()
+  const { erc20ChildBalances } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
@@ -101,13 +130,7 @@ function DestinationNetworkBalance({
     )
   }
 
-  return (
-    <ETHBalance
-      balance={nativeCurrencyBalances.destinationBalance}
-      on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-      prefix="Balance: "
-    />
-  )
+  return <NativeCurrencyDestinationBalance prefix="Balance: " />
 }
 
 export function DestinationNetworkBox({
@@ -118,6 +141,8 @@ export function DestinationNetworkBox({
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { destinationAddress } = useDestinationAddressStore()
+  const [{ amount2 }] = useArbQueryParams()
+  const isBatchTransferSupported = useIsBatchTransferSupported()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
   const [
     destinationNetworkSelectionDialogProps,
@@ -138,9 +163,14 @@ export function DestinationNetworkBox({
           <BalancesContainer>
             {destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (
-                <DestinationNetworkBalance
-                  showUsdcSpecificInfo={showUsdcSpecificInfo}
-                />
+                <>
+                  <DestinationNetworkBalance
+                    showUsdcSpecificInfo={showUsdcSpecificInfo}
+                  />
+                  {isBatchTransferSupported && Number(amount2) > 0 && (
+                    <NativeCurrencyDestinationBalance />
+                  )}
+                </>
               )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>

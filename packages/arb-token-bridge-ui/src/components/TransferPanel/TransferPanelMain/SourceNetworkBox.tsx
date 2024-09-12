@@ -97,6 +97,12 @@ export function SourceNetworkBox({
     }
   }, [amount2, maxAmount2, isMaxAmount2, setAmount2])
 
+  useEffect(() => {
+    if (isBatchTransferSupported && Number(amount2) > 0) {
+      setIsAmount2InputVisible(true)
+    }
+  }, [isBatchTransferSupported, amount2])
+
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
       setAmount(maxAmount)
@@ -171,9 +177,8 @@ export function SourceNetworkBox({
                 decimals={nativeCurrency.decimals}
               />
               <p className="mt-1 text-xs font-light text-white">
-                You can transfer ETH in the same transaction if you wish to.
-                This is the approximate amount you will receive. The final
-                amount depends on actual gas usage.
+                You can transfer {nativeCurrency.symbol} in the same transaction
+                if you wish to.
               </p>
             </>
           )}

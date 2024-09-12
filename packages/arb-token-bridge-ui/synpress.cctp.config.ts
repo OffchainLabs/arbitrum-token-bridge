@@ -117,8 +117,8 @@ async function fundWallets() {
    * And in the worst case, we run each tests 3 time
    */
   const usdcAmount = utils.parseUnits('0.0006', 6)
-  const ethAmountSepolia = utils.parseEther('0.01')
-  const ethAmountArbSepolia = utils.parseEther('0.002')
+  const ethAmountSepolia = utils.parseEther('0.025')
+  const ethAmountArbSepolia = utils.parseEther('0.006')
   const ethPromises: (() => Promise<void>)[] = []
   const usdcPromises: (() => Promise<void>)[] = []
 

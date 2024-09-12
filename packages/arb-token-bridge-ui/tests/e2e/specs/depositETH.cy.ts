@@ -34,6 +34,9 @@ describe('Deposit ETH', () => {
       amount: ETHAmountToDeposit,
       symbol: 'ETH'
     })
+    cy.closeTransactionHistoryPanel()
+    cy.findAmountInput().should('have.value', '')
+    cy.findMoveFundsButton().should('be.disabled')
   })
 
   // TODO
