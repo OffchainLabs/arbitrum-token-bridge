@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { BigNumber, utils } from 'ethers'
+import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
-import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
-import { formatAmount } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useDestinationAddressStore } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
@@ -19,7 +17,6 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { ether } from '../../constants'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -30,7 +27,6 @@ import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { NetworkType } from './TransferPanelMain/utils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -198,33 +194,6 @@ export function NetworkContainer({
         </div>
       </div>
     </div>
-  )
-}
-
-function StyledLoader() {
-  return <Loader color="white" size="small" />
-}
-
-export function ETHBalance({
-  balance,
-  prefix = '',
-  on
-}: {
-  balance: BigNumber | null
-  prefix?: string
-  on: NetworkType
-}) {
-  if (!balance) {
-    return <StyledLoader />
-  }
-
-  return (
-    <p>
-      <span className="font-light">{prefix}</span>
-      <span aria-label={`ETH balance amount on ${on}`}>
-        {formatAmount(balance, { symbol: ether.symbol })}
-      </span>
-    </p>
   )
 }
 
