@@ -101,7 +101,7 @@ jobs:
     name: "Test UI"
     runs-on: ubuntu-latest
     needs: [build, check-files]
-    if: needs.check-files.outputs.run_tests == 'true'
+    if: needs.check-files.outputs.run_tests == 'true' && github.event_name != 'pull_request_review'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -118,6 +118,7 @@ jobs:
   audit:
     name: "Audit"
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request_review'
     needs: build
     steps:
       - name: Checkout
@@ -132,6 +133,7 @@ jobs:
   check-formatting:
     name: "Check Formatting"
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request_review'
     needs: build
     steps:
       - name: Checkout
@@ -146,209 +148,43 @@ jobs:
       - name: Check formatting with ESLint
         run: yarn lint
 
-  dismiss-previous-e2e-check:
-    name: "Dismiss Previous E2E Check"
-    runs-on: ubuntu-latest
-    if: github.event.review.state == 'approved'
-    steps:
-      - name: Dismiss previous E2E check run
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const { owner, repo } = context.repo;
-            const sha = context.payload.pull_request.head.sha;
-            
-            const checkRuns = await github.rest.checks.listForRef({
-              owner,
-              repo,
-              ref: sha,
-              check_name: 'Build, Test'
-            });
-            
-            for (const checkRun of checkRuns.data.check_runs) {
-              await github.rest.checks.update({
-                owner,
-                repo,
-                check_run_id: checkRun.id,
-                status: 'completed',
-                conclusion: 'cancelled',
-                output: {
-                  title: 'Previous E2E Check Dismissed',
-                  summary: 'This E2E check was dismissed due to PR approval. A new E2E check will be initiated.'
-                }
-              });
-            }
+  regular-e2e-tests:
+    name: "E2E Tests"
+    needs: [check-files]
+    if: needs.check-files.outputs.run_tests == 'true' && github.event_name != 'pull_request_review'
+    uses: ./.github/workflows/e2e-tests.yml
+    with:
+      test_type: 'regular'
+    secrets: inherit
 
-  load-e2e-files:
-    name: "Load e2e files"
-    runs-on: ubuntu-latest
-    needs: [check-is-hotfix]
-    if: |
-      needs.check-is-hotfix.outputs.is_hotfix == 'false' &&
-      (github.event_name != 'pull_request_review' || github.event.review.state == 'approved')
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.e2eFiles }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  cctp-e2e-tests:
+    name: "CCTP E2E Tests"
+    needs: [check-files]
+    # Only run CCTP tests when the PR was just approved
+    if: needs.check-files.outputs.run_tests == 'true' && github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
+    uses: ./.github/workflows/e2e-tests.yml
+    with:
+      test_type: 'cctp'
+    secrets: inherit
 
-      - id: set-matrix
-        run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js ${{ (github.event.review.state == 'approved' || github.event.comment.body == '/cctp') && 'includeCctp' || '' }} | jq . --compact-output)" >> $GITHUB_OUTPUT
-
-  test-e2e:
-    name: "Test E2E ${{ (matrix.test.type == 'cctp' && 'CCTP') || (matrix.test.orbitTest == '1' && 'with L3') || '' }} - ${{ matrix.test.name }}"
-    runs-on: ubuntu-latest
-    needs: [build, check-files, check-is-hotfix, load-e2e-files]
-    if: |
-      needs.check-files.outputs.run_tests == 'true' &&
-      needs.check-is-hotfix.outputs.is_hotfix == 'false' &&
-      (github.event_name != 'pull_request_review' || github.event.review.state == 'approved')
-    strategy:
-      fail-fast: false # If one test fails, let the other tests run
-      matrix:
-        test: ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
-
-    steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
-          
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: false
-          swap-storage: true
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@main
-
-      - name: Restore build artifacts
-        uses: ./.github/actions/build-artifacts/restore
-
-      - name: Install cypress
-        run: yarn cypress install
-
-      - name: Install linux dependencies
-        run: |
-          sudo apt-get install --no-install-recommends -y \
-          fluxbox \
-          xvfb
-
-      - name: Run xvfb and fluxbox
-        run: |
-          Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
-          fluxbox &
-        env:
-          DISPLAY: :0.0
-
-      - name: Run nitro testnode
-        if: matrix.test.type == 'regular'
-        uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
-        with:
-          nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
-          l3-node: ${{ matrix.test.orbitTest == '1' }}
-          no-l3-token-bridge: ${{ matrix.test.orbitTest == '0' }}
-
-      - name: Run e2e tests via cypress-io/github-action
-        uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
-        with:
-          start: yarn start
-          command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.orbitTest == '1' && ':orbit') || '' }} --browser chromium"
-          wait-on: http://127.0.0.1:3000
-          wait-on-timeout: 120
-          spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
-        env:
-          DISPLAY: :0.0
-          TEST_FILE: ${{ matrix.test.file }}
-          SKIP_METAMASK_SETUP: true
-          CYPRESS_RECORD_VIDEO: ${{ matrix.test.recordVideo }}
-          PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
-          PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
-          PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
-          NEXT_PUBLIC_IS_E2E_TEST: true
-          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
-          NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://127.0.0.1:8547
-          NEXT_PUBLIC_LOCAL_L3_RPC_URL: http://127.0.0.1:3347
-
-      - name: Archive e2e artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}-${{ matrix.test.name }}-${{ matrix.test.type }}-${{ matrix.test.orbitTest }}
-          path: |
-            ./packages/arb-token-bridge-ui/cypress/videos
-            ./packages/arb-token-bridge-ui/cypress/screenshots
-          if-no-files-found: 'ignore'
-        continue-on-error: true
-      - name: Throw error if tests failed
-        if: steps.e2e-run.outputs.status == 'failed'
-        run: exit 1
-  
   test-e2e-success:
     name: "Test E2E Success"
     runs-on: ubuntu-latest
-    needs: [test-e2e]
-    if: (github.event_name != 'pull_request_review' || github.event.review.state == 'approved')
-    steps:
-      - name: Update E2E check run
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const { owner, repo } = context.repo;
-            const sha = context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
-            
-            const conclusion = '${{ needs.test-e2e.result }}' === 'success' ? 'success' : 'failure';
-
-            await github.rest.checks.create({
-              owner,
-              repo,
-              head_sha: sha,
-              name: 'Build, Test',
-              status: 'completed',
-              conclusion: conclusion,
-              output: {
-                title: 'E2E Test Results',
-                summary: `The E2E tests have ${conclusion === 'success' ? 'passed' : 'failed'}.`
-              }
-            });
-
-      - name: E2E Succeeded
-        if: needs.test-e2e.result == 'success' || needs.test-e2e.result == 'skipped'
-        run: echo "E2E tests passed"
-
-      - name: E2E Failed
-        if: needs.test-e2e.result != 'success' && needs.test-e2e.result != 'skipped'
-        run: exit 1
-
-
-  clean-up:
-    name: "Clean Up"
-    runs-on: ubuntu-latest
-    needs: [test-ui]
+    needs: [regular-e2e-tests, cctp-e2e-tests]
     if: always()
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Regular E2E Succeeded
+        if: needs.regular-e2e-tests.result == 'success' || needs.regular-e2e-tests.result == 'skipped'
+        run: echo "Regular E2E tests passed"
 
-      - name: Install gh-actions-cache
-        run: gh extension install actions/gh-actions-cache
+      - name: Regular E2E Failed
+        if: needs.regular-e2e-tests.result != 'success' && needs.regular-e2e-tests.result != 'skipped'
+        run: exit 1
 
-      - name: Delete build artifacts
-        run: |
-          if gh actions-cache list | grep build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
-          then
-            gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }} --confirm
-          fi
-        shell: bash
+      - name: CCTP E2E Succeeded
+        if: needs.cctp-e2e-tests.result == 'success' || needs.cctp-e2e-tests.result == 'skipped'
+        run: echo "CCTP E2E tests passed"
+
+      - name: CCTP E2E Failed
+        if: needs.cctp-e2e-tests.result != 'success' && needs.cctp-e2e-tests.result != 'skipped'
+        run: exit 1
