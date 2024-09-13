@@ -146,6 +146,40 @@ jobs:
       - name: Check formatting with ESLint
         run: yarn lint
 
+  dismiss-previous-e2e-check:
+    name: "Dismiss Previous E2E Check"
+    runs-on: ubuntu-latest
+    if: github.event.review.state == 'approved'
+    steps:
+      - name: Dismiss previous E2E check run
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = context.payload.pull_request.head.sha;
+            
+            const checkRuns = await github.rest.checks.listForRef({
+              owner,
+              repo,
+              ref: sha,
+              check_name: 'Test E2E'
+            });
+            
+            for (const checkRun of checkRuns.data.check_runs) {
+              await github.rest.checks.update({
+                owner,
+                repo,
+                check_run_id: checkRun.id,
+                status: 'completed',
+                conclusion: 'cancelled',
+                output: {
+                  title: 'Previous E2E Check Dismissed',
+                  summary: 'This E2E check was dismissed due to PR approval. A new E2E check will be initiated.'
+                }
+              });
+            }
+
   load-e2e-files:
     name: "Load e2e files"
     runs-on: ubuntu-latest
@@ -271,12 +305,36 @@ jobs:
     steps:
       - name: E2E Succeeded
         if: needs.test-e2e.result == 'success' || needs.test-e2e.result == 'skipped'
-        run: echo "nice"
+        run: echo "E2E tests passed"
 
       - name: E2E Failed
         if: needs.test-e2e.result != 'success' && needs.test-e2e.result != 'skipped'
         run: exit 1
-  
+
+      - name: Update E2E check run
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
+            
+            const conclusion = '${{ needs.test-e2e.result }}' === 'success' ? 'success' : 'failure';
+
+            await github.rest.checks.create({
+              owner,
+              repo,
+              head_sha: sha,
+              name: 'Test E2E',
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: 'E2E Test Results',
+                summary: `The E2E tests have ${conclusion === 'success' ? 'passed' : 'failed'}.`
+              }
+            });
+
+
   clean-up:
     name: "Clean Up"
     runs-on: ubuntu-latest
@@ -296,58 +354,3 @@ jobs:
             gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }} --confirm
           fi
         shell: bash
-
-  update-check:
-    name: "Update Check Run"
-    needs: [test-ui, test-e2e-success, clean-up]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Update check run
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const { owner, repo } = context.repo;
-            const sha = context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
-            
-            const conclusion = (
-              '${{ needs.test-ui.result }}' === 'success' &&
-              '${{ needs.test-e2e-success.result }}' === 'success' &&
-              '${{ needs.clean-up.result }}' === 'success'
-            ) ? 'success' : 'failure';
-
-            const checkRuns = await github.rest.checks.listForRef({
-              owner,
-              repo,
-              ref: sha,
-              check_name: 'CI check'
-            });
-            
-            if (checkRuns.data.total_count > 0) {
-              const checkRunId = checkRuns.data.check_runs[0].id;
-              await github.rest.checks.update({
-                owner,
-                repo,
-                check_run_id: checkRunId,
-                status: 'completed',
-                conclusion: conclusion,
-                output: {
-                  title: 'CI Check Results',
-                  summary: `The CI checks have ${conclusion === 'success' ? 'passed' : 'failed'}.`
-                }
-              });
-            } else {
-              await github.rest.checks.create({
-                owner,
-                repo,
-                head_sha: sha,
-                name: 'CI check',
-                status: 'completed',
-                conclusion: conclusion,
-                output: {
-                  title: 'CI Check Results',
-                  summary: `The CI checks have ${conclusion === 'success' ? 'passed' : 'failed'}.`
-                }
-              });
-            }
