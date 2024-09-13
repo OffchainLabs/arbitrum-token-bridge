@@ -88,17 +88,18 @@ describe('Withdraw USDC through CCTP', () => {
   })
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
+    const customUSDCAmountToSend = 0.00011
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending(USDCAmountToSend.toString())
+    cy.confirmSpending(customUSDCAmountToSend.toString())
 
     // eslint-disable-next-line
     cy.wait(10_000)
     cy.confirmMetamaskTransaction(undefined)
     const txData = {
-      amount: USDCAmountToSend,
+      amount: customUSDCAmountToSend,
       symbol: 'USDC'
     }
     cy.findTransactionInTransactionHistory({
