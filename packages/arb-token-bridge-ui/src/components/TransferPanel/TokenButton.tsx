@@ -21,6 +21,7 @@ import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 export type TokenButtonOptions = {
   symbol?: string
+  logoSrc?: string | null
   disabled?: boolean
 }
 
@@ -58,6 +59,10 @@ export function TokenButton({
   }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
 
   const tokenLogoSrc = useMemo(() => {
+    if (typeof options?.logoSrc !== 'undefined') {
+      return options.logoSrc || nativeCurrency.logoUrl
+    }
+
     if (selectedToken) {
       return (
         tokensFromLists[selectedToken.address]?.logoURI ??
@@ -66,7 +71,13 @@ export function TokenButton({
     }
 
     return nativeCurrency.logoUrl
-  }, [nativeCurrency.logoUrl, selectedToken, tokensFromLists, tokensFromUser])
+  }, [
+    nativeCurrency.logoUrl,
+    options,
+    selectedToken,
+    tokensFromLists,
+    tokensFromUser
+  ])
 
   return (
     <>
