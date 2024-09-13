@@ -163,7 +163,7 @@ jobs:
               owner,
               repo,
               ref: sha,
-              check_name: 'Test E2E'
+              check_name: 'Build, Test'
             });
             
             for (const checkRun of checkRuns.data.check_runs) {
@@ -299,9 +299,7 @@ jobs:
     name: "Test E2E Success"
     runs-on: ubuntu-latest
     needs: [test-e2e]
-    if: |
-      always() &&
-      (github.event_name != 'pull_request_review' || github.event.review.state == 'approved')
+    if: (github.event_name != 'pull_request_review' || github.event.review.state == 'approved')
     steps:
       - name: Update E2E check run
         uses: actions/github-script@v6
@@ -317,7 +315,7 @@ jobs:
               owner,
               repo,
               head_sha: sha,
-              name: 'Test E2E',
+              name: 'Build, Test',
               status: 'completed',
               conclusion: conclusion,
               output: {
