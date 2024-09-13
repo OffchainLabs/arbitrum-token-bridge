@@ -37,7 +37,7 @@ function BalanceRow({
 }) {
   return (
     <div className="flex justify-between py-3 text-sm">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1.5">
         <SafeImage
           src={tokenLogoUri}
           alt={`${symbol} logo`}

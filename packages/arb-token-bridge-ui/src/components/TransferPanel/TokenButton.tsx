@@ -73,7 +73,7 @@ export function TokenButton({
                   }
                   alt={`${selectedToken?.symbol ?? nativeCurrency.symbol} logo`}
                   className="h-5 w-5 shrink-0"
-                  fallback={<TokenLogoFallback className="h-5 w-5 text-xs" />}
+                  fallback={<TokenLogoFallback className="h-5 w-5" />}
                 />
                 <span className="text-xl font-light">{tokenSymbol}</span>
                 {!disabled && (
