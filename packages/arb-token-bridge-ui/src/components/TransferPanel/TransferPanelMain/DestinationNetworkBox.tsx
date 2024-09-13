@@ -23,17 +23,29 @@ import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
+import { SafeImage } from '../../common/SafeImage'
+import { TokenLogoFallback } from '../TokenInfo'
 
 function BalanceRow({
   symbol,
-  balance
+  balance,
+  tokenLogoUri
 }: {
   symbol: string
   balance: string | undefined
+  tokenLogoUri: string | undefined
 }) {
   return (
     <div className="flex justify-between py-3 text-sm">
-      <span>{symbol}</span>
+      <div className="flex items-center space-x-2">
+        <SafeImage
+          src={tokenLogoUri}
+          alt={`${symbol} logo`}
+          className="h-4 w-4 shrink-0"
+          fallback={<TokenLogoFallback className="h-4 w-4 text-xs" />}
+        />
+        <span>{symbol}</span>
+      </div>
       <div className="flex">
         Balance:{' '}
         {balance ? (
@@ -91,6 +103,9 @@ function BalancesContainer({
               })
             : undefined
         }
+        tokenLogoUri={
+          selectedToken ? selectedToken.logoURI : nativeCurrency.logoUrl
+        }
       />
       {isBatchTransferSupported && Number(amount2) > 0 && (
         <BalanceRow
@@ -102,6 +117,7 @@ function BalancesContainer({
                 })
               : undefined
           }
+          tokenLogoUri={nativeCurrency.logoUrl}
         />
       )}
       {showUsdcSpecificInfo && isDepositMode && (
@@ -113,6 +129,7 @@ function BalancesContainer({
               : erc20ChildBalances?.[CommonAddress.ArbitrumSepolia.USDC]) ??
               constants.Zero
           )}
+          tokenLogoUri="/images/USDCLogo.svg"
         />
       )}
     </div>

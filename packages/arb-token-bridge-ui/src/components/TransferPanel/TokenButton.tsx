@@ -15,6 +15,8 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
+import { SafeImage } from '../common/SafeImage'
+import { TokenLogoFallback } from './TokenInfo'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -63,18 +65,16 @@ export function TokenButton({
               disabled={disabled}
             >
               <div className="flex items-center gap-2">
-                {/* Commenting it out until we update the token image source files to be of better quality */}
-                {/* {tokenLogo && ( 
-                 // SafeImage is used for token logo, we don't know at buildtime
-                where those images will be loaded from // It would throw error
-                if it's loaded from external domains // eslint-disable-next-line
-                @next/next/no-img-element 
-                 <img
-                    src={tokenLogo}
-                    alt="Token logo"
-                    className="h-5 w-5 sm:h-7 sm:w-7"
-                  />
-                )} */}
+                <SafeImage
+                  src={
+                    selectedToken
+                      ? selectedToken.logoURI
+                      : nativeCurrency.logoUrl
+                  }
+                  alt={`${selectedToken?.symbol ?? nativeCurrency.symbol} logo`}
+                  className="h-5 w-5 shrink-0"
+                  fallback={<TokenLogoFallback className="h-5 w-5 text-xs" />}
+                />
                 <span className="text-xl font-light">{tokenSymbol}</span>
                 {!disabled && (
                   <ChevronDownIcon
