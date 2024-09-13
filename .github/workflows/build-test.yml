@@ -303,14 +303,6 @@ jobs:
       always() &&
       (github.event_name != 'pull_request_review' || github.event.review.state == 'approved')
     steps:
-      - name: E2E Succeeded
-        if: needs.test-e2e.result == 'success' || needs.test-e2e.result == 'skipped'
-        run: echo "E2E tests passed"
-
-      - name: E2E Failed
-        if: needs.test-e2e.result != 'success' && needs.test-e2e.result != 'skipped'
-        run: exit 1
-
       - name: Update E2E check run
         uses: actions/github-script@v6
         with:
@@ -333,6 +325,14 @@ jobs:
                 summary: `The E2E tests have ${conclusion === 'success' ? 'passed' : 'failed'}.`
               }
             });
+
+      - name: E2E Succeeded
+        if: needs.test-e2e.result == 'success' || needs.test-e2e.result == 'skipped'
+        run: echo "E2E tests passed"
+
+      - name: E2E Failed
+        if: needs.test-e2e.result != 'success' && needs.test-e2e.result != 'skipped'
+        run: exit 1
 
 
   clean-up:
