@@ -17,6 +17,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { SafeImage } from '../common/SafeImage'
 import { TokenLogoFallback } from './TokenInfo'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -36,6 +37,9 @@ export function TokenButton({
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
 
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
+
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokenSymbol = useMemo(() => {
@@ -53,6 +57,17 @@ export function TokenButton({
     })
   }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
 
+  const tokenLogoSrc = useMemo(() => {
+    if (selectedToken) {
+      return (
+        tokensFromLists[selectedToken.address]?.logoURI ??
+        tokensFromUser[selectedToken.address]?.logoURI
+      )
+    }
+
+    return nativeCurrency.logoUrl
+  }, [nativeCurrency.logoUrl, selectedToken, tokensFromLists, tokensFromUser])
+
   return (
     <>
       <Popover className="relative">
@@ -66,11 +81,7 @@ export function TokenButton({
             >
               <div className="flex items-center gap-2">
                 <SafeImage
-                  src={
-                    selectedToken
-                      ? selectedToken.logoURI
-                      : nativeCurrency.logoUrl
-                  }
+                  src={tokenLogoSrc}
                   alt={`${selectedToken?.symbol ?? nativeCurrency.symbol} logo`}
                   className="h-5 w-5 shrink-0"
                   fallback={<TokenLogoFallback className="h-5 w-5" />}

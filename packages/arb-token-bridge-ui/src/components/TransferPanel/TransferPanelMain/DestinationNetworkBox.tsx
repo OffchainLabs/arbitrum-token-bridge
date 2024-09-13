@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { constants } from 'ethers'
 import Image from 'next/image'
 
@@ -25,21 +26,59 @@ import { Loader } from '../../common/atoms/Loader'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { SafeImage } from '../../common/SafeImage'
 import { TokenLogoFallback } from '../TokenInfo'
+import { useTokensFromLists, useTokensFromUser } from '../TokenSearchUtils'
 
 function BalanceRow({
-  symbol,
-  balance,
-  tokenLogoUri
+  parentErc20Address,
+  balance
 }: {
-  symbol: string
+  parentErc20Address?: string
   balance: string | undefined
-  tokenLogoUri: string | undefined
 }) {
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
+
+  const tokenLogoSrc = useMemo(() => {
+    if (parentErc20Address) {
+      return (
+        tokensFromLists[parentErc20Address]?.logoURI ??
+        tokensFromUser[parentErc20Address]?.logoURI
+      )
+    }
+
+    return nativeCurrency.logoUrl
+  }, [
+    nativeCurrency.logoUrl,
+    parentErc20Address,
+    tokensFromLists,
+    tokensFromUser
+  ])
+
+  const symbol = useMemo(() => {
+    if (parentErc20Address) {
+      return (
+        tokensFromLists[parentErc20Address]?.symbol ??
+        tokensFromUser[parentErc20Address]?.symbol
+      )
+    }
+
+    return nativeCurrency.symbol
+  }, [
+    nativeCurrency.symbol,
+    parentErc20Address,
+    tokensFromLists,
+    tokensFromUser
+  ])
+
   return (
     <div className="flex justify-between py-3 text-sm">
       <div className="flex items-center space-x-1.5">
         <SafeImage
-          src={tokenLogoUri}
+          src={tokenLogoSrc}
           alt={`${symbol} logo`}
           className="h-4 w-4 shrink-0"
           fallback={<TokenLogoFallback className="h-4 w-4 text-xs" />}
@@ -93,7 +132,7 @@ function BalancesContainer({
       style={{ backgroundColor: '#00000050' }}
     >
       <BalanceRow
-        symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
+        parentErc20Address={selectedToken?.address}
         balance={
           selectedTokenOrNativeCurrencyBalance
             ? formatAmount(selectedTokenOrNativeCurrencyBalance, {
@@ -103,13 +142,9 @@ function BalancesContainer({
               })
             : undefined
         }
-        tokenLogoUri={
-          selectedToken ? selectedToken.logoURI : nativeCurrency.logoUrl
-        }
       />
       {isBatchTransferSupported && Number(amount2) > 0 && (
         <BalanceRow
-          symbol={nativeCurrency.symbol}
           balance={
             nativeCurrencyBalances.destinationBalance
               ? formatAmount(nativeCurrencyBalances.destinationBalance, {
@@ -117,19 +152,21 @@ function BalancesContainer({
                 })
               : undefined
           }
-          tokenLogoUri={nativeCurrency.logoUrl}
         />
       )}
       {showUsdcSpecificInfo && isDepositMode && (
         <BalanceRow
-          symbol="USDC.e"
+          parentErc20Address={
+            isArbitrumOne
+              ? CommonAddress.Ethereum.USDC
+              : CommonAddress.ArbitrumOne.USDC
+          }
           balance={formatAmount(
             (isArbitrumOne
               ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
               : erc20ChildBalances?.[CommonAddress.ArbitrumSepolia.USDC]) ??
               constants.Zero
           )}
-          tokenLogoUri="/images/USDCLogo.svg"
         />
       )}
     </div>
