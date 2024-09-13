@@ -363,6 +363,7 @@ Cypress.Commands.addAll({
   typeAmount,
   typeAmount2,
   findAmountInput,
+  findAmount2Input,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeForChain,
