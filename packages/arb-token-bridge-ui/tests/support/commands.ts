@@ -176,10 +176,20 @@ export function findAmountInput(): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy.findByLabelText('Amount input')
 }
 
+export function findAmount2Input(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText('Amount2 input')
+}
+
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy.findAmountInput().type(String(amount))
+}
+
+export function typeAmount2(
+  amount: string | number
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findAmount2Input().type(String(amount))
 }
 
 export function findSourceChainButton(
@@ -250,12 +260,21 @@ export function closeTransactionHistoryPanel() {
 
 export function openTransactionDetails({
   amount,
-  symbol
+  amount2,
+  symbol,
+  symbol2
 }: {
   amount: number
+  amount2?: number
   symbol: string
+  symbol2: string
 }): Cypress.Chainable<JQuery<HTMLElement>> {
-  cy.findTransactionInTransactionHistory({ amount, symbol }).within(() => {
+  cy.findTransactionInTransactionHistory({
+    amount,
+    amount2,
+    symbol,
+    symbol2
+  }).within(() => {
     cy.findByLabelText('Transaction details button').click()
   })
   return cy.findByText('Transaction details').should('be.visible')
@@ -278,16 +297,24 @@ export function findTransactionDetailsCustomDestinationAddress(
 
 export function findTransactionInTransactionHistory({
   symbol,
+  symbol2,
   amount,
+  amount2,
   duration
 }: {
   symbol: string
+  symbol2?: string
   amount: number
+  amount2?: number
   duration?: string
 }) {
-  const rowId = new RegExp(
+  const rowIdBase = new RegExp(
     `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
   )
+
+  const rowId =
+    amount2 && symbol2 ? `${rowIdBase}-${amount2}${symbol2}` : rowIdBase
+
   cy.findByTestId(rowId).as('row')
   if (duration) {
     cy.get('@row').findAllByText(duration).first().should('be.visible')
@@ -334,6 +361,7 @@ Cypress.Commands.addAll({
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  typeAmount2,
   findAmountInput,
   findSourceChainButton,
   findDestinationChainButton,
