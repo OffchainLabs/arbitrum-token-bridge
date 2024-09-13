@@ -51,9 +51,6 @@ export const confirmAndApproveCctpWithdrawal = () => {
 }
 
 describe('Withdraw USDC through CCTP', () => {
-  // Happy Path
-  const USDCAmountToSend = 0.0001
-
   beforeEach(() => {
     cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
     cy.findSourceChainButton('Arbitrum Sepolia')
@@ -64,16 +61,16 @@ describe('Withdraw USDC through CCTP', () => {
       tokenName: 'USDC',
       tokenAddress: CommonAddress.ArbitrumSepolia.USDC
     })
+  })
 
+  it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
+    const USDCAmountToSend = 0.0001
     cy.typeAmount(USDCAmountToSend)
 
     cy.findByText('Gas estimates are not available for this action.').should(
       'be.visible'
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
-  })
-
-  it('should initiate withdrawing USDC to the same address through CCTP successfully', () => {
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
@@ -88,18 +85,24 @@ describe('Withdraw USDC through CCTP', () => {
   })
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
-    const customUSDCAmountToSend = 0.00011
+    const USDCAmountToSend = 0.00011
+    cy.typeAmount(USDCAmountToSend)
+
+    cy.findByText('Gas estimates are not available for this action.').should(
+      'be.visible'
+    )
+    cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
     cy.fillCustomDestinationAddress()
     cy.findMoveFundsButton().click()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending(customUSDCAmountToSend.toString())
+    cy.confirmSpending(USDCAmountToSend.toString())
 
     // eslint-disable-next-line
     cy.wait(10_000)
     cy.confirmMetamaskTransaction(undefined)
     const txData = {
-      amount: customUSDCAmountToSend,
+      amount: USDCAmountToSend,
       symbol: 'USDC'
     }
     cy.findTransactionInTransactionHistory({
