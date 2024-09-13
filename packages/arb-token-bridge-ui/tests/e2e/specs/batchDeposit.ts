@@ -1,0 +1,176 @@
+import {
+  ERC20TokenSymbol,
+  getInitialERC20Balance,
+  getInitialETHBalance,
+  getL1NetworkConfig,
+  getL1NetworkName,
+  getL2NetworkConfig,
+  getL2NetworkName,
+  moreThanZeroBalance,
+  zeroToLessThanOneETH
+} from '../../support/common'
+import { formatAmount } from '../../../src/util/NumberUtils'
+
+describe('Batch Deposit', () => {
+  let parentNativeTokenBalance,
+    parentErc20Balance,
+    childNativeTokenBalance,
+    childErc20Balance: string
+
+  beforeEach(() => {
+    getInitialETHBalance(
+      Cypress.env('ETH_RPC_URL'),
+      Cypress.env('ADDRESS')
+    ).then(val => (parentNativeTokenBalance = formatAmount(val)))
+
+    getInitialETHBalance(
+      Cypress.env('ARB_RPC_URL'),
+      Cypress.env('ADDRESS')
+    ).then(val => (childNativeTokenBalance = formatAmount(val)))
+
+    getInitialERC20Balance({
+      tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN'),
+      multiCallerAddress: getL1NetworkConfig().multiCall,
+      address: Cypress.env('ADDRESS'),
+      rpcURL: Cypress.env('ETH_RPC_URL')
+    }).then(val => (parentErc20Balance = formatAmount(val)))
+
+    getInitialERC20Balance({
+      tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_CHILD_CHAIN'),
+      multiCallerAddress: getL2NetworkConfig().multiCall,
+      address: Cypress.env('ADDRESS'),
+      rpcURL: Cypress.env('ARB_RPC_URL')
+    }).then(val => (childErc20Balance = formatAmount(val)))
+  })
+
+  it('should show L1 and L2 chains, and ETH correctly', () => {
+    cy.login({ networkType: 'parentChain' })
+    cy.findSourceChainButton(getL1NetworkName())
+    cy.findDestinationChainButton(getL2NetworkName())
+    cy.findSelectTokenButton('ETH')
+  })
+
+  it('should deposit erc-20 and native currency to the same address', () => {
+    // randomize the amount to be sure that previous transactions are not checked in e2e
+    const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
+    const nativeCurrencyAmountToSend = 0.002
+
+    const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+    const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
+
+    cy.login({ networkType: 'parentChain' })
+    context('should add a new token', () => {
+      cy.searchAndSelectToken({
+        tokenName: ERC20TokenSymbol,
+        tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN')
+      })
+    })
+
+    context('should show erc-20 parent balance correctly', () => {
+      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on parentChain`)
+        .should('be.visible')
+        .contains(parentErc20Balance)
+        .should('be.visible')
+    })
+
+    context('should show erc-20 child balance correctly', () => {
+      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
+        .should('be.visible')
+        .contains(childErc20Balance)
+        .should('be.visible')
+    })
+
+    context('native currency balance on child chain should not exist', () => {
+      cy.findByLabelText(`ETH balance amount on childChain`).should('not.exist')
+    })
+
+    context('amount2 input should not exist', () => {
+      cy.findAmount2Input().should('not.exist')
+    })
+
+    context('should click add native currency button', () => {
+      cy.findByLabelText('Add native currency button')
+        .should('be.visible')
+        .click()
+    })
+
+    context('amount2 input should show', () => {
+      cy.findAmount2Input().should('be.visible').should('have.value', '')
+    })
+
+    context('native currency balance on child chain should show', () => {
+      cy.findByLabelText(`ETH balance amount on childChain`)
+        .should('be.visible')
+        .contains(childNativeTokenBalance)
+        .should('be.visible')
+    })
+
+    context('move funds button should be disabled', () => {
+      cy.findMoveFundsButton().should('be.disabled')
+    })
+
+    context('should show gas estimations and summary', () => {
+      cy.typeAmount(ERC20AmountToSend)
+      cy.typeAmount2(nativeCurrencyAmountToSend)
+      cy.findGasFeeSummary(zeroToLessThanOneETH)
+      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+    })
+
+    const txData = {
+      symbol: ERC20TokenSymbol,
+      symbol2: 'ETH',
+      amount: ERC20AmountToSend,
+      amount2: nativeCurrencyAmountToSend
+    }
+
+    context('should deposit successfully', () => {
+      cy.findMoveFundsButton().click()
+      cy.confirmMetamaskTransaction()
+      cy.findTransactionInTransactionHistory({
+        ...txData,
+        duration: depositTime
+      })
+    })
+
+    context('deposit should complete successfully', () => {
+      cy.selectTransactionsPanelTab('settled')
+
+      cy.waitUntil(() => cy.findTransactionInTransactionHistory(txData), {
+        errorMsg: 'Could not find settled ERC20 Batch Deposit transaction',
+        timeout: 60_000,
+        interval: 500
+      })
+
+      cy.findTransactionInTransactionHistory({
+        duration: 'a few seconds ago',
+        ...txData
+      })
+      cy.closeTransactionHistoryPanel()
+    })
+
+    context('funds should reach destination account successfully', () => {
+      // should have more funds on destination chain
+      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
+        .contains(moreThanZeroBalance)
+        .should('be.visible')
+      cy.findByLabelText(`ETH balance amount on childChain`).then(value => {
+        expect(Number(value)).to.be.at.least(
+          Number(parentNativeTokenBalance) + nativeCurrencyAmountToSend
+        )
+      })
+
+      // the balance on the source chain should not be the same as before
+      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on parentChain`)
+        .should('be.visible')
+        .its('text')
+        .should('not.eq', parentErc20Balance)
+    })
+
+    context('transfer panel amount should be reset', () => {
+      cy.findAmountInput().should('have.value', '')
+      cy.findAmount2Input().should('have.value', '')
+      cy.findMoveFundsButton().should('be.disabled')
+    })
+  })
+})

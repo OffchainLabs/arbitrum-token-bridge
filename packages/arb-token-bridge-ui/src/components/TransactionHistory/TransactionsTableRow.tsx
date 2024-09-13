@@ -167,11 +167,27 @@ export function TransactionsTableRow({
     return tx.status === 'Failure'
   }, [tx])
 
+  const testId = useMemo(() => {
+    const type = isClaimableTx ? 'claimable' : 'deposit'
+    const id = `${type}-row-${tx.txId}-${tx.value}${tx.asset}`
+
+    if (tx.value2) {
+      return `${id}-${tx.value2}${nativeCurrency.symbol}`
+    }
+
+    return id
+  }, [
+    isClaimableTx,
+    nativeCurrency.symbol,
+    tx.asset,
+    tx.txId,
+    tx.value,
+    tx.value2
+  ])
+
   return (
     <div
-      data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}-${
-        tx.value
-      }${tx.asset}`}
+      data-testid={testId}
       className={twMerge(
         'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_170px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
         className
