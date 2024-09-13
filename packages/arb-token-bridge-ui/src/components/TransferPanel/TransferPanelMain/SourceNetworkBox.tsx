@@ -6,6 +6,7 @@ import {
   useState
 } from 'react'
 import { utils } from 'ethers'
+import Image from 'next/image'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 
 import { getNetworkName } from '../../../util/networks'
@@ -37,6 +38,7 @@ import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsB
 import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
+import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 
 function Amount2ToggleButton({
   onClick
@@ -80,6 +82,10 @@ export function SourceNetworkBox({
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
   const ethBalanceSourceChain = useBalanceOnSourceChain(null)
+
+  const {
+    network: { logo: networkLogo }
+  } = getBridgeUiConfigForChain(networks.sourceChain.id)
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -139,11 +145,21 @@ export function SourceNetworkBox({
 
   return (
     <>
-      <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
-        <NetworkButton
-          type="source"
-          onClick={openSourceNetworkSelectionDialog}
-        />
+      <NetworkContainer network={networks.sourceChain}>
+        <div className="flex justify-between">
+          <NetworkButton
+            type="source"
+            onClick={openSourceNetworkSelectionDialog}
+          />
+          <div className="relative h-[44px] w-[44px]">
+            <Image
+              src={networkLogo}
+              alt={`${networks.sourceChain.name} logo`}
+              layout={'fill'}
+              objectFit={'contain'}
+            />
+          </div>
+        </div>
 
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput

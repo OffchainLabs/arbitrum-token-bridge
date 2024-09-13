@@ -1,17 +1,11 @@
 import { constants } from 'ethers'
+import Image from 'next/image'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useDestinationAddressStore } from '../AdvancedSettings'
-import {
-  BalancesContainer,
-  NetworkContainer,
-  NetworkListboxPlusBalancesContainer
-} from '../TransferPanelMain'
-import { TokenBalance } from './TokenBalance'
+import { NetworkContainer } from '../TransferPanelMain'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { NetworkType } from './utils'
 import { useAppState } from '../../../state'
-import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
@@ -26,54 +20,33 @@ import {
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
-import { ether } from '../../../constants'
 import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
+import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 
-function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
-  const nativeCurrencyBalances = useNativeCurrencyBalances()
-  const [networks] = useNetworks()
-  const nativeCurrency = useNativeCurrency({
-    provider: networks.destinationChainProvider
-  })
-  const { isDepositMode } = useNetworksRelationship(networks)
-
-  if (nativeCurrency.isCustom) {
-    return (
-      <TokenBalance
-        forToken={nativeCurrency}
-        balance={nativeCurrencyBalances.destinationBalance}
-        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-        prefix={prefix}
-      />
-    )
-  }
-  if (!nativeCurrencyBalances.destinationBalance) {
-    return (
-      <p className="flex items-center gap-1">
-        <span className="font-light">{prefix}</span>
-        <Loader color="white" size="small" />
-      </p>
-    )
-  }
-
+function BalanceRow({
+  symbol,
+  balance
+}: {
+  symbol: string
+  balance: string | undefined
+}) {
   return (
-    <p>
-      <span className="font-light">{prefix}</span>
-      <span
-        aria-label={`ETH balance amount on ${
-          isDepositMode ? NetworkType.childChain : NetworkType.parentChain
-        }`}
-      >
-        {formatAmount(nativeCurrencyBalances.destinationBalance, {
-          symbol: ether.symbol
-        })}
-      </span>
-    </p>
+    <div className="flex justify-between py-3 text-sm">
+      <span>{symbol}</span>
+      <div className="flex">
+        Balance:{' '}
+        {balance ? (
+          balance
+        ) : (
+          <Loader wrapperClass="ml-2" size="small" color="white" />
+        )}
+      </div>
+    </div>
   )
 }
 
-function DestinationNetworkBalance({
+function BalancesContainer({
   showUsdcSpecificInfo
 }: {
   showUsdcSpecificInfo: boolean
@@ -84,69 +57,66 @@ function DestinationNetworkBalance({
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const { isArbitrumOne } = isNetwork(childChain.id)
+
+  const [{ amount2 }] = useArbQueryParams()
+  const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const { erc20ChildBalances } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const selectedTokenDestinationBalance = isDepositMode
+    ? selectedTokenBalances.childBalance
+    : selectedTokenBalances.parentBalance
 
-  if (selectedToken) {
-    return (
-      <>
-        <TokenBalance
+  const selectedTokenOrNativeCurrencyBalance = selectedToken
+    ? selectedTokenDestinationBalance
+    : nativeCurrencyBalances.destinationBalance
+
+  return (
+    <div
+      className="rounded px-4 text-white [&>*+*]:border-t [&>*+*]:border-gray-600"
+      style={{ backgroundColor: '#00000050' }}
+    >
+      <BalanceRow
+        symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
+        balance={
+          selectedTokenOrNativeCurrencyBalance
+            ? formatAmount(selectedTokenOrNativeCurrencyBalance, {
+                decimals: selectedToken
+                  ? selectedToken.decimals
+                  : nativeCurrency.decimals
+              })
+            : undefined
+        }
+      />
+      {isBatchTransferSupported && Number(amount2) > 0 && (
+        <BalanceRow
+          symbol={nativeCurrency.symbol}
           balance={
-            isDepositMode
-              ? selectedTokenBalances.childBalance
-              : selectedTokenBalances.parentBalance
-          }
-          on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-          forToken={selectedToken}
-          tokenSymbolOverride={
-            // we need to send the proper, sanitized token-name to the component
-            selectedToken?.symbol
-              ? sanitizeTokenSymbol(selectedToken?.symbol, {
-                  chainId: networks.destinationChain.id,
-                  erc20L1Address: selectedToken?.address
+            nativeCurrencyBalances.destinationBalance
+              ? formatAmount(nativeCurrencyBalances.destinationBalance, {
+                  decimals: nativeCurrency.decimals
                 })
               : undefined
           }
-          prefix="Balance: "
         />
-        {/* In deposit mode, when user selected USDC on mainnet,
-        the UI shows the Arb One balance of both USDC.e and native USDC */}
-        {showUsdcSpecificInfo && isDepositMode && (
-          <TokenBalance
-            balance={
-              (isArbitrumOne
-                ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
-                : erc20ChildBalances?.[CommonAddress.ArbitrumSepolia.USDC]) ??
+      )}
+      {showUsdcSpecificInfo && isDepositMode && (
+        <BalanceRow
+          symbol="USDC.e"
+          balance={formatAmount(
+            (isArbitrumOne
+              ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
+              : erc20ChildBalances?.[CommonAddress.ArbitrumSepolia.USDC]) ??
               constants.Zero
-            }
-            on={NetworkType.childChain}
-            forToken={
-              selectedToken ? { ...selectedToken, symbol: 'USDC' } : null
-            }
-            tokenSymbolOverride="USDC"
-          />
-        )}
-      </>
-    )
-  }
-
-  if (nativeCurrency.isCustom) {
-    return (
-      <TokenBalance
-        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-        balance={nativeCurrencyBalances.destinationBalance}
-        forToken={nativeCurrency}
-        prefix="Balance: "
-      />
-    )
-  }
-
-  return <NativeCurrencyDestinationBalance prefix="Balance: " />
+          )}
+        />
+      )}
+    </div>
+  )
 }
 
 export function DestinationNetworkBox({
@@ -156,12 +126,13 @@ export function DestinationNetworkBox({
 }) {
   const [networks] = useNetworks()
   const { destinationAddress } = useDestinationAddressStore()
-  const [{ amount2 }] = useArbQueryParams()
-  const isBatchTransferSupported = useIsBatchTransferSupported()
   const [
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
+  const {
+    network: { logo: networkLogo }
+  } = getBridgeUiConfigForChain(networks.destinationChain.id)
 
   return (
     <>
@@ -169,20 +140,21 @@ export function DestinationNetworkBox({
         network={networks.destinationChain}
         customAddress={destinationAddress}
       >
-        <NetworkListboxPlusBalancesContainer>
+        <div className="flex justify-between">
           <NetworkButton
             type="destination"
             onClick={openDestinationNetworkSelectionDialog}
           />
-          <BalancesContainer>
-            <DestinationNetworkBalance
-              showUsdcSpecificInfo={showUsdcSpecificInfo}
+          <div className="relative h-[44px] w-[44px]">
+            <Image
+              src={networkLogo}
+              alt={`${networks.destinationChain.name} logo`}
+              layout={'fill'}
+              objectFit={'contain'}
             />
-            {isBatchTransferSupported && Number(amount2) > 0 && (
-              <NativeCurrencyDestinationBalance />
-            )}
-          </BalancesContainer>
-        </NetworkListboxPlusBalancesContainer>
+          </div>
+        </div>
+        <BalancesContainer showUsdcSpecificInfo={showUsdcSpecificInfo} />
         <EstimatedGas chainType="destination" />
       </NetworkContainer>
       <NetworkSelectionContainer
