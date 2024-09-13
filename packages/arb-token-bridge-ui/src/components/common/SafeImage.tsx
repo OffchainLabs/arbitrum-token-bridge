@@ -22,11 +22,6 @@ export function SafeImage(props: SafeImageProps) {
       image.onload = () => setValidImageSrc(sanitizedImageSrc)
       image.src = sanitizedImageSrc
     }
-
-    return function cleanup() {
-      // Abort previous loading
-      image.src = ''
-    }
   }, [src])
 
   if (!validImageSrc) {
