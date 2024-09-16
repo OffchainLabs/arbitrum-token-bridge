@@ -154,9 +154,11 @@ describe('Batch Deposit', () => {
 
     context('funds should reach destination account successfully', () => {
       // should have more funds on destination chain
-      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
-        .contains(moreThanZeroBalance)
-        .should('be.visible')
+      cy.findByLabelText(
+        `${ERC20TokenSymbol} balance amount on childChain`
+      ).then(value => {
+        expect(Number(value)).to.be.greaterThan(Number(parentErc20Balance))
+      })
       cy.findByLabelText(`ETH balance amount on childChain`).then(value => {
         expect(Number(value)).to.be.at.least(
           Number(parentNativeTokenBalance) + nativeCurrencyAmountToSend
