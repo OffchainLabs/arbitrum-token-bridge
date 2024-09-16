@@ -7,6 +7,7 @@ import {
   getL2NetworkConfig,
   getL2NetworkName,
   moreThanZeroBalance,
+  visitAfterSomeDelay,
   zeroToLessThanOneETH
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -44,7 +45,13 @@ describe('Batch Deposit', () => {
   })
 
   it('should show L1 and L2 chains, and ETH correctly', () => {
-    cy.login({ networkType: 'parentChain', query: { experiments: 'batch' } })
+    visitAfterSomeDelay('/', {
+      qs: {
+        sourceChain: 'custom-localhost',
+        destinationChain: 'arbitrum-localhost',
+        experiments: 'batch'
+      }
+    })
     cy.findSourceChainButton(getL1NetworkName())
     cy.findDestinationChainButton(getL2NetworkName())
     cy.findSelectTokenButton('ETH')
