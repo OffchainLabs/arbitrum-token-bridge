@@ -28,7 +28,12 @@ export function TokenBalance({
   }
 
   if (!balance) {
-    return <Loader color="white" size="small" />
+    return (
+      <p className="flex items-center gap-1">
+        <span className="font-light">{prefix}</span>
+        <Loader color="white" size="small" />
+      </p>
+    )
   }
 
   const tokenSymbol = tokenSymbolOverride ?? forToken.symbol

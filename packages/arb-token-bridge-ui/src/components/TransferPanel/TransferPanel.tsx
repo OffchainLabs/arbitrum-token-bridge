@@ -758,10 +758,20 @@ export function TransferPanel() {
         return
       }
 
+      const isCustomNativeTokenAmount2 =
+        nativeCurrency.isCustom &&
+        isBatchTransferSupported &&
+        Number(amount2) > 0
+
       const isNativeCurrencyApprovalRequired =
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
-          amount: amountBigNumber
+          amount: amountBigNumber,
+          options: {
+            approvalAmountIncrease: isCustomNativeTokenAmount2
+              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              : undefined
+          }
         })
 
       if (isNativeCurrencyApprovalRequired) {
@@ -771,7 +781,12 @@ export function TransferPanel() {
 
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
-          amount: amountBigNumber
+          amount: amountBigNumber,
+          options: {
+            approvalAmountIncrease: isCustomNativeTokenAmount2
+              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              : undefined
+          }
         })
 
         if (approvalTx) {

@@ -21,7 +21,8 @@ import {
   findTransactionInTransactionHistory,
   findClaimButton,
   selectTransactionsPanelTab,
-  confirmSpending
+  confirmSpending,
+  closeTransactionHistoryPanel
 } from '../support/commands'
 
 declare global {
@@ -55,6 +56,7 @@ declare global {
       findSelectTokenButton: typeof findSelectTokenButton
       openTransactionDetails: typeof openTransactionDetails
       closeTransactionDetails: typeof closeTransactionDetails
+      closeTransactionHistoryPanel: typeof closeTransactionHistoryPanel
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
