@@ -54,18 +54,6 @@ describe('Batch Deposit', () => {
   })
 
   it('should deposit erc-20 and native currency to the same address', () => {
-    getInitialERC20Balance({
-      tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_CHILD_CHAIN'),
-      multiCallerAddress: getL2NetworkConfig().multiCall,
-      address: Cypress.env('ADDRESS'),
-      rpcURL: Cypress.env('ARB_RPC_URL')
-    }).then(val => (childErc20Balance = formatAmount(val)))
-
-    getInitialETHBalance(
-      Cypress.env('ARB_RPC_URL'),
-      Cypress.env('ADDRESS')
-    ).then(val => (childNativeTokenBalance = formatAmount(val)))
-
     // randomize the amount to be sure that previous transactions are not checked in e2e
     const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
     const nativeCurrencyAmountToSend = 0.002
