@@ -1,5 +1,5 @@
 name: Build, Test
-run-name: CI check
+
 on:
   pull_request_review:
     types:
