@@ -6,7 +6,6 @@ import {
   getL1NetworkName,
   getL2NetworkConfig,
   getL2NetworkName,
-  moreThanZeroBalance,
   zeroToLessThanOneETH
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -21,13 +20,13 @@ describe('Batch Deposit', () => {
     getInitialERC20Balance({
       tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_CHILD_CHAIN'),
       multiCallerAddress: getL2NetworkConfig().multiCall,
-      address: Cypress.env('CUSTOM_DESTINATION_ADDRESS'),
+      address: Cypress.env('ADDRESS'),
       rpcURL: Cypress.env('ARB_RPC_URL')
     }).then(val => (childErc20Balance = formatAmount(val)))
 
     getInitialETHBalance(
       Cypress.env('ARB_RPC_URL'),
-      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+      Cypress.env('ADDRESS')
     ).then(val => (childNativeTokenBalance = formatAmount(val)))
 
     getInitialETHBalance(
