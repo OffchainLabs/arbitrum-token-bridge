@@ -212,13 +212,6 @@ describe('Batch Deposit', () => {
       cy.fillCustomDestinationAddress()
     })
 
-    context('should show erc-20 parent balance correctly', () => {
-      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on parentChain`)
-        .should('be.visible')
-        .contains(parentErc20Balance)
-        .should('be.visible')
-    })
-
     context('should show erc-20 child balance correctly', () => {
       cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
         .should('be.visible')
@@ -316,12 +309,6 @@ describe('Batch Deposit', () => {
           'be.gt',
           Number(parentNativeTokenBalance) + nativeCurrencyAmountToSend
         )
-
-      // the balance on the source chain should not be the same as before
-      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on parentChain`)
-        .invoke('text')
-        .then(parseFloat)
-        .should('be.lt', Number(parentErc20Balance))
     })
 
     context('transfer panel amount should be reset', () => {

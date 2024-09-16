@@ -251,3 +251,5 @@ describe('User enters site with query params on URL', () => {
     )
   })
 })
+
+// TODO: Test amount2 when query params e2e is added back
