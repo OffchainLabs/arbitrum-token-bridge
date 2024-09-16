@@ -897,7 +897,7 @@ export function TransferPanel() {
         }
 
         overrides.maxSubmissionCost = utils
-          .parseEther(amount2)
+          .parseUnits(amount2, nativeCurrency.decimals)
           .add(gasEstimates.estimatedChildChainSubmissionCost)
         overrides.excessFeeRefundAddress = destinationAddress
       }
