@@ -1,12 +1,7 @@
-import {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
+import { create } from 'zustand'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -43,6 +38,10 @@ function Amount2ToggleButton({
 }: {
   onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
 }) {
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
   return (
     <Button
       variant="secondary"
@@ -51,18 +50,31 @@ function Amount2ToggleButton({
     >
       <div className="flex items-center space-x-1">
         <PlusCircleIcon width={18} />
-        <span>Add ETH</span>
+        <span>Add {nativeCurrency.symbol}</span>
       </div>
     </Button>
   )
 }
+
+export const useAmount2InputVisibility = create<{
+  isAmount2InputVisible: boolean
+  showAmount2Input: () => void
+}>(set => ({
+  isAmount2InputVisible: false,
+  showAmount2Input: () => {
+    set(() => ({
+      isAmount2InputVisible: true
+    }))
+  }
+}))
 
 export function SourceNetworkBox({
   showUsdcSpecificInfo
 }: {
   showUsdcSpecificInfo: boolean
 }) {
-  const [isAmount2InputVisible, setIsAmount2InputVisible] = useState(false)
+  const { isAmount2InputVisible, showAmount2Input } =
+    useAmount2InputVisibility()
 
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
@@ -99,7 +111,7 @@ export function SourceNetworkBox({
 
   useEffect(() => {
     if (isBatchTransferSupported && Number(amount2) > 0) {
-      setIsAmount2InputVisible(true)
+      showAmount2Input()
     }
   }, [isBatchTransferSupported, amount2])
 
@@ -158,9 +170,7 @@ export function SourceNetworkBox({
 
           {isBatchTransferSupported && !isAmount2InputVisible && (
             <div className="flex justify-end">
-              <Amount2ToggleButton
-                onClick={() => setIsAmount2InputVisible(true)}
-              />
+              <Amount2ToggleButton onClick={showAmount2Input} />
             </div>
           )}
 
