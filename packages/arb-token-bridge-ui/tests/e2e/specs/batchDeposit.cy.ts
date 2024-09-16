@@ -170,7 +170,7 @@ describe('Batch Deposit', () => {
       cy.findByLabelText(`${ERC20TokenSymbol} balance amount on parentChain`)
         .invoke('text')
         .then(parseFloat)
-        .should('be.lt', parentErc20Balance)
+        .should('be.lt', Number(parentErc20Balance))
     })
 
     context('transfer panel amount should be reset', () => {
