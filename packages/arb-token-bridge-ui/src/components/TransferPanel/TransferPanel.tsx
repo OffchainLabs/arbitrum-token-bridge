@@ -248,11 +248,20 @@ export function TransferPanel() {
         return utils.parseUnits(amountSafe, selectedToken.decimals)
       }
 
+      const { isOrbitChain: isSourceChainOrbit } = isNetwork(
+        networks.sourceChain.id
+      )
+
+      if (isSourceChainOrbit) {
+        // native token on Orbit chains is always 18 decimals
+        return utils.parseEther(amountSafe)
+      }
+
       return utils.parseUnits(amountSafe, nativeCurrency.decimals)
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, selectedToken, nativeCurrency])
+  }, [amount, selectedToken, nativeCurrency, networks.sourceChain])
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
     const waitForInput = openUSDCDepositConfirmationDialog()
