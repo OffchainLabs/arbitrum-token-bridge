@@ -48,15 +48,24 @@ export type TransferEstimateGas = {
   signer: Signer
 }
 
+export type TransferOverrides = {
+  maxSubmissionCost?: BigNumber
+  excessFeeRefundAddress?: string
+}
+
 export type TransferProps = {
   amount: BigNumber
   signer: Signer
   destinationAddress?: string
+  overrides?: TransferOverrides
 }
 
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
   signer: Signer
+  options?: {
+    approvalAmountIncrease?: BigNumber
+  }
 }
 
 export type ApproveNativeCurrencyEstimateGasProps = {
@@ -67,6 +76,9 @@ export type ApproveNativeCurrencyEstimateGasProps = {
 export type ApproveNativeCurrencyProps = {
   signer: Signer
   amount: BigNumber
+  options?: {
+    approvalAmountIncrease?: BigNumber
+  }
 }
 
 export type RequiresTokenApprovalProps = {

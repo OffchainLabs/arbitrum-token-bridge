@@ -25,11 +25,10 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import { isTeleporterTransaction } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../hooks/useTransactions'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -280,7 +279,7 @@ export async function getUpdatedEthDeposit(
     return tx
   }
 
-  const { parentToChildMsg: l1ToL2Msg } =
+  const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
       isEthDeposit: true,
@@ -288,7 +287,7 @@ export async function getUpdatedEthDeposit(
       childProvider: getProviderForChainId(tx.childChainId)
     })
 
-  if (!l1ToL2Msg) {
+  if (!parentToChildMsg) {
     const receipt = await getTxReceipt(tx)
 
     if (!receipt || receipt.status !== 0) {
@@ -300,7 +299,7 @@ export async function getUpdatedEthDeposit(
     return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
   }
 
-  const status = await l1ToL2Msg?.status()
+  const status = await parentToChildMsg?.status()
   const isDeposited = status === EthDepositMessageStatus.DEPOSITED
 
   const newDeposit: MergedTransaction = {
@@ -312,10 +311,11 @@ export async function getUpdatedEthDeposit(
       status: isDeposited
         ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
         : ParentToChildMessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).childTxHash,
+      retryableCreationTxID: (parentToChildMsg as EthDepositMessage)
+        .childTxHash,
       // Only show `childTxId` after the deposit is confirmed
       childTxId: isDeposited
-        ? (l1ToL2Msg as EthDepositMessage).childTxHash
+        ? (parentToChildMsg as EthDepositMessage).childTxHash
         : undefined
     }
   }
@@ -338,16 +338,15 @@ export async function getUpdatedTokenDeposit(
     return tx
   }
 
-  const { parentToChildMsg: l1ToL2Msg } =
+  const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
       isEthDeposit: false,
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })
-  const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
 
-  if (!l1ToL2Msg) {
+  if (!parentToChildMsg) {
     const receipt = await getTxReceipt(tx)
 
     if (!receipt || receipt.status !== 0) {
@@ -359,7 +358,8 @@ export async function getUpdatedTokenDeposit(
     return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
   }
 
-  const res = await _l1ToL2Msg.getSuccessfulRedeem()
+  const _parentToChildMsg = parentToChildMsg as ParentToChildMessageReader
+  const res = await _parentToChildMsg.getSuccessfulRedeem()
 
   const childTxId = (() => {
     if (res.status === ParentToChildMessageStatus.REDEEMED) {
@@ -371,7 +371,7 @@ export async function getUpdatedTokenDeposit(
 
   const newDeposit: MergedTransaction = {
     ...tx,
-    status: _l1ToL2Msg.retryableCreationId ? 'success' : tx.status,
+    status: _parentToChildMsg.retryableCreationId ? 'success' : tx.status,
     resolvedAt:
       res.status === ParentToChildMessageStatus.REDEEMED
         ? dayjs().valueOf()
@@ -380,7 +380,7 @@ export async function getUpdatedTokenDeposit(
       status: res.status,
       childTxId,
       fetchingUpdate: false,
-      retryableCreationTxID: _l1ToL2Msg.retryableCreationId
+      retryableCreationTxID: _parentToChildMsg.retryableCreationId
     }
   }
 
@@ -638,7 +638,7 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
 
-  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     return tx.l2ToL3MsgData?.l3TxID
   }
 

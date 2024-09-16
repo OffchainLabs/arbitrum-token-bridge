@@ -9,7 +9,6 @@ import {
   getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
@@ -18,8 +17,9 @@ import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
 import {
   getL2ConfigForTeleport,
-  isTeleport
+  isValidTeleportChainPair
 } from '../token-bridge-sdk/teleport'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -156,10 +156,13 @@ export async function fetchErc20Data({
 
     return erc20Data
   } catch (error) {
-    // log some extra info on sentry in case multi-caller fails
-    Sentry.configureScope(function (scope) {
-      scope.setExtra('token_address', address)
-      Sentry.captureException(error)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'fetchErc20Data',
+      additionalData: {
+        token_address_on_this_chain: address,
+        chain: chainId.toString()
+      }
     })
     throw error
   }
@@ -208,10 +211,14 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
     })
     return tokenData?.allowance ?? constants.Zero
   } catch (error) {
-    // log the issue on sentry, later, fall back if there is no multicall
-    Sentry.configureScope(function (scope) {
-      scope.setExtra('token_address', address)
-      Sentry.captureException(error)
+    const chainId = await getChainIdFromProvider(provider)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'fetchErc20Allowance',
+      additionalData: {
+        token_address_on_this_chain: address,
+        chain: chainId.toString()
+      }
     })
     throw error
   }
@@ -476,7 +483,7 @@ export async function isGatewayRegistered({
   // for now, we are returning true since we are limiting the tokens to teleport, but we will expand this once we expand the allowList
   const sourceChainId = await getChainIdFromProvider(parentChainProvider)
   const destinationChainId = await getChainIdFromProvider(childChainProvider)
-  if (isTeleport({ sourceChainId, destinationChainId })) {
+  if (isValidTeleportChainPair({ sourceChainId, destinationChainId })) {
     return true
   }
 

@@ -4,7 +4,6 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { sanitizeImageSrc } from '../../util'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -17,43 +16,31 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 
-export function TokenButton(): JSX.Element {
+export type TokenButtonOptions = {
+  symbol?: string
+  disabled?: boolean
+}
+
+export function TokenButton({
+  options
+}: {
+  options?: TokenButtonOptions
+}): JSX.Element {
   const {
-    app: {
-      selectedToken,
-      arbTokenBridge: { bridgeTokens },
-      arbTokenBridgeLoaded
-    }
+    app: { selectedToken }
   } = useAppState()
+  const disabled = options?.disabled ?? false
+
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenLogo = useMemo<string | undefined>(() => {
-    const selectedAddress = selectedToken?.address
-    if (!selectedAddress) {
-      return nativeCurrency.logoUrl
-    }
-    if (!arbTokenBridgeLoaded) {
-      return undefined
-    }
-    if (typeof bridgeTokens === 'undefined') {
-      return undefined
-    }
-    const logo = bridgeTokens[selectedAddress]?.logoURI
-    if (logo) {
-      return sanitizeImageSrc(logo)
-    }
-    return undefined
-  }, [
-    nativeCurrency,
-    bridgeTokens,
-    selectedToken?.address,
-    arbTokenBridgeLoaded
-  ])
-
   const tokenSymbol = useMemo(() => {
+    if (typeof options?.symbol !== 'undefined') {
+      return options.symbol
+    }
+
     if (!selectedToken) {
       return nativeCurrency.symbol
     }
@@ -62,7 +49,7 @@ export function TokenButton(): JSX.Element {
       erc20L1Address: selectedToken.address,
       chainId: networks.sourceChain.id
     })
-  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
+  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
 
   return (
     <>
@@ -70,9 +57,10 @@ export function TokenButton(): JSX.Element {
         {({ open }) => (
           <>
             <Popover.Button
-              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
+              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 pb-1 pt-2 text-white"
               aria-label="Select Token"
               onClick={onPopoverButtonClick}
+              disabled={disabled}
             >
               <div className="flex items-center gap-2">
                 {/* Commenting it out until we update the token image source files to be of better quality */}
@@ -87,22 +75,22 @@ export function TokenButton(): JSX.Element {
                     className="h-5 w-5 sm:h-7 sm:w-7"
                   />
                 )} */}
-                <span className="text-xl font-light sm:text-3xl">
-                  {tokenSymbol}
-                </span>
-                <ChevronDownIcon
-                  className={twMerge(
-                    'h-3 w-3 text-gray-6 transition-transform duration-200',
-                    open ? '-rotate-180' : 'rotate-0'
-                  )}
-                />
+                <span className="text-xl font-light">{tokenSymbol}</span>
+                {!disabled && (
+                  <ChevronDownIcon
+                    className={twMerge(
+                      'h-3 w-3 text-gray-6 transition-transform duration-200',
+                      open ? '-rotate-180' : 'rotate-0'
+                    )}
+                  />
+                )}
               </div>
             </Popover.Button>
 
             <Transition
               // we don't unmount on leave here because otherwise transition won't work with virtualized lists
               options={{ unmountOnLeave: false }}
-              className="fixed left-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
+              className="fixed right-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
               afterLeave={onPopoverClose}
             >
               <Popover.Panel

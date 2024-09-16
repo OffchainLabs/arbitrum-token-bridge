@@ -12,7 +12,7 @@ describe('Deposit ETH', () => {
   const ETHAmountToDeposit = 0.0001
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  const depositTime = isOrbitTest ? 'Less than a minute' : '10 minutes'
+  const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
@@ -24,20 +24,19 @@ describe('Deposit ETH', () => {
   it('should show gas estimations and bridge successfully', () => {
     cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
-      //
-      .then(() => {
-        cy.findGasFeeSummary(zeroToLessThanOneETH)
-        cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-        cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
-      })
+    cy.findGasFeeSummary(zeroToLessThanOneETH)
+    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
+    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
     cy.findMoveFundsButton().click()
-    cy.confirmMetamaskTransaction().then(() => {
-      cy.findTransactionInTransactionHistory({
-        duration: depositTime,
-        amount: ETHAmountToDeposit,
-        symbol: 'ETH'
-      })
+    cy.confirmMetamaskTransaction()
+    cy.findTransactionInTransactionHistory({
+      duration: depositTime,
+      amount: ETHAmountToDeposit,
+      symbol: 'ETH'
     })
+    cy.closeTransactionHistoryPanel()
+    cy.findAmountInput().should('have.value', '')
+    cy.findMoveFundsButton().should('be.disabled')
   })
 
   // TODO

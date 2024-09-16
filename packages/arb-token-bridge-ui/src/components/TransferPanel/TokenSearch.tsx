@@ -18,7 +18,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneUSDCe,
-  getL2ERC20Address
+  getL2ERC20Address,
+  isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
@@ -43,6 +44,7 @@ import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useBalances } from '../../hooks/useBalances'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -493,6 +495,7 @@ function TokensPanel({
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
       dataCy="tokenSearchList"
+      isDialog={false}
     >
       <AutoSizer>
         {({ height, width }) => (
@@ -517,6 +520,7 @@ export function TokenSearch({
   close: () => void
 }) {
   const { address: walletAddress } = useAccount()
+  const { setAmount2 } = useSetInputAmount()
   const {
     app: {
       arbTokenBridge: { token, bridgeTokens }
@@ -554,17 +558,18 @@ export function TokenSearch({
       return
     }
 
-    if (typeof bridgeTokens === 'undefined') {
-      return
+    if (isTokenNativeUSDC(_token.address)) {
+      // not supported
+      setAmount2('')
     }
 
     try {
       // Native USDC on L2 won't have a corresponding L1 address
-      const isNativeUSDC =
+      const isL2NativeUSDC =
         isTokenArbitrumOneNativeUSDC(_token.address) ||
         isTokenArbitrumSepoliaNativeUSDC(_token.address)
 
-      if (isNativeUSDC) {
+      if (isL2NativeUSDC) {
         if (isLoadingAccountType) {
           return
         }
@@ -596,6 +601,10 @@ export function TokenSearch({
           decimals: 6,
           listIds: new Set()
         })
+        return
+      }
+
+      if (typeof bridgeTokens === 'undefined') {
         return
       }
 

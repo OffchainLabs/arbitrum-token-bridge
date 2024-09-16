@@ -7,6 +7,9 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
+import Image from 'next/image'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
@@ -28,6 +31,9 @@ import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
 import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
 import { Address } from '../../util/AddressUtils'
+import { isBatchTransfer } from '../../util/TokenDepositUtils'
+import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   const { sourceChainId, destinationChainId } = tx
@@ -123,6 +129,8 @@ export function TransactionsTableRow({
   className?: string
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
+  const childProvider = getProviderForChainId(tx.childChainId)
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
   const { sourceChainId, destinationChainId } = tx
 
@@ -170,18 +178,37 @@ export function TransactionsTableRow({
       )}
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
-      <div className="flex items-center pr-3 align-middle">
-        <TransactionsTableExternalLink
-          href={`${getExplorerUrl(sourceChainId)}/token/${tx.tokenAddress}`}
-          disabled={!tx.tokenAddress}
-        >
-          <TransactionsTableTokenImage tx={tx} />
-          <span className="ml-2">
-            {formatAmount(Number(tx.value), {
-              symbol: tokenSymbol
-            })}
-          </span>
-        </TransactionsTableExternalLink>
+      <div className="flex flex-col space-y-1">
+        <div className="flex items-center pr-3 align-middle">
+          <TransactionsTableExternalLink
+            href={`${getExplorerUrl(sourceChainId)}/token/${tx.tokenAddress}`}
+            disabled={!tx.tokenAddress}
+          >
+            <TransactionsTableTokenImage tx={tx} />
+            <span className="ml-2">
+              {formatAmount(Number(tx.value), {
+                symbol: tokenSymbol
+              })}
+            </span>
+          </TransactionsTableExternalLink>
+        </div>
+        {isBatchTransfer(tx) && (
+          <BatchTransferNativeTokenTooltip tx={tx}>
+            <div className="flex items-center pr-3 align-middle">
+              <Image
+                height={20}
+                width={20}
+                alt={`${nativeCurrency.symbol} logo`}
+                src={nativeCurrency.logoUrl ?? EthereumLogoRoundLight}
+              />
+              <span className="ml-2">
+                {formatAmount(Number(tx.value2), {
+                  symbol: nativeCurrency.symbol
+                })}
+              </span>
+            </div>
+          </BatchTransferNativeTokenTooltip>
+        )}
       </div>
       <div className="flex items-center space-x-2">
         <TransactionsTableExternalLink

@@ -14,12 +14,11 @@ import {
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
 import {
-  isTeleporterTransaction,
+  isTeleportTx,
   TeleporterTransaction,
   Transaction
 } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
-import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
@@ -62,24 +61,18 @@ export const getDepositStatus = (
     return DepositStatus.L1_PENDING
   }
 
-  // for teleport txn
-  if (
-    isTeleport({
-      sourceChainId: tx.parentChainId, // we make sourceChain=parentChain assumption coz it's a deposit txn
-      destinationChainId: tx.childChainId
-    })
-  ) {
-    const { l2ToL3MsgData, l1ToL2MsgData } = tx as TeleporterMergedTransaction
+  if (isTeleportTx(tx)) {
+    const { l2ToL3MsgData, parentToChildMsgData } = tx
 
     // if any of the retryable info is missing, first fetch might be pending
-    if (!l1ToL2MsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
+    if (!parentToChildMsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
 
     // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
     if (l2ToL3MsgData.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
 
     // if we find first retryable leg failing, then no need to check for the second leg
     const firstLegDepositStatus = getDepositStatusFromL1ToL2MessageStatus(
-      l1ToL2MsgData.status
+      parentToChildMsgData.status
     )
     if (firstLegDepositStatus !== DepositStatus.L2_SUCCESS) {
       return firstLegDepositStatus
@@ -91,11 +84,13 @@ export const getDepositStatus = (
     if (typeof secondLegDepositStatus !== 'undefined') {
       return secondLegDepositStatus
     }
-    switch (l1ToL2MsgData.status) {
+    switch (parentToChildMsgData.status) {
       case ParentToChildMessageStatus.REDEEMED:
         return DepositStatus.L2_PENDING // tx is still pending if `l1ToL2MsgData` is redeemed (but l2ToL3MsgData is not)
       default:
-        return getDepositStatusFromL1ToL2MessageStatus(l1ToL2MsgData.status)
+        return getDepositStatusFromL1ToL2MessageStatus(
+          parentToChildMsgData.status
+        )
     }
   }
 
@@ -148,15 +143,16 @@ export const transformDeposit = (
     direction: tx.type,
     status: tx.status,
     createdAt: tx.timestampCreated
-      ? getStandardizedTimestamp(tx.timestampCreated)
+      ? normalizeTimestamp(tx.timestampCreated)
       : null,
     resolvedAt: tx.timestampResolved
-      ? getStandardizedTimestamp(tx.timestampResolved)
+      ? normalizeTimestamp(tx.timestampResolved)
       : null,
     txId: tx.txID,
     asset: tx.assetName || '',
     assetType: tx.assetType,
     value: tx.value,
+    value2: tx.value2,
     uniqueId: null, // not needed
     isWithdrawal: false,
     blockNum: tx.blockNumber || null,
@@ -169,7 +165,7 @@ export const transformDeposit = (
     sourceChainId: Number(tx.l1NetworkID),
     destinationChainId: Number(tx.l2NetworkID)
   }
-  if (isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     return {
       ...transaction,
       l2ToL3MsgData: tx.l2ToL3MsgData
@@ -193,9 +189,7 @@ export const transformWithdrawal = (
       NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
         ? 'Failure'
         : outgoingStateToString[tx.outgoingMessageState],
-    createdAt: getStandardizedTimestamp(
-      String(BigNumber.from(tx.timestamp).toNumber() * 1000)
-    ),
+    createdAt: normalizeTimestamp(tx.timestamp.toNumber()),
     resolvedAt: null,
     txId: tx.l2TxHash || 'l2-tx-hash-not-found',
     asset: tx.symbol || '',
@@ -301,7 +295,7 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
-  if (isTeleport(tx) && isTeleporterTransaction(tx)) {
+  if (isTeleportTx(tx)) {
     return (
       firstRetryableLegRequiresRedeem(tx) ||
       secondRetryableLegForTeleportRequiresRedeem(tx)
@@ -310,15 +304,31 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const getStandardizedTimestamp = (date: string | BigNumber) => {
+export const normalizeTimestamp = (date: number | string) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
+  const TIMESTAMP_LENGTH = 13
+  let timestamp = date
+
   if (typeof date === 'string') {
-    if (isNaN(Number(date))) return dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
-    return Number(date) // for timestamp type of date -> dayjs timestamp
+    timestamp = isNaN(Number(date))
+      ? dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
+      : Number(date) // for timestamp type of date -> dayjs timestamp
   }
 
-  // BigNumber
-  return date.toNumber()
+  const timestampString = String(timestamp)
+
+  if (timestampString.length === TIMESTAMP_LENGTH) {
+    // correct timestamp length
+    return Number(timestampString)
+  }
+
+  if (timestampString.length < TIMESTAMP_LENGTH) {
+    // add zeros at the end until correct timestamp length
+    return Number(timestampString.padEnd(TIMESTAMP_LENGTH, '0'))
+  }
+
+  // remove end digits until correct timestamp length
+  return Number(timestampString.slice(0, TIMESTAMP_LENGTH))
 }
 
 export const getStandardizedTime = (standardizedTimestamp: number) => {

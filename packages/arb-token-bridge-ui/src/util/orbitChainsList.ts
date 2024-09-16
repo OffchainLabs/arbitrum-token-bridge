@@ -206,6 +206,49 @@ export const orbitMainnets: {
       }
     }
   },
+  70701: {
+    chainId: 70701,
+    confirmPeriodBlocks: 43200,
+    ethBridge: {
+      bridge: '0x53D82686BC9827fEc03bcEe661B37b855A18EcA9',
+      inbox: '0xEe30EfcaF812d10e1EFE25E9458f76a39DAD3239',
+      outbox: '0xa4270256B160C3Ebec2d6914a906c7EC38D8d072',
+      rollup: '0x330F8fEB25f3427cABA32446728C36ae67f2135b',
+      sequencerInbox: '0x6eE94AD8057Fd7Ba4d47bb6278a261c8a9FD4E3f'
+    },
+    explorerUrl: 'https://explorer-proofofplay-boss-mainnet.t.conduit.xyz',
+    rpcUrl: 'https://rpc.boss.proofofplay.com',
+    name: 'Proof of Play Boss',
+    slug: 'pop-boss',
+    parentChainId: 42161,
+    isCustom: true,
+    isTestnet: false,
+    tokenBridge: {
+      parentCustomGateway: '0x7D25Cc5b71AC932F696F3f4Da109e867395f4F05',
+      parentErc20Gateway: '0x410a210d51597be9e575F9b46c11eB865c0Ee073',
+      parentGatewayRouter: '0x48e067CC8eedc2f6E6dfB7192E7E32158A7de0E2',
+      parentMultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      parentProxyAdmin: '0x490C4c92Ea9FF02EE8277222C66afD80Bfb1b7c1',
+      parentWeth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      parentWethGateway: '0x7480A89d1e360e512493489711EC7bc8eE7acfD6',
+      childCustomGateway: '0xA534bFDaBBac7F0511E97bDFCE8aB72bd7380355',
+      childErc20Gateway: '0xb7B9a171D4B318e87e198A028b0650Bf3Fa16615',
+      childGatewayRouter: '0x2DDb10B368c5D31BEb395Cbb16f0bC6Ffea7eE08',
+      childMultiCall: '0xFcA54035D5CceE942674721E8Ab5aB37d88D82b9',
+      childProxyAdmin: '0x63a766C4C8f1c54cD818A7Ab67A9AF54a78cB82F',
+      childWeth: '0x993232978869f1772Fb5D282Fdbcb0f6C5ef744D',
+      childWethGateway: '0x9c0c007880e04685947d13533dCa27BF2AAEc0Ec'
+    },
+    bridgeUiConfig: {
+      color: '#3E63DD',
+      network: {
+        name: 'Proof of Play Boss',
+        description:
+          'Proof of Play Boss is a gaming-focused L3 settling on Arbitrum using the Orbit Stack and AnyTrust DA.',
+        logo: '/images/PopApexLogo.svg'
+      }
+    }
+  },
   42001: {
     chainId: 42001,
     confirmPeriodBlocks: 7200,
@@ -634,6 +677,57 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         symbol: 'AARC',
         decimals: 18,
         logoUrl: '/images/AtlasLogo.png'
+      }
+    }
+  },
+  2730: {
+    chainId: 2730,
+    confirmPeriodBlocks: 64,
+    ethBridge: {
+      bridge: '0x34C1428F66bB2E418f72DEa75a1f601E0698dEC5',
+      inbox: '0xbC9C0dcb21C53681E6451AB910d78Bc0a3D24742',
+      outbox: '0xBf3226Af95b8603200BdECE1592eA3a6f30a1969',
+      rollup: '0x57af9E93648f7F8c795A0a7D0049B3ef30198bc8',
+      sequencerInbox: '0x45DeF8701582EE64014E6cc9E3039820Ac20349F'
+    },
+    nativeToken: '0x555BF0d9394CC86F0D0D4102916cC6851439dDd0',
+    explorerUrl: 'https://testnet-explorer.xrone.network',
+    rpcUrl: 'https://xr-sepolia-testnet.rpc.caldera.xyz/http',
+    isCustom: true,
+    isTestnet: true,
+    name: 'XR Sepolia',
+    slug: 'xr-sepolia',
+    parentChainId: 421614,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      parentCustomGateway: '0x5F1ac3cd4553bA45fccF135d057795717b37B9Ef',
+      parentErc20Gateway: '0xd0CD7B9F4cB10B21abBfFA874F0d0ad1a41bD51C',
+      parentGatewayRouter: '0x29216c76510df5e90626d39B49e5098ad6e1b4ed',
+      parentMultiCall: '0x3AFeb1Ea760EED35D224C531D531C30eC6aE13e5',
+      parentProxyAdmin: '0xC6333aa27314D5a18f95bca1D54aC1cDc1CD96A0',
+      parentWeth: '0x0000000000000000000000000000000000000000',
+      parentWethGateway: '0x0000000000000000000000000000000000000000',
+      childCustomGateway: '0x8A13D96EFd45923eFAC61cB28740662Ac32C3cD8',
+      childErc20Gateway: '0x84c736079527f13093cDB4382e4A273751904334',
+      childGatewayRouter: '0xFFaD917b6DD1593F8bA36aE2943097deE22EbC9a',
+      childMultiCall: '0x736C61d3b852b42421631A57af78E35E37c784E3',
+      childProxyAdmin: '0x0497357278c9B079e314De0efC48202a2224b374',
+      childWeth: '0x0000000000000000000000000000000000000000',
+      childWethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    bridgeUiConfig: {
+      color: '#03AB2A',
+      network: {
+        name: 'XR Sepolia',
+        logo: '/images/xrLogo.png',
+        description:
+          'XR One is home to the next wave of high impact competitive Web3 & Web2 games.'
+      },
+      nativeTokenData: {
+        name: 'tXR',
+        symbol: 'tXR',
+        decimals: 18,
+        logoUrl: '/images/xrTokenLogo.png'
       }
     }
   }

@@ -1,4 +1,3 @@
-import './commands'
 import '@synthetixio/synpress/support'
 import logCollector from 'cypress-terminal-report/src/installLogsCollector'
 
@@ -7,11 +6,7 @@ import {
   getL2NetworkConfig,
   getL2TestnetNetworkConfig
 } from './common'
-
-Cypress.Keyboard.defaults({
-  // tests are flaky in CI with low keystroke delay
-  keystrokeDelay: 150
-})
+import './commands'
 
 logCollector({
   collectTypes: [
@@ -20,7 +15,6 @@ logCollector({
     'cons:debug',
     'cons:error',
     'cons:info',
-    'cons:log',
     'cons:warn'
   ]
 })

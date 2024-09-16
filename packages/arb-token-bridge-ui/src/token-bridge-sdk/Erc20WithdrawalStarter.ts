@@ -101,9 +101,17 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
+    const destinationChainId = await getChainIdFromProvider(
+      this.destinationChainProvider
+    )
+
     // check first if token is even eligible for allowance check on l2
     if (
-      tokenRequiresApprovalOnL2(destinationChainErc20Address, sourceChainId) &&
+      (await tokenRequiresApprovalOnL2({
+        tokenAddressOnParentChain: destinationChainErc20Address,
+        parentChainId: destinationChainId,
+        childChainId: sourceChainId
+      })) &&
       this.sourceChainErc20Address
     ) {
       const token = ERC20__factory.connect(

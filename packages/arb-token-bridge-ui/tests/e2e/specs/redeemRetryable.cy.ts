@@ -84,32 +84,25 @@ describe('Redeem ERC20 Deposit', () => {
           .click()
 
         // approve redeem transaction
-        cy.confirmMetamaskTransaction().then(() => {
-          cy.wait(15_000).then(() => {
-            cy.selectTransactionsPanelTab('settled')
+        cy.confirmMetamaskTransaction()
+        cy.wait(15_000)
+        cy.selectTransactionsPanelTab('settled')
 
-            // find the same transaction there redeemed successfully
-            cy.findTransactionInTransactionHistory({
-              amount: wethAmountToDeposit,
-              symbol: 'WETH'
-            })
-
-            // close transaction history
-            cy.findByLabelText('Close side panel').click()
-
-            // wait for the destination balance to update
-            cy.wait(5_000).then(() => {
-              // the balance on the destination chain should not be the same as before
-              cy.findByLabelText('WETH balance amount on childChain')
-                .should('be.visible')
-                .invoke('text')
-                .should(
-                  'eq',
-                  formatAmount(Number(l2ERC20bal) + wethAmountToDeposit)
-                )
-            })
-          })
+        // find the same transaction there redeemed successfully
+        cy.findTransactionInTransactionHistory({
+          amount: wethAmountToDeposit,
+          symbol: 'WETH'
         })
+
+        cy.closeTransactionHistoryPanel()
+
+        // wait for the destination balance to update
+        cy.wait(5_000)
+        // the balance on the destination chain should not be the same as before
+        cy.findByLabelText('WETH balance amount on childChain')
+          .should('be.visible')
+          .invoke('text')
+          .should('eq', formatAmount(Number(l2ERC20bal) + wethAmountToDeposit))
       })
     })
   })

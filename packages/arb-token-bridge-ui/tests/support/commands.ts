@@ -8,20 +8,13 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { recurse } from 'cypress-recurse'
 import {
   NetworkType,
   NetworkName,
   startWebApp,
   getL1NetworkConfig,
-  getL2NetworkConfig,
-  getInitialERC20Balance
+  getL2NetworkConfig
 } from './common'
-import { Wallet, utils } from 'ethers'
-import { CommonAddress } from '../../src/util/CommonAddressUtils'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { shortenAddress } from '../../src/util/CommonUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
@@ -57,7 +50,7 @@ export function login({
 
     // when testing Orbit chains we want to set destination chain to L3
     const destinationChain =
-      networkType === 'parentChain' && network.chainId === '412346'
+      networkType === 'parentChain' && network.chainId === 412346
         ? 'l3-localhost'
         : ''
     startWebApp(url, {
@@ -80,37 +73,14 @@ export function login({
   })
 }
 
-Cypress.Commands.add(
-  'typeRecursively',
-  { prevSubject: true },
-  (subject, text: string) => {
-    recurse(
-      // the commands to repeat, and they yield the input element
-      () => cy.wrap(subject).clear().type(text),
-      // the predicate takes the output of the above commands
-      // and returns a boolean. If it returns true, the recursion stops
-      $input => $input.val() === text,
-      {
-        log: false,
-        timeout: 180_000
-      }
-    )
-      // the recursion yields whatever the command function yields
-      // and we can confirm that the text was entered correctly
-      .should('have.value', text)
-  }
-)
-
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    cy.resetMetamaskAccount().then(() => {
-      // resetMetamaskAccount doesn't seem to remove the connected network in CI
-      // changeMetamaskNetwork fails if already connected to the desired network
-      // as a workaround we switch to another network after all the tests
-      cy.changeMetamaskNetwork('sepolia')
-    })
-  })
+  cy.disconnectMetamaskWalletFromAllDapps()
+  cy.resetMetamaskAccount()
+  // resetMetamaskAccount doesn't seem to remove the connected network in CI
+  // changeMetamaskNetwork fails if already connected to the desired network
+  // as a workaround we switch to another network after all the tests
+  cy.changeMetamaskNetwork('sepolia')
 }
 
 export const connectToApp = () => {
@@ -161,77 +131,6 @@ export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
   )
 }
 
-const l1RpcUrl = Cypress.env('ETH_SEPOLIA_RPC_URL')
-const l2RpcUrl = Cypress.env('ARB_SEPOLIA_RPC_URL')
-const l1Provider = new StaticJsonRpcProvider(l1RpcUrl)
-const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
-const userWallet = new Wallet(Cypress.env('PRIVATE_KEY'))
-const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
-
-export async function resetCctpAllowance(networkType: NetworkType) {
-  const provider = networkType === 'parentChain' ? l1Provider : l2Provider
-  const { USDC, tokenMessengerContractAddress } =
-    networkType === 'parentChain'
-      ? CommonAddress.Sepolia
-      : CommonAddress.ArbitrumSepolia
-
-  const contract = ERC20__factory.connect(USDC, userWallet.connect(provider))
-  const allowance = await contract.allowance(
-    userWallet.address,
-    tokenMessengerContractAddress
-  )
-  if (allowance.gt(0)) {
-    await contract.decreaseAllowance(tokenMessengerContractAddress, allowance)
-  }
-}
-
-export async function fundUserUsdcTestnet(networkType: NetworkType) {
-  console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
-  const usdcContractAddress =
-    networkType === 'parentChain'
-      ? CommonAddress.Sepolia.USDC
-      : CommonAddress.ArbitrumSepolia.USDC
-
-  const usdcBalance = await getInitialERC20Balance({
-    address: userWallet.address,
-    rpcURL: networkType === 'parentChain' ? l1RpcUrl : l2RpcUrl,
-    tokenAddress: usdcContractAddress,
-    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
-  })
-
-  // Fund only if the balance is less than 0.0001 USDC
-  if (usdcBalance && usdcBalance.lt(utils.parseUnits('0.0001', 6))) {
-    console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
-    const l1Provider = new StaticJsonRpcProvider(l1RpcUrl)
-    const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
-    const provider = networkType === 'parentChain' ? l1Provider : l2Provider
-    const contract = new ERC20__factory().connect(localWallet.connect(provider))
-    const token = contract.attach(usdcContractAddress)
-    await token.deployed()
-    const tx = await token.transfer(
-      userWallet.address,
-      utils.parseUnits('1', 6)
-    )
-    await tx.wait()
-  }
-}
-
-export async function fundUserWalletEth(networkType: NetworkType) {
-  console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
-  const address = await userWallet.getAddress()
-  const provider = networkType === 'parentChain' ? l1Provider : l2Provider
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 0.005 eth
-  const amountToTransfer = '0.005'
-  if (balance.lt(utils.parseEther(amountToTransfer))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther(amountToTransfer)
-    })
-    await tx.wait()
-  }
-}
-
 export const searchAndSelectToken = ({
   tokenName,
   tokenAddress
@@ -244,20 +143,19 @@ export const searchAndSelectToken = ({
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
-    .typeRecursively(tokenAddress)
+    .type(tokenAddress)
     .should('be.visible')
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click()
 
-      // Select the USDC token
-      cy.findAllByText(tokenName).first().click()
+  // Click on the Add new token button
+  cy.findByRole('button', { name: 'Add New Token' })
+    .should('be.visible')
+    .click()
 
-      // USDC token should be selected now and popup should be closed after selection
-      cy.findSelectTokenButton(tokenName)
-    })
+  // Select the USDC token
+  cy.findAllByText(tokenName).first().click()
+
+  // USDC token should be selected now and popup should be closed after selection
+  cy.findSelectTokenButton(tokenName)
 }
 
 export const fillCustomDestinationAddress = () => {
@@ -269,17 +167,19 @@ export const fillCustomDestinationAddress = () => {
     .should('be.visible')
     .click()
 
-  cy.findByPlaceholderText(Cypress.env('ADDRESS'))
+  cy.findByLabelText('Custom Destination Address Input')
     .should('be.visible')
-    .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+    .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+}
+
+export function findAmountInput(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText('Amount input')
 }
 
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy
-    .findByPlaceholderText(/enter amount/i)
-    .typeRecursively(String(amount))
+  return cy.findAmountInput().type(String(amount))
 }
 
 export function findSourceChainButton(
@@ -344,6 +244,10 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function closeTransactionHistoryPanel() {
+  cy.findByLabelText('Close side panel').click()
+}
+
 export function openTransactionDetails({
   amount,
   symbol
@@ -381,8 +285,10 @@ export function findTransactionInTransactionHistory({
   amount: number
   duration?: string
 }) {
+  // Replace . with \.
+  const parsedAmount = amount.toString().replace(/\./g, '\\.')
   const rowId = new RegExp(
-    `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
+    `(claimable|deposit)-row-[0-9xabcdef]*-${parsedAmount}${symbol}`
   )
   cy.findByTestId(rowId).as('row')
   if (duration) {
@@ -401,27 +307,47 @@ export function findClaimButton(
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
+/**
+ * Currently, Synpress confirmMetamaskPermissionToSpend is clicking only once
+ * We need to call it twice to confirm it.
+ * shouldWaitForPopupClosure needs to be set to true for the test to pass
+ */
+export function confirmSpending(
+  spendLimit: Parameters<
+    typeof cy.confirmMetamaskPermissionToSpend
+  >[0]['spendLimit']
+) {
+  cy.confirmMetamaskPermissionToSpend({
+    spendLimit,
+    shouldWaitForPopupClosure: true
+  })
+  cy.confirmMetamaskPermissionToSpend({
+    spendLimit,
+    shouldWaitForPopupClosure: true
+  })
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
   openTransactionsPanel,
   selectTransactionsPanelTab,
-  resetCctpAllowance,
-  fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  findAmountInput,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
   findSelectTokenButton,
+  closeTransactionHistoryPanel,
   openTransactionDetails,
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
-  findTransactionDetailsCustomDestinationAddress
+  findTransactionDetailsCustomDestinationAddress,
+  confirmSpending
 })
