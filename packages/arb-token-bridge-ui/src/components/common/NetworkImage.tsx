@@ -20,7 +20,7 @@ export const NetworkImage = ({
   return (
     <div
       style={{
-        backgroundColor: `${color}33`
+        backgroundColor: `${color}75`
       }}
       className={twMerge(
         'flex w-4 shrink-0 items-center justify-center rounded-full p-[4px]',

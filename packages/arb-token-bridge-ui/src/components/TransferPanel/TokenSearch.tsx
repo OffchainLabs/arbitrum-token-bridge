@@ -18,7 +18,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneUSDCe,
-  getL2ERC20Address
+  getL2ERC20Address,
+  isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
@@ -43,6 +44,7 @@ import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useBalances } from '../../hooks/useBalances'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -525,6 +527,7 @@ export function TokenSearch({
   close: () => void
 }) {
   const { address: walletAddress } = useAccount()
+  const { setAmount2 } = useSetInputAmount()
   const {
     app: {
       arbTokenBridge: { token, bridgeTokens }
@@ -564,13 +567,18 @@ export function TokenSearch({
       return
     }
 
+    if (isTokenNativeUSDC(_token.address)) {
+      // not supported
+      setAmount2('')
+    }
+
     try {
       // Native USDC on L2 won't have a corresponding L1 address
-      const isNativeUSDC =
+      const isL2NativeUSDC =
         isTokenArbitrumOneNativeUSDC(lowercasedTokenAddress) ||
         isTokenArbitrumSepoliaNativeUSDC(lowercasedTokenAddress)
 
-      if (isNativeUSDC) {
+      if (isL2NativeUSDC) {
         if (isLoadingAccountType) {
           return
         }
