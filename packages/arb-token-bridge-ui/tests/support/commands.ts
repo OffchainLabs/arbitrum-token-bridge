@@ -308,12 +308,14 @@ export function findTransactionInTransactionHistory({
   amount2?: number
   duration?: string
 }) {
-  const rowIdBase = new RegExp(
-    `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
-  )
+  // Replace . with \.
+  const parsedAmount = amount.toString().replace(/\./g, '\\.')
 
-  const rowId =
-    amount2 && symbol2 ? `${rowIdBase}-${amount2}${symbol2}` : rowIdBase
+  const rowId = new RegExp(
+    `(claimable|deposit)-row-[0-9xabcdef]*-${parsedAmount}${symbol}${
+      amount2 && symbol2 ? `-${amount2}${symbol2}` : ''
+    }`
+  )
 
   cy.findByTestId(rowId).as('row')
   if (duration) {
