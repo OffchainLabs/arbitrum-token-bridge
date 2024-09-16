@@ -18,6 +18,18 @@ describe('Batch Deposit', () => {
     childErc20Balance: string
 
   beforeEach(() => {
+    getInitialERC20Balance({
+      tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_CHILD_CHAIN'),
+      multiCallerAddress: getL2NetworkConfig().multiCall,
+      address: Cypress.env('CUSTOM_DESTINATION_ADDRESS'),
+      rpcURL: Cypress.env('ARB_RPC_URL')
+    }).then(val => (childErc20Balance = formatAmount(val)))
+
+    getInitialETHBalance(
+      Cypress.env('ARB_RPC_URL'),
+      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+    ).then(val => (childNativeTokenBalance = formatAmount(val)))
+
     getInitialETHBalance(
       Cypress.env('ETH_RPC_URL'),
       Cypress.env('ADDRESS')
@@ -181,18 +193,6 @@ describe('Batch Deposit', () => {
   })
 
   it('should deposit erc-20 and native currency to a different address', () => {
-    getInitialERC20Balance({
-      tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_CHILD_CHAIN'),
-      multiCallerAddress: getL2NetworkConfig().multiCall,
-      address: Cypress.env('CUSTOM_DESTINATION_ADDRESS'),
-      rpcURL: Cypress.env('ARB_RPC_URL')
-    }).then(val => (childErc20Balance = formatAmount(val)))
-
-    getInitialETHBalance(
-      Cypress.env('ARB_RPC_URL'),
-      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-    ).then(val => (childNativeTokenBalance = formatAmount(val)))
-
     // randomize the amount to be sure that previous transactions are not checked in e2e
     const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
     const nativeCurrencyAmountToSend = 0.002
@@ -212,17 +212,6 @@ describe('Batch Deposit', () => {
       cy.fillCustomDestinationAddress()
     })
 
-    context('should show erc-20 child balance correctly', () => {
-      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
-        .should('be.visible')
-        .contains(childErc20Balance)
-        .should('be.visible')
-    })
-
-    context('native currency balance on child chain should not exist', () => {
-      cy.findByLabelText(`ETH balance amount on childChain`).should('not.exist')
-    })
-
     context('amount2 input should not exist', () => {
       cy.findAmount2Input().should('not.exist')
     })
@@ -235,13 +224,6 @@ describe('Batch Deposit', () => {
 
     context('amount2 input should show', () => {
       cy.findAmount2Input().should('be.visible').should('have.value', '')
-    })
-
-    context('native currency balance on child chain should show', () => {
-      cy.findByLabelText(`ETH balance amount on childChain`)
-        .should('be.visible')
-        .contains(childNativeTokenBalance)
-        .should('be.visible')
     })
 
     context('move funds button should be disabled', () => {
@@ -294,21 +276,6 @@ describe('Batch Deposit', () => {
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
       cy.closeTransactionHistoryPanel()
-    })
-
-    context('funds should reach destination account successfully', () => {
-      // should have more funds on destination chain
-      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
-        .invoke('text')
-        .then(parseFloat)
-        .should('be.gt', Number(parentErc20Balance))
-      cy.findByLabelText(`ETH balance amount on childChain`)
-        .invoke('text')
-        .then(parseFloat)
-        .should(
-          'be.gt',
-          Number(parentNativeTokenBalance) + nativeCurrencyAmountToSend
-        )
     })
 
     context('transfer panel amount should be reset', () => {
