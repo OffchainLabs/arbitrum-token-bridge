@@ -54,7 +54,8 @@ export const getAPIBaseUrl = () => {
   return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 }
 
-const featureFlags = ['batch'] as const
+// add feature flags to the array
+const featureFlags = [] as const
 
 type FeatureFlag = (typeof featureFlags)[number]
 
