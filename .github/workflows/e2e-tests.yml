@@ -65,8 +65,8 @@ jobs:
         uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
-          l3-node: ${{ matrix.test.orbitTest == '1' }}
-          no-l3-token-bridge: ${{ matrix.test.orbitTest == '0' }}
+          l3-node: ${{ matrix.test.orbit == '1' }}
+          no-l3-token-bridge: ${{ matrix.test.orbit == '0' }}
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
