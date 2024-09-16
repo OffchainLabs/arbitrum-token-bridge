@@ -38,6 +38,10 @@ function Amount2ToggleButton({
 }: {
   onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
 }) {
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
   return (
     <Button
       variant="secondary"
@@ -46,7 +50,7 @@ function Amount2ToggleButton({
     >
       <div className="flex items-center space-x-1">
         <PlusCircleIcon width={18} />
-        <span>Add ETH</span>
+        <span>Add {nativeCurrency.symbol}</span>
       </div>
     </Button>
   )
