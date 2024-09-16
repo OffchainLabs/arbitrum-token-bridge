@@ -256,6 +256,7 @@ describe('Batch Deposit', () => {
       cy.findTransactionDetailsCustomDestinationAddress(
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
+      cy.closeTransactionDetails()
     })
 
     context('deposit should complete successfully', () => {
@@ -275,6 +276,7 @@ describe('Batch Deposit', () => {
       cy.findTransactionDetailsCustomDestinationAddress(
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
+      cy.closeTransactionDetails()
       cy.closeTransactionHistoryPanel()
     })
 
