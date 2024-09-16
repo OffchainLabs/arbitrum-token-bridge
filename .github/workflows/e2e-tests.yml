@@ -27,7 +27,7 @@ jobs:
         run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js ${{ inputs.test_type }} | jq . --compact-output)" >> $GITHUB_OUTPUT
 
   test-e2e:
-    name: "Test E2E - ${{ matrix.test.name }}"
+    name: "Test E2E - ${{ matrix.test.name }}${{ matrix.test.type == 'orbit' && ' with L3' || ''}}"
     needs: [load-e2e-files]
     runs-on: ubuntu-latest
     strategy:
