@@ -150,7 +150,7 @@ jobs:
 
   regular-e2e-tests:
     name: "E2E Tests"
-    needs: [check-files]
+    needs: [build, check-files]
     if: needs.check-files.outputs.run_tests == 'true' && github.event_name != 'pull_request_review'
     uses: ./.github/workflows/e2e-tests.yml
     with:
@@ -159,7 +159,7 @@ jobs:
 
   cctp-e2e-tests:
     name: "CCTP E2E Tests"
-    needs: [check-files]
+    needs: [build, check-files]
     # Only run CCTP tests when the PR was just approved
     if: needs.check-files.outputs.run_tests == 'true' && github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
     uses: ./.github/workflows/e2e-tests.yml
