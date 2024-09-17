@@ -605,6 +605,8 @@ export function TransferPanel() {
 
     setTransferring(true)
 
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
     try {
       if (
         (isDepositMode && !parentSigner) ||
@@ -660,6 +662,7 @@ export function TransferPanel() {
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
           network: childChainName,
           amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined,
           version: 2
         })
 
@@ -875,14 +878,13 @@ export function TransferPanel() {
             assetType: 'ERC-20',
             accountType: 'Smart Contract',
             network: childChainName,
-            amount: Number(amount)
+            amount: Number(amount),
+            amount2: isBatchTransfer ? Number(amount2) : undefined
           }
         )
       }
 
       const overrides: TransferOverrides = {}
-
-      const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
       if (isBatchTransfer) {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
@@ -931,6 +933,8 @@ export function TransferPanel() {
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
     if (!isSmartContractWallet) {
       trackEvent(
         isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
@@ -939,14 +943,13 @@ export function TransferPanel() {
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: 'EOA',
           network: getNetworkName(childChain.id),
-          amount: Number(amount)
+          amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined
         }
       )
     }
 
     const { sourceChainTransaction } = bridgeTransfer
-
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
