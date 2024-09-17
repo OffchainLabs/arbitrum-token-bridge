@@ -30,45 +30,22 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_hotfix: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
-
+    env:  
+      IS_HOTFIX: ${{ contains(github.event.pull_request.title, 'hotfix') }}
     steps:
-      - name: Make IS_HOTFIX env var global
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/check-is-hotfix
         id: check-is-hotfix
-        run: |
-          echo "is_hotfix=${{ env.IS_HOTFIX }}" >> $GITHUB_OUTPUT
 
   check-files:
     name: Check files
+    runs-on: ubuntu-latest
     outputs:
       run_tests: ${{ steps.check-files.outputs.run_tests }}
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      # run tests only if specific files are changed
-      - name: Check modified files
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/check-files
         id: check-files
-        run: |
-          echo "=============== list modified files ==============="
-          files=`git diff --name-only HEAD^ HEAD`
-          echo "$files"
-          for file in $files; do
-            if [[ $file != packages/* ]] && ! [[ $file =~ .*\.(lock|yml)$ ]]; then
-              # if not in packages/ and does not end with .lock or .yml
-              echo "run_tests=false" >> $GITHUB_OUTPUT
-            elif [[ $file == .github/ISSUE_TEMPLATE/* ]]; then
-              echo "run_tests=false" >> $GITHUB_OUTPUT
-            elif [[ $file =~ .*\.(md|svg|png|webp|gif|txt)$ ]]; then
-              echo "run_tests=false" >> $GITHUB_OUTPUT
-            else
-              echo "run_tests=true" >> $GITHUB_OUTPUT
-              break
-            fi
-          done
-        shell: bash
 
   build:
     name: "Build"
@@ -142,8 +119,8 @@ jobs:
 
   e2e-tests:
     name: "E2E Tests"
-    needs: [build, check-files]
-    if: needs.check-files.outputs.run_tests == 'true'
+    needs: [build, check-is-hotfix, check-files]
+    if: needs.check-is-hotfix.outputs.is_hotfix == 'false' && needs.check-files.outputs.run_tests == 'true'
     uses: ./.github/workflows/e2e-tests.yml
     with:
       test_type: 'regular'
