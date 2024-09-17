@@ -16,6 +16,8 @@ export type BridgeUiConfig = {
     description?: string
   }
   nativeTokenData?: NativeCurrencyBase
+  fastWithdrawalTime?: number
+  fastWithdrawalActive?: boolean
 }
 
 export type OrbitChainConfig = ChainWithRpcUrl & {
@@ -435,7 +437,9 @@ export const orbitMainnets: {
         symbol: 'DMT',
         decimals: 18,
         logoUrl: '/images/SankoLogo.png'
-      }
+      },
+      fastWithdrawalTime: 900000, // 15 minutes
+      fastWithdrawalActive: true
     }
   }
 }
@@ -538,7 +542,9 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         symbol: 'BERD',
         decimals: 18,
         logoUrl: ''
-      }
+      },
+      fastWithdrawalTime: 1800000, // 30 minutes
+      fastWithdrawalActive: true
     }
   },
   12325: {
