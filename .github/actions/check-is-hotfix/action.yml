@@ -3,7 +3,7 @@ description: 'Check if PR is hotfix'
 outputs:
   is_hotfix:
     description: 'Whether the PR is a hotfix'
-    value: ${{ steps.check-is-hotfix.outputs.is_hotfix }
+    value: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
 runs:
   using: "composite"
   steps:
