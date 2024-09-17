@@ -928,6 +928,8 @@ export function TransferPanel() {
     }
   }
 
+  const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
@@ -939,14 +941,13 @@ export function TransferPanel() {
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: 'EOA',
           network: getNetworkName(childChain.id),
-          amount: Number(amount)
+          amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined
         }
       )
     }
 
     const { sourceChainTransaction } = bridgeTransfer
-
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
