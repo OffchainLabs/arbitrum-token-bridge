@@ -245,6 +245,10 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
+export function closeTransactionHistoryPanel() {
+  cy.findByLabelText('Close side panel').click()
+}
+
 export function openTransactionDetails({
   amount,
   symbol
@@ -282,8 +286,10 @@ export function findTransactionInTransactionHistory({
   amount: number
   duration?: string
 }) {
+  // Replace . with \.
+  const parsedAmount = amount.toString().replace(/\./g, '\\.')
   const rowId = new RegExp(
-    `(claimable|deposit)-row-[0-9xabcdef]*-${amount}${symbol}`
+    `(claimable|deposit)-row-[0-9xabcdef]*-${parsedAmount}${symbol}`
   )
   cy.findByTestId(rowId).as('row')
   if (duration) {
@@ -343,6 +349,7 @@ Cypress.Commands.addAll({
   findGasFeeSummary,
   findMoveFundsButton,
   findSelectTokenButton,
+  closeTransactionHistoryPanel,
   openTransactionDetails,
   closeTransactionDetails,
   findTransactionInTransactionHistory,

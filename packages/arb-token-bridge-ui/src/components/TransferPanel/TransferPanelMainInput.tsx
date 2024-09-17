@@ -98,11 +98,12 @@ function SourceChainTokenBalance({
     balanceOverride ??
     (selectedToken ? tokenBalance : nativeCurrencyBalances.sourceBalance)
 
-  const formattedBalance = balance
-    ? formatAmount(balance, {
-        decimals: selectedToken?.decimals ?? nativeCurrency.decimals
-      })
-    : null
+  const formattedBalance =
+    balance !== null
+      ? formatAmount(balance, {
+          decimals: selectedToken?.decimals ?? nativeCurrency.decimals
+        })
+      : null
 
   if (formattedBalance) {
     return (
@@ -224,6 +225,15 @@ export const TransferPanelMainInput = React.memo(
     const [localValue, setLocalValue] = useState(value)
 
     useEffect(() => {
+      /**
+       * If value is empty, set localValue to empty string
+       * this is useful when transfer was successful and the `amount` query param
+       * was reset to an empty string
+       */
+      if (value === '') {
+        setLocalValue('')
+      }
+
       if (!isMaxAmount || !maxAmount) {
         return
       }
@@ -233,7 +243,7 @@ export const TransferPanelMainInput = React.memo(
        * If user types anything before we receive the amount, isMaxAmount is set to false in the parent
        */
       setLocalValue(maxAmount)
-    }, [isMaxAmount, maxAmount])
+    }, [isMaxAmount, maxAmount, value])
 
     const handleMaxButtonClick: React.MouseEventHandler<HTMLButtonElement> =
       useCallback(

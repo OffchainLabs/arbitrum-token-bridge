@@ -1,11 +1,9 @@
-import { constants, utils } from 'ethers'
-import { useAccount } from 'wagmi'
+import { constants } from 'ethers'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useDestinationAddressStore } from '../AdvancedSettings'
 import {
   BalancesContainer,
-  ETHBalance,
   NetworkContainer,
   NetworkListboxPlusBalancesContainer
 } from '../TransferPanelMain'
@@ -26,6 +24,54 @@ import {
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { ether } from '../../../constants'
+import { formatAmount } from '../../../util/NumberUtils'
+import { Loader } from '../../common/atoms/Loader'
+import { useAmount2InputVisibility } from './SourceNetworkBox'
+
+function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
+  const [networks] = useNetworks()
+  const nativeCurrency = useNativeCurrency({
+    provider: networks.destinationChainProvider
+  })
+  const { isDepositMode } = useNetworksRelationship(networks)
+
+  if (nativeCurrency.isCustom) {
+    return (
+      <TokenBalance
+        forToken={nativeCurrency}
+        balance={nativeCurrencyBalances.destinationBalance}
+        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+        prefix={prefix}
+      />
+    )
+  }
+  if (!nativeCurrencyBalances.destinationBalance) {
+    return (
+      <p className="flex items-center gap-1">
+        <span className="font-light">{prefix}</span>
+        <Loader color="white" size="small" />
+      </p>
+    )
+  }
+
+  return (
+    <p>
+      <span className="font-light">{prefix}</span>
+      <span
+        aria-label={`ETH balance amount on ${
+          isDepositMode ? NetworkType.childChain : NetworkType.parentChain
+        }`}
+      >
+        {formatAmount(nativeCurrencyBalances.destinationBalance, {
+          symbol: ether.symbol
+        })}
+      </span>
+    </p>
+  )
+}
 
 function DestinationNetworkBalance({
   showUsdcSpecificInfo
@@ -40,8 +86,7 @@ function DestinationNetworkBalance({
     useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
 
-  const { ethParentBalance, ethChildBalance, erc20ChildBalances } =
-    useBalances()
+  const { erc20ChildBalances } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
@@ -101,13 +146,7 @@ function DestinationNetworkBalance({
     )
   }
 
-  return (
-    <ETHBalance
-      balance={nativeCurrencyBalances.destinationBalance}
-      on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-      prefix="Balance: "
-    />
-  )
+  return <NativeCurrencyDestinationBalance prefix="Balance: " />
 }
 
 export function DestinationNetworkBox({
@@ -115,14 +154,14 @@ export function DestinationNetworkBox({
 }: {
   showUsdcSpecificInfo: boolean
 }) {
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { destinationAddress } = useDestinationAddressStore()
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+  const isBatchTransferSupported = useIsBatchTransferSupported()
   const [
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
+  const { isAmount2InputVisible } = useAmount2InputVisibility()
 
   return (
     <>
@@ -136,12 +175,12 @@ export function DestinationNetworkBox({
             onClick={openDestinationNetworkSelectionDialog}
           />
           <BalancesContainer>
-            {destinationAddressOrWalletAddress &&
-              utils.isAddress(destinationAddressOrWalletAddress) && (
-                <DestinationNetworkBalance
-                  showUsdcSpecificInfo={showUsdcSpecificInfo}
-                />
-              )}
+            <DestinationNetworkBalance
+              showUsdcSpecificInfo={showUsdcSpecificInfo}
+            />
+            {isBatchTransferSupported && isAmount2InputVisible && (
+              <NativeCurrencyDestinationBalance />
+            )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
         <EstimatedGas chainType="destination" />

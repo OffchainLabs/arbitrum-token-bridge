@@ -1,4 +1,4 @@
-import { BigNumber, Contract, ContractFactory, Wallet, utils } from 'ethers'
+import { BigNumber, Contract, Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -116,14 +116,14 @@ async function fundWallets() {
   }
 
   /**
-   * We need 0.0002 USDC per test (0.0001 for same address and 0.0001 for custom address)
+   * We need 0.0002 USDC per test (0.0001 for same address and 0.00011 for custom address)
    * And in the worst case, we run each tests 3 time
    */
-  const usdcAmount = utils.parseUnits('0.0006', 6)
-  const ethAmountSepolia = utils.parseEther('0.01')
-  const ethAmountArbSepolia = utils.parseEther('0.002')
-  // const ethPromises: (() => Promise<void>)[] = []
-  // const usdcPromises: (() => Promise<void>)[] = []
+  const usdcAmount = utils.parseUnits('0.00063', 6)
+  const ethAmountSepolia = utils.parseEther('0.025')
+  const ethAmountArbSepolia = utils.parseEther('0.006')
+  const ethPromises: (() => Promise<void>)[] = []
+  const usdcPromises: (() => Promise<void>)[] = []
 
   // if (tests.some(testFile => testFile.includes('deposit'))) {
   //   ethPromises.push(fundEthHelper('sepolia'))

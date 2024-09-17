@@ -105,12 +105,26 @@ export function useMaxAmount() {
     if (!isDepositMode) {
       return undefined
     }
-    if (nativeCurrency.isCustom) {
+    if (typeof estimatedChildChainGasFees === 'undefined') {
+      return undefined
+    }
+    if (typeof nativeCurrencyMaxAmount === 'undefined') {
       return undefined
     }
 
+    if (nativeCurrency.isCustom) {
+      return String(
+        Number(nativeCurrencyMaxAmount) - estimatedChildChainGasFees * 1.4
+      )
+    }
+
     return nativeCurrencyMaxAmount
-  }, [isDepositMode, nativeCurrency.isCustom, nativeCurrencyMaxAmount])
+  }, [
+    isDepositMode,
+    estimatedChildChainGasFees,
+    nativeCurrencyMaxAmount,
+    nativeCurrency.isCustom
+  ])
 
   return {
     maxAmount,
