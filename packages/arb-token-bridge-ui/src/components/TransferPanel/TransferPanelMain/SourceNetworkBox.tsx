@@ -31,7 +31,7 @@ import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 function Amount2ToggleButton({
   onClick
@@ -91,7 +91,7 @@ export function SourceNetworkBox({
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
-  const ethBalanceSourceChain = useBalanceOnSourceChain(null)
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -142,11 +142,11 @@ export function SourceNetworkBox({
     () => ({
       symbol: nativeCurrency.symbol,
       disabled: true,
-      balance: ethBalanceSourceChain
-        ? Number(utils.formatEther(ethBalanceSourceChain))
+      balance: nativeCurrencyBalances.sourceBalance
+        ? Number(utils.formatEther(nativeCurrencyBalances.sourceBalance))
         : undefined
     }),
-    [ethBalanceSourceChain, nativeCurrency.symbol]
+    [nativeCurrencyBalances, nativeCurrency.symbol]
   )
 
   return (
