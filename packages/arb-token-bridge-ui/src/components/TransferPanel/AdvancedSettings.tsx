@@ -11,13 +11,11 @@ import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
-import {
-  addressIsSmartContract,
-  addressIsDenylisted
-} from '../../util/AddressUtils'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -46,39 +44,6 @@ export const useDestinationAddressStore = create<DestinationAddressStore>(
       set(() => ({ destinationAddress }))
   })
 )
-
-export async function getDestinationAddressError({
-  destinationAddress,
-  isSmartContractWallet,
-  isTeleportMode
-}: {
-  destinationAddress?: string
-  isSmartContractWallet: boolean
-  isTeleportMode: boolean
-}): Promise<DestinationAddressErrors | null> {
-  if (!destinationAddress && isSmartContractWallet) {
-    // destination address required for contract wallets
-    return DestinationAddressErrors.REQUIRED_ADDRESS
-  }
-
-  if (!destinationAddress) {
-    return null
-  }
-
-  if (!isAddress(destinationAddress)) {
-    return DestinationAddressErrors.INVALID_ADDRESS
-  }
-  if (await addressIsDenylisted(destinationAddress)) {
-    return DestinationAddressErrors.DENYLISTED_ADDRESS
-  }
-
-  if (isTeleportMode) {
-    return DestinationAddressErrors.TELEPORT_DISABLED
-  }
-
-  // no error
-  return null
-}
 
 async function getDestinationAddressWarning({
   destinationAddress,
@@ -121,8 +86,7 @@ export const AdvancedSettings = () => {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode,
-    isTeleportMode
+    isDepositMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
@@ -131,8 +95,9 @@ export const AdvancedSettings = () => {
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  const { error, setError, destinationAddress, setDestinationAddress } =
+  const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
+  const { destinationAddressError: error } = useDestinationAddressError()
 
   useEffect(() => {
     // Initially hide for EOA
@@ -140,19 +105,6 @@ export const AdvancedSettings = () => {
     // Initially lock for EOA
     setInputLocked(isEOA)
   }, [isEOA])
-
-  useEffect(() => {
-    async function updateError() {
-      setError(
-        await getDestinationAddressError({
-          destinationAddress,
-          isSmartContractWallet,
-          isTeleportMode
-        })
-      )
-    }
-    updateError()
-  }, [destinationAddress, isSmartContractWallet, setError, isTeleportMode])
 
   useEffect(() => {
     // isSubscribed makes sure that only the latest state is written
@@ -180,7 +132,8 @@ export const AdvancedSettings = () => {
     childChainProvider,
     parentChainProvider,
     childChain.id,
-    parentChain.id
+    parentChain.id,
+    networks.destinationChain.id
   ])
 
   const collapsible = useMemo(() => {

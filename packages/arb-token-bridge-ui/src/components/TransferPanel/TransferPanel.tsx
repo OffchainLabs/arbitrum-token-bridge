@@ -39,7 +39,6 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import {
   AdvancedSettings,
-  getDestinationAddressError,
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
@@ -82,6 +81,7 @@ import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { normalizeTimestamp } from '../../state/app/utils'
+import { getDestinationAddressError } from './hooks/useDestinationAddressError'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -409,7 +409,7 @@ export function TransferPanel() {
 
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet,
+        isSenderSmartContractWallet: isSmartContractWallet,
         isTeleportMode
       })
       if (destinationAddressError) {
@@ -579,7 +579,7 @@ export function TransferPanel() {
 
     const destinationAddressError = await getDestinationAddressError({
       destinationAddress,
-      isSmartContractWallet,
+      isSenderSmartContractWallet: isSmartContractWallet,
       isTeleportMode
     })
     if (destinationAddressError) {
@@ -749,7 +749,7 @@ export function TransferPanel() {
       // if destination address is added, validate it
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet,
+        isSenderSmartContractWallet: isSmartContractWallet,
         isTeleportMode
       })
       if (destinationAddressError) {
