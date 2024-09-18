@@ -22,7 +22,6 @@ env:
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
   THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  IS_HOTFIX: ${{ contains(github.event.pull_request.title, 'hotfix') }}
 
 jobs:
   check-files:
