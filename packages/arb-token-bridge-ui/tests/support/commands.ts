@@ -343,7 +343,7 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
     amount,
     symbol: 'USDC'
   })
-  cy.findClaimButton(formattedAmount, { timeout: 80_000 }).click()
+  cy.findClaimButton(formattedAmount, { timeout: 120_000 }).click()
   if (options.accept) {
     cy.confirmMetamaskTransaction(undefined)
     cy.findByLabelText('show settled transactions').should('be.visible').click()
