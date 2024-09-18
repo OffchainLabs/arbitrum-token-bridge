@@ -83,39 +83,40 @@ async function fundWallets() {
     network: 'sepolia' | 'arbSepolia',
     amount: BigNumber
   ) => {
-    return () =>
-      fundEth({
-        address: userWalletAddress,
-        sourceWallet: localWallet,
-        ...(network === 'sepolia'
-          ? {
-              provider: sepoliaProvider,
-              amount,
-              networkType: 'parentChain'
-            }
-          : {
-              provider: arbSepoliaProvider,
-              amount,
-              networkType: 'childChain'
-            })
-      })
+    return fundEth({
+      address: userWalletAddress,
+      sourceWallet: localWallet,
+      ...(network === 'sepolia'
+        ? {
+            provider: sepoliaProvider,
+            amount,
+            networkType: 'parentChain'
+          }
+        : {
+            provider: arbSepoliaProvider,
+            amount,
+            networkType: 'childChain'
+          })
+    })
   }
-  const fundUsdcHelper = (network: 'sepolia' | 'arbSepolia') => {
-    return () =>
-      fundUsdc({
-        address: userWalletAddress,
-        sourceWallet: localWallet,
-        amount: usdcAmount,
-        ...(network === 'sepolia'
-          ? {
-              provider: sepoliaProvider,
-              networkType: 'parentChain'
-            }
-          : {
-              provider: arbSepoliaProvider,
-              networkType: 'childChain'
-            })
-      })
+  const fundUsdcHelper = (
+    network: 'sepolia' | 'arbSepolia',
+    amount: BigNumber = usdcAmount
+  ) => {
+    return fundUsdc({
+      address: userWalletAddress,
+      sourceWallet: localWallet,
+      amount,
+      ...(network === 'sepolia'
+        ? {
+            provider: sepoliaProvider,
+            networkType: 'parentChain'
+          }
+        : {
+            provider: arbSepoliaProvider,
+            networkType: 'childChain'
+          })
+    })
   }
 
   /**
@@ -125,29 +126,30 @@ async function fundWallets() {
   const usdcAmount = utils.parseUnits('0.00063', 6)
   const ethAmountSepolia = utils.parseEther('0.025')
   const ethAmountArbSepolia = utils.parseEther('0.006')
-  const ethPromises: (() => Promise<void>)[] = []
-  const usdcPromises: (() => Promise<void>)[] = []
 
   if (tests.some(testFile => testFile.includes('deposit'))) {
-    // Add ETH  and USDC on Sepolia, to generate deposit tx on Sepolia
-    ethPromises.push(
+    // Add ETH and USDC on ArbSepolia, to generate tx on ArbSepolia
+    await Promise.all([
       fundEthHelper('sepolia', ethAmountSepolia),
       fundEthHelper('arbSepolia', utils.parseEther('0.01'))
-    )
-    usdcPromises.push(fundUsdcHelper('sepolia'))
+    ])
+    await Promise.all([
+      fundUsdcHelper('sepolia'),
+      fundUsdcHelper('arbSepolia', utils.parseUnits('0.00029', 6))
+    ])
   }
 
   if (tests.some(testFile => testFile.includes('withdraw'))) {
-    // Add ETH  and USDC on Sepolia, to generate deposit tx on Sepolia
-    ethPromises.push(
+    // Add ETH and USDC on Sepolia, to generate tx on Sepolia
+    await Promise.all([
       fundEthHelper('arbSepolia', ethAmountArbSepolia),
       fundEthHelper('sepolia', utils.parseEther('0.01'))
-    )
-    usdcPromises.push(fundUsdcHelper('arbSepolia'), fundUsdcHelper('sepolia'))
+    ])
+    await Promise.all([
+      fundUsdcHelper('arbSepolia'),
+      fundUsdcHelper('sepolia', utils.parseUnits('0.00025', 6))
+    ])
   }
-
-  await Promise.all(ethPromises.map(fn => fn()))
-  await Promise.all(usdcPromises.map(fn => fn()))
 }
 
 async function createCctpTx(
