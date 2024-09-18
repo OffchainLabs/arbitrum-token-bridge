@@ -129,7 +129,11 @@ async function fundWallets() {
   const usdcPromises: (() => Promise<void>)[] = []
 
   if (tests.some(testFile => testFile.includes('deposit'))) {
-    ethPromises.push(fundEthHelper('sepolia', ethAmountSepolia))
+    // Add ETH  and USDC on Sepolia, to generate deposit tx on Sepolia
+    ethPromises.push(
+      fundEthHelper('sepolia', ethAmountSepolia),
+      fundEthHelper('arbSepolia', utils.parseEther('0.01'))
+    )
     usdcPromises.push(fundUsdcHelper('sepolia'))
   }
 
@@ -146,23 +150,34 @@ async function fundWallets() {
   await Promise.all(usdcPromises.map(fn => fn()))
 }
 
-async function createDepositTx(destinationAddress: Address, amount: string) {
-  console.log(`Creating CCTP deposit transaction for ${destinationAddress}`)
-  const signer = userWallet.connect(sepoliaProvider)
-  const usdcContract = ERC20__factory.connect(
-    CommonAddress.Sepolia.USDC,
-    signer
-  )
+async function createCctpTx(
+  type: 'deposit' | 'withdrawal',
+  destinationAddress: Address,
+  amount: string
+) {
+  console.log(`Creating CCTP transaction for ${destinationAddress}`)
+  const provider = type === 'deposit' ? sepoliaProvider : arbSepoliaProvider
+  const usdcAddress =
+    type === 'deposit'
+      ? CommonAddress.Sepolia.USDC
+      : CommonAddress.ArbitrumSepolia.USDC
+  const tokenMessengerContractAddress =
+    type === 'deposit'
+      ? CommonAddress.Sepolia.tokenMessengerContractAddress
+      : CommonAddress.ArbitrumSepolia.tokenMessengerContractAddress
+
+  const signer = userWallet.connect(provider)
+  const usdcContract = ERC20__factory.connect(usdcAddress, signer)
 
   const tx = await usdcContract.functions.approve(
-    CommonAddress.Sepolia.tokenMessengerContractAddress,
+    tokenMessengerContractAddress,
     utils.parseUnits(amount, 6)
   )
 
   await tx.wait()
 
   const tokenMessenger = new Contract(
-    CommonAddress.Sepolia.tokenMessengerContractAddress,
+    tokenMessengerContractAddress,
     TokenMessengerAbi,
     signer
   )
@@ -171,9 +186,9 @@ async function createDepositTx(destinationAddress: Address, amount: string) {
 
   const depositForBurnTx = await tokenMessenger.functions.depositForBurn(
     utils.parseUnits(amount, 6),
-    ChainDomain.ArbitrumOne,
+    type === 'deposit' ? ChainDomain.ArbitrumOne : ChainDomain.Ethereum,
     utils.hexlify(utils.zeroPad(destinationAddress, 32)),
-    CommonAddress.Sepolia.USDC
+    usdcAddress
   )
 
   await depositForBurnTx.wait()
@@ -197,9 +212,25 @@ export default defineConfig({
       /**
        * Currently, we can't confirm transaction on Sepolia, we need to programmatically deposit on Sepolia
        * And claim on ArbSepolia
+       *
+       * - Create one deposit transaction, claimed in withdrawCctp
+       * - Create one deposit transaction to custom address, claimed in withdrawCctp
+       * - Create one withdraw transaction, rejected in depositCctp
+       * - Create one withdraw transaction to custom address, rejected in depositCctp
        */
-      await createDepositTx(userWallet.address as Address, '0.00011')
-      // await createDepositTx(customAddress as Address, '0.00012')
+      if (tests.some(testFile => testFile.includes('deposit'))) {
+        await createCctpTx(
+          'withdrawal',
+          userWallet.address as Address,
+          '0.00014'
+        )
+        await createCctpTx('withdrawal', customAddress as Address, '0.00015')
+      }
+
+      if (tests.some(testFile => testFile.includes('withdraw'))) {
+        await createCctpTx('deposit', userWallet.address as Address, '0.00012')
+        await createCctpTx('deposit', customAddress as Address, '0.00013')
+      }
 
       setupCypressTasks(on, { requiresNetworkSetup: false })
       synpressPlugins(on, config)

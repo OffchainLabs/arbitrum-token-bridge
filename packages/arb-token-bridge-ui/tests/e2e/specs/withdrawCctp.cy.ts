@@ -95,8 +95,24 @@ describe('Withdraw USDC through CCTP', () => {
   })
 
   it('should claim deposit', () => {
-    const amount = 0.00011
-    const formattedAmount = formatAmount(0.00011, {
+    const amount = 0.00012
+    const formattedAmount = formatAmount(amount, {
+      symbol: 'USDC'
+    })
+    cy.openTransactionsPanel('pending')
+    cy.findTransactionInTransactionHistory({
+      amount,
+      symbol: 'USDC'
+    })
+    cy.findClaimButton(formattedAmount, { timeout: 80_000 }).click()
+    cy.confirmMetamaskTransaction(undefined)
+    cy.findByLabelText('show settled transactions').should('be.visible').click()
+    cy.findByText(formattedAmount).should('be.visible')
+  })
+
+  it('should claim deposit to a custom address', () => {
+    const amount = 0.00013
+    const formattedAmount = formatAmount(amount, {
       symbol: 'USDC'
     })
     cy.openTransactionsPanel('pending')

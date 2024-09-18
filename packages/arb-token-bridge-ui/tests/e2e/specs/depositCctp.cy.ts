@@ -109,10 +109,27 @@ describe('Deposit USDC through CCTP', () => {
     // We have setup deposit transactions before running tests
     cy.wait(40_000)
     cy.rejectMetamaskTransaction()
+  })
 
+  it('should claim withdrawal', () => {
     cy.openTransactionsPanel('pending')
     cy.findClaimButton(
-      formatAmount(0.00011, {
+      formatAmount(0.00014, {
+        symbol: 'USDC'
+      }),
+      { timeout: 80_000 }
+    ).click()
+    cy.allowMetamaskToSwitchNetwork().then(approved => {
+      expect(approved).to.be.true
+    })
+    cy.wait(15_000)
+    cy.confirmMetamaskTransaction(undefined)
+  })
+
+  it('should claim withdrawal to a custom address', () => {
+    cy.openTransactionsPanel('pending')
+    cy.findClaimButton(
+      formatAmount(0.00015, {
         symbol: 'USDC'
       }),
       { timeout: 80_000 }
