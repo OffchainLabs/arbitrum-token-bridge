@@ -83,15 +83,10 @@ describe('Withdraw USDC through CCTP', () => {
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
-    cy.findClaimButton(
-      formatAmount(USDCAmountToSend, {
-        symbol: 'USDC'
-      }),
-      { timeout: 120_000 }
-    ).click()
   })
 
   it('should claim deposit', () => {
+    cy.changeMetamaskNetwork('sepolia')
     cy.claimCctp(0.00012, { accept: true })
     cy.closeTransactionHistoryPanel()
     cy.claimCctp(0.00013, { accept: true })
@@ -126,6 +121,7 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )
+    cy.closeTransactionDetails()
     cy.findClaimButton(
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'

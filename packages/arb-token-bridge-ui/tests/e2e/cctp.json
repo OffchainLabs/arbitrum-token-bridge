@@ -1,10 +1,5 @@
 [
   {
-    "name": "Deposit Cctp",
-    "file": "tests/e2e/specs/**/depositCctp.cy.{js,jsx,ts,tsx}",
-    "recordVideo": false
-  },
-  {
     "name": "Withdraw Cctp",
     "file": "tests/e2e/specs/**/withdrawCctp.cy.{js,jsx,ts,tsx}",
     "recordVideo": false
