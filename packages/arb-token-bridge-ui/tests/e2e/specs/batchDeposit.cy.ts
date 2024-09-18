@@ -72,14 +72,12 @@ describe('Batch Deposit', () => {
       cy.findByLabelText(`${ERC20TokenSymbol} balance amount on parentChain`)
         .should('be.visible')
         .contains(parentErc20Balance)
-        .should('be.visible')
     })
 
     context('should show erc-20 child balance correctly', () => {
       cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
         .should('be.visible')
         .contains(childErc20Balance)
-        .should('be.visible')
     })
 
     context('native currency balance on child chain should not exist', () => {
@@ -104,7 +102,6 @@ describe('Batch Deposit', () => {
       cy.findByLabelText(`ETH balance amount on childChain`)
         .should('be.visible')
         .contains(childNativeTokenBalance)
-        .should('be.visible')
     })
 
     context('move funds button should be disabled', () => {
