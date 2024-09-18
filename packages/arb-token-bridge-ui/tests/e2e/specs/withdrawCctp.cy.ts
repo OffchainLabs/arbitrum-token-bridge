@@ -89,13 +89,9 @@ describe('Withdraw USDC through CCTP', () => {
       }),
       { timeout: 120_000 }
     ).click()
-    cy.allowMetamaskToSwitchNetwork()
-    // We can't confirm transaction on Sepolia for the moment
-    cy.rejectMetamaskTransaction()
   })
 
   it('should claim deposit', () => {
-    cy.changeMetamaskNetwork('arbitrum sepolia')
     cy.claimCctp(0.00012, { accept: true })
     cy.closeTransactionHistoryPanel()
     cy.claimCctp(0.00013, { accept: true })
