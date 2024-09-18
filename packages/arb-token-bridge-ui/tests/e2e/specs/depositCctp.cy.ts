@@ -111,34 +111,10 @@ describe('Deposit USDC through CCTP', () => {
     cy.rejectMetamaskTransaction()
   })
 
-  it('should claim withdrawal', () => {
-    cy.openTransactionsPanel('pending')
-    cy.findClaimButton(
-      formatAmount(0.00014, {
-        symbol: 'USDC'
-      }),
-      { timeout: 80_000 }
-    ).click()
-    cy.allowMetamaskToSwitchNetwork().then(approved => {
-      expect(approved).to.be.true
-    })
-    cy.wait(15_000)
-    cy.confirmMetamaskTransaction(undefined)
-  })
-
-  it('should claim withdrawal to a custom address', () => {
-    cy.openTransactionsPanel('pending')
-    cy.findClaimButton(
-      formatAmount(0.00015, {
-        symbol: 'USDC'
-      }),
-      { timeout: 80_000 }
-    ).click()
-    cy.allowMetamaskToSwitchNetwork().then(approved => {
-      expect(approved).to.be.true
-    })
-    cy.wait(15_000)
-    cy.confirmMetamaskTransaction(undefined)
+  it('should claim deposit', () => {
+    cy.claimCctp(0.00014)
+    cy.closeTransactionHistoryPanel()
+    cy.claimCctp(0.00015)
   })
 
   /**

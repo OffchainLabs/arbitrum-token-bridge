@@ -17,6 +17,7 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -333,6 +334,21 @@ export function confirmSpending(
   })
 }
 
+export function claimCctp(amount: number) {
+  const formattedAmount = formatAmount(amount, {
+    symbol: 'USDC'
+  })
+  cy.openTransactionsPanel('pending')
+  cy.findTransactionInTransactionHistory({
+    amount,
+    symbol: 'USDC'
+  })
+  cy.findClaimButton(formattedAmount, { timeout: 80_000 }).click()
+  cy.confirmMetamaskTransaction(undefined)
+  cy.findByLabelText('show settled transactions').should('be.visible').click()
+  cy.findByText(formattedAmount).should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -355,5 +371,6 @@ Cypress.Commands.addAll({
   findTransactionInTransactionHistory,
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
-  confirmSpending
+  confirmSpending,
+  claimCctp
 })
