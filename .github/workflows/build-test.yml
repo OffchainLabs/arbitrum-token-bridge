@@ -38,6 +38,7 @@ jobs:
   build:
     name: "Build"
     runs-on: ubuntu-latest
+    if: needs.check-files.outputs.run_tests == 'true' && ${{ !contains(github.event.pull_request.title, 'hotfix') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
