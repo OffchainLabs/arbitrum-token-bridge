@@ -346,11 +346,11 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   cy.findClaimButton(formattedAmount, { timeout: 80_000 }).click()
   if (options.accept) {
     cy.confirmMetamaskTransaction(undefined)
+    cy.findByLabelText('show settled transactions').should('be.visible').click()
+    cy.findByText(formattedAmount).should('be.visible')
   } else {
     cy.rejectMetamaskTransaction()
   }
-  cy.findByLabelText('show settled transactions').should('be.visible').click()
-  cy.findByText(formattedAmount).should('be.visible')
 }
 
 Cypress.Commands.addAll({
