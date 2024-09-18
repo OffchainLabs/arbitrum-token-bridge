@@ -13,14 +13,14 @@ import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 export async function getDestinationAddressError({
   destinationAddress,
-  isSmartContractWallet,
+  isSenderSmartContractWallet,
   isTeleportMode
 }: {
   destinationAddress?: string
-  isSmartContractWallet: boolean
+  isSenderSmartContractWallet: boolean
   isTeleportMode: boolean
 }): Promise<DestinationAddressErrors | null> {
-  if (!destinationAddress && isSmartContractWallet) {
+  if (!destinationAddress && isSenderSmartContractWallet) {
     // destination address required for contract wallets
     return DestinationAddressErrors.REQUIRED_ADDRESS
   }
@@ -45,7 +45,8 @@ export function useDestinationAddressError() {
   const { destinationAddress } = useDestinationAddressStore()
   const [networks] = useNetworks()
   const { isTeleportMode } = useNetworksRelationship(networks)
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet: isSenderSmartContractWallet } =
+    useAccountType()
 
   const queryKey = useMemo(() => {
     if (typeof destinationAddress === 'undefined') {
@@ -55,19 +56,19 @@ export function useDestinationAddressError() {
 
     return [
       destinationAddress.toLowerCase(),
-      isSmartContractWallet,
+      isSenderSmartContractWallet,
       isTeleportMode,
       'useDestinationAddressError'
     ] as const
-  }, [destinationAddress, isSmartContractWallet, isTeleportMode])
+  }, [destinationAddress, isSenderSmartContractWallet, isTeleportMode])
 
   const { data: destinationAddressError } = useSWRImmutable(
     queryKey,
     // Extracts the first element of the query key as the fetcher param
-    ([_destinationAddress, _isSmartContractWallet, _isTeleportMode]) =>
+    ([_destinationAddress, _isSenderSmartContractWallet, _isTeleportMode]) =>
       getDestinationAddressError({
         destinationAddress: _destinationAddress,
-        isSmartContractWallet: _isSmartContractWallet,
+        isSenderSmartContractWallet: _isSenderSmartContractWallet,
         isTeleportMode: _isTeleportMode
       })
   )

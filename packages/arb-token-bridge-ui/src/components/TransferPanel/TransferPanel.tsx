@@ -74,6 +74,7 @@ import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { normalizeTimestamp } from '../../state/app/utils'
+import { getDestinationAddressError } from './hooks/useDestinationAddressError'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -386,6 +387,17 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return
       }
 
+      const destinationAddressError = await getDestinationAddressError({
+        destinationAddress,
+        isSenderSmartContractWallet: isSmartContractWallet,
+        isTeleportMode
+      })
+
+      if (destinationAddressError) {
+        console.error(destinationAddressError)
+        return
+      }
+
       const cctpTransferStarter = new CctpTransferStarter({
         sourceChainProvider,
         destinationChainProvider
@@ -543,6 +555,7 @@ export function TransferPanel() {
     if (!isConnectedToTheWrongChain) {
       return
     }
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
     trackEvent('Switch Network and Transfer', {
       type: isTeleportMode
         ? 'Teleport'
@@ -554,6 +567,7 @@ export function TransferPanel() {
       accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
       network: childChainName,
       amount: Number(amount),
+      amount2: isBatchTransfer ? Number(amount2) : undefined,
       version: 2
     })
     const switchTargetChainId = latestNetworks.current.sourceChain.id
@@ -568,8 +582,10 @@ export function TransferPanel() {
     }
   }, [
     amount,
+    amount2,
     chainId,
     childChain.id,
+    isBatchTransferSupported,
     isCctp,
     isDepositMode,
     isSmartContractWallet,
@@ -616,6 +632,8 @@ export function TransferPanel() {
     }
 
     setTransferring(true)
+
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     try {
       const sourceChainId = latestNetworks.current.sourceChain.id
@@ -772,14 +790,13 @@ export function TransferPanel() {
             assetType: 'ERC-20',
             accountType: 'Smart Contract',
             network: childChainName,
-            amount: Number(amount)
+            amount: Number(amount),
+            amount2: isBatchTransfer ? Number(amount2) : undefined
           }
         )
       }
 
       const overrides: TransferOverrides = {}
-
-      const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
       if (isBatchTransfer) {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
@@ -828,6 +845,8 @@ export function TransferPanel() {
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
     if (!isSmartContractWallet) {
       trackEvent(
         isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
@@ -836,14 +855,13 @@ export function TransferPanel() {
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: 'EOA',
           network: getNetworkName(childChain.id),
-          amount: Number(amount)
+          amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined
         }
       )
     }
 
     const { sourceChainTransaction } = bridgeTransfer
-
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 

@@ -437,6 +437,50 @@ export const orbitMainnets: {
         logoUrl: '/images/SankoLogo.png'
       }
     }
+  },
+  55244: {
+    chainId: 55244,
+    confirmPeriodBlocks: 40320,
+    ethBridge: {
+      bridge: '0xEca0fEB4aA6112a3923823559e7197294Bc49CC7',
+      inbox: '0x2EAf07A964c6601c4fAefd6D8969DF0B84f65e55',
+      outbox: '0xa4b3B4D5f7976a8D283864ea83f1Bb3D815b1798',
+      rollup: '0x325Dd0279Ba31bC346BA80F3D00628deFa2EacD4',
+      sequencerInbox: '0xe0064A9fb8e45BfD8e5aB1cE7523888814A096E0'
+    },
+    explorerUrl: 'https://explorer.superposition.so',
+    rpcUrl: 'https://rpc.superposition.so',
+    isCustom: true,
+    isTestnet: false,
+    name: 'Superposition',
+    slug: 'superposition',
+    parentChainId: 42161,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      parentCustomGateway: '0xacb51eA5b465692c889C36615a398BA14D42b619',
+      parentErc20Gateway: '0x62bEd4b862254789825Cd6F2352aa2b76B16145e',
+      parentGatewayRouter: '0x9FE42A08751E8566A0918807bF2870594bf22806',
+      parentMultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      parentProxyAdmin: '0x0000000000000000000000000000000000000000',
+      parentWeth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      parentWethGateway: '0xAD1B3e0474456DA577157d472410B53e91810D3b',
+      childCustomGateway: '0x8767D9ec58A3f9B8ca36B201c5A2544927E4cAe8',
+      childErc20Gateway: '0x705818fEbefB70Ff0997438E472C7B565eF8c6B1',
+      childGatewayRouter: '0x5494dB62F5F799F49e05a0F5B7925D699fa32c6f',
+      childMultiCall: '0x020dcb08cBd4809384Bc7944CCB5d7A371779dE8',
+      childProxyAdmin: '0x2D1D86b7F0C134a79A6bc0cE82614Fef9B98672a',
+      childWeth: '0x1fB719f10b56d7a85DCD32f27f897375fB21cfdd',
+      childWethGateway: '0x478021001536eEdB1841def8f71c6DA68e2b2890'
+    },
+    bridgeUiConfig: {
+      color: '#1E1E1E',
+      network: {
+        name: 'Superposition',
+        logo: '/images/SuperpositionLogo.svg',
+        description:
+          'Superposition is the first DeFi-native Layer-3, with shared and permissionless liquidity, AA, and minimal fees, while providing higher yields.'
+      }
+    }
   }
 }
 

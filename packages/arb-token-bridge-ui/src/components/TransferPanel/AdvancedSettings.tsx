@@ -93,6 +93,7 @@ export const AdvancedSettings = () => {
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
+  const { destinationAddressError: error } = useDestinationAddressError()
 
   const { destinationAddressError: error } = useDestinationAddressError()
 
