@@ -25,18 +25,6 @@ env:
   IS_HOTFIX: ${{ contains(github.event.pull_request.title, 'hotfix') }}
 
 jobs:
-  check-is-hotfix:
-    name: Check if PR is hotfix
-    runs-on: ubuntu-latest
-    outputs:
-      is_hotfix: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
-    env:  
-      IS_HOTFIX: ${{ contains(github.event.pull_request.title, 'hotfix') }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/check-is-hotfix
-        id: check-is-hotfix
-
   check-files:
     name: Check files
     runs-on: ubuntu-latest
@@ -119,8 +107,7 @@ jobs:
 
   e2e-tests:
     name: "E2E Tests"
-    needs: [build, check-is-hotfix, check-files]
-    if: needs.check-is-hotfix.outputs.is_hotfix == 'false' && needs.check-files.outputs.run_tests == 'true'
+    needs: [build, check-files]
     uses: ./.github/workflows/e2e-tests.yml
     with:
       test_type: 'regular'
