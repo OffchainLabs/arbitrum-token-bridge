@@ -72,7 +72,6 @@ describe('Deposit Token', () => {
           cy.findByLabelText(`${testCase.symbol} balance amount on parentChain`)
             .should('be.visible')
             .contains(l1ERC20bal)
-            .should('be.visible')
         })
 
         context('should show gas estimations', () => {
