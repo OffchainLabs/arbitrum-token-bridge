@@ -30,7 +30,7 @@
     "fetch-retry": "^5.0.3",
     "graphql": "^16.8.1",
     "lodash-es": "^4.17.21",
-    "next": "^14.2.5",
+    "next": "^14.2.10",
     "next-query-params": "^5.0.0",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
