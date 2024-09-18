@@ -100,11 +100,12 @@ function SourceChainTokenBalance({
     balanceOverride ??
     (selectedToken ? tokenBalance : nativeCurrencyBalances.sourceBalance)
 
-  const formattedBalance = balance
-    ? formatAmount(balance, {
-        decimals: selectedToken?.decimals ?? nativeCurrency.decimals
-      })
-    : null
+  const formattedBalance =
+    balance !== null
+      ? formatAmount(balance, {
+          decimals: selectedToken?.decimals ?? nativeCurrency.decimals
+        })
+      : null
 
   const symbol =
     symbolOverride ?? selectedToken?.symbol ?? nativeCurrency.symbol
