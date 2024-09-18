@@ -95,8 +95,6 @@ export const AdvancedSettings = () => {
     useDestinationAddressStore()
   const { destinationAddressError: error } = useDestinationAddressError()
 
-  const { destinationAddressError: error } = useDestinationAddressError()
-
   useEffect(() => {
     // Initially hide for EOA
     setCollapsed(isEOA)
