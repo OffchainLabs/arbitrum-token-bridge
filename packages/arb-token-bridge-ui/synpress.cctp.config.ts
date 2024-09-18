@@ -79,7 +79,10 @@ async function fundWallets() {
   const userWalletAddress = userWallet.address
   console.log(`Funding wallet ${userWalletAddress}`)
 
-  const fundEthHelper = (network: 'sepolia' | 'arbSepolia') => {
+  const fundEthHelper = (
+    network: 'sepolia' | 'arbSepolia',
+    amount: BigNumber
+  ) => {
     return () =>
       fundEth({
         address: userWalletAddress,
@@ -87,12 +90,12 @@ async function fundWallets() {
         ...(network === 'sepolia'
           ? {
               provider: sepoliaProvider,
-              amount: ethAmountSepolia,
+              amount,
               networkType: 'parentChain'
             }
           : {
               provider: arbSepoliaProvider,
-              amount: ethAmountArbSepolia,
+              amount,
               networkType: 'childChain'
             })
       })
@@ -125,24 +128,26 @@ async function fundWallets() {
   const ethPromises: (() => Promise<void>)[] = []
   const usdcPromises: (() => Promise<void>)[] = []
 
-  // if (tests.some(testFile => testFile.includes('deposit'))) {
-  //   ethPromises.push(fundEthHelper('sepolia'))
-  //   usdcPromises.push(fundUsdcHelper('sepolia'))
-  // }
+  if (tests.some(testFile => testFile.includes('deposit'))) {
+    ethPromises.push(fundEthHelper('sepolia', ethAmountSepolia))
+    usdcPromises.push(fundUsdcHelper('sepolia'))
+  }
 
-  // if (tests.some(testFile => testFile.includes('withdraw'))) {
-  //   ethPromises.push(fundEthHelper('arbSepolia'))
-  //   usdcPromises.push(fundUsdcHelper('arbSepolia'))
-  // }
+  if (tests.some(testFile => testFile.includes('withdraw'))) {
+    // Add ETH  and USDC on Sepolia, to generate deposit tx on Sepolia
+    ethPromises.push(
+      fundEthHelper('arbSepolia', ethAmountArbSepolia),
+      fundEthHelper('sepolia', utils.parseEther('0.01'))
+    )
+    usdcPromises.push(fundUsdcHelper('arbSepolia'), fundUsdcHelper('sepolia'))
+  }
 
-  // await Promise.all(ethPromises.map(fn => fn()))
-  // await Promise.all(usdcPromises.map(fn => fn()))
-  await fundEthHelper('sepolia')()
-  await fundUsdcHelper('sepolia')()
-  await fundEthHelper('arbSepolia')()
+  await Promise.all(ethPromises.map(fn => fn()))
+  await Promise.all(usdcPromises.map(fn => fn()))
 }
 
-async function createDepositTx(destinationAddress: Address) {
+async function createDepositTx(destinationAddress: Address, amount: string) {
+  console.log(`Creating CCTP deposit transaction for ${destinationAddress}`)
   const signer = userWallet.connect(sepoliaProvider)
   const usdcContract = ERC20__factory.connect(
     CommonAddress.Sepolia.USDC,
@@ -151,7 +156,7 @@ async function createDepositTx(destinationAddress: Address) {
 
   const tx = await usdcContract.functions.approve(
     CommonAddress.Sepolia.tokenMessengerContractAddress,
-    utils.parseUnits('0.00011', 6)
+    utils.parseUnits(amount, 6)
   )
 
   await tx.wait()
@@ -165,7 +170,7 @@ async function createDepositTx(destinationAddress: Address) {
   await tokenMessenger.deployed()
 
   const depositForBurnTx = await tokenMessenger.functions.depositForBurn(
-    utils.parseUnits('0.00011', 6),
+    utils.parseUnits(amount, 6),
     ChainDomain.ArbitrumOne,
     utils.hexlify(utils.zeroPad(destinationAddress, 32)),
     CommonAddress.Sepolia.USDC
@@ -193,8 +198,8 @@ export default defineConfig({
        * Currently, we can't confirm transaction on Sepolia, we need to programmatically deposit on Sepolia
        * And claim on ArbSepolia
        */
-      await createDepositTx(userWallet.address as Address)
-      await createDepositTx(customAddress as Address)
+      await createDepositTx(userWallet.address as Address, '0.00011')
+      // await createDepositTx(customAddress as Address, '0.00012')
 
       setupCypressTasks(on, { requiresNetworkSetup: false })
       synpressPlugins(on, config)

@@ -78,7 +78,7 @@ describe('Withdraw USDC through CCTP', () => {
     cy.confirmSpending(USDCAmountToSend.toString())
     // eslint-disable-next-line
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction(undefined)
+    cy.confirmMetamaskTransaction({ gasConfig: 'aggressive' })
     cy.findTransactionInTransactionHistory({
       amount: USDCAmountToSend,
       symbol: 'USDC'
@@ -87,10 +87,27 @@ describe('Withdraw USDC through CCTP', () => {
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'
       }),
-      { timeout: 60_000 }
+      { timeout: 120_000 }
     ).click()
     cy.allowMetamaskToSwitchNetwork()
+    // We can't confirm transaction on Sepolia for the moment
     cy.rejectMetamaskTransaction()
+  })
+
+  it('should claim deposit', () => {
+    const amount = 0.00011
+    const formattedAmount = formatAmount(0.00011, {
+      symbol: 'USDC'
+    })
+    cy.openTransactionsPanel('pending')
+    cy.findTransactionInTransactionHistory({
+      amount,
+      symbol: 'USDC'
+    })
+    cy.findClaimButton(formattedAmount, { timeout: 80_000 }).click()
+    cy.confirmMetamaskTransaction(undefined)
+    cy.findByLabelText('show settled transactions').should('be.visible').click()
+    cy.findByText(formattedAmount).should('be.visible')
   })
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
