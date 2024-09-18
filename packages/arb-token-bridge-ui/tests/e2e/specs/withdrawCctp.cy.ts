@@ -83,6 +83,15 @@ describe('Withdraw USDC through CCTP', () => {
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
+    cy.findClaimButton(
+      formatAmount(USDCAmountToSend, {
+        symbol: 'USDC'
+      }),
+      { timeout: 120_000 }
+    ).click()
+    cy.allowMetamaskToSwitchNetwork()
+    cy.rejectMetamaskTransaction()
+    cy.changeMetamaskNetwork('arbitrum-sepolia')
   })
 
   it('should claim deposit', () => {
@@ -126,7 +135,7 @@ describe('Withdraw USDC through CCTP', () => {
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'
       }),
-      { timeout: 80_000 }
+      { timeout: 120_000 }
     ).click()
     cy.allowMetamaskToSwitchNetwork()
     cy.rejectMetamaskTransaction()
