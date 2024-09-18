@@ -110,6 +110,7 @@ describe('Deposit USDC through CCTP', () => {
     cy.wait(40_000)
     cy.rejectMetamaskTransaction()
 
+    cy.pause()
     cy.openTransactionsPanel('pending')
     cy.findClaimButton(
       formatAmount(USDCAmountToSend, {

@@ -139,6 +139,7 @@ async function fundWallets() {
   // await Promise.all(usdcPromises.map(fn => fn()))
   await fundEthHelper('sepolia')()
   await fundUsdcHelper('sepolia')()
+  await fundEthHelper('arbSepolia')()
 }
 
 async function createDepositTx(destinationAddress: Address) {
@@ -163,12 +164,14 @@ async function createDepositTx(destinationAddress: Address) {
 
   await tokenMessenger.deployed()
 
-  return await tokenMessenger.depositForBurn(
+  const depositForBurnTx = await tokenMessenger.functions.depositForBurn(
     utils.parseUnits('0.00011', 6),
     ChainDomain.ArbitrumOne,
     utils.hexlify(utils.zeroPad(destinationAddress, 32)),
     CommonAddress.Sepolia.USDC
   )
+
+  await depositForBurnTx.wait()
 }
 
 export default defineConfig({
@@ -190,10 +193,8 @@ export default defineConfig({
        * Currently, we can't confirm transaction on Sepolia, we need to programmatically deposit on Sepolia
        * And claim on ArbSepolia
        */
-      await Promise.all([
-        createDepositTx(userWallet.address as Address),
-        createDepositTx(customAddress as Address)
-      ])
+      await createDepositTx(userWallet.address as Address)
+      await createDepositTx(customAddress as Address)
 
       setupCypressTasks(on, { requiresNetworkSetup: false })
       synpressPlugins(on, config)
