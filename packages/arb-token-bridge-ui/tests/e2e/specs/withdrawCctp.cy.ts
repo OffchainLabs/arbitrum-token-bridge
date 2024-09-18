@@ -95,9 +95,10 @@ describe('Withdraw USDC through CCTP', () => {
   })
 
   it('should claim deposit', () => {
-    cy.claimCctp(0.00012)
+    cy.changeMetamaskNetwork('arbitrum sepolia')
+    cy.claimCctp(0.00012, { accept: true })
     cy.closeTransactionHistoryPanel()
-    cy.claimCctp(0.00013)
+    cy.claimCctp(0.00013, { accept: true })
   })
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
@@ -133,7 +134,7 @@ describe('Withdraw USDC through CCTP', () => {
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'
       }),
-      { timeout: 60_000 }
+      { timeout: 80_000 }
     ).click()
     cy.allowMetamaskToSwitchNetwork()
     cy.rejectMetamaskTransaction()

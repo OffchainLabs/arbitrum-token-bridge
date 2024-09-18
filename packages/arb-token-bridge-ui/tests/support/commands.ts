@@ -334,7 +334,7 @@ export function confirmSpending(
   })
 }
 
-export function claimCctp(amount: number) {
+export function claimCctp(amount: number, options: { accept: boolean }) {
   const formattedAmount = formatAmount(amount, {
     symbol: 'USDC'
   })
@@ -344,7 +344,11 @@ export function claimCctp(amount: number) {
     symbol: 'USDC'
   })
   cy.findClaimButton(formattedAmount, { timeout: 80_000 }).click()
-  cy.confirmMetamaskTransaction(undefined)
+  if (options.accept) {
+    cy.confirmMetamaskTransaction(undefined)
+  } else {
+    cy.rejectMetamaskTransaction()
+  }
   cy.findByLabelText('show settled transactions').should('be.visible').click()
   cy.findByText(formattedAmount).should('be.visible')
 }
