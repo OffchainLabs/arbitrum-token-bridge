@@ -180,17 +180,16 @@ function ErrorMessage({
     case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
     case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
       return (
-        <>
-          <span className="text-sm text-brick">
-            This token can&apos;t be bridged over.
-          </span>{' '}
+        <div className="text-sm text-brick">
+          <span>This token can&apos;t be bridged over.</span>{' '}
           <button
             className="arb-hover underline"
             onClick={openTransferDisabledDialog}
           >
-            Learn more.
+            Learn more
           </button>
-        </>
+          <span>.</span>
+        </div>
       )
   }
 }

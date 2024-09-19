@@ -1,6 +1,9 @@
 // tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
+import { ethers } from 'ethers'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
 import { ChainId, isNetwork } from '../util/networks'
 import {
   isTokenArbitrumOneUSDCe,
@@ -195,15 +198,32 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8',
       l1Address: '0x0B7f0e51Cd1739D6C96982D55aD8fA634dd43A9C',
       l2Address: '0x6Ab317237cc72B2cdb54EcfcC180b61E00F7df76'
-    },
-    {
-      symbol: 'ZRO',
-      l2CustomAddr: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
-      l1Address: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
-      l2Address: '0xd99f14023f6bde3142d339b6c069b2b711da7e37'
     }
   ],
   [ChainId.ArbitrumNova]: []
+}
+
+async function isLayerZeroToken(
+  parentChainErc20Address: string,
+  parentChainId: number
+) {
+  const parentProvider = getProviderForChainId(parentChainId)
+
+  // https://github.com/LayerZero-Labs/LayerZero-v2/blob/592625b9e5967643853476445ffe0e777360b906/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol#L37
+  const layerZeroTokenOftContract = new ethers.Contract(
+    parentChainErc20Address,
+    [
+      'function oftVersion() external pure virtual returns (bytes4 interfaceId, uint64 version)'
+    ],
+    parentProvider
+  )
+
+  try {
+    const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
+    return !!_isLayerZeroToken
+  } catch (error) {
+    return false
+  }
 }
 
 /**
@@ -211,16 +231,25 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
  * @param erc20L1Address
  * @param childChainId
  */
-export function isWithdrawOnlyToken(
-  parentChainErc20Address: string,
+export async function isWithdrawOnlyToken({
+  parentChainErc20Address,
+  parentChainId,
+  childChainId
+}: {
+  parentChainErc20Address: string
+  parentChainId: number
   childChainId: number
-) {
+}) {
   // disable USDC.e deposits for Orbit chains
   if (
     (isTokenArbitrumOneUSDCe(parentChainErc20Address) ||
       isTokenArbitrumSepoliaUSDCe(parentChainErc20Address)) &&
     isNetwork(childChainId).isOrbitChain
   ) {
+    return true
+  }
+
+  if (await isLayerZeroToken(parentChainErc20Address, parentChainId)) {
     return true
   }
 
