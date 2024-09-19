@@ -1,28 +1,33 @@
 #!/usr/bin/env node
-const specFiles = require('../../packages/arb-token-bridge-ui/tests/e2e/specfiles.json')
-const cctpFiles = require('../../packages/arb-token-bridge-ui/tests/e2e/cctp.json')
+const specFiles = require("../../packages/arb-token-bridge-ui/tests/e2e/specfiles.json");
+const cctpFiles = require("../../packages/arb-token-bridge-ui/tests/e2e/cctp.json");
 
-// For each test in specFiles, add an orbit test
-const tests = []
-specFiles.forEach(spec => {
-    tests.push({
-        ...spec,
-        type: 'regular',
-        orbitTest: '0',
-    })
-    tests.push({
-        ...spec,
-        type: 'regular',
-        orbitTest: '1',
-    })
-})
+const tests = [];
 
-cctpFiles.forEach(spec => {
-    tests.push({
+const testType = process.argv[2];
+switch (testType) {
+  case "regular": {
+    specFiles.forEach((spec) => {
+      tests.push({
+        ...spec,
+        type: "regular",
+      });
+      tests.push({
+        ...spec,
+        type: "orbit",
+      });
+    });
+    break;
+  }
+  case "cctp": {
+    cctpFiles.forEach((spec) => {
+      tests.push({
         ...spec,
         type: 'cctp',
-        orbitTest: null,
+      })
     })
-})
+    break;
+  }
+}
 
-console.log(JSON.stringify(tests))
+console.log(JSON.stringify(tests));
