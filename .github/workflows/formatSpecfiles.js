@@ -20,12 +20,13 @@ switch (testType) {
     break;
   }
   case "cctp": {
-    cctpFiles.forEach((spec) => {
-      tests.push({
-        ...spec,
-        type: 'cctp',
-      })
-    })
+    // Running CCTP tests in parallel cause nonce issues, we're running the two tests sequentially
+    test.push({
+      name: "cctp",
+      file: "tests/e2e/specs/**/*Cctp.cy.{js,jsx,ts,tsx}",
+      recordVideo: false,
+      type: "cctp",
+    });
     break;
   }
 }

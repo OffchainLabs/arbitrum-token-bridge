@@ -45,9 +45,11 @@ export async function fundUsdc({
 
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
-const tests = process.env.TEST_FILE
-  ? [process.env.TEST_FILE]
-  : specFiles.map(file => file.file)
+const tests =
+  process.env.TEST_FILE &&
+  specFiles.find(file => file.name === process.env.TEST_FILE)
+    ? [process.env.TEST_FILE]
+    : specFiles.map(file => file.file)
 
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 if (typeof INFURA_KEY === 'undefined') {
