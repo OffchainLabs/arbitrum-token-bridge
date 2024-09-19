@@ -48,7 +48,10 @@ function Amount2ToggleButton({
       className="border-white/30 shadow-2"
       onClick={onClick}
     >
-      <div className="flex items-center space-x-1">
+      <div
+        aria-label="Add native currency button"
+        className="flex items-center space-x-1"
+      >
         <PlusCircleIcon width={18} />
         <span>Add {nativeCurrency.symbol}</span>
       </div>
@@ -185,6 +188,7 @@ export function SourceNetworkBox({
                 maxAmount={maxAmount2}
                 isMaxAmount={isMaxAmount2}
                 decimals={nativeCurrency.decimals}
+                aria-label="Amount2 input"
               />
               <p className="mt-1 text-xs font-light text-white">
                 You can transfer {nativeCurrency.symbol} in the same transaction
