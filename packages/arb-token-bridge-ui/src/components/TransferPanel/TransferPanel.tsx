@@ -23,13 +23,7 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import {
-  isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  isTokenSepoliaUSDC,
-  isTokenMainnetUSDC,
-  isGatewayRegistered
-} from '../../util/TokenUtils'
+import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
@@ -81,6 +75,7 @@ import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { normalizeTimestamp } from '../../state/app/utils'
 import { getDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -136,7 +131,7 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const isCctpTransfer = useIsCctpTransfer()
 
   const latestEth = useLatest(eth)
 
@@ -976,42 +971,6 @@ export function TransferPanel() {
       await updateErc20ParentBalances([nativeCurrency.address])
     }
   }
-
-  const isCctpTransfer = useMemo(() => {
-    if (!selectedToken) {
-      return false
-    }
-
-    if (isTeleportMode) {
-      return false
-    }
-
-    if (isDepositMode) {
-      if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
-        return true
-      }
-
-      if (isTokenSepoliaUSDC(selectedToken.address) && isArbitrumSepolia) {
-        return true
-      }
-    } else {
-      if (
-        isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
-        isArbitrumOne
-      ) {
-        return true
-      }
-
-      if (
-        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
-        isArbitrumSepolia
-      ) {
-        return true
-      }
-    }
-
-    return false
-  }, [isArbitrumOne, isArbitrumSepolia, isDepositMode, selectedToken])
 
   return (
     <>
