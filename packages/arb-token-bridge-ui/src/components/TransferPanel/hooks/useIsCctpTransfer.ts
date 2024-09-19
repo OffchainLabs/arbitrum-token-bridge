@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useAppState } from '../../../state'
@@ -20,45 +18,34 @@ export const useIsCctpTransfer = function () {
     useNetworksRelationship(networks)
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
-  return useMemo(() => {
-    if (!selectedToken) {
-      return false
-    }
-
-    if (isTeleportMode) {
-      return false
-    }
-
-    if (isDepositMode) {
-      if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
-        return true
-      }
-
-      if (isTokenSepoliaUSDC(selectedToken.address) && isArbitrumSepolia) {
-        return true
-      }
-    } else {
-      if (
-        isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
-        isArbitrumOne
-      ) {
-        return true
-      }
-
-      if (
-        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
-        isArbitrumSepolia
-      ) {
-        return true
-      }
-    }
-
+  if (!selectedToken) {
     return false
-  }, [
-    isArbitrumOne,
-    isArbitrumSepolia,
-    isDepositMode,
-    isTeleportMode,
-    selectedToken
-  ])
+  }
+
+  if (isTeleportMode) {
+    return false
+  }
+
+  if (isDepositMode) {
+    if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
+      return true
+    }
+
+    if (isTokenSepoliaUSDC(selectedToken.address) && isArbitrumSepolia) {
+      return true
+    }
+  } else {
+    if (isTokenArbitrumOneNativeUSDC(selectedToken.address) && isArbitrumOne) {
+      return true
+    }
+
+    if (
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
+      isArbitrumSepolia
+    ) {
+      return true
+    }
+  }
+
+  return false
 }
