@@ -195,6 +195,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8',
       l1Address: '0x0B7f0e51Cd1739D6C96982D55aD8fA634dd43A9C',
       l2Address: '0x6Ab317237cc72B2cdb54EcfcC180b61E00F7df76'
+    },
+    {
+      symbol: 'ZRO',
+      l2CustomAddr: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+      l1Address: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+      l2Address: '0xd99f14023f6bde3142d339b6c069b2b711da7e37'
     }
   ],
   [ChainId.ArbitrumNova]: []
