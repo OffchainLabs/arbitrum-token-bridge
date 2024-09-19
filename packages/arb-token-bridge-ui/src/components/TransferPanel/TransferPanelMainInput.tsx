@@ -74,9 +74,11 @@ function MaxButton({
 }
 
 function SourceChainTokenBalance({
-  balanceOverride
+  balanceOverride,
+  symbolOverride
 }: {
   balanceOverride?: AmountInputOptions['balance']
+  symbolOverride?: AmountInputOptions['symbol']
 }) {
   const {
     app: { selectedToken }
@@ -105,15 +107,18 @@ function SourceChainTokenBalance({
         })
       : null
 
+  const symbol =
+    symbolOverride ?? selectedToken?.symbol ?? nativeCurrency.symbol
+
   if (formattedBalance) {
     return (
       <>
         <span className="text-sm font-light text-white">Balance: </span>
         <span
           className="whitespace-nowrap text-sm text-white"
-          aria-label={`${
-            selectedToken?.symbol ?? nativeCurrency.symbol
-          } balance amount on ${isDepositMode ? 'parentChain' : 'childChain'}`}
+          aria-label={`${symbol} balance amount on ${
+            isDepositMode ? 'parentChain' : 'childChain'
+          }`}
         >
           {formattedBalance}
         </span>
@@ -284,7 +289,10 @@ export const TransferPanelMainInput = React.memo(
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
               <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-                <SourceChainTokenBalance balanceOverride={options?.balance} />
+                <SourceChainTokenBalance
+                  balanceOverride={options?.balance}
+                  symbolOverride={options?.symbol}
+                />
                 <MaxButton onClick={handleMaxButtonClick} />
               </div>
             </div>

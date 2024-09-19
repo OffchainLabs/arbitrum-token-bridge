@@ -7,12 +7,11 @@ import {
   getInitialERC20Balance,
   getL1NetworkConfig,
   zeroToLessThanOneETH,
+  moreThanZeroBalance,
   getL1NetworkName,
   getL2NetworkName,
   ERC20TokenSymbol
 } from '../../support/common'
-
-const moreThanZeroBalance = /0(\.\d+)/
 
 const depositTestCases = {
   'Standard ERC20': {
@@ -73,7 +72,6 @@ describe('Deposit Token', () => {
           cy.findByLabelText(`${testCase.symbol} balance amount on parentChain`)
             .should('be.visible')
             .contains(l1ERC20bal)
-            .should('be.visible')
         })
 
         context('should show gas estimations', () => {
