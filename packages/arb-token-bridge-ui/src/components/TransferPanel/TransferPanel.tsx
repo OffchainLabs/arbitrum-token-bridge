@@ -34,9 +34,8 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { errorToast, warningToast } from '../common/atoms/Toast'
-import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN } from '../../constants'
 import {
   AdvancedSettings,
   useDestinationAddressStore
@@ -82,18 +81,6 @@ import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { normalizeTimestamp } from '../../state/app/utils'
 import { getDestinationAddressError } from './hooks/useDestinationAddressError'
-
-const networkConnectionWarningToast = () =>
-  warningToast(
-    <>
-      Network connection issue. Please contact{' '}
-      <ExternalLink href={GET_HELP_LINK} className="underline">
-        support
-      </ExternalLink>
-      .
-    </>,
-    { autoClose: false }
-  )
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -685,21 +672,6 @@ export function TransferPanel() {
 
       const sourceChainId = latestNetworks.current.sourceChain.id
       const destinationChainId = latestNetworks.current.destinationChain.id
-      const connectedChainId = networks.sourceChain.id
-      const sourceChainEqualsConnectedChain = sourceChainId === connectedChainId
-
-      // Transfer is invalid if the connected chain doesn't mismatches source-destination chain requirements
-      const depositNetworkConnectionWarning =
-        isDepositMode &&
-        (!sourceChainEqualsConnectedChain || isConnectedToOrbitChain.current)
-      const withdrawalNetworkConnectionWarning =
-        !isDepositMode && !sourceChainEqualsConnectedChain
-      if (
-        depositNetworkConnectionWarning ||
-        withdrawalNetworkConnectionWarning
-      ) {
-        return networkConnectionWarningToast()
-      }
 
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
