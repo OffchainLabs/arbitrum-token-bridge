@@ -11,10 +11,14 @@ export function useSelectedTokenIsWithdrawOnly() {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { parentChain, childChain } = useNetworksRelationship(networks)
+  const { isDepositMode, parentChain, childChain } =
+    useNetworksRelationship(networks)
 
   const queryKey = useMemo(() => {
     if (!selectedToken) {
+      return null
+    }
+    if (!isDepositMode) {
       return null
     }
     return [
@@ -22,7 +26,7 @@ export function useSelectedTokenIsWithdrawOnly() {
       parentChain.id,
       childChain.id
     ] as const
-  }, [selectedToken, parentChain.id, childChain.id])
+  }, [selectedToken, isDepositMode, parentChain.id, childChain.id])
 
   const { data: isSelectedTokenWithdrawOnly, isLoading } = useSWRImmutable(
     queryKey,

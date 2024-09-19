@@ -249,11 +249,17 @@ export async function isWithdrawOnlyToken({
     return true
   }
 
+  const inWithdrawOnlyList = (withdrawOnlyTokens[childChainId] ?? [])
+    .map(token => token.l1Address.toLowerCase())
+    .includes(parentChainErc20Address.toLowerCase())
+
+  if (inWithdrawOnlyList) {
+    return true
+  }
+
   if (await isLayerZeroToken(parentChainErc20Address, parentChainId)) {
     return true
   }
 
-  return (withdrawOnlyTokens[childChainId] ?? [])
-    .map(token => token.l1Address.toLowerCase())
-    .includes(parentChainErc20Address.toLowerCase())
+  return false
 }
