@@ -18,7 +18,7 @@ describe('Login Account', () => {
       val => (l1ETHbal = formatAmount(val))
     )
     getInitialETHBalance(Cypress.env('ARB_RPC_URL')).then(
-      val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
+      val => (l2ETHbal = formatAmount(val))
     )
   })
 
@@ -33,16 +33,14 @@ describe('Login Account', () => {
 
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({ networkType: 'parentChain' })
-    // Balance: is in a different element so we check for siblings
-    cy.findByText(l1ETHbal)
+    cy.findByLabelText(`ETH balance amount on parentChain`)
+      .contains(l1ETHbal)
       .should('be.visible')
-      .siblings()
-      .contains('Balance: ')
-    // Balance: is in a different element so we check for siblings
-    cy.findByText(l2ETHbal)
+
+    cy.findByLabelText(`ETH balance amount on childChain`)
+      .contains(l2ETHbal)
       .should('be.visible')
-      .siblings()
-      .contains('Balance: ')
+
     cy.findSourceChainButton(getL1NetworkName())
     cy.findDestinationChainButton(getL2NetworkName())
   })

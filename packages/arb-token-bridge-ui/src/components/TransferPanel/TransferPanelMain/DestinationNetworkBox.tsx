@@ -91,18 +91,20 @@ function BalanceRow({
         />
         <span>{symbol}</span>
       </div>
-      <span
-        aria-label={`${symbol} balance amount on ${
-          isDepositMode ? 'childChain' : 'parentChain'
-        }`}
-      >
-        Balance:{' '}
-        {balance ? (
-          balance
-        ) : (
-          <Loader wrapperClass="ml-2" size="small" color="white" />
-        )}
-      </span>
+      <div>
+        <span>Balance: </span>
+        <span
+          aria-label={`${symbol} balance amount on ${
+            isDepositMode ? 'childChain' : 'parentChain'
+          }`}
+        >
+          {balance ? (
+            balance
+          ) : (
+            <Loader wrapperClass="ml-2" size="small" color="white" />
+          )}
+        </span>
+      </div>
     </div>
   )
 }
