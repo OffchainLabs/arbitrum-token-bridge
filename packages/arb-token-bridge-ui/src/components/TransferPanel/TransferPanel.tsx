@@ -120,7 +120,7 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: sourceChainSigner } = useSigner({
+  const { data: signer } = useSigner({
     chainId: networks.sourceChain.id
   })
 
@@ -348,10 +348,9 @@ export function TransferPanel() {
     if (!selectedToken) {
       return
     }
-    if (!sourceChainSigner) {
+    if (!signer) {
       throw Error(signerUndefinedError)
     }
-    const signer = sourceChainSigner
 
     if (!isTransferAllowed) {
       return
@@ -592,11 +591,9 @@ export function TransferPanel() {
   ])
 
   const transfer = async () => {
-    if (!sourceChainSigner) {
-      throw Error(signerUndefinedError)
+    if (!signer) {
+      throw signerUndefinedError
     }
-
-    const signer = sourceChainSigner
 
     if (!isTransferAllowed) {
       return
