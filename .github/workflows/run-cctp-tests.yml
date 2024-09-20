@@ -33,21 +33,39 @@ jobs:
       - uses: ./.github/actions/check-files
         id: check-files
 
-  anything:
-    name: "debug test"
+  should-run-tests:
     runs-on: ubuntu-latest
+    needs: [check-files]
+    outputs:
+      should_run: ${{ steps.should-run-tests.outputs.should_run }}
     steps:
-      - name: "step"
+      - name: Check trigger type and conditions
+        id: should-run-tests
         run: |
-          echo ${{ github.event.comment.body }}
+          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            if [[ "${{ contains(fromJson('["OWNER", "MEMBER"]'), github.event.comment.author_association) }}" == "false" ]]; then
+              echo "should_run=false" >> $GITHUB_OUTPUT
+            elif [[ "${{ github.event.comment.body }}" == "/run-cctp-tests" && "${{ github.event.issue.pull_request }}" != "" ]]; then
+              echo "should_run=true" >> $GITHUB_OUTPUT
+            else
+              echo "should_run=false" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${{ github.event_name }}" == "pull_request_review" ]]; then
+            if [[ "${{ github.event.review.state }}" == "approved" && "${{ needs.check-files.outputs.run_tests }}" == "true" && "${{ contains(github.event.pull_request.title, 'hotfix') }}" == "false" ]]; then
+              echo "should_run=true" >> $GITHUB_OUTPUT
+            else
+              echo "should_run=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
 
   build:
     name: "Build"
     runs-on: ubuntu-latest
-    needs: [check-files]
-    if: >
-      (needs.check-files.outputs.run_tests == 'true' && ${{ !contains(github.event.pull_request.title, 'hotfix') }}) ||
-      (contains(github.event.comment.html_url, '/pull/') && github.event.comment.body == '/run-cctp-tests')
+    needs: [should-run-tests]
+    if: needs.should-run-tests.outputs.should_run == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,22 +87,56 @@ jobs:
   cctp-e2e-tests:
     name: "CCTP E2E Tests"
     needs: [build, check-files]
-    # Only run CCTP tests when the PR was just approved
     uses: ./.github/workflows/e2e-tests.yml
     with:
       test_type: 'cctp'
     secrets: inherit
 
-  test-e2e-success:
-    name: "Test E2E Success"
-    runs-on: ubuntu-latest
+  update-pr-status:
+    name: "Update PR Status"
     needs: [cctp-e2e-tests]
+    runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: Regular E2E Succeeded
-        if: needs.cctp-e2e-tests.result == 'success' || needs.cctp-e2e-tests.result == 'skipped'
-        run: echo "Regular E2E tests passed"
-
-      - name: Regular E2E Failed
-        if: needs.cctp-e2e-tests.result != 'success' && needs.cctp-e2e-tests.result != 'skipped'
-        run: exit 1
+      - name: Create check run
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { owner, repo } = context.repo;
+            let pull_number;
+            
+            if ('${{ github.event_name }}' === 'issue_comment') {
+              pull_number = context.issue.number;
+            } else if ('${{ github.event_name }}' === 'pull_request_review') {
+              pull_number = context.payload.pull_request.number;
+            } else {
+              console.log('Unexpected event type');
+              return;
+            }
+            
+            // Fetch the PR data to get the latest SHA
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: pull_number,
+            });
+            
+            const head_sha = pr.head.sha;
+            
+            // Construct the URL for this workflow run
+            const workflowUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            
+            await github.rest.checks.create({
+              owner,
+              repo,
+              name: 'CCTP Tests',
+              head_sha: head_sha,
+              status: 'completed',
+              conclusion: '${{ needs.cctp-e2e-tests.result }}',
+              output: {
+                title: 'CCTP Tests Result',
+                summary: `The CCTP tests have completed with status: ${{ needs.cctp-e2e-tests.result }}.`,
+                text: `For detailed information, please check the [workflow run](${workflowUrl}).`
+              }
+            });
