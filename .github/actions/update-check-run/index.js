@@ -1,45 +1,38 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 
-module.exports = async ({ github, context, core }, inputs) => {
+async function run() {
   try {
-    const token = inputs.token;
-    const status = inputs.status;
-    const conclusion = inputs.conclusion;
-    const detailsUrl = inputs["details-url"];
+    const token = core.getInput("github-token", { required: true });
+    const status = core.getInput("status", { required: true });
+    const conclusion = core.getInput("conclusion");
+    const detailsUrl = core.getInput("details-url");
+    const checkName = "CCTP E2E Tests";
 
     const octokit = github.getOctokit(token);
+    const context = github.context;
     const { owner, repo } = context.repo;
 
     let pull_number, head_sha;
 
     if (context.eventName === "issue_comment") {
       pull_number = context.issue.number;
-    } else if (context.eventName === "pull_request_review") {
-      pull_number = context.payload.pull_request.number;
-    } else if (
-      context.eventName === "push" ||
-      context.eventName === "merge_group"
-    ) {
-      head_sha = context.sha;
-    } else {
-      core.setFailed("Unexpected event type");
-      return;
-    }
-
-    if (!head_sha) {
       const { data: pr } = await octokit.rest.pulls.get({
         owner,
         repo,
         pull_number,
       });
       head_sha = pr.head.sha;
+    } else if (context.eventName === "pull_request_review") {
+      pull_number = context.payload.pull_request.number;
+      head_sha = context.payload.pull_request.head.sha;
+    } else {
+      core.setFailed("Unexpected event type");
+      return;
     }
 
-    const checkName = "CCTP E2E Tests";
-
-    // Check if a check run already exists
-    const { data: existingChecks } = await octokit.rest.checks.listForRef({
+    // Get all check runs for the current SHA
+    const { data: allCheckRuns } = await octokit.rest.checks.listForRef({
       owner,
       repo,
       ref: head_sha,
@@ -67,12 +60,13 @@ module.exports = async ({ github, context, core }, inputs) => {
             ? "Tests are currently in progress. Results will be updated upon completion."
             : `For detailed information, please check the [workflow run](${detailsUrl}).`,
       },
+      details_url: detailsUrl,
     };
 
-    if (existingChecks.check_runs.length > 0) {
+    if (allCheckRuns[0]) {
       // Update existing check run
       await octokit.rest.checks.update({
-        check_run_id: existingChecks.check_runs[0].id,
+        check_run_id: allCheckRuns[0].id,
         ...checkRunData,
       });
     } else {
@@ -82,4 +76,6 @@ module.exports = async ({ github, context, core }, inputs) => {
   } catch (error) {
     core.setFailed(error.message);
   }
-};
+}
+
+run();
