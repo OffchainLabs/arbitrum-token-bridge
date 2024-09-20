@@ -10,7 +10,6 @@ import {
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
 import { useAppContextState } from '../App/AppContext'
-import { useDestinationAddressStore } from './AdvancedSettings'
 import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
@@ -32,6 +31,7 @@ import { useBalances } from '../../hooks/useBalances'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -151,7 +151,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     parentWalletAddress: walletAddress,
     childWalletAddress: walletAddress
   })
-  const { error: destinationAddressError } = useDestinationAddressStore()
+  const { destinationAddressError } = useDestinationAddressError()
 
   const ethL1BalanceFloat = ethParentBalance
     ? parseFloat(utils.formatEther(ethParentBalance))
@@ -571,6 +571,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childChain.id,
     parentChain.id,
     networks.sourceChain.name,
-    isTeleportMode
+    isTeleportMode,
+    isSelectedTokenWithdrawOnly,
+    isSelectedTokenWithdrawOnlyLoading
   ])
 }
