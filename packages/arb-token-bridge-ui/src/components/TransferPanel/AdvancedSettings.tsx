@@ -29,17 +29,13 @@ enum DestinationAddressWarnings {
 }
 
 type DestinationAddressStore = {
-  error: DestinationAddressErrors | null
   destinationAddress: string | undefined
-  setError: (error: DestinationAddressErrors | null) => void
   setDestinationAddress: (destinationAddress: string | undefined) => void
 }
 
 export const useDestinationAddressStore = create<DestinationAddressStore>(
   set => ({
-    error: null,
     destinationAddress: undefined,
-    setError: error => set(() => ({ error })),
     setDestinationAddress: destinationAddress =>
       set(() => ({ destinationAddress }))
   })
