@@ -31,7 +31,7 @@ import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 function Amount2ToggleButton({
   onClick
@@ -48,7 +48,10 @@ function Amount2ToggleButton({
       className="border-white/30 shadow-2"
       onClick={onClick}
     >
-      <div className="flex items-center space-x-1">
+      <div
+        aria-label="Add native currency button"
+        className="flex items-center space-x-1"
+      >
         <PlusCircleIcon width={18} />
         <span>Add {nativeCurrency.symbol}</span>
       </div>
@@ -91,7 +94,7 @@ export function SourceNetworkBox({
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
-  const ethBalanceSourceChain = useBalanceOnSourceChain(null)
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -142,11 +145,11 @@ export function SourceNetworkBox({
     () => ({
       symbol: nativeCurrency.symbol,
       disabled: true,
-      balance: ethBalanceSourceChain
-        ? Number(utils.formatEther(ethBalanceSourceChain))
+      balance: nativeCurrencyBalances.sourceBalance
+        ? Number(utils.formatEther(nativeCurrencyBalances.sourceBalance))
         : undefined
     }),
-    [ethBalanceSourceChain, nativeCurrency.symbol]
+    [nativeCurrencyBalances, nativeCurrency.symbol]
   )
 
   return (
@@ -185,6 +188,7 @@ export function SourceNetworkBox({
                 maxAmount={maxAmount2}
                 isMaxAmount={isMaxAmount2}
                 decimals={nativeCurrency.decimals}
+                aria-label="Amount2 input"
               />
               <p className="mt-1 text-xs font-light text-white">
                 You can transfer {nativeCurrency.symbol} in the same transaction
