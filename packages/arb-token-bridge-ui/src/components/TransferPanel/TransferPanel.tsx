@@ -672,8 +672,8 @@ export function TransferPanel() {
        * DO NOT TOUCH THIS UNLESS YOU ARE VERY VERY SURE OF WHAT YOU ARE DOING.
        * OTHERWISE USERS CAN LOSE THEIR FUNDS.
        */
-      const sourceChainEqualsConnectedChain =
-        latestNetworks.current.sourceChain.id === networks.sourceChain.id
+      const connectedChainId = networks.sourceChain.id
+      const sourceChainEqualsConnectedChain = sourceChainId === connectedChainId
 
       // Transfer is invalid if the connected chain doesn't mismatches source-destination chain requirements
       const depositNetworkConnectionWarning =
