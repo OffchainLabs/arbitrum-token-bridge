@@ -74,8 +74,10 @@ import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { normalizeTimestamp } from '../../state/app/utils'
-import { getDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+
+const signerUndefinedError = 'Signer is undefined'
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -171,6 +173,8 @@ export function TransferPanel() {
   const [isCctp, setIsCctp] = useState(false)
 
   const { transferReady } = useTransferReadiness()
+
+  const { destinationAddressError } = useDestinationAddressError()
 
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
@@ -389,11 +393,6 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return
       }
 
-      const destinationAddressError = await getDestinationAddressError({
-        destinationAddress,
-        isSenderSmartContractWallet: isSmartContractWallet,
-        isTeleportMode
-      })
       if (destinationAddressError) {
         console.error(destinationAddressError)
         return
@@ -535,9 +534,19 @@ export function TransferPanel() {
     }
   }
 
-  const transfer = async () => {
-    const signerUndefinedError = 'Signer is undefined'
+  const isTransferAllowed = useMemo(() => {
+    if (!isConnected) {
+      return false
+    }
+    if (!walletAddress) {
+      return false
+    }
+    if (!!destinationAddressError) {
+      return false
+    }
+  }, [destinationAddressError, isConnected, walletAddress])
 
+  const transfer = async () => {
     try {
       setTransferring(true)
       if (chainId !== networks.sourceChain.id) {
@@ -547,26 +556,13 @@ export function TransferPanel() {
       setTransferring(false)
     }
 
-    if (!isConnected) {
-      return
-    }
-    if (!walletAddress) {
+    if (!isTransferAllowed) {
       return
     }
 
     const hasBothSigners = parentSigner && childSigner
     if (isEOA && !hasBothSigners) {
       throw signerUndefinedError
-    }
-
-    const destinationAddressError = await getDestinationAddressError({
-      destinationAddress,
-      isSenderSmartContractWallet: isSmartContractWallet,
-      isTeleportMode
-    })
-    if (destinationAddressError) {
-      console.error(destinationAddressError)
-      return
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -716,12 +712,6 @@ export function TransferPanel() {
         return
       }
 
-      // if destination address is added, validate it
-      const destinationAddressError = await getDestinationAddressError({
-        destinationAddress,
-        isSenderSmartContractWallet: isSmartContractWallet,
-        isTeleportMode
-      })
       if (destinationAddressError) {
         console.error(destinationAddressError)
         return
