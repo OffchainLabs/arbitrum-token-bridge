@@ -666,6 +666,12 @@ export function TransferPanel() {
       const sourceChainId = latestNetworks.current.sourceChain.id
       const destinationChainId = latestNetworks.current.destinationChain.id
 
+      /** !!CAUTION
+       * This is needed because the current chain could be wrong and wasn't switched due to being stale.
+       * Not sure what the reason is but it can only be fixed by further investigation and refactoring.
+       * DO NOT TOUCH THIS UNLESS YOU ARE VERY VERY SURE OF WHAT YOU ARE DOING.
+       * OTHERWISE USERS CAN LOSE THEIR FUNDS.
+       */
       const sourceChainEqualsConnectedChain =
         latestNetworks.current.sourceChain.id === networks.sourceChain.id
 
