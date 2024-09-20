@@ -23,23 +23,15 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import {
-  isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  isTokenSepoliaUSDC,
-  isTokenMainnetUSDC,
-  isGatewayRegistered
-} from '../../util/TokenUtils'
+import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { errorToast, warningToast } from '../common/atoms/Toast'
-import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN } from '../../constants'
 import {
   AdvancedSettings,
-  getDestinationAddressError,
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
@@ -82,18 +74,8 @@ import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { normalizeTimestamp } from '../../state/app/utils'
-
-const networkConnectionWarningToast = () =>
-  warningToast(
-    <>
-      Network connection issue. Please contact{' '}
-      <ExternalLink href={GET_HELP_LINK} className="underline">
-        support
-      </ExternalLink>
-      .
-    </>,
-    { autoClose: false }
-  )
+import { getDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -149,7 +131,7 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const isCctpTransfer = useIsCctpTransfer()
 
   const latestEth = useLatest(eth)
 
@@ -409,7 +391,7 @@ export function TransferPanel() {
 
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet,
+        isSenderSmartContractWallet: isSmartContractWallet,
         isTeleportMode
       })
       if (destinationAddressError) {
@@ -579,7 +561,7 @@ export function TransferPanel() {
 
     const destinationAddressError = await getDestinationAddressError({
       destinationAddress,
-      isSmartContractWallet,
+      isSenderSmartContractWallet: isSmartContractWallet,
       isTeleportMode
     })
     if (destinationAddressError) {
@@ -604,6 +586,8 @@ export function TransferPanel() {
     const childChainName = getNetworkName(childChain.id)
 
     setTransferring(true)
+
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     try {
       if (
@@ -660,6 +644,7 @@ export function TransferPanel() {
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
           network: childChainName,
           amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined,
           version: 2
         })
 
@@ -682,21 +667,6 @@ export function TransferPanel() {
 
       const sourceChainId = latestNetworks.current.sourceChain.id
       const destinationChainId = latestNetworks.current.destinationChain.id
-      const connectedChainId = networks.sourceChain.id
-      const sourceChainEqualsConnectedChain = sourceChainId === connectedChainId
-
-      // Transfer is invalid if the connected chain doesn't mismatches source-destination chain requirements
-      const depositNetworkConnectionWarning =
-        isDepositMode &&
-        (!sourceChainEqualsConnectedChain || isConnectedToOrbitChain.current)
-      const withdrawalNetworkConnectionWarning =
-        !isDepositMode && !sourceChainEqualsConnectedChain
-      if (
-        depositNetworkConnectionWarning ||
-        withdrawalNetworkConnectionWarning
-      ) {
-        return networkConnectionWarningToast()
-      }
 
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
@@ -749,7 +719,7 @@ export function TransferPanel() {
       // if destination address is added, validate it
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet,
+        isSenderSmartContractWallet: isSmartContractWallet,
         isTeleportMode
       })
       if (destinationAddressError) {
@@ -875,14 +845,13 @@ export function TransferPanel() {
             assetType: 'ERC-20',
             accountType: 'Smart Contract',
             network: childChainName,
-            amount: Number(amount)
+            amount: Number(amount),
+            amount2: isBatchTransfer ? Number(amount2) : undefined
           }
         )
       }
 
       const overrides: TransferOverrides = {}
-
-      const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
       if (isBatchTransfer) {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
@@ -931,6 +900,8 @@ export function TransferPanel() {
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
     if (!isSmartContractWallet) {
       trackEvent(
         isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
@@ -939,14 +910,13 @@ export function TransferPanel() {
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: 'EOA',
           network: getNetworkName(childChain.id),
-          amount: Number(amount)
+          amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined
         }
       )
     }
 
     const { sourceChainTransaction } = bridgeTransfer
-
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
@@ -1001,42 +971,6 @@ export function TransferPanel() {
       await updateErc20ParentBalances([nativeCurrency.address])
     }
   }
-
-  const isCctpTransfer = useMemo(() => {
-    if (!selectedToken) {
-      return false
-    }
-
-    if (isTeleportMode) {
-      return false
-    }
-
-    if (isDepositMode) {
-      if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
-        return true
-      }
-
-      if (isTokenSepoliaUSDC(selectedToken.address) && isArbitrumSepolia) {
-        return true
-      }
-    } else {
-      if (
-        isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
-        isArbitrumOne
-      ) {
-        return true
-      }
-
-      if (
-        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
-        isArbitrumSepolia
-      ) {
-        return true
-      }
-    }
-
-    return false
-  }, [isArbitrumOne, isArbitrumSepolia, isDepositMode, selectedToken])
 
   return (
     <>

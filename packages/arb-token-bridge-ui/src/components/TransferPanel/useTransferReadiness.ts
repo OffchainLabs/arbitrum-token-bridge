@@ -11,7 +11,6 @@ import {
 } from '../../util/TokenUtils'
 import { useAppContextState } from '../App/AppContext'
 import { useDestinationAddressStore } from './AdvancedSettings'
-import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
@@ -32,6 +31,7 @@ import { isNetwork } from '../../util/networks'
 import { useBalances } from '../../hooks/useBalances'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
+import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -136,6 +136,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isTeleportMode
   } = useNetworksRelationship(networks)
 
+  const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
+    useSelectedTokenIsWithdrawOnly()
   const gasSummary = useGasSummary()
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
@@ -293,11 +295,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
     // ERC-20
     if (selectedToken) {
-      const selectedTokenIsWithdrawOnly = isWithdrawOnlyToken(
-        selectedToken.address,
-        childChain.id
-      )
-
       const selectedTokenIsDisabled =
         isTransferDisabledToken(selectedToken.address, childChain.id) ||
         (isTeleportMode &&
@@ -307,7 +304,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             childChain.id
           ))
 
-      if (isDepositMode && selectedTokenIsWithdrawOnly) {
+      if (
+        isDepositMode &&
+        isSelectedTokenWithdrawOnly &&
+        !isSelectedTokenWithdrawOnlyLoading
+      ) {
         return notReady({
           errorMessages: {
             inputAmount1: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY

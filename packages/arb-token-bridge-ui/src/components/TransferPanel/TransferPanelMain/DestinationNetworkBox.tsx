@@ -20,13 +20,13 @@ import {
 } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
-import { formatAmount } from '../../../util/NumberUtils'
-import { Loader } from '../../common/atoms/Loader'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { SafeImage } from '../../common/SafeImage'
 import { TokenLogoFallback } from '../TokenInfo'
 import { useTokensFromLists, useTokensFromUser } from '../TokenSearchUtils'
+import { formatAmount } from '../../../util/NumberUtils'
+import { Loader } from '../../common/atoms/Loader'
+import { useAmount2InputVisibility } from './SourceNetworkBox'
 
 function BalanceRow({
   parentErc20Address,
@@ -111,8 +111,8 @@ function BalancesContainer({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const { isArbitrumOne } = isNetwork(childChain.id)
 
-  const [{ amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
+  const { isAmount2InputVisible } = useAmount2InputVisibility()
 
   const { erc20ChildBalances } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -143,7 +143,7 @@ function BalancesContainer({
             : undefined
         }
       />
-      {isBatchTransferSupported && Number(amount2) > 0 && (
+      {isBatchTransferSupported && isAmount2InputVisible && (
         <BalanceRow
           balance={
             nativeCurrencyBalances.destinationBalance

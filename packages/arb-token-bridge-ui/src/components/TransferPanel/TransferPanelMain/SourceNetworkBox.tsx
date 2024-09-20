@@ -1,13 +1,8 @@
-import {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
 import Image from 'next/image'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
+import { create } from 'zustand'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -37,34 +32,54 @@ import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 function Amount2ToggleButton({
   onClick
 }: {
   onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
 }) {
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
   return (
     <Button
       variant="secondary"
       className="border-white/30 shadow-2"
       onClick={onClick}
     >
-      <div className="flex items-center space-x-1">
+      <div
+        aria-label="Add native currency button"
+        className="flex items-center space-x-1"
+      >
         <PlusCircleIcon width={18} />
-        <span>Add ETH</span>
+        <span>Add {nativeCurrency.symbol}</span>
       </div>
     </Button>
   )
 }
+
+export const useAmount2InputVisibility = create<{
+  isAmount2InputVisible: boolean
+  showAmount2Input: () => void
+}>(set => ({
+  isAmount2InputVisible: false,
+  showAmount2Input: () => {
+    set(() => ({
+      isAmount2InputVisible: true
+    }))
+  }
+}))
 
 export function SourceNetworkBox({
   showUsdcSpecificInfo
 }: {
   showUsdcSpecificInfo: boolean
 }) {
-  const [isAmount2InputVisible, setIsAmount2InputVisible] = useState(false)
+  const { isAmount2InputVisible, showAmount2Input } =
+    useAmount2InputVisibility()
 
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
@@ -81,7 +96,7 @@ export function SourceNetworkBox({
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
-  const ethBalanceSourceChain = useBalanceOnSourceChain(null)
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
 
   const {
     network: { logo: networkLogo }
@@ -105,7 +120,7 @@ export function SourceNetworkBox({
 
   useEffect(() => {
     if (isBatchTransferSupported && Number(amount2) > 0) {
-      setIsAmount2InputVisible(true)
+      showAmount2Input()
     }
   }, [isBatchTransferSupported, amount2])
 
@@ -137,11 +152,11 @@ export function SourceNetworkBox({
       symbol: nativeCurrency.symbol,
       logoSrc: null,
       disabled: true,
-      balance: ethBalanceSourceChain
-        ? Number(utils.formatEther(ethBalanceSourceChain))
+      balance: nativeCurrencyBalances.sourceBalance
+        ? Number(utils.formatEther(nativeCurrencyBalances.sourceBalance))
         : undefined
     }),
-    [ethBalanceSourceChain, nativeCurrency.symbol]
+    [nativeCurrencyBalances, nativeCurrency.symbol]
   )
 
   return (
@@ -175,9 +190,7 @@ export function SourceNetworkBox({
 
           {isBatchTransferSupported && !isAmount2InputVisible && (
             <div className="flex justify-end">
-              <Amount2ToggleButton
-                onClick={() => setIsAmount2InputVisible(true)}
-              />
+              <Amount2ToggleButton onClick={showAmount2Input} />
             </div>
           )}
 
@@ -192,6 +205,7 @@ export function SourceNetworkBox({
                 maxAmount={maxAmount2}
                 isMaxAmount={isMaxAmount2}
                 decimals={nativeCurrency.decimals}
+                aria-label="Amount2 input"
               />
               <p className="mt-1 text-xs font-light text-white">
                 You can transfer {nativeCurrency.symbol} in the same transaction

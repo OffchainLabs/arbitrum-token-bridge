@@ -1,5 +1,4 @@
 import { useAppState } from '../../state'
-import { isExperimentalFeatureEnabled } from '../../util'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
@@ -11,9 +10,6 @@ export const useIsBatchTransferSupported = () => {
     app: { selectedToken }
   } = useAppState()
 
-  if (!isExperimentalFeatureEnabled('batch')) {
-    return false
-  }
   if (!selectedToken) {
     return false
   }
