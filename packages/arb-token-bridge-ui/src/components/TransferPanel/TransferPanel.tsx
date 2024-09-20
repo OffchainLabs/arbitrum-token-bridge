@@ -120,13 +120,10 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
-  const { data: parentSigner } = useSigner({
-    chainId: parentChain.id
-  })
-  const { data: childSigner } = useSigner({
-    chainId: childChain.id
+  const { data: signer } = useSigner({
+    chainId: networks.sourceChain.id
   })
 
   const { openTransactionHistoryPanel, setTransferring } =
@@ -340,9 +337,8 @@ export function TransferPanel() {
     if (!walletAddress) {
       return
     }
-    const signer = isDepositMode ? parentSigner : childSigner
     if (!signer) {
-      throw 'Signer is undefined'
+      throw signerUndefinedError
     }
 
     setTransferring(true)
@@ -561,8 +557,7 @@ export function TransferPanel() {
       return
     }
 
-    const hasBothSigners = parentSigner && childSigner
-    if (isEOA && !hasBothSigners) {
+    if (!signer) {
       throw signerUndefinedError
     }
 
@@ -587,13 +582,6 @@ export function TransferPanel() {
     const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     try {
-      if (
-        (isDepositMode && !parentSigner) ||
-        (!isDepositMode && !childSigner)
-      ) {
-        throw signerUndefinedError
-      }
-
       const warningToken =
         selectedToken && warningTokens[selectedToken.address.toLowerCase()]
       if (warningToken) {
@@ -673,8 +661,6 @@ export function TransferPanel() {
         ? selectedToken?.l2Address
         : selectedToken?.address
 
-      const signer = isDepositMode ? parentSigner : childSigner
-
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
@@ -688,8 +674,6 @@ export function TransferPanel() {
           sourceChainErc20Address,
           destinationChainId
         })
-
-      if (!signer) throw Error('Signer not connected!')
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
