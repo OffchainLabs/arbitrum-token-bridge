@@ -22,7 +22,6 @@ import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { SafeImage } from '../../common/SafeImage'
-import { TokenLogoFallback } from '../TokenInfo'
 import { useTokensFromLists, useTokensFromUser } from '../TokenSearchUtils'
 import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
@@ -30,13 +29,16 @@ import { useAmount2InputVisibility } from './SourceNetworkBox'
 
 function BalanceRow({
   parentErc20Address,
-  balance
+  balance,
+  symbolOverride
 }: {
   parentErc20Address?: string
   balance: string | undefined
+  symbolOverride?: string
 }) {
   const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
+  const { childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokensFromLists = useTokensFromLists()
@@ -59,6 +61,10 @@ function BalanceRow({
   ])
 
   const symbol = useMemo(() => {
+    if (symbolOverride) {
+      return symbolOverride
+    }
+
     if (parentErc20Address) {
       return (
         tokensFromLists[parentErc20Address]?.symbol ??
@@ -68,6 +74,7 @@ function BalanceRow({
 
     return nativeCurrency.symbol
   }, [
+    symbolOverride,
     nativeCurrency.symbol,
     parentErc20Address,
     tokensFromLists,
@@ -81,18 +88,21 @@ function BalanceRow({
           src={tokenLogoSrc}
           alt={`${symbol} logo`}
           className="h-4 w-4 shrink-0"
-          fallback={<TokenLogoFallback className="h-4 w-4 text-xs" />}
         />
         <span>{symbol}</span>
       </div>
-      <div className="flex">
+      <span
+        aria-label={`${symbol} balance amount on ${
+          isDepositMode ? 'childChain' : 'parentChain'
+        }`}
+      >
         Balance:{' '}
         {balance ? (
           balance
         ) : (
           <Loader wrapperClass="ml-2" size="small" color="white" />
         )}
-      </div>
+      </span>
     </div>
   )
 }
@@ -131,6 +141,25 @@ function BalancesContainer({
       className="rounded px-3 text-white [&>*+*]:border-t [&>*+*]:border-gray-600"
       style={{ backgroundColor: '#00000050' }}
     >
+      {showUsdcSpecificInfo && isDepositMode && (
+        <BalanceRow
+          parentErc20Address={
+            isArbitrumOne
+              ? CommonAddress.Ethereum.USDC
+              : CommonAddress.ArbitrumOne.USDC
+          }
+          balance={formatAmount(
+            (isArbitrumOne
+              ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
+              : erc20ChildBalances?.[CommonAddress.ArbitrumSepolia.USDC]) ??
+              constants.Zero,
+            {
+              decimals: selectedToken?.decimals
+            }
+          )}
+          symbolOverride="USDC"
+        />
+      )}
       <BalanceRow
         parentErc20Address={selectedToken?.address}
         balance={
@@ -152,21 +181,6 @@ function BalancesContainer({
                 })
               : undefined
           }
-        />
-      )}
-      {showUsdcSpecificInfo && isDepositMode && (
-        <BalanceRow
-          parentErc20Address={
-            isArbitrumOne
-              ? CommonAddress.Ethereum.USDC
-              : CommonAddress.ArbitrumOne.USDC
-          }
-          balance={formatAmount(
-            (isArbitrumOne
-              ? erc20ChildBalances?.[CommonAddress.ArbitrumOne.USDC]
-              : erc20ChildBalances?.[CommonAddress.ArbitrumSepolia.USDC]) ??
-              constants.Zero
-          )}
         />
       )}
     </div>
