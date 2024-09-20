@@ -389,12 +389,6 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return
       }
 
-      const destinationAddressError = await getDestinationAddressError({
-        destinationAddress,
-        isSenderSmartContractWallet: isSmartContractWallet,
-        isTeleportMode
-      })
-
       if (destinationAddressError) {
         console.error(destinationAddressError)
         return
