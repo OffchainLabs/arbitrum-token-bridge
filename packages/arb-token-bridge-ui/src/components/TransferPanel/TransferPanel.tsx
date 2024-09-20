@@ -128,6 +128,8 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
+  const isCctpTransfer = useIsCctpTransfer()
+
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount, amount2 }] = useArbQueryParams()
@@ -916,8 +918,6 @@ export function TransferPanel() {
       await updateErc20ParentBalances([nativeCurrency.address])
     }
   }
-
-  const isCctpTransfer = useIsCctpTransfer()
 
   return (
     <>
