@@ -544,6 +544,7 @@ export function TransferPanel() {
     if (!!destinationAddressError) {
       return false
     }
+    return true
   }, [destinationAddressError, isConnected, walletAddress])
 
   const transfer = async () => {
