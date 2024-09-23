@@ -22,7 +22,6 @@ import '../styles/tailwind.css'
 import '../styles/purple.css'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 
-console.log('oui')
 if (
   process.env.NODE_ENV !== 'production' ||
   process.env.NEXT_PUBLIC_IS_E2E_TEST
