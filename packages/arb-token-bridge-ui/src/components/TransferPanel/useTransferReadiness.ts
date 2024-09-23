@@ -10,8 +10,6 @@ import {
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
 import { useAppContextState } from '../App/AppContext'
-import { useDestinationAddressStore } from './AdvancedSettings'
-import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
@@ -31,6 +29,9 @@ import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
 import { useBalances } from '../../hooks/useBalances'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { formatAmount } from '../../util/NumberUtils'
+import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -135,6 +136,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isTeleportMode
   } = useNetworksRelationship(networks)
 
+  const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
+    useSelectedTokenIsWithdrawOnly()
   const gasSummary = useGasSummary()
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
@@ -148,7 +151,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     parentWalletAddress: walletAddress,
     childWalletAddress: walletAddress
   })
-  const { error: destinationAddressError } = useDestinationAddressStore()
+  const { destinationAddressError } = useDestinationAddressError()
 
   const ethL1BalanceFloat = ethParentBalance
     ? parseFloat(utils.formatEther(ethParentBalance))
@@ -235,18 +238,19 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
-    const sendsAdditionalEth = Number(amount2) > 0
-    const notEnoughEthForAdditionalEthTransfer =
-      Number(amount2) >
-      ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
+    const sendsAmount2 = Number(amount2) > 0
+    const notEnoughAmount2 = nativeCurrency.isCustom
+      ? Number(amount2) > Number(customFeeTokenL1BalanceFloat)
+      : Number(amount2) >
+        ethBalanceFloat - (estimatedL1GasFees + estimatedL2GasFees)
 
     if (isNaN(Number(amount)) || Number(amount) === 0) {
       return notReady({
         errorMessages: {
           inputAmount2:
-            sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+            sendsAmount2 && notEnoughAmount2
               ? getInsufficientFundsErrorMessage({
-                  asset: ether.symbol,
+                  asset: nativeCurrency.symbol,
                   chain: networks.sourceChain.name
                 })
               : undefined
@@ -291,11 +295,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
     // ERC-20
     if (selectedToken) {
-      const selectedTokenIsWithdrawOnly = isWithdrawOnlyToken(
-        selectedToken.address,
-        childChain.id
-      )
-
       const selectedTokenIsDisabled =
         isTransferDisabledToken(selectedToken.address, childChain.id) ||
         (isTeleportMode &&
@@ -305,7 +304,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             childChain.id
           ))
 
-      if (isDepositMode && selectedTokenIsWithdrawOnly) {
+      if (
+        isDepositMode &&
+        isSelectedTokenWithdrawOnly &&
+        !isSelectedTokenWithdrawOnlyLoading
+      ) {
         return notReady({
           errorMessages: {
             inputAmount1: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
@@ -336,9 +339,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
               chain: networks.sourceChain.name
             }),
             inputAmount2:
-              sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+              sendsAmount2 && notEnoughAmount2
                 ? getInsufficientFundsErrorMessage({
-                    asset: ether.symbol,
+                    asset: nativeCurrency.symbol,
                     chain: networks.sourceChain.name
                   })
                 : undefined
@@ -354,13 +357,26 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       }
 
       // Check amount against custom fee token balance
-      if (Number(amount) > customFeeTokenBalanceFloat) {
+      if (
+        Number(amount) > customFeeTokenBalanceFloat ||
+        (sendsAmount2 && notEnoughAmount2)
+      ) {
         return notReady({
           errorMessages: {
-            inputAmount1: getInsufficientFundsErrorMessage({
-              asset: nativeCurrency.symbol,
-              chain: networks.sourceChain.name
-            })
+            inputAmount1:
+              Number(amount) > customFeeTokenBalanceFloat
+                ? getInsufficientFundsErrorMessage({
+                    asset: nativeCurrency.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                : undefined,
+            inputAmount2:
+              sendsAmount2 && notEnoughAmount2
+                ? getInsufficientFundsErrorMessage({
+                    asset: nativeCurrency.symbol,
+                    chain: networks.sourceChain.name
+                  })
+                : undefined
           }
         })
       }
@@ -408,25 +424,55 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             }
 
             // We have to check if there's enough ETH to cover L1 gas
-            if (estimatedL1GasFees > ethBalanceFloat) {
+            if (
+              estimatedL1GasFees > ethBalanceFloat ||
+              (sendsAmount2 && notEnoughAmount2)
+            ) {
               return notReady({
                 errorMessages: {
-                  inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-                    asset: ether.symbol,
-                    chain: networks.sourceChain.name
-                  })
+                  inputAmount1:
+                    estimatedL1GasFees > ethBalanceFloat
+                      ? getInsufficientFundsForGasFeesErrorMessage({
+                          asset: ether.symbol,
+                          chain: networks.sourceChain.name,
+                          balance: formatAmount(ethBalanceFloat),
+                          requiredBalance: formatAmount(estimatedL1GasFees)
+                        })
+                      : undefined,
+                  inputAmount2:
+                    sendsAmount2 && notEnoughAmount2
+                      ? getInsufficientFundsErrorMessage({
+                          asset: nativeCurrency.symbol,
+                          chain: networks.sourceChain.name
+                        })
+                      : undefined
                 }
               })
             }
 
             // We have to check if there's enough of the custom fee token to cover L2 gas
-            if (estimatedL2GasFees > customFeeTokenL1BalanceFloat) {
+            if (
+              estimatedL2GasFees > customFeeTokenL1BalanceFloat ||
+              (sendsAmount2 && notEnoughAmount2)
+            ) {
               return notReady({
                 errorMessages: {
-                  inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-                    asset: nativeCurrency.symbol,
-                    chain: networks.sourceChain.name
-                  })
+                  inputAmount1:
+                    estimatedL2GasFees > customFeeTokenL1BalanceFloat
+                      ? getInsufficientFundsForGasFeesErrorMessage({
+                          asset: nativeCurrency.symbol,
+                          chain: networks.sourceChain.name,
+                          balance: formatAmount(customFeeTokenL1BalanceFloat),
+                          requiredBalance: formatAmount(estimatedL2GasFees)
+                        })
+                      : undefined,
+                  inputAmount2:
+                    sendsAmount2 && notEnoughAmount2
+                      ? getInsufficientFundsErrorMessage({
+                          asset: nativeCurrency.symbol,
+                          chain: networks.sourceChain.name
+                        })
+                      : undefined
                 }
               })
             }
@@ -438,22 +484,23 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           const notEnoughEthForGasFees =
             estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat
 
-          if (
-            notEnoughEthForGasFees ||
-            (sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer)
-          ) {
+          if (notEnoughEthForGasFees || (sendsAmount2 && notEnoughAmount2)) {
             return notReady({
               errorMessages: {
                 inputAmount1: notEnoughEthForGasFees
                   ? getInsufficientFundsForGasFeesErrorMessage({
                       asset: ether.symbol,
-                      chain: networks.sourceChain.name
+                      chain: networks.sourceChain.name,
+                      balance: formatAmount(ethBalanceFloat),
+                      requiredBalance: formatAmount(
+                        estimatedL1GasFees + estimatedL2GasFees
+                      )
                     })
                   : undefined,
                 inputAmount2:
-                  sendsAdditionalEth && notEnoughEthForAdditionalEthTransfer
+                  sendsAmount2 && notEnoughAmount2
                     ? getInsufficientFundsErrorMessage({
-                        asset: ether.symbol,
+                        asset: nativeCurrency.symbol,
                         chain: networks.sourceChain.name
                       })
                     : undefined
@@ -472,7 +519,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
               errorMessages: {
                 inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
                   asset: ether.symbol,
-                  chain: networks.sourceChain.name
+                  chain: networks.sourceChain.name,
+                  balance: formatAmount(ethBalanceFloat),
+                  requiredBalance: formatAmount(
+                    estimatedL1GasFees + estimatedL2GasFees
+                  )
                 })
               }
             })
@@ -490,7 +541,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             errorMessages: {
               inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
                 asset: nativeCurrency.symbol,
-                chain: networks.sourceChain.name
+                chain: networks.sourceChain.name,
+                balance: formatAmount(ethBalanceFloat),
+                requiredBalance: formatAmount(total)
               })
             }
           })
@@ -518,6 +571,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childChain.id,
     parentChain.id,
     networks.sourceChain.name,
-    isTeleportMode
+    isTeleportMode,
+    isSelectedTokenWithdrawOnly,
+    isSelectedTokenWithdrawOnlyLoading
   ])
 }

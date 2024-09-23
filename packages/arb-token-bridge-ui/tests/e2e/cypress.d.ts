@@ -5,12 +5,12 @@ import {
   login,
   logout,
   openTransactionsPanel,
-  resetCctpAllowance,
-  fundUserUsdcTestnet,
-  fundUserWalletEth,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  typeAmount2,
+  findAmountInput,
+  findAmount2Input,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeSummary,
@@ -22,7 +22,9 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
-  selectTransactionsPanelTab
+  selectTransactionsPanelTab,
+  confirmSpending,
+  closeTransactionHistoryPanel
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -44,9 +46,6 @@ declare global {
       logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
-      resetCctpAllowance: typeof resetCctpAllowance
-      fundUserUsdcTestnet: typeof fundUserUsdcTestnet
-      fundUserWalletEth: typeof fundUserWalletEth
       searchAndSelectToken({
         tokenName,
         tokenAddress
@@ -56,6 +55,9 @@ declare global {
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
       typeAmount: typeof typeAmount
+      typeAmount2: typeof typeAmount2
+      findAmountInput: typeof findAmountInput
+      findAmount2Input: typeof findAmount2Input
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
       findGasFeeForChain: typeof findGasFeeForChain
@@ -64,9 +66,11 @@ declare global {
       findSelectTokenButton: typeof findSelectTokenButton
       openTransactionDetails: typeof openTransactionDetails
       closeTransactionDetails: typeof closeTransactionDetails
+      closeTransactionHistoryPanel: typeof closeTransactionHistoryPanel
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      confirmSpending: typeof confirmSpending
     }
   }
 }

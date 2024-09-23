@@ -7,12 +7,11 @@ import {
   getInitialERC20Balance,
   getL1NetworkConfig,
   zeroToLessThanOneETH,
+  moreThanZeroBalance,
   getL1NetworkName,
   getL2NetworkName,
   ERC20TokenSymbol
 } from '../../support/common'
-
-const moreThanZeroBalance = /0(\.\d+)/
 
 const depositTestCases = {
   'Standard ERC20': {
@@ -73,7 +72,6 @@ describe('Deposit Token', () => {
           cy.findByLabelText(`${testCase.symbol} balance amount on parentChain`)
             .should('be.visible')
             .contains(l1ERC20bal)
-            .should('be.visible')
         })
 
         context('should show gas estimations', () => {
@@ -91,6 +89,12 @@ describe('Deposit Token', () => {
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
           })
+        })
+
+        context('transfer panel amount should be reset', () => {
+          cy.closeTransactionHistoryPanel()
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
         })
       })
 
@@ -170,7 +174,7 @@ describe('Deposit Token', () => {
 
         context('funds should reach destination account successfully', () => {
           // close transaction history
-          cy.findByLabelText('Close side panel').click()
+          cy.closeTransactionHistoryPanel()
 
           // the custom destination address should now have some balance greater than zero
           cy.findByLabelText(`${testCase.symbol} balance amount on childChain`)
@@ -182,6 +186,11 @@ describe('Deposit Token', () => {
             .should('be.visible')
             .its('text')
             .should('not.eq', l1ERC20bal)
+        })
+
+        context('transfer panel amount should be reset', () => {
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
         })
       })
 

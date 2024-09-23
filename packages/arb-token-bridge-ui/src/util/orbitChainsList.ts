@@ -437,6 +437,50 @@ export const orbitMainnets: {
         logoUrl: '/images/SankoLogo.png'
       }
     }
+  },
+  55244: {
+    chainId: 55244,
+    confirmPeriodBlocks: 40320,
+    ethBridge: {
+      bridge: '0xEca0fEB4aA6112a3923823559e7197294Bc49CC7',
+      inbox: '0x2EAf07A964c6601c4fAefd6D8969DF0B84f65e55',
+      outbox: '0xa4b3B4D5f7976a8D283864ea83f1Bb3D815b1798',
+      rollup: '0x325Dd0279Ba31bC346BA80F3D00628deFa2EacD4',
+      sequencerInbox: '0xe0064A9fb8e45BfD8e5aB1cE7523888814A096E0'
+    },
+    explorerUrl: 'https://explorer.superposition.so',
+    rpcUrl: 'https://rpc.superposition.so',
+    isCustom: true,
+    isTestnet: false,
+    name: 'Superposition',
+    slug: 'superposition',
+    parentChainId: 42161,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      parentCustomGateway: '0xacb51eA5b465692c889C36615a398BA14D42b619',
+      parentErc20Gateway: '0x62bEd4b862254789825Cd6F2352aa2b76B16145e',
+      parentGatewayRouter: '0x9FE42A08751E8566A0918807bF2870594bf22806',
+      parentMultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      parentProxyAdmin: '0x0000000000000000000000000000000000000000',
+      parentWeth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      parentWethGateway: '0xAD1B3e0474456DA577157d472410B53e91810D3b',
+      childCustomGateway: '0x8767D9ec58A3f9B8ca36B201c5A2544927E4cAe8',
+      childErc20Gateway: '0x705818fEbefB70Ff0997438E472C7B565eF8c6B1',
+      childGatewayRouter: '0x5494dB62F5F799F49e05a0F5B7925D699fa32c6f',
+      childMultiCall: '0x020dcb08cBd4809384Bc7944CCB5d7A371779dE8',
+      childProxyAdmin: '0x2D1D86b7F0C134a79A6bc0cE82614Fef9B98672a',
+      childWeth: '0x1fB719f10b56d7a85DCD32f27f897375fB21cfdd',
+      childWethGateway: '0x478021001536eEdB1841def8f71c6DA68e2b2890'
+    },
+    bridgeUiConfig: {
+      color: '#1E1E1E',
+      network: {
+        name: 'Superposition',
+        logo: '/images/SuperpositionLogo.svg',
+        description:
+          'Superposition is the first DeFi-native Layer-3, with shared and permissionless liquidity, AA, and minimal fees, while providing higher yields.'
+      }
+    }
   }
 }
 
@@ -677,6 +721,57 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         symbol: 'AARC',
         decimals: 18,
         logoUrl: '/images/AtlasLogo.png'
+      }
+    }
+  },
+  2730: {
+    chainId: 2730,
+    confirmPeriodBlocks: 64,
+    ethBridge: {
+      bridge: '0x34C1428F66bB2E418f72DEa75a1f601E0698dEC5',
+      inbox: '0xbC9C0dcb21C53681E6451AB910d78Bc0a3D24742',
+      outbox: '0xBf3226Af95b8603200BdECE1592eA3a6f30a1969',
+      rollup: '0x57af9E93648f7F8c795A0a7D0049B3ef30198bc8',
+      sequencerInbox: '0x45DeF8701582EE64014E6cc9E3039820Ac20349F'
+    },
+    nativeToken: '0x555BF0d9394CC86F0D0D4102916cC6851439dDd0',
+    explorerUrl: 'https://testnet-explorer.xrone.network',
+    rpcUrl: 'https://xr-sepolia-testnet.rpc.caldera.xyz/http',
+    isCustom: true,
+    isTestnet: true,
+    name: 'XR Sepolia',
+    slug: 'xr-sepolia',
+    parentChainId: 421614,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      parentCustomGateway: '0x5F1ac3cd4553bA45fccF135d057795717b37B9Ef',
+      parentErc20Gateway: '0xd0CD7B9F4cB10B21abBfFA874F0d0ad1a41bD51C',
+      parentGatewayRouter: '0x29216c76510df5e90626d39B49e5098ad6e1b4ed',
+      parentMultiCall: '0x3AFeb1Ea760EED35D224C531D531C30eC6aE13e5',
+      parentProxyAdmin: '0xC6333aa27314D5a18f95bca1D54aC1cDc1CD96A0',
+      parentWeth: '0x0000000000000000000000000000000000000000',
+      parentWethGateway: '0x0000000000000000000000000000000000000000',
+      childCustomGateway: '0x8A13D96EFd45923eFAC61cB28740662Ac32C3cD8',
+      childErc20Gateway: '0x84c736079527f13093cDB4382e4A273751904334',
+      childGatewayRouter: '0xFFaD917b6DD1593F8bA36aE2943097deE22EbC9a',
+      childMultiCall: '0x736C61d3b852b42421631A57af78E35E37c784E3',
+      childProxyAdmin: '0x0497357278c9B079e314De0efC48202a2224b374',
+      childWeth: '0x0000000000000000000000000000000000000000',
+      childWethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    bridgeUiConfig: {
+      color: '#03AB2A',
+      network: {
+        name: 'XR Sepolia',
+        logo: '/images/xrLogo.png',
+        description:
+          'XR One is home to the next wave of high impact competitive Web3 & Web2 games.'
+      },
+      nativeTokenData: {
+        name: 'tXR',
+        symbol: 'tXR',
+        decimals: 18,
+        logoUrl: '/images/xrTokenLogo.png'
       }
     }
   }

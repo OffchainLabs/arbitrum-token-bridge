@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import Image from 'next/image'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
@@ -30,9 +31,9 @@ import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
 import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
 import { Address } from '../../util/AddressUtils'
-import { ether } from '../../constants'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
-import { BatchTransferEthTooltip } from './TransactionHistoryTable'
+import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   const { sourceChainId, destinationChainId } = tx
@@ -128,6 +129,8 @@ export function TransactionsTableRow({
   className?: string
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
+  const childProvider = getProviderForChainId(tx.childChainId)
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
   const { sourceChainId, destinationChainId } = tx
 
@@ -164,11 +167,27 @@ export function TransactionsTableRow({
     return tx.status === 'Failure'
   }, [tx])
 
+  const testId = useMemo(() => {
+    const type = isClaimableTx ? 'claimable' : 'deposit'
+    const id = `${type}-row-${tx.txId}-${tx.value}${tx.asset}`
+
+    if (tx.value2) {
+      return `${id}-${tx.value2}${nativeCurrency.symbol}`
+    }
+
+    return id
+  }, [
+    isClaimableTx,
+    nativeCurrency.symbol,
+    tx.asset,
+    tx.txId,
+    tx.value,
+    tx.value2
+  ])
+
   return (
     <div
-      data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}-${
-        tx.value
-      }${tx.asset}`}
+      data-testid={testId}
       className={twMerge(
         'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_170px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
         className
@@ -190,21 +209,21 @@ export function TransactionsTableRow({
           </TransactionsTableExternalLink>
         </div>
         {isBatchTransfer(tx) && (
-          <BatchTransferEthTooltip>
+          <BatchTransferNativeTokenTooltip tx={tx}>
             <div className="flex items-center pr-3 align-middle">
               <Image
                 height={20}
                 width={20}
-                alt="ETH logo"
-                src={EthereumLogoRoundLight}
+                alt={`${nativeCurrency.symbol} logo`}
+                src={nativeCurrency.logoUrl ?? EthereumLogoRoundLight}
               />
               <span className="ml-2">
                 {formatAmount(Number(tx.value2), {
-                  symbol: ether.symbol
+                  symbol: nativeCurrency.symbol
                 })}
               </span>
             </div>
-          </BatchTransferEthTooltip>
+          </BatchTransferNativeTokenTooltip>
         )}
       </div>
       <div className="flex items-center space-x-2">

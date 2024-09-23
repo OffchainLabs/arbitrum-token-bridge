@@ -21,7 +21,7 @@ export type NetworkName =
 type NetworkConfig = {
   networkName: NetworkName
   rpcUrl: string
-  chainId: string
+  chainId: number
   symbol: string
   isTestnet: boolean
   multiCall: string
@@ -43,7 +43,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
   return {
     networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
-    chainId: isOrbitTest ? '412346' : '1337',
+    chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: isOrbitTest
@@ -58,7 +58,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
   return {
     networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
-    chainId: isOrbitTest ? '333333' : '412346',
+    chainId: isOrbitTest ? 333333 : 412346,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: isOrbitTest
@@ -71,7 +71,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
-    chainId: '11155111',
+    chainId: 11155111,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: MULTICALL_TESTNET_ADDRESS
@@ -82,7 +82,7 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'arbitrum-sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
-    chainId: '421614',
+    chainId: 421614,
     symbol: 'ETH',
     isTestnet: true,
     multiCall: MULTICALL_TESTNET_ADDRESS
@@ -95,6 +95,7 @@ export const ERC20TokenDecimals = 18
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
+export const moreThanZeroBalance = /0(\.\d+)/
 
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)
@@ -181,33 +182,6 @@ export const wait = (ms = 0): Promise<void> => {
   return new Promise(res => setTimeout(res, ms))
 }
 
-export async function fundEth({
-  address, // wallet address where funding is required
-  networkType, // parentChain or childChain
-  parentProvider,
-  childProvider,
-  sourceWallet // source wallet that will fund the `address`
-}: {
-  address: string
-  parentProvider: Provider
-  childProvider: Provider
-  sourceWallet: Wallet
-  networkType: NetworkType
-}) {
-  console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
-  const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 2 eth
-  if (balance.lt(utils.parseEther('2'))) {
-    const tx = await sourceWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther('2')
-    })
-    await tx.wait()
-  }
-}
-
 export async function generateActivityOnChains({
   parentProvider,
   childProvider,
@@ -236,20 +210,18 @@ export async function generateActivityOnChains({
   const minerParent = Wallet.createRandom().connect(parentProvider)
   await fundEth({
     address: await minerParent.getAddress(),
-    networkType: 'parentChain',
-    parentProvider,
-    childProvider,
-    sourceWallet: wallet
+    provider: parentProvider,
+    sourceWallet: wallet,
+    networkType: 'parentChain'
   })
 
   console.log('Generating activity on childChain...')
   const minerChild = Wallet.createRandom().connect(childProvider)
   await fundEth({
     address: await minerChild.getAddress(),
-    networkType: 'childChain',
-    parentProvider,
-    childProvider,
-    sourceWallet: wallet
+    provider: childProvider,
+    sourceWallet: wallet,
+    networkType: 'childChain'
   })
 
   await Promise.allSettled([keepMining(minerParent), keepMining(minerChild)])
@@ -292,4 +264,67 @@ export async function checkForAssertions({
       e
     )
   }
+}
+
+export async function fundEth({
+  address, // wallet address where funding is required
+  provider,
+  sourceWallet, // source wallet that will fund the `address`,
+  networkType,
+  amount = utils.parseEther('2')
+}: {
+  address: string
+  provider: Provider
+  sourceWallet: Wallet
+  networkType: NetworkType
+  amount?: BigNumber
+}) {
+  console.log(`Funding ETH ${address} on ${networkType}...`)
+  const balance = await provider.getBalance(address)
+  // Fund only if the balance is less than 2 eth
+  if (balance.lt(amount)) {
+    const tx = await sourceWallet.connect(provider).sendTransaction({
+      to: address,
+      value: amount
+    })
+    await tx.wait()
+  }
+}
+
+export async function getCustomDestinationAddress() {
+  console.log('Getting custom destination address...')
+  return (await Wallet.createRandom().getAddress()).toLowerCase()
+}
+
+export function setupCypressTasks(
+  on: Cypress.PluginEvents,
+  { requiresNetworkSetup }: { requiresNetworkSetup: boolean }
+) {
+  let currentNetworkName: NetworkName | null = null
+  let networkSetupComplete = !requiresNetworkSetup
+  let walletConnectedToDapp = false
+
+  on('task', {
+    setCurrentNetworkName: (networkName: NetworkName) => {
+      currentNetworkName = networkName
+      return null
+    },
+    getCurrentNetworkName: () => {
+      return currentNetworkName
+    },
+    setNetworkSetupComplete: () => {
+      networkSetupComplete = true
+      return null
+    },
+    getNetworkSetupComplete: () => {
+      return networkSetupComplete
+    },
+    setWalletConnectedToDapp: () => {
+      walletConnectedToDapp = true
+      return null
+    },
+    getWalletConnectedToDapp: () => {
+      return walletConnectedToDapp
+    }
+  })
 }

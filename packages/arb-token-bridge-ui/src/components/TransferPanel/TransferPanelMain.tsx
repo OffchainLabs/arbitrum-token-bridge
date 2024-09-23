@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { BigNumber, utils } from 'ethers'
+import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
-import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
-import { formatAmount } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useDestinationAddressStore } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
@@ -19,7 +17,6 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { ether } from '../../constants'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -27,11 +24,9 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
-import { Balances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { NetworkType } from './TransferPanelMain/utils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -202,33 +197,6 @@ export function NetworkContainer({
   )
 }
 
-function StyledLoader() {
-  return <Loader color="white" size="small" />
-}
-
-export function ETHBalance({
-  balance,
-  prefix = '',
-  on
-}: {
-  balance: BigNumber | null
-  prefix?: string
-  on: NetworkType
-}) {
-  if (!balance) {
-    return <StyledLoader />
-  }
-
-  return (
-    <p>
-      <span className="font-light">{prefix}</span>
-      <span aria-label={`ETH balance amount on ${on}`}>
-        {formatAmount(balance, { symbol: ether.symbol })}
-      </span>
-    </p>
-  )
-}
-
 export function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
@@ -268,13 +236,7 @@ export function TransferPanelMain() {
 
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
-  const {
-    ethParentBalance,
-    erc20ParentBalances,
-    updateErc20ParentBalances,
-    ethChildBalance,
-    updateErc20ChildBalances
-  } = useBalances()
+  const { updateErc20ParentBalances, updateErc20ChildBalances } = useBalances()
 
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
@@ -319,19 +281,6 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
-  // TODO: move into a hook (FS-714)
-  // when customFeeTokenBalances is moved to an independent hook file, use `setAmount` directly in useMaxAmount and do not pass `customFeeTokenBalances` as a prop
-  const customFeeTokenBalances: Balances = useMemo(() => {
-    if (!nativeCurrency.isCustom) {
-      return { parentBalance: ethParentBalance, childBalance: ethChildBalance }
-    }
-
-    return {
-      parentBalance: erc20ParentBalances?.[nativeCurrency.address] ?? null,
-      childBalance: ethChildBalance
-    }
-  }, [nativeCurrency, ethParentBalance, ethChildBalance, erc20ParentBalances])
-
   const showUSDCSpecificInfo =
     !isTeleportMode &&
     ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
@@ -348,17 +297,11 @@ export function TransferPanelMain() {
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <SourceNetworkBox
-        customFeeTokenBalances={customFeeTokenBalances}
-        showUsdcSpecificInfo={showUSDCSpecificInfo}
-      />
+      <SourceNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
 
       <SwitchNetworksButton />
 
-      <DestinationNetworkBox
-        customFeeTokenBalances={customFeeTokenBalances}
-        showUsdcSpecificInfo={showUSDCSpecificInfo}
-      />
+      <DestinationNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
 
       <TransferDisabledDialog />
     </div>

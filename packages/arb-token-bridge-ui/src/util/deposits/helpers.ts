@@ -17,15 +17,16 @@ import {
   L2ToL3MessageData,
   Transaction,
   TxnStatus,
-  TeleporterTransaction
+  TeleporterTransaction,
+  isTeleportTx
 } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   getL2ConfigForTeleport,
-  fetchTeleportStatusFromTxId,
-  isTeleport
+  fetchTeleportStatusFromTxId
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
+import { normalizeTimestamp } from '../../state/app/utils'
 
 export const updateAdditionalDepositData = async ({
   depositTx,
@@ -43,11 +44,13 @@ export const updateAdditionalDepositData = async ({
   let timestampCreated = new Date().toISOString()
   if (depositTx.timestampCreated) {
     // if timestamp is already there in Subgraphs, take it from there
-    timestampCreated = String(Number(depositTx.timestampCreated) * 1000)
+    timestampCreated = String(normalizeTimestamp(depositTx.timestampCreated))
   } else if (depositTx.blockNumber) {
     // if timestamp not in subgraph, fallback to onchain data
     timestampCreated = String(
-      (await parentProvider.getBlock(depositTx.blockNumber)).timestamp * 1000
+      normalizeTimestamp(
+        (await parentProvider.getBlock(depositTx.blockNumber)).timestamp
+      )
     )
   }
 
@@ -68,12 +71,7 @@ export const updateAdditionalDepositData = async ({
       isClassic
     })
 
-  if (
-    isTeleport({
-      sourceChainId: depositTx.parentChainId,
-      destinationChainId: depositTx.childChainId
-    })
-  ) {
+  if (isTeleportTx(depositTx)) {
     const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
       await fetchTeleporterDepositStatusData({
         ...depositTx,
@@ -257,7 +255,9 @@ const updateETHDepositStatusData = async ({
     : null
 
   const timestampResolved = childBlockNum
-    ? (await childProvider.getBlock(childBlockNum)).timestamp * 1000
+    ? normalizeTimestamp(
+        (await childProvider.getBlock(childBlockNum)).timestamp
+      )
     : null
 
   // return the data to populate on UI
@@ -336,7 +336,9 @@ const updateTokenDepositStatusData = async ({
     : null
 
   const timestampResolved = childBlockNum
-    ? (await childProvider.getBlock(childBlockNum)).timestamp * 1000
+    ? normalizeTimestamp(
+        (await childProvider.getBlock(childBlockNum)).timestamp
+      )
     : null
 
   const completeDepositTx: Transaction = {
@@ -400,7 +402,7 @@ const updateClassicDepositStatusData = async ({
     : null
 
   const timestampResolved = l2BlockNum
-    ? (await childProvider.getBlock(l2BlockNum)).timestamp * 1000
+    ? normalizeTimestamp((await childProvider.getBlock(l2BlockNum)).timestamp)
     : null
 
   const completeDepositTx: Transaction = {
@@ -427,7 +429,7 @@ async function getTimestampResolved(
     .getTransactionReceipt(l3TxHash)
     .then(tx => tx.blockNumber)
     .then(blockNumber => destinationChainProvider.getBlock(blockNumber))
-    .then(block => String(block.timestamp * 1000))
+    .then(block => normalizeTimestamp(block.timestamp))
 }
 
 export async function fetchTeleporterDepositStatusData({
@@ -518,9 +520,8 @@ export async function fetchTeleporterDepositStatusData({
         l2L3Redeem && l2L3Redeem.status === ParentToChildMessageStatus.REDEEMED
           ? l2L3Redeem.childTxReceipt.transactionHash
           : undefined
-      const timestampResolved = await getTimestampResolved(
-        destinationChainProvider,
-        l3TxID
+      const timestampResolved = String(
+        await getTimestampResolved(destinationChainProvider, l3TxID)
       )
 
       // extract the new L2 tx details if we find that `l2ForwarderFactoryRetryable` has been redeemed manually
