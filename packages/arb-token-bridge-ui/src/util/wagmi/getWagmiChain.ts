@@ -11,8 +11,7 @@ import {
   localL2Network,
   localL3Network
 } from './wagmiAdditionalNetworks'
-import { ChainId } from '../networks'
-import { getCustomChainFromLocalStorageById } from '../networks'
+import { ChainId, getCustomChainFromLocalStorageById } from '../networks'
 import { orbitChains } from '../orbitChainsList'
 
 export function getWagmiChain(chainId: number): Chain {
