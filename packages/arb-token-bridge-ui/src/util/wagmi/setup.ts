@@ -120,55 +120,51 @@ function getChains(targetChainKey: TargetChainKey) {
 }
 
 export function getProps(targetChainKey: string | null) {
-  try {
-    const { chains, provider } = configureChains(
-      // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
-      //
-      // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-      getChains(sanitizeTargetChainKey(targetChainKey)),
-      [
-        customInfuraProvider(),
-        publicProvider(),
-        jsonRpcProvider({
-          rpc: chain => ({
-            http: rpcURLs[chain.id]!
-          })
+  const { chains, provider } = configureChains(
+    // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
+    //
+    // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
+    getChains(sanitizeTargetChainKey(targetChainKey)),
+    [
+      customInfuraProvider(),
+      publicProvider(),
+      jsonRpcProvider({
+        rpc: chain => ({
+          http: rpcURLs[chain.id]!
         })
+      })
+    ]
+  )
+
+  const { wallets } = getDefaultWallets({
+    ...appInfo,
+    chains
+  })
+
+  const connectors = connectorsForWallets([
+    ...wallets,
+    {
+      groupName: 'More',
+      wallets: [
+        trustWallet({ chains, projectId }),
+        okxWallet({ chains, projectId })
       ]
-    )
-
-    const { wallets } = getDefaultWallets({
-      ...appInfo,
-      chains
-    })
-
-    const connectors = connectorsForWallets([
-      ...wallets,
-      {
-        groupName: 'More',
-        wallets: [
-          trustWallet({ chains, projectId }),
-          okxWallet({ chains, projectId })
-        ]
-      }
-    ])
-
-    const client = createClient({
-      autoConnect: true,
-      connectors,
-      provider
-    })
-
-    return {
-      rainbowKitProviderProps: {
-        appInfo,
-        chains
-      },
-      wagmiConfigProps: {
-        client
-      }
     }
-  } catch (e) {
-    console.log('ERROR: ', e)
+  ])
+
+  const client = createClient({
+    autoConnect: true,
+    connectors,
+    provider
+  })
+
+  return {
+    rainbowKitProviderProps: {
+      appInfo,
+      chains
+    },
+    wagmiConfigProps: {
+      client
+    }
   }
 }
