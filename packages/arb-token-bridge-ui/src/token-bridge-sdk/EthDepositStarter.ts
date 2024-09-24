@@ -85,35 +85,63 @@ export class EthDepositStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    signer,
+    destinationAddress
+  }: TransferEstimateGas) {
     const address = await getAddressFromSigner(signer)
 
     return depositEthEstimateGas({
       amount,
       address,
       parentChainProvider: this.sourceChainProvider,
-      childChainProvider: this.destinationChainProvider
+      childChainProvider: this.destinationChainProvider,
+      destinationAddress
     })
   }
 
-  public async transfer({ amount, signer }: TransferProps) {
+  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const depositRequest = await ethBridger.getDepositRequest({
-      amount,
-      from: address
-    })
+    const depositRequest = destinationAddress
+      ? await ethBridger.getDepositToRequest({
+          amount,
+          from: address,
+          parentProvider: this.sourceChainProvider,
+          childProvider: this.destinationChainProvider,
+          destinationAddress
+        })
+      : await ethBridger.getDepositRequest({
+          amount,
+          from: address
+        })
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest
     )
 
-    const sourceChainTransaction = await ethBridger.deposit({
-      amount,
-      parentSigner: signer,
-      overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
-    })
+    const sourceChainTransaction = destinationAddress
+      ? await ethBridger.depositTo({
+          amount,
+          parentSigner: signer,
+          childProvider: this.destinationChainProvider,
+          destinationAddress,
+          overrides: {
+            gasLimit: percentIncrease(gasLimit, BigNumber.from(5))
+          },
+          retryableGasOverrides: {
+            // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+            // the 30% gas limit increase should cover the difference
+            gasLimit: { percentIncrease: BigNumber.from(30) }
+          }
+        })
+      : await ethBridger.deposit({
+          amount,
+          parentSigner: signer,
+          overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
+        })
 
     return {
       transferType: this.transferType,
