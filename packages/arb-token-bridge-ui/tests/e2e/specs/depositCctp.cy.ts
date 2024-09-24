@@ -4,6 +4,7 @@
 
 import { zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -104,6 +105,16 @@ describe('Deposit USDC through CCTP', () => {
     //     timeout: 60_000
     //   }
     // })
+
+    // We have setup deposit transactions before running tests
+    cy.wait(40_000)
+    cy.rejectMetamaskTransaction()
+  })
+
+  it('should claim deposit', () => {
+    cy.claimCctp(0.00014, { accept: false })
+    cy.closeTransactionHistoryPanel()
+    cy.claimCctp(0.00015, { accept: false })
   })
 
   /**
