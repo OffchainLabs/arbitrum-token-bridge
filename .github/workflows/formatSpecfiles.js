@@ -20,12 +20,12 @@ switch (testType) {
     break;
   }
   case "cctp": {
-    tests.push({
-      name: "cctp",
-      file: "tests/e2e/specs/**/*Cctp.cy.{js,jsx,ts,tsx}",
-      recordVideo: false,
-      type: "cctp",
-    });
+    cctpFiles.forEach((spec) => {
+      tests.push({
+        ...spec,
+        type: 'cctp',
+      })
+    })
     break;
   }
 }
