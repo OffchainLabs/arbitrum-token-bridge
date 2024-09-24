@@ -489,7 +489,7 @@ export const orbitMainnets: {
       bridge: '0x34F81F9C4F3227DbaCcFF8E51DBaa1571e114759',
       inbox: '0x703F97120c8E5F5fC7c878C309E9e84E118B0478',
       outbox: '0x31A1A120939007547aBC5e3BFaBDB6AcA6C00378',
-      rollup: '0x811e70a2fC012e738e0AeA8b0c3b024538be42f2 ',
+      rollup: '0x811e70a2fC012e738e0AeA8b0c3b024538be42f2',
       sequencerInbox: '0xD00d2ef101d86C570dA8f38801f236b79a7a2A93'
     },
     explorerUrl: 'https://explorer.mindnetwork.xyz',
