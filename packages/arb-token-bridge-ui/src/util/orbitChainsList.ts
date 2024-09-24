@@ -481,6 +481,50 @@ export const orbitMainnets: {
           'Superposition is the first DeFi-native Layer-3, with shared and permissionless liquidity, AA, and minimal fees, while providing higher yields.'
       }
     }
+  },
+  228: {
+    chainId: 228,
+    confirmPeriodBlocks: 7200,
+    ethBridge: {
+      bridge: '0x34F81F9C4F3227DbaCcFF8E51DBaa1571e114759',
+      inbox: '0x703F97120c8E5F5fC7c878C309E9e84E118B0478',
+      outbox: '0x31A1A120939007547aBC5e3BFaBDB6AcA6C00378',
+      rollup: '0x811e70a2fC012e738e0AeA8b0c3b024538be42f2 ',
+      sequencerInbox: '0xD00d2ef101d86C570dA8f38801f236b79a7a2A93'
+    },
+    explorerUrl: 'https://explorer.mindnetwork.xyz',
+    rpcUrl: 'https://rpc-mainnet.mindnetwork.xyz',
+    isCustom: true,
+    isTestnet: false,
+    name: 'Mind Network',
+    slug: 'mind-network',
+    parentChainId: 42161,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      parentCustomGateway: '0xA6a623F64931Bcf1368B120e9Dc29254676D0D8E',
+      parentErc20Gateway: '0x281587c05DeA1a1ceCE83F6FFea23c5aFd287fb3',
+      parentGatewayRouter: '0x7E2349E5d0A3E8418864576d0D7a1747456B0849',
+      parentMultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      parentProxyAdmin: '0x0000000000000000000000000000000000000000',
+      parentWeth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      parentWethGateway: '0xe525299577D2431312beF921d4c29E1Fd1efC4E7',
+      childCustomGateway: '0xbF406e74cE3467359e32F542C954D23ee702832e',
+      childErc20Gateway: '0x7427835d6e475698C78A92a59fd7e05Dd3F1257d',
+      childGatewayRouter: '0x6d3Cedb80E82c47E50403807b70681A8b646da40',
+      childMultiCall: '0x4e2Df93A243BDFb8C35Df3aB4927fcb78BC9a2b2',
+      childProxyAdmin: '0x419c82c65A27f5A96A9Ab3E025FD57fc7201c1bD',
+      childWeth: '0xbFDDe12A6f356d5F05e97A2E9f3C2731258e118c',
+      childWethGateway: '0xb27F672Af56DbD012dC997d00a11245494d1f1Bb'
+    },
+    bridgeUiConfig: {
+      color: '#18392b',
+      network: {
+        name: 'Mind Network',
+        logo: '/images/MindChainLogo.webp',
+        description:
+          'MindChain is the 1st FHE consensus chain for Mind Network, serving billions in voted TVL and millions of voters from AI partners.'
+      }
+    }
   }
 }
 
