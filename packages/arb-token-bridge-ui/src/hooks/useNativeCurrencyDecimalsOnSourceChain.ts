@@ -1,11 +1,13 @@
 import { isNetwork } from '../util/networks'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export const useNativeCurrencyDecimalsOnSourceChain = () => {
   const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({
-    provider: networks.sourceChainProvider
+    provider: childChainProvider
   })
   const { isOrbitChain: isSourceChainOrbit } = isNetwork(
     networks.sourceChain.id
