@@ -43,7 +43,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Create build or restore build artifacts
-        uses: ./.github/actions/build-artifacts/cache
+        uses: ./.github/workflows/build-artifacts.yml
 
       - name: Install cypress
         run: yarn cypress install
