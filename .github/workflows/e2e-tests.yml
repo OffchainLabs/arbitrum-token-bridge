@@ -1,6 +1,8 @@
 name: E2E tests
 
 on:
+  workflow_run:
+    workflows: ["Build"]
   workflow_call:
     inputs:
       test_type:
