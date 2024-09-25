@@ -1,6 +1,22 @@
 name: Cache build artifacts
 description: Cache build artifacts
 
+on:
+  workflow_call:
+    secrets:
+      NEXT_PUBLIC_INFURA_KEY:
+        description: 'Infura key'
+        required: true
+      NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:
+        description: 'WalletConnect project id'
+        required: true
+      THE_GRAPH_NETWORK_API_KEY:
+        description: 'The Graph network API key'
+        required: true
+      GITHUB_TOKEN:
+        description: 'GitHub token'
+        required: true
+
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
@@ -8,7 +24,6 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 runs:
-  using: composite
   steps:
     - name: Check cache for build artifacts
       id: cache
