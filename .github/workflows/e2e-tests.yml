@@ -1,8 +1,6 @@
 name: E2E tests
 
 on:
-  workflow_run:
-    workflows: ["Build"]
   workflow_call:
     inputs:
       test_type:
@@ -44,8 +42,8 @@ jobs:
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
-      - name: Restore build artifacts
-        uses: ./.github/actions/build-artifacts/restore
+      - name: Create build or restore build artifacts
+        uses: ./.github/actions/build-artifacts/cache
 
       - name: Install cypress
         run: yarn cypress install

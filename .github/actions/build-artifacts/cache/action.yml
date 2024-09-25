@@ -1,10 +1,42 @@
 name: Cache build artifacts
 description: Cache build artifacts
 
+env:
+  NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+  NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+  THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 runs:
   using: composite
   steps:
+    - name: Check cache for build artifacts
+      id: cache
+      uses: actions/cache/restore@v4
+      with:
+        path:  |
+          ./packages/arb-token-bridge-ui/build
+        key: build-artifacts-${{ github.run_id }}
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install node_modules
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: OffchainLabs/actions/node-modules/install@main
+
+      run: ${{ inputs.install-command }}
+    - name: Build
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: yarn build
+      env:
+        NEXT_PUBLIC_IS_E2E_TEST: true
+        NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+        NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+        THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
+
     - name: Cache build artifacts
+      if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
         path: |

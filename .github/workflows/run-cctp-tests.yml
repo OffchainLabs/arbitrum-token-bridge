@@ -1,8 +1,6 @@
 name: PR approved workflow
 
 on:
-  workflow_run:
-    workflows: ["Build"]
   workflow_dispatch:
   pull_request_review:
     types:

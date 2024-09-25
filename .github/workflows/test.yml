@@ -1,8 +1,6 @@
 name: Test
 
 on:
-  workflow_run:
-    workflows: ["Build"]
   pull_request:
     branches: ["master"]
     types:
@@ -48,8 +46,8 @@ jobs:
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
-      - name: Restore build artifacts
-        uses: ./.github/actions/build-artifacts/restore
+      - name: Create build or restore build artifacts
+        uses: ./.github/actions/build-artifacts/cache
 
       - name: Start UI and Test
         run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
