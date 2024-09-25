@@ -105,7 +105,11 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const depositRequest = destinationAddress
+    const isDifferentDestinationAddress =
+      destinationAddress &&
+      destinationAddress.toLowerCase() !== address.toLowerCase()
+
+    const depositRequest = isDifferentDestinationAddress
       ? await ethBridger.getDepositToRequest({
           amount,
           from: address,

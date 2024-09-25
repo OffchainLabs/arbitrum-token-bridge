@@ -61,7 +61,11 @@ export async function depositEthEstimateGas(
     return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
   }
 
-  if (destinationAddress) {
+  const isDifferentDestinationAddress =
+    destinationAddress &&
+    destinationAddress.toLowerCase() !== address.toLowerCase()
+
+  if (isDifferentDestinationAddress) {
     const depositToRequest = await ethBridger.getDepositToRequest({
       amount,
       from: address,
