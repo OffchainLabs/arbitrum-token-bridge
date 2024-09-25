@@ -146,10 +146,19 @@ export function SourceNetworkBox({
       symbol: nativeCurrency.symbol,
       disabled: true,
       balance: nativeCurrencyBalances.sourceBalance
-        ? Number(utils.formatEther(nativeCurrencyBalances.sourceBalance))
+        ? Number(
+            utils.formatUnits(
+              nativeCurrencyBalances.sourceBalance,
+              nativeCurrency.decimals
+            )
+          )
         : undefined
     }),
-    [nativeCurrencyBalances, nativeCurrency.symbol]
+    [
+      nativeCurrency.symbol,
+      nativeCurrency.decimals,
+      nativeCurrencyBalances.sourceBalance
+    ]
   )
 
   return (

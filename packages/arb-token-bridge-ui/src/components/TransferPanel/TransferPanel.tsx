@@ -23,7 +23,10 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import { isGatewayRegistered } from '../../util/TokenUtils'
+import {
+  isGatewayRegistered,
+  scaleToNativeTokenDecimals
+} from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
@@ -850,7 +853,8 @@ export function TransferPanel() {
         }
 
         overrides.maxSubmissionCost = utils
-          .parseUnits(amount2, nativeCurrency.decimals)
+          // we are not scaling these to native decimals because arbitrum-sdk does it for us
+          .parseEther(amount2)
           .add(gasEstimates.estimatedChildChainSubmissionCost)
         overrides.excessFeeRefundAddress = destinationAddress
       }
@@ -904,6 +908,20 @@ export function TransferPanel() {
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
+    const { isOrbitChain: isSourceChainOrbit } = isNetwork(
+      networks.sourceChain.id
+    )
+
+    // for withdrawals from Orbit chains we used 18 decimals
+    // but to display it correctly in the history we need to scale it to native currency decimals
+    const scaledAmount =
+      isSourceChainOrbit && !selectedToken
+        ? scaleToNativeTokenDecimals({
+            amount: amountBigNumber,
+            decimals: nativeCurrency.decimals
+          })
+        : amountBigNumber
+
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
       parentChainId: parentChain.id,
@@ -912,7 +930,7 @@ export function TransferPanel() {
       walletAddress,
       destinationAddress,
       nativeCurrency,
-      amount: amountBigNumber,
+      amount: scaledAmount,
       amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
       timestampCreated
     })
@@ -931,7 +949,7 @@ export function TransferPanel() {
           walletAddress,
           destinationAddress,
           nativeCurrency,
-          amount: amountBigNumber,
+          amount: scaledAmount,
           amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
           timestampCreated
         })

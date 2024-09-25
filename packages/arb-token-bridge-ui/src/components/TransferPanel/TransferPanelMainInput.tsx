@@ -21,6 +21,7 @@ import { Loader } from '../common/atoms/Loader'
 import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
+import { isNetwork } from '../../util/networks'
 
 function MaxButton({
   className = '',
@@ -86,6 +87,9 @@ function SourceChainTokenBalance({
   const [networks] = useNetworks()
   const { isDepositMode, childChainProvider } =
     useNetworksRelationship(networks)
+  const { isOrbitChain: isSourceNetworkOrbit } = isNetwork(
+    networks.sourceChain.id
+  )
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
@@ -100,10 +104,22 @@ function SourceChainTokenBalance({
     balanceOverride ??
     (selectedToken ? tokenBalance : nativeCurrencyBalances.sourceBalance)
 
+  const selectedTokenDecimals = useMemo(() => {
+    if (selectedToken) {
+      return selectedToken.decimals
+    }
+
+    if (isSourceNetworkOrbit) {
+      return 18
+    }
+
+    return nativeCurrency.decimals
+  }, [isSourceNetworkOrbit, nativeCurrency.decimals, selectedToken])
+
   const formattedBalance =
     balance !== null
       ? formatAmount(balance, {
-          decimals: selectedToken?.decimals ?? nativeCurrency.decimals
+          decimals: selectedTokenDecimals
         })
       : null
 

@@ -9,6 +9,7 @@ import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { isNetwork } from '../../../util/networks'
 
 export function useMaxAmount() {
   const {
@@ -40,10 +41,14 @@ export function useMaxAmount() {
       )
     }
 
+    const { isOrbitChain: isSourceChainOrbit } = isNetwork(
+      networks.sourceChain.id
+    )
+
     // ETH deposits and ETH/custom fee token withdrawals
     const nativeCurrencyBalanceFormatted = utils.formatUnits(
       nativeCurrencySourceBalance,
-      nativeCurrency.decimals
+      isSourceChainOrbit ? 18 : nativeCurrency.decimals
     )
 
     if (
