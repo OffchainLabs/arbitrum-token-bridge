@@ -8,7 +8,7 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -25,8 +25,6 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
@@ -146,9 +144,6 @@ export function TransferPanel() {
   const isCctpTransfer = useIsCctpTransfer()
 
   const latestEth = useLatest(eth)
-
-  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
-  const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -557,10 +552,15 @@ export function TransferPanel() {
   }, [destinationAddressError, isConnected, walletAddress])
 
   const transfer = async () => {
+    const sourceChainId = latestNetworks.current.sourceChain.id
+
+    const isConnectedToTheWrongChain =
+      chainId !== latestNetworks.current.sourceChain.id
+
     try {
       setTransferring(true)
-      if (chainId !== networks.sourceChain.id) {
-        await switchNetworkAsync?.(networks.sourceChain.id)
+      if (isConnectedToTheWrongChain) {
+        await switchNetworkAsync?.(sourceChainId)
       }
     } finally {
       setTransferring(false)
@@ -605,32 +605,9 @@ export function TransferPanel() {
         return
       }
 
-      const depositRequiresChainSwitch = () => {
-        const isParentChainEthereum = isNetwork(
-          parentChain.id
-        ).isEthereumMainnetOrTestnet
+      const destinationChainId = latestNetworks.current.destinationChain.id
 
-        return (
-          isDepositMode &&
-          ((isParentChainEthereum && isConnectedToArbitrum.current) ||
-            isConnectedToOrbitChain.current)
-        )
-      }
-
-      const withdrawalRequiresChainSwitch = () => {
-        const isConnectedToEthereum =
-          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-
-        const { isOrbitChain: isSourceChainOrbit } = isNetwork(childChain.id)
-
-        return (
-          !isDepositMode &&
-          (isConnectedToEthereum ||
-            (isConnectedToArbitrum.current && isSourceChainOrbit))
-        )
-      }
-
-      if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
+      if (isConnectedToTheWrongChain) {
         trackEvent('Switch Network and Transfer', {
           type: isTeleportMode
             ? 'Teleport'
@@ -646,14 +623,11 @@ export function TransferPanel() {
           version: 2
         })
 
-        const switchTargetChainId = latestNetworks.current.sourceChain.id
-
-        await switchNetworkAsync?.(switchTargetChainId)
+        await switchNetworkAsync?.(sourceChainId)
 
         // keep checking till we know the connected chain-pair are correct for transfer
         while (
-          depositRequiresChainSwitch() ||
-          withdrawalRequiresChainSwitch() ||
+          isConnectedToTheWrongChain ||
           !latestEth.current ||
           !arbTokenBridgeLoaded
         ) {
@@ -663,28 +637,8 @@ export function TransferPanel() {
         await new Promise(r => setTimeout(r, 3000))
       }
 
-      const sourceChainId = latestNetworks.current.sourceChain.id
-      const destinationChainId = latestNetworks.current.destinationChain.id
-
-      /** !!CAUTION
-       * This is needed because the current chain could be wrong and wasn't switched due to being stale.
-       * Not sure what the reason is but it can only be fixed by further investigation and refactoring.
-       * DO NOT TOUCH THIS UNLESS YOU ARE VERY VERY SURE OF WHAT YOU ARE DOING.
-       * OTHERWISE USERS CAN LOSE THEIR FUNDS.
-       */
-      const connectedChainId = chainId
-      const sourceChainEqualsConnectedChain = sourceChainId === connectedChainId
-
       // Transfer is invalid if the connected chain is not the source chain
-      const depositNetworkConnectionWarning =
-        isDepositMode &&
-        (!sourceChainEqualsConnectedChain || isConnectedToOrbitChain.current)
-      const withdrawalNetworkConnectionWarning =
-        !isDepositMode && !sourceChainEqualsConnectedChain
-      if (
-        depositNetworkConnectionWarning ||
-        withdrawalNetworkConnectionWarning
-      ) {
+      if (isConnectedToTheWrongChain) {
         return networkConnectionWarningToast()
       }
 
