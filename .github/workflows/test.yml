@@ -34,6 +34,12 @@ jobs:
       - uses: ./.github/actions/check-files
         id: check-files
 
+  build:
+    name: 'Build'
+    needs: [check-files]
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
   test-ui:
     name: "Test UI"
     runs-on: ubuntu-latest
@@ -46,9 +52,6 @@ jobs:
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
-      - name: Create build or restore build artifacts
-        uses: ./.github/workflows/build.yml
-        
       - name: Start UI and Test
         run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
 

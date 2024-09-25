@@ -27,6 +27,11 @@ jobs:
       - id: set-matrix
         run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js ${{ inputs.test_type }} | jq . --compact-output)" >> $GITHUB_OUTPUT
 
+  build:
+    name: 'Build'
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
   test-e2e:
     name: "Test E2E - ${{ matrix.test.name }}${{ matrix.test.type == 'orbit' && ' with L3' || ''}}"
     needs: [load-e2e-files]
@@ -41,9 +46,6 @@ jobs:
 
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
-
-      - name: Create build or restore build artifacts
-        uses: ./.github/workflows/build.yml
 
       - name: Install cypress
         run: yarn cypress install
