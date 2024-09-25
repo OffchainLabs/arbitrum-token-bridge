@@ -79,6 +79,7 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+import { useNativeCurrencyDecimalsOnSourceChain } from '../../hooks/useNativeCurrencyDecimalsOnSourceChain'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -120,6 +121,8 @@ export function TransferPanel() {
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
   const isBatchTransferSupported = useIsBatchTransferSupported()
+  const nativeCurrencyDecimalsOnSourceChain =
+    useNativeCurrencyDecimalsOnSourceChain()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -234,20 +237,11 @@ export function TransferPanel() {
         return utils.parseUnits(amountSafe, selectedToken.decimals)
       }
 
-      const { isOrbitChain: isSourceChainOrbit } = isNetwork(
-        networks.sourceChain.id
-      )
-
-      if (isSourceChainOrbit) {
-        // native token on Orbit chains is always 18 decimals
-        return utils.parseEther(amountSafe)
-      }
-
-      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
+      return utils.parseUnits(amountSafe, nativeCurrencyDecimalsOnSourceChain)
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, selectedToken, nativeCurrency, networks.sourceChain])
+  }, [amount, selectedToken, nativeCurrencyDecimalsOnSourceChain])
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
     const waitForInput = openUSDCDepositConfirmationDialog()

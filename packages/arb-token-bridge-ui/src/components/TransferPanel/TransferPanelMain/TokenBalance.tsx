@@ -1,12 +1,18 @@
+import { useMemo } from 'react'
 import { BigNumber } from 'ethers'
 
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
-import { NativeCurrencyErc20 } from '../../../hooks/useNativeCurrency'
+import {
+  NativeCurrencyErc20,
+  useNativeCurrency
+} from '../../../hooks/useNativeCurrency'
 import { Loader } from '../../common/atoms/Loader'
 import { TokenSymbolWithExplorerLink } from '../../common/TokenSymbolWithExplorerLink'
 import { formatAmount } from '../../../util/NumberUtils'
 
 import { NetworkType } from './utils'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 export function TokenBalance({
   forToken,
@@ -22,6 +28,23 @@ export function TokenBalance({
   tokenSymbolOverride?: string
 }) {
   const isParentChain = on === NetworkType.parentChain
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
+
+  const isCustomNativeCurrency =
+    nativeCurrency.isCustom &&
+    forToken?.address.toLowerCase() === nativeCurrency.address.toLowerCase()
+
+  const decimals = useMemo(() => {
+    if (!isParentChain && isCustomNativeCurrency) {
+      // Native currency on Orbit chain, always 18 decimals
+      return 18
+    }
+    return forToken?.decimals
+  }, [forToken?.decimals, isCustomNativeCurrency, isParentChain])
 
   if (!forToken) {
     return null
@@ -43,7 +66,7 @@ export function TokenBalance({
       <span className="font-light">{prefix}</span>
       <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {
-          decimals: isParentChain ? forToken.decimals : 18
+          decimals
         })}
       </span>{' '}
       <TokenSymbolWithExplorerLink

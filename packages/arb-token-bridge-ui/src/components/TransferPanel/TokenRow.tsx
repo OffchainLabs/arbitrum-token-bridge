@@ -21,7 +21,7 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
-import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
@@ -32,6 +32,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
+import { useNativeCurrencyDecimalsOnSourceChain } from '../../hooks/useNativeCurrencyDecimalsOnSourceChain'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -244,14 +245,8 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { balance, symbol } = useTokenInfo(token)
-  const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({
-    provider: childChainProvider
-  })
-  const { isOrbitChain: isSourceChainOrbit } = isNetwork(
-    networks.sourceChain.id
-  )
+  const nativeCurrencyDecimalsOnSourceChain =
+    useNativeCurrencyDecimalsOnSourceChain()
 
   const isArbitrumNativeUSDC =
     isTokenArbitrumOneNativeUSDC(token?.address) ||
@@ -278,11 +273,8 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
     if (token) {
       return token.decimals
     }
-    if (isSourceChainOrbit) {
-      return 18
-    }
-    return nativeCurrency.decimals
-  }, [isSourceChainOrbit, nativeCurrency.decimals, token])
+    return nativeCurrencyDecimalsOnSourceChain
+  }, [nativeCurrencyDecimalsOnSourceChain, token])
 
   if (!tokenIsAddedToTheBridge) {
     return <span className="arb-hover text-sm">Import</span>
