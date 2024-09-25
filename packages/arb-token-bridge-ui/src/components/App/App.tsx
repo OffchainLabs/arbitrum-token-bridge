@@ -54,7 +54,7 @@ const rainbowkitTheme = merge(darkTheme(), {
     accentColor: 'var(--blue-link)'
   },
   fonts: {
-    body: 'Roboto, sans-serif'
+    body: 'Roboto, Arial, sans-serif'
   }
 } as Theme)
 
