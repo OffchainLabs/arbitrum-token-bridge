@@ -13,7 +13,6 @@ import { addressIsSmartContract } from './AddressUtils'
 import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
 import { MergedTransaction } from '../state/app/state'
-import { isExperimentalFeatureEnabled } from '.'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
@@ -221,7 +220,6 @@ async function addressIsCustomGatewayToken({
 
 export function isBatchTransfer(tx: MergedTransaction) {
   return (
-    isExperimentalFeatureEnabled('batch') &&
     !tx.isCctp &&
     !tx.isWithdrawal &&
     tx.assetType === AssetType.ERC20 &&
