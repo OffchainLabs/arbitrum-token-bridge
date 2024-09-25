@@ -44,8 +44,6 @@ jobs:
 
       - name: Create build or restore build artifacts
         uses: ./.github/actions/build-artifacts/cache
-        with:
-          secrets: inherit
 
       - name: Install cypress
         run: yarn cypress install

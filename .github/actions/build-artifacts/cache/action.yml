@@ -17,8 +17,12 @@ on:
         description: 'GitHub token'
         required: true
 
-runs:
-  steps:
+jobs:
+  check-build-cache:
+    name: Check cache for build artifacts
+    runs-on: ubuntu-latest
+    secrets: inherit
+    steps:
     - name: Check cache for build artifacts
       id: cache
       uses: actions/cache/restore@v4
@@ -36,6 +40,7 @@ runs:
 
     - name: Build
       if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
       run: yarn build
       env:
         NEXT_PUBLIC_IS_E2E_TEST: true
