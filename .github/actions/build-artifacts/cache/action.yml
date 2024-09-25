@@ -34,7 +34,6 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: OffchainLabs/actions/node-modules/install@main
 
-      run: ${{ inputs.install-command }}
     - name: Build
       if: steps.cache.outputs.cache-hit != 'true'
       run: yarn build
