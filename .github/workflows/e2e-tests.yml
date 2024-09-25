@@ -16,6 +16,7 @@ env:
 jobs:
   load-e2e-files:
     name: "Load e2e files"
+    if: inputs.test_type.type != 'cctp'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.e2eFiles }}
