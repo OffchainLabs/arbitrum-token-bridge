@@ -47,6 +47,9 @@ jobs:
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
+      - name: Restore build artifacts
+        uses: ./.github/actions/restore-build-artifacts
+
       - name: Install cypress
         run: yarn cypress install
 

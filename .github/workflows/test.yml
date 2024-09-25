@@ -53,11 +53,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Restore build artifacts
-        uses: actions/cache/restore@v4
-        with:
-          path:  |
-            ./packages/arb-token-bridge-ui/build
-          key: build-artifacts-${{ github.run_id }}
+        uses: ./.github/actions/restore-build-artifacts
 
       - name: Start UI and Test
         run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
