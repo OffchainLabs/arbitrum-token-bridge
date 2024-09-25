@@ -14,6 +14,9 @@ jobs:
     name: Check cache for build artifacts
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
     - name: Check cache for build artifacts
       id: cache
       uses: actions/cache/restore@v4
@@ -21,9 +24,6 @@ jobs:
         path:  |
           ./packages/arb-token-bridge-ui/build
         key: build-artifacts-${{ github.run_id }}
-
-    - name: Checkout
-      uses: actions/checkout@v4
 
     - name: Install node_modules
       if: steps.cache.outputs.cache-hit != 'true'
