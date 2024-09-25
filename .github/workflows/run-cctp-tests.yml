@@ -1,15 +1,10 @@
 name: PR approved workflow
 
 on:
-  issue_comment:
-    types:
-      - created
+  workflow_dispatch:
   pull_request_review:
     types:
       - submitted
-  push:
-    branches: ["master"]
-  merge_group:
 
 # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
 concurrency:
@@ -42,24 +37,17 @@ jobs:
       - name: Check trigger type and conditions
         id: should-run-tests
         run: |
-          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
-            if [[ "${{ contains(fromJson('["OWNER", "MEMBER"]'), github.event.comment.author_association) }}" == "false" ]]; then
-              echo "should_run=false" >> $GITHUB_OUTPUT
-            elif [[ "${{ github.event.comment.body }}" == "/run-cctp-tests" && "${{ github.event.issue.pull_request }}" != "" ]]; then
-              echo "should_run=true" >> $GITHUB_OUTPUT
-            else
-              echo "should_run=false" >> $GITHUB_OUTPUT
-            fi
-          elif [[ "${{ github.event_name }}" == "pull_request_review" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request_review" ]]; then
             if [[ "${{ github.event.review.state }}" == "approved" && "${{ needs.check-files.outputs.run_tests }}" == "true" && "${{ contains(github.event.pull_request.title, 'hotfix') }}" == "false" ]]; then
               echo "should_run=true" >> $GITHUB_OUTPUT
             else
               echo "should_run=false" >> $GITHUB_OUTPUT
             fi
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
-
 
   build:
     name: "Build"
@@ -92,51 +80,16 @@ jobs:
       test_type: 'cctp'
     secrets: inherit
 
-  update-pr-status:
-    name: "Update PR Status"
-    needs: [cctp-e2e-tests]
+  test-e2e-success:
+    name: "CCTP Test E2E Success"
     runs-on: ubuntu-latest
+    needs: [cctp-e2e-tests]
     if: always()
     steps:
-      - name: Create check run
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const { owner, repo } = context.repo;
-            let pull_number;
-            
-            if ('${{ github.event_name }}' === 'issue_comment') {
-              pull_number = context.issue.number;
-            } else if ('${{ github.event_name }}' === 'pull_request_review') {
-              pull_number = context.payload.pull_request.number;
-            } else {
-              console.log('Unexpected event type');
-              return;
-            }
-            
-            // Fetch the PR data to get the latest SHA
-            const { data: pr } = await github.rest.pulls.get({
-              owner,
-              repo,
-              pull_number: pull_number,
-            });
-            
-            const head_sha = pr.head.sha;
-            
-            // Construct the URL for this workflow run
-            const workflowUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
-            
-            await github.rest.checks.create({
-              owner,
-              repo,
-              name: 'CCTP Tests',
-              head_sha: head_sha,
-              status: 'completed',
-              conclusion: '${{ needs.cctp-e2e-tests.result }}',
-              output: {
-                title: 'CCTP Tests Result',
-                summary: `The CCTP tests have completed with status: ${{ needs.cctp-e2e-tests.result }}.`,
-                text: `For detailed information, please check the [workflow run](${workflowUrl}).`
-              }
-            });
+      - name: CCTP E2E Succeeded
+        if: needs.cctp-e2e-tests.result == 'success' || needs.cctp-e2e-tests.result == 'skipped'
+        run: echo "CCTP E2E tests passed"
+
+      - name: CCTP E2E Failed
+        if: needs.cctp-e2e-tests.result != 'success' && needs.cctp-e2e-tests.result != 'skipped'
+        run: exit 1

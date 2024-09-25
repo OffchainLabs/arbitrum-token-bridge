@@ -8,6 +8,7 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { SelectorMatcherOptions } from '@testing-library/cypress'
 import {
   NetworkType,
   NetworkName,
@@ -16,6 +17,7 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -329,8 +331,13 @@ export function findTransactionInTransactionHistory({
 }
 
 export function findClaimButton(
-  amountToClaim: string
+  amountToClaim: string,
+  options?: SelectorMatcherOptions
 ): Cypress.Chainable<JQuery<HTMLElement>> {
+  if (options) {
+    return cy.findByLabelText(`Claim ${amountToClaim}`, options)
+  }
+
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
@@ -352,6 +359,25 @@ export function confirmSpending(
     spendLimit,
     shouldWaitForPopupClosure: true
   })
+}
+
+export function claimCctp(amount: number, options: { accept: boolean }) {
+  const formattedAmount = formatAmount(amount, {
+    symbol: 'USDC'
+  })
+  cy.openTransactionsPanel('pending')
+  cy.findTransactionInTransactionHistory({
+    amount,
+    symbol: 'USDC'
+  })
+  cy.findClaimButton(formattedAmount, { timeout: 120_000 }).click()
+  if (options.accept) {
+    cy.confirmMetamaskTransaction(undefined)
+    cy.findByLabelText('show settled transactions').should('be.visible').click()
+    cy.findByText(formattedAmount).should('be.visible')
+  } else {
+    cy.rejectMetamaskTransaction()
+  }
 }
 
 Cypress.Commands.addAll({
@@ -378,5 +404,6 @@ Cypress.Commands.addAll({
   findTransactionInTransactionHistory,
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
-  confirmSpending
+  confirmSpending,
+  claimCctp
 })

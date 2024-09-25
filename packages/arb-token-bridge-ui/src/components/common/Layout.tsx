@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
+import { SiteBanner } from './SiteBanner'
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
@@ -54,7 +55,10 @@ export function Layout(props: LayoutProps) {
         <div className="flex flex-row">
           <AppSidebar />
 
-          <main className="grow">{props.children}</main>
+          <main className="grow">
+            <SiteBanner></SiteBanner>
+            {props.children}
+          </main>
 
           <Toast />
         </div>
