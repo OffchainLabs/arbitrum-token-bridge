@@ -19,7 +19,7 @@ env:
 jobs:
   run-monitoring:
     name: Run
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout repositories
       uses: actions/checkout@v4
