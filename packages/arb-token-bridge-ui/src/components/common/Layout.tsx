@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
-import { StatusAndInfoBanner } from './StatusAndInfoBanner'
+import { SiteBanner } from './SiteBanner'
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
@@ -61,7 +61,7 @@ export function Layout(props: LayoutProps) {
                 It also dynamically displays Arbiscan/NovaScan status. 
                 To hide or remove its content, simply empty out its children instead of removing the entire component. 
               */}
-            <StatusAndInfoBanner />
+            <SiteBanner />
 
             {props.children}
           </main>

@@ -61,7 +61,7 @@ function isComponentOperational({ status }: { status: string }) {
   return status === 'OPERATIONAL'
 }
 
-export const StatusAndInfoBanner = ({
+export const SiteBanner = ({
   children,
   expiryDate, // date in utc
   ...props
