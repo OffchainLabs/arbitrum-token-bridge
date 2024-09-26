@@ -45,7 +45,7 @@ jobs:
       - name: Install node_modules
         uses: actions/setup-node@v4
         with: 
-          node-version: 'latest'
+          node-version: '20'
 
       - name: Build
         run: yarn build
@@ -76,7 +76,7 @@ jobs:
       - name: Install node_modules
         uses: actions/setup-node@v4
         with: 
-          node-version: 'latest'
+          node-version: '20'
 
       - name: Start UI and Test
         run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
