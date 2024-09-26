@@ -17,7 +17,7 @@ jobs:
   load-e2e-files:
     name: "Load e2e files"
     if: inputs.test_type.type != 'cctp'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-8
     outputs:
       matrix: ${{ steps.set-matrix.outputs.e2eFiles }}
     steps:
@@ -30,7 +30,7 @@ jobs:
   test-e2e:
     name: "Test E2E - ${{ matrix.test.name }}${{ matrix.test.type == 'orbit' && ' with L3' || ''}}"
     needs: [load-e2e-files]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-8
     strategy:
       fail-fast: false
       matrix:
@@ -104,7 +104,7 @@ jobs:
 
   clean-up:
     name: "Clean Up"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-8
     needs: [test-e2e]
     if: always()
     steps:
