@@ -71,7 +71,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@main
+        uses: actions/setup-node@v4
+        with: 
+          node-version: '20'
+
+      - name: Install deps
+        run: yarn install
 
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
