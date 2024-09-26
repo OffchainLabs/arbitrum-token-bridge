@@ -67,3 +67,17 @@ jobs:
         BATCH_POSTER_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
         ASSERTION_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
         ASSERTION_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
+
+    - name: Send Slack notification on failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+        author_name: Monitoring Workflow Failure
+        if_mention: failure
+        channel: ${{ secrets[steps.config.outputs.slack_channel] }}
+        icon_emoji: ':github:'
+        username: GitHub Actions
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets[steps.config.outputs.slack_token] }}
