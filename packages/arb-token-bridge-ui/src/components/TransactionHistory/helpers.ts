@@ -326,12 +326,17 @@ export async function getUpdatedEthDeposit(
   }
 }
 
-export async function getUpdatedTokenDeposit(
+export async function getUpdatedRetryableDeposit(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
+  const isDifferentDestinationAddress =
+    typeof tx.sender !== 'undefined' &&
+    typeof tx.destination !== 'undefined' &&
+    tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+
   if (
     !isTxPending(tx) ||
-    tx.assetType !== AssetType.ERC20 ||
+    (tx.assetType !== AssetType.ERC20 && !isDifferentDestinationAddress) ||
     tx.isWithdrawal ||
     tx.isCctp
   ) {

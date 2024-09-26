@@ -39,7 +39,7 @@ import {
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
   getUpdatedTeleportTransfer,
-  getUpdatedTokenDeposit,
+  getUpdatedRetryableDeposit,
   getUpdatedWithdrawal,
   isCctpTransfer,
   isSameTransaction,
@@ -733,15 +733,20 @@ export const useTransactionHistory = (
         return
       }
 
+      const isDifferentDestinationAddress =
+        tx.sender &&
+        tx.destination &&
+        tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+
       // ETH deposit
-      if (tx.assetType === AssetType.ETH) {
+      if (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
         updateCachedTransaction(updatedEthDeposit)
         return
       }
 
-      // Token deposit
-      const updatedTokenDeposit = await getUpdatedTokenDeposit(tx)
+      // Token deposit or ETH deposit to a different destination address
+      const updatedTokenDeposit = await getUpdatedRetryableDeposit(tx)
       updateCachedTransaction(updatedTokenDeposit)
     },
     [updateCachedTransaction]

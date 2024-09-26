@@ -60,14 +60,20 @@ export const updateAdditionalDepositData = async ({
 
   const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
-  const isEthDeposit = depositTx.assetType === AssetType.ETH
+  const isNativeTokenTransferToSameAddress =
+    depositTx.assetType === AssetType.ETH &&
+    !(
+      depositTx.sender &&
+      depositTx.destination &&
+      depositTx.sender.toLowerCase() !== depositTx.destination.toLowerCase()
+    )
 
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: depositTx.txID,
       parentProvider,
       childProvider,
-      isEthDeposit,
+      isEthDeposit: isNativeTokenTransferToSameAddress,
       isClassic
     })
 
@@ -93,14 +99,14 @@ export const updateAdditionalDepositData = async ({
     return updateClassicDepositStatusData({
       depositTx,
       parentToChildMsg: parentToChildMsg as ParentToChildMessageReaderClassic,
-      isEthDeposit,
+      isEthDeposit: isNativeTokenTransferToSameAddress,
       timestampCreated,
       childProvider
     })
   }
 
   // Check if deposit is ETH
-  if (isEthDeposit) {
+  if (isNativeTokenTransferToSameAddress) {
     return updateETHDepositStatusData({
       depositTx,
       ethDepositMessage: parentToChildMsg as EthDepositMessage,
