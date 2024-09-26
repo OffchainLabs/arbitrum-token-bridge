@@ -53,6 +53,9 @@ jobs:
           docker-images: false
           swap-storage: true
 
+      # we found on 26 Sep that using Chrome 129 mysteriously broke ci at setupMetamask step
+      # with the following error: > Cannot read properties of undefined (reading 'waitForTimeout')
+      # so we are reverting to Chrome 128 on ci
       # https://www.ubuntuupdates.org/package_logs?type=ppas&vals=8
       - name: Set up Chrome 128
         run: |
