@@ -73,6 +73,8 @@ export const updateAdditionalDepositData = async ({
       depositTxId: depositTx.txID,
       parentProvider,
       childProvider,
+      // we use `depositTo` from arbitrum-sdk to send native token to a different destination address
+      // it uses retryables so technically it's not ETH deposit
       isEthDeposit: isNativeTokenTransferToSameAddress,
       isClassic
     })
@@ -99,6 +101,8 @@ export const updateAdditionalDepositData = async ({
     return updateClassicDepositStatusData({
       depositTx,
       parentToChildMsg: parentToChildMsg as ParentToChildMessageReaderClassic,
+      // we use `depositTo` from arbitrum-sdk to send native token to a different destination address
+      // it uses retryables so technically it's not ETH deposit
       isEthDeposit: isNativeTokenTransferToSameAddress,
       timestampCreated,
       childProvider
