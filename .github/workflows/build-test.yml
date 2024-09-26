@@ -43,10 +43,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@main
+        uses: actions/setup-node@v4
+        with: 
+          node-version: 'latest'
 
       - name: Build
-        run: source ~/.nvm/nvm.sh & nvm use 20 & yarn build
+        run: yarn build
         env:
           NEXT_PUBLIC_IS_E2E_TEST: true
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
@@ -71,8 +73,13 @@ jobs:
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
 
+      - name: Install node_modules
+        uses: actions/setup-node@v4
+        with: 
+          node-version: 'latest'
+
       - name: Start UI and Test
-        run: source ~/.nvm/nvm.sh & nvm use 20 & yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
+        run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
 
   audit:
     name: "Audit"
