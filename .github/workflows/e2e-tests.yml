@@ -57,7 +57,8 @@ jobs:
         id: setup-chrome
         uses: browser-actions/setup-chrome@v1
         with:
-          chrome-version: 128
+          chrome-version: 128.0.6613.137
+          install-chromedriver: true
       
       - name: Checkout
         uses: actions/checkout@v4
