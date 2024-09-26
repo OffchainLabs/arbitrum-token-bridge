@@ -54,6 +54,7 @@ jobs:
           swap-storage: true
 
       - name: Set up Chrome 128
+        id: setup-chrome
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: 128
@@ -95,7 +96,7 @@ jobs:
         uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
         with:
           start: yarn start
-          command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.type == 'orbit' && ':orbit') || '' }} --browser chrome"
+          command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.type == 'orbit' && ':orbit') || '' }} --browser ${{ steps.setup-chrome.outputs.chrome-path }}"
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
