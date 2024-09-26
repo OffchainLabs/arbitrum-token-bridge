@@ -47,6 +47,9 @@ jobs:
         with: 
           node-version: '20'
 
+      - name: Install deps
+        run: yarn install
+
       - name: Build
         run: yarn build
         env:
@@ -77,6 +80,9 @@ jobs:
         uses: actions/setup-node@v4
         with: 
           node-version: '20'
+
+      - name: Install deps
+        run: yarn install
 
       - name: Start UI and Test
         run: yarn start-server-and-test 'start' http://127.0.0.1:3000 'yarn test:ci'
