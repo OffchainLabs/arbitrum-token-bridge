@@ -45,7 +45,7 @@ jobs:
       - name: Install node_modules
         uses: actions/setup-node@v4
         with: 
-          node-version: '20'
+          node-version: '18'
 
       - name: Install deps
         run: yarn install
@@ -73,7 +73,7 @@ jobs:
       - name: Install node_modules
         uses: actions/setup-node@v4
         with: 
-          node-version: '20'
+          node-version: '18'
 
       - name: Install deps
         run: yarn install
@@ -84,7 +84,7 @@ jobs:
       - name: Install node_modules
         uses: actions/setup-node@v4
         with: 
-          node-version: '20'
+          node-version: '18'
 
       - name: Install deps
         run: yarn install
