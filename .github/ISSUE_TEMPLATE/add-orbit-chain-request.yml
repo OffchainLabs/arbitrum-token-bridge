@@ -1,6 +1,6 @@
 name: Add Orbit Chain Request
 description: File a request to have your Orbit chain added to the bridge
-title: "[feat]: "
+title: "[feat]: Add Orbit chain "
 labels: ["feat", "triage"]
 body:
   - type: markdown
@@ -59,6 +59,7 @@ body:
       label: Explorer URL
     validations:
       required: true
+      
   - type: input
     id: parent-chain-id
     attributes:
@@ -66,6 +67,13 @@ body:
       placeholder: ex. 42161
     validations:
       required: true
+  - type: checkboxes
+    id: is-testnet
+    attributes:
+      label: Is this a testnet?
+      description: Check this box if the chain is a testnet
+      options:
+        - label: Yes, this is a testnet
 
   - type: markdown
     attributes:
@@ -88,7 +96,7 @@ body:
       label: Native token name
       placeholder: ex. Ether
     validations:
-      required: false           
+      required: false
   - type: input
     id: native-token-symbol
     attributes:
@@ -168,45 +176,45 @@ body:
       value: |
         You can find this information under the `"l2Contracts" : {...}` key.
   - type: input
-    id: parent-customGateway
+    id: parent-custom-gateway
     attributes:
-      label: customGateway
+      label: Parent Custom Gateway
     validations:
       required: true
   - type: input
-    id: parent-ERC20Gateway
+    id: parent-erc20-gateway
     attributes:
-      label: ERC20Gateway
+      label: Parent ERC20 Gateway
     validations:
       required: true
   - type: input
-    id: parent-gatewayRouter
+    id: parent-gateway-router
     attributes:
-      label: gatewayRouter
+      label: Parent Gateway Router
     validations:
       required: true
   - type: input
     id: parent-multicall
     attributes:
-      label: multicall
+      label: Parent MultiCall
     validations:
       required: true
   - type: input
-    id: parent-proxyAdmin
+    id: parent-proxy-admin
     attributes:
-      label: proxyAdmin
+      label: Parent Proxy Admin
     validations:
       required: true
   - type: input
     id: parent-weth
     attributes:
-      label: weth
+      label: Parent WETH
     validations:
       required: true
   - type: input
-    id: parent-wethGateway
+    id: parent-weth-gateway
     attributes:
-      label: wethGateway
+      label: Parent WETH Gateway
     validations:
       required: true
 
@@ -219,44 +227,44 @@ body:
       value: |
         You can find this information under the `"l3Contracts" : {...}` key.
   - type: input
-    id: child-customGateway
+    id: child-custom-gateway
     attributes:
-      label: customGateway
+      label: Child Custom Gateway
     validations:
       required: true
   - type: input
-    id: child-ERC20Gateway
+    id: child-erc20-gateway
     attributes:
-      label: ERC20Gateway
+      label: Child ERC20 Gateway
     validations:
       required: true
   - type: input
-    id: child-gatewayRouter
+    id: child-gateway-router
     attributes:
-      label: gatewayRouter
+      label: Child Gateway Router
     validations:
       required: true
   - type: input
     id: child-multicall
     attributes:
-      label: multicall
+      label: Child Multicall
     validations:
       required: true
   - type: input
-    id: child-proxyAdmin
+    id: child-proxy-admin
     attributes:
-      label: proxyAdmin
+      label: Child Proxy Admin
     validations:
       required: true
   - type: input
     id: child-weth
     attributes:
-      label: weth
+      label: Child WETH
     validations:
       required: true
   - type: input
-    id: child-wethGateway
+    id: child-weth-gateway
     attributes:
-      label: wethGateway
+      label: Child WETH Gateway
     validations:
       required: true

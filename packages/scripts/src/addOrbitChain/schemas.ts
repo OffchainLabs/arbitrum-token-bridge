@@ -1,0 +1,317 @@
+import { z } from "zod";
+import { ethers } from "ethers";
+import { getOctokit } from "@actions/github";
+
+export const isValidAddress = (address: string): boolean => {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
+
+export const addressSchema = z.string().refine(isValidAddress, {
+  message: "Invalid Ethereum address",
+});
+
+export const urlSchema = z.string().url().startsWith("https://");
+
+export const colorHexSchema = z
+  .string()
+  .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid color hex");
+
+export const descriptionSchema = z
+  .string()
+  .max(250)
+  .transform((desc) => (desc.endsWith(".") ? desc : `${desc}.`));
+
+export const ethBridgeSchema = z.object({
+  bridge: addressSchema,
+  inbox: addressSchema,
+  outbox: addressSchema,
+  rollup: addressSchema,
+  sequencerInbox: addressSchema,
+});
+
+export const tokenBridgeSchema = z.object({
+  parentCustomGateway: addressSchema,
+  parentErc20Gateway: addressSchema,
+  parentGatewayRouter: addressSchema,
+  parentMulticall: addressSchema.optional(),
+  parentProxyAdmin: addressSchema,
+  parentWeth: addressSchema.optional(),
+  parentWethGateway: addressSchema,
+  childCustomGateway: addressSchema,
+  childErc20Gateway: addressSchema,
+  childGatewayRouter: addressSchema,
+  childMulticall: addressSchema.optional(),
+  childProxyAdmin: addressSchema,
+  childWeth: addressSchema,
+  childWethGateway: addressSchema,
+});
+
+export const bridgeUiConfigSchema = z.object({
+  color: colorHexSchema,
+  network: z.object({
+    name: z.string().min(1),
+    logo: z.string().optional(),
+    description: descriptionSchema,
+  }),
+  nativeTokenData: z
+    .object({
+      name: z.string().min(1),
+      symbol: z.string().min(1),
+      decimals: z.number().int().positive(),
+      logoUrl: z.string().optional(),
+    })
+    .optional(),
+});
+
+export const chainSchema = z
+  .object({
+    chainId: z.number().int().positive(),
+    confirmPeriodBlocks: z.number().int().positive(),
+    ethBridge: ethBridgeSchema,
+    nativeToken: addressSchema.optional(),
+    explorerUrl: urlSchema,
+    rpcUrl: urlSchema,
+    isArbitrum: z.boolean().default(true),
+    isCustom: z.boolean().default(true),
+    isTestnet: z.boolean(),
+    name: z.string().min(1),
+    slug: z.string().min(1),
+    parentChainId: z.number().int().positive(),
+    partnerChainIDs: z.array(z.number().int().positive()).default([]),
+    retryableLifetimeSeconds: z.number().int().positive().default(604800),
+    tokenBridge: tokenBridgeSchema,
+    nitroGenesisBlock: z.number().int().nonnegative().default(0),
+    nitroGenesisL1Block: z.number().int().nonnegative().default(0),
+    depositTimeout: z.number().int().positive().default(1800000),
+    blockTime: z.number().positive().default(0.25),
+    bridgeUiConfig: bridgeUiConfigSchema,
+  })
+  .superRefine(async (chain, ctx) => {
+    const getParentChainInfo = (parentChainId: number) => {
+      switch (parentChainId) {
+        case 1: // Ethereum Mainnet
+          return {
+            rpcUrl: "https://eth.llamarpc.com",
+            blockExplorer: "https://etherscan.io",
+            chainId: 1,
+            name: "Ethereum",
+          };
+        case 42161: // Arbitrum One
+          return {
+            rpcUrl: "https://arb1.arbitrum.io/rpc",
+            blockExplorer: "https://arbiscan.io",
+            chainId: 42161,
+            name: "Arbitrum One",
+          };
+        case 421614: // Arbitrum Sepolia
+          return {
+            rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
+            blockExplorer: "https://sepolia.arbiscan.io",
+            chainId: 421614,
+            name: "Arbitrum Sepolia",
+          };
+        default:
+          throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
+      }
+    };
+
+    const parentChainInfo = getParentChainInfo(chain.parentChainId);
+
+    const parentAddressesToCheck = [
+      chain.ethBridge.bridge,
+      chain.ethBridge.inbox,
+      chain.ethBridge.outbox,
+      chain.ethBridge.rollup,
+      chain.ethBridge.sequencerInbox,
+      chain.tokenBridge.parentCustomGateway,
+      chain.tokenBridge.parentErc20Gateway,
+      chain.tokenBridge.parentGatewayRouter,
+      chain.tokenBridge.parentMulticall,
+      chain.tokenBridge.parentProxyAdmin,
+      chain.tokenBridge.parentWeth,
+      chain.tokenBridge.parentWethGateway,
+    ].filter(
+      (address): address is string =>
+        typeof address === "string" &&
+        address !== "0x0000000000000000000000000000000000000000"
+    );
+
+    const childAddressesToCheck = [
+      chain.tokenBridge.childCustomGateway,
+      chain.tokenBridge.childErc20Gateway,
+      chain.tokenBridge.childGatewayRouter,
+      chain.tokenBridge.childMulticall,
+      chain.tokenBridge.childProxyAdmin,
+    ].filter(
+      (address): address is string =>
+        typeof address === "string" &&
+        address !== "0x0000000000000000000000000000000000000000"
+    );
+
+    const checkAddresses = async (
+      addresses: string[],
+      rpcUrl: string,
+      blockExplorer: string,
+      chainId: number,
+      chainName: string
+    ) => {
+      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      for (const address of addresses) {
+        try {
+          const code = await provider.getCode(address);
+          if (code === "0x") {
+            const explorerLink = `${blockExplorer}/address/${address}`;
+            console.warn(
+              `Address ${address} on ${chainName} (chainId: ${chainId}) is not a contract. Verify manually: ${explorerLink}`
+            );
+            // TODO: Uncomment this when we can verify all contracts
+            // ctx.addIssue({
+            //   code: z.ZodIssueCode.custom,
+            //   message: `Address at ${address} is not a contract on ${chainName}. Verify manually: ${explorerLink}`,
+            // });
+          }
+        } catch (error) {
+          const explorerLink = `${blockExplorer}/address/${address}`;
+          console.log(
+            `Error checking contract at ${address} on ${chainName} (chainId: ${chainId}). Verify manually: ${explorerLink}`
+          );
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Error checking contract at ${address} on ${chainName}. Verify manually: ${explorerLink}`,
+          });
+        }
+      }
+    };
+
+    await checkAddresses(
+      parentAddressesToCheck,
+      parentChainInfo.rpcUrl,
+      parentChainInfo.blockExplorer,
+      parentChainInfo.chainId,
+      parentChainInfo.name
+    );
+    await checkAddresses(
+      childAddressesToCheck,
+      chain.rpcUrl,
+      chain.explorerUrl,
+      chain.chainId,
+      chain.name
+    );
+  });
+
+export const orbitChainsListSchema = z.object({
+  mainnet: z.record(z.string(), chainSchema),
+  testnet: z.record(z.string(), chainSchema),
+});
+
+// Schema for incoming data from GitHub issue
+export const incomingChainDataSchema = z.object({
+  chainId: z.string().regex(/^\d+$/),
+  name: z.string().min(1),
+  description: z.string().max(250),
+  chainLogo: z.string().url(),
+  color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
+  rpcUrl: z.string().url(),
+  explorerUrl: z.string().url(),
+  parentChainId: z.string().regex(/^\d+$/),
+  isTestnet: z.boolean(),
+  confirmPeriodBlocks: z.string().regex(/^\d+$/),
+  nativeTokenAddress: addressSchema.optional(),
+  nativeTokenName: z.string().optional(),
+  nativeTokenSymbol: z.string().optional(),
+  nativeTokenLogo: z.string().url().optional(),
+  bridge: addressSchema,
+  inbox: addressSchema,
+  outbox: addressSchema,
+  rollup: addressSchema,
+  sequencerInbox: addressSchema,
+  parentGatewayRouter: addressSchema,
+  childGatewayRouter: addressSchema,
+  parentErc20Gateway: addressSchema,
+  childErc20Gateway: addressSchema,
+  parentCustomGateway: addressSchema,
+  childCustomGateway: addressSchema,
+  parentWethGateway: addressSchema,
+  childWethGateway: addressSchema,
+  parentWeth: addressSchema,
+  childWeth: addressSchema,
+  parentProxyAdmin: addressSchema,
+  childProxyAdmin: addressSchema,
+  parentMulticall: addressSchema,
+  childMulticall: addressSchema,
+});
+
+// Schema for the final OrbitChain structure
+export const orbitChainSchema = chainSchema;
+
+export const validateIncomingChainData = async (
+  rawData: unknown
+): Promise<IncomingChainData> => {
+  return await incomingChainDataSchema.parseAsync(rawData);
+};
+
+export const validateOrbitChain = async (chainData: unknown) => {
+  return await chainSchema.parseAsync(chainData);
+};
+
+export const validateOrbitChainsList = async (
+  chainsList: unknown
+): Promise<void> => {
+  await orbitChainsListSchema.parseAsync(chainsList);
+};
+
+export const chainDataLabelToKey: Record<string, string> = {
+  "Chain ID": "chainId",
+  "Chain name": "name",
+  "Chain description": "description",
+  "Chain logo": "chainLogo",
+  "Brand color": "color",
+  "RPC URL": "rpcUrl",
+  "Explorer URL": "explorerUrl",
+  "Parent chain ID": "parentChainId",
+  "Is this a testnet?": "isTestnet",
+  confirmPeriodBlocks: "confirmPeriodBlocks",
+  "Native token address": "nativeTokenAddress",
+  "Native token name": "nativeTokenName",
+  "Native token symbol": "nativeTokenSymbol",
+  "Native token logo": "nativeTokenLogo",
+  bridge: "bridge",
+  inbox: "inbox",
+  outbox: "outbox",
+  rollup: "rollup",
+  sequencerInbox: "sequencerInbox",
+  "Parent Gateway Router": "parentGatewayRouter",
+  "Child Gateway Router": "childGatewayRouter",
+  "Parent ERC20 Gateway": "parentErc20Gateway",
+  "Child ERC20 Gateway": "childErc20Gateway",
+  "Parent Custom Gateway": "parentCustomGateway",
+  "Child Custom Gateway": "childCustomGateway",
+  "Parent WETH Gateway": "parentWethGateway",
+  "Child WETH Gateway": "childWethGateway",
+  "Child WETH": "childWeth",
+  "Parent Proxy Admin": "parentProxyAdmin",
+  "Child Proxy Admin": "childProxyAdmin",
+  "Parent MultiCall": "parentMulticall",
+  "Child Multicall": "childMulticall",
+  "Parent WETH": "parentWeth",
+};
+
+export interface Issue {
+  state: string;
+  body: string;
+  html_url: string;
+}
+
+export type IncomingChainData = z.infer<typeof incomingChainDataSchema>;
+export type TokenBridgeAddresses = z.infer<typeof tokenBridgeSchema>;
+export type OrbitChain = z.infer<typeof chainSchema>;
+export type OrbitChainsList = z.infer<typeof orbitChainsListSchema>;
+
+export interface FieldMetadata {
+  label: string;
+  required: boolean;
+  type: "string" | "number" | "address" | "url" | "color";
+  validator?: (value: string) => boolean | string | number;
+}
+
+export type GithubClient = ReturnType<typeof getOctokit>;

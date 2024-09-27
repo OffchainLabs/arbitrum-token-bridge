@@ -1,0 +1,62 @@
+name: Add Orbit Chain
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue Number'
+        required: true
+        type: string
+
+permissions:
+  issues: read
+  contents: write
+  pull-requests: write
+
+jobs:
+  check_issue_template:
+    runs-on: ubuntu-latest
+    outputs:
+      is_add_orbit_chain_request: ${{ steps.check_template.outputs.is_add_orbit_chain_request }}
+    steps:
+      - name: Check if issue uses Add Orbit Chain Request template
+        id: check_template
+        run: |
+          if [[ "${{ github.event.issue.title }}" == "[feat]: Add Orbit chain "* ]]; then
+            echo "is_add_orbit_chain_request=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_add_orbit_chain_request=false" >> $GITHUB_OUTPUT
+          fi
+
+  add_orbit_chain:
+    needs: check_issue_template
+    if: |
+      (github.event_name == 'issues' && needs.check_issue_template.outputs.is_add_orbit_chain_request == 'true') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build scripts
+        run: yarn workspace scripts build
+
+      - name: Run addOrbitChain script
+        run: yarn workspace scripts add-orbit-chain ../../packages/arb-token-bridge-ui/src/util/orbitChainsList.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
