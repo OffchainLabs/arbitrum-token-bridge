@@ -165,5 +165,5 @@ export const fetchDeposits = async ({
   return [
     ...mappedDepositsFromSubgraph,
     ...mappedDepositsToCustomDestinationFromSubgraph
-  ].sort((a, b) => Number(a.timestampCreated) - Number(b.timestampCreated))
+  ].sort((a, b) => Number(b.timestampCreated) - Number(a.timestampCreated))
 }
