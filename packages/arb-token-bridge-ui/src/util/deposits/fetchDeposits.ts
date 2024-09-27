@@ -137,7 +137,6 @@ export const fetchDeposits = async ({
   const mappedDepositsToCustomDestinationFromSubgraph: Transaction[] =
     depositsToCustomDestinationFromSubgraph.map(
       (tx: FetchDepositsToCustomDestinationFromSubgraphResult) => {
-        console.log({ tx })
         return {
           type: 'deposit-l1',
           status: 'pending',
