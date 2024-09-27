@@ -9,6 +9,10 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { defaultErc20Decimals } from '../../defaults'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  fetchDepositsToCustomDestinationFromSubgraph,
+  FetchDepositsToCustomDestinationFromSubgraphResult
+} from './fetchDepositsToCustomDestinationFromSubgraph'
 
 export type FetchDepositParams = {
   sender?: string
@@ -50,19 +54,34 @@ export const fetchDeposits = async ({
   }
 
   let depositsFromSubgraph: FetchDepositsFromSubgraphResult[] = []
+  let depositsToCustomDestinationFromSubgraph: FetchDepositsToCustomDestinationFromSubgraphResult[] =
+    []
+
+  const subgraphParams = {
+    sender,
+    receiver,
+    fromBlock,
+    toBlock,
+    l2ChainId,
+    pageSize,
+    pageNumber,
+    searchString
+  }
+
   try {
-    depositsFromSubgraph = await fetchDepositsFromSubgraph({
-      sender,
-      receiver,
-      fromBlock,
-      toBlock,
-      l2ChainId,
-      pageSize,
-      pageNumber,
-      searchString
-    })
+    depositsFromSubgraph = await fetchDepositsFromSubgraph(subgraphParams)
   } catch (error: any) {
     console.log('Error fetching deposits from subgraph', error)
+  }
+
+  try {
+    depositsToCustomDestinationFromSubgraph =
+      await fetchDepositsToCustomDestinationFromSubgraph(subgraphParams)
+  } catch (error: any) {
+    console.log(
+      'Error fetching deposits to custom destination from subgraph',
+      error
+    )
   }
 
   const mappedDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(
@@ -115,5 +134,37 @@ export const fetchDeposits = async ({
     }
   )
 
-  return mappedDepositsFromSubgraph
+  const mappedDepositsToCustomDestinationFromSubgraph: Transaction[] =
+    depositsToCustomDestinationFromSubgraph.map(
+      (tx: FetchDepositsToCustomDestinationFromSubgraphResult) => {
+        console.log({ tx })
+        return {
+          type: 'deposit-l1',
+          status: 'pending',
+          direction: 'deposit',
+          source: 'subgraph',
+          value: utils.formatUnits(tx.ethValue, nativeCurrency.decimals),
+          txID: tx.transactionHash,
+          sender: tx.sender,
+          destination: tx.receiver,
+
+          assetName: nativeCurrency.symbol,
+          assetType: AssetType.ETH,
+
+          l1NetworkID: String(l1ChainId),
+          l2NetworkID: String(l2ChainId),
+          blockNumber: Number(tx.blockCreatedAt),
+          timestampCreated: tx.timestamp,
+          isClassic: false,
+
+          childChainId: l2ChainId,
+          parentChainId: l1ChainId
+        }
+      }
+    )
+
+  return [
+    ...mappedDepositsFromSubgraph,
+    ...mappedDepositsToCustomDestinationFromSubgraph
+  ].sort((a, b) => Number(a.timestampCreated) - Number(b.timestampCreated))
 }
