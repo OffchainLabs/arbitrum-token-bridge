@@ -71,14 +71,9 @@ jobs:
 
     - name: Send Slack notification on failure
       if: failure()
-      uses: 8398a7/action-slack@v3
+      uses: slackapi/slack-github-action@v1.27.0
       with:
-        status: failure
-        fields: repo,message,commit,author,action,eventName,ref,workflow
-        author_name: Monitoring Workflow Failure
-        if_mention: failure
-        channel: ${{ secrets[steps.config.outputs.slack_channel] }}
-        icon_emoji: ':github:'
-        username: GitHub Actions
+        channel-id: ${{ secrets[steps.config.outputs.slack_channel] }}
+        slack-message: "Error: Monitoring run failed for ${{ inputs.monitor }}"
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets[steps.config.outputs.slack_token] }}
+        SLACK_BOT_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
