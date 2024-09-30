@@ -121,7 +121,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ inputs.test_type }}
+          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ (matrix.test.type == 'cctp' && 'cctp') || (matrix.test.type == 'orbit' && 'l3') || 'regular'}}
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots
