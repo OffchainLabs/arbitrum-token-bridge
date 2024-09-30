@@ -552,7 +552,7 @@ export function TransferPanel() {
     if (!arbTokenBridgeLoaded) {
       return false
     }
-    if (!latestEth) {
+    if (!latestEth.current) {
       return false
     }
     if (!isConnected) {
