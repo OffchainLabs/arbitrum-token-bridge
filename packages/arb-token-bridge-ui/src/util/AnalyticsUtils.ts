@@ -19,11 +19,13 @@ export type ProviderName =
   | 'Other'
 
 type AnalyticsEventMap = {
-  'Transfer Button Clicked': {
+  'Transfer Button Click': {
     type: TransferDirection
     isCctpTransfer: boolean
+    isCustomDestinationTransfer: boolean
     tokenSymbol?: string
     assetType: AssetType
+    parentChainErc20Address?: string
     accountType: AccountType
     network: string
     amount: number

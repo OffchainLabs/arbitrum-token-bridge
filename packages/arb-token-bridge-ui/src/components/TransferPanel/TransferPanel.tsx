@@ -161,6 +161,8 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
+  const isCustomDestinationTransfer = !!destinationAddress
+
   const {
     updateEthParentBalance,
     updateErc20ParentBalances,
@@ -883,7 +885,9 @@ export function TransferPanel() {
           accountType: 'EOA',
           network: getNetworkName(childChain.id),
           amount: Number(amount),
-          amount2: isBatchTransfer ? Number(amount2) : undefined
+          amount2: isBatchTransfer ? Number(amount2) : undefined,
+          isCustomDestinationTransfer,
+          parentChainErc20Address: selectedToken?.address
         }
       )
     }
@@ -945,7 +949,7 @@ export function TransferPanel() {
   }
 
   const trackTransferButtonClick = useCallback(() => {
-    trackEvent('Transfer Button Clicked', {
+    trackEvent('Transfer Button Click', {
       type: isTeleportMode
         ? 'Teleport'
         : isDepositMode
@@ -957,7 +961,9 @@ export function TransferPanel() {
       accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
       network: childChain.name,
       amount: Number(amount),
-      amount2: isBatchTransfer ? Number(amount2) : undefined
+      amount2: isBatchTransfer ? Number(amount2) : undefined,
+      isCustomDestinationTransfer,
+      parentChainErc20Address: selectedToken?.address
     })
   }, [
     amount,
@@ -968,7 +974,8 @@ export function TransferPanel() {
     isDepositMode,
     isSmartContractWallet,
     isTeleportMode,
-    selectedToken
+    selectedToken,
+    isCustomDestinationTransfer
   ])
 
   return (
