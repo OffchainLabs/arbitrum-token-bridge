@@ -56,7 +56,13 @@ export function Layout(props: LayoutProps) {
           <AppSidebar />
 
           <main className="grow">
-            <SiteBanner></SiteBanner>
+            {/* 
+                Warning: DO NOT remove the `SiteBanner` component. 
+                It also dynamically displays Arbiscan/Novascan status. 
+                To hide or remove its content, simply empty out its children instead of removing the entire component. 
+              */}
+            <SiteBanner />
+
             {props.children}
           </main>
 
