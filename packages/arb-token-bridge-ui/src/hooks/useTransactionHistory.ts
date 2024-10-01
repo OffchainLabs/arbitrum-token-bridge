@@ -62,6 +62,7 @@ import {
   isTransferTeleportFromSubgraph,
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -806,8 +807,20 @@ export const useTransactionHistory = (
   }, [txPages, setPage, page, pauseCount, fetching, runFetcher, isValidating])
 
   useEffect(() => {
-    if (typeof error !== 'undefined' || typeof txPagesError !== 'undefined') {
+    if (typeof error !== 'undefined') {
       console.error(error)
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'useTransactionHistoryWithoutStatuses'
+      })
+    }
+
+    if (typeof txPagesError !== 'undefined') {
+      console.error(txPagesError)
+      captureSentryErrorWithExtraData({
+        error: txPagesError,
+        originFunction: 'useTransactionHistory'
+      })
     }
   }, [error, txPagesError])
 
