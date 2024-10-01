@@ -220,8 +220,6 @@ export const TransactionHistoryTable = (
     }
   }, [transactions.length])
 
-  console.log('XXX', error)
-
   if (isTxHistoryEmpty) {
     return (
       <EmptyTransactionHistory
