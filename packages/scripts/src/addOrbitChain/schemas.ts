@@ -2,6 +2,8 @@ import { z } from "zod";
 import { ethers } from "ethers";
 import { getOctokit } from "@actions/github";
 
+export const TESTNET_PARENT_CHAIN_IDS = [5, 11155111, 421613, 421614];
+
 export const isValidAddress = (address: string): boolean => {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 };
@@ -10,7 +12,36 @@ export const addressSchema = z.string().refine(isValidAddress, {
   message: "Invalid Ethereum address",
 });
 
-export const urlSchema = z.string().url().startsWith("https://");
+export const urlSchema = z
+  .string()
+  .refine(
+    (url) => {
+      try {
+        new URL(url);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+    {
+      message: (url) => `Invalid URL format: ${url}`,
+    }
+  )
+  .refine((url) => url.startsWith("https://"), {
+    message: (url) => `URL must start with https://: ${url}`,
+  })
+  .refine(
+    (url) => {
+      const urlObj = new URL(url);
+      return urlObj.hostname !== "";
+    },
+    {
+      message: (url) => `URL must have a valid hostname: ${url}`,
+    }
+  )
+  .refine((url) => !url.endsWith("/"), {
+    message: (url) => `URL must not have a trailing slash: ${url}`,
+  });
 
 export const colorHexSchema = z
   .string()
@@ -183,6 +214,8 @@ export const chainSchema = z
       }
     };
 
+    chain.isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(chain.parentChainId);
+
     await checkAddresses(
       parentAddressesToCheck,
       parentChainInfo.rpcUrl,
@@ -208,13 +241,12 @@ export const orbitChainsListSchema = z.object({
 export const incomingChainDataSchema = z.object({
   chainId: z.string().regex(/^\d+$/),
   name: z.string().min(1),
-  description: z.string().max(250),
+  description: z.string().max(130),
   chainLogo: z.string().url(),
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
   rpcUrl: z.string().url(),
   explorerUrl: z.string().url(),
   parentChainId: z.string().regex(/^\d+$/),
-  isTestnet: z.boolean(),
   confirmPeriodBlocks: z.string().regex(/^\d+$/),
   nativeTokenAddress: addressSchema.optional(),
   nativeTokenName: z.string().optional(),
@@ -247,7 +279,17 @@ export const orbitChainSchema = chainSchema;
 export const validateIncomingChainData = async (
   rawData: unknown
 ): Promise<IncomingChainData> => {
-  return await incomingChainDataSchema.parseAsync(rawData);
+  try {
+    return await incomingChainDataSchema.parseAsync(rawData);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error("Validation errors:");
+      error.errors.forEach((err) => {
+        console.error(`${err.path.join(".")}: ${err.message}`);
+      });
+    }
+    throw error;
+  }
 };
 
 export const validateOrbitChain = async (chainData: unknown) => {
@@ -257,7 +299,23 @@ export const validateOrbitChain = async (chainData: unknown) => {
 export const validateOrbitChainsList = async (
   chainsList: unknown
 ): Promise<void> => {
-  await orbitChainsListSchema.parseAsync(chainsList);
+  try {
+    await orbitChainsListSchema.parseAsync(chainsList);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error("OrbitChainsList Validation Errors:");
+      error.errors.forEach((err) => {
+        const path = err.path.join(".");
+        console.error(`Path: ${path}`);
+        console.error(`Error: ${err.message}`);
+        if (err.code === z.ZodIssueCode.custom) {
+          console.error(`Custom error: ${JSON.stringify(err.params)}`);
+        }
+        console.error("---");
+      });
+    }
+    throw error;
+  }
 };
 
 export const chainDataLabelToKey: Record<string, string> = {
@@ -269,7 +327,6 @@ export const chainDataLabelToKey: Record<string, string> = {
   "RPC URL": "rpcUrl",
   "Explorer URL": "explorerUrl",
   "Parent chain ID": "parentChainId",
-  "Is this a testnet?": "isTestnet",
   confirmPeriodBlocks: "confirmPeriodBlocks",
   "Native token address": "nativeTokenAddress",
   "Native token name": "nativeTokenName",

@@ -12,6 +12,7 @@ import {
   Issue,
   OrbitChain,
   OrbitChainsList,
+  TESTNET_PARENT_CHAIN_IDS,
   validateIncomingChainData,
   validateOrbitChain,
   validateOrbitChainsList,
@@ -199,20 +200,13 @@ export const extractRawChainData = (
 
   while ((match = pattern.exec(issue.body)) !== null) {
     const [, label, value] = match;
-    // if (label === "Is this a testnet?") {
-    //   debugger;
-    // }
     const trimmedLabel = label.trim();
     const trimmedValue = value.trim();
 
     const key = chainDataLabelToKey[trimmedLabel] || trimmedLabel;
 
     if (trimmedValue !== "_No response_") {
-      if (trimmedValue === "Yes" || trimmedValue === "No") {
-        rawData[key] = trimmedValue === "Yes";
-      } else {
-        rawData[key] = trimmedValue;
-      }
+      rawData[key] = trimmedValue;
     }
   }
 
@@ -289,64 +283,69 @@ export const transformIncomingDataToOrbitChain = (
   chainData: IncomingChainData,
   chainLogoPath: string,
   nativeTokenLogoPath?: string
-): OrbitChain => ({
-  chainId: parseInt(chainData.chainId, 10),
-  confirmPeriodBlocks: parseInt(chainData.confirmPeriodBlocks, 10),
-  ethBridge: {
-    bridge: chainData.bridge,
-    inbox: chainData.inbox,
-    outbox: chainData.outbox,
-    rollup: chainData.rollup,
-    sequencerInbox: chainData.sequencerInbox,
-  },
-  nativeToken: chainData.nativeTokenAddress,
-  explorerUrl: chainData.explorerUrl,
-  rpcUrl: chainData.rpcUrl,
-  isArbitrum: true,
-  isCustom: true,
-  isTestnet: chainData.isTestnet,
-  name: chainData.name,
-  slug: nameToSlug(chainData.name),
-  parentChainId: parseInt(chainData.parentChainId, 10),
-  partnerChainIDs: [],
-  retryableLifetimeSeconds: 604800,
-  tokenBridge: {
-    parentCustomGateway: chainData.parentCustomGateway,
-    parentErc20Gateway: chainData.parentErc20Gateway,
-    parentGatewayRouter: chainData.parentGatewayRouter,
-    parentMulticall: chainData.parentMulticall,
-    parentProxyAdmin: chainData.parentProxyAdmin,
-    parentWeth: chainData.parentWeth,
-    parentWethGateway: chainData.parentWethGateway,
-    childCustomGateway: chainData.childCustomGateway,
-    childErc20Gateway: chainData.childErc20Gateway,
-    childGatewayRouter: chainData.childGatewayRouter,
-    childMulticall: chainData.childMulticall,
-    childProxyAdmin: chainData.childProxyAdmin,
-    childWeth: chainData.childWeth,
-    childWethGateway: chainData.childWethGateway,
-  },
-  nitroGenesisBlock: 0,
-  nitroGenesisL1Block: 0,
-  depositTimeout: 1800000,
-  blockTime: 0.25,
-  bridgeUiConfig: {
-    color: chainData.color,
-    network: {
-      name: chainData.name,
-      logo: chainLogoPath,
-      description: chainData.description,
+): OrbitChain => {
+  const parentChainId = parseInt(chainData.parentChainId, 10);
+  const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
+
+  return {
+    chainId: parseInt(chainData.chainId, 10),
+    confirmPeriodBlocks: parseInt(chainData.confirmPeriodBlocks, 10),
+    ethBridge: {
+      bridge: chainData.bridge,
+      inbox: chainData.inbox,
+      outbox: chainData.outbox,
+      rollup: chainData.rollup,
+      sequencerInbox: chainData.sequencerInbox,
     },
-    ...(chainData.nativeTokenAddress && {
-      nativeTokenData: {
-        name: chainData.nativeTokenName || "",
-        symbol: chainData.nativeTokenSymbol || "",
-        decimals: 18,
-        logoUrl: nativeTokenLogoPath,
+    nativeToken: chainData.nativeTokenAddress,
+    explorerUrl: chainData.explorerUrl,
+    rpcUrl: chainData.rpcUrl,
+    isArbitrum: true,
+    isCustom: true,
+    isTestnet,
+    name: chainData.name,
+    slug: nameToSlug(chainData.name),
+    parentChainId,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      parentCustomGateway: chainData.parentCustomGateway,
+      parentErc20Gateway: chainData.parentErc20Gateway,
+      parentGatewayRouter: chainData.parentGatewayRouter,
+      parentMulticall: chainData.parentMulticall,
+      parentProxyAdmin: chainData.parentProxyAdmin,
+      parentWeth: chainData.parentWeth,
+      parentWethGateway: chainData.parentWethGateway,
+      childCustomGateway: chainData.childCustomGateway,
+      childErc20Gateway: chainData.childErc20Gateway,
+      childGatewayRouter: chainData.childGatewayRouter,
+      childMulticall: chainData.childMulticall,
+      childProxyAdmin: chainData.childProxyAdmin,
+      childWeth: chainData.childWeth,
+      childWethGateway: chainData.childWethGateway,
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: 0.25,
+    bridgeUiConfig: {
+      color: chainData.color,
+      network: {
+        name: chainData.name,
+        logo: chainLogoPath,
+        description: chainData.description,
       },
-    }),
-  },
-});
+      ...(chainData.nativeTokenAddress && {
+        nativeTokenData: {
+          name: chainData.nativeTokenName || "",
+          symbol: chainData.nativeTokenSymbol || "",
+          decimals: 18,
+          logoUrl: nativeTokenLogoPath,
+        },
+      }),
+    },
+  };
+};
 
 export const updateOrbitChainsFile = (
   orbitChain: OrbitChain,

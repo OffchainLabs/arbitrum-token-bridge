@@ -67,13 +67,6 @@ body:
       placeholder: ex. 42161
     validations:
       required: true
-  - type: checkboxes
-    id: is-testnet
-    attributes:
-      label: Is this a testnet?
-      description: Check this box if the chain is a testnet
-      options:
-        - label: Yes, this is a testnet
 
   - type: markdown
     attributes:

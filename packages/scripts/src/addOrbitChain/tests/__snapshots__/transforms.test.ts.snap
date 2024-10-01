@@ -17,7 +17,6 @@ exports[`Transforms > extractRawChainData > should extract raw chain data from t
   "description": "A test chain.",
   "explorerUrl": "https://explorer.example.com",
   "inbox": "0x0000000000000000000000000000000000000003",
-  "isTestnet": true,
   "name": "Test Chain",
   "nativeTokenAddress": "0x0000000000000000000000000000000000000001",
   "nativeTokenLogo": "https://example.com/token-logo.png",

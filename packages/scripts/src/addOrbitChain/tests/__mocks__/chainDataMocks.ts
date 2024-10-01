@@ -41,9 +41,6 @@ https://explorer.example.com
 ### Parent chain ID
 1
 
-### Is this a testnet?
-Yes
-
 ### confirmPeriodBlocks
 100
 
@@ -186,7 +183,6 @@ export const mockIncomingChainData: IncomingChainData = {
   rpcUrl: "https://testrpc.com",
   explorerUrl: "https://testexplorer.com",
   parentChainId: "421614",
-  isTestnet: true,
   confirmPeriodBlocks: "150",
   nativeTokenAddress: "0x0000000000000000000000000000000000000006",
   nativeTokenName: "Test Token",
