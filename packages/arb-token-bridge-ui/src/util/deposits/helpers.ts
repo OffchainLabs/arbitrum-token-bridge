@@ -17,13 +17,13 @@ import {
   L2ToL3MessageData,
   Transaction,
   TxnStatus,
-  TeleporterTransaction,
-  isTeleportTx
+  TeleporterTransaction
 } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   getL2ConfigForTeleport,
-  fetchTeleportStatusFromTxId
+  fetchTeleportStatusFromTxId,
+  isValidTeleportChainPair
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { normalizeTimestamp } from '../../state/app/utils'
@@ -71,7 +71,14 @@ export const updateAdditionalDepositData = async ({
       isClassic
     })
 
-  if (isTeleportTx(depositTx)) {
+  if (
+    // txns fetched through subgraph will not have `l2ToL3MsgData`. So `isTeleportTx` will not pass here.
+    // since this is a deposit tx flow, the `parent` and `child` chain will always be `source` and `destination`
+    isValidTeleportChainPair({
+      sourceChainId: depositTx.parentChainId,
+      destinationChainId: depositTx.childChainId
+    })
+  ) {
     const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
       await fetchTeleporterDepositStatusData({
         ...depositTx,
@@ -124,7 +131,7 @@ export const updateAdditionalDepositData = async ({
   }
 
   const { value2 } = await getBatchTransferDepositData({
-    l1ToL2Msg: parentToChildMsg as ParentToChildMessageReader,
+    l1ToL2Msg: parentToChildMsg as ParentToChildMessageReader | undefined,
     depositStatus: tokenDeposit.status
   })
 
@@ -138,11 +145,15 @@ const getBatchTransferDepositData = async ({
   l1ToL2Msg,
   depositStatus
 }: {
-  l1ToL2Msg: ParentToChildMessageReader
+  l1ToL2Msg: ParentToChildMessageReader | undefined
   depositStatus: TxnStatus | undefined
 }): Promise<{
   value2: Transaction['value2']
 }> => {
+  if (!l1ToL2Msg) {
+    return { value2: undefined }
+  }
+
   if (!isPotentialBatchTransfer({ l1ToL2Msg })) {
     return { value2: undefined }
   }

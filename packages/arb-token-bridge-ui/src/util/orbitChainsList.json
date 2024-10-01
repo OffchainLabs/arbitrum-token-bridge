@@ -11,8 +11,8 @@
         "sequencerInbox": "0x995a9d3ca121D48d21087eDE20bc8acb2398c8B1"
       },
       "nativeToken": "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66",
-      "explorerUrl": "https://explorer.xai-chain.net",
-      "rpcUrl": "https://xai-chain.net/rpc",
+      "explorerUrl": "https: //explorer.xai-chain.net",
+      "rpcUrl": "https: //xai-chain.net/rpc",
       "isCustom": true,
       "isTestnet": false,
       "name": "Xai",
@@ -60,8 +60,8 @@
         "rollup": "0x2e988Ea0873C9d712628F0bf38DAFdE754927C89",
         "sequencerInbox": "0xA436f1867adD490BF1530c636f2FB090758bB6B3"
       },
-      "explorerUrl": "https://mainnet.explorer.rarichain.org",
-      "rpcUrl": "https://mainnet.rpc.rarichain.org/http",
+      "explorerUrl": "https: //mainnet.explorer.rarichain.org",
+      "rpcUrl": "https: //mainnet.rpc.rarichain.org/http",
       "isCustom": true,
       "isTestnet": false,
       "name": "RARI Mainnet",
@@ -104,8 +104,8 @@
         "rollup": "0x73CA76d9B04661604fF950fB8DBc9f18F1B853f1",
         "sequencerInbox": "0xfb27e42E964F3364630F76D62EB295ae792BD4FA"
       },
-      "explorerUrl": "https://muster-explorer.alt.technology",
-      "rpcUrl": "https://muster.alt.technology",
+      "explorerUrl": "https: //muster-explorer.alt.technology",
+      "rpcUrl": "https: //muster.alt.technology",
       "name": "Muster",
       "slug": "muster",
       "retryableLifetimeSeconds": 604800,
@@ -146,8 +146,8 @@
         "rollup": "0x65AD139061B3f6DDb16170a07b925337ddf42407",
         "sequencerInbox": "0xa58F38102579dAE7C584850780dDA55744f67DF1"
       },
-      "explorerUrl": "https://explorer.apex.proofofplay.com",
-      "rpcUrl": "https://rpc.apex.proofofplay.com",
+      "explorerUrl": "https: //explorer.apex.proofofplay.com",
+      "rpcUrl": "https: //rpc.apex.proofofplay.com",
       "name": "Proof of Play Apex",
       "slug": "pop-apex",
       "parentChainId": 42161,
@@ -188,8 +188,8 @@
         "rollup": "0x330F8fEB25f3427cABA32446728C36ae67f2135b",
         "sequencerInbox": "0x6eE94AD8057Fd7Ba4d47bb6278a261c8a9FD4E3f"
       },
-      "explorerUrl": "https://explorer-proofofplay-boss-mainnet.t.conduit.xyz",
-      "rpcUrl": "https://rpc.boss.proofofplay.com",
+      "explorerUrl": "https: //explorer-proofofplay-boss-mainnet.t.conduit.xyz",
+      "rpcUrl": "https: //rpc.boss.proofofplay.com",
       "name": "Proof of Play Boss",
       "slug": "pop-boss",
       "parentChainId": 42161,
@@ -220,55 +220,6 @@
         }
       }
     },
-    "42001": {
-      "chainId": 42001,
-      "confirmPeriodBlocks": 7200,
-      "ethBridge": {
-        "bridge": "0x10B25719f4c0fA1BFF22431438E6b6315059548A",
-        "inbox": "0x1285D6cE3604D341b29ccfF300d043af1CDb57e3",
-        "outbox": "0x32005e1Ca72cDaAADc2BCFb5E37cc8B2bdb30c60",
-        "rollup": "0x5c6f7a6CC67F35d8d9A02521E69B80915DA13748",
-        "sequencerInbox": "0x58b38152Dc53Aab5F6c41f33AA543E224a7FF709"
-      },
-      "nativeToken": "0xBC9B77acA82f6BE43927076D71cd453b625165B8",
-      "explorerUrl": "https://explorer.pmon.xyz",
-      "rpcUrl": "https://rpc.pmon.xyz",
-      "name": "PMON Chain",
-      "slug": "pmon-chain",
-      "parentChainId": 42161,
-      "isCustom": true,
-      "isTestnet": false,
-      "tokenBridge": {
-        "parentCustomGateway": "0x38727FfD8aFAdaeF60687D1E623Fd28B58A2B8a8",
-        "parentErc20Gateway": "0x341F7f035f1CBA1E879Df40117f797F88aC703ea",
-        "parentGatewayRouter": "0xAE4BAD578fff3377FC5Ebfd4d52d3fdd7FAB3017",
-        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
-        "parentProxyAdmin": "0x50AD12758e5e6320d658B358C731AF6C7FE2b853",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0xed609532adB4B24cd580d042A05ef15d914Bb7b0",
-        "childErc20Gateway": "0x8624C8046AA1E619528adA4Fa894E431b7CCE139",
-        "childGatewayRouter": "0x1d55e424757817CBd27caD7169FE462d6703c57d",
-        "childMultiCall": "0xB019E8B9448138251a9C58af34FcCd276cE733f6",
-        "childProxyAdmin": "0x8699E41Ed6246708035f7B2E1bf194D9C6Fb7d32",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#FF3369",
-        "network": {
-          "name": "PMON Chain",
-          "description": "Bridge to PMON Chain for strategic, fully on-chain monster battles and start building your ultimate NFT collection.",
-          "logo": "/images/PolychainMonstersLogo.png"
-        },
-        "nativeTokenData": {
-          "name": "Polkamon",
-          "symbol": "PMON",
-          "decimals": 18,
-          "logoUrl": "/images/PolychainMonstersLogo.png"
-        }
-      }
-    },
     "12324": {
       "chainId": 12324,
       "confirmPeriodBlocks": 7200,
@@ -279,8 +230,8 @@
         "rollup": "0xb75A0a5812303cBB198d4f0BcA7CA38f17b8783e",
         "sequencerInbox": "0xB9450b512Fd3454e9C1a2593C5DF9E71344b5653"
       },
-      "explorerUrl": "https://explorer.l3x.com",
-      "rpcUrl": "https://rpc-mainnet.l3x.com",
+      "explorerUrl": "https: //explorer.l3x.com",
+      "rpcUrl": "https: //rpc-mainnet.l3x.com",
       "name": "L3X Network",
       "slug": "l3x-network",
       "parentChainId": 42161,
@@ -322,8 +273,8 @@
         "rollup": "0xeb61c3FA03544021cf76412eFb9D0Ce7D8c0290d",
         "sequencerInbox": "0x47861E0419BE83d0175818a09221B6DF2EFD7793"
       },
-      "explorerUrl": "https://xchain-explorer.idex.io",
-      "rpcUrl": "https://xchain-rpc.idex.io",
+      "explorerUrl": "https: //xchain-explorer.idex.io",
+      "rpcUrl": "https: //xchain-rpc.idex.io",
       "isCustom": true,
       "isTestnet": false,
       "name": "XCHAIN",
@@ -366,8 +317,8 @@
         "sequencerInbox": "0x24B68936C13A414cd91437aE7AA730321B9ff159"
       },
       "nativeToken": "0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8",
-      "explorerUrl": "https://explorer.sanko.xyz",
-      "rpcUrl": "https://mainnet.sanko.xyz",
+      "explorerUrl": "https: //explorer.sanko.xyz",
+      "rpcUrl": "https: //mainnet.sanko.xyz",
       "isCustom": true,
       "isTestnet": false,
       "name": "Sanko",
@@ -415,8 +366,8 @@
         "rollup": "0x325Dd0279Ba31bC346BA80F3D00628deFa2EacD4",
         "sequencerInbox": "0xe0064A9fb8e45BfD8e5aB1cE7523888814A096E0"
       },
-      "explorerUrl": "https://explorer.superposition.so",
-      "rpcUrl": "https://rpc.superposition.so",
+      "explorerUrl": "https: //explorer.superposition.so",
+      "rpcUrl": "https: //rpc.superposition.so",
       "isCustom": true,
       "isTestnet": false,
       "name": "Superposition",
@@ -458,8 +409,8 @@
         "rollup": "0x811e70a2fC012e738e0AeA8b0c3b024538be42f2",
         "sequencerInbox": "0xD00d2ef101d86C570dA8f38801f236b79a7a2A93"
       },
-      "explorerUrl": "https://explorer.mindnetwork.xyz",
-      "rpcUrl": "https://rpc-mainnet.mindnetwork.xyz",
+      "explorerUrl": "https: //explorer.mindnetwork.xyz",
+      "rpcUrl": "https: //rpc-mainnet.mindnetwork.xyz",
       "isCustom": true,
       "isTestnet": false,
       "name": "Mind Network",
@@ -504,8 +455,8 @@
         "sequencerInbox": "0x529a2061A1973be80D315770bA9469F3Da40D938"
       },
       "nativeToken": "0x4e6f41acbfa8eb4a3b25e151834d9a14b49b69d2",
-      "explorerUrl": "https://testnet-explorer-v2.xai-chain.net",
-      "rpcUrl": "https://testnet-v2.xai-chain.net/rpc",
+      "explorerUrl": "https: //testnet-explorer-v2.xai-chain.net",
+      "rpcUrl": "https: //testnet-v2.xai-chain.net/rpc",
       "name": "Xai Testnet",
       "slug": "xai-testnet",
       "parentChainId": 421614,
@@ -554,8 +505,8 @@
         "sequencerInbox": "0x67ad6c79E33eA9e523E0e68961456d0ac7A973Cc"
       },
       "nativeToken": "0xAC716E87b0853C0712674e8E3a8435a489F276b4",
-      "explorerUrl": "https://testnet-scan.dodochain.com",
-      "rpcUrl": "https://dodochain-testnet.alt.technology",
+      "explorerUrl": "https: //testnet-scan.dodochain.com",
+      "rpcUrl": "https: //dodochain-testnet.alt.technology",
       "isCustom": true,
       "isTestnet": true,
       "name": "DODOchain Testnet",
@@ -603,8 +554,8 @@
         "rollup": "0xce99C9E7566438a8311424aD0287EB0fDEAc55A2",
         "sequencerInbox": "0xd598F60Ae694bE2aF9D6933aD9e9f7A431A2005E"
       },
-      "explorerUrl": "https://explorer-testnet.l3x.com",
-      "rpcUrl": "https://rpc-testnet.l3x.com",
+      "explorerUrl": "https: //explorer-testnet.l3x.com",
+      "rpcUrl": "https: //rpc-testnet.l3x.com",
       "isCustom": true,
       "isTestnet": true,
       "name": "L3X Network Testnet",
@@ -646,8 +597,8 @@
         "rollup": "0x2EeDc7b995267aa1060587Ff2585690C204E7e5c",
         "sequencerInbox": "0xf0d96B3a783F04620D5CBbf2829E70CEe396403F"
       },
-      "explorerUrl": "https://testnet.explorer.rarichain.org",
-      "rpcUrl": "https://testnet.rpc.rarichain.org/http",
+      "explorerUrl": "https: //testnet.explorer.rarichain.org",
+      "rpcUrl": "https: //testnet.rpc.rarichain.org/http",
       "isCustom": true,
       "isTestnet": true,
       "name": "RARI Testnet",
@@ -690,8 +641,8 @@
         "sequencerInbox": "0x146bCf344F949ad4c9Fcf339eb4415981aE21dF9"
       },
       "nativeToken": "0x566f8345F7bF45358FaB2802C19c60D691dE04e4",
-      "explorerUrl": "https://testnet.theatlas.tech",
-      "rpcUrl": "https://theatlas.tech",
+      "explorerUrl": "https: //testnet.theatlas.tech",
+      "rpcUrl": "https: //theatlas.tech",
       "isCustom": true,
       "isTestnet": true,
       "name": "Atlas Testnet",
@@ -740,8 +691,8 @@
         "sequencerInbox": "0x45DeF8701582EE64014E6cc9E3039820Ac20349F"
       },
       "nativeToken": "0x555BF0d9394CC86F0D0D4102916cC6851439dDd0",
-      "explorerUrl": "https://testnet-explorer.xrone.network",
-      "rpcUrl": "https://xr-sepolia-testnet.rpc.caldera.xyz/http",
+      "explorerUrl": "https: //testnet-explorer.xrone.network",
+      "rpcUrl": "https: //xr-sepolia-testnet.rpc.caldera.xyz/http",
       "isCustom": true,
       "isTestnet": true,
       "name": "XR Sepolia",

@@ -16,6 +16,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -140,7 +141,7 @@ export const AdvancedSettings = () => {
   }, [destinationAddress, isEOA])
 
   // Disabled for ETH
-  if (!selectedToken) {
+  if (!selectedToken && !isExperimentalFeatureEnabled('eth-custom-dest')) {
     return null
   }
 

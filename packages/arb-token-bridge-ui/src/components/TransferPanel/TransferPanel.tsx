@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
@@ -76,6 +76,7 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -161,6 +162,8 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
+  const isCustomDestinationTransfer = !!destinationAddress
+
   const {
     updateEthParentBalance,
     updateErc20ParentBalances,
@@ -176,6 +179,7 @@ export function TransferPanel() {
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
   )
+  const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
@@ -562,7 +566,11 @@ export function TransferPanel() {
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && !selectedToken) {
+    if (
+      isSmartContractWallet &&
+      !selectedToken &&
+      !isExperimentalFeatureEnabled('eth-custom-dest')
+    ) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
       return
     }
@@ -578,8 +586,6 @@ export function TransferPanel() {
     const childChainName = getNetworkName(childChain.id)
 
     setTransferring(true)
-
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     try {
       const warningToken =
@@ -690,7 +696,11 @@ export function TransferPanel() {
       }
 
       // SCW transfers are not enabled for ETH transfers yet
-      if (isNativeCurrencyTransfer && isSmartContractWallet) {
+      if (
+        isNativeCurrencyTransfer &&
+        isSmartContractWallet &&
+        !isExperimentalFeatureEnabled('eth-custom-dest')
+      ) {
         console.error(
           "ETH transfers aren't enabled for smart contract wallets."
         )
@@ -875,8 +885,6 @@ export function TransferPanel() {
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
-
     if (!isSmartContractWallet) {
       trackEvent(
         isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
@@ -886,7 +894,9 @@ export function TransferPanel() {
           accountType: 'EOA',
           network: getNetworkName(childChain.id),
           amount: Number(amount),
-          amount2: isBatchTransfer ? Number(amount2) : undefined
+          amount2: isBatchTransfer ? Number(amount2) : undefined,
+          isCustomDestinationTransfer,
+          parentChainErc20Address: selectedToken?.address
         }
       )
     }
@@ -947,6 +957,36 @@ export function TransferPanel() {
     }
   }
 
+  const trackTransferButtonClick = useCallback(() => {
+    trackEvent('Transfer Button Click', {
+      type: isTeleportMode
+        ? 'Teleport'
+        : isDepositMode
+        ? 'Deposit'
+        : 'Withdrawal',
+      isCctpTransfer,
+      tokenSymbol: selectedToken?.symbol,
+      assetType: selectedToken ? 'ERC-20' : 'ETH',
+      accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+      network: childChain.name,
+      amount: Number(amount),
+      amount2: isBatchTransfer ? Number(amount2) : undefined,
+      isCustomDestinationTransfer,
+      parentChainErc20Address: selectedToken?.address
+    })
+  }, [
+    amount,
+    amount2,
+    childChain.name,
+    isBatchTransfer,
+    isCctpTransfer,
+    isDepositMode,
+    isSmartContractWallet,
+    isTeleportMode,
+    selectedToken,
+    isCustomDestinationTransfer
+  ])
+
   return (
     <>
       <TokenApprovalDialog
@@ -996,6 +1036,8 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={!transferReady.deposit}
               onClick={() => {
+                trackTransferButtonClick()
+
                 if (isCctpTransfer) {
                   transferCctp()
                 } else if (selectedToken) {
@@ -1026,6 +1068,8 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={!transferReady.withdrawal}
               onClick={() => {
+                trackTransferButtonClick()
+
                 if (isCctpTransfer) {
                   transferCctp()
                 } else {
