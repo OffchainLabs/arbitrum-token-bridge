@@ -62,6 +62,9 @@ export const updateAdditionalDepositData = async ({
 
   const isNativeTokenTransferToSameAddress =
     depositTx.assetType === AssetType.ETH &&
+    // We cannot just check for tx.sender.toLowerCase() === tx.destination.toLowerCase()
+    // because if destination or sender is undefined, this will be assigned false
+    // but if that's the case we should treat it as transfer to the same address
     !(
       depositTx.sender &&
       depositTx.destination &&
