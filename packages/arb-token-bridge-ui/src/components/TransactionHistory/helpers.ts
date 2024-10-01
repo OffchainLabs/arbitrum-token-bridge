@@ -22,7 +22,10 @@ import {
   fetchTeleporterDepositStatusData
 } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { getDepositStatus } from '../../state/app/utils'
+import {
+  getDepositStatus,
+  isCustomDestinationAddressTx
+} from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
@@ -329,10 +332,7 @@ export async function getUpdatedEthDeposit(
 export async function getUpdatedRetryableDeposit(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  const isDifferentDestinationAddress =
-    typeof tx.sender !== 'undefined' &&
-    typeof tx.destination !== 'undefined' &&
-    tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+  const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
 
   if (
     !isTxPending(tx) ||

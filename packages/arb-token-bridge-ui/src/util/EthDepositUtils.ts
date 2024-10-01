@@ -4,6 +4,7 @@ import { BigNumber, constants } from 'ethers'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { fetchErc20Allowance } from './TokenUtils'
 import { DepositTxEstimateGasParams } from './TokenDepositUtils'
+import { isCustomDestinationAddressTx } from '../state/app/utils'
 
 function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): DepositGasEstimates {
   return {
@@ -61,9 +62,10 @@ export async function depositEthEstimateGas(
     return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
   }
 
-  const isDifferentDestinationAddress =
-    destinationAddress &&
-    destinationAddress.toLowerCase() !== address.toLowerCase()
+  const isDifferentDestinationAddress = isCustomDestinationAddressTx({
+    sender: address,
+    destination: destinationAddress
+  })
 
   if (isDifferentDestinationAddress) {
     const depositToRequest = await ethBridger.getDepositToRequest({
@@ -71,7 +73,8 @@ export async function depositEthEstimateGas(
       from: address,
       parentProvider: parentChainProvider,
       childProvider: childChainProvider,
-      destinationAddress
+      // we know it's defined
+      destinationAddress: String(destinationAddress)
     })
 
     const estimatedParentChainGas = await parentChainProvider.estimateGas(
