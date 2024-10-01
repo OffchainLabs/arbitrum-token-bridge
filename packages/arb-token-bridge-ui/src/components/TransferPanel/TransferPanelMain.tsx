@@ -220,10 +220,9 @@ export function NetworkListboxPlusBalancesContainer({
 
 export function TransferPanelMain() {
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isTeleportMode } =
+  const { childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const {
@@ -282,11 +281,6 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
-  const showUSDCSpecificInfo =
-    !isTeleportMode &&
-    ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-      (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia))
-
   useEffect(() => {
     if (isExperimentalFeatureEnabled('eth-custom-dest')) {
       // do not reset destination address for this feature
@@ -303,11 +297,11 @@ export function TransferPanelMain() {
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <SourceNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <SourceNetworkBox />
 
       <SwitchNetworksButton />
 
-      <DestinationNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <DestinationNetworkBox />
 
       <TransferDisabledDialog />
     </div>
