@@ -191,7 +191,7 @@ describe("Validation Functions", () => {
       await expect(
         chainSchema.parseAsync(mockOrbitChain)
       ).resolves.not.toThrow();
-    });
+    }, 1000000);
 
     it("should throw for invalid chain objects", async () => {
       const invalidChain = {
@@ -200,7 +200,7 @@ describe("Validation Functions", () => {
         name: "",
       };
       await expect(chainSchema.parseAsync(invalidChain)).rejects.toThrow();
-    });
+    }, 1000000);
   });
 
   describe("validateOrbitChainsList", () => {

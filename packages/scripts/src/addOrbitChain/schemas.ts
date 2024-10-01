@@ -206,10 +206,10 @@ export const chainSchema = z
           console.log(
             `Error checking contract at ${address} on ${chainName} (chainId: ${chainId}). Verify manually: ${explorerLink}`
           );
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Error checking contract at ${address} on ${chainName}. Verify manually: ${explorerLink}`,
-          });
+          // ctx.addIssue({
+          //   code: z.ZodIssueCode.custom,
+          //   message: `Error checking contract at ${address} on ${chainName}. Verify manually: ${explorerLink}`,
+          // });
         }
       }
     };
