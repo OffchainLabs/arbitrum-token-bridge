@@ -12,6 +12,7 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
+import { isExperimentalFeatureEnabled } from '../util'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -85,35 +86,78 @@ export class EthDepositStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    signer,
+    destinationAddress
+  }: TransferEstimateGas) {
     const address = await getAddressFromSigner(signer)
 
     return depositEthEstimateGas({
       amount,
       address,
       parentChainProvider: this.sourceChainProvider,
-      childChainProvider: this.destinationChainProvider
+      childChainProvider: this.destinationChainProvider,
+      destinationAddress
     })
   }
 
-  public async transfer({ amount, signer }: TransferProps) {
+  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const depositRequest = await ethBridger.getDepositRequest({
-      amount,
-      from: address
-    })
+    const isDifferentDestinationAddress =
+      destinationAddress &&
+      destinationAddress.toLowerCase() !== address.toLowerCase()
+
+    // TODO: remove this when eth-custom-dest feature is live
+    // this is a safety check, this shouldn't happen
+    if (
+      isDifferentDestinationAddress &&
+      !isExperimentalFeatureEnabled('eth-custom-dest')
+    ) {
+      throw 'Native currency transfers to a custom destination address are not supported yet.'
+    }
+
+    const depositRequest = isDifferentDestinationAddress
+      ? await ethBridger.getDepositToRequest({
+          amount,
+          from: address,
+          parentProvider: this.sourceChainProvider,
+          childProvider: this.destinationChainProvider,
+          destinationAddress
+        })
+      : await ethBridger.getDepositRequest({
+          amount,
+          from: address
+        })
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest
     )
 
-    const sourceChainTransaction = await ethBridger.deposit({
-      amount,
-      parentSigner: signer,
-      overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
-    })
+    const parentChainOverrides = {
+      gasLimit: percentIncrease(gasLimit, BigNumber.from(5))
+    }
+
+    const sourceChainTransaction = isDifferentDestinationAddress
+      ? await ethBridger.depositTo({
+          amount,
+          parentSigner: signer,
+          childProvider: this.destinationChainProvider,
+          destinationAddress,
+          overrides: parentChainOverrides,
+          retryableGasOverrides: {
+            // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+            // the 30% gas limit increase should cover the difference
+            gasLimit: { percentIncrease: BigNumber.from(30) }
+          }
+        })
+      : await ethBridger.deposit({
+          amount,
+          parentSigner: signer,
+          overrides: parentChainOverrides
+        })
 
     return {
       transferType: this.transferType,
