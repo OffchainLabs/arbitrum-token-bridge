@@ -79,6 +79,7 @@ import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 
 const signerUndefinedError = 'Signer is undefined'
+const transferNotAllowedError = 'Transfer not allowed'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -348,10 +349,10 @@ export function TransferPanel() {
       return
     }
     if (!signer) {
-      throw signerUndefinedError
+      throw new Error(signerUndefinedError)
     }
     if (!isTransferAllowed) {
-      return
+      throw new Error(transferNotAllowedError)
     }
 
     setTransferring(true)
@@ -547,11 +548,11 @@ export function TransferPanel() {
     const sourceChainId = latestNetworks.current.sourceChain.id
 
     if (!isTransferAllowed) {
-      return
+      throw new Error(transferNotAllowedError)
     }
 
     if (!signer) {
-      throw signerUndefinedError
+      throw new Error(signerUndefinedError)
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -947,13 +948,16 @@ export function TransferPanel() {
         await switchNetworkAsync?.(sourceChainId)
       }
     } catch (error) {
+      if (isUserRejectedError(error)) {
+        return
+      }
       return networkConnectionWarningToast()
     } finally {
       setTransferring(false)
     }
 
     if (!isTransferAllowed) {
-      return
+      return networkConnectionWarningToast()
     }
 
     if (isCctpTransfer) {
