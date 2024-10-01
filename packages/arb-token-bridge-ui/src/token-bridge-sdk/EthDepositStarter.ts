@@ -140,7 +140,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       gasLimit: percentIncrease(gasLimit, BigNumber.from(5))
     }
 
-    const sourceChainTransaction = destinationAddress
+    const sourceChainTransaction = isDifferentDestinationAddress
       ? await ethBridger.depositTo({
           amount,
           parentSigner: signer,
