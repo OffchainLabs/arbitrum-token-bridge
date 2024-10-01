@@ -23,7 +23,10 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import { isGatewayRegistered } from '../../util/TokenUtils'
+import {
+  isGatewayRegistered,
+  scaleToNativeTokenDecimals
+} from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
@@ -76,6 +79,7 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+import { useNativeCurrencyDecimalsOnSourceChain } from '../../hooks/useNativeCurrencyDecimalsOnSourceChain'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -117,6 +121,8 @@ export function TransferPanel() {
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
   const isBatchTransferSupported = useIsBatchTransferSupported()
+  const nativeCurrencyDecimalsOnSourceChain =
+    useNativeCurrencyDecimalsOnSourceChain()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -234,11 +240,11 @@ export function TransferPanel() {
         return utils.parseUnits(amountSafe, selectedToken.decimals)
       }
 
-      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
+      return utils.parseUnits(amountSafe, nativeCurrencyDecimalsOnSourceChain)
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, selectedToken, nativeCurrency])
+  }, [amount, selectedToken, nativeCurrencyDecimalsOnSourceChain])
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
     const waitForInput = openUSDCDepositConfirmationDialog()
@@ -842,6 +848,7 @@ export function TransferPanel() {
         }
 
         overrides.maxSubmissionCost = utils
+          // we are not scaling these to native decimals because arbitrum-sdk does it for us
           .parseEther(amount2)
           .add(gasEstimates.estimatedChildChainSubmissionCost)
         overrides.excessFeeRefundAddress = destinationAddress
@@ -896,6 +903,20 @@ export function TransferPanel() {
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
+    const { isOrbitChain: isSourceChainOrbit } = isNetwork(
+      networks.sourceChain.id
+    )
+
+    // for withdrawals from Orbit chains we used 18 decimals
+    // but to display it correctly in the history we need to scale it to native currency decimals
+    const scaledAmount =
+      isSourceChainOrbit && !selectedToken
+        ? scaleToNativeTokenDecimals({
+            amount: amountBigNumber,
+            decimals: nativeCurrency.decimals
+          })
+        : amountBigNumber
+
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
       parentChainId: parentChain.id,
@@ -904,7 +925,7 @@ export function TransferPanel() {
       walletAddress,
       destinationAddress,
       nativeCurrency,
-      amount: amountBigNumber,
+      amount: scaledAmount,
       amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
       timestampCreated
     })
@@ -923,7 +944,7 @@ export function TransferPanel() {
           walletAddress,
           destinationAddress,
           nativeCurrency,
-          amount: amountBigNumber,
+          amount: scaledAmount,
           amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
           timestampCreated
         })
