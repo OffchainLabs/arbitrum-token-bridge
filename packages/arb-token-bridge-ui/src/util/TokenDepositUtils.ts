@@ -134,9 +134,12 @@ export type DepositTxEstimateGasParams = {
   parentChainErc20Address?: string
   parentChainProvider: Provider
   childChainProvider: Provider
+  destinationAddress?: string
 }
 
-type DepositTokenEstimateGasParams = Required<DepositTxEstimateGasParams>
+type DepositTokenEstimateGasParams = Required<
+  Omit<DepositTxEstimateGasParams, 'destinationAddress'>
+>
 
 export async function depositTokenEstimateGas(
   params: DepositTokenEstimateGasParams

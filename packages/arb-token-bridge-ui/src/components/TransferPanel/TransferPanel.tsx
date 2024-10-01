@@ -75,6 +75,7 @@ import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -590,7 +591,11 @@ export function TransferPanel() {
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && !selectedToken) {
+    if (
+      isSmartContractWallet &&
+      !selectedToken &&
+      !isExperimentalFeatureEnabled('eth-custom-dest')
+    ) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
       return
     }
@@ -657,7 +662,11 @@ export function TransferPanel() {
       }
 
       // SCW transfers are not enabled for ETH transfers yet
-      if (isNativeCurrencyTransfer && isSmartContractWallet) {
+      if (
+        isNativeCurrencyTransfer &&
+        isSmartContractWallet &&
+        !isExperimentalFeatureEnabled('eth-custom-dest')
+      ) {
         console.error(
           "ETH transfers aren't enabled for smart contract wallets."
         )
