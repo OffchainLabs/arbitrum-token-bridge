@@ -1,6 +1,6 @@
 {
-  "mainnet": {
-    "660279": {
+  "mainnet": [
+    {
       "chainId": 660279,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
@@ -50,7 +50,7 @@
         }
       }
     },
-    "1380012617": {
+    {
       "chainId": 1380012617,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
@@ -93,7 +93,7 @@
         }
       }
     },
-    "4078": {
+    {
       "chainId": 4078,
       "parentChainId": 42161,
       "confirmPeriodBlocks": 7200,
@@ -136,7 +136,7 @@
         }
       }
     },
-    "70700": {
+    {
       "chainId": 70700,
       "confirmPeriodBlocks": 40320,
       "ethBridge": {
@@ -178,7 +178,7 @@
         }
       }
     },
-    "70701": {
+    {
       "chainId": 70701,
       "confirmPeriodBlocks": 43200,
       "ethBridge": {
@@ -220,7 +220,7 @@
         }
       }
     },
-    "12324": {
+    {
       "chainId": 12324,
       "confirmPeriodBlocks": 7200,
       "ethBridge": {
@@ -263,7 +263,7 @@
         }
       }
     },
-    "94524": {
+    {
       "chainId": 94524,
       "confirmPeriodBlocks": 40320,
       "ethBridge": {
@@ -306,7 +306,7 @@
         }
       }
     },
-    "1996": {
+    {
       "chainId": 1996,
       "confirmPeriodBlocks": 20,
       "ethBridge": {
@@ -356,7 +356,7 @@
         }
       }
     },
-    "55244": {
+    {
       "chainId": 55244,
       "confirmPeriodBlocks": 40320,
       "ethBridge": {
@@ -399,7 +399,7 @@
         }
       }
     },
-    "228": {
+    {
       "chainId": 228,
       "confirmPeriodBlocks": 7200,
       "ethBridge": {
@@ -442,9 +442,9 @@
         }
       }
     }
-  },
-  "testnet": {
-    "37714555429": {
+  ],
+  "testnet": [
+    {
       "chainId": 37714555429,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -494,7 +494,7 @@
         }
       }
     },
-    "53457": {
+    {
       "chainId": 53457,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -544,7 +544,7 @@
         }
       }
     },
-    "12325": {
+    {
       "chainId": 12325,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -587,7 +587,7 @@
         }
       }
     },
-    "1918988905": {
+    {
       "chainId": 1918988905,
       "confirmPeriodBlocks": 64,
       "ethBridge": {
@@ -630,7 +630,7 @@
         }
       }
     },
-    "1183": {
+    {
       "chainId": 1183,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -680,7 +680,7 @@
         }
       }
     },
-    "2730": {
+    {
       "chainId": 2730,
       "confirmPeriodBlocks": 64,
       "ethBridge": {
@@ -730,5 +730,5 @@
         }
       }
     }
-  }
+  ]
 }

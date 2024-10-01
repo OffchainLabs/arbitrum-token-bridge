@@ -232,9 +232,15 @@ export const chainSchema = z
     );
   });
 
+export type OrbitChainsList = {
+  mainnet: OrbitChain[];
+  testnet: OrbitChain[];
+};
+
+// Update the orbitChainsListSchema
 export const orbitChainsListSchema = z.object({
-  mainnet: z.record(z.string(), chainSchema),
-  testnet: z.record(z.string(), chainSchema),
+  mainnet: z.array(chainSchema),
+  testnet: z.array(chainSchema),
 });
 
 // Schema for incoming data from GitHub issue
@@ -362,7 +368,6 @@ export interface Issue {
 export type IncomingChainData = z.infer<typeof incomingChainDataSchema>;
 export type TokenBridgeAddresses = z.infer<typeof tokenBridgeSchema>;
 export type OrbitChain = z.infer<typeof chainSchema>;
-export type OrbitChainsList = z.infer<typeof orbitChainsListSchema>;
 
 export interface FieldMetadata {
   label: string;

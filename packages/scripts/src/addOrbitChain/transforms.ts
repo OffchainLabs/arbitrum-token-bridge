@@ -5,6 +5,7 @@ import { warning } from "@actions/core";
 import axios from "axios";
 import * as fs from "fs";
 import * as core from "@actions/core";
+import orderedJson from "json-order";
 
 import {
   chainDataLabelToKey,
@@ -351,18 +352,32 @@ export const updateOrbitChainsFile = (
   orbitChain: OrbitChain,
   targetJsonPath: string
 ): OrbitChainsList => {
+  // Read the file contents
   const fileContents = fs.readFileSync(targetJsonPath, "utf8");
-  const orbitChains: OrbitChainsList = JSON.parse(fileContents);
+
+  // Parse the JSON
+  const orbitChains: { mainnet: OrbitChain[]; testnet: OrbitChain[] } =
+    JSON.parse(fileContents);
   const networkType = orbitChain.isTestnet ? "testnet" : "mainnet";
 
-  // Append the new chain to the end of the appropriate network type
-  orbitChains[networkType][orbitChain.chainId] = orbitChain;
+  // Find the index of the chain if it already exists
+  const existingIndex = orbitChains[networkType].findIndex(
+    (chain) => chain.chainId === orbitChain.chainId
+  );
 
-  // Convert the updated object back to a string, preserving the original formatting
+  if (existingIndex !== -1) {
+    // Update existing chain
+    orbitChains[networkType][existingIndex] = orbitChain;
+  } else {
+    // Add new chain to the end of the array
+    orbitChains[networkType].push(orbitChain);
+  }
+
+  // Convert the updated object back to a JSON string, preserving the original formatting
   const updatedContents = JSON.stringify(orbitChains, null, 2);
 
   // Write the updated contents back to the file
   fs.writeFileSync(targetJsonPath, updatedContents);
 
-  return orbitChains;
+  return updatedContents;
 };

@@ -2,7 +2,7 @@
 
 import fs from "fs";
 import path from "path";
-import { beforeEach, describe, expect, it, afterEach } from "vitest";
+import { beforeEach, afterEach, describe, expect, it } from "vitest";
 import { IncomingChainData, OrbitChainsList } from "../schemas";
 import {
   extractRawChainData,
@@ -40,24 +40,20 @@ describe("Transforms", () => {
   });
 
   describe("updateOrbitChainsFile", () => {
+    const testData = `{
+      "mainnet": [
+        { "chainId": 2, "name": "Existing Chain 2" },
+        { "chainId": 4, "name": "Existing Chain 4" },
+        { "chainId": 1, "name": "Existing Chain 1" }
+      ],
+      "testnet": [
+        { "chainId": 3, "name": "Existing Testnet 1" }
+      ]
+    }`;
     const tempFilePath = path.join(__dirname, "tempMockChains.json");
 
     beforeEach(() => {
-      const initialContent: OrbitChainsList = {
-        mainnet: {
-          "1": { chainId: 1, name: "Existing Chain 1" },
-          "2": { chainId: 2, name: "Existing Chain 2" },
-        },
-        testnet: {
-          "3": { chainId: 3, name: "Existing Testnet 1" },
-        },
-      } as OrbitChainsList;
-
-      fs.writeFileSync(
-        tempFilePath,
-        JSON.stringify(initialContent, null, 2),
-        "utf8"
-      );
+      fs.writeFileSync(tempFilePath, testData, "utf8");
     });
 
     afterEach(() => {
@@ -67,22 +63,22 @@ describe("Transforms", () => {
     });
 
     it("should update the orbit chains file correctly while preserving order", () => {
-      const newChain = { ...mockOrbitChain, isTestnet: false, chainId: 4 };
+      const newChain = { ...mockOrbitChain, isTestnet: false, chainId: 5 };
       const result = updateOrbitChainsFile(newChain, tempFilePath);
 
-      // Check if the new chain is added
-      expect(result.mainnet[newChain.chainId]).toEqual(newChain);
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.mainnet.map((chain: any) => chain.chainId)).toEqual([
+        2, 4, 1, 5,
+      ]);
+      expect(parsedResult.testnet.map((chain: any) => chain.chainId)).toEqual([
+        3,
+      ]);
+      expect(
+        parsedResult.mainnet.find((chain: any) => chain.chainId === 5)
+      ).toEqual(newChain);
 
-      // Read the file content to check the order
-      const fileContent = fs.readFileSync(tempFilePath, "utf8");
-      const parsedContent: OrbitChainsList = JSON.parse(fileContent);
-
-      // Check if the order is preserved in the file
-      expect(Object.keys(parsedContent.mainnet)).toEqual(["1", "2", "4"]);
-      expect(Object.keys(parsedContent.testnet)).toEqual(["3"]);
-
-      // Check if the content matches the returned result
-      expect(parsedContent).toEqual(result);
+      const updatedContent = fs.readFileSync(tempFilePath, "utf8");
+      expect(updatedContent).toMatchSnapshot();
     });
 
     it("should add a new testnet chain while preserving order", () => {
@@ -93,22 +89,22 @@ describe("Transforms", () => {
       };
       const result = updateOrbitChainsFile(newTestnetChain, tempFilePath);
 
-      // Check if the new chain is added
-      expect(result.testnet[newTestnetChain.chainId]).toEqual(newTestnetChain);
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.mainnet.map((chain: any) => chain.chainId)).toEqual([
+        2, 4, 1,
+      ]);
+      expect(parsedResult.testnet.map((chain: any) => chain.chainId)).toEqual([
+        3, 5,
+      ]);
+      expect(
+        parsedResult.testnet.find((chain: any) => chain.chainId === 5)
+      ).toEqual(newTestnetChain);
 
-      // Read the file content to check the order
-      const fileContent = fs.readFileSync(tempFilePath, "utf8");
-      const parsedContent: OrbitChainsList = JSON.parse(fileContent);
-
-      // Check if the order is preserved in the file
-      expect(Object.keys(parsedContent.mainnet)).toEqual(["1", "2"]);
-      expect(Object.keys(parsedContent.testnet)).toEqual(["3", "5"]);
-
-      // Check if the content matches the returned result
-      expect(parsedContent).toEqual(result);
+      const updatedContent = fs.readFileSync(tempFilePath, "utf8");
+      expect(updatedContent).toMatchSnapshot();
     });
 
-    it("should handle adding a chain with an existing chainId", () => {
+    it("should handle updating an existing chain while preserving order", () => {
       const existingChainId = 2;
       const updatedChain = {
         ...mockOrbitChain,
@@ -118,19 +114,19 @@ describe("Transforms", () => {
       };
       const result = updateOrbitChainsFile(updatedChain, tempFilePath);
 
-      // Check if the chain is updated
-      expect(result.mainnet[existingChainId]).toEqual(updatedChain);
+      const parsedResult = JSON.parse(result);
+      expect(parsedResult.mainnet.map((chain: any) => chain.chainId)).toEqual([
+        2, 4, 1,
+      ]);
+      expect(parsedResult.testnet.map((chain: any) => chain.chainId)).toEqual([
+        3,
+      ]);
+      expect(
+        parsedResult.mainnet.find((chain: any) => chain.chainId === 2)
+      ).toEqual(updatedChain);
 
-      // Read the file content to check the order
-      const fileContent = fs.readFileSync(tempFilePath, "utf8");
-      const parsedContent: OrbitChainsList = JSON.parse(fileContent);
-
-      // Check if the order is preserved in the file
-      expect(Object.keys(parsedContent.mainnet)).toEqual(["1", "2"]);
-      expect(Object.keys(parsedContent.testnet)).toEqual(["3"]);
-
-      // Check if the content matches the returned result
-      expect(parsedContent).toEqual(result);
+      const updatedContent = fs.readFileSync(tempFilePath, "utf8");
+      expect(updatedContent).toMatchSnapshot();
     });
   });
 
