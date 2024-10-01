@@ -379,5 +379,5 @@ export const updateOrbitChainsFile = (
   // Write the updated contents back to the file
   fs.writeFileSync(targetJsonPath, updatedContents);
 
-  return updatedContents;
+  return orbitChains;
 };

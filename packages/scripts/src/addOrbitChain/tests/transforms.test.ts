@@ -66,16 +66,13 @@ describe("Transforms", () => {
       const newChain = { ...mockOrbitChain, isTestnet: false, chainId: 5 };
       const result = updateOrbitChainsFile(newChain, tempFilePath);
 
-      const parsedResult = JSON.parse(result);
-      expect(parsedResult.mainnet.map((chain: any) => chain.chainId)).toEqual([
+      expect(result.mainnet.map((chain: any) => chain.chainId)).toEqual([
         2, 4, 1, 5,
       ]);
-      expect(parsedResult.testnet.map((chain: any) => chain.chainId)).toEqual([
-        3,
-      ]);
-      expect(
-        parsedResult.mainnet.find((chain: any) => chain.chainId === 5)
-      ).toEqual(newChain);
+      expect(result.testnet.map((chain: any) => chain.chainId)).toEqual([3]);
+      expect(result.mainnet.find((chain: any) => chain.chainId === 5)).toEqual(
+        newChain
+      );
 
       const updatedContent = fs.readFileSync(tempFilePath, "utf8");
       expect(updatedContent).toMatchSnapshot();
@@ -89,16 +86,13 @@ describe("Transforms", () => {
       };
       const result = updateOrbitChainsFile(newTestnetChain, tempFilePath);
 
-      const parsedResult = JSON.parse(result);
-      expect(parsedResult.mainnet.map((chain: any) => chain.chainId)).toEqual([
+      expect(result.mainnet.map((chain: any) => chain.chainId)).toEqual([
         2, 4, 1,
       ]);
-      expect(parsedResult.testnet.map((chain: any) => chain.chainId)).toEqual([
-        3, 5,
-      ]);
-      expect(
-        parsedResult.testnet.find((chain: any) => chain.chainId === 5)
-      ).toEqual(newTestnetChain);
+      expect(result.testnet.map((chain: any) => chain.chainId)).toEqual([3, 5]);
+      expect(result.testnet.find((chain: any) => chain.chainId === 5)).toEqual(
+        newTestnetChain
+      );
 
       const updatedContent = fs.readFileSync(tempFilePath, "utf8");
       expect(updatedContent).toMatchSnapshot();
@@ -114,16 +108,13 @@ describe("Transforms", () => {
       };
       const result = updateOrbitChainsFile(updatedChain, tempFilePath);
 
-      const parsedResult = JSON.parse(result);
-      expect(parsedResult.mainnet.map((chain: any) => chain.chainId)).toEqual([
+      expect(result.mainnet.map((chain: any) => chain.chainId)).toEqual([
         2, 4, 1,
       ]);
-      expect(parsedResult.testnet.map((chain: any) => chain.chainId)).toEqual([
-        3,
-      ]);
-      expect(
-        parsedResult.mainnet.find((chain: any) => chain.chainId === 2)
-      ).toEqual(updatedChain);
+      expect(result.testnet.map((chain: any) => chain.chainId)).toEqual([3]);
+      expect(result.mainnet.find((chain: any) => chain.chainId === 2)).toEqual(
+        updatedChain
+      );
 
       const updatedContent = fs.readFileSync(tempFilePath, "utf8");
       expect(updatedContent).toMatchSnapshot();
