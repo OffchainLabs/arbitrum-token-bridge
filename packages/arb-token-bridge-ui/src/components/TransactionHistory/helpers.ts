@@ -282,7 +282,7 @@ export async function getUpdatedEthDeposit(
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
-      isEthDeposit: true,
+      isRetryableDeposit: false,
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })
@@ -346,7 +346,7 @@ export async function getUpdatedRetryableDeposit(
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
-      isEthDeposit: false,
+      isRetryableDeposit: true,
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })

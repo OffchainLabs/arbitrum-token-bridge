@@ -95,15 +95,7 @@ export const getDepositStatus = (
   }
 
   const isNativeTokenTransferToSameAddress =
-    tx.assetType === AssetType.ETH &&
-    // We cannot just check for tx.sender.toLowerCase() === tx.destination.toLowerCase()
-    // because if destination or sender is undefined, this will be assigned false
-    // but if that's the case we should treat it as transfer to the same address
-    !(
-      tx.sender &&
-      tx.destination &&
-      tx.sender.toLowerCase() !== tx.destination.toLowerCase()
-    )
+    tx.assetType === AssetType.ETH && !isCustomDestinationAddressTx(tx)
 
   const { parentToChildMsgData: l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
