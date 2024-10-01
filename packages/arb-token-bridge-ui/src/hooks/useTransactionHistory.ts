@@ -808,7 +808,7 @@ export const useTransactionHistory = (
 
   useEffect(() => {
     if (typeof error !== 'undefined') {
-      console.error(error)
+      console.warn(error)
       captureSentryErrorWithExtraData({
         error,
         originFunction: 'useTransactionHistoryWithoutStatuses'
@@ -816,7 +816,7 @@ export const useTransactionHistory = (
     }
 
     if (typeof txPagesError !== 'undefined') {
-      console.error(txPagesError)
+      console.warn(txPagesError)
       captureSentryErrorWithExtraData({
         error: txPagesError,
         originFunction: 'useTransactionHistory'
