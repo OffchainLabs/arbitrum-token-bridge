@@ -7,7 +7,10 @@ import { useDestinationAddressError } from './useDestinationAddressError'
 
 export function useIsTransferAllowed() {
   const {
-    app: { arbTokenBridgeLoaded }
+    app: {
+      arbTokenBridgeLoaded,
+      arbTokenBridge: { eth }
+    }
   } = useAppState()
   const { address: walletAddress, isConnected } = useAccount()
   // do not use `useChainId` because it won't detect chains outside of our wagmi config
@@ -19,6 +22,9 @@ export function useIsTransferAllowed() {
     const isConnectedToTheWrongChain = chain?.id !== networks.sourceChain.id
 
     if (!arbTokenBridgeLoaded) {
+      return false
+    }
+    if (!eth) {
       return false
     }
     if (!isConnected) {
@@ -39,6 +45,7 @@ export function useIsTransferAllowed() {
     chain?.id,
     destinationAddressError,
     isConnected,
+    eth,
     networks.sourceChain.id,
     walletAddress
   ])
