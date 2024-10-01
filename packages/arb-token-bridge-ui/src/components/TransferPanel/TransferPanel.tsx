@@ -546,38 +546,40 @@ export function TransferPanel() {
     }
   }
 
-  const isTransferAllowed = useMemo(() => {
-    const isConnectedToTheWrongChain =
-      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
+  const isTransferAllowed = useLatest(
+    useMemo(() => {
+      const isConnectedToTheWrongChain =
+        latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
 
-    if (!arbTokenBridgeLoaded) {
-      return false
-    }
-    if (!latestEth.current) {
-      return false
-    }
-    if (!isConnected) {
-      return false
-    }
-    if (!walletAddress) {
-      return false
-    }
-    if (isConnectedToTheWrongChain) {
-      return false
-    }
-    if (!!destinationAddressError) {
-      return false
-    }
-    return true
-  }, [
-    arbTokenBridgeLoaded,
-    destinationAddressError,
-    isConnected,
-    latestChain,
-    latestEth,
-    latestNetworks,
-    walletAddress
-  ])
+      if (!arbTokenBridgeLoaded) {
+        return false
+      }
+      if (!latestEth.current) {
+        return false
+      }
+      if (!isConnected) {
+        return false
+      }
+      if (!walletAddress) {
+        return false
+      }
+      if (isConnectedToTheWrongChain) {
+        return false
+      }
+      if (!!destinationAddressError) {
+        return false
+      }
+      return true
+    }, [
+      arbTokenBridgeLoaded,
+      destinationAddressError,
+      isConnected,
+      latestChain,
+      latestEth,
+      latestNetworks,
+      walletAddress
+    ])
+  )
 
   const transfer = async () => {
     const sourceChainId = latestNetworks.current.sourceChain.id
