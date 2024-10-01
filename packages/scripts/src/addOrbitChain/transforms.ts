@@ -354,7 +354,15 @@ export const updateOrbitChainsFile = (
   const fileContents = fs.readFileSync(targetJsonPath, "utf8");
   const orbitChains: OrbitChainsList = JSON.parse(fileContents);
   const networkType = orbitChain.isTestnet ? "testnet" : "mainnet";
+
+  // Append the new chain to the end of the appropriate network type
   orbitChains[networkType][orbitChain.chainId] = orbitChain;
-  fs.writeFileSync(targetJsonPath, JSON.stringify(orbitChains, null, 2));
+
+  // Convert the updated object back to a string, preserving the original formatting
+  const updatedContents = JSON.stringify(orbitChains, null, 2);
+
+  // Write the updated contents back to the file
+  fs.writeFileSync(targetJsonPath, updatedContents);
+
   return orbitChains;
 };
