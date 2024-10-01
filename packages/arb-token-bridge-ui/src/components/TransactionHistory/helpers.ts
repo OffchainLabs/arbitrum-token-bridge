@@ -336,7 +336,9 @@ export async function getUpdatedRetryableDeposit(
 
   if (
     !isTxPending(tx) ||
-    (tx.assetType !== AssetType.ERC20 && !isDifferentDestinationAddress) ||
+    // ETH transfer to the same address
+    // ETH sent to a custom destination uses retryables so we allow it in this flow
+    (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) ||
     tx.isWithdrawal ||
     tx.isCctp
   ) {
