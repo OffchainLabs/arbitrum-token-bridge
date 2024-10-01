@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { useLatest } from 'react-use'
 import { useAccount, useNetwork } from 'wagmi'
 
 import { useAppState } from '../../../state'
@@ -8,13 +7,9 @@ import { useDestinationAddressError } from './useDestinationAddressError'
 
 export function useIsTransferAllowed() {
   const {
-    app: {
-      arbTokenBridgeLoaded,
-      arbTokenBridge: { eth }
-    }
+    app: { arbTokenBridgeLoaded }
   } = useAppState()
   const { address: walletAddress, isConnected } = useAccount()
-  const latestEth = useLatest(eth)
   // do not use `useChainId` because it won't detect chains outside of our wagmi config
   const { chain } = useNetwork()
   const [networks] = useNetworks()
@@ -24,9 +19,6 @@ export function useIsTransferAllowed() {
     const isConnectedToTheWrongChain = chain?.id !== networks.sourceChain.id
 
     if (!arbTokenBridgeLoaded) {
-      return false
-    }
-    if (!latestEth.current) {
       return false
     }
     if (!isConnected) {
@@ -47,7 +39,6 @@ export function useIsTransferAllowed() {
     chain?.id,
     destinationAddressError,
     isConnected,
-    latestEth,
     networks.sourceChain.id,
     walletAddress
   ])
