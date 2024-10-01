@@ -76,6 +76,7 @@ import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
 import { isExperimentalFeatureEnabled } from '../../util'
+import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 
 const signerUndefinedError = 'Signer is undefined'
 
@@ -106,14 +107,13 @@ export function TransferPanel() {
     app: {
       connectionState,
       selectedToken,
-      arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token },
+      arbTokenBridge: { token },
       warningTokens
     }
   } = useAppState()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
-  const { address: walletAddress, isConnected } = useAccount()
+  const { address: walletAddress } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
@@ -145,7 +145,7 @@ export function TransferPanel() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
-  const latestEth = useLatest(eth)
+  const isTransferAllowed = useLatest(useIsTransferAllowed())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -347,9 +347,6 @@ export function TransferPanel() {
     if (!selectedToken) {
       return
     }
-    if (!walletAddress) {
-      return
-    }
     if (!signer) {
       throw signerUndefinedError
     }
@@ -545,41 +542,6 @@ export function TransferPanel() {
       setIsCctp(false)
     }
   }
-
-  const isTransferAllowed = useLatest(
-    useMemo(() => {
-      const isConnectedToTheWrongChain =
-        latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
-
-      if (!arbTokenBridgeLoaded) {
-        return false
-      }
-      if (!latestEth.current) {
-        return false
-      }
-      if (!isConnected) {
-        return false
-      }
-      if (!walletAddress) {
-        return false
-      }
-      if (isConnectedToTheWrongChain) {
-        return false
-      }
-      if (!!destinationAddressError) {
-        return false
-      }
-      return true
-    }, [
-      arbTokenBridgeLoaded,
-      destinationAddressError,
-      isConnected,
-      latestChain,
-      latestEth,
-      latestNetworks,
-      walletAddress
-    ])
-  )
 
   const transfer = async () => {
     const sourceChainId = latestNetworks.current.sourceChain.id
