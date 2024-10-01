@@ -89,7 +89,7 @@ jobs:
 
       - name: Run nitro testnode
         if: inputs.test_type != 'cctp'
-        uses: OffchainLabs/actions/run-nitro-test-node@f81eb18ab481bff3a32443dc0a04628fe2f234b0
+        uses: OffchainLabs/actions/run-nitro-test-node@015c0f6cbb1f7a831949e1da4bfe8b9ef1e8f220
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
           l3-node: ${{ matrix.test.type == 'orbit' }}
