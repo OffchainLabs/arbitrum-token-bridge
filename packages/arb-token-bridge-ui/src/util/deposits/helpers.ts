@@ -124,7 +124,7 @@ export const updateAdditionalDepositData = async ({
   }
 
   const { value2 } = await getBatchTransferDepositData({
-    l1ToL2Msg: parentToChildMsg as ParentToChildMessageReader | undefined,
+    l1ToL2Msg: parentToChildMsg as ParentToChildMessageReader,
     depositStatus: tokenDeposit.status
   })
 
@@ -138,15 +138,11 @@ const getBatchTransferDepositData = async ({
   l1ToL2Msg,
   depositStatus
 }: {
-  l1ToL2Msg: ParentToChildMessageReader | undefined
+  l1ToL2Msg: ParentToChildMessageReader
   depositStatus: TxnStatus | undefined
 }): Promise<{
   value2: Transaction['value2']
 }> => {
-  if (!l1ToL2Msg) {
-    return { value2: undefined }
-  }
-
   if (!isPotentialBatchTransfer({ l1ToL2Msg })) {
     return { value2: undefined }
   }

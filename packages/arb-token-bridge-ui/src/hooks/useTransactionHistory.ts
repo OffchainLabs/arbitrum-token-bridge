@@ -805,6 +805,12 @@ export const useTransactionHistory = (
     }
   }, [txPages, setPage, page, pauseCount, fetching, runFetcher, isValidating])
 
+  useEffect(() => {
+    if (typeof error !== 'undefined' || typeof txPagesError !== 'undefined') {
+      console.error(error)
+    }
+  }, [error, txPagesError])
+
   function pause() {
     setFetching(false)
   }
