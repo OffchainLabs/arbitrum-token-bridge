@@ -54,7 +54,7 @@ export const fetchDeposits = async ({
   }
 
   let depositsFromSubgraph: FetchDepositsFromSubgraphResult[] = []
-  let depositsToCustomDestinationFromSubgraph: FetchEthDepositsToCustomDestinationFromSubgraphResult[] =
+  let ethDepositsToCustomDestinationFromSubgraph: FetchEthDepositsToCustomDestinationFromSubgraphResult[] =
     []
 
   const subgraphParams = {
@@ -75,11 +75,11 @@ export const fetchDeposits = async ({
   }
 
   try {
-    depositsToCustomDestinationFromSubgraph =
+    ethDepositsToCustomDestinationFromSubgraph =
       await fetchEthDepositsToCustomDestinationFromSubgraph(subgraphParams)
   } catch (error: any) {
     console.log(
-      'Error fetching deposits to custom destination from subgraph',
+      'Error fetching native token deposits to custom destination from subgraph',
       error
     )
   }
@@ -134,8 +134,8 @@ export const fetchDeposits = async ({
     }
   )
 
-  const mappedDepositsToCustomDestinationFromSubgraph: Transaction[] =
-    depositsToCustomDestinationFromSubgraph.map(
+  const mappedEthDepositsToCustomDestinationFromSubgraph: Transaction[] =
+    ethDepositsToCustomDestinationFromSubgraph.map(
       (tx: FetchEthDepositsToCustomDestinationFromSubgraphResult) => {
         return {
           type: 'deposit-l1',
@@ -164,6 +164,6 @@ export const fetchDeposits = async ({
 
   return [
     ...mappedDepositsFromSubgraph,
-    ...mappedDepositsToCustomDestinationFromSubgraph
+    ...mappedEthDepositsToCustomDestinationFromSubgraph
   ].sort((a, b) => Number(b.timestampCreated) - Number(a.timestampCreated))
 }
