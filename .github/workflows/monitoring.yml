@@ -73,6 +73,6 @@ jobs:
       uses: slackapi/slack-github-action@v1.27.0
       with:
         channel-id: ${{ secrets[steps.config.outputs.slack_channel] }}
-        slack-message: "Error: Monitoring run failed for ${{ inputs.monitor }}"
+        slack-message: "Error: Monitoring run failed for ${{ inputs.monitor }}\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
       env:
         SLACK_BOT_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
