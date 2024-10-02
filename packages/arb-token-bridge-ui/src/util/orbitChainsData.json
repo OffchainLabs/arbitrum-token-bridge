@@ -170,11 +170,11 @@
         "childWethGateway": "0x6e965dd667cb08f09DE8285317f012Ac889507b4"
       },
       "bridgeUiConfig": {
-        "color": "#3E63DD",
+        "color": "#6C41FF",
         "network": {
           "name": "Proof of Play Apex",
           "description": "Apex is the first chain in Proof of Play's Multichain, powering the popular Pirate Nation game.",
-          "logo": "/images/PopApexLogo.svg"
+          "logo": "/images/PopApexLogo.webp"
         }
       }
     },
@@ -216,7 +216,7 @@
         "network": {
           "name": "Proof of Play Boss",
           "description": "Proof of Play Boss is a gaming-focused L3 settling on Arbitrum using the Orbit Stack and AnyTrust DA.",
-          "logo": "/images/PopApexLogo.svg"
+          "logo": "/images/PopApexLogo.webp"
         }
       }
     },
