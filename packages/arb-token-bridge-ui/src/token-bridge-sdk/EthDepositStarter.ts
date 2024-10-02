@@ -13,6 +13,7 @@ import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { isExperimentalFeatureEnabled } from '../util'
+import { isCustomDestinationAddressTx } from '../state/app/utils'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -106,9 +107,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const isDifferentDestinationAddress =
-      destinationAddress &&
-      destinationAddress.toLowerCase() !== address.toLowerCase()
+    const isDifferentDestinationAddress = isCustomDestinationAddressTx({
+      sender: address,
+      destination: destinationAddress
+    })
 
     // TODO: remove this when eth-custom-dest feature is live
     // this is a safety check, this shouldn't happen
@@ -125,7 +127,8 @@ export class EthDepositStarter extends BridgeTransferStarter {
           from: address,
           parentProvider: this.sourceChainProvider,
           childProvider: this.destinationChainProvider,
-          destinationAddress
+          // we know it's defined
+          destinationAddress: String(destinationAddress)
         })
       : await ethBridger.getDepositRequest({
           amount,
@@ -145,7 +148,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
           amount,
           parentSigner: signer,
           childProvider: this.destinationChainProvider,
-          destinationAddress,
+          destinationAddress: String(destinationAddress),
           overrides: parentChainOverrides,
           retryableGasOverrides: {
             // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
