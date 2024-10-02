@@ -8,14 +8,16 @@ import {
 import { FetchEthDepositsToCustomDestinationFromSubgraphResult } from '../../util/deposits/fetchEthDepositsToCustomDestinationFromSubgraph'
 
 type NextApiRequestWithDepositParams = NextApiRequest & {
-  sender?: string
-  receiver?: string
-  l2ChainId: string
-  search?: string
-  page?: string
-  pageSize?: string
-  fromBlock?: string
-  toBlock?: string
+  query: {
+    sender?: string
+    receiver?: string
+    l2ChainId: string
+    search?: string
+    page?: string
+    pageSize?: string
+    fromBlock?: string
+    toBlock?: string
+  }
 }
 
 type RetryableFromSubgraph = {
@@ -90,6 +92,7 @@ export default async function handler(
     }
     ${search ? `transactionHash_contains: "${search}",` : ''}
     l2Callvalue_gt: 0
+    l2Calldata: "0x"
     `
 
     const subgraphClient = getL1SubgraphClient(Number(l2ChainId))
