@@ -12,7 +12,7 @@ import {
   isValidAddress,
   OrbitChain,
 } from "../schemas";
-import orbitChainsList from "../../../../arb-token-bridge-ui/src/util/orbitChainsList.json";
+import orbitChainsList from "../../../../arb-token-bridge-ui/src/util/orbitChainsData.json";
 import { mockOrbitChain } from "./__mocks__/chainDataMocks";
 
 describe("Validation Functions", () => {

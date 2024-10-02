@@ -56,7 +56,7 @@ jobs:
         run: yarn workspace scripts build
 
       - name: Run addOrbitChain script
-        run: yarn workspace scripts add-orbit-chain ../../packages/arb-token-bridge-ui/src/util/orbitChainsList.json
+        run: yarn workspace scripts add-orbit-chain ../../packages/arb-token-bridge-ui/src/util/orbitChainsData.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
