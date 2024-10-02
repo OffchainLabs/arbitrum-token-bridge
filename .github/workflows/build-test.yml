@@ -133,8 +133,8 @@ jobs:
     needs: [check-files]
     if: |
       needs.check-files.outputs.run_tests == 'true' &&
-      (github.event_name == 'push' ||
-       contains(github.event.pull_request.changed_files, 'packages/scripts/'))
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.changed_files.*.filename, 'packages/scripts/')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -143,7 +143,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Run scripts tests
-        run: yarn workspace @arbitrum/scripts test   
+        run: yarn workspace @arbitrum/scripts test
 
   validate-orbit-chains-data:
     name: "Validate Orbit Chains Data"
@@ -151,8 +151,8 @@ jobs:
     needs: [check-files]
     if: |
       needs.check-files.outputs.run_tests == 'true' &&
-      (github.event_name == 'push' ||
-       contains(github.event.pull_request.changed_files, 'packages/arb-token-bridge-ui/src/util/orbitChainsData.json'))
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.changed_files.*.filename, 'packages/arb-token-bridge-ui/src/util/orbitChainsData.json')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
