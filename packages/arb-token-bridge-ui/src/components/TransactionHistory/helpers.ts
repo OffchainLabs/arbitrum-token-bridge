@@ -22,7 +22,10 @@ import {
   fetchTeleporterDepositStatusData
 } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { getDepositStatus } from '../../state/app/utils'
+import {
+  getDepositStatus,
+  isCustomDestinationAddressTx
+} from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
@@ -282,7 +285,7 @@ export async function getUpdatedEthDeposit(
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
-      isEthDeposit: true,
+      isRetryableDeposit: false,
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })
@@ -329,14 +332,13 @@ export async function getUpdatedEthDeposit(
 export async function getUpdatedRetryableDeposit(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  const isDifferentDestinationAddress =
-    typeof tx.sender !== 'undefined' &&
-    typeof tx.destination !== 'undefined' &&
-    tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+  const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
 
   if (
     !isTxPending(tx) ||
-    (tx.assetType !== AssetType.ERC20 && !isDifferentDestinationAddress) ||
+    // ETH transfer to the same address
+    // ETH sent to a custom destination uses retryables so we allow it in this flow
+    (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) ||
     tx.isWithdrawal ||
     tx.isCctp
   ) {
@@ -346,7 +348,7 @@ export async function getUpdatedRetryableDeposit(
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
-      isEthDeposit: false,
+      isRetryableDeposit: true,
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })

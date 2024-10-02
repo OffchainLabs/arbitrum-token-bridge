@@ -95,12 +95,7 @@ export const getDepositStatus = (
   }
 
   const isNativeTokenTransferToSameAddress =
-    tx.assetType === AssetType.ETH &&
-    !(
-      tx.sender &&
-      tx.destination &&
-      tx.sender.toLowerCase() !== tx.destination.toLowerCase()
-    )
+    tx.assetType === AssetType.ETH && !isCustomDestinationAddressTx(tx)
 
   const { parentToChildMsgData: l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {

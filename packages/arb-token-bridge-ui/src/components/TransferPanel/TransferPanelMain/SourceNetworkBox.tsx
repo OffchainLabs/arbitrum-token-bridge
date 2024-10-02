@@ -32,6 +32,7 @@ import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsB
 import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 
 function Amount2ToggleButton({
   onClick
@@ -71,11 +72,7 @@ export const useAmount2InputVisibility = create<{
   }
 }))
 
-export function SourceNetworkBox({
-  showUsdcSpecificInfo
-}: {
-  showUsdcSpecificInfo: boolean
-}) {
+export function SourceNetworkBox() {
   const { isAmount2InputVisible, showAmount2Input } =
     useAmount2InputVisibility()
 
@@ -95,6 +92,8 @@ export function SourceNetworkBox({
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
+
+  const isCctpTransfer = useIsCctpTransfer()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -116,7 +115,7 @@ export function SourceNetworkBox({
     if (isBatchTransferSupported && Number(amount2) > 0) {
       showAmount2Input()
     }
-  }, [isBatchTransferSupported, amount2])
+  }, [isBatchTransferSupported, amount2, showAmount2Input])
 
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
@@ -197,7 +196,7 @@ export function SourceNetworkBox({
             </>
           )}
 
-          {showUsdcSpecificInfo && (
+          {isCctpTransfer && (
             <p className="mt-1 text-xs font-light text-white">
               Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
               <ExternalLink
