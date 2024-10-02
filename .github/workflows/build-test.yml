@@ -131,10 +131,7 @@ jobs:
     name: "Test Scripts"
     runs-on: ubuntu-latest
     needs: [check-files]
-    if: |
-      needs.check-files.outputs.run_tests == 'true' &&
-      github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.changed_files.*.filename, 'packages/scripts/')
+    if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -149,10 +146,7 @@ jobs:
     name: "Validate Orbit Chains Data"
     runs-on: ubuntu-latest
     needs: [check-files]
-    if: |
-      needs.check-files.outputs.run_tests == 'true' &&
-      github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.changed_files.*.filename, 'packages/arb-token-bridge-ui/src/util/orbitChainsData.json')
+    if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
