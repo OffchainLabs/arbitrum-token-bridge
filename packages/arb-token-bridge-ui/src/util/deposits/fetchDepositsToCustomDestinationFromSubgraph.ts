@@ -71,7 +71,7 @@ export const fetchDepositsToCustomDestinationFromSubgraph = async ({
   if (pageSize === 0) return [] // don't query subgraph if nothing requested
 
   const response = await fetch(
-    `${getAPIBaseUrl()}/api/eth-deposits-custom-address?${urlParams}`,
+    `${getAPIBaseUrl()}/api/eth-deposits-custom-destination?${urlParams}`,
     {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
