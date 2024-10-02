@@ -145,7 +145,10 @@ export default async function handler(
       meta: { source: getSourceFromSubgraphClient(subgraphClient) },
       data: transactions
     })
-  } catch (e) {
-    console.error({ e })
+  } catch (error: any) {
+    res.status(500).json({
+      message: error?.message ?? 'Something went wrong',
+      data: []
+    })
   }
 }
