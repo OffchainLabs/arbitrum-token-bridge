@@ -5,7 +5,7 @@ import {
   getL1SubgraphClient,
   getSourceFromSubgraphClient
 } from '../../api-utils/ServerSubgraphUtils'
-import { FetchDepositsToCustomDestinationFromSubgraphResult } from '../../util/deposits/fetchDepositsToCustomDestinationFromSubgraph'
+import { FetchEthDepositsToCustomDestinationFromSubgraphResult } from '../../util/deposits/fetchEthDepositsToCustomDestinationFromSubgraph'
 
 type NextApiRequestWithDepositParams = NextApiRequest & {
   sender?: string
@@ -28,15 +28,15 @@ type RetryableFromSubgraph = {
   blockCreatedAt: string
 }
 
-type DepositsToCustomDestinationResponse = {
+type EthDepositsToCustomDestinationResponse = {
   meta?: { source: string | null }
-  data: FetchDepositsToCustomDestinationFromSubgraphResult[]
+  data: FetchEthDepositsToCustomDestinationFromSubgraphResult[]
   message?: string
 }
 
 export default async function handler(
   req: NextApiRequestWithDepositParams,
-  res: NextApiResponse<DepositsToCustomDestinationResponse>
+  res: NextApiResponse<EthDepositsToCustomDestinationResponse>
 ) {
   try {
     const {
@@ -126,7 +126,7 @@ export default async function handler(
     const retryablesFromSubgraph: RetryableFromSubgraph[] =
       subgraphResult.data.retryables
 
-    const transactions: FetchDepositsToCustomDestinationFromSubgraphResult[] =
+    const transactions: FetchEthDepositsToCustomDestinationFromSubgraphResult[] =
       retryablesFromSubgraph.map(retryable => {
         return {
           receiver: retryable.destAddr,

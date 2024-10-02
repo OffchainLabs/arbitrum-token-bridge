@@ -10,9 +10,9 @@ import { Transaction } from '../../hooks/useTransactions'
 import { defaultErc20Decimals } from '../../defaults'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
-  fetchDepositsToCustomDestinationFromSubgraph,
-  FetchDepositsToCustomDestinationFromSubgraphResult
-} from './fetchDepositsToCustomDestinationFromSubgraph'
+  fetchEthDepositsToCustomDestinationFromSubgraph,
+  FetchEthDepositsToCustomDestinationFromSubgraphResult
+} from './fetchEthDepositsToCustomDestinationFromSubgraph'
 
 export type FetchDepositParams = {
   sender?: string
@@ -54,7 +54,7 @@ export const fetchDeposits = async ({
   }
 
   let depositsFromSubgraph: FetchDepositsFromSubgraphResult[] = []
-  let depositsToCustomDestinationFromSubgraph: FetchDepositsToCustomDestinationFromSubgraphResult[] =
+  let depositsToCustomDestinationFromSubgraph: FetchEthDepositsToCustomDestinationFromSubgraphResult[] =
     []
 
   const subgraphParams = {
@@ -76,7 +76,7 @@ export const fetchDeposits = async ({
 
   try {
     depositsToCustomDestinationFromSubgraph =
-      await fetchDepositsToCustomDestinationFromSubgraph(subgraphParams)
+      await fetchEthDepositsToCustomDestinationFromSubgraph(subgraphParams)
   } catch (error: any) {
     console.log(
       'Error fetching deposits to custom destination from subgraph',
@@ -136,7 +136,7 @@ export const fetchDeposits = async ({
 
   const mappedDepositsToCustomDestinationFromSubgraph: Transaction[] =
     depositsToCustomDestinationFromSubgraph.map(
-      (tx: FetchDepositsToCustomDestinationFromSubgraphResult) => {
+      (tx: FetchEthDepositsToCustomDestinationFromSubgraphResult) => {
         return {
           type: 'deposit-l1',
           status: 'pending',

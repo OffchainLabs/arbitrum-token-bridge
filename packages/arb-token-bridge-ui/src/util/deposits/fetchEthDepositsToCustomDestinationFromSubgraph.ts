@@ -1,7 +1,7 @@
 import { hasL1Subgraph } from '../SubgraphUtils'
-import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
+import { getAPIBaseUrl, sanitizeQueryParams } from '../index'
 
-export type FetchDepositsToCustomDestinationFromSubgraphResult = {
+export type FetchEthDepositsToCustomDestinationFromSubgraphResult = {
   receiver: string
   sender: string
   timestamp: string
@@ -27,7 +27,7 @@ export type FetchDepositsToCustomDestinationFromSubgraphResult = {
  * @param query.searchString Searches records through the l1TxHash
  */
 
-export const fetchDepositsToCustomDestinationFromSubgraph = async ({
+export const fetchEthDepositsToCustomDestinationFromSubgraph = async ({
   sender,
   receiver,
   fromBlock,
@@ -45,7 +45,7 @@ export const fetchDepositsToCustomDestinationFromSubgraph = async ({
   pageSize?: number
   pageNumber?: number
   searchString?: string
-}): Promise<FetchDepositsToCustomDestinationFromSubgraphResult[]> => {
+}): Promise<FetchEthDepositsToCustomDestinationFromSubgraphResult[]> => {
   if (toBlock && fromBlock >= toBlock) {
     // if fromBlock > toBlock or both are equal / 0
     return []
@@ -78,9 +78,8 @@ export const fetchDepositsToCustomDestinationFromSubgraph = async ({
     }
   )
 
-  const transactions: FetchDepositsToCustomDestinationFromSubgraphResult[] = (
-    await response.json()
-  ).data
+  const transactions: FetchEthDepositsToCustomDestinationFromSubgraphResult[] =
+    (await response.json()).data
 
   return transactions
 }
