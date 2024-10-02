@@ -20,6 +20,7 @@ import {
 import { isTeleportTx, Transaction } from './useTransactions'
 import { MergedTransaction } from '../state/app/state'
 import {
+  isCustomDestinationAddressTx,
   normalizeTimestamp,
   transformDeposit,
   transformWithdrawal
@@ -39,7 +40,7 @@ import {
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
   getUpdatedTeleportTransfer,
-  getUpdatedTokenDeposit,
+  getUpdatedRetryableDeposit,
   getUpdatedWithdrawal,
   isCctpTransfer,
   isSameTransaction,
@@ -62,6 +63,7 @@ import {
   isTransferTeleportFromSubgraph,
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -733,16 +735,18 @@ export const useTransactionHistory = (
         return
       }
 
-      // ETH deposit
-      if (tx.assetType === AssetType.ETH) {
+      const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
+
+      // ETH deposit to the same address
+      if (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
         updateCachedTransaction(updatedEthDeposit)
         return
       }
 
-      // Token deposit
-      const updatedTokenDeposit = await getUpdatedTokenDeposit(tx)
-      updateCachedTransaction(updatedTokenDeposit)
+      // Token deposit or ETH deposit to a different destination address
+      const updatedRetryableDeposit = await getUpdatedRetryableDeposit(tx)
+      updateCachedTransaction(updatedRetryableDeposit)
     },
     [updateCachedTransaction]
   )
@@ -804,6 +808,24 @@ export const useTransactionHistory = (
       setPage(prevPage => prevPage + 1)
     }
   }, [txPages, setPage, page, pauseCount, fetching, runFetcher, isValidating])
+
+  useEffect(() => {
+    if (typeof error !== 'undefined') {
+      console.warn(error)
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'useTransactionHistoryWithoutStatuses'
+      })
+    }
+
+    if (typeof txPagesError !== 'undefined') {
+      console.warn(txPagesError)
+      captureSentryErrorWithExtraData({
+        error: txPagesError,
+        originFunction: 'useTransactionHistory'
+      })
+    }
+  }, [error, txPagesError])
 
   function pause() {
     setFetching(false)
