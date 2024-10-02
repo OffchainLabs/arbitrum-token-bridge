@@ -18,7 +18,7 @@ export type FetchEthDepositsToCustomDestinationFromSubgraphResult = {
 }
 
 /**
- * Fetches initiated deposits (ETH + Tokens) from subgraph in range of [fromBlock, toBlock] and pageParams.
+ * Fetches initiated retryable deposits (ETH transfers to custom destination) from subgraph in range of [fromBlock, toBlock] and pageParams.
  *
  * @param query Query params
  * @param query.sender Address that initiated the deposit
