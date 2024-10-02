@@ -27,6 +27,7 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { isCustomDestinationAddressTx } from '../../state/app/utils'
 
 const DetailsBox = ({
   children,
@@ -82,8 +83,10 @@ export const TransactionsTableDetails = ({
 
   const isDifferentSourceAddress =
     address.toLowerCase() !== tx.sender?.toLowerCase()
-  const isDifferentDestinationAddress =
-    address.toLowerCase() !== tx.destination?.toLowerCase()
+  const isDifferentDestinationAddress = isCustomDestinationAddressTx({
+    sender: address,
+    destination: tx.destination
+  })
 
   const { sourceChainId, destinationChainId } = tx
 
