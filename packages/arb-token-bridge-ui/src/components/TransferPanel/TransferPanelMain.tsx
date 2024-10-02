@@ -27,6 +27,7 @@ import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -281,6 +282,11 @@ export function TransferPanelMain() {
   ])
 
   useEffect(() => {
+    if (isExperimentalFeatureEnabled('eth-custom-dest')) {
+      // do not reset destination address for this feature
+      // this will also be the default behavior when the feature is live - which means we will remove this hook
+      return
+    }
     // Different destination address only allowed for tokens
     if (!selectedToken) {
       setDestinationAddress(undefined)
