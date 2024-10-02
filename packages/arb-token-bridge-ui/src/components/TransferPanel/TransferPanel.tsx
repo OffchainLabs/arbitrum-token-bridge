@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
-import { constants, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
@@ -67,7 +67,10 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
-import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
+import {
+  getBridgeTransferProperties,
+  percentIncrease
+} from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
@@ -717,10 +720,33 @@ export function TransferPanel() {
         isBatchTransferSupported &&
         Number(amount2) > 0
 
+      let nativeCurrencyToApprove = amountBigNumber
+
+      // Eth transfers to a custom destination use retryables
+      // In the case of native currency we need to also approve native currency used for gas
+      if (!selectedToken && isCustomDestinationTransfer) {
+        const retryableGasEstimates =
+          await bridgeTransferStarter.transferEstimateGas({
+            amount: amountBigNumber,
+            signer
+          })
+
+        const parentGasPrice = await parentChainProvider.getGasPrice()
+
+        const parentRetryableGas =
+          retryableGasEstimates?.estimatedParentChainGas.mul(parentGasPrice)
+
+        if (parentRetryableGas) {
+          nativeCurrencyToApprove = nativeCurrencyToApprove.add(
+            percentIncrease(parentRetryableGas, BigNumber.from(30))
+          )
+        }
+      }
+
       const isNativeCurrencyApprovalRequired =
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
-          amount: amountBigNumber,
+          amount: nativeCurrencyToApprove,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
               ? utils.parseUnits(amount2, nativeCurrency.decimals)
@@ -735,7 +761,7 @@ export function TransferPanel() {
 
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
-          amount: amountBigNumber,
+          amount: nativeCurrencyToApprove,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
               ? utils.parseUnits(amount2, nativeCurrency.decimals)
