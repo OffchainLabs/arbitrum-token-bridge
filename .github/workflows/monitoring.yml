@@ -67,6 +67,9 @@ jobs:
         BATCH_POSTER_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
         ASSERTION_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
         ASSERTION_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
+        NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+        NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
+        ARB_ONE_MONITOR_RPC_URL: ${{ secrets.ARB_ONE_MONITOR_RPC_URL }}
 
     - name: Send Slack notification on failure
       if: failure()
