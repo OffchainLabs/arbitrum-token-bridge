@@ -60,11 +60,17 @@ body:
     validations:
       required: true
       
-  - type: input
+  - type: dropdown
     id: parent-chain-id
     attributes:
-      label: Parent chain ID
-      placeholder: ex. 42161
+      label: Parent Chain ID
+      description: Select the parent chain for your Orbit chain.
+      options:
+        - "1"
+        - "42161"
+        - "421614"
+        - "11155111"
+        - "17000"
     validations:
       required: true
 
