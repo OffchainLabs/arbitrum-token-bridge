@@ -3,12 +3,12 @@ import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount, useChainId, useSigner } from 'wagmi'
+import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -25,11 +25,9 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import {
   AdvancedSettings,
   useDestinationAddressStore
@@ -79,9 +77,24 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+import { ExternalLink } from '../common/ExternalLink'
 import { isExperimentalFeatureEnabled } from '../../util'
+import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 
 const signerUndefinedError = 'Signer is undefined'
+const transferNotAllowedError = 'Transfer not allowed'
+
+const networkConnectionWarningToast = () =>
+  warningToast(
+    <>
+      Network connection issue. Please contact{' '}
+      <ExternalLink href={GET_HELP_LINK} className="underline">
+        support
+      </ExternalLink>
+      .
+    </>,
+    { autoClose: false }
+  )
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -98,18 +111,18 @@ export function TransferPanel() {
     app: {
       connectionState,
       selectedToken,
-      arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token },
+      arbTokenBridge: { token },
       warningTokens
     }
   } = useAppState()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
-  const { address: walletAddress, isConnected } = useAccount()
+  const { address: walletAddress } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
-  const chainId = useChainId()
+  // do not use `useChainId` because it won't detect chains outside of our wagmi config
+  const latestChain = useLatest(useNetwork())
   const [networks] = useNetworks()
   const {
     childChain,
@@ -136,10 +149,7 @@ export function TransferPanel() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
-  const latestEth = useLatest(eth)
-
-  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
-  const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
+  const isTransferAllowed = useLatest(useIsTransferAllowed())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -341,17 +351,17 @@ export function TransferPanel() {
     if (!selectedToken) {
       return
     }
-    if (!walletAddress) {
-      return
-    }
     if (!signer) {
-      throw signerUndefinedError
+      throw new Error(signerUndefinedError)
+    }
+    if (!isTransferAllowed) {
+      throw new Error(transferNotAllowedError)
     }
 
     setTransferring(true)
     const childChainName = getNetworkName(childChain.id)
     const isConnectedToTheWrongChain =
-      chainId !== latestNetworks.current.sourceChain.id
+      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
 
     if (isConnectedToTheWrongChain) {
       trackEvent('Switch Network and Transfer', {
@@ -537,35 +547,15 @@ export function TransferPanel() {
     }
   }
 
-  const isTransferAllowed = useMemo(() => {
-    if (!isConnected) {
-      return false
-    }
-    if (!walletAddress) {
-      return false
-    }
-    if (!!destinationAddressError) {
-      return false
-    }
-    return true
-  }, [destinationAddressError, isConnected, walletAddress])
-
   const transfer = async () => {
-    try {
-      setTransferring(true)
-      if (chainId !== networks.sourceChain.id) {
-        await switchNetworkAsync?.(networks.sourceChain.id)
-      }
-    } finally {
-      setTransferring(false)
-    }
+    const sourceChainId = latestNetworks.current.sourceChain.id
 
     if (!isTransferAllowed) {
-      return
+      throw new Error(transferNotAllowedError)
     }
 
     if (!signer) {
-      throw signerUndefinedError
+      throw new Error(signerUndefinedError)
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -601,65 +591,6 @@ export function TransferPanel() {
         return
       }
 
-      const depositRequiresChainSwitch = () => {
-        const isParentChainEthereum = isNetwork(
-          parentChain.id
-        ).isEthereumMainnetOrTestnet
-
-        return (
-          isDepositMode &&
-          ((isParentChainEthereum && isConnectedToArbitrum.current) ||
-            isConnectedToOrbitChain.current)
-        )
-      }
-
-      const withdrawalRequiresChainSwitch = () => {
-        const isConnectedToEthereum =
-          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-
-        const { isOrbitChain: isSourceChainOrbit } = isNetwork(childChain.id)
-
-        return (
-          !isDepositMode &&
-          (isConnectedToEthereum ||
-            (isConnectedToArbitrum.current && isSourceChainOrbit))
-        )
-      }
-
-      if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
-        trackEvent('Switch Network and Transfer', {
-          type: isTeleportMode
-            ? 'Teleport'
-            : isDepositMode
-            ? 'Deposit'
-            : 'Withdrawal',
-          tokenSymbol: selectedToken?.symbol,
-          assetType: selectedToken ? 'ERC-20' : 'ETH',
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: childChainName,
-          amount: Number(amount),
-          amount2: isBatchTransfer ? Number(amount2) : undefined,
-          version: 2
-        })
-
-        const switchTargetChainId = latestNetworks.current.sourceChain.id
-
-        await switchNetworkAsync?.(switchTargetChainId)
-
-        // keep checking till we know the connected chain-pair are correct for transfer
-        while (
-          depositRequiresChainSwitch() ||
-          withdrawalRequiresChainSwitch() ||
-          !latestEth.current ||
-          !arbTokenBridgeLoaded
-        ) {
-          await new Promise(r => setTimeout(r, 100))
-        }
-
-        await new Promise(r => setTimeout(r, 3000))
-      }
-
-      const sourceChainId = latestNetworks.current.sourceChain.id
       const destinationChainId = latestNetworks.current.destinationChain.id
 
       const sourceChainErc20Address = isDepositMode
@@ -1013,6 +944,57 @@ export function TransferPanel() {
     isCustomDestinationTransfer
   ])
 
+  const moveFundsButtonOnClick = async () => {
+    const isConnectedToTheWrongChain =
+      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
+
+    const sourceChainId = latestNetworks.current.sourceChain.id
+    const childChainName = getNetworkName(childChain.id)
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+    trackTransferButtonClick()
+
+    try {
+      setTransferring(true)
+      if (isConnectedToTheWrongChain) {
+        trackEvent('Switch Network and Transfer', {
+          type: isTeleportMode
+            ? 'Teleport'
+            : isDepositMode
+            ? 'Deposit'
+            : 'Withdrawal',
+          tokenSymbol: selectedToken?.symbol,
+          assetType: selectedToken ? 'ERC-20' : 'ETH',
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: childChainName,
+          amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined,
+          version: 2
+        })
+        await switchNetworkAsync?.(sourceChainId)
+      }
+    } catch (error) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+      return networkConnectionWarningToast()
+    } finally {
+      setTransferring(false)
+    }
+
+    if (!isTransferAllowed) {
+      return networkConnectionWarningToast()
+    }
+
+    if (isCctpTransfer) {
+      return transferCctp()
+    }
+    if (isDepositMode && selectedToken) {
+      return depositToken()
+    }
+    return transfer()
+  }
+
   return (
     <>
       <TokenApprovalDialog
@@ -1061,17 +1043,7 @@ export function TransferPanel() {
               variant="primary"
               loading={isTransferring}
               disabled={!transferReady.deposit}
-              onClick={() => {
-                trackTransferButtonClick()
-
-                if (isCctpTransfer) {
-                  transferCctp()
-                } else if (selectedToken) {
-                  depositToken()
-                } else {
-                  transfer()
-                }
-              }}
+              onClick={moveFundsButtonOnClick}
               style={{
                 borderColor: destinationChainUIcolor,
                 backgroundColor: `${destinationChainUIcolor}66`
@@ -1093,15 +1065,7 @@ export function TransferPanel() {
               variant="primary"
               loading={isTransferring}
               disabled={!transferReady.withdrawal}
-              onClick={() => {
-                trackTransferButtonClick()
-
-                if (isCctpTransfer) {
-                  transferCctp()
-                } else {
-                  transfer()
-                }
-              }}
+              onClick={moveFundsButtonOnClick}
               style={{
                 borderColor: destinationChainUIcolor,
                 backgroundColor: `${destinationChainUIcolor}66`
