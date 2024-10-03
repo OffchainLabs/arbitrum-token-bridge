@@ -28,8 +28,7 @@ jobs:
         run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js ${{ inputs.test_type }} | jq . --compact-output)" >> $GITHUB_OUTPUT
 
   test-e2e:
-    name: "Test E2E - ${{ matrix.test.name }}${{ matrix.test.type == 'orbit' && ' with L3' || ''}}"
-    needs: [load-e2e-files]
+    name: "Test E2E - ${{ matrix.test.name }}${{ matrix.test.type == 'orbit-eth' && ' with L3' matrix.test.type == 'orbit-custom' && ' with custom fee token' || ''}}"    needs: [load-e2e-files]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -92,14 +91,19 @@ jobs:
         uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
-          l3-node: ${{ matrix.test.type == 'orbit' }}
-          no-l3-token-bridge: ${{ matrix.test.type != 'orbit' }}
+          l3-node: ${{ matrix.test.type != 'regular' }}
+          no-l3-token-bridge: ${{ matrix.test.type == 'regular' }}
+          args: ${{ matrix.test.type == 'orbit-custom' && '--l3-fee-token' || '' }}
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # pin@v6.7.6
         with:
-          start: yarn start
-          command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.type == 'orbit' && ':orbit') || '' }} --browser chrome"
+          start: ${{ matrix.test.type == 'orbit-custom' && 'NEXT_PUBLIC_CUSTOM_FEE_TOKEN=true yarn start' || 'yarn start' }}
+          command: >-
+            ${{ 
+              (matrix.test.type != 'regular') && 'yarn test:e2e:orbit --browser chromium' ||
+              'yarn test:e2e --browser chromium'
+            }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
@@ -121,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ (matrix.test.type == 'cctp' && 'cctp') || (matrix.test.type == 'orbit' && 'l3') || 'regular'}}
+          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ (matrix.test.type == 'cctp' && 'cctp') || (matrix.test.type == 'orbit-eth' && 'l3') || (matrix.test.type == 'orbit-custom' && 'custom-fee-token') || 'regular'}}
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots

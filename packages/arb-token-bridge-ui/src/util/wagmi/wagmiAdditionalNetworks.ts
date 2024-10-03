@@ -11,7 +11,14 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
     id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: nativeTokenData ?? ether,
+    nativeCurrency:
+      nativeTokenData || process.env.NEXT_PUBLIC_CUSTOM_FEE_TOKEN === 'true'
+        ? {
+            name: 'testnode',
+            symbol: 'TN',
+            decimals: 18
+          }
+        : ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
