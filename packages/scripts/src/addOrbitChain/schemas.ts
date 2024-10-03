@@ -117,8 +117,8 @@ export const chainSchema = z
           };
         case 17000: // Holesky
           return {
-            rpcUrl: "https://rpc.holesky.org",
-            blockExplorer: "https://explorer.holesky.org",
+            rpcUrl: "https://ethereum-holesky-rpc.publicnode.com	",
+            blockExplorer: "https://holesky.etherscan.io/",
             chainId: 17000,
             name: "Holesky",
           };
