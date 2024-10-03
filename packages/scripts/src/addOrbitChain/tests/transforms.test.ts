@@ -2,8 +2,8 @@
 
 import fs from "fs";
 import path from "path";
-import { beforeEach, afterEach, describe, expect, it } from "vitest";
-import { IncomingChainData, OrbitChainsList } from "../schemas";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { IncomingChainData } from "../schemas";
 import {
   extractRawChainData,
   nameToSlug,

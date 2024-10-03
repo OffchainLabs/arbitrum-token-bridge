@@ -14,35 +14,13 @@ export const addressSchema = z.string().refine(isValidAddress, {
 
 export const urlSchema = z
   .string()
-  .refine(
-    (url) => {
-      try {
-        new URL(url);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    },
-    {
-      message: (url) => `Invalid URL format: ${url}`,
-    }
-  )
+  .url({ message: "Invalid URL format." })
   .refine((url) => url.startsWith("https://"), {
-    message: (url) => `URL must start with https://: ${url}`,
+    message: "URL must start with https://.",
   })
-  .refine(
-    (url) => {
-      const urlObj = new URL(url);
-      return urlObj.hostname !== "";
-    },
-    {
-      message: (url) => `URL must have a valid hostname: ${url}`,
-    }
-  )
   .refine((url) => !url.endsWith("/"), {
-    message: (url) => `URL must not have a trailing slash: ${url}`,
+    message: "URL must not have a trailing slash.",
   });
-
 export const colorHexSchema = z
   .string()
   .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid color hex");

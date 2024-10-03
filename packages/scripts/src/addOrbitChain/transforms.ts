@@ -1,12 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+import * as core from "@actions/core";
 import { warning } from "@actions/core";
 import axios from "axios";
 import * as fs from "fs";
-import * as core from "@actions/core";
-import orderedJson from "json-order";
 
+import {
+  commitChanges,
+  createBranch,
+  createPullRequest,
+  getContent,
+  getIssue,
+  updateContent,
+} from "./github";
 import {
   chainDataLabelToKey,
   IncomingChainData,
@@ -18,14 +25,6 @@ import {
   validateOrbitChain,
   validateOrbitChainsList,
 } from "./schemas";
-import {
-  commitChanges,
-  createBranch,
-  createPullRequest,
-  getContent,
-  getIssue,
-  updateContent,
-} from "./github";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg"];
 

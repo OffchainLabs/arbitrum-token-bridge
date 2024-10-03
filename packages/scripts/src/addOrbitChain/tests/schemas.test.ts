@@ -1,18 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import orbitChainsList from "../../../../arb-token-bridge-ui/src/util/orbitChainsData.json";
 import {
   addressSchema,
-  urlSchema,
+  bridgeUiConfigSchema,
+  chainSchema,
   colorHexSchema,
   descriptionSchema,
   ethBridgeSchema,
-  tokenBridgeSchema,
-  bridgeUiConfigSchema,
-  chainSchema,
-  validateOrbitChainsList,
   isValidAddress,
-  OrbitChain,
+  tokenBridgeSchema,
+  urlSchema,
+  validateOrbitChainsList,
 } from "../schemas";
-import orbitChainsList from "../../../../arb-token-bridge-ui/src/util/orbitChainsData.json";
 import { mockOrbitChain } from "./__mocks__/chainDataMocks";
 
 describe("Validation Functions", () => {
@@ -67,6 +66,8 @@ describe("Validation Functions", () => {
 
     it("should throw for invalid URLs", () => {
       expect(() => urlSchema.parse("http://example.com")).toThrow();
+      expect(() => urlSchema.parse("https://")).toThrow();
+      expect(() => urlSchema.parse("https://example.com/")).toThrow();
     });
   });
 
