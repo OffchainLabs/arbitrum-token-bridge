@@ -82,22 +82,34 @@ export function sanitizeQueryParams({
     isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
   ) {
-    if (sourceChainId === ChainId.Ethereum) {
-      return {
-        sourceChainId,
-        destinationChainId: ChainId.ArbitrumOne
-      }
-    }
-    if (sourceChainId === ChainId.Sepolia) {
-      return {
-        sourceChainId,
-        destinationChainId: ChainId.ArbitrumSepolia
-      }
-    }
-    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
-    return {
-      sourceChainId: sourceChainId,
-      destinationChainId: defaultDestinationChainId!
+    switch (sourceChainId) {
+      case ChainId.Ethereum:
+        return {
+          sourceChainId,
+          destinationChainId: ChainId.ArbitrumOne
+        }
+      case ChainId.ArbitrumOne:
+        return {
+          sourceChainId,
+          destinationChainId: ChainId.Ethereum
+        }
+      case ChainId.Sepolia:
+        return {
+          sourceChainId,
+          destinationChainId: ChainId.ArbitrumSepolia
+        }
+      case ChainId.ArbitrumSepolia:
+        return {
+          sourceChainId,
+          destinationChainId: ChainId.Sepolia
+        }
+      default:
+        const [defaultDestinationChainId] =
+          getDestinationChainIds(sourceChainId)
+        return {
+          sourceChainId: sourceChainId,
+          destinationChainId: defaultDestinationChainId!
+        }
     }
   }
 
