@@ -5,7 +5,7 @@ import {
   getArbitrumNetworks,
   registerCustomArbitrumNetwork
 } from '@arbitrum/sdk'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
@@ -396,13 +396,15 @@ export async function registerLocalNetwork() {
   try {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
+    rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
-    const l3LocalProvider = getProviderForChainId(ChainId.L3Local)
+    const l3LocalProvider = new StaticJsonRpcProvider(
+      localL3NetworkRpcUrl,
+      ChainId.L3Local
+    )
     const nativeCurrency = await fetchNativeCurrency({
       provider: l3LocalProvider
     })
-
-    rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
     registerCustomArbitrumNetwork(defaultL2Network)
     registerCustomArbitrumNetwork(
