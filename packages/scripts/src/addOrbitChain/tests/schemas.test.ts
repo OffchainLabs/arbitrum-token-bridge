@@ -62,12 +62,15 @@ describe("Validation Functions", () => {
   describe("urlSchema", () => {
     it("should validate correct URLs", () => {
       expect(() => urlSchema.parse("https://example.com")).not.toThrow();
+      expect(() => urlSchema.parse("https://example.com/")).not.toThrow();
+      expect(urlSchema.parse("https://example.com/")).toBe(
+        "https://example.com"
+      );
     });
 
     it("should throw for invalid URLs", () => {
       expect(() => urlSchema.parse("http://example.com")).toThrow();
       expect(() => urlSchema.parse("https://")).toThrow();
-      expect(() => urlSchema.parse("https://example.com/")).toThrow();
     });
   });
 

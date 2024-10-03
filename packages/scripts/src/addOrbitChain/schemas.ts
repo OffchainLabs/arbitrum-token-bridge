@@ -19,9 +19,8 @@ export const urlSchema = z
   .refine((url) => url.startsWith("https://"), {
     message: "URL must start with https://.",
   })
-  .refine((url) => !url.endsWith("/"), {
-    message: "URL must not have a trailing slash.",
-  });
+  .transform((url) => (url.endsWith("/") ? url.slice(0, -1) : url));
+
 export const colorHexSchema = z
   .string()
   .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid color hex");
