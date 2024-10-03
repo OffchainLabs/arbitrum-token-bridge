@@ -11,7 +11,7 @@ import { getNetworkName } from '../../util/networks'
 
 export function MoveFundsButton({
   onClick
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+}: Pick<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>) {
   const { layout } = useAppContextState()
   const { isTransferring } = layout
 
