@@ -1,4 +1,4 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -17,7 +17,11 @@ import {
   fetchErc20Allowance,
   fetchErc20ParentChainGatewayAddress
 } from '../util/TokenUtils'
-import { getAddressFromSigner, percentIncrease } from './utils'
+import {
+  getAddressFromSigner,
+  getChainIdFromProvider,
+  percentIncrease
+} from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
 // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
@@ -291,6 +295,17 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
     const erc20Bridger = await this.getBridger()
+    const signerChainId = await signer.getChainId()
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+    const destinationChainId = (
+      await this.destinationChainProvider.getNetwork()
+    ).chainId
+
+    if (signerChainId !== sourceChainId) {
+      throw new Error(
+        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
+      )
+    }
 
     const depositRequest = await erc20Bridger.getDepositRequest({
       parentProvider: this.sourceChainProvider,
@@ -306,6 +321,19 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       },
       ...overrides
     })
+
+    const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    const parentGatewayRouterAddressForChain =
+      getArbitrumNetwork(
+        destinationChainId
+      ).tokenBridge?.parentGatewayRouter.toLowerCase()
+
+    if (depositToAddress !== parentGatewayRouterAddressForChain) {
+      throw new Error(
+        `Wrong token gateway router address on parent chain. Expected ${parentGatewayRouterAddressForChain}, got ${depositToAddress} instead.`
+      )
+    }
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest

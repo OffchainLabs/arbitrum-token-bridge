@@ -1,4 +1,4 @@
-import { EthBridger } from '@arbitrum/sdk'
+import { EthBridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber } from 'ethers'
 import {
   ApproveNativeCurrencyEstimateGasProps,
@@ -9,7 +9,11 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { getAddressFromSigner, percentIncrease } from './utils'
+import {
+  getAddressFromSigner,
+  getChainIdFromProvider,
+  percentIncrease
+} from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { isExperimentalFeatureEnabled } from '../util'
@@ -106,6 +110,11 @@ export class EthDepositStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
+    const signerChainId = await signer.getChainId()
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+    const destinationChainId = (
+      await this.destinationChainProvider.getNetwork()
+    ).chainId
 
     const isDifferentDestinationAddress = isCustomDestinationAddressTx({
       sender: address,
@@ -118,7 +127,15 @@ export class EthDepositStarter extends BridgeTransferStarter {
       isDifferentDestinationAddress &&
       !isExperimentalFeatureEnabled('eth-custom-dest')
     ) {
-      throw 'Native currency transfers to a custom destination address are not supported yet.'
+      throw new Error(
+        'Native currency transfers to a custom destination address are not supported yet.'
+      )
+    }
+
+    if (signerChainId !== sourceChainId) {
+      throw new Error(
+        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
+      )
     }
 
     const depositRequest = isDifferentDestinationAddress
@@ -134,6 +151,17 @@ export class EthDepositStarter extends BridgeTransferStarter {
           amount,
           from: address
         })
+
+    const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    const inboxAddressForChain =
+      getArbitrumNetwork(destinationChainId).ethBridge.inbox.toLowerCase()
+
+    if (depositToAddress !== inboxAddressForChain) {
+      throw new Error(
+        `Wrong inbox address for destination chain. Expected ${inboxAddressForChain}, got ${depositToAddress} instead.`
+      )
+    }
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest

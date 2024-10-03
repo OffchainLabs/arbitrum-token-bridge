@@ -84,9 +84,15 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ signer, amount, destinationAddress }: TransferProps) {
+    const address = await getAddressFromSigner(signer)
+    const signerChainId = await signer.getChainId()
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    const address = await getAddressFromSigner(signer)
+    if (signerChainId !== sourceChainId) {
+      throw new Error(
+        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
+      )
+    }
 
     // cctp has an upper limit for transfer
     const burnLimit = await fetchPerMessageBurnLimit({

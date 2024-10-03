@@ -1,4 +1,4 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -188,6 +188,18 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+    const signerChainId = await signer.getChainId()
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+    const destinationChainId = (
+      await this.destinationChainProvider.getNetwork()
+    ).chainId
+
+    if (signerChainId !== sourceChainId) {
+      throw new Error(
+        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
+      )
+    }
+
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -196,8 +208,6 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       await this.getDestinationChainErc20Address()
 
     const address = await getAddressFromSigner(signer)
-
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     const isSmartContractWallet = await addressIsSmartContract(
       address,
@@ -218,6 +228,19 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       destinationAddress: destinationAddress ?? address,
       amount
     })
+
+    const withdrawToAddress = request.txRequest.to.toLowerCase()
+
+    const childGatewayRouterAddressForChain =
+      getArbitrumNetwork(
+        destinationChainId
+      ).tokenBridge?.childGatewayRouter.toLowerCase()
+
+    if (withdrawToAddress !== childGatewayRouterAddressForChain) {
+      throw new Error(
+        `Wrong token gateway router address on child chain. Expected ${childGatewayRouterAddressForChain}, got ${withdrawToAddress} instead.`
+      )
+    }
 
     const tx = await erc20Bridger.withdraw({
       ...request,
