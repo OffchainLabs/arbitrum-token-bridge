@@ -2,7 +2,8 @@ import { z } from "zod";
 import { ethers } from "ethers";
 import { getOctokit } from "@actions/github";
 
-export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614];
+export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000];
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export const isValidAddress = (address: string): boolean => {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -27,7 +28,7 @@ export const colorHexSchema = z
 
 export const descriptionSchema = z
   .string()
-  .max(130)
+  .max(190)
   .transform((desc) => (desc.endsWith(".") ? desc : `${desc}.`));
 
 export const ethBridgeSchema = z.object({
@@ -44,7 +45,7 @@ export const tokenBridgeSchema = z.object({
   parentGatewayRouter: addressSchema,
   parentMulticall: addressSchema.optional(),
   parentProxyAdmin: addressSchema,
-  parentWeth: addressSchema.optional(),
+  parentWeth: addressSchema,
   parentWethGateway: addressSchema,
   childCustomGateway: addressSchema,
   childErc20Gateway: addressSchema,
@@ -86,13 +87,8 @@ export const chainSchema = z
     name: z.string().min(1),
     slug: z.string().min(1),
     parentChainId: z.number().int().positive(),
-    partnerChainIDs: z.array(z.number().int().positive()).default([]),
     retryableLifetimeSeconds: z.number().int().positive().default(604800),
     tokenBridge: tokenBridgeSchema,
-    nitroGenesisBlock: z.number().int().nonnegative().default(0),
-    nitroGenesisL1Block: z.number().int().nonnegative().default(0),
-    depositTimeout: z.number().int().positive().default(1800000),
-    blockTime: z.number().positive().default(0.25),
     bridgeUiConfig: bridgeUiConfigSchema,
   })
   .superRefine(async (chain, ctx) => {
@@ -119,6 +115,13 @@ export const chainSchema = z
             chainId: 421614,
             name: "Arbitrum Sepolia",
           };
+        case 17000: // Holesky
+          return {
+            rpcUrl: "https://rpc.holesky.org",
+            blockExplorer: "https://explorer.holesky.org",
+            chainId: 17000,
+            name: "Holesky",
+          };
         default:
           throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
       }
@@ -141,8 +144,7 @@ export const chainSchema = z
       chain.tokenBridge.parentWethGateway,
     ].filter(
       (address): address is string =>
-        typeof address === "string" &&
-        address !== "0x0000000000000000000000000000000000000000"
+        typeof address === "string" && address !== ZERO_ADDRESS
     );
 
     const childAddressesToCheck = [
@@ -153,8 +155,7 @@ export const chainSchema = z
       chain.tokenBridge.childProxyAdmin,
     ].filter(
       (address): address is string =>
-        typeof address === "string" &&
-        address !== "0x0000000000000000000000000000000000000000"
+        typeof address === "string" && address !== ZERO_ADDRESS
     );
 
     const checkAddresses = async (
@@ -225,9 +226,9 @@ export const orbitChainsListSchema = z.object({
 export const incomingChainDataSchema = z.object({
   chainId: z.string().regex(/^\d+$/),
   name: z.string().min(1),
-  description: z.string().max(130),
+  description: descriptionSchema,
   chainLogo: z.string().url(),
-  color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
+  color: colorHexSchema,
   rpcUrl: z.string().url(),
   explorerUrl: z.string().url(),
   parentChainId: z.string().regex(/^\d+$/),

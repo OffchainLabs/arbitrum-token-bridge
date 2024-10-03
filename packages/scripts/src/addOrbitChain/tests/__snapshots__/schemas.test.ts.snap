@@ -34,6 +34,15 @@ exports[`Validation Functions > tokenBridgeSchema > should throw for invalid tok
     \\"expected\\": \\"string\\",
     \\"received\\": \\"undefined\\",
     \\"path\\": [
+      \\"parentWeth\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
       \\"parentWethGateway\\"
     ],
     \\"message\\": \\"Required\\"
@@ -107,6 +116,7 @@ exports[`Validation Functions > tokenBridgeSchema > should validate correct toke
   "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentMulticall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentProxyAdmin": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 }
 `;

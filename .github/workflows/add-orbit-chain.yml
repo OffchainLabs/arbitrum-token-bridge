@@ -1,8 +1,6 @@
 name: Add Orbit Chain
 
 on:
-  issues:
-    types: [opened]
   workflow_dispatch:
     inputs:
       issue_number:

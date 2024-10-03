@@ -26,7 +26,7 @@ import {
   validateOrbitChainsList,
 } from "./schemas";
 
-const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg"];
+const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 
 export const initializeAndFetchData = async (): Promise<void> => {
   core.startGroup("Initialization and Data Fetching");
@@ -306,7 +306,6 @@ export const transformIncomingDataToOrbitChain = (
     name: chainData.name,
     slug: nameToSlug(chainData.name),
     parentChainId,
-    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       parentCustomGateway: chainData.parentCustomGateway,
@@ -324,10 +323,6 @@ export const transformIncomingDataToOrbitChain = (
       childWeth: chainData.childWeth,
       childWethGateway: chainData.childWethGateway,
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: 0.25,
     bridgeUiConfig: {
       color: chainData.color,
       network: {

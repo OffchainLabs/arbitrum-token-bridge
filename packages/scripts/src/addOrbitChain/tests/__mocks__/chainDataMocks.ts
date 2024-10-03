@@ -228,7 +228,6 @@ export const mockOrbitChain: OrbitChain = {
   name: "Xai",
   slug: "xai",
   parentChainId: 42161,
-  partnerChainIDs: [],
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
     parentGatewayRouter: "0x22CCA5Dc96a4Ac1EC32c9c7C5ad4D66254a24C35",
@@ -239,16 +238,13 @@ export const mockOrbitChain: OrbitChain = {
     childCustomGateway: "0x96551194230725c72ACF8E9573B1382CCBC70635",
     parentWethGateway: "0x0000000000000000000000000000000000000000",
     childWethGateway: "0x0000000000000000000000000000000000000000",
+    parentWeth: "0x0000000000000000000000000000000000000000",
     childWeth: "0x0000000000000000000000000000000000000000",
     parentProxyAdmin: "0x041f85dd87c46b941dc9b15c6628b19ee5358485",
     childProxyAdmin: "0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E",
     parentMulticall: "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
     childMulticall: "0xEEC168551A85911Ec3A905e0561b656979f3ea67",
   },
-  nitroGenesisBlock: 0,
-  nitroGenesisL1Block: 0,
-  depositTimeout: 1800000,
-  blockTime: 0.25,
   bridgeUiConfig: {
     color: "#F30019",
     network: {

@@ -133,6 +133,7 @@ describe("Validation Functions", () => {
         childCustomGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
         parentWethGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
         childWethGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+        parentWeth: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
         childWeth: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
         parentProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
         childProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
