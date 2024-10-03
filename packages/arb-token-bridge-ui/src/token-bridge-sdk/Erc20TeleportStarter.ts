@@ -15,7 +15,8 @@ import { fetchErc20Allowance } from '../util/TokenUtils'
 import {
   getAddressFromSigner,
   getChainIdFromProvider,
-  percentIncrease
+  percentIncrease,
+  validateSignerChainId
 } from './utils'
 import { getL2ConfigForTeleport } from './teleport'
 
@@ -178,14 +179,11 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     }
 
     const address = await getAddressFromSigner(signer)
-    const signerChainId = await signer.getChainId()
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    if (signerChainId !== sourceChainId) {
-      throw new Error(
-        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
-      )
-    }
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
 
     const l2Provider = await this.getL2Provider()
 

@@ -12,7 +12,8 @@ import {
 import {
   getAddressFromSigner,
   getChainIdFromProvider,
-  percentIncrease
+  percentIncrease,
+  validateSignerChainId
 } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
@@ -110,8 +111,6 @@ export class EthDepositStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
-    const signerChainId = await signer.getChainId()
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
     const destinationChainId = (
       await this.destinationChainProvider.getNetwork()
     ).chainId
@@ -132,11 +131,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
       )
     }
 
-    if (signerChainId !== sourceChainId) {
-      throw new Error(
-        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
-      )
-    }
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
 
     const depositRequest = isDifferentDestinationAddress
       ? await ethBridger.getDepositToRequest({

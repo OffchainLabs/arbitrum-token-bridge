@@ -10,7 +10,8 @@ import {
 import {
   getAddressFromSigner,
   getChainIdFromProvider,
-  percentIncrease
+  percentIncrease,
+  validateSignerChainId
 } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { isExperimentalFeatureEnabled } from '../util'
@@ -54,8 +55,6 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await EthBridger.fromProvider(this.sourceChainProvider)
-    const signerChainId = await signer.getChainId()
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     // TODO: remove this when eth-custom-dest feature is live
     // this is a safety check, this shouldn't happen
@@ -66,11 +65,10 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
       throw 'Native currency withdrawals to a custom destination address are not supported yet.'
     }
 
-    if (signerChainId !== sourceChainId) {
-      throw new Error(
-        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
-      )
-    }
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
 
     const request = await ethBridger.getWithdrawalRequest({
       amount,

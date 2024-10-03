@@ -17,7 +17,8 @@ import {
 import {
   getAddressFromSigner,
   getChainIdFromProvider,
-  percentIncrease
+  percentIncrease,
+  validateSignerChainId
 } from './utils'
 import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
@@ -188,17 +189,15 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
-    const signerChainId = await signer.getChainId()
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
     const destinationChainId = (
       await this.destinationChainProvider.getNetwork()
     ).chainId
 
-    if (signerChainId !== sourceChainId) {
-      throw new Error(
-        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
-      )
-    }
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: sourceChainId
+    })
 
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')

@@ -12,7 +12,8 @@ import { getL2ConfigForTeleport } from './teleport'
 import {
   getAddressFromSigner,
   getChainIdFromProvider,
-  percentIncrease
+  percentIncrease,
+  validateSignerChainId
 } from './utils'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
@@ -110,14 +111,11 @@ export class EthTeleportStarter extends BridgeTransferStarter {
 
   public async transfer({ amount, signer }: TransferProps) {
     const address = await getAddressFromSigner(signer)
-    const signerChainId = await signer.getChainId()
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    if (signerChainId !== sourceChainId) {
-      throw new Error(
-        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
-      )
-    }
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
 
     const l2Provider = await this.getL2Provider()
 

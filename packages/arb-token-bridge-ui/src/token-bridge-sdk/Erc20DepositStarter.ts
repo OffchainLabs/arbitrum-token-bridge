@@ -20,7 +20,8 @@ import {
 import {
   getAddressFromSigner,
   getChainIdFromProvider,
-  percentIncrease
+  percentIncrease,
+  validateSignerChainId
 } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
@@ -295,17 +296,14 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
     const erc20Bridger = await this.getBridger()
-    const signerChainId = await signer.getChainId()
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
     const destinationChainId = (
       await this.destinationChainProvider.getNetwork()
     ).chainId
 
-    if (signerChainId !== sourceChainId) {
-      throw new Error(
-        `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
-      )
-    }
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
 
     const depositRequest = await erc20Bridger.getDepositRequest({
       parentProvider: this.sourceChainProvider,

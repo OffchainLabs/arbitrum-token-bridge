@@ -121,3 +121,24 @@ export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
 
   return createProviderWithCache(chainId)
 }
+
+export async function validateSignerChainId({
+  signer,
+  sourceChainIdOrProvider
+}: {
+  signer: Signer
+  sourceChainIdOrProvider: number | Provider
+}) {
+  const signerChainId = await signer.getChainId()
+
+  const sourceChainId =
+    typeof sourceChainIdOrProvider === 'number'
+      ? sourceChainIdOrProvider
+      : await getChainIdFromProvider(sourceChainIdOrProvider)
+
+  if (signerChainId !== sourceChainId) {
+    throw new Error(
+      `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
+    )
+  }
+}
