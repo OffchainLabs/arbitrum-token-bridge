@@ -99,10 +99,11 @@ jobs:
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # pin@v6.7.6
         with:
-          start: ${{ matrix.test.type == 'orbit-custom' && 'NEXT_PUBLIC_CUSTOM_FEE_TOKEN=true yarn start' || 'yarn start' }}
+          start: yarn start
           command: >-
             ${{ 
-              (matrix.test.type != 'regular') && 'yarn test:e2e:orbit --browser chromium' ||
+              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chromium' ||
+              (matrix.test.type == 'orbit-custom' && 'yarn test:e2e:orbit:custom-gas-token --browser chromium') ||
               'yarn test:e2e --browser chromium'
             }}
           wait-on: http://127.0.0.1:3000

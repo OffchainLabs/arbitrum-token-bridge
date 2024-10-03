@@ -5,20 +5,23 @@ import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
-  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
+  let { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
+
+  if (chain.chainId === ChainId.L3Local) {
+    nativeTokenData = chain.nativeToken
+      ? {
+          name: 'testnode',
+          symbol: 'TN',
+          decimals: 18
+        }
+      : ether
+  }
 
   return {
     id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency:
-      nativeTokenData || process.env.NEXT_PUBLIC_CUSTOM_FEE_TOKEN === 'true'
-        ? {
-            name: 'testnode',
-            symbol: 'TN',
-            decimals: 18
-          }
-        : ether,
+    nativeCurrency: nativeTokenData || ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]

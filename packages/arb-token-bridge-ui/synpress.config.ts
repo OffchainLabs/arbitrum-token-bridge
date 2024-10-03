@@ -32,6 +32,7 @@ import {
 import {
   defaultL2Network,
   defaultL3Network,
+  defaultL3CustomGasTokenNetwork,
   registerLocalNetwork
 } from './src/util/networks'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
@@ -40,19 +41,27 @@ const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
   : specFiles.map(file => file.file)
 
-const isOrbitTest = process.env.E2E_ORBIT == 'true'
+const isOrbitTest = [
+  process.env.E2E_ORBIT,
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+].includes('true')
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
+const l3Network =
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+    ? defaultL3CustomGasTokenNetwork
+    : defaultL3Network
+
 const l1WethGateway = isOrbitTest
-  ? defaultL3Network.tokenBridge!.parentWethGateway
+  ? l3Network.tokenBridge!.parentWethGateway
   : defaultL2Network.tokenBridge!.parentWethGateway
 
 let l1WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge!.parentWeth
+  ? l3Network.tokenBridge!.parentWeth
   : defaultL2Network.tokenBridge!.parentWeth
 
 let l2WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge!.childWeth
+  ? l3Network.tokenBridge!.childWeth
   : defaultL2Network.tokenBridge!.childWeth
 
 export default defineConfig({
@@ -60,7 +69,7 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
-      registerLocalNetwork()
+      await registerLocalNetwork()
 
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
@@ -130,9 +139,11 @@ export default defineConfig({
         bridger.nativeToken!
       )
 
-      await ethBridger.approveGasToken({
-        parentSigner: userWallet.connect(parentProvider)
-      })
+      if (isCustomFeeToken) {
+        await ethBridger.approveGasToken({
+          parentSigner: userWallet.connect(parentProvider)
+        })
+      }
 
       // Wrap ETH to test WETH transactions and approve it's usage
       await fundWeth('parentChain')
