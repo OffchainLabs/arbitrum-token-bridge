@@ -11,6 +11,7 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
+import { ProjectsListing } from '../common/ProjectsListing'
 
 function TransactionHistorySidePanel() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
@@ -59,6 +60,8 @@ export function MainContent() {
         <TransactionStatusInfo />
 
         <TransferPanel />
+
+        <ProjectsListing />
       </div>
 
       <TransactionHistorySidePanel />

@@ -36,3 +36,6 @@ export const MULTICALL_TESTNET_ADDRESS =
 export const ETHER_TOKEN_LOGO = '/images/EthereumLogoRound.svg'
 
 export const ether = { name: 'Ether', symbol: 'ETH', decimals: 18 } as const
+
+export const PORTAL_API_ENDPOINT =
+  'https://arbitrum-portal-git-fs-609-enhance-portal-be7f96-offchain-labs.vercel.app'
