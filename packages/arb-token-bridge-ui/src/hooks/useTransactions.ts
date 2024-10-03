@@ -193,7 +193,7 @@ function updateTxnParentToChildMsg(
 
   if (!(transaction.type === 'deposit' || transaction.type === 'deposit-l1')) {
     throw new Error(
-      "Attempting to add a parenttochildmsg to a tx that isn't a deposit:" +
+      "Attempting to add a parentToChildMsg to a tx that isn't a deposit:" +
         txID
     )
   }
