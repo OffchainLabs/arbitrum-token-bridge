@@ -533,6 +533,31 @@ export function getChildChainIds(chain: ArbitrumNetwork | L1Network) {
   return Array.from(new Set(childChainIds))
 }
 
+/**
+ * Sorts an array of chain IDs in ascending order (default) but keep core chains on top.
+ * This is helpful e.g. when we grab the default chain which is the first chain on top.
+ */
+export function sortChainIds(chainIds: number[]) {
+  return chainIds.sort((a, b) => {
+    const { isCoreChain: isCoreChainA } = isNetwork(a)
+    const { isCoreChain: isCoreChainB } = isNetwork(b)
+
+    if (isCoreChainA && isCoreChainB) {
+      // Both are core chains, sort in ascending order
+      return a - b
+    } else if (isCoreChainA) {
+      // Only A is core chain, it should come first
+      return -1
+    } else if (isCoreChainB) {
+      // Only B is core chain, it should come first
+      return 1
+    } else {
+      // Neither are core chains, sort in ascending order
+      return a - b
+    }
+  })
+}
+
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
   const chain = getChainByChainId(chainId)
 
@@ -545,9 +570,8 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
   const validDestinationChainIds = getChildChainIds(chain)
 
   if (parentChainId) {
-    // always make parent chain the first element
-    return [parentChainId, ...validDestinationChainIds]
+    return sortChainIds([parentChainId, ...validDestinationChainIds])
   }
 
-  return validDestinationChainIds
+  return sortChainIds(validDestinationChainIds)
 }
