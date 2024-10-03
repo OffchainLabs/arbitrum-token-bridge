@@ -82,6 +82,18 @@ export function sanitizeQueryParams({
     isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
   ) {
+    if (sourceChainId === ChainId.Ethereum) {
+      return {
+        sourceChainId,
+        destinationChainId: ChainId.ArbitrumOne
+      }
+    }
+    if (sourceChainId === ChainId.Sepolia) {
+      return {
+        sourceChainId,
+        destinationChainId: ChainId.ArbitrumSepolia
+      }
+    }
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
     return {
       sourceChainId: sourceChainId,
