@@ -182,6 +182,13 @@ export default defineConfig({
       config.env.L1_WETH_ADDRESS = l1WethAddress
       config.env.L2_WETH_ADDRESS = l2WethAddress
 
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken(
+          localWallet,
+          l3Network.tokenBridge?.childWethGateway!
+        )
+      }
+
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
 
@@ -239,9 +246,10 @@ if (!process.env.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
 
-// const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
 const localWallet = new Wallet(
-  utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+    ? utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
+    : process.env.PRIVATE_KEY_CUSTOM
 )
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
