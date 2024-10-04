@@ -112,9 +112,11 @@ export default defineConfig({
       const bridger = await Erc20Bridger.fromProvider(childProvider)
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
-
+      
+      console.log({ childProvider })
+      console.log({ isOrbitTest })
       console.log({ l3Network })
-      console.log('native token: ', bridger.nativeToken)
+      console.log('native token: ', ethBridger.nativeToken)
       console.log('process.env.E2E_ORBIT: ', process.env.E2E_ORBIT)
       console.log('process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ', process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN)
 
