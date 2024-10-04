@@ -12,6 +12,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
+import { TestWETH9 } from '@arbitrum/sdk/dist/lib/abi/TestWETH9'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './src/util/TokenUtils'
@@ -112,13 +113,16 @@ export default defineConfig({
       const bridger = await Erc20Bridger.fromProvider(childProvider)
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
-      
+
       console.log({ childProvider })
       console.log({ isOrbitTest })
       console.log({ l3Network })
       console.log('native token: ', ethBridger.nativeToken)
       console.log('process.env.E2E_ORBIT: ', process.env.E2E_ORBIT)
-      console.log('process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ', process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN)
+      console.log(
+        'process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ',
+        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+      )
 
       // Approve custom fee token if not ETH
       if (isCustomFeeToken) {
@@ -130,7 +134,7 @@ export default defineConfig({
       await fundUserWalletNativeCurrency()
 
       await fundErc20ToParentChain(l1ERC20Token)
-      await fundErc20ToChildChain(l1ERC20Token)
+      await fundErc20ToChildChain(l1ERC20Token, '5')
       await approveErc20(l1ERC20Token)
 
       if (
@@ -157,8 +161,12 @@ export default defineConfig({
 
       // Wrap ETH to test WETH transactions and approve it's usage
       await fundWeth('parentChain')
-      await fundWeth('childChain')
       await approveWeth()
+      // await fundWeth('childChain')
+      await fundErc20ToChildChain(
+        getWethContract(parentProvider, l1WethAddress),
+        '0.1'
+      )
 
       // Generate activity on chains so that assertions get posted and claims can be made
       generateActivityOnChains({
@@ -390,7 +398,7 @@ function getWethContract(
 
 async function fundWeth(networkType: NetworkType) {
   console.log(`Funding WETH: ${networkType}...`)
-  const amount = networkType === 'parentChain' ? '0.2' : '0.1'
+  const amount = networkType === 'parentChain' ? '0.3' : '0.1'
   const address = networkType === 'parentChain' ? l1WethAddress : l2WethAddress
   const provider =
     networkType === 'parentChain' ? parentProvider : childProvider
@@ -398,6 +406,10 @@ async function fundWeth(networkType: NetworkType) {
     value: utils.parseEther(amount)
   })
   await tx.wait()
+}
+
+async function depositWeth() {
+  console.log(`Depositing WETH...`)
 }
 
 async function approveWeth() {
@@ -430,7 +442,10 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
   await transferTx.wait()
 }
 
-async function fundErc20ToChildChain(l1ERC20Token: Contract) {
+async function fundErc20ToChildChain(
+  l1ERC20Token: Contract | TestWETH9,
+  amount: string
+) {
   console.log('Funding ERC20 on Child Chain...')
   // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
   await deployERC20ToChildChain(l1ERC20Token.address)
@@ -450,7 +465,7 @@ async function fundErc20ToChildChain(l1ERC20Token: Contract) {
     parentSigner,
     childProvider,
     erc20ParentAddress: l1ERC20Token.address,
-    amount: parseUnits('5', ERC20TokenDecimals),
+    amount: parseUnits(amount, ERC20TokenDecimals),
     destinationAddress: userWallet.address
   })
   const depositRec = await depositTx.wait()
