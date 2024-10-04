@@ -134,7 +134,7 @@ export default defineConfig({
       await fundUserWalletNativeCurrency()
 
       await fundErc20ToParentChain(l1ERC20Token)
-      await fundErc20ToChildChain(l1ERC20Token, '5')
+      await fundErc20ToChildChain(l1ERC20Token, '5', true)
       await approveErc20(l1ERC20Token)
 
       if (
@@ -165,7 +165,8 @@ export default defineConfig({
       // await fundWeth('childChain')
       await fundErc20ToChildChain(
         getWethContract(parentProvider, l1WethAddress),
-        '0.1'
+        '0.1',
+        false
       )
 
       // Generate activity on chains so that assertions get posted and claims can be made
@@ -444,14 +445,18 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
 
 async function fundErc20ToChildChain(
   l1ERC20Token: Contract | TestWETH9,
-  amount: string
+  amount: string,
+  deploy: boolean
 ) {
   console.log('Funding ERC20 on Child Chain...')
-  // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
-  await deployERC20ToChildChain(l1ERC20Token.address)
+  if (deploy) {
+    // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
+    await deployERC20ToChildChain(l1ERC20Token.address)
+  }
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
   const parentSigner = localWallet.connect(parentProvider)
 
+  console.log('approving..')
   // approve the ERC20 token for spending
   const approvalTx = await erc20Bridger.approveToken({
     erc20ParentAddress: l1ERC20Token.address,
@@ -459,6 +464,8 @@ async function fundErc20ToChildChain(
     amount: constants.MaxUint256
   })
   await approvalTx.wait()
+
+  console.log('depositing..')
 
   // deposit the ERC20 token to L2 (fund the L2 account)
   const depositTx = await erc20Bridger.deposit({
