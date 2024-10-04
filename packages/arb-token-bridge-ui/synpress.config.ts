@@ -110,7 +110,8 @@ export default defineConfig({
       const l1ERC20Token = await deployERC20ToParentChain()
 
       const bridger = await Erc20Bridger.fromProvider(childProvider)
-      const isCustomFeeToken = isNonZeroAddress(bridger.nativeToken)
+      const ethBridger = await EthBridger.fromProvider(childProvider)
+      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       console.log({ l3Network })
       console.log('native token: ', bridger.nativeToken)
@@ -138,8 +139,6 @@ export default defineConfig({
         l1WethAddress = wethAddresses.l1WethAddress
         l2WethAddress = wethAddresses.l2WethAddress
       }
-
-      const ethBridger = await EthBridger.fromProvider(childProvider)
 
       if (isCustomFeeToken) {
         await approveCustomFeeToken(
