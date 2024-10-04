@@ -112,7 +112,10 @@ export default defineConfig({
       const bridger = await Erc20Bridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(bridger.nativeToken)
 
+      console.log({ l3Network })
       console.log('native token: ', bridger.nativeToken)
+      console.log('process.env.E2E_ORBIT: ', process.env.E2E_ORBIT)
+      console.log('process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ', process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN)
 
       // Approve custom fee token if not ETH
       if (isCustomFeeToken) {
@@ -150,8 +153,6 @@ export default defineConfig({
           parentSigner: userWallet.connect(parentProvider)
         })
       }
-
-      console.log({ l3Network })
 
       // Wrap ETH to test WETH transactions and approve it's usage
       await fundWeth('parentChain')
