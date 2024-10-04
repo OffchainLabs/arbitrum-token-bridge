@@ -14,27 +14,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  check_issue_template:
-    runs-on: ubuntu-latest
-    outputs:
-      is_add_orbit_chain_request: ${{ steps.check_template.outputs.is_add_orbit_chain_request }}
-    steps:
-      - name: Check if issue uses Add Orbit Chain Request template
-        id: check_template
-        run: |
-          if [[ "${{ github.event.issue.title }}" == "[feat]: Add Orbit chain "* ]]; then
-            echo "is_add_orbit_chain_request=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_add_orbit_chain_request=false" >> $GITHUB_OUTPUT
-          fi
-
   add_orbit_chain:
-    needs: check_issue_template
-    if: |
-      (github.event_name == 'issues' && needs.check_issue_template.outputs.is_add_orbit_chain_request == 'true') ||
-      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,8 +28,8 @@ jobs:
           node-version: '18'
           cache: 'yarn'
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Build scripts
         run: yarn workspace scripts build

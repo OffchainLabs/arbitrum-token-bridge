@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { ethers } from "ethers";
+import { constants, ethers } from "ethers";
 import { getOctokit } from "@actions/github";
 
 export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000];
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const ZERO_ADDRESS = constants.AddressZero;
 
 export const isValidAddress = (address: string): boolean => {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -106,6 +106,13 @@ export const chainSchema = z
             blockExplorer: "https://arbiscan.io",
             chainId: 42161,
             name: "Arbitrum One",
+          };
+        case 11155111: // Sepolia
+          return {
+            rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com	",
+            blockExplorer: "https://sepolia.etherscan.io",
+            chainId: 11155111,
+            name: "Sepolia",
           };
         case 421614: // Arbitrum Sepolia
           return {
@@ -312,7 +319,7 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Explorer URL": "explorerUrl",
   "Parent chain ID": "parentChainId",
   confirmPeriodBlocks: "confirmPeriodBlocks",
-  "Native token address": "nativeTokenAddress",
+  "Native token address on Parent Chain": "nativeTokenAddress",
   "Native token name": "nativeTokenName",
   "Native token symbol": "nativeTokenSymbol",
   "Native token logo": "nativeTokenLogo",

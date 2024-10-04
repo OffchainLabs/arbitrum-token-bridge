@@ -442,7 +442,7 @@
         }
       }
     },
-    "4162": {
+    {
       "chainId": 4162,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
