@@ -109,11 +109,18 @@ export default defineConfig({
       // Deploy and fund ERC20 to Parent and Child chains
       const l1ERC20Token = await deployERC20ToParentChain()
 
+      const bridger = await Erc20Bridger.fromProvider(childProvider)
+      const isCustomFeeToken = isNonZeroAddress(bridger.nativeToken)
+
+      console.log('native token: ', bridger.nativeToken)
+
       // Approve custom fee token if not ETH
-      await approveCustomFeeToken(
-        localWallet.connect(parentProvider),
-        l1ERC20Token.address
-      )
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken(
+          localWallet.connect(parentProvider),
+          l1ERC20Token.address
+        )
+      }
       await fundUserWalletNativeCurrency()
 
       await fundErc20ToParentChain(l1ERC20Token)
@@ -129,21 +136,22 @@ export default defineConfig({
         l2WethAddress = wethAddresses.l2WethAddress
       }
 
-      const bridger = await Erc20Bridger.fromProvider(childProvider)
-      const isCustomFeeToken = typeof bridger.nativeToken !== 'undefined'
-
       const ethBridger = await EthBridger.fromProvider(childProvider)
 
-      await approveCustomFeeToken(
-        userWallet.connect(parentProvider),
-        bridger.nativeToken!
-      )
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken(
+          userWallet.connect(parentProvider),
+          bridger.nativeToken!
+        )
+      }
 
       if (isCustomFeeToken) {
         await ethBridger.approveGasToken({
           parentSigner: userWallet.connect(parentProvider)
         })
       }
+
+      console.log({ l3Network })
 
       // Wrap ETH to test WETH transactions and approve it's usage
       await fundWeth('parentChain')
@@ -265,13 +273,6 @@ async function approveCustomFeeToken(
   signer: Wallet,
   erc20ParentAddress: string
 ) {
-  const childEthBridger = await EthBridger.fromProvider(childProvider)
-  const isCustomFeeToken = typeof childEthBridger.nativeToken !== 'undefined'
-
-  if (!isCustomFeeToken) {
-    return
-  }
-
   console.log('Approving custom fee token...')
   const childErc20Bridger = await Erc20Bridger.fromProvider(childProvider)
 
@@ -332,8 +333,12 @@ async function deployERC20ToParentChain() {
   return l1TokenContract
 }
 
-function isNonZeroAddress(address: string) {
-  return address !== constants.AddressZero && utils.isAddress(address)
+function isNonZeroAddress(address: string | undefined) {
+  return (
+    typeof address === 'string' &&
+    address !== constants.AddressZero &&
+    utils.isAddress(address)
+  )
 }
 
 async function deployWeth(provider: StaticJsonRpcProvider) {
@@ -395,6 +400,7 @@ async function fundWeth(networkType: NetworkType) {
 
 async function approveWeth() {
   console.log('Approving WETH...')
+  console.log({ l1WethAddress })
   const tx = await getWethContract(parentProvider, l1WethAddress).approve(
     l1WethGateway,
     constants.MaxInt256
