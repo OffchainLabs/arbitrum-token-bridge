@@ -157,6 +157,10 @@ export default defineConfig({
         await ethBridger.approveGasToken({
           parentSigner: userWallet.connect(parentProvider)
         })
+        await bridger.approveGasToken({
+          parentSigner: userWallet.connect(parentProvider),
+          erc20ParentAddress: l1WethAddress
+        })
       }
 
       // Wrap ETH to test WETH transactions and approve it's usage
