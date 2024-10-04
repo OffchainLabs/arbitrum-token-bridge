@@ -239,7 +239,10 @@ if (!process.env.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
 
-const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
+// const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
+const localWallet = new Wallet(
+  utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
+)
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
 async function approveCustomFeeToken(
