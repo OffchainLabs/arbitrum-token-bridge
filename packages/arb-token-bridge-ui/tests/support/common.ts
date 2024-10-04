@@ -6,7 +6,11 @@ import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
-import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
+import {
+  defaultL2Network,
+  defaultL3Network,
+  defaultL3CustomGasTokenNetwork
+} from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
 
 export type NetworkType = 'parentChain' | 'childChain'
@@ -229,19 +233,30 @@ export async function generateActivityOnChains({
 
 export async function checkForAssertions({
   parentProvider,
-  isOrbitTest
+  testType
 }: {
   parentProvider: Provider
-  isOrbitTest: boolean
+  testType: 'regular' | 'orbit-eth' | 'orbit-custom'
 }) {
+  console.log('Checking for assertions...')
+
   const abi = [
     'function latestConfirmed() public view returns (uint64)',
     'function latestNodeCreated() public view returns (uint64)'
   ]
 
-  const rollupAddress = isOrbitTest
-    ? defaultL3Network.ethBridge.rollup
-    : defaultL2Network.ethBridge.rollup
+  let rollupAddress: string
+
+  switch (testType) {
+    case 'orbit-eth':
+      rollupAddress = defaultL3Network.ethBridge.rollup
+      break
+    case 'orbit-custom':
+      rollupAddress = defaultL3CustomGasTokenNetwork.ethBridge.rollup
+      break
+    default:
+      rollupAddress = defaultL2Network.ethBridge.rollup
+  }
 
   const rollupContract = new ethers.Contract(rollupAddress, abi, parentProvider)
 
