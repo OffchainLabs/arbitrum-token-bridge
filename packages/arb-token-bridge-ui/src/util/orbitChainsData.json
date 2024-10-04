@@ -441,6 +441,56 @@
           "description": "MindChain is the 1st FHE consensus chain for Mind Network, serving billions in voted TVL and millions of voters from AI partners."
         }
       }
+    },
+    "4162": {
+      "chainId": 4162,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xa104C0426e95a5538e89131DbB4163d230C35f86",
+        "inbox": "0xEa83E8907C89Bc0D9517632f0ba081972E328631",
+        "outbox": "0xB360b2f57c645E847148d7C479b7468AbF6F707d",
+        "rollup": "0x36c6C69A6186D4475fc5c21181CD980Bd6E5e11F",
+        "sequencerInbox": "0xD80a805c86C14c879420eC6acb366D04D318fC0C"
+      },
+      "nativeToken": "0xbe9F61555F50DD6167f2772e9CF7519790d96624",
+      "explorerUrl": "https://explorerl2.sx.technology",
+      "rpcUrl": "https://rpc-rollup.sx.technology",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "SX",
+      "slug": "sx",
+      "parentChainId": 1,
+      "retryableLifetimeSeconds": 604800,
+      "tokenBridge": {
+        "parentCustomGateway": "0x54F4853fDfC80F6bA4e66a7946c2B9086B1dE45F",
+        "parentErc20Gateway": "0xB4968C66BECc8fb4f73b50354301c1aDb2Abaa91",
+        "parentGatewayRouter": "0x5F00446D785421d65B50c192D7129e3C3906438A",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0xe8606A55d105EF857F187C32Ae0E9a168aF8F497",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xe52a0d0da09392fCD363457e8D719a32DB80A655",
+        "childErc20Gateway": "0x214474E5399cc4C003A990E28a4379A1f1b64eE7",
+        "childGatewayRouter": "0xb77b85Bc59f7C48C21Aa32c6230CD4262Fa79f5b",
+        "childMultiCall": "0x0bf69D86597181af32820dfEB30dea20263040Bb",
+        "childProxyAdmin": "0x9B338812Fe3A88691D0378B995A01f062341BC38",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#2196F3",
+        "network": {
+          "name": "SX",
+          "logo": "/images/sxLogo.png",
+          "description": "The chain that powers SX Bet, the lowest vig sports betting platform in the world."
+        },
+        "nativeTokenData": {
+          "name": "SX Network",
+          "symbol": "SX",
+          "decimals": 18,
+          "logoUrl": "/images/sxTokenLogo.png"
+        }
+      }
     }
   ],
   "testnet": [
