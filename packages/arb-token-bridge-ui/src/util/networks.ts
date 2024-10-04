@@ -5,12 +5,10 @@ import {
   getArbitrumNetworks,
   registerCustomArbitrumNetwork
 } from '@arbitrum/sdk'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
-import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
 
 export enum ChainId {
   // L1
@@ -398,17 +396,9 @@ export async function registerLocalNetwork() {
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
     rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
-    const l3LocalProvider = new StaticJsonRpcProvider(
-      localL3NetworkRpcUrl,
-      ChainId.L3Local
-    )
-    const nativeCurrency = await fetchNativeCurrency({
-      provider: l3LocalProvider
-    })
-
     registerCustomArbitrumNetwork(defaultL2Network)
     registerCustomArbitrumNetwork(
-      nativeCurrency.isCustom
+      process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
         ? defaultL3CustomGasTokenNetwork
         : defaultL3Network
     )
