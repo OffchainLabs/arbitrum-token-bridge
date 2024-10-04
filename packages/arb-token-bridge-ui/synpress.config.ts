@@ -184,7 +184,7 @@ export default defineConfig({
 
       if (isCustomFeeToken) {
         await approveCustomFeeToken(
-          localWallet,
+          userWallet.connect(parentProvider),
           l3Network.tokenBridge?.childWethGateway!
         )
       }
