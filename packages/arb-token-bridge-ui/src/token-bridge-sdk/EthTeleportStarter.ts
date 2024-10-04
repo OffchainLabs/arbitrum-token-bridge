@@ -11,7 +11,6 @@ import {
 import { getL2ConfigForTeleport } from './teleport'
 import {
   getAddressFromSigner,
-  getChainIdFromProvider,
   percentIncrease,
   validateSignerChainId
 } from './utils'

@@ -19,7 +19,6 @@ import {
 } from '../util/TokenUtils'
 import {
   getAddressFromSigner,
-  getChainIdFromProvider,
   percentIncrease,
   validateSignerChainId
 } from './utils'

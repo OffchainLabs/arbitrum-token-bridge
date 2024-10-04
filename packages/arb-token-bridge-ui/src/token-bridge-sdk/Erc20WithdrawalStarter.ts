@@ -190,9 +190,6 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-    const destinationChainId = (
-      await this.destinationChainProvider.getNetwork()
-    ).chainId
 
     await validateSignerChainId({
       signer,
@@ -232,7 +229,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const childGatewayRouterAddressForChain =
       getArbitrumNetwork(
-        destinationChainId
+        sourceChainId
       ).tokenBridge?.childGatewayRouter.toLowerCase()
 
     if (withdrawToAddress !== childGatewayRouterAddressForChain) {

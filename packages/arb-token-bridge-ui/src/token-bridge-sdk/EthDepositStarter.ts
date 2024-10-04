@@ -11,7 +11,6 @@ import {
 } from './BridgeTransferStarter'
 import {
   getAddressFromSigner,
-  getChainIdFromProvider,
   percentIncrease,
   validateSignerChainId
 } from './utils'
