@@ -1,6 +1,6 @@
 name: Add Orbit Chain Request
 description: File a request to have your Orbit chain added to the bridge
-title: "[feat]: "
+title: "[feat]: add Orbit chain "
 labels: ["feat", "triage"]
 body:
   - type: markdown
@@ -78,7 +78,7 @@ body:
   - type: input
     id: native-token-address
     attributes:
-      label: Native token address
+      label: Native token address on Parent Chain
       placeholder: ex. 0x0000000000000000000000000000000000000000
     validations:
       required: false
@@ -177,6 +177,7 @@ body:
     id: parent-ERC20Gateway
     attributes:
       label: ERC20Gateway
+      description: This is also called the standard gateway. [Read more](https://docs.arbitrum.io/build-decentralized-apps/token-bridging/token-bridge-erc20#default-standard-bridging).
     validations:
       required: true
   - type: input
