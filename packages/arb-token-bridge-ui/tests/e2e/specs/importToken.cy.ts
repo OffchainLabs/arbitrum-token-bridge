@@ -15,6 +15,7 @@ const ERC20TokenAddressL2: string = Cypress.env(
 )
 
 describe('Import token', () => {
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   // we use mainnet to test token lists
 
   context('User import token through UI', () => {
@@ -76,7 +77,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findSelectTokenButton('ETH').click()
+        cy.findSelectTokenButton(nativeTokenSymbol).click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -100,7 +101,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findSelectTokenButton('ETH').click()
+        cy.findSelectTokenButton(nativeTokenSymbol).click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -136,7 +137,7 @@ describe('Import token', () => {
         const addressWithoutLastChar = ERC20TokenAddressL1.slice(0, -1) // Remove the last character
 
         cy.login({ networkType: 'parentChain' })
-        cy.findSelectTokenButton('ETH').click()
+        cy.findSelectTokenButton(nativeTokenSymbol).click()
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
@@ -261,7 +262,7 @@ describe('Import token', () => {
           .trigger('click', {
             force: true
           })
-        cy.findSelectTokenButton('ETH')
+        cy.findSelectTokenButton(nativeTokenSymbol)
 
         // Modal is closed
         cy.findByRole('button', { name: 'Dialog Cancel' }).should('not.exist')

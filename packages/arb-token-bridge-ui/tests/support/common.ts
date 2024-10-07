@@ -98,8 +98,11 @@ export const ERC20TokenSymbol = 'TESTARB'
 export const ERC20TokenDecimals = 18
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
-export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const moreThanZeroBalance = /0(\.\d+)/
+
+export function getZeroToLessThanOneNativeToken(symbol: string) {
+  return new RegExp(`0(\\.\\d+)*( ${symbol})`)
+}
 
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)

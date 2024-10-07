@@ -44,12 +44,12 @@ const tests = process.env.TEST_FILE
 
 const isOrbitTest = [
   process.env.E2E_ORBIT,
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+  process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN
 ].includes('true')
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
 const l3Network =
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+  process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
     ? defaultL3CustomGasTokenNetwork
     : defaultL3Network
 
@@ -114,27 +114,28 @@ export default defineConfig({
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
-      console.log({ childProvider })
-      console.log({ isOrbitTest })
-      console.log({ l3Network })
-      console.log('native token: ', ethBridger.nativeToken)
-      console.log('process.env.E2E_ORBIT: ', process.env.E2E_ORBIT)
-      console.log(
-        'process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ',
-        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
-      )
-
       // Approve custom fee token if not ETH
       if (isCustomFeeToken) {
         await approveCustomFeeToken(
           localWallet.connect(parentProvider),
           l1ERC20Token.address
         )
+        await approveCustomFeeToken(
+          localWallet.connect(parentProvider),
+          bridger.nativeToken!
+        )
+        await ethBridger.approveGasToken({
+          parentSigner: localWallet.connect(parentProvider)
+        })
       }
       await fundUserWalletNativeCurrency()
 
       await fundErc20ToParentChain(l1ERC20Token)
-      await fundErc20ToChildChain(l1ERC20Token, '5', true)
+      await fundErc20ToChildChain(
+        l1ERC20Token.address,
+        localWallet.connect(parentProvider),
+        '5'
+      )
       await approveErc20(l1ERC20Token)
 
       if (
@@ -167,10 +168,22 @@ export default defineConfig({
       await fundWeth('parentChain')
       await approveWeth()
       // await fundWeth('childChain')
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken(
+          userWallet.connect(parentProvider),
+          l1WethAddress
+        )
+      }
+
+      const wethBal = await getWethContract(
+        parentProvider,
+        l1WethAddress
+      ).balanceOf(userWallet.address)
+
       await fundErc20ToChildChain(
-        getWethContract(parentProvider, l1WethAddress),
-        '0.1',
-        false
+        l1WethAddress,
+        userWallet.connect(parentProvider),
+        '0.1'
       )
 
       // Generate activity on chains so that assertions get posted and claims can be made
@@ -183,7 +196,7 @@ export default defineConfig({
       checkForAssertions({
         parentProvider,
         testType:
-          process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+          process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
             ? 'orbit-custom'
             : process.env.E2E_ORBIT === 'true'
             ? 'orbit-eth'
@@ -201,6 +214,7 @@ export default defineConfig({
       config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
+      config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
@@ -278,7 +292,7 @@ if (!process.env.PRIVATE_KEY_USER) {
 }
 
 const localWallet = new Wallet(
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+  process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN
     ? utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
     : process.env.PRIVATE_KEY_CUSTOM
 )
@@ -448,34 +462,28 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
 }
 
 async function fundErc20ToChildChain(
-  l1ERC20Token: Contract | TestWETH9,
-  amount: string,
-  deploy: boolean
+  parentErc20Address: string,
+  signer: Wallet,
+  amount: string
 ) {
-  console.log('Funding ERC20 on Child Chain...')
-  if (deploy) {
-    // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
-    await deployERC20ToChildChain(l1ERC20Token.address)
-  }
-  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
-  const parentSigner = localWallet.connect(parentProvider)
+  // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
+  await deployERC20ToChildChain(parentErc20Address)
 
-  console.log('approving..')
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  const parentSigner = signer
+
   // approve the ERC20 token for spending
   const approvalTx = await erc20Bridger.approveToken({
-    erc20ParentAddress: l1ERC20Token.address,
+    erc20ParentAddress: parentErc20Address,
     parentSigner,
     amount: constants.MaxUint256
   })
   await approvalTx.wait()
 
-  console.log('depositing..')
-
-  // deposit the ERC20 token to L2 (fund the L2 account)
   const depositTx = await erc20Bridger.deposit({
     parentSigner,
     childProvider,
-    erc20ParentAddress: l1ERC20Token.address,
+    erc20ParentAddress: parentErc20Address,
     amount: parseUnits(amount, ERC20TokenDecimals),
     destinationAddress: userWallet.address
   })

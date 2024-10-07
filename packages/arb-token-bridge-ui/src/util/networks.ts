@@ -396,9 +396,11 @@ export async function registerLocalNetwork() {
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
     rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
+      
+    console.log('process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ', process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true')
     registerCustomArbitrumNetwork(defaultL2Network)
     registerCustomArbitrumNetwork(
-      process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+      process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
         ? defaultL3CustomGasTokenNetwork
         : defaultL3Network
     )

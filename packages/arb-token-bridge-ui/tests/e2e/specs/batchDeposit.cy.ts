@@ -6,7 +6,7 @@ import {
   getL1NetworkName,
   getL2NetworkConfig,
   getL2NetworkName,
-  zeroToLessThanOneETH
+  getZeroToLessThanOneNativeToken
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
@@ -15,6 +15,10 @@ describe('Batch Deposit', () => {
     parentErc20Balance,
     childNativeTokenBalance,
     childErc20Balance: string
+
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const zeroToLessThanOneNativeToken =
+    getZeroToLessThanOneNativeToken(nativeTokenSymbol)
 
   beforeEach(() => {
     getInitialERC20Balance({
@@ -49,7 +53,7 @@ describe('Batch Deposit', () => {
     })
     cy.findSourceChainButton(getL1NetworkName())
     cy.findDestinationChainButton(getL2NetworkName())
-    cy.findSelectTokenButton('ETH')
+    cy.findSelectTokenButton(nativeTokenSymbol)
   })
 
   it('should deposit erc-20 and native currency to the same address', () => {
@@ -81,7 +85,9 @@ describe('Batch Deposit', () => {
     })
 
     context('native currency balance on child chain should not exist', () => {
-      cy.findByLabelText(`ETH balance amount on childChain`).should('not.exist')
+      cy.findByLabelText(
+        `${nativeTokenSymbol} balance amount on childChain`
+      ).should('not.exist')
     })
 
     context('amount2 input should not exist', () => {
@@ -99,7 +105,7 @@ describe('Batch Deposit', () => {
     })
 
     context('native currency balance on child chain should show', () => {
-      cy.findByLabelText(`ETH balance amount on childChain`)
+      cy.findByLabelText(`${nativeTokenSymbol} balance amount on childChain`)
         .should('be.visible')
         .contains(childNativeTokenBalance)
     })
@@ -111,9 +117,9 @@ describe('Batch Deposit', () => {
     context('should show gas estimations and summary', () => {
       cy.typeAmount(ERC20AmountToSend)
       cy.typeAmount2(nativeCurrencyAmountToSend)
-      cy.findGasFeeSummary(zeroToLessThanOneETH)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+      cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
+      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneNativeToken)
+      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     })
 
     const txData = {
@@ -154,7 +160,7 @@ describe('Batch Deposit', () => {
         .invoke('text')
         .then(parseFloat)
         .should('be.gt', Number(parentErc20Balance))
-      cy.findByLabelText(`ETH balance amount on childChain`)
+      cy.findByLabelText(`${nativeTokenSymbol} balance amount on childChain`)
         .invoke('text')
         .then(parseFloat)
         .should(
@@ -217,14 +223,14 @@ describe('Batch Deposit', () => {
     context('should show gas estimations and summary', () => {
       cy.typeAmount(ERC20AmountToSend)
       cy.typeAmount2(nativeCurrencyAmountToSend)
-      cy.findGasFeeSummary(zeroToLessThanOneETH)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+      cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
+      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneNativeToken)
+      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     })
 
     const txData = {
       symbol: ERC20TokenSymbol,
-      symbol2: 'ETH',
+      symbol2: nativeTokenSymbol,
       amount: ERC20AmountToSend,
       amount2: nativeCurrencyAmountToSend
     }
