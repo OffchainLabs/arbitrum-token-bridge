@@ -222,6 +222,12 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           'grid grid-cols-[260px_auto] items-center text-sm font-light'
         )}
       >
+        <span>
+          custom gas token?:{' '}
+          {process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+            ? 'true'
+            : 'false'}
+        </span>
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">

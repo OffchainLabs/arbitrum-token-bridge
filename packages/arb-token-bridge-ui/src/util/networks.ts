@@ -345,7 +345,7 @@ export const defaultL3Network: ArbitrumNetwork = {
   }
 }
 
-export const defaultL3CustomGasTokenNetwork = {
+export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
   chainId: 333333,
   parentChainId: ChainId.ArbitrumLocal,
   confirmPeriodBlocks: 20,
