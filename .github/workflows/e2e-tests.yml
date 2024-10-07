@@ -102,9 +102,9 @@ jobs:
           start: yarn start
           command: >-
             ${{ 
-              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chromium' ||
-              (matrix.test.type == 'orbit-custom' && 'yarn test:e2e:orbit:custom-gas-token --browser chromium') ||
-              'yarn test:e2e --browser chromium'
+              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
+              (matrix.test.type == 'orbit-custom' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
+              'yarn test:e2e --browser chrome'
             }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
