@@ -109,7 +109,7 @@ export const chainSchema = z
           };
         case 11155111: // Sepolia
           return {
-            rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com	",
+            rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
             blockExplorer: "https://sepolia.etherscan.io",
             chainId: 11155111,
             name: "Sepolia",
