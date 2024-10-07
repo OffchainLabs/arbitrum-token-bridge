@@ -8,6 +8,7 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { SelectorMatcherOptions } from '@testing-library/cypress'
 import {
   NetworkType,
   NetworkName,
@@ -16,6 +17,7 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -176,10 +178,20 @@ export function findAmountInput(): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy.findByLabelText('Amount input')
 }
 
+export function findAmount2Input(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findByLabelText('Amount2 input')
+}
+
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findAmountInput().type(String(amount))
+  return cy.findAmountInput().scrollIntoView().type(String(amount))
+}
+
+export function typeAmount2(
+  amount: string | number
+): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy.findAmount2Input().scrollIntoView().type(String(amount))
 }
 
 export function findSourceChainButton(
@@ -250,12 +262,21 @@ export function closeTransactionHistoryPanel() {
 
 export function openTransactionDetails({
   amount,
-  symbol
+  amount2,
+  symbol,
+  symbol2
 }: {
   amount: number
+  amount2?: number
   symbol: string
+  symbol2: string
 }): Cypress.Chainable<JQuery<HTMLElement>> {
-  cy.findTransactionInTransactionHistory({ amount, symbol }).within(() => {
+  cy.findTransactionInTransactionHistory({
+    amount,
+    amount2,
+    symbol,
+    symbol2
+  }).within(() => {
     cy.findByLabelText('Transaction details button').click()
   })
   return cy.findByText('Transaction details').should('be.visible')
@@ -278,18 +299,26 @@ export function findTransactionDetailsCustomDestinationAddress(
 
 export function findTransactionInTransactionHistory({
   symbol,
+  symbol2,
   amount,
+  amount2,
   duration
 }: {
   symbol: string
+  symbol2?: string
   amount: number
+  amount2?: number
   duration?: string
 }) {
   // Replace . with \.
   const parsedAmount = amount.toString().replace(/\./g, '\\.')
+
   const rowId = new RegExp(
-    `(claimable|deposit)-row-[0-9xabcdef]*-${parsedAmount}${symbol}`
+    `(claimable|deposit)-row-[0-9xabcdef]*-${parsedAmount}${symbol}${
+      amount2 && symbol2 ? `-${amount2}${symbol2}` : ''
+    }`
   )
+
   cy.findByTestId(rowId).as('row')
   if (duration) {
     cy.get('@row').findAllByText(duration).first().should('be.visible')
@@ -302,8 +331,13 @@ export function findTransactionInTransactionHistory({
 }
 
 export function findClaimButton(
-  amountToClaim: string
+  amountToClaim: string,
+  options?: SelectorMatcherOptions
 ): Cypress.Chainable<JQuery<HTMLElement>> {
+  if (options) {
+    return cy.findByLabelText(`Claim ${amountToClaim}`, options)
+  }
+
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
@@ -327,6 +361,25 @@ export function confirmSpending(
   })
 }
 
+export function claimCctp(amount: number, options: { accept: boolean }) {
+  const formattedAmount = formatAmount(amount, {
+    symbol: 'USDC'
+  })
+  cy.openTransactionsPanel('pending')
+  cy.findTransactionInTransactionHistory({
+    amount,
+    symbol: 'USDC'
+  })
+  cy.findClaimButton(formattedAmount, { timeout: 120_000 }).click()
+  if (options.accept) {
+    cy.confirmMetamaskTransaction(undefined)
+    cy.findByLabelText('show settled transactions').should('be.visible').click()
+    cy.findByText(formattedAmount).should('be.visible')
+  } else {
+    cy.rejectMetamaskTransaction()
+  }
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -336,7 +389,9 @@ Cypress.Commands.addAll({
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  typeAmount2,
   findAmountInput,
+  findAmount2Input,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeForChain,
@@ -349,5 +404,6 @@ Cypress.Commands.addAll({
   findTransactionInTransactionHistory,
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
-  confirmSpending
+  confirmSpending,
+  claimCctp
 })
