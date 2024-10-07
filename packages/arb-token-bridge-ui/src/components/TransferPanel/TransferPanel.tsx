@@ -9,7 +9,6 @@ import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { getNetworkName } from '../../util/networks'
-import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
@@ -20,7 +19,7 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
-import { useAppContextActions, useAppContextState } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { isGatewayRegistered } from '../../util/TokenUtils'
@@ -49,9 +48,7 @@ import {
   useTokenFromSearchParams
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
-import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
@@ -77,6 +74,7 @@ import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
 import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
+import { MoveFundsButton } from './MoveFundsButton'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -112,8 +110,6 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const { layout } = useAppContextState()
-  const { isTransferring } = layout
   const { address: walletAddress } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -182,13 +178,8 @@ export function TransferPanel() {
 
   const [isCctp, setIsCctp] = useState(false)
 
-  const { transferReady } = useTransferReadiness()
-
   const { destinationAddressError } = useDestinationAddressError()
 
-  const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
-    networks.destinationChain.id
-  )
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
   function closeWithResetTokenImportDialog() {
@@ -1011,53 +1002,7 @@ export function TransferPanel() {
           amount={parseFloat(amount)}
           token={selectedToken}
         />
-        <div className="transfer-panel-stats">
-          {isDepositMode ? (
-            <Button
-              variant="primary"
-              loading={isTransferring}
-              disabled={!transferReady.deposit}
-              onClick={moveFundsButtonOnClick}
-              style={{
-                borderColor: destinationChainUIcolor,
-                backgroundColor: `${destinationChainUIcolor}66`
-              }}
-              className={twMerge(
-                'w-full border bg-eth-dark py-3 text-lg',
-                'disabled:!border-white/10 disabled:!bg-white/10',
-                'lg:text-2xl'
-              )}
-            >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(
-                    networks.destinationChain.id
-                  )}`}
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              loading={isTransferring}
-              disabled={!transferReady.withdrawal}
-              onClick={moveFundsButtonOnClick}
-              style={{
-                borderColor: destinationChainUIcolor,
-                backgroundColor: `${destinationChainUIcolor}66`
-              }}
-              className={twMerge(
-                'w-full border py-3 text-lg',
-                'disabled:!border-white/10 disabled:!bg-white/10',
-                'lg:text-2xl'
-              )}
-            >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(
-                    networks.destinationChain.id
-                  )}`}
-            </Button>
-          )}
-        </div>
+        <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportDialog
