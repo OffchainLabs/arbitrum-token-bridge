@@ -72,6 +72,12 @@ describe('Withdraw ETH', () => {
         })
           .should('be.visible')
           .click()
+
+        cy.findByRole('switch', {
+          name: /possible the committee fails/i
+        })
+          .should('be.visible')
+          .click()
         // the Continue withdrawal button should not be disabled now
         cy.findByRole('button', {
           name: /Continue/i
