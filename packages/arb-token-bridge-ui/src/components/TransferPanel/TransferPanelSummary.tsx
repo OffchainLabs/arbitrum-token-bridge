@@ -228,6 +228,10 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             ? 'true'
             : 'false'}
         </span>
+        <span>
+          custom gas token value:{' '}
+          {process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN}
+        </span>
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">

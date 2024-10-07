@@ -99,7 +99,7 @@ jobs:
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # pin@v6.7.6
         with:
-          start: NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN=${{ matrix.test.type == 'orbit-custom' && 'true' || 'false' }} yarn start
+          start: yarn start
           command: >-
             ${{ 
               (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
@@ -122,6 +122,7 @@ jobs:
           NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
           NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://127.0.0.1:8547
           NEXT_PUBLIC_LOCAL_L3_RPC_URL: http://127.0.0.1:3347
+          NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN=${{ matrix.test.type == 'orbit-custom' && 'true' || 'false' }}
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@v4
