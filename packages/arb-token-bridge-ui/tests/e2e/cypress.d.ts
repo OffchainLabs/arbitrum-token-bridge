@@ -8,7 +8,9 @@ import {
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
+  typeAmount2,
   findAmountInput,
+  findAmount2Input,
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeSummary,
@@ -22,7 +24,8 @@ import {
   findClaimButton,
   selectTransactionsPanelTab,
   confirmSpending,
-  closeTransactionHistoryPanel
+  closeTransactionHistoryPanel,
+  claimCctp
 } from '../support/commands'
 
 declare global {
@@ -47,7 +50,9 @@ declare global {
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
       typeAmount: typeof typeAmount
+      typeAmount2: typeof typeAmount2
       findAmountInput: typeof findAmountInput
+      findAmount2Input: typeof findAmount2Input
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
       findGasFeeForChain: typeof findGasFeeForChain
@@ -61,6 +66,7 @@ declare global {
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
       confirmSpending: typeof confirmSpending
+      claimCctp: typeof claimCctp
     }
   }
 }

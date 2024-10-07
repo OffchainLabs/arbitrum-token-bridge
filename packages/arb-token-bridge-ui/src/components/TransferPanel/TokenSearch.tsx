@@ -38,7 +38,6 @@ import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
-import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
@@ -373,8 +372,8 @@ function TokensPanel({
     isParentChainArbitrumOne,
     isParentChainArbitrumSepolia,
     isOrbitChain,
-    nativeCurrency,
-    getBalance
+    getBalance,
+    nativeCurrency
   ])
 
   const storeNewToken = async () => {
@@ -533,7 +532,6 @@ export function TokenSearch({
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
@@ -623,12 +621,6 @@ export function TokenSearch({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address
         })
-      }
-
-      // do not allow import of withdraw-only tokens at deposit mode
-      if (isDepositMode && isWithdrawOnlyToken(_token.address, childChain.id)) {
-        openTransferDisabledDialog()
-        return
       }
 
       if (isTransferDisabledToken(_token.address, childChain.id)) {

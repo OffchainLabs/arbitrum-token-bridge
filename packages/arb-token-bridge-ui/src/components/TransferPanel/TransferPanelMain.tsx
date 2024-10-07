@@ -27,6 +27,7 @@ import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -228,10 +229,9 @@ export function NetworkListboxPlusBalancesContainer({
 
 export function TransferPanelMain() {
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isTeleportMode } =
+  const { childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const {
@@ -290,12 +290,12 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
-  const showUSDCSpecificInfo =
-    !isTeleportMode &&
-    ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-      (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia))
-
   useEffect(() => {
+    if (isExperimentalFeatureEnabled('eth-custom-dest')) {
+      // do not reset destination address for this feature
+      // this will also be the default behavior when the feature is live - which means we will remove this hook
+      return
+    }
     // Different destination address only allowed for tokens
     if (!selectedToken) {
       setDestinationAddress(undefined)
@@ -306,11 +306,11 @@ export function TransferPanelMain() {
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <SourceNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <SourceNetworkBox />
 
       <SwitchNetworksButton />
 
-      <DestinationNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <DestinationNetworkBox />
 
       <TransferDisabledDialog />
     </div>
