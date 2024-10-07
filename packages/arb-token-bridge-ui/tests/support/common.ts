@@ -58,15 +58,21 @@ export const getL1NetworkConfig = (): NetworkConfig => {
 
 export const getL2NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
+
+  const l3Network = isCustomFeeToken
+    ? defaultL3CustomGasTokenNetwork
+    : defaultL3Network
 
   return {
     networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
-    symbol: 'ETH',
+    symbol: nativeTokenSymbol,
     isTestnet: true,
     multiCall: isOrbitTest
-      ? defaultL3Network.tokenBridge!.childMultiCall
+      ? l3Network.tokenBridge!.childMultiCall
       : defaultL2Network.tokenBridge!.childMultiCall
   }
 }
