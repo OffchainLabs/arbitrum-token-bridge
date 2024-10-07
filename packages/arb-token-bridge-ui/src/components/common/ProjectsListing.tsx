@@ -10,6 +10,10 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getChainQueryParamForChain } from '../../types/ChainQueryParam'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
+const shuffleArray = (array: PortalProject[]) => {
+  return array.sort(() => Math.random() - 0.5)
+}
+
 const fetchProjects = async (chainId: number) => {
   const isChainOrbit = isNetwork(chainId).isOrbitChain
   const chainSlug = getChainQueryParamForChain(chainId)
@@ -54,6 +58,9 @@ export const ProjectsListing = () => {
     return null
   }
 
+  // Shuffle projects and limit to 4
+  const randomizedProjects = shuffleArray(projects).slice(0, 4)
+
   return (
     <div
       className="flex flex-col gap-3 rounded-md border bg-dark p-4 text-white"
@@ -65,7 +72,7 @@ export const ProjectsListing = () => {
         Explore Apps on {getNetworkName(destinationChain.id)}
       </h2>
       <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
-        {projects.slice(0, 4).map(project => (
+        {randomizedProjects.map(project => (
           <Project
             key={project.id}
             project={project}

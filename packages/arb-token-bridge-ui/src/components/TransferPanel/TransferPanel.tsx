@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
@@ -184,6 +184,11 @@ export function TransferPanel() {
   const [showProjectsListing, setShowProjectsListing] = useState(false)
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+  useEffect(() => {
+    // hide Project listing when networks are changed
+    setShowProjectsListing(false)
+  }, [childChain.id, parentChain.id])
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
