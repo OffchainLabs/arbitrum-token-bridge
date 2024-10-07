@@ -1,5 +1,7 @@
 import { BigNumber, constants } from 'ethers'
 import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
+
 import { useAppState } from '../../state'
 import { useNetworks } from '../useNetworks'
 import {
@@ -19,6 +21,7 @@ export function useSelectedTokenBalances(): Balances {
   const { app } = useAppState()
   const { selectedToken } = app
   const [networks] = useNetworks()
+  const { isConnected } = useAccount()
 
   const {
     isArbitrumOne: isSourceChainArbitrumOne,
@@ -47,6 +50,13 @@ export function useSelectedTokenBalances(): Balances {
     const result: Balances = {
       parentBalance: null,
       childBalance: null
+    }
+
+    if (!isConnected) {
+      return {
+        parentBalance: constants.Zero,
+        childBalance: constants.Zero
+      }
     }
 
     if (!selectedToken) {
@@ -103,10 +113,11 @@ export function useSelectedTokenBalances(): Balances {
 
     return result
   }, [
+    isConnected,
+    selectedToken,
     erc20ParentBalances,
     erc20ChildBalances,
     isEthereumArbitrumOnePair,
-    isSepoliaArbSepoliaPair,
-    selectedToken
+    isSepoliaArbSepoliaPair
   ])
 }
