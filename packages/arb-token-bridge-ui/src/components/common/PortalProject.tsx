@@ -11,13 +11,20 @@ export type PortalProject = {
   url: string
 }
 
-export const Project = ({ project }: { project: PortalProject }) => {
+export const Project = ({
+  project,
+  onClick
+}: {
+  project: PortalProject
+  onClick?: () => void
+}) => {
   return (
     <div className="h-full min-h-[150px] w-full overflow-hidden rounded-md border border-white/30 bg-dark hover:bg-dark-hover">
       <ExternalLink
         className="relative flex h-full w-full flex-col gap-2 p-4 hover:opacity-100"
         aria-label={`${project.title}`}
         href={`https://portal.arbitrum.io?project=${project.id}`}
+        onClick={onClick}
       >
         {/* Normal project contents */}
         <div className="flex w-full flex-row gap-1">

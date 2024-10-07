@@ -8,7 +8,7 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { getNetworkName } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
@@ -75,6 +75,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
+import { ProjectsListing } from '../common/ProjectsListing'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -179,6 +180,8 @@ export function TransferPanel() {
   const [isCctp, setIsCctp] = useState(false)
 
   const { destinationAddressError } = useDestinationAddressError()
+
+  const [showProjectsListing, setShowProjectsListing] = useState(false)
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
@@ -865,6 +868,11 @@ export function TransferPanel() {
     setTransferring(false)
     clearAmountInput()
 
+    // for custom orbit pages, show Projects' listing after transfer
+    if (isDepositMode && isNetwork(childChain.id).isOrbitChain) {
+      setShowProjectsListing(true)
+    }
+
     await (sourceChainTransaction as TransactionResponse).wait()
 
     // tx confirmed, update balances
@@ -1044,6 +1052,8 @@ export function TransferPanel() {
           </Tippy>
         )}
       </div>
+
+      {showProjectsListing && <ProjectsListing />}
     </>
   )
 }

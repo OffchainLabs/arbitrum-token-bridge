@@ -8,6 +8,7 @@ import { PORTAL_API_ENDPOINT } from '../../constants'
 import { ExternalLink } from './ExternalLink'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getChainQueryParamForChain } from '../../types/ChainQueryParam'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 const fetchProjects = async (chainId: number) => {
   const isChainOrbit = isNetwork(chainId).isOrbitChain
@@ -65,7 +66,16 @@ export const ProjectsListing = () => {
       </h2>
       <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
         {projects.slice(0, 4).map(project => (
-          <Project key={project.id} project={project} />
+          <Project
+            key={project.id}
+            project={project}
+            onClick={() => {
+              trackEvent('Project Click', {
+                network: getNetworkName(destinationChain.id),
+                projectName: project.title
+              })
+            }}
+          />
         ))}
       </div>
       {projects.length > 4 && (
@@ -75,6 +85,11 @@ export const ProjectsListing = () => {
           style={{
             borderColor: destinationChainUIcolor,
             backgroundColor: `${destinationChainUIcolor}66`
+          }}
+          onClick={() => {
+            trackEvent('Show All Projects Click', {
+              network: getNetworkName(destinationChain.id)
+            })
           }}
         >
           See all
