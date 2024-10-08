@@ -26,19 +26,28 @@ export type OrbitChainConfig = ChainWithRpcUrl & {
 }
 
 type OrbitChainsData = {
-  mainnet: { [key: string]: OrbitChainConfig }
-  testnet: { [key: string]: OrbitChainConfig }
+  mainnet: OrbitChainConfig[]
+  testnet: OrbitChainConfig[]
 }
 
 const typedOrbitChainsData = orbitChainsData as OrbitChainsData
 
+const convertArrayToObject = (
+  array: OrbitChainConfig[]
+): { [key: number]: OrbitChainConfig } => {
+  return array.reduce((acc, chain) => {
+    acc[chain.chainId] = chain
+    return acc
+  }, {} as { [key: number]: OrbitChainConfig })
+}
+
 export const orbitMainnets: {
   [key: number]: OrbitChainConfig
-} = typedOrbitChainsData.mainnet
+} = convertArrayToObject(typedOrbitChainsData.mainnet)
 
 export const orbitTestnets: {
   [key: number]: OrbitChainConfig
-} = typedOrbitChainsData.testnet
+} = convertArrayToObject(typedOrbitChainsData.testnet)
 
 export const orbitChains = { ...orbitMainnets, ...orbitTestnets }
 
