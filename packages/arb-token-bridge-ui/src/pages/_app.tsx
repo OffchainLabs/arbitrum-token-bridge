@@ -15,11 +15,14 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
-import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
+import { ChainKeyQueryParam } from '../types/ChainQueryParam'
 import { isUserRejectedError } from '../util/isUserRejectedError'
+import { getChainForChainKeyQueryParam } from '../util/chainQueryParamUtils'
+
+const siteTitle = 'Bridge to Arbitrum'
 
 if (
   process.env.NODE_ENV !== 'production' ||
@@ -82,12 +85,82 @@ if (
   })
 }
 
-export default function App({ Component, pageProps }: AppProps) {
+type ChainBlob = {
+  name: string
+  slug: string
+}
+
+function DynamicMetaData({
+  sourceChainSlug,
+  destinationChainSlug
+}: {
+  sourceChainSlug: ChainKeyQueryParam
+  destinationChainSlug: ChainKeyQueryParam
+}) {
+  const sourceChain: ChainBlob = {
+    name: getChainForChainKeyQueryParam(sourceChainSlug).name,
+    slug: sourceChainSlug
+  }
+  const destinationChain: ChainBlob = {
+    name: getChainForChainKeyQueryParam(destinationChainSlug).name,
+    slug: destinationChainSlug
+  }
+
+  const siteDescription = `Bridge from ${sourceChain.name} to ${destinationChain.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
+  const siteDomain = 'https://bridge.arbitrum.io'
+
+  return (
+    <>
+      <title>{siteTitle}</title>
+      <meta name="description" content={siteDescription} />
+
+      {/* <!-- Facebook Meta Tags --> */}
+      <meta name="og:url" property="og:url" content={siteDomain} />
+      <meta name="og:type" property="og:type" content="website" />
+      <meta name="og:title" property="og:title" content={siteTitle} />
+      <meta
+        name="og:description"
+        property="og:description"
+        content={siteDescription}
+      />
+      <meta
+        name="og:image"
+        property="og:image"
+        content={`${siteDomain}/images/__auto-generated/open-graph/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+      />
+
+      {/* <!-- Twitter Meta Tags --> */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta
+        name="twitter:domain"
+        property="twitter:domain"
+        content="bridge.arbitrum.io"
+      />
+      <meta name="twitter:url" property="twitter:url" content={siteDomain} />
+      <meta name="twitter:title" content={siteTitle} />
+      <meta name="twitter:description" content={siteDescription} />
+      <meta
+        name="twitter:image"
+        content={`${siteDomain}/images/__auto-generated/open-graph/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+      />
+    </>
+  )
+}
+
+export default function App({ Component, pageProps, router }: AppProps) {
+  const sourceChainSlug = (router.query.sourceChain?.toString() ??
+    'ethereum') as ChainKeyQueryParam
+  const destinationChainSlug = (router.query.destinationChain?.toString() ??
+    'arbitrum-one') as ChainKeyQueryParam
+
   return (
     <>
       <Head>
+        <DynamicMetaData
+          sourceChainSlug={sourceChainSlug}
+          destinationChainSlug={destinationChainSlug}
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{siteTitle}</title>
       </Head>
       <Layout>
         <Component {...pageProps} />

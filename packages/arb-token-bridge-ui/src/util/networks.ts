@@ -168,6 +168,11 @@ export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
   }
 
   const newCustomChains = [...getCustomChainsFromLocalStorage(), newCustomChain]
+
+  if (typeof localStorage === 'undefined') {
+    return
+  }
+
   localStorage.setItem(
     customChainLocalStorageKey,
     JSON.stringify(newCustomChains)
@@ -178,6 +183,11 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
   const newCustomChains = getCustomChainsFromLocalStorage().filter(
     chain => chain.chainId !== chainId
   )
+
+  if (typeof localStorage === 'undefined') {
+    return
+  }
+
   localStorage.setItem(
     customChainLocalStorageKey,
     JSON.stringify(newCustomChains)
