@@ -41,7 +41,10 @@ const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
   : specFiles.map(file => file.file)
 
-const isOrbitTest = process.env.E2E_ORBIT === 'true'
+const isOrbitTest = [
+  process.env.E2E_ORBIT,
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+].includes('true')
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
 const l3Network =
@@ -68,7 +71,7 @@ export default defineConfig({
       logsPrinter(on)
       await registerLocalNetwork()
 
-      const bridger = await Erc20Bridger.fromProvider(childProvider)
+      const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
@@ -118,17 +121,19 @@ export default defineConfig({
         })
         await approveCustomFeeToken({
           signer: localWallet.connect(parentProvider),
-          erc20ParentAddress: bridger.nativeToken!
+          erc20ParentAddress: erc20Bridger.nativeToken!
         })
         await ethBridger.approveGasToken({
           parentSigner: localWallet.connect(parentProvider)
         })
       }
-      await fundUserWalletNativeCurrency()
+      if (isCustomFeeToken) {
+        await fundUserWalletNativeCurrency()
+      }
 
       await fundErc20ToParentChain(l1ERC20Token)
       await fundErc20ToChildChain({
-        signer: localWallet.connect(parentProvider),
+        parentSigner: localWallet.connect(parentProvider),
         parentErc20Address: l1ERC20Token.address,
         amount: parseUnits('5', ERC20TokenDecimals)
       })
@@ -146,12 +151,12 @@ export default defineConfig({
       if (isCustomFeeToken) {
         await approveCustomFeeToken({
           signer: userWallet.connect(parentProvider),
-          erc20ParentAddress: bridger.nativeToken!
+          erc20ParentAddress: erc20Bridger.nativeToken!
         })
         await ethBridger.approveGasToken({
           parentSigner: userWallet.connect(parentProvider)
         })
-        await bridger.approveGasToken({
+        await erc20Bridger.approveGasToken({
           parentSigner: userWallet.connect(parentProvider),
           erc20ParentAddress: l1WethAddress
         })
@@ -168,7 +173,7 @@ export default defineConfig({
       }
 
       await fundErc20ToChildChain({
-        signer: userWallet.connect(parentProvider),
+        parentSigner: userWallet.connect(parentProvider),
         parentErc20Address: l1WethAddress,
         amount: utils.parseEther('0.1')
       })
@@ -218,7 +223,6 @@ export default defineConfig({
 
       synpressPlugins(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: true })
-
       return config
     },
     baseUrl: 'http://localhost:3000',
@@ -299,16 +303,11 @@ async function approveCustomFeeToken({
 
 async function fundUserWalletNativeCurrency() {
   const childEthBridger = await EthBridger.fromProvider(childProvider)
-  const isCustomFeeToken = typeof childEthBridger.nativeToken !== 'undefined'
-
-  if (!isCustomFeeToken) {
-    return
-  }
 
   const address = await userWallet.getAddress()
 
   const tokenContract = TestERC20__factory.connect(
-    childEthBridger.nativeToken,
+    childEthBridger.nativeToken!,
     localWallet.connect(parentProvider)
   )
 
@@ -413,10 +412,6 @@ async function fundWeth(networkType: NetworkType) {
   await tx.wait()
 }
 
-async function depositWeth() {
-  console.log(`Depositing WETH...`)
-}
-
 async function approveWeth() {
   console.log('Approving WETH...')
   console.log({ l1WethAddress })
@@ -449,18 +444,17 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
 
 async function fundErc20ToChildChain({
   parentErc20Address,
-  signer,
+  parentSigner,
   amount
 }: {
   parentErc20Address: string
-  signer: Wallet
+  parentSigner: Wallet
   amount: BigNumber
 }) {
   // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
   await deployERC20ToChildChain(parentErc20Address)
 
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
-  const parentSigner = signer
 
   // approve the ERC20 token for spending
   const approvalTx = await erc20Bridger.approveToken({
