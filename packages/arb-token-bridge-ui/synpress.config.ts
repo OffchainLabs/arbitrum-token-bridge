@@ -44,16 +44,9 @@ const tests = process.env.TEST_FILE
 
 const isOrbitTest = [
   process.env.E2E_ORBIT,
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+  process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN
 ].includes('true')
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
-
-console.log({ isOrbitTest })
-console.log('process.env.E2E_ORBIT: ', process.env.E2E_ORBIT)
-console.log(
-  'process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ',
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
-)
 
 const l3Network =
   process.env.ORBIT_CUSTOM_GAS_TOKEN === 'true'
@@ -203,7 +196,7 @@ export default defineConfig({
       checkForAssertions({
         parentProvider,
         testType:
-          process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+          process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
             ? 'orbit-custom'
             : process.env.E2E_ORBIT === 'true'
             ? 'orbit-eth'
@@ -299,7 +292,7 @@ if (!process.env.PRIVATE_KEY_USER) {
 }
 
 const localWallet = new Wallet(
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+  process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
     ? utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
     : process.env.PRIVATE_KEY_CUSTOM
 )
