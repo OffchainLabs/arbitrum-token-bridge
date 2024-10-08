@@ -292,7 +292,7 @@ if (!process.env.PRIVATE_KEY_USER) {
 }
 
 const localWallet = new Wallet(
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
     ? utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
     : process.env.PRIVATE_KEY_CUSTOM
 )
