@@ -198,7 +198,16 @@ export function NetworkContainer({
   )
 }
 
-export function BalancesContainer({ children }: { children: React.ReactNode }) {
+export function BalancesContainer({
+  children
+}: {
+  children: JSX.Element[] | React.ReactNode
+}) {
+  const { address: walletAddress, isConnected } = useAccount()
+  if (!walletAddress || !isConnected) {
+    return null
+  }
+
   return (
     <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
       {children}

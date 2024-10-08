@@ -52,6 +52,7 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import {
   BridgeTransfer,
@@ -75,6 +76,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
+import { Button } from '../common/Button'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -110,7 +112,7 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const { address: walletAddress } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
@@ -150,6 +152,7 @@ export function TransferPanel() {
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
+  const { openConnectModal } = useConnectModal()
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
@@ -1002,7 +1005,19 @@ export function TransferPanel() {
           amount={parseFloat(amount)}
           token={selectedToken}
         />
-        <MoveFundsButton onClick={moveFundsButtonOnClick} />
+        <div className="transfer-panel-stats">
+          {isConnected ? (
+            <MoveFundsButton onClick={moveFundsButtonOnClick} />
+          ) : (
+            <Button
+              variant="primary"
+              onClick={openConnectModal}
+              className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
+            >
+              <span className="block w-[360px] truncate">Connect Wallet</span>
+            </Button>
+          )}
+        </div>
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportDialog
