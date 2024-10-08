@@ -9,7 +9,6 @@
     "dev": "yarn workspace arb-token-bridge-ui dev",
     "build": "yarn workspace arb-token-bridge-ui build",
     "start": "yarn workspace arb-token-bridge-ui start",
-    "start:orbit-custom": "yarn workspace arb-token-bridge-ui start",
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
     "test:ci": "yarn workspace arb-token-bridge-ui test:ci",
     "prettier:check": "./node_modules/.bin/prettier --check .",

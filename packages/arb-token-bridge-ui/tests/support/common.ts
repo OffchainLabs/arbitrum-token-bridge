@@ -247,8 +247,6 @@ export async function checkForAssertions({
   parentProvider: Provider
   testType: 'regular' | 'orbit-eth' | 'orbit-custom'
 }) {
-  console.log('Checking for assertions...')
-
   const abi = [
     'function latestConfirmed() public view returns (uint64)',
     'function latestNodeCreated() public view returns (uint64)'

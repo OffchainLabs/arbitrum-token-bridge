@@ -12,7 +12,6 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
-import { TestWETH9 } from '@arbitrum/sdk/dist/lib/abi/TestWETH9'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './src/util/TokenUtils'
@@ -113,14 +112,14 @@ export default defineConfig({
 
       // Approve custom fee token if not ETH
       if (isCustomFeeToken) {
-        await approveCustomFeeToken(
-          localWallet.connect(parentProvider),
-          l1ERC20Token.address
-        )
-        await approveCustomFeeToken(
-          localWallet.connect(parentProvider),
-          bridger.nativeToken!
-        )
+        await approveCustomFeeToken({
+          signer: localWallet.connect(parentProvider),
+          erc20ParentAddress: l1ERC20Token.address
+        })
+        await approveCustomFeeToken({
+          signer: localWallet.connect(parentProvider),
+          erc20ParentAddress: bridger.nativeToken!
+        })
         await ethBridger.approveGasToken({
           parentSigner: localWallet.connect(parentProvider)
         })
@@ -128,11 +127,11 @@ export default defineConfig({
       await fundUserWalletNativeCurrency()
 
       await fundErc20ToParentChain(l1ERC20Token)
-      await fundErc20ToChildChain(
-        l1ERC20Token.address,
-        localWallet.connect(parentProvider),
-        '5'
-      )
+      await fundErc20ToChildChain({
+        signer: localWallet.connect(parentProvider),
+        parentErc20Address: l1ERC20Token.address,
+        amount: parseUnits('5', ERC20TokenDecimals)
+      })
       await approveErc20(l1ERC20Token)
 
       if (
@@ -145,13 +144,10 @@ export default defineConfig({
       }
 
       if (isCustomFeeToken) {
-        await approveCustomFeeToken(
-          userWallet.connect(parentProvider),
-          bridger.nativeToken!
-        )
-      }
-
-      if (isCustomFeeToken) {
+        await approveCustomFeeToken({
+          signer: userWallet.connect(parentProvider),
+          erc20ParentAddress: bridger.nativeToken!
+        })
         await ethBridger.approveGasToken({
           parentSigner: userWallet.connect(parentProvider)
         })
@@ -164,24 +160,18 @@ export default defineConfig({
       // Wrap ETH to test WETH transactions and approve it's usage
       await fundWeth('parentChain')
       await approveWeth()
-      // await fundWeth('childChain')
       if (isCustomFeeToken) {
-        await approveCustomFeeToken(
-          userWallet.connect(parentProvider),
-          l1WethAddress
-        )
+        await approveCustomFeeToken({
+          signer: userWallet.connect(parentProvider),
+          erc20ParentAddress: l1WethAddress
+        })
       }
 
-      const wethBal = await getWethContract(
-        parentProvider,
-        l1WethAddress
-      ).balanceOf(userWallet.address)
-
-      await fundErc20ToChildChain(
-        l1WethAddress,
-        userWallet.connect(parentProvider),
-        '0.1'
-      )
+      await fundErc20ToChildChain({
+        signer: userWallet.connect(parentProvider),
+        parentErc20Address: l1WethAddress,
+        amount: utils.parseEther('0.1')
+      })
 
       // Generate activity on chains so that assertions get posted and claims can be made
       generateActivityOnChains({
@@ -224,10 +214,10 @@ export default defineConfig({
       config.env.L2_WETH_ADDRESS = l2WethAddress
 
       if (isCustomFeeToken) {
-        await approveCustomFeeToken(
-          userWallet.connect(parentProvider),
-          l1WethAddress
-        )
+        await approveCustomFeeToken({
+          signer: userWallet.connect(parentProvider),
+          erc20ParentAddress: l1WethAddress
+        })
       }
 
       config.env.REDEEM_RETRYABLE_TEST_TX =
@@ -235,6 +225,29 @@ export default defineConfig({
 
       synpressPlugins(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: true })
+
+      // after everything is done, revoke approvals so e2e runs properly
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken({
+          signer: userWallet.connect(parentProvider),
+          erc20ParentAddress: bridger.nativeToken!,
+          amount: BigNumber.from(0)
+        })
+        await ethBridger.approveGasToken({
+          parentSigner: userWallet.connect(parentProvider),
+          amount: BigNumber.from(0)
+        })
+        await bridger.approveGasToken({
+          parentSigner: userWallet.connect(parentProvider),
+          erc20ParentAddress: l1WethAddress,
+          amount: BigNumber.from(0)
+        })
+        await approveCustomFeeToken({
+          signer: userWallet.connect(parentProvider),
+          erc20ParentAddress: l1WethAddress,
+          amount: BigNumber.from(0)
+        })
+      }
       return config
     },
     baseUrl: 'http://localhost:3000',
@@ -294,16 +307,22 @@ const localWallet = new Wallet(
 )
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
-async function approveCustomFeeToken(
-  signer: Wallet,
+async function approveCustomFeeToken({
+  signer,
+  erc20ParentAddress,
+  amount
+}: {
+  signer: Wallet
   erc20ParentAddress: string
-) {
+  amount?: BigNumber
+}) {
   console.log('Approving custom fee token...')
   const childErc20Bridger = await Erc20Bridger.fromProvider(childProvider)
 
   await childErc20Bridger.approveGasToken({
     parentSigner: signer,
-    erc20ParentAddress
+    erc20ParentAddress,
+    amount
   })
 }
 
@@ -457,11 +476,15 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
   await transferTx.wait()
 }
 
-async function fundErc20ToChildChain(
-  parentErc20Address: string,
-  signer: Wallet,
-  amount: string
-) {
+async function fundErc20ToChildChain({
+  parentErc20Address,
+  signer,
+  amount
+}: {
+  parentErc20Address: string
+  signer: Wallet
+  amount: BigNumber
+}) {
   // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
   await deployERC20ToChildChain(parentErc20Address)
 
@@ -480,7 +503,7 @@ async function fundErc20ToChildChain(
     parentSigner,
     childProvider,
     erc20ParentAddress: parentErc20Address,
-    amount: parseUnits(amount, ERC20TokenDecimals),
+    amount,
     destinationAddress: userWallet.address
   })
   const depositRec = await depositTx.wait()

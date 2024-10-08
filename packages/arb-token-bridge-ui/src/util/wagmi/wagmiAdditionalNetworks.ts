@@ -21,7 +21,7 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
     id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: nativeTokenData || ether,
+    nativeCurrency: nativeTokenData ?? ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
