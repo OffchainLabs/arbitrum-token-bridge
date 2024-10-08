@@ -565,21 +565,6 @@ export function getTxRemainingTimeInMinutes(tx: MergedTransaction) {
   )
 }
 
-export function getTxCompletionDate(tx: MergedTransaction) {
-  const minutesLeft = getTxRemainingTimeInMinutes(tx)
-  const { createdAt, resolvedAt } = tx
-
-  if (typeof minutesLeft !== 'number' || !createdAt) {
-    return null
-  }
-
-  if (!isTxPending(tx)) {
-    return resolvedAt ? dayjs(resolvedAt) : null
-  }
-
-  return dayjs(createdAt).add(minutesLeft, 'minutes')
-}
-
 export function getTxHumanReadableRemainingTime(tx: MergedTransaction) {
   const minutesLeft = getTxRemainingTimeInMinutes(tx)
 
