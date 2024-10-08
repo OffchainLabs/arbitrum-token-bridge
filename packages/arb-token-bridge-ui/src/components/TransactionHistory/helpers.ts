@@ -565,37 +565,6 @@ export function getTxRemainingTimeInMinutes(tx: MergedTransaction) {
   )
 }
 
-export function getTxHumanReadableRemainingTime(tx: MergedTransaction) {
-  const minutesLeft = getTxRemainingTimeInMinutes(tx)
-
-  if (!minutesLeft) {
-    return null
-  }
-
-  const hoursLeft = Math.floor(minutesLeft / 60)
-  const daysLeft = Math.floor(hoursLeft / 24)
-
-  const formattedDaysLeft = daysLeft === 1 ? '1 day' : `${daysLeft} days`
-  const formattedHoursLeft = hoursLeft === 1 ? '1 hr' : `${daysLeft} hrs`
-  const formattedMinutesLeft =
-    minutesLeft === 1 ? '1 min' : `${minutesLeft} mins`
-
-  if (daysLeft > 0) {
-    return `${formattedDaysLeft} ${hoursLeft % 60}${
-      hoursLeft % 60 === 1 ? ' hr' : ' hrs'
-    }`
-  }
-  if (hoursLeft > 0) {
-    return `${formattedHoursLeft} ${minutesLeft % 60}${
-      minutesLeft % 60 === 1 ? ' min' : ' mins'
-    }`
-  }
-  if (minutesLeft > 0) {
-    return formattedMinutesLeft
-  }
-  return 'less than a minute'
-}
-
 export function getDestinationNetworkTxId(tx: MergedTransaction) {
   if (tx.isCctp) {
     return tx.cctpData?.receiveMessageTransactionHash
