@@ -521,35 +521,6 @@ export async function getUpdatedTeleportTransfer(
   }
 }
 
-export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
-  if (isDeposit(tx)) {
-    switch (tx.depositStatus) {
-      case DepositStatus.CREATION_FAILED:
-      case DepositStatus.L1_FAILURE:
-      case DepositStatus.L2_FAILURE:
-        return StatusLabel.FAILURE
-      case DepositStatus.EXPIRED:
-        return StatusLabel.EXPIRED
-      case DepositStatus.L1_PENDING:
-      case DepositStatus.L2_PENDING:
-        return StatusLabel.PENDING
-      default:
-        return StatusLabel.SUCCESS
-    }
-  } else {
-    switch (tx.status) {
-      case WithdrawalStatus.EXECUTED:
-        return StatusLabel.SUCCESS
-      case WithdrawalStatus.CONFIRMED:
-        return StatusLabel.CLAIMABLE
-      case WithdrawalStatus.UNCONFIRMED:
-        return StatusLabel.PENDING
-      default:
-        return StatusLabel.FAILURE
-    }
-  }
-}
-
 function getTxDurationInMinutes(tx: MergedTransaction) {
   const { parentChainId } = tx
   const { isEthereumMainnet, isEthereumMainnetOrTestnet, isTestnet } =
