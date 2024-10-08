@@ -69,12 +69,12 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
-      await registerLocalNetwork()
+      await registerLocalNetwork(process.env.ORBIT_CUSTOM_GAS_TOKEN === 'true')
 
       try {
         const data = await fetchErc20Data({
           address: defaultL3CustomGasTokenNetwork.nativeToken!,
-          provider: new StaticJsonRpcProvider(ethRpcUrl)
+          provider: new StaticJsonRpcProvider(arbRpcUrl)
         })
         console.log({ data })
       } catch (err) {

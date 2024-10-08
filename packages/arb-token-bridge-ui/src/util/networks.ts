@@ -394,7 +394,7 @@ export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   fallback: 'http://127.0.0.1:3347'
 })
 
-export async function registerLocalNetwork() {
+export async function registerLocalNetwork(isLocalCustomNativeToken?: boolean) {
   try {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
@@ -402,18 +402,19 @@ export async function registerLocalNetwork() {
 
     registerCustomArbitrumNetwork(defaultL2Network)
 
-    let isLocalCustomNativeToken = false
-    try {
-      const data = await fetchErc20Data({
-        address: defaultL3CustomGasTokenNetwork.nativeToken!,
-        provider: new StaticJsonRpcProvider(localL2NetworkRpcUrl)
-      })
-      if (data.symbol === 'TN') {
-        isLocalCustomNativeToken = true
+    if (typeof isLocalCustomNativeToken === 'undefined') {
+      try {
+        const data = await fetchErc20Data({
+          address: defaultL3CustomGasTokenNetwork.nativeToken!,
+          provider: new StaticJsonRpcProvider(localL2NetworkRpcUrl)
+        })
+        if (data.symbol === 'TN') {
+          isLocalCustomNativeToken = true
+        }
+      } catch (e) {
+        // not the native token
+        isLocalCustomNativeToken = false
       }
-    } catch (e) {
-      // not the native token
-      isLocalCustomNativeToken = false
     }
 
     registerCustomArbitrumNetwork(
