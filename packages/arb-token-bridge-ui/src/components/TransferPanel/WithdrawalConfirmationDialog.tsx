@@ -21,6 +21,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { SecurityGuaranteed, SecurityNotGuaranteed } from './SecurityLabels'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
+import { getConfirmationTime } from '../../util/WithdrawalUtils'
 
 function getCalendarUrl(
   withdrawalDate: dayjs.Dayjs,
@@ -44,6 +45,8 @@ export function WithdrawalConfirmationDialog(
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain } =
     useNetworksRelationship(networks)
+
+  const { fastWithdrawalActive } = getConfirmationTime(childChain.id)
 
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -69,8 +72,11 @@ export function WithdrawalConfirmationDialog(
   const [checkbox3Checked, setCheckbox3Checked] = useState(false)
 
   const { isArbitrumOne } = isNetwork(childChain.id)
-  const bothCheckboxesChecked =
-    checkbox1Checked && checkbox2Checked && checkbox3Checked
+
+  const allCheckboxesChecked =
+    checkbox1Checked &&
+    checkbox2Checked &&
+    (fastWithdrawalActive ? checkbox3Checked : true)
 
   const estimatedConfirmationDate = getWithdrawalConfirmationDate({
     createdAt: null,
@@ -97,7 +103,7 @@ export function WithdrawalConfirmationDialog(
       className="max-w-[700px]"
       title={`Move funds to ${destinationNetworkName}`}
       actionButtonProps={{
-        disabled: !bothCheckboxesChecked,
+        disabled: !allCheckboxesChecked,
         hidden: isFastBridgesTab
       }}
     >
@@ -163,23 +169,25 @@ export function WithdrawalConfirmationDialog(
                   onChange={setCheckbox2Checked}
                 />
 
-                <Checkbox
-                  label={
-                    <span className="font-light">
-                      I understand that ~{confirmationPeriod} is an estimate,
-                      and it&apos;s possible the committee fails and it will
-                      default back to the 8 days.{' '}
-                      <ExternalLink
-                        href={FAST_WITHDRAWAL_DOCS_ARTICLE_LINK}
-                        className="underline"
-                      >
-                        Learn more.
-                      </ExternalLink>
-                    </span>
-                  }
-                  checked={checkbox3Checked}
-                  onChange={setCheckbox3Checked}
-                />
+                {fastWithdrawalActive && (
+                  <Checkbox
+                    label={
+                      <span className="font-light">
+                        I understand that ~{confirmationPeriod} is an estimate,
+                        and it&apos;s possible the committee fails and it will
+                        default back to the 8 days.{' '}
+                        <ExternalLink
+                          href={FAST_WITHDRAWAL_DOCS_ARTICLE_LINK}
+                          className="underline"
+                        >
+                          Learn more.
+                        </ExternalLink>
+                      </span>
+                    }
+                    checked={checkbox3Checked}
+                    onChange={setCheckbox3Checked}
+                  />
+                )}
 
                 <div className="flex">
                   <SecurityGuaranteed />
