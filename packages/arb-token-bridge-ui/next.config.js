@@ -8,10 +8,10 @@ module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
-  env: {
-    NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN:
-      process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN
-  },
+  // env: {
+  //   NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN:
+  //     process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN
+  // },
   async headers() {
     return [
       {

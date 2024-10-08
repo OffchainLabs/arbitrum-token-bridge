@@ -44,7 +44,7 @@ const tests = process.env.TEST_FILE
 
 const isOrbitTest = [
   process.env.E2E_ORBIT,
-  process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
 ].includes('true')
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
@@ -70,7 +70,13 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
-      await registerLocalNetwork()
+      console.log(
+        'process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ',
+        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+      )
+      await registerLocalNetwork(
+        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+      )
 
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
@@ -196,7 +202,7 @@ export default defineConfig({
       checkForAssertions({
         parentProvider,
         testType:
-          process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+          process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
             ? 'orbit-custom'
             : process.env.E2E_ORBIT === 'true'
             ? 'orbit-eth'
@@ -292,7 +298,7 @@ if (!process.env.PRIVATE_KEY_USER) {
 }
 
 const localWallet = new Wallet(
-  process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
     ? utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
     : process.env.PRIVATE_KEY_CUSTOM
 )

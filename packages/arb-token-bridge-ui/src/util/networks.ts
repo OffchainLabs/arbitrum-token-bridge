@@ -392,7 +392,7 @@ export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   fallback: 'http://127.0.0.1:3347'
 })
 
-export async function registerLocalNetwork() {
+export async function registerLocalNetwork(isCustomGasToken = false) {
   try {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
@@ -400,7 +400,8 @@ export async function registerLocalNetwork() {
 
     registerCustomArbitrumNetwork(defaultL2Network)
     registerCustomArbitrumNetwork(
-      process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+      process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true' ||
+        isCustomGasToken
         ? defaultL3CustomGasTokenNetwork
         : defaultL3Network
     )
