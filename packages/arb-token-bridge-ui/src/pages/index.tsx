@@ -16,6 +16,7 @@ import {
   encodeChainQueryParam
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
+import { AppContent } from '../components/App/App'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
@@ -143,5 +144,9 @@ export default function Index() {
     addOrbitChainsToArbitrumSDK()
   }, [])
 
-  return <App />
+  return (
+    <App>
+      <AppContent />
+    </App>
+  )
 }

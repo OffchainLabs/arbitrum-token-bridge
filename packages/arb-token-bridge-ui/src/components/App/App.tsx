@@ -58,7 +58,7 @@ const rainbowkitTheme = merge(darkTheme(), {
   }
 } as Theme)
 
-const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
+export const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
   const {
     app: { selectedToken }
@@ -196,7 +196,7 @@ function getBaseUrl(url: string) {
   }
 }
 
-function AppContent() {
+export function AppContent() {
   const [networks] = useNetworks()
   const { parentChain, childChain } = useNetworksRelationship(networks)
   const { address, isConnected, connector } = useAccount()
@@ -291,7 +291,10 @@ function AppContent() {
 //
 // https://github.com/orgs/WalletConnect/discussions/2733
 // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-const searchParams = new URLSearchParams(window.location.search)
+
+const searchParams = new URLSearchParams(
+  typeof window !== 'undefined' ? window.location.search : ''
+)
 const targetChainKey = searchParams.get('sourceChain')
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
@@ -299,7 +302,7 @@ const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 // Clear cache for everything related to WalletConnect v2.
 //
 // TODO: Remove this once the fix for the infinite loop / memory leak is identified.
-Object.keys(localStorage).forEach(key => {
+Object.keys(typeof window !== 'undefined' ? localStorage : {}).forEach(key => {
   if (
     key === 'wagmi.requestedChains' ||
     key === 'wagmi.store' ||
@@ -400,7 +403,7 @@ function ConnectedChainSyncer() {
   return null
 }
 
-export default function App() {
+export default function App({ children }: { children: React.ReactNode }) {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
   return (
@@ -412,9 +415,7 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <ConnectedChainSyncer />
-            <AppContextProvider>
-              <AppContent />
-            </AppContextProvider>
+            <AppContextProvider>{children}</AppContextProvider>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>

@@ -254,10 +254,13 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   // We need this because of Smart Contract Wallets
   const cctpTypeToFetch = useCallback(
     (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (isLoadingAccountType || !chain) {
+      if (isLoadingAccountType) {
         return undefined
       }
       if (isSmartContractWallet) {
+        if (!chain) {
+          return undefined
+        }
         // fetch based on the connected network
         if (chain.id === chainPair.parentChainId) {
           return 'deposits'
@@ -336,10 +339,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
 
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
-      if (!chain) {
-        return []
-      }
-
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
       return Promise.all(
@@ -347,6 +346,10 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
           .filter(chainPair => {
             if (isSmartContractWallet) {
               // only fetch txs from the connected network
+              if (!chain) {
+                return []
+              }
+
               return [chainPair.parentChainId, chainPair.childChainId].includes(
                 chain.id
               )
@@ -361,7 +364,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
             // that's why we need to limit shown txs either to sent or received funds
             // otherwise we'd display funds for a different network, which could be someone else's account
             const isConnectedToParentChain =
-              chainPair.parentChainId === chain.id
+              chainPair.parentChainId === chain?.id
 
             const includeSentTxs = shouldIncludeSentTxs({
               type,
@@ -435,7 +438,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
   )
 
-  const shouldFetch = address && chain && !isLoadingAccountType
+  const shouldFetch = address && !isLoadingAccountType
 
   const {
     data: depositsData,
@@ -483,10 +486,11 @@ export const useTransactionHistory = (
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): UseTransactionHistoryResult => {
+  const addressLowercased = address?.toLowerCase() as Address
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+    useAccountType({ address: addressLowercased })
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
@@ -501,7 +505,7 @@ export const useTransactionHistory = (
     loading: isLoadingTxsWithoutStatus,
     error,
     failedChainPairs
-  } = useTransactionHistoryWithoutStatuses(address)
+  } = useTransactionHistoryWithoutStatuses(addressLowercased)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -512,18 +516,20 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
-        ? (['complete_tx_list', address, pageNumber, data] as const)
+      return addressLowercased &&
+        !isLoadingTxsWithoutStatus &&
+        !isLoadingAccountType
+        ? (['complete_tx_list', addressLowercased, pageNumber, data] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
+    [addressLowercased, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
   )
 
   const depositsFromCache = useMemo(() => {
-    if (isLoadingAccountType || !chain) {
+    if (isLoadingAccountType) {
       return []
     }
-    return getDepositsWithoutStatusesFromCache(address)
+    return getDepositsWithoutStatusesFromCache(addressLowercased)
       .filter(tx => isNetwork(tx.parentChainId).isTestnet === isTestnetMode)
       .filter(tx => {
         const chainPairExists = getMultiChainFetchList().some(chainPair => {
@@ -541,15 +547,18 @@ export const useTransactionHistory = (
         }
 
         if (isSmartContractWallet) {
+          if (!chain) {
+            return []
+          }
           // only include txs for the connected network
           return tx.parentChainId === chain.id
         }
         return true
       })
   }, [
-    address,
-    isTestnetMode,
     isLoadingAccountType,
+    addressLowercased,
+    isTestnetMode,
     isSmartContractWallet,
     chain
   ])
@@ -613,7 +622,7 @@ export const useTransactionHistory = (
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
   const { data: newTransactionsData, mutate: mutateNewTransactionsData } =
     useSWRImmutable<MergedTransaction[]>(
-      address ? ['new_tx_list', address] : null
+      addressLowercased ? ['new_tx_list', addressLowercased] : null
     )
 
   const transactions: MergedTransaction[] = useMemo(() => {
@@ -621,10 +630,10 @@ export const useTransactionHistory = (
     // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
     return txs.filter(tx =>
       [tx.sender?.toLowerCase(), tx.destination?.toLowerCase()].includes(
-        address?.toLowerCase()
+        addressLowercased
       )
     )
-  }, [newTransactionsData, txPages, address])
+  }, [newTransactionsData, txPages, addressLowercased])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -752,18 +761,25 @@ export const useTransactionHistory = (
   )
 
   useEffect(() => {
-    if (!runFetcher || !connector) {
-      return
-    }
-    connector.on('change', e => {
-      // reset state on account change
-      if (e.account) {
+    function setInitialState(address: Address | undefined) {
+      if (address) {
         setPage(1)
         setPauseCount(0)
         setFetching(true)
       }
+    }
+    if (!runFetcher) {
+      return
+    }
+    if (!connector) {
+      setInitialState(addressLowercased)
+      return
+    }
+    connector.on('change', e => {
+      // reset state on account change
+      setInitialState(e.account)
     })
-  }, [connector, runFetcher, setPage])
+  }, [connector, runFetcher, setPage, addressLowercased])
 
   useEffect(() => {
     if (!txPages || !fetching || !runFetcher || isValidating) {
