@@ -9,7 +9,7 @@
     "dev": "yarn workspace arb-token-bridge-ui dev",
     "build": "yarn workspace arb-token-bridge-ui build",
     "start": "yarn workspace arb-token-bridge-ui start",
-    "start:orbit-custom": "NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn workspace arb-token-bridge-ui start",
+    "start:orbit-custom": "yarn workspace arb-token-bridge-ui start",
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
     "test:ci": "yarn workspace arb-token-bridge-ui test:ci",
     "prettier:check": "./node_modules/.bin/prettier --check .",
@@ -19,7 +19,7 @@
     "test:e2e": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn synpress run --configFile synpress.config.ts",
     "test:e2e:cctp": "yarn test:e2e --configFile synpress.cctp.config.ts",
     "test:e2e:orbit": "E2E_ORBIT=true yarn test:e2e",
-    "test:e2e:orbit:custom-gas-token": "NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn test:e2e"
+    "test:e2e:orbit:custom-gas-token": "E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn test:e2e"
   },
   "resolutions": {
     "**/@walletconnect/ethereum-provider": "2.13.1",

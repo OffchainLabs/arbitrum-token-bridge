@@ -38,6 +38,9 @@ jobs:
     name: "Build"
     runs-on: ubuntu-latest
     if: needs.check-files.outputs.run_tests == 'true' && ${{ !contains(github.event.pull_request.title, 'hotfix') }}
+    strategy:
+      matrix:
+        build-type: ['regular', 'orbit-custom']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,9 +55,12 @@ jobs:
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
           THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
+          NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN: ${{ matrix.build-type == 'orbit-custom' && 'true' || 'false' }}
 
       - name: Cache build artifacts
         uses: ./.github/actions/build-artifacts/cache
+        with:
+          key: build-${{ matrix.build-type }}-${{ github.sha }}
 
   test-ui:
     name: "Test UI"
