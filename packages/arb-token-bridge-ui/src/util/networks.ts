@@ -1,3 +1,4 @@
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
   getChildrenForNetwork,
@@ -9,6 +10,7 @@ import {
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
+import { fetchErc20Data } from './TokenUtils'
 
 export enum ChainId {
   // L1
@@ -392,16 +394,29 @@ export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   fallback: 'http://127.0.0.1:3347'
 })
 
-export async function registerLocalNetwork(isCustomGasToken = false) {
+export async function registerLocalNetwork() {
   try {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
     rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
     registerCustomArbitrumNetwork(defaultL2Network)
+
+    let isLocalCustomNativeToken = false
+    try {
+      const data = await fetchErc20Data({
+        address: defaultL3CustomGasTokenNetwork.nativeToken!,
+        provider: new StaticJsonRpcProvider(localL2NetworkRpcUrl)
+      })
+      if (data.symbol === 'TN') {
+        isLocalCustomNativeToken = true
+      }
+    } catch (e) {
+      // not the native token
+    }
+
     registerCustomArbitrumNetwork(
-      process.env.NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true' ||
-        isCustomGasToken
+      isLocalCustomNativeToken
         ? defaultL3CustomGasTokenNetwork
         : defaultL3Network
     )

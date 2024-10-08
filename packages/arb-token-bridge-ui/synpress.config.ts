@@ -42,10 +42,7 @@ const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
   : specFiles.map(file => file.file)
 
-const isOrbitTest = [
-  process.env.E2E_ORBIT,
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
-].includes('true')
+const isOrbitTest = process.env.E2E_ORBIT === 'true'
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
 const l3Network =
@@ -70,13 +67,11 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
-      console.log(
-        'process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ',
-        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
-      )
-      await registerLocalNetwork(
-        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
-      )
+      await registerLocalNetwork()
+
+      const bridger = await Erc20Bridger.fromProvider(childProvider)
+      const ethBridger = await EthBridger.fromProvider(childProvider)
+      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
@@ -115,10 +110,6 @@ export default defineConfig({
 
       // Deploy and fund ERC20 to Parent and Child chains
       const l1ERC20Token = await deployERC20ToParentChain()
-
-      const bridger = await Erc20Bridger.fromProvider(childProvider)
-      const ethBridger = await EthBridger.fromProvider(childProvider)
-      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       // Approve custom fee token if not ETH
       if (isCustomFeeToken) {
@@ -201,12 +192,11 @@ export default defineConfig({
       // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
       checkForAssertions({
         parentProvider,
-        testType:
-          process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
-            ? 'orbit-custom'
-            : process.env.E2E_ORBIT === 'true'
-            ? 'orbit-eth'
-            : 'regular'
+        testType: isCustomFeeToken
+          ? 'orbit-custom'
+          : process.env.E2E_ORBIT === 'true'
+          ? 'orbit-eth'
+          : 'regular'
       })
 
       // Set Cypress variables
