@@ -1,0 +1,41 @@
+name: Add Orbit Chain
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue Number'
+        required: true
+        type: string
+
+permissions:
+  issues: read
+  contents: write
+  pull-requests: write
+
+jobs:
+  add_orbit_chain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
+
+      - name: Build scripts
+        run: yarn workspace scripts build
+
+      - name: Run addOrbitChain script
+        run: yarn workspace scripts add-orbit-chain ../../packages/arb-token-bridge-ui/src/util/orbitChainsData.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
