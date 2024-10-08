@@ -44,13 +44,13 @@ export const ProjectsListing = () => {
     data: projects,
     error,
     isLoading
-  } = useSWRImmutable(['fetchProjects', destinationChain.id], () =>
-    fetchProjects(destinationChain.id)
+  } = useSWRImmutable(
+    isDestinationChainOrbit ? [destinationChain.id, 'fetchProjects'] : null,
+    ([destinationChainId]) => fetchProjects(destinationChainId)
   )
 
   if (
     isLoading ||
-    !isDestinationChainOrbit ||
     !projects ||
     projects.length === 0 ||
     typeof error !== 'undefined'
