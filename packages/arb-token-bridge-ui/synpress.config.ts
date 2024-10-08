@@ -14,7 +14,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
-import { getL2ERC20Address } from './src/util/TokenUtils'
+import { fetchErc20Data, getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import { contractAbi, contractByteCode } from './testErc20Token'
 import {
@@ -70,6 +70,16 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       logsPrinter(on)
       await registerLocalNetwork()
+
+      try {
+        const data = await fetchErc20Data({
+          address: defaultL3CustomGasTokenNetwork.nativeToken!,
+          provider: new StaticJsonRpcProvider(ethRpcUrl)
+        })
+        console.log({ data })
+      } catch (err) {
+        console.log({ err })
+      }
 
       const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
       const ethBridger = await EthBridger.fromProvider(childProvider)
@@ -414,7 +424,6 @@ async function fundWeth(networkType: NetworkType) {
 
 async function approveWeth() {
   console.log('Approving WETH...')
-  console.log({ l1WethAddress })
   const tx = await getWethContract(parentProvider, l1WethAddress).approve(
     l1WethGateway,
     constants.MaxInt256
