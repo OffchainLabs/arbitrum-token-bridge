@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import axios from 'axios'
 import useSWRImmutable from 'swr/immutable'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
@@ -9,12 +10,42 @@ import { ExternalLink } from './ExternalLink'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getChainQueryParamForChain } from '../../types/ChainQueryParam'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { isTestingEnvironment } from '../../util/CommonUtils'
 
 const shuffleArray = (array: PortalProject[]) => {
   return array.sort(() => Math.random() - 0.5)
 }
 
-const fetchProjects = async (chainId: number) => {
+const generateTestnetProjects = (
+  chainId: number,
+  count: number
+): PortalProject[] => {
+  const {
+    network: { name: chainName, logo: chainImage }
+  } = getBridgeUiConfigForChain(chainId)
+
+  return [...Array(count)].map((_, key) => ({
+    chains: [chainName],
+    description: `This is a featured project deployed on ${chainName}.`,
+    id: `project_${key}`,
+    images: {
+      logoUrl: chainImage,
+      bannerUrl: chainImage
+    },
+    subcategories: [
+      { id: 'defi', title: 'Defi' },
+      { id: 'nfts', title: 'NFTs' }
+    ],
+    title: `Featured Project ${key + 1}`,
+    url: PORTAL_API_ENDPOINT
+  }))
+}
+
+const fetchProjects = async (
+  chainId: number,
+  isTestnetMode: boolean
+): Promise<PortalProject[]> => {
   const isChainOrbit = isNetwork(chainId).isOrbitChain
   const chainSlug = getChainQueryParamForChain(chainId)
 
@@ -22,22 +53,29 @@ const fetchProjects = async (chainId: number) => {
     return []
   }
 
-  const response = await axios.get(
-    `${PORTAL_API_ENDPOINT}/api/projects?chains=${chainSlug}`
-  )
+  if (isTestnetMode) {
+    return isTestingEnvironment ? generateTestnetProjects(chainId, 6) : [] // don't show any test projects in production
+  }
 
-  return response.data as PortalProject[]
+  try {
+    const response = await axios.get(
+      `${PORTAL_API_ENDPOINT}/api/projects?chains=${chainSlug}`
+    )
+    return response.data as PortalProject[]
+  } catch (error) {
+    console.warn('Error fetching projects:', error)
+    return []
+  }
 }
 
 export const ProjectsListing = () => {
   const [{ destinationChain }] = useNetworks()
+  const [isTestnetMode] = useIsTestnetMode()
 
   const isDestinationChainOrbit = isNetwork(destinationChain.id).isOrbitChain
-
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     destinationChain.id
   )
-
   const destinationChainSlug = getChainQueryParamForChain(destinationChain.id)
 
   const {
@@ -45,8 +83,17 @@ export const ProjectsListing = () => {
     error,
     isLoading
   } = useSWRImmutable(
-    isDestinationChainOrbit ? [destinationChain.id, 'fetchProjects'] : null,
-    ([destinationChainId]) => fetchProjects(destinationChainId)
+    isDestinationChainOrbit
+      ? [destinationChain.id, isTestnetMode, 'fetchProjects']
+      : null,
+    ([destinationChainId, isTestnetMode]) =>
+      fetchProjects(destinationChainId, isTestnetMode)
+  )
+
+  // Shuffle projects and limit to 4
+  const randomizedProjects = useMemo(
+    () => (projects ? shuffleArray(projects).slice(0, 4) : []),
+    [projects]
   )
 
   if (
@@ -57,9 +104,6 @@ export const ProjectsListing = () => {
   ) {
     return null
   }
-
-  // Shuffle projects and limit to 4
-  const randomizedProjects = shuffleArray(projects).slice(0, 4)
 
   return (
     <div
@@ -76,7 +120,10 @@ export const ProjectsListing = () => {
           <Project
             key={project.id}
             project={project}
+            isTestnetMode={isTestnetMode}
             onClick={() => {
+              if (isTestnetMode) return
+
               trackEvent('Project Click', {
                 network: getNetworkName(destinationChain.id),
                 projectName: project.title
@@ -87,13 +134,19 @@ export const ProjectsListing = () => {
       </div>
       {projects.length > 4 && (
         <ExternalLink
-          href={`${PORTAL_API_ENDPOINT}/projects?chains=${destinationChainSlug}`}
+          href={
+            isTestnetMode
+              ? PORTAL_API_ENDPOINT
+              : `${PORTAL_API_ENDPOINT}/projects?chains=${destinationChainSlug}`
+          }
           className="flex w-min flex-nowrap items-center gap-2 self-end whitespace-nowrap rounded-sm border p-2 text-sm"
           style={{
             borderColor: destinationChainUIcolor,
             backgroundColor: `${destinationChainUIcolor}66`
           }}
           onClick={() => {
+            if (isTestnetMode) return
+
             trackEvent('Show All Projects Click', {
               network: getNetworkName(destinationChain.id)
             })

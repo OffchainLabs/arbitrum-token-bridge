@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { ExternalLink } from './ExternalLink'
+import { PORTAL_API_ENDPOINT } from '../../constants'
 
 export type PortalProject = {
   chains: string[]
@@ -13,16 +14,22 @@ export type PortalProject = {
 
 export const Project = ({
   project,
-  onClick
+  onClick,
+  isTestnetMode
 }: {
   project: PortalProject
   onClick?: () => void
+  isTestnetMode: boolean
 }) => {
   return (
     <ExternalLink
       className="relative flex h-full min-h-[150px] w-full flex-col gap-2 overflow-hidden rounded-md border border-white/30 bg-dark p-4 hover:bg-dark-hover hover:opacity-100"
       aria-label={`${project.title}`}
-      href={`https://portal.arbitrum.io?project=${project.id}`}
+      href={
+        isTestnetMode
+          ? PORTAL_API_ENDPOINT
+          : `${PORTAL_API_ENDPOINT}?project=${project.id}`
+      }
       onClick={onClick}
     >
       {/* Normal project contents */}
@@ -30,7 +37,7 @@ export const Project = ({
         {/* Logos */}
         <div className="flex shrink-0 grow-0 flex-col gap-2 overflow-hidden bg-cover bg-center">
           {/* Project logo */}
-          <div className="relative inline-block max-w-[70px] overflow-hidden rounded-md bg-white p-[1px]">
+          <div className="relative flex h-[50px] w-[50px] items-center justify-center overflow-hidden rounded-md bg-white p-[1px]">
             <div className="[&:hover_span]:opacity-100">
               <Image
                 alt={`${project.title} logo`}
