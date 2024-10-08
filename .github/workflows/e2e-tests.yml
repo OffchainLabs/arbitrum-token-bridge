@@ -99,9 +99,9 @@ jobs:
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # pin@v6.7.6
         with:
-        start: |
-          export NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN=${{ matrix.test.type == 'orbit-custom' && 'true' || 'false' }}
-          yarn start
+          start: |
+            export NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN=${{ matrix.test.type == 'orbit-custom' && 'true' || 'false' }}
+            yarn start
           command: >-
             ${{ 
               (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
