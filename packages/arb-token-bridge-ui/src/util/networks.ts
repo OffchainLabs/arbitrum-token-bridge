@@ -413,6 +413,7 @@ export async function registerLocalNetwork() {
       }
     } catch (e) {
       // not the native token
+      isLocalCustomNativeToken = false
     }
 
     registerCustomArbitrumNetwork(

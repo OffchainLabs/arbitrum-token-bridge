@@ -213,41 +213,12 @@ export default defineConfig({
       config.env.L1_WETH_ADDRESS = l1WethAddress
       config.env.L2_WETH_ADDRESS = l2WethAddress
 
-      if (isCustomFeeToken) {
-        await approveCustomFeeToken({
-          signer: userWallet.connect(parentProvider),
-          erc20ParentAddress: l1WethAddress
-        })
-      }
-
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
 
       synpressPlugins(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: true })
 
-      // after everything is done, revoke approvals so e2e runs properly
-      if (isCustomFeeToken) {
-        await approveCustomFeeToken({
-          signer: userWallet.connect(parentProvider),
-          erc20ParentAddress: bridger.nativeToken!,
-          amount: BigNumber.from(0)
-        })
-        await ethBridger.approveGasToken({
-          parentSigner: userWallet.connect(parentProvider),
-          amount: BigNumber.from(0)
-        })
-        await bridger.approveGasToken({
-          parentSigner: userWallet.connect(parentProvider),
-          erc20ParentAddress: l1WethAddress,
-          amount: BigNumber.from(0)
-        })
-        await approveCustomFeeToken({
-          signer: userWallet.connect(parentProvider),
-          erc20ParentAddress: l1WethAddress,
-          amount: BigNumber.from(0)
-        })
-      }
       return config
     },
     baseUrl: 'http://localhost:3000',
