@@ -119,7 +119,7 @@ jobs:
           PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
           PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
           PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
-          E2E_ORBIT_CUSTOM_GAS_TOKEN: ${{ matrix.build-type == 'orbit-custom' && 'true' || 'false' }}
+          NEXT_PUBLIC_E2E_ORBIT_CUSTOM_GAS_TOKEN: ${{ matrix.build-type == 'orbit-custom' && 'true' || 'false' }}
           NEXT_PUBLIC_IS_E2E_TEST: true
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545

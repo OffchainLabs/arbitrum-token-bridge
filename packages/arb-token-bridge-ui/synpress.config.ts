@@ -48,6 +48,13 @@ const isOrbitTest = [
 ].includes('true')
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
+console.log({ isOrbitTest })
+console.log('process.env.E2E_ORBIT: ', process.env.E2E_ORBIT)
+console.log(
+  'process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN: ',
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+)
+
 const l3Network =
   process.env.ORBIT_CUSTOM_GAS_TOKEN === 'true'
     ? defaultL3CustomGasTokenNetwork
