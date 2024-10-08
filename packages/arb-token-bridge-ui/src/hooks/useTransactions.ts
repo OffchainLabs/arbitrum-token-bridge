@@ -20,9 +20,9 @@ type Action =
   | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: string }
   | { type: 'ADD_TRANSACTIONS'; transactions: Transaction[] }
   | {
-      type: 'UPDATE_L1TOL2MSG_DATA'
+      type: 'UPDATE_PARENT_TO_CHILD_MSG_DATA'
       txID: string
-      l1ToL2MsgData: ParentToChildMessageData
+      parentToChildMsgData: ParentToChildMessageData
     }
   | { type: 'SET_TRANSACTIONS'; transactions: Transaction[] }
 
@@ -177,10 +177,10 @@ function updateBlockNumber(
   return newState
 }
 
-function updateTxnL1ToL2Msg(
+function updateTxnParentToChildMsg(
   state: Transaction[],
   txID: string,
-  l1ToL2MsgData: ParentToChildMessageData
+  parentToChildMsgData: ParentToChildMessageData
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -193,17 +193,18 @@ function updateTxnL1ToL2Msg(
 
   if (!(transaction.type === 'deposit' || transaction.type === 'deposit-l1')) {
     throw new Error(
-      "Attempting to add a l1tol2msg to a tx that isn't a deposit:" + txID
+      "Attempting to add a parentToChildMsg to a tx that isn't a deposit:" +
+        txID
     )
   }
 
-  const previousL1ToL2MsgData = transaction.parentToChildMsgData
-  if (!previousL1ToL2MsgData) {
+  const previousParentToChildMsgData = transaction.parentToChildMsgData
+  if (!previousParentToChildMsgData) {
     newState[index] = {
       ...transaction,
       parentToChildMsgData: {
-        status: l1ToL2MsgData.status,
-        retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
+        status: parentToChildMsgData.status,
+        retryableCreationTxID: parentToChildMsgData.retryableCreationTxID,
         fetchingUpdate: false
       }
     }
@@ -212,7 +213,10 @@ function updateTxnL1ToL2Msg(
 
   newState[index] = {
     ...transaction,
-    parentToChildMsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
+    parentToChildMsgData: {
+      ...previousParentToChildMsgData,
+      ...parentToChildMsgData
+    }
   }
   return newState
 }
@@ -283,8 +287,12 @@ function reducer(state: Transaction[], action: Action) {
     case 'SET_RESOLVED_TIMESTAMP': {
       return updateResolvedTimestamp(state, action.txID, action.timestamp)
     }
-    case 'UPDATE_L1TOL2MSG_DATA': {
-      return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
+    case 'UPDATE_PARENT_TO_CHILD_MSG_DATA': {
+      return updateTxnParentToChildMsg(
+        state,
+        action.txID,
+        action.parentToChildMsgData
+      )
     }
     case 'SET_TRANSACTIONS': {
       return action.transactions
@@ -339,14 +347,14 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
-  const updateTxnL1ToL2MsgData = async (
+  const updateTxnParentToChildMsgData = async (
     txID: string,
-    l1ToL2MsgData: ParentToChildMessageData
+    parentToChildMsgData: ParentToChildMessageData
   ) => {
     dispatch({
-      type: 'UPDATE_L1TOL2MSG_DATA',
+      type: 'UPDATE_PARENT_TO_CHILD_MSG_DATA',
       txID: txID,
-      l1ToL2MsgData
+      parentToChildMsgData
     })
   }
 
@@ -384,7 +392,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateTransaction = (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: ParentToChildMessageData
+    parentToChildMsgData?: ParentToChildMessageData
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
@@ -410,8 +418,11 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (tx) {
       setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString())
     }
-    if (l1ToL2MsgData) {
-      updateTxnL1ToL2MsgData(txReceipt.transactionHash, l1ToL2MsgData)
+    if (parentToChildMsgData) {
+      updateTxnParentToChildMsgData(
+        txReceipt.transactionHash,
+        parentToChildMsgData
+      )
     }
   }
 
