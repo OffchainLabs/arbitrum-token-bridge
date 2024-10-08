@@ -107,7 +107,7 @@ export const ProjectsListing = () => {
 
   return (
     <div
-      className="flex flex-col gap-3 rounded-md border bg-dark p-4 text-white"
+      className="flex flex-col gap-3 border-y bg-dark p-4 text-white sm:rounded-md sm:border"
       style={{
         borderColor: destinationChainUIcolor
       }}
@@ -115,6 +115,15 @@ export const ProjectsListing = () => {
       <h2 className="text-lg">
         Explore Apps on {getNetworkName(destinationChain.id)}
       </h2>
+
+      {isTestnetMode && (
+        <div className="text-xs text-white/70">
+          <b>Development-mode only</b>. These are placeholder projects for
+          showing how this feature works in non-production mode. Real projects
+          are fetched from the Portal for mainnet Orbit chains.
+        </div>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
         {randomizedProjects.map(project => (
           <Project
@@ -139,7 +148,7 @@ export const ProjectsListing = () => {
               ? PORTAL_API_ENDPOINT
               : `${PORTAL_API_ENDPOINT}/projects?chains=${destinationChainSlug}`
           }
-          className="flex w-min flex-nowrap items-center gap-2 self-end whitespace-nowrap rounded-sm border p-2 text-sm"
+          className="flex w-min flex-nowrap items-center gap-2 self-end whitespace-nowrap rounded-md border p-2 text-sm"
           style={{
             borderColor: destinationChainUIcolor,
             backgroundColor: `${destinationChainUIcolor}66`
