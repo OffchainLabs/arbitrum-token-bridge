@@ -131,7 +131,9 @@ describe('Withdraw native token', () => {
           cy.closeTransactionHistoryPanel()
 
           // the balance on the destination chain should not be the same as before
-          cy.findByLabelText('native token balance amount on parentChain')
+          cy.findByLabelText(
+            `${nativeTokenSymbol} balance amount on parentChain`
+          )
             .should('be.visible')
             .its('text')
             .should('not.eq', l1EthBal)
