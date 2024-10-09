@@ -117,7 +117,7 @@ export const createAndValidateOrbitChain = async (
 ) => {
   core.startGroup("Orbit Chain Creation and Validation");
   console.log("Creating OrbitChain object...");
-  const orbitChain = transformIncomingDataToOrbitChain(
+  const orbitChain = await transformIncomingDataToOrbitChain(
     validatedIncomingData,
     chainLogoPath,
     nativeTokenLogoPath
@@ -130,7 +130,7 @@ export const createAndValidateOrbitChain = async (
 };
 
 export const updateAndValidateOrbitChainsList = async (
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>,
+  orbitChain: OrbitChain,
   targetJsonPath: string
 ) => {
   core.startGroup("Orbit ChainsList Update and Validation");
@@ -152,7 +152,7 @@ export const commitChangesAndCreatePR = async (
   branchName: string,
   targetJsonPath: string,
   updatedOrbitChainsList: ReturnType<typeof updateOrbitChainsFile>,
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>
+  orbitChain: OrbitChain
 ) => {
   core.startGroup("Commit Changes and Create Pull Request");
   console.log("Preparing to commit changes...");
@@ -171,7 +171,7 @@ export const commitChangesAndCreatePR = async (
 
 export const setOutputs = (
   branchName: string,
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>,
+  orbitChain: OrbitChain,
   targetJsonPath: string
 ) => {
   core.startGroup("Set Outputs");
