@@ -11,6 +11,7 @@ const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN')
 
 describe('Approve token for deposit', () => {
   // log in to metamask
+  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
   const zeroToLessThanOneNativeToken = getZeroToLessThanOneNativeToken(
     Cypress.env('NATIVE_TOKEN_SYMBOL')
   )
@@ -29,8 +30,8 @@ describe('Approve token for deposit', () => {
 
       cy.findByText('MAX').click()
 
-      cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneNativeToken)
+      cy.findGasFeeSummary(zeroToLessThanOneEth)
+      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
       cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
 
       cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {

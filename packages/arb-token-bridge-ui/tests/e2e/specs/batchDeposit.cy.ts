@@ -17,6 +17,7 @@ describe('Batch Deposit', () => {
     childErc20Balance: string
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
   const zeroToLessThanOneNativeToken =
     getZeroToLessThanOneNativeToken(nativeTokenSymbol)
 
@@ -117,14 +118,14 @@ describe('Batch Deposit', () => {
     context('should show gas estimations and summary', () => {
       cy.typeAmount(ERC20AmountToSend)
       cy.typeAmount2(nativeCurrencyAmountToSend)
-      cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneNativeToken)
+      cy.findGasFeeSummary(zeroToLessThanOneEth)
+      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
       cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     })
 
     const txData = {
       symbol: ERC20TokenSymbol,
-      symbol2: 'ETH',
+      symbol2: nativeTokenSymbol,
       amount: ERC20AmountToSend,
       amount2: nativeCurrencyAmountToSend
     }
@@ -223,8 +224,8 @@ describe('Batch Deposit', () => {
     context('should show gas estimations and summary', () => {
       cy.typeAmount(ERC20AmountToSend)
       cy.typeAmount2(nativeCurrencyAmountToSend)
-      cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneNativeToken)
+      cy.findGasFeeSummary(zeroToLessThanOneEth)
+      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
       cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     })
 

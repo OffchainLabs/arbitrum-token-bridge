@@ -11,6 +11,7 @@ import {
 describe('Deposit native token', () => {
   const ETHAmountToDeposit = 0.0001
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
   const zeroToLessThanOneNativeToken =
     getZeroToLessThanOneNativeToken(nativeTokenSymbol)
 
@@ -27,8 +28,8 @@ describe('Deposit native token', () => {
   it('should show gas estimations and bridge successfully', () => {
     cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
-    cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneNativeToken)
+    cy.findGasFeeSummary(zeroToLessThanOneEth)
+    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction()

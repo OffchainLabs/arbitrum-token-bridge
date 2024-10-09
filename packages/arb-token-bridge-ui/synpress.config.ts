@@ -87,6 +87,9 @@ export default defineConfig({
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
+      console.log({ isCustomFeeToken })
+      throw 'e'
+
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
       }
