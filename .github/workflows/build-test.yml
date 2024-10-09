@@ -154,9 +154,6 @@ jobs:
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
-      - name: Install sharp
-        run: cd packages/scripts && npm install --platform=linux --arch=x64 sharp
-
       - name: Build
         run: yarn workspace scripts build
 
