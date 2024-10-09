@@ -36,7 +36,7 @@ body:
     id: brand-color
     attributes:
       label: Brand color
-      description: The primary hex code color of your chain. Must have a contrast ratio of at least 4.5:1 against white (#FFFFFF) for accessibility.
+      description: The primary hex code color of your chain. Must have a contrast ratio of at least 3:1 against white (#FFFFFF) for accessibility.
       placeholder: ex. "#FFFFFF"
     validations:
       required: true
