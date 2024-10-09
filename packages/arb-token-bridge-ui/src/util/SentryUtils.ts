@@ -9,12 +9,11 @@ export function captureSentryErrorWithExtraData({
   originFunction: string
   additionalData?: Record<string, string>
 }) {
-  Sentry.configureScope(function (scope) {
-    // tags only allow primitive values
-    scope.setTag('origin function', originFunction)
-    if (additionalData) {
-      scope.setTags(additionalData)
-    }
-    Sentry.captureException(error, () => scope)
-  })
+  // tags only allow primitive values
+  Sentry.getCurrentScope().setTag('origin function', originFunction)
+
+  if (additionalData) {
+    Sentry.getCurrentScope().setTags(additionalData)
+  }
+  Sentry.captureException(error)
 }
