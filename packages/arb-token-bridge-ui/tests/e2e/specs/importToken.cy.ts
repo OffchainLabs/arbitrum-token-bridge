@@ -247,6 +247,8 @@ describe('Import token', () => {
 
         visitAfterSomeDelay('/', {
           qs: {
+            sourceChain: 'arbitrum-localhost',
+            destinationChain: 'l3-localhost',
             token: invalidTokenAddress
           }
         })

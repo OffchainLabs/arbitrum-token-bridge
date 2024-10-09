@@ -137,7 +137,8 @@ export default defineConfig({
       await fundErc20ToChildChain({
         parentSigner: localWallet.connect(parentProvider),
         parentErc20Address: l1ERC20Token.address,
-        amount: parseUnits('5', ERC20TokenDecimals)
+        amount: parseUnits('5', ERC20TokenDecimals),
+        isCustomFeeToken
       })
       await approveErc20(l1ERC20Token)
 
@@ -168,7 +169,8 @@ export default defineConfig({
       await fundErc20ToChildChain({
         parentSigner: userWallet.connect(parentProvider),
         parentErc20Address: l1WethAddress,
-        amount: utils.parseEther('0.1')
+        amount: utils.parseEther('0.1'),
+        isCustomFeeToken
       })
 
       // Generate activity on chains so that assertions get posted and claims can be made
@@ -359,13 +361,13 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
   })
   await deploy.wait()
 
-  // if (erc20L1Address === l1WethAddress) {
-  //   l2WethAddress = await getL2ERC20Address({
-  //     erc20L1Address: l1WethAddress,
-  //     l1Provider: parentProvider,
-  //     l2Provider: childProvider
-  //   })
-  // }
+  if (erc20L1Address === l1WethAddress) {
+    l2WethAddress = await getL2ERC20Address({
+      erc20L1Address: l1WethAddress,
+      l1Provider: parentProvider,
+      l2Provider: childProvider
+    })
+  }
 }
 
 function getWethContract(
@@ -419,14 +421,18 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
 async function fundErc20ToChildChain({
   parentErc20Address,
   parentSigner,
-  amount
+  amount,
+  isCustomFeeToken
 }: {
   parentErc20Address: string
   parentSigner: Wallet
   amount: BigNumber
+  isCustomFeeToken: boolean
 }) {
-  // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
-  await deployERC20ToChildChain(parentErc20Address)
+  if (parentErc20Address !== l1WethAddress || isCustomFeeToken) {
+    // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
+    await deployERC20ToChildChain(parentErc20Address)
+  }
 
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
 
