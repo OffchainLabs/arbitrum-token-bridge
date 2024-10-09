@@ -14,6 +14,7 @@ import {
   getIssue,
   updateContent,
 } from "./github";
+import { fetchRollupContractData } from "./network";
 import {
   chainDataLabelToKey,
   IncomingChainData,
@@ -279,23 +280,29 @@ export const fetchAndSaveImage = async (
   return `/${imageSavePath}`;
 };
 
-export const transformIncomingDataToOrbitChain = (
+export const transformIncomingDataToOrbitChain = async (
   chainData: IncomingChainData,
   chainLogoPath: string,
   nativeTokenLogoPath?: string
-): OrbitChain => {
+): Promise<OrbitChain> => {
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
 
+  // Fetch rollup contract data
+  const rollupData = await fetchRollupContractData(
+    chainData.rollup,
+    chainData.rpcUrl
+  );
+
   return {
     chainId: parseInt(chainData.chainId, 10),
-    confirmPeriodBlocks: parseInt(chainData.confirmPeriodBlocks, 10),
+    confirmPeriodBlocks: rollupData.confirmPeriodBlocks,
     ethBridge: {
-      bridge: chainData.bridge,
-      inbox: chainData.inbox,
-      outbox: chainData.outbox,
+      bridge: rollupData.bridge,
+      inbox: rollupData.inbox,
+      outbox: rollupData.outbox,
       rollup: chainData.rollup,
-      sequencerInbox: chainData.sequencerInbox,
+      sequencerInbox: rollupData.sequencerInbox,
     },
     nativeToken: chainData.nativeTokenAddress,
     explorerUrl: chainData.explorerUrl,
