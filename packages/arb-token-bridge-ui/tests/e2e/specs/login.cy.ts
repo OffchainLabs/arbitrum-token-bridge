@@ -6,8 +6,8 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getInitialETHBalance,
+  getL1NetworkConfig,
   getL1NetworkName,
-  getL2NetworkConfig,
   getL2NetworkName
 } from './../../support/common'
 
@@ -22,7 +22,7 @@ describe('Login Account', () => {
     if (isCustomFeeToken) {
       getInitialERC20Balance({
         tokenAddress: Cypress.env('NATIVE_TOKEN_ADDRESS'),
-        multiCallerAddress: getL2NetworkConfig().multiCall,
+        multiCallerAddress: getL1NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ETH_RPC_URL')
       }).then(val => (l1ETHbal = formatAmount(val)))

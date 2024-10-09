@@ -118,11 +118,8 @@ describe('Deposit Token', () => {
 
         context('should show summary', () => {
           cy.typeAmount(ERC20AmountToSend)
-          cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-          cy.findGasFeeForChain(
-            getL1NetworkName(),
-            zeroToLessThanOneNativeToken
-          )
+          cy.findGasFeeSummary(zeroToLessThanOneEth)
+          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
           cy.findGasFeeForChain(
             getL2NetworkName(),
             zeroToLessThanOneNativeToken

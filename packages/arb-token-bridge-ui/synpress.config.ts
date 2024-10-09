@@ -359,13 +359,13 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
   })
   await deploy.wait()
 
-  if (erc20L1Address === l1WethAddress) {
-    l2WethAddress = await getL2ERC20Address({
-      erc20L1Address: l1WethAddress,
-      l1Provider: parentProvider,
-      l2Provider: childProvider
-    })
-  }
+  // if (erc20L1Address === l1WethAddress) {
+  //   l2WethAddress = await getL2ERC20Address({
+  //     erc20L1Address: l1WethAddress,
+  //     l1Provider: parentProvider,
+  //     l2Provider: childProvider
+  //   })
+  // }
 }
 
 function getWethContract(
