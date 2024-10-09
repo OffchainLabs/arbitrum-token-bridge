@@ -43,9 +43,9 @@ export function TokenBalance({
       <span className="font-light">{prefix}</span>
       <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {
-          decimals: forToken.decimals,
+          decimals: forToken.decimals
         })}
-      </span>{' ss'}
+      </span>{' '}
       <TokenSymbolWithExplorerLink
         token={forToken}
         tokenSymbolOverride={tokenSymbolOverride}
