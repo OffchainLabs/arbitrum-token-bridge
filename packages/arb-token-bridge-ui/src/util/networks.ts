@@ -369,7 +369,7 @@ export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
     parentGatewayRouter: '0x0C085152C2799834fc1603533ff6916fa1FdA302',
     parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
     parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
-    parentWeth: '0x0000000000000000000000000000000000000000',
+    parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
     parentWethGateway: '0x59156b0596689D965Ba707E160e5370AF22461a0',
     childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
     childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',

@@ -14,7 +14,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
-import { fetchErc20Data, getL2ERC20Address } from './src/util/TokenUtils'
+import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import { contractAbi, contractByteCode } from './testErc20Token'
 import {
@@ -141,15 +141,6 @@ export default defineConfig({
       })
       await approveErc20(l1ERC20Token)
 
-      if (
-        !isNonZeroAddress(l1WethAddress) ||
-        !isNonZeroAddress(l2WethAddress)
-      ) {
-        const wethAddresses = await deployWeth(parentProvider)
-        l1WethAddress = wethAddresses.l1WethAddress
-        l2WethAddress = wethAddresses.l2WethAddress
-      }
-
       if (isCustomFeeToken) {
         await approveCustomFeeToken({
           signer: userWallet.connect(parentProvider),
@@ -208,6 +199,7 @@ export default defineConfig({
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
       config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
+      config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
@@ -357,33 +349,6 @@ function isNonZeroAddress(address: string | undefined) {
   )
 }
 
-async function deployWeth(provider: StaticJsonRpcProvider) {
-  const wethFactory = new TestWETH9__factory(localWallet.connect(provider))
-  const weth = await wethFactory.deploy('Wrapped Ether', 'WETH')
-  await weth.deployed()
-
-  const bridger = await Erc20Bridger.fromProvider(childProvider)
-  const deployOnChildChain = await bridger.deposit({
-    amount: BigNumber.from(0),
-    erc20ParentAddress: weth.address,
-    parentSigner: localWallet.connect(parentProvider),
-    childProvider
-  })
-
-  await deployOnChildChain.wait()
-
-  const l2WethAddress = await getL2ERC20Address({
-    erc20L1Address: weth.address,
-    l1Provider: parentProvider,
-    l2Provider: childProvider
-  })
-
-  return {
-    l1WethAddress: weth.address,
-    l2WethAddress
-  }
-}
-
 async function deployERC20ToChildChain(erc20L1Address: string) {
   const bridger = await Erc20Bridger.fromProvider(childProvider)
   const deploy = await bridger.deposit({
@@ -393,6 +358,14 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
     childProvider
   })
   await deploy.wait()
+
+  if (erc20L1Address === l1WethAddress) {
+    l2WethAddress = await getL2ERC20Address({
+      erc20L1Address: l1WethAddress,
+      l1Provider: parentProvider,
+      l2Provider: childProvider
+    })
+  }
 }
 
 function getWethContract(

@@ -4,8 +4,10 @@
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
+  getInitialERC20Balance,
   getInitialETHBalance,
   getL1NetworkName,
+  getL2NetworkConfig,
   getL2NetworkName
 } from './../../support/common'
 
@@ -14,11 +16,21 @@ describe('Login Account', () => {
   let l2ETHbal
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
 
   before(() => {
-    getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
-      val => (l1ETHbal = formatAmount(val))
-    )
+    if (isCustomFeeToken) {
+      getInitialERC20Balance({
+        tokenAddress: Cypress.env('NATIVE_TOKEN_ADDRESS'),
+        multiCallerAddress: getL2NetworkConfig().multiCall,
+        address: Cypress.env('ADDRESS'),
+        rpcURL: Cypress.env('ETH_RPC_URL')
+      }).then(val => (l1ETHbal = formatAmount(val)))
+    } else {
+      getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
+        val => (l1ETHbal = formatAmount(val))
+      )
+    }
     getInitialETHBalance(Cypress.env('ARB_RPC_URL')).then(
       val => (l2ETHbal = formatAmount(val))
     )

@@ -34,6 +34,7 @@ describe('Deposit Token', () => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
   const zeroToLessThanOneNativeToken =
     getZeroToLessThanOneNativeToken(nativeTokenSymbol)
 
@@ -79,11 +80,8 @@ describe('Deposit Token', () => {
 
         context('should show gas estimations', () => {
           cy.typeAmount(ERC20AmountToSend)
-          cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-          cy.findGasFeeForChain(
-            getL1NetworkName(),
-            zeroToLessThanOneNativeToken
-          )
+          cy.findGasFeeSummary(zeroToLessThanOneEth)
+          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
           cy.findGasFeeForChain(
             getL2NetworkName(),
             zeroToLessThanOneNativeToken

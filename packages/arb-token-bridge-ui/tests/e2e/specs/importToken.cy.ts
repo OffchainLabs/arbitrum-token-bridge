@@ -77,7 +77,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findSelectTokenButton(nativeTokenSymbol).click()
+        cy.findSelectTokenButton('ETH').click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -101,7 +101,7 @@ describe('Import token', () => {
           networkName: 'mainnet'
         })
 
-        cy.findSelectTokenButton(nativeTokenSymbol).click()
+        cy.findSelectTokenButton('ETH').click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
