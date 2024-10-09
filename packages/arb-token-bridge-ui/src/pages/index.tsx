@@ -20,7 +20,7 @@ import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 
 const App = dynamic(
   () => {
-    return new Promise<{ default: ComponentType<{}> }>(async resolve => {
+    return new Promise<{ default: ComponentType }>(async resolve => {
       if (
         process.env.NODE_ENV !== 'production' ||
         process.env.NEXT_PUBLIC_IS_E2E_TEST
