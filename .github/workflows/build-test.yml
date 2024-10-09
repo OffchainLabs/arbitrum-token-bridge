@@ -151,6 +151,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvips-dev
+
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
    
