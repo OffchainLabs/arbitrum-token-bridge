@@ -148,7 +148,7 @@ describe('Withdraw ERC20 Token', () => {
         })
       })
 
-      it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
+      it('should claim funds', { defaultCommandTimeout: 500_000 }, () => {
         // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
 
         cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
