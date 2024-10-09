@@ -3,6 +3,7 @@ import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import {
   ChainId,
   getBaseChainIdByChainId,
+  getDestinationChainIds,
   getSupportedChainIds
 } from '../networks'
 import { orbitTestnets } from '../orbitChainsList'
@@ -208,5 +209,49 @@ describe('getSupportedChainIds', () => {
         getSupportedChainIds({ includeMainnets: false, includeTestnets: false })
       ).toHaveLength(0)
     })
+  })
+})
+
+describe('getDestinationChainIds', () => {
+  function isAscending(arr: number[]) {
+    return arr.every(
+      (value, index) => index === 0 || value >= Number(arr[index - 1])
+    )
+  }
+
+  it('should return a sorted list for Ethereum Mainnet', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.Ethereum)
+    const defaultChainId = destinationChainIds[0]
+    const nonDefaultChainIds = destinationChainIds.slice(1)
+
+    expect(defaultChainId).toBe(ChainId.ArbitrumOne)
+    expect(isAscending(nonDefaultChainIds)).toBe(true)
+  })
+
+  it('should return a sorted list for Arbitrum One', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.ArbitrumOne)
+    const defaultChainId = destinationChainIds[0]
+    const nonDefaultChainIds = destinationChainIds.slice(1)
+
+    expect(defaultChainId).toBe(ChainId.Ethereum)
+    expect(isAscending(nonDefaultChainIds)).toBe(true)
+  })
+
+  it('should return a sorted list for Sepolia', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.Sepolia)
+    const defaultChainId = destinationChainIds[0]
+    const nonDefaultChainIds = destinationChainIds.slice(1)
+
+    expect(defaultChainId).toBe(ChainId.ArbitrumSepolia)
+    expect(isAscending(nonDefaultChainIds)).toBe(true)
+  })
+
+  it('should return a sorted list for Arbitrum Sepolia', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.ArbitrumSepolia)
+    const defaultChainId = destinationChainIds[0]
+    const nonDefaultChainIds = destinationChainIds.slice(1)
+
+    expect(defaultChainId).toBe(ChainId.Sepolia)
+    expect(isAscending(nonDefaultChainIds)).toBe(true)
   })
 })

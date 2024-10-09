@@ -4,6 +4,7 @@ import { BigNumber, constants } from 'ethers'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { fetchErc20Allowance } from './TokenUtils'
 import { DepositTxEstimateGasParams } from './TokenDepositUtils'
+import { isCustomDestinationAddressTx } from '../state/app/utils'
 
 function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): DepositGasEstimates {
   return {
@@ -46,7 +47,13 @@ export type DepositEthEstimateGasParams = Omit<
 export async function depositEthEstimateGas(
   params: DepositEthEstimateGasParams
 ): Promise<DepositGasEstimates> {
-  const { amount, address, parentChainProvider, childChainProvider } = params
+  const {
+    amount,
+    address,
+    parentChainProvider,
+    childChainProvider,
+    destinationAddress
+  } = params
   const ethBridger = await EthBridger.fromProvider(childChainProvider)
 
   const customFeeToken = typeof ethBridger.nativeToken !== 'undefined'
@@ -55,7 +62,33 @@ export async function depositEthEstimateGas(
     return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
   }
 
-  // todo: update this when we support custom destination addresses for eth deposits
+  const isDifferentDestinationAddress = isCustomDestinationAddressTx({
+    sender: address,
+    destination: destinationAddress
+  })
+
+  if (isDifferentDestinationAddress) {
+    const depositToRequest = await ethBridger.getDepositToRequest({
+      amount,
+      from: address,
+      parentProvider: parentChainProvider,
+      childProvider: childChainProvider,
+      // we know it's defined
+      destinationAddress: String(destinationAddress)
+    })
+
+    const estimatedParentChainGas = await parentChainProvider.estimateGas(
+      depositToRequest.txRequest
+    )
+
+    return {
+      estimatedParentChainGas,
+      estimatedChildChainGas: depositToRequest.retryableData.gasLimit,
+      estimatedChildChainSubmissionCost:
+        depositToRequest.retryableData.maxSubmissionCost
+    }
+  }
+
   const depositRequest = await ethBridger.getDepositRequest({
     amount,
     from: address

@@ -87,7 +87,7 @@ jobs:
           no-l3-token-bridge: ${{ matrix.test.type != 'orbit' }}
 
       - name: Run e2e tests via cypress-io/github-action
-        uses: cypress-io/github-action@8d3918616d8ac34caa2b49afc8b408b6a872a6f5 # pin@v6.7.1
+        uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # pin@v6.7.6
         with:
           start: yarn start
           command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.type == 'orbit' && ':orbit') || '' }} --browser chromium"
@@ -112,7 +112,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ inputs.test_type }}
+          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ (matrix.test.type == 'cctp' && 'cctp') || (matrix.test.type == 'orbit' && 'l3') || 'regular'}}
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots

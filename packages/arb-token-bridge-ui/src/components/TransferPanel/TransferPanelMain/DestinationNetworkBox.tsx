@@ -29,6 +29,7 @@ import { ether } from '../../../constants'
 import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
 import { useAmount2InputVisibility } from './SourceNetworkBox'
+import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 
 function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -73,11 +74,7 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   )
 }
 
-function DestinationNetworkBalance({
-  showUsdcSpecificInfo
-}: {
-  showUsdcSpecificInfo: boolean
-}) {
+function DestinationNetworkBalance() {
   const {
     app: { selectedToken }
   } = useAppState()
@@ -91,6 +88,8 @@ function DestinationNetworkBalance({
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const isCctpTransfer = useIsCctpTransfer()
 
   if (selectedToken) {
     return (
@@ -116,7 +115,7 @@ function DestinationNetworkBalance({
         />
         {/* In deposit mode, when user selected USDC on mainnet,
         the UI shows the Arb One balance of both USDC.e and native USDC */}
-        {showUsdcSpecificInfo && isDepositMode && (
+        {isCctpTransfer && isDepositMode && (
           <TokenBalance
             balance={
               (isArbitrumOne
@@ -149,11 +148,7 @@ function DestinationNetworkBalance({
   return <NativeCurrencyDestinationBalance prefix="Balance: " />
 }
 
-export function DestinationNetworkBox({
-  showUsdcSpecificInfo
-}: {
-  showUsdcSpecificInfo: boolean
-}) {
+export function DestinationNetworkBox() {
   const [networks] = useNetworks()
   const { destinationAddress } = useDestinationAddressStore()
   const isBatchTransferSupported = useIsBatchTransferSupported()
@@ -175,9 +170,7 @@ export function DestinationNetworkBox({
             onClick={openDestinationNetworkSelectionDialog}
           />
           <BalancesContainer>
-            <DestinationNetworkBalance
-              showUsdcSpecificInfo={showUsdcSpecificInfo}
-            />
+            <DestinationNetworkBalance />
             {isBatchTransferSupported && isAmount2InputVisible && (
               <NativeCurrencyDestinationBalance />
             )}
