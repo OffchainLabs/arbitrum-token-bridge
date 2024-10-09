@@ -158,7 +158,10 @@ jobs:
 
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
-   
+
+      - name: Install sharp
+        run: SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm_config_arch=x64 npm_config_platform=linux yarn add sharp
+
       - name: Build
         run: yarn workspace scripts build
 
