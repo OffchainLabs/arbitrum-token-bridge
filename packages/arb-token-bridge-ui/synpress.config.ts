@@ -73,22 +73,9 @@ export default defineConfig({
         process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
       )
 
-      try {
-        const data = await fetchErc20Data({
-          address: defaultL3CustomGasTokenNetwork.nativeToken!,
-          provider: new StaticJsonRpcProvider(arbRpcUrl)
-        })
-        console.log({ data })
-      } catch (err) {
-        console.log({ err })
-      }
-
       const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
-
-      console.log({ isCustomFeeToken })
-      throw 'e'
 
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
