@@ -308,7 +308,7 @@
     },
     "1996": {
       "chainId": 1996,
-      "confirmPeriodBlocks": 20,
+      "confirmPeriodBlocks": 45818,
       "ethBridge": {
         "bridge": "0x2f285781B8d58678a3483de52D618198E4d27532",
         "inbox": "0x718E2a83775343d5c0B1eE0676703cBAF30CaFCD",
