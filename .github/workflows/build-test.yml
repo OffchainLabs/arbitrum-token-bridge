@@ -151,16 +151,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libvips-dev
-
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Install sharp
-        run: cd packages/scripts && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm_config_arch=x64 npm_config_platform=linux yarn add sharp
+        run: cd packages/scripts && npm install --platform=linux --arch=x64 sharp
 
       - name: Build
         run: yarn workspace scripts build
