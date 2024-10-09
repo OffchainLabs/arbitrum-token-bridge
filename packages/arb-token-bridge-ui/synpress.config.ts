@@ -69,7 +69,9 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
-      await registerLocalNetwork(process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true')
+      await registerLocalNetwork(
+        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+      )
 
       try {
         const data = await fetchErc20Data({
