@@ -166,8 +166,17 @@ export const commitChangesAndCreatePR = async (
   console.log("Changes committed successfully");
   const issue = await getIssue(process.env.ISSUE_NUMBER!);
   console.log("Creating pull request...");
-  await createPullRequest(branchName, orbitChain.name, issue.html_url);
-  console.log("Pull request created successfully");
+  await createPullRequest(branchName, orbitChain.name, issue.html_url)
+    .catch((err) => {
+      if (err.message.includes("A pull request already exists")) {
+        console.log("Pull request already exists.");
+      } else {
+        throw err;
+      }
+    })
+    .then(() => {
+      console.log("Pull request created successfully");
+    });
   core.endGroup();
 };
 
