@@ -119,6 +119,12 @@ describe('Withdraw ERC20 Token', () => {
           })
             .should('be.visible')
             .click()
+
+          cy.findByRole('switch', {
+            name: /possible the committee fails/i
+          })
+            .should('be.visible')
+            .click()
           // the Continue withdrawal button should not be disabled now
           cy.findByRole('button', {
             name: /Continue/i
@@ -230,6 +236,12 @@ describe('Withdraw ERC20 Token', () => {
 
           cy.findByRole('switch', {
             name: /after claiming my funds/i
+          })
+            .should('be.visible')
+            .click()
+
+          cy.findByRole('switch', {
+            name: /possible the committee fails/i
           })
             .should('be.visible')
             .click()

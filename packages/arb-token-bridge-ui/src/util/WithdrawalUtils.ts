@@ -9,6 +9,7 @@ import { BigNumber } from 'ethers'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
+import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -103,5 +104,56 @@ export async function withdrawInitTxEstimateGas({
         ? BigNumber.from(1_400_000)
         : BigNumber.from(800_000)
     }
+  }
+}
+
+const SECONDS_IN_MINUTE = 60
+const SECONDS_IN_HOUR = 3600
+const SECONDS_IN_DAY = 86400
+const DEFAULT_CONFIRMATION_TIME = 7 * SECONDS_IN_DAY
+const DEFAULT_FAST_WITHDRAWAL_TIME = SECONDS_IN_DAY
+
+function formatDuration(seconds: number): string {
+  if (seconds < SECONDS_IN_MINUTE) return `${seconds} seconds`
+  if (seconds < SECONDS_IN_HOUR)
+    return `${Math.round(seconds / SECONDS_IN_MINUTE)} minutes`
+  if (seconds < SECONDS_IN_DAY)
+    return `${Math.round(seconds / SECONDS_IN_HOUR)} hours`
+  return `${Math.round(seconds / SECONDS_IN_DAY)} days`
+}
+
+/**
+ * Calculate confirmation time for bridge transactions.
+ * @param {number} chainId - The ID of the parent chain.
+ */
+export function getConfirmationTime(chainId: number) {
+  const { fastWithdrawalTime, fastWithdrawalActive } =
+    getBridgeUiConfigForChain(chainId)
+
+  const isDefaultConfirmationTime = !fastWithdrawalActive
+  const isDefaultFastWithdrawal = fastWithdrawalActive && !fastWithdrawalTime
+  const isCustomFastWithdrawal = fastWithdrawalActive && !!fastWithdrawalTime
+
+  let confirmationTimeInSeconds: number
+
+  if (isDefaultFastWithdrawal) {
+    confirmationTimeInSeconds = DEFAULT_FAST_WITHDRAWAL_TIME
+  } else if (isCustomFastWithdrawal) {
+    confirmationTimeInSeconds = fastWithdrawalTime / 1000
+  } else {
+    confirmationTimeInSeconds = DEFAULT_CONFIRMATION_TIME
+  }
+
+  const confirmationTimeInReadableFormat = formatDuration(
+    confirmationTimeInSeconds
+  )
+
+  return {
+    fastWithdrawalActive,
+    isDefaultConfirmationTime,
+    isDefaultFastWithdrawal,
+    isCustomFastWithdrawal,
+    confirmationTimeInSeconds,
+    confirmationTimeInReadableFormat
   }
 }
