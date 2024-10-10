@@ -427,7 +427,7 @@ async function fundErc20ToChildChain({
   isCustomFeeToken: boolean
 }) {
   // deploy any token that's not WETH
-  // only deploy with for custom fee token chains because it's not deployed there
+  // only deploy WETH for custom fee token chains because it's not deployed there
   if (parentErc20Address !== l1WethAddress || isCustomFeeToken) {
     // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
     await deployERC20ToChildChain(parentErc20Address)
