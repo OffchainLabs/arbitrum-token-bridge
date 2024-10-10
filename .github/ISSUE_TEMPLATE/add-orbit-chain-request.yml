@@ -274,7 +274,7 @@ body:
     id: launch-date
     attributes:
       label: Launch Date
-      description: When is the chain expected to go live on the bridge? (YYYY-MM-DD)
+      description: When is the chain expected to go live on the bridge? (YYYY-MM-DD) Leave empty if the the chain is already live.
       placeholder: ex. 2023-12-31
     validations:
       required: false
