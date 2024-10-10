@@ -59,12 +59,7 @@ const fetchProjects = async (
 
   try {
     const response = await axios.get(
-      `${PORTAL_API_ENDPOINT}/api/projects?chains=${chainSlug}`,
-      {
-        headers: {
-          'Access-Control-Allow-Origin': '*'
-        }
-      }
+      `${PORTAL_API_ENDPOINT}/api/projects?chains=${chainSlug}`
     )
     return response.data as PortalProject[]
   } catch (error) {
