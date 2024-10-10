@@ -157,7 +157,7 @@ export default defineConfig({
       }
 
       // Wrap ETH to test WETH transactions and approve it's usage
-      await fundWeth('parentChain')
+      await fundWethOnParentChain()
       await approveWeth()
       if (isCustomFeeToken) {
         await approveCustomFeeToken({
@@ -361,6 +361,7 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
   })
   await deploy.wait()
 
+  // store deployed weth address
   if (erc20L1Address === l1WethAddress) {
     l2WethAddress = await getL2ERC20Address({
       erc20L1Address: l1WethAddress,
@@ -377,14 +378,10 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
-async function fundWeth(networkType: NetworkType) {
-  console.log(`Funding WETH: ${networkType}...`)
-  const amount = networkType === 'parentChain' ? '0.3' : '0.1'
-  const address = networkType === 'parentChain' ? l1WethAddress : l2WethAddress
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
-  const tx = await getWethContract(provider, address).deposit({
-    value: utils.parseEther(amount)
+async function fundWethOnParentChain() {
+  console.log(`Funding WETH...`)
+  const tx = await getWethContract(parentProvider, l1WethAddress).deposit({
+    value: utils.parseEther('0.3')
   })
   await tx.wait()
 }
@@ -429,6 +426,8 @@ async function fundErc20ToChildChain({
   amount: BigNumber
   isCustomFeeToken: boolean
 }) {
+  // deploy any token that's not WETH
+  // only deploy with for custom fee token chains because it's not deployed there
   if (parentErc20Address !== l1WethAddress || isCustomFeeToken) {
     // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
     await deployERC20ToChildChain(parentErc20Address)
