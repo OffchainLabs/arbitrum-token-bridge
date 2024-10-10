@@ -2,11 +2,13 @@
 
 import fs from "fs";
 import path from "path";
+import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { IncomingChainData } from "../schemas";
 import {
   extractRawChainData,
   nameToSlug,
+  resizeImage,
   stripWhitespace,
   transformIncomingDataToOrbitChain,
   updateOrbitChainsFile,
@@ -138,6 +140,57 @@ describe("Transforms", () => {
         expect(nameToSlug("Multiple   Spaces")).toBe("multiple-spaces");
         expect(nameToSlug("")).toBe("");
       });
+    });
+  });
+
+  describe("resizeImage", () => {
+    const testImagePath = path.join(__dirname, "__mocks__", "test-image.jpg");
+    const resizedImagePath = path.join(
+      __dirname,
+      "__mocks__",
+      "resized-test-image.jpg"
+    );
+
+    // COMMENT OUT TO KEEP RESIZED IMAGES
+    afterEach(() => {
+      // Clean up the resized image after each test
+      if (fs.existsSync(resizedImagePath)) {
+        fs.unlinkSync(resizedImagePath);
+      }
+    });
+
+    it("should resize an image to under 100KB while maintaining aspect ratio", async () => {
+      const inputBuffer = fs.readFileSync(testImagePath);
+      const resizedBuffer = await resizeImage(inputBuffer);
+
+      expect(resizedBuffer.length).toBeLessThanOrEqual(100 * 1024);
+
+      // Save the resized image
+      fs.writeFileSync(resizedImagePath, resizedBuffer);
+      console.log(`Resized image saved to: ${resizedImagePath}`);
+
+      // Additional check to ensure the file was actually saved
+      expect(fs.existsSync(resizedImagePath)).toBe(true);
+      const savedFileSize = fs.statSync(resizedImagePath).size;
+      expect(savedFileSize).toBeLessThanOrEqual(100 * 1024);
+
+      // Verify that the saved image can be decoded and aspect ratio is maintained
+      const originalMetadata = await sharp(testImagePath).metadata();
+      const resizedMetadata = await sharp(resizedImagePath).metadata();
+
+      expect(resizedMetadata.format).toBe("jpeg");
+      expect(resizedMetadata.width).toBeLessThanOrEqual(
+        originalMetadata.width!
+      );
+      expect(resizedMetadata.height).toBeLessThanOrEqual(
+        originalMetadata.height!
+      );
+
+      const originalAspectRatio =
+        originalMetadata.width! / originalMetadata.height!;
+      const resizedAspectRatio =
+        resizedMetadata.width! / resizedMetadata.height!;
+      expect(resizedAspectRatio).toBeCloseTo(originalAspectRatio, 2);
     });
   });
 });
