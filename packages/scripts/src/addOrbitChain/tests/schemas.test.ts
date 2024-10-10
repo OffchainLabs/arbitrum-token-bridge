@@ -140,8 +140,8 @@ describe("Validation Functions", () => {
         childWeth: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
         parentProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
         childProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        parentMulticall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childMulticall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+        parentMultiCall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+        childMultiCall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
       };
       const result = await tokenBridgeSchema.parseAsync(validTokenBridge);
       expect(result).toMatchSnapshot();
