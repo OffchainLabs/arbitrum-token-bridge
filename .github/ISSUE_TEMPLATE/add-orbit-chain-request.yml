@@ -169,7 +169,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## Parent chain (L2) token bridge contract addresses
+        ## Parent chain token bridge contract addresses
   - type: markdown
     attributes:
       value: |
@@ -221,7 +221,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## Orbit chain (L3) token bridge contract addresses 
+        ## Orbit chain token bridge contract addresses 
   - type: markdown
     attributes:
       value: |
@@ -277,4 +277,4 @@ body:
       description: When is the chain expected to go live on the bridge? (YYYY-MM-DD)
       placeholder: ex. 2023-12-31
     validations:
-      required: true
+      required: false
