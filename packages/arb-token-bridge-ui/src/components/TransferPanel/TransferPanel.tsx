@@ -605,7 +605,7 @@ export function TransferPanel() {
         isBatchTransferSupported &&
         Number(amount2) > 0
 
-      let nativeCurrencyToApprove = amountBigNumber
+      let approvalAmountIncrease: BigNumber | undefined = undefined
 
       // Eth transfers to a custom destination use retryables
       // In the case of native currency we need to also approve native currency used for gas
@@ -622,20 +622,26 @@ export function TransferPanel() {
           retryableGasEstimates?.estimatedParentChainGas.mul(parentGasPrice)
 
         if (parentRetryableGas) {
-          nativeCurrencyToApprove = nativeCurrencyToApprove.add(
-            percentIncrease(parentRetryableGas, BigNumber.from(30))
+          approvalAmountIncrease = percentIncrease(
+            parentRetryableGas,
+            BigNumber.from(30)
           )
         }
+      }
+
+      if (isCustomNativeTokenAmount2) {
+        approvalAmountIncrease = utils.parseUnits(
+          amount2,
+          nativeCurrency.decimals
+        )
       }
 
       const isNativeCurrencyApprovalRequired =
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
-          amount: nativeCurrencyToApprove,
+          amount: amountBigNumber,
           options: {
-            approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrency.decimals)
-              : undefined
+            approvalAmountIncrease
           }
         })
 
@@ -646,11 +652,9 @@ export function TransferPanel() {
 
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
-          amount: nativeCurrencyToApprove,
+          amount: amountBigNumber,
           options: {
-            approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrency.decimals)
-              : undefined
+            approvalAmountIncrease
           }
         })
 
