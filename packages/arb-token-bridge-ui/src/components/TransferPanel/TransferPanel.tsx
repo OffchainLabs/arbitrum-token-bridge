@@ -75,6 +75,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
+import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -117,15 +118,17 @@ export function TransferPanel() {
   // do not use `useChainId` because it won't detect chains outside of our wagmi config
   const latestChain = useLatest(useNetwork())
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
+  const {
+    current: {
+      childChain,
+      childChainProvider,
+      parentChain,
+      parentChainProvider,
+      isDepositMode,
+      isTeleportMode
+    }
+  } = useLatest(useNetworksRelationship(latestNetworks.current))
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -228,19 +231,7 @@ export function TransferPanel() {
     }
   }
 
-  const amountBigNumber = useMemo(() => {
-    try {
-      const amountSafe = amount || '0'
-
-      if (selectedToken) {
-        return utils.parseUnits(amountSafe, selectedToken.decimals)
-      }
-
-      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
-    } catch (error) {
-      return constants.Zero
-    }
-  }, [amount, selectedToken, nativeCurrency])
+  const amountBigNumber = useAmountBigNumber()
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
     const waitForInput = openUSDCDepositConfirmationDialog()
@@ -347,31 +338,6 @@ export function TransferPanel() {
     }
 
     setTransferring(true)
-    const childChainName = getNetworkName(childChain.id)
-    const isConnectedToTheWrongChain =
-      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
-
-    if (isConnectedToTheWrongChain) {
-      trackEvent('Switch Network and Transfer', {
-        type: isDepositMode ? 'Deposit' : 'Withdrawal',
-        tokenSymbol: 'USDC',
-        assetType: 'ERC-20',
-        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: childChainName,
-        amount: Number(amount),
-        version: 2
-      })
-
-      const switchTargetChainId = latestNetworks.current.sourceChain.id
-      try {
-        await switchNetworkAsync?.(switchTargetChainId)
-      } catch (error) {
-        captureSentryErrorWithExtraData({
-          error,
-          originFunction: 'transferCctp switchNetworkAsync'
-        })
-      }
-    }
 
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
@@ -392,11 +358,6 @@ export function TransferPanel() {
       } else {
         const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
         if (!withdrawalConfirmation) return
-      }
-
-      if (destinationAddressError) {
-        console.error(destinationAddressError)
-        return
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -467,6 +428,8 @@ export function TransferPanel() {
           } transaction failed: ${(error as Error)?.message ?? error}`
         )
       }
+
+      const childChainName = getNetworkName(childChain.id)
 
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
