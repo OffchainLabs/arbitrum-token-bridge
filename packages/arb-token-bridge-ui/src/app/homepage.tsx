@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect } from 'react'
 import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
@@ -138,7 +139,7 @@ export function getServerSideProps({
   }
 }
 
-export default function Index() {
+export default function Homepage() {
   useEffect(() => {
     addOrbitChainsToArbitrumSDK()
   }, [])

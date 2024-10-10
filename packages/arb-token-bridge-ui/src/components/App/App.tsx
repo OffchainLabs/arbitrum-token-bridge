@@ -1,5 +1,7 @@
+'use client'
+import * as Sentry from '@sentry/react'
+import posthog from 'posthog-js'
 import { useCallback, useEffect, useState } from 'react'
-
 import { useAccount, useNetwork, WagmiConfig, useDisconnect } from 'wagmi'
 import {
   darkTheme,
@@ -12,6 +14,11 @@ import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
+import timeZone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
@@ -25,7 +32,11 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getNetworkName,
+  isNetwork,
+  registerLocalNetwork
+} from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -41,6 +52,12 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
+
+dayjs.extend(utc)
+dayjs.extend(relativeTime)
+dayjs.extend(timeZone)
+dayjs.extend(advancedFormat)
 
 declare global {
   interface Window {
@@ -56,6 +73,62 @@ const rainbowkitTheme = merge(darkTheme(), {
     body: 'Roboto, sans-serif'
   }
 } as Theme)
+
+if (
+  process.env.NODE_ENV !== 'production' ||
+  process.env.NEXT_PUBLIC_IS_E2E_TEST
+) {
+  registerLocalNetwork()
+}
+
+Sentry.init({
+  environment: process.env.NODE_ENV,
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  integrations: [Sentry.browserTracingIntegration()],
+  tracesSampleRate: 0.025,
+  maxValueLength: 0,
+  // https://docs.sentry.io/platforms/javascript/guides/react/configuration/filtering/#filtering-error-events
+  ignoreErrors: [
+    // Ignore events related to failed `eth_gasPrice` calls
+    /eth_gasPrice/i,
+    // Ignore events related to failed `eth_getBalance` calls
+    /eth_getBalance/i,
+    // Ignore events related to failed walletConnect calls
+    /Attempt to connect to relay via/i,
+    // Ignore events about window.propertyX being redefined accross multiple extensions
+    /Cannot redefine property/i,
+    // Ignore WC bug until we can update to the latest version, see FS-677
+    /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i
+  ],
+  beforeSend: (event, hint) => {
+    if (isUserRejectedError(hint.originalException)) {
+      return null
+    }
+
+    return event
+  }
+})
+
+if (
+  typeof window !== 'undefined' &&
+  typeof process.env.NEXT_PUBLIC_POSTHOG_KEY === 'string'
+) {
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+    api_host: 'https://app.posthog.com',
+    loaded: posthog => {
+      if (process.env.NODE_ENV !== 'production') {
+        // when in dev, you can see data that would be sent in prod (in devtools)
+        posthog.debug()
+      }
+    },
+    // store data in temporary memory that expires with each session
+    persistence: 'memory',
+    // by default posthog autocaptures (sends) events such as onClick, etc
+    // we set up our own events instead
+    autocapture: false,
+    disable_session_recording: true
+  })
+}
 
 const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()

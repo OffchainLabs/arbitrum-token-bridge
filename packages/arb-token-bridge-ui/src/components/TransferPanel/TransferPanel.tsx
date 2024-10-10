@@ -1,3 +1,4 @@
+'use client'
 import dayjs from 'dayjs'
 import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
