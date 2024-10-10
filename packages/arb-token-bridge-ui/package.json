@@ -46,6 +46,7 @@
     "tailwind-merge": "^2.0.0",
     "use-query-params": "^2.2.1",
     "wagmi": "^0.12.18",
+    "web-push": "^3.6.7",
     "zod": "^3.22.4",
     "zustand": "^4.3.9"
   },
@@ -88,6 +89,7 @@
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
     "@types/react-virtualized": "^9.21.20",
+    "@types/web-push": "^3.6.3",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^6.13.2",
     "autoprefixer": "^10.4.13",
