@@ -5,6 +5,7 @@ import * as core from "@actions/core";
 import { warning } from "@actions/core";
 import axios from "axios";
 import * as fs from "fs";
+import sharp from "sharp";
 
 import {
   commitChanges,
@@ -27,6 +28,7 @@ import {
 } from "./schemas";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
+const MAX_IMAGE_SIZE_KB = 100;
 
 export const initializeAndFetchData = async (): Promise<void> => {
   core.startGroup("Initialization and Data Fetching");
@@ -218,6 +220,39 @@ export const stripWhitespace = (text: string): string =>
 export const nameToSlug = (name: string): string =>
   name.toLowerCase().replace(/\s+/g, "-");
 
+export const resizeImage = async (
+  imageBuffer: Buffer,
+  maxSizeKB = MAX_IMAGE_SIZE_KB
+): Promise<Buffer> => {
+  console.log("Resizing image...");
+  let resizedImage = imageBuffer;
+  let scale = 1;
+
+  while (resizedImage.length > maxSizeKB * 1024 && scale > 0.1) {
+    const image = sharp(imageBuffer);
+    const metadata = await image.metadata();
+
+    if (!metadata.width || !metadata.height) {
+      throw new Error("Unable to get image dimensions");
+    }
+
+    const newWidth = Math.round(metadata.width * scale);
+    const newHeight = Math.round(metadata.height * scale);
+
+    resizedImage = await image
+      .resize(newWidth, newHeight, { fit: "inside" })
+      .toBuffer();
+
+    scale -= 0.1;
+  }
+
+  if (resizedImage.length > maxSizeKB * 1024) {
+    throw new Error(`Unable to resize image to under ${maxSizeKB}KB`);
+  }
+
+  return resizedImage;
+};
+
 export const fetchAndSaveImage = async (
   urlOrPath: string,
   fileName: string,
@@ -260,7 +295,18 @@ export const fetchAndSaveImage = async (
   }
 
   const response = await axios.get(urlOrPath, { responseType: "arraybuffer" });
-  const imageBuffer = Buffer.from(response.data);
+  let imageBuffer = Buffer.from(response.data);
+
+  // Resize the image
+  try {
+    imageBuffer = await resizeImage(imageBuffer);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.warn(`Failed to resize image: ${error.message}`);
+    } else {
+      console.warn(`Failed to resize image: ${error}`);
+    }
+  }
 
   // Check if the file already exists in the repository
   let sha: string | undefined;
