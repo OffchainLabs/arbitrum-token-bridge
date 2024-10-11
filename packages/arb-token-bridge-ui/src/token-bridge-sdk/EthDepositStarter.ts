@@ -112,15 +112,6 @@ export class EthDepositStarter extends BridgeTransferStarter {
       destination: destinationAddress
     })
 
-    // TODO: remove this when eth-custom-dest feature is live
-    // this is a safety check, this shouldn't happen
-    if (
-      isDifferentDestinationAddress &&
-      !isExperimentalFeatureEnabled('eth-custom-dest')
-    ) {
-      throw 'Native currency transfers to a custom destination address are not supported yet.'
-    }
-
     const depositRequest = isDifferentDestinationAddress
       ? await ethBridger.getDepositToRequest({
           amount,
