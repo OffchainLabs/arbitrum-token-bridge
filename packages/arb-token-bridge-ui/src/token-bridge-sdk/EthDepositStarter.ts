@@ -34,10 +34,15 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async requiresNativeCurrencyApproval({
     amount,
-    signer
+    signer,
+    options
   }: RequiresNativeCurrencyApprovalProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
+
+    const amountToApprove = amount.add(
+      options?.approvalAmountIncrease || BigNumber.from(0)
+    )
 
     const { childNetwork } = ethBridger
 
@@ -53,7 +58,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     })
 
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
-    return customFeeTokenAllowanceForInbox.lt(amount)
+    return customFeeTokenAllowanceForInbox.lt(amountToApprove)
   }
 
   public async approveNativeCurrencyEstimateGas({
@@ -68,12 +73,18 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async approveNativeCurrency({
     signer,
-    amount
+    amount,
+    options
   }: ApproveNativeCurrencyProps) {
     const ethBridger = await this.getBridger()
+
+    const amountToApprove = amount.add(
+      options?.approvalAmountIncrease || BigNumber.from(0)
+    )
+
     return ethBridger.approveGasToken({
       parentSigner: signer,
-      amount
+      amount: amountToApprove
     })
   }
 

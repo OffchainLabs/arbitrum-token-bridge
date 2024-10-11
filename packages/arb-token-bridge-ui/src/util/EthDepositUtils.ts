@@ -68,24 +68,29 @@ export async function depositEthEstimateGas(
   })
 
   if (isDifferentDestinationAddress) {
-    const depositToRequest = await ethBridger.getDepositToRequest({
-      amount,
-      from: address,
-      parentProvider: parentChainProvider,
-      childProvider: childChainProvider,
-      // we know it's defined
-      destinationAddress: String(destinationAddress)
-    })
+    try {
+      const depositToRequest = await ethBridger.getDepositToRequest({
+        amount,
+        from: address,
+        parentProvider: parentChainProvider,
+        childProvider: childChainProvider,
+        // we know it's defined
+        destinationAddress: String(destinationAddress)
+      })
 
-    const estimatedParentChainGas = await parentChainProvider.estimateGas(
-      depositToRequest.txRequest
-    )
+      const estimatedParentChainGas = await parentChainProvider.estimateGas(
+        depositToRequest.txRequest
+      )
 
-    return {
-      estimatedParentChainGas,
-      estimatedChildChainGas: depositToRequest.retryableData.gasLimit,
-      estimatedChildChainSubmissionCost:
-        depositToRequest.retryableData.maxSubmissionCost
+      return {
+        estimatedParentChainGas,
+        estimatedChildChainGas: depositToRequest.retryableData.gasLimit,
+        estimatedChildChainSubmissionCost:
+          depositToRequest.retryableData.maxSubmissionCost
+      }
+    } catch {
+      // we use retryables so we may not be able to fetch gas if the current approval doesn't cover gas costs
+      return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
     }
   }
 
