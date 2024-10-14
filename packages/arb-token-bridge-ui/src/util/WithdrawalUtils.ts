@@ -10,6 +10,7 @@ import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
+import { isNetwork } from './networks'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -112,6 +113,7 @@ const SECONDS_IN_HOUR = 3600
 const SECONDS_IN_DAY = 86400
 const DEFAULT_CONFIRMATION_TIME = 7 * SECONDS_IN_DAY
 const DEFAULT_FAST_WITHDRAWAL_TIME = SECONDS_IN_DAY
+const DEFAULT_TESTNET_CONFIRMATION_TIME = SECONDS_IN_HOUR
 
 function formatDuration(seconds: number): string {
   if (seconds < SECONDS_IN_MINUTE) return `${seconds} seconds`
@@ -129,6 +131,7 @@ function formatDuration(seconds: number): string {
 export function getConfirmationTime(chainId: number) {
   const { fastWithdrawalTime, fastWithdrawalActive } =
     getBridgeUiConfigForChain(chainId)
+  const isTestnet = isNetwork(chainId).isTestnet
 
   const isDefaultConfirmationTime = !fastWithdrawalActive
   const isDefaultFastWithdrawal = fastWithdrawalActive && !fastWithdrawalTime
@@ -141,7 +144,9 @@ export function getConfirmationTime(chainId: number) {
   } else if (isCustomFastWithdrawal) {
     confirmationTimeInSeconds = fastWithdrawalTime / 1000
   } else {
-    confirmationTimeInSeconds = DEFAULT_CONFIRMATION_TIME
+    confirmationTimeInSeconds = isTestnet
+      ? DEFAULT_TESTNET_CONFIRMATION_TIME
+      : DEFAULT_CONFIRMATION_TIME
   }
 
   const confirmationTimeInReadableFormat = formatDuration(
