@@ -88,7 +88,7 @@ export async function depositEthEstimateGas(
         estimatedChildChainSubmissionCost:
           depositToRequest.retryableData.maxSubmissionCost
       }
-    } catch {
+    } catch (_) {
       // we use retryables so we may not be able to fetch gas if the current approval doesn't cover gas costs
       return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
     }

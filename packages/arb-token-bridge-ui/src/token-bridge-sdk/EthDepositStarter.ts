@@ -41,7 +41,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const ethBridger = await this.getBridger()
 
     const amountToApprove = amount.add(
-      options?.approvalAmountIncrease || BigNumber.from(0)
+      options?.approvalAmountIncrease ?? BigNumber.from(0)
     )
 
     const { childNetwork } = ethBridger
@@ -79,7 +79,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const ethBridger = await this.getBridger()
 
     const amountToApprove = amount.add(
-      options?.approvalAmountIncrease || BigNumber.from(0)
+      options?.approvalAmountIncrease ?? BigNumber.from(0)
     )
 
     return ethBridger.approveGasToken({
