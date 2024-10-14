@@ -624,7 +624,12 @@ export function TransferPanel() {
 
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
-          amount: amountBigNumber
+          amount: amountBigNumber,
+          options: {
+            approvalAmountIncrease: isCustomNativeTokenAmount2
+              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              : undefined
+          }
         })
 
         if (approvalTx) {
