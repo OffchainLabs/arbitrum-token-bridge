@@ -3,6 +3,8 @@
 
 import * as core from "@actions/core";
 import { warning } from "@actions/core";
+import { getArbitrumNetworkInformationFromRollup } from "@arbitrum/sdk";
+import { JsonRpcProvider } from "@ethersproject/providers";
 import axios from "axios";
 import * as fs from "fs";
 import sharp from "sharp";
@@ -15,7 +17,6 @@ import {
   getIssue,
   updateContent,
 } from "./github";
-import { fetchRollupContractData } from "./network";
 import {
   chainDataLabelToKey,
   IncomingChainData,
@@ -343,21 +344,24 @@ export const transformIncomingDataToOrbitChain = async (
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
 
-  // Fetch rollup contract data
-  const rollupData = await fetchRollupContractData(
+  // Create a provider using the rpcUrl
+  const provider = new JsonRpcProvider(chainData.rpcUrl);
+
+  // Fetch rollup contract data using getArbitrumNetworkInformationFromRollup
+  const rollupData = await getArbitrumNetworkInformationFromRollup(
     chainData.rollup,
-    chainData.rpcUrl
+    provider
   );
 
   return {
     chainId: parseInt(chainData.chainId, 10),
     confirmPeriodBlocks: rollupData.confirmPeriodBlocks,
     ethBridge: {
-      bridge: rollupData.bridge,
-      inbox: rollupData.inbox,
-      outbox: rollupData.outbox,
+      bridge: rollupData.ethBridge.bridge,
+      inbox: rollupData.ethBridge.inbox,
+      outbox: rollupData.ethBridge.outbox,
       rollup: chainData.rollup,
-      sequencerInbox: rollupData.sequencerInbox,
+      sequencerInbox: rollupData.ethBridge.sequencerInbox,
     },
     nativeToken: chainData.nativeTokenAddress,
     explorerUrl: chainData.explorerUrl,
