@@ -1,14 +1,14 @@
 import dayjs from 'dayjs'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, utils } from 'ethers'
+import { utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { getNetworkName } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
@@ -78,6 +78,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
+import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -186,7 +187,14 @@ export function TransferPanel() {
 
   const { destinationAddressError } = useDestinationAddressError()
 
+  const [showProjectsListing, setShowProjectsListing] = useState(false)
+
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+  useEffect(() => {
+    // hide Project listing when networks are changed
+    setShowProjectsListing(false)
+  }, [childChain.id, parentChain.id])
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
@@ -832,6 +840,11 @@ export function TransferPanel() {
     setTransferring(false)
     clearAmountInput()
 
+    // for custom orbit pages, show Projects' listing after transfer
+    if (isDepositMode && isNetwork(childChain.id).isOrbitChain) {
+      setShowProjectsListing(true)
+    }
+
     await (sourceChainTransaction as TransactionResponse).wait()
 
     // tx confirmed, update balances
@@ -1011,6 +1024,8 @@ export function TransferPanel() {
           </Tippy>
         )}
       </div>
+
+      {showProjectsListing && <ProjectsListing />}
     </>
   )
 }
