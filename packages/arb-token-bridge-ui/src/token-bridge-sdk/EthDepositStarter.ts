@@ -14,6 +14,7 @@ import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { isExperimentalFeatureEnabled } from '../util'
 import { isCustomDestinationAddressTx } from '../state/app/utils'
+import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -60,7 +61,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const parentRetryableGas =
       retryableGasEstimates.estimatedParentChainGas.mul(parentGasPrice)
 
-    return percentIncrease(parentRetryableGas, BigNumber.from(30))
+    return percentIncrease(
+      parentRetryableGas,
+      BigNumber.from(DEFAULT_GAS_PRICE_PERCENT_INCREASE)
+    )
   }
 
   public async requiresNativeCurrencyApproval({

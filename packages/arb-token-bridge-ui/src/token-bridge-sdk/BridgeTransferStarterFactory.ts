@@ -21,6 +21,9 @@ function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
     cacheKey += `-destinationErc20:${props.destinationChainErc20Address}`
   }
 
+  if (props.destinationAddress) {
+    cacheKey += `-destinationAddress:${props.destinationAddress}`
+  }
   return cacheKey
 }
 
