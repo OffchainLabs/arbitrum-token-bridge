@@ -34,11 +34,7 @@ export const confirmAndApproveCctpWithdrawal = () => {
   })
     .should('be.visible')
     .click()
-  cy.findByRole('switch', {
-    name: /possible the committee fails/i
-  })
-    .should('be.visible')
-    .click()
+
   cy.findByRole('button', {
     name: /Continue/i
   })
