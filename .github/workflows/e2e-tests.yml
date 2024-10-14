@@ -91,7 +91,7 @@ jobs:
         if: inputs.test_type != 'cctp'
         uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
-          nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
+          nitro-testnode-ref: 2c2a97c2608ab0c83f2322af2a0dc2bf0b15ea31
           l3-node: ${{ matrix.test.type == 'orbit' }}
           no-l3-token-bridge: ${{ matrix.test.type != 'orbit' }}
 
