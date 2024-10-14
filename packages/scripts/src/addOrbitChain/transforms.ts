@@ -343,11 +343,7 @@ export const transformIncomingDataToOrbitChain = async (
 ): Promise<OrbitChain> => {
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
-
-  // Create a provider using the rpcUrl
   const provider = new JsonRpcProvider(chainData.rpcUrl);
-
-  // Fetch rollup contract data using getArbitrumNetworkInformationFromRollup
   const rollupData = await getArbitrumNetworkInformationFromRollup(
     chainData.rollup,
     provider
