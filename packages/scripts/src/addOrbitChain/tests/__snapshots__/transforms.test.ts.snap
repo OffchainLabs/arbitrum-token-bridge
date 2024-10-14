@@ -8,7 +8,7 @@ exports[`Transforms > extractRawChainData > should extract raw chain data from t
   "childCustomGateway": "0x000000000000000000000000000000000000000E",
   "childErc20Gateway": "0x000000000000000000000000000000000000000F",
   "childGatewayRouter": "0x0000000000000000000000000000000000000010",
-  "childMulticall": "0x0000000000000000000000000000000000000011",
+  "childMultiCall": "0x0000000000000000000000000000000000000011",
   "childProxyAdmin": "0x0000000000000000000000000000000000000012",
   "childWeth": "0x0000000000000000000000000000000000000013",
   "childWethGateway": "0x0000000000000000000000000000000000000014",
@@ -27,7 +27,7 @@ exports[`Transforms > extractRawChainData > should extract raw chain data from t
   "parentCustomGateway": "0x0000000000000000000000000000000000000007",
   "parentErc20Gateway": "0x0000000000000000000000000000000000000008",
   "parentGatewayRouter": "0x0000000000000000000000000000000000000009",
-  "parentMulticall": "0x000000000000000000000000000000000000000A",
+  "parentMultiCall": "0x000000000000000000000000000000000000000A",
   "parentProxyAdmin": "0x000000000000000000000000000000000000000B",
   "parentWeth": "0x000000000000000000000000000000000000000C",
   "parentWethGateway": "0x000000000000000000000000000000000000000D",
@@ -76,14 +76,14 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
     "childCustomGateway": "0x0000000000000000000000000000000000000014",
     "childErc20Gateway": "0x0000000000000000000000000000000000000015",
     "childGatewayRouter": "0x0000000000000000000000000000000000000016",
-    "childMulticall": "0x0000000000000000000000000000000000000017",
+    "childMultiCall": "0x0000000000000000000000000000000000000017",
     "childProxyAdmin": "0x0000000000000000000000000000000000000018",
     "childWeth": "0x0000000000000000000000000000000000000019",
     "childWethGateway": "0x0000000000000000000000000000000000000020",
     "parentCustomGateway": "0x0000000000000000000000000000000000000007",
     "parentErc20Gateway": "0x0000000000000000000000000000000000000008",
     "parentGatewayRouter": "0x0000000000000000000000000000000000000009",
-    "parentMulticall": "0x0000000000000000000000000000000000000010",
+    "parentMultiCall": "0x0000000000000000000000000000000000000010",
     "parentProxyAdmin": "0x0000000000000000000000000000000000000011",
     "parentWeth": "0x0000000000000000000000000000000000000012",
     "parentWethGateway": "0x0000000000000000000000000000000000000013",
@@ -145,8 +145,8 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
         \\"childWeth\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentProxyAdmin\\": \\"0x041f85dd87c46b941dc9b15c6628b19ee5358485\\",
         \\"childProxyAdmin\\": \\"0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E\\",
-        \\"parentMulticall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
-        \\"childMulticall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
+        \\"parentMultiCall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
+        \\"childMultiCall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
       },
       \\"bridgeUiConfig\\": {
         \\"color\\": \\"#F30019\\",
@@ -203,8 +203,8 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
         \\"childWeth\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentProxyAdmin\\": \\"0x041f85dd87c46b941dc9b15c6628b19ee5358485\\",
         \\"childProxyAdmin\\": \\"0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E\\",
-        \\"parentMulticall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
-        \\"childMulticall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
+        \\"parentMultiCall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
+        \\"childMultiCall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
       },
       \\"bridgeUiConfig\\": {
         \\"color\\": \\"#F30019\\",
@@ -287,8 +287,8 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
         \\"childWeth\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentProxyAdmin\\": \\"0x041f85dd87c46b941dc9b15c6628b19ee5358485\\",
         \\"childProxyAdmin\\": \\"0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E\\",
-        \\"parentMulticall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
-        \\"childMulticall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
+        \\"parentMultiCall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
+        \\"childMultiCall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
       },
       \\"bridgeUiConfig\\": {
         \\"color\\": \\"#F30019\\",
