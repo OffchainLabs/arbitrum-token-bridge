@@ -1,12 +1,11 @@
-import { configDefaults, defineConfig } from "vitest/config";
+import { defineConfig } from "vite";
+import { resolve } from "path";
 
 export default defineConfig({
   build: {
-    // Vite build configuration
-    outDir: "dist",
     lib: {
-      entry: "src/index.ts",
-      formats: ["es", "cjs"],
+      entry: resolve(__dirname, "src/index.ts"),
+      formats: ["cjs", "es"],
       fileName: (format) => `scripts.${format}.js`,
     },
     rollupOptions: {
@@ -16,20 +15,17 @@ export default defineConfig({
         "axios",
         "fs",
         "commander",
+        "sharp",
+        "path",
       ],
     },
   },
-  test: {
-    // Vitest configuration
-    globals: true,
-    environment: "node",
-    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-    setupFiles: ["./src/addOrbitChain/tests/setup.ts"],
-
-    exclude: [...configDefaults.exclude, "dist", "node_modules"],
-    coverage: {
-      reporter: ["text", "json", "html"],
-      exclude: ["node_modules/", "src/**/*.{test,spec}.{js,ts}"],
+  optimizeDeps: {
+    exclude: ["sharp"],
+  },
+  resolve: {
+    alias: {
+      path: "path",
     },
   },
 });
