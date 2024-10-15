@@ -34,11 +34,25 @@ import { Address } from '../../util/AddressUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { createNotification } from '../../util/notifications'
+import { shortenTxHash } from '../../util/CommonUtils'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   const { sourceChainId, destinationChainId } = tx
 
+  const txName = `Transaction ${shortenTxHash(tx.txId)} on ${getNetworkName(
+    sourceChainId
+  )}`
+  createNotification({
+    text: `${txName} failed. Please retry the transaction.`,
+    tag: 'failed'
+  })
+
   if (isTxFailed(tx)) {
+    createNotification({
+      text: `${txName} failed. Please retry the transaction.`,
+      tag: 'failed'
+    })
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
@@ -53,6 +67,10 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   }
 
   if (isTxExpired(tx)) {
+    createNotification({
+      text: `${txName} expired. Please contact support.`,
+      tag: 'expired'
+    })
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
@@ -81,6 +99,10 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   }
 
   if (isTxClaimable(tx)) {
+    createNotification({
+      text: `${txName} is ready to be claimed. Please claim the funds.`,
+      tag: 'claimable'
+    })
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}

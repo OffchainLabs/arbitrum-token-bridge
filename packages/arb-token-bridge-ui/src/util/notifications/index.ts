@@ -7,11 +7,18 @@ export function requestNotificationPermission() {
   return Notification.requestPermission()
 }
 
-export function createNotification({ text }: { text: string }) {
+export function createNotification({
+  text,
+  tag
+}: {
+  text: string
+  tag?: string
+}) {
   const img = '/logo.png'
   const notification = new Notification('Arbitrum Token Bridge', {
     body: text,
-    icon: img
+    icon: img,
+    tag
   })
   return notification
 }
