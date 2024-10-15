@@ -42,7 +42,7 @@ async function isBlocked(address: Address): Promise<boolean> {
       additionalData: { address }
     })
 
-    return true
+    return false
   }
 }
 
