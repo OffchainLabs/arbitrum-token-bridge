@@ -140,11 +140,6 @@ export const AdvancedSettings = () => {
     return isEOA && !destinationAddress
   }, [destinationAddress, isEOA])
 
-  // Disabled for ETH
-  if (!selectedToken && !isExperimentalFeatureEnabled('eth-custom-dest')) {
-    return null
-  }
-
   if (!isEOA && !isSmartContractWallet) {
     return null
   }

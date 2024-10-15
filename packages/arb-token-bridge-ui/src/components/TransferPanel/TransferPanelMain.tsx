@@ -281,18 +281,6 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
-  useEffect(() => {
-    if (isExperimentalFeatureEnabled('eth-custom-dest')) {
-      // do not reset destination address for this feature
-      // this will also be the default behavior when the feature is live - which means we will remove this hook
-      return
-    }
-    // Different destination address only allowed for tokens
-    if (!selectedToken) {
-      setDestinationAddress(undefined)
-    }
-  }, [selectedToken, setDestinationAddress])
-
   useUpdateUSDCTokenData()
 
   return (

@@ -269,7 +269,7 @@ export function openTransactionDetails({
   amount: number
   amount2?: number
   symbol: string
-  symbol2: string
+  symbol2?: string
 }): Cypress.Chainable<JQuery<HTMLElement>> {
   cy.findTransactionInTransactionHistory({
     amount,

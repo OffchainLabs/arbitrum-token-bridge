@@ -55,7 +55,7 @@ export const getAPIBaseUrl = () => {
 }
 
 // add feature flags to the array
-const featureFlags = ['eth-custom-dest'] as const
+const featureFlags = [] as const
 
 type FeatureFlag = (typeof featureFlags)[number]
 

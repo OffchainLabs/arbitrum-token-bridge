@@ -50,10 +50,6 @@ export const fetchEthDepositsToCustomDestinationFromSubgraph = async ({
   pageNumber?: number
   searchString?: string
 }): Promise<FetchEthDepositsToCustomDestinationFromSubgraphResult[]> => {
-  if (!isExperimentalFeatureEnabled('eth-custom-dest')) {
-    return []
-  }
-
   if (toBlock && fromBlock >= toBlock) {
     // if fromBlock > toBlock or both are equal / 0
     return []
