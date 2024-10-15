@@ -36,6 +36,7 @@ async function isBlocked(address: Address): Promise<boolean> {
     const { blocked } = await response.json()
     return blocked
   } catch (error) {
+    console.error('Failed to check if address is blocked', error)
     captureSentryErrorWithExtraData({
       error,
       originFunction: 'isBlocked',
