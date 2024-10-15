@@ -36,7 +36,7 @@ body:
     id: brand-color
     attributes:
       label: Brand color
-      description: The primary hex code color of your chain.
+      description: The primary hex code color of your chain. Must have a contrast ratio of at least 3:1 against white (#FFFFFF) for accessibility.
       placeholder: ex. "#FFFFFF"
     validations:
       required: true
@@ -236,6 +236,7 @@ body:
     id: child-erc20-gateway
     attributes:
       label: Child ERC20 Gateway
+      description: This is also called the standard gateway. [Read more](https://docs.arbitrum.io/build-decentralized-apps/token-bridging/token-bridge-erc20#default-standard-bridging).
     validations:
       required: true
   - type: input
@@ -268,3 +269,12 @@ body:
       label: Child WETH Gateway
     validations:
       required: true
+
+  - type: input
+    id: launch-date
+    attributes:
+      label: Launch Date
+      description: When is the chain expected to go live on the bridge? (YYYY-MM-DD) Leave empty if the the chain is already live.
+      placeholder: ex. 2023-12-31
+    validations:
+      required: false
