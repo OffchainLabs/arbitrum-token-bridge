@@ -7,8 +7,6 @@ import { isNetwork } from '../util/networks'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
-const SCREENINGS_API_URL = process.env.NEXT_SCREENINGS_API_URL
-
 /**
  * Checks if an address is blocked using the external Screenings API service.
  * @param {Address} address - The address to check.
@@ -23,7 +21,7 @@ async function isBlocked(address: Address): Promise<boolean> {
       return false
     }
 
-    const url = new URL(SCREENINGS_API_URL ?? '')
+    const url = new URL(process.env.SCREENING_API_ENDPOINT_V2 ?? '')
     url.searchParams.set('address', address)
 
     const response = await fetch(url, {
