@@ -15,11 +15,7 @@ import {
 import dayjs from 'dayjs'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import {
-  getStandardizedDate,
-  getStandardizedTime,
-  isTokenDeposit
-} from '../../state/app/utils'
+import { isTokenDeposit } from '../../state/app/utils'
 import {
   ChainPair,
   UseTransactionHistoryResult
@@ -33,6 +29,7 @@ import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { Address } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { EnableNotificationsBanner } from './EnableNotificationsBanner'
 
 export const BatchTransferNativeTokenTooltip = ({
   children,
@@ -241,6 +238,7 @@ export const TransactionHistoryTable = (
           </div>
         )}
         <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
+        <EnableNotificationsBanner />
       </div>
 
       <AutoSizer disableHeight>
