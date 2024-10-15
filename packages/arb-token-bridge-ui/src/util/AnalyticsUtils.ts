@@ -99,6 +99,13 @@ type AnalyticsEventMap = {
     complete: boolean
     version: number
   }
+  'Project Click': {
+    network: string
+    projectName: string
+  }
+  'Show All Projects Click': {
+    network: string
+  }
 }
 
 type AnalyticsEvent = keyof AnalyticsEventMap

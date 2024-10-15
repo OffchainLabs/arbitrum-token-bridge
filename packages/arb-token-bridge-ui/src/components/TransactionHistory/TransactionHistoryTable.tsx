@@ -66,26 +66,6 @@ export const ContentWrapper = ({
   )
 }
 
-export const TransactionDateTime = ({
-  standardizedDate
-}: {
-  standardizedDate: number | null
-}) => {
-  // Standardized formatted date-time component used across transaction rows
-
-  if (!standardizedDate) return <span className="whitespace-nowrap">n/a</span>
-  return (
-    <div className="flex flex-nowrap gap-1">
-      <span className="whitespace-nowrap">
-        {getStandardizedDate(standardizedDate)}
-      </span>
-      <span className="whitespace-nowrap opacity-60">
-        {getStandardizedTime(standardizedDate)}
-      </span>
-    </div>
-  )
-}
-
 const TableHeader = ({
   children,
   className
