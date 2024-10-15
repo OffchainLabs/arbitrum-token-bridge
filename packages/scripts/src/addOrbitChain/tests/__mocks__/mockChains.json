@@ -1,0 +1,18 @@
+{
+  "mainnet": [
+    {
+      "chainId": 42161,
+      "name": "Arbitrum One",
+      "explorerUrl": "https://arbiscan.io",
+      "rpcUrl": "https://arb1.arbitrum.io/rpc"
+    }
+  ],
+  "testnet": [
+    {
+      "chainId": 421613,
+      "name": "Arbitrum Goerli",
+      "explorerUrl": "https://goerli.arbiscan.io",
+      "rpcUrl": "https://goerli-rollup.arbitrum.io/rpc"
+    }
+  ]
+}
