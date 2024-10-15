@@ -8,6 +8,7 @@ import {
   ChainId,
   getChains,
   getChildChainIds,
+  getNetworkName,
   isNetwork
 } from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
@@ -44,7 +45,10 @@ import {
   getUpdatedWithdrawal,
   isCctpTransfer,
   isSameTransaction,
-  isTxPending
+  isTxPending,
+  isTxFailed,
+  isTxExpired,
+  isTxClaimable
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useAccountType } from './useAccountType'
@@ -64,6 +68,41 @@ import {
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { shortenTxHash } from '../util/CommonUtils'
+import { createNotification } from '../util/notifications'
+
+function createNotificationForTransaction(tx: MergedTransaction) {
+  const txName = `Transaction ${shortenTxHash(tx.txId)} on ${getNetworkName(
+    tx.sourceChainId
+  )}`
+
+  let notificationObject = undefined
+
+  if (isTxFailed(tx)) {
+    notificationObject = {
+      text: `${txName} failed. Please retry the transaction.`,
+      tag: 'failed'
+    }
+  }
+
+  if (isTxExpired(tx)) {
+    notificationObject = {
+      text: `${txName} expired. Please contact support.`,
+      tag: 'expired'
+    }
+  }
+
+  if (isTxClaimable(tx)) {
+    notificationObject = {
+      text: `${txName} is ready to be claimed. Please claim the funds.`,
+      tag: 'claimable'
+    }
+  }
+
+  if (typeof notificationObject !== 'undefined') {
+    createNotification(notificationObject)
+  }
+}
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -710,6 +749,8 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
+      createNotificationForTransaction(tx)
+
       if (!isTxPending(tx)) {
         // if not pending we don't need to check for status, we accept whatever status is passed in
         updateCachedTransaction(tx)
