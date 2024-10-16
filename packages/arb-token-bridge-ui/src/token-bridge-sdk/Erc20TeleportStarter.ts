@@ -12,7 +12,11 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner, percentIncrease } from './utils'
+import {
+  getAddressFromSigner,
+  percentIncrease,
+  validateSignerChainId
+} from './utils'
 import { getL2ConfigForTeleport } from './teleport'
 
 export class Erc20TeleportStarter extends BridgeTransferStarter {
@@ -175,6 +179,11 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
+
     const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
@@ -188,6 +197,17 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       l2Provider,
       l3Provider: this.destinationChainProvider
     })
+
+    const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    const l1TeleporterAddress =
+      l1l3Bridger.l2Network.teleporter?.l1Teleporter.toLowerCase()
+
+    if (depositToAddress !== l1TeleporterAddress) {
+      throw new Error(
+        `Wrong address for teleporter transfer to destination chain. Expected ${l1TeleporterAddress}, got ${depositToAddress} instead.`
+      )
+    }
 
     const tx = await l1l3Bridger.deposit({
       txRequest: depositRequest.txRequest,
