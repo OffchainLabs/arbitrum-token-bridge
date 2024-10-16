@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 import { trackEvent } from '../util/AnalyticsUtils'
-import { isNetwork } from '../util/networks'
 import { Address } from '../util/AddressUtils'
 
 async function isBlocked(address: Address): Promise<boolean> {
@@ -40,7 +39,6 @@ async function fetcher(address: Address): Promise<boolean> {
 
 export function useAccountIsBlocked() {
   const { address } = useAccount()
-  const { chain } = useNetwork()
 
   const queryKey = useMemo(() => {
     if (typeof address === 'undefined') {
@@ -48,13 +46,8 @@ export function useAccountIsBlocked() {
       return null
     }
 
-    if (isNetwork(chain?.id ?? 0).isTestnet) {
-      // Don't fetch
-      return null
-    }
-
     return [address.toLowerCase(), 'useAccountIsBlocked']
-  }, [address, chain?.id])
+  }, [address])
 
   const { data: isBlocked } = useSWRImmutable<boolean>(
     queryKey,
