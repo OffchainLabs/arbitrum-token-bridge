@@ -128,6 +128,20 @@ export const chainSchema = z
             chainId: 17000,
             name: "Holesky",
           };
+        case 8453: // Base
+          return {
+            rpcUrl: "https://mainnet.base.org",
+            blockExplorer: "https://basescan.io",
+            chainId: 8453,
+            name: "Base",
+          };
+        case 8453: // Base
+          return {
+            rpcUrl: "https://sepolia.base.org",
+            blockExplorer: "https://sepolia.basescan.io",
+            chainId: 84532,
+            name: "Base Sepolia",
+          };
         default:
           throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
       }

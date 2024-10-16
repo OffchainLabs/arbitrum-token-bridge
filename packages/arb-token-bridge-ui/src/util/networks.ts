@@ -20,9 +20,11 @@ export enum ChainId {
   // L2
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
+  Base = 8453,
   // L2 Testnets
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
+  BaseSepolia = 84532,
   // L3 Testnets
   L3Local = 333333
 }
@@ -208,10 +210,18 @@ export const rpcURLs: { [chainId: number]: string } = {
     fallback: 'https://arb1.arbitrum.io/rpc'
   }),
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
+  [ChainId.Base]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.Base),
+    fallback: 'https://mainnet.base.org'
+  }),
   // L2 Testnets
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
     env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
     fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
+  }),
+  [ChainId.BaseSepolia]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.BaseSepolia),
+    fallback: 'https://sepolia.base.org'
   })
 }
 
@@ -224,8 +234,10 @@ export const explorerUrls: { [chainId: number]: string } = {
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
+  [ChainId.Base]: 'https://basescan.org',
   // L2 Testnets
-  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io'
+  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
+  [ChainId.BaseSepolia]: 'https://sepolia.basescan.org'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -397,11 +409,16 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
+  const isBaseMainnet = chainId === ChainId.Base
+  const isBaseSepolia = chainId === ChainId.BaseSepolia
+
   const isEthereumMainnetOrTestnet =
     isEthereumMainnet || isSepolia || isHolesky || isLocal
 
   const isArbitrum =
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia
+
+  const isBase = isBaseMainnet || isBaseSepolia
 
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
   const isOrbitChain = !isCoreChain
@@ -416,8 +433,11 @@ export function isNetwork(chainId: ChainId) {
     isArbitrum,
     isArbitrumOne,
     isArbitrumNova,
+    isBase,
+    isBaseMainnet,
     // L2 Testnets
     isArbitrumSepolia,
+    isBaseSepolia,
     // Orbit chains
     isOrbitChain,
     // General
