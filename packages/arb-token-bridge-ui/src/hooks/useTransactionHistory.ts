@@ -48,7 +48,8 @@ import {
   isTxPending,
   isTxFailed,
   isTxExpired,
-  isTxClaimable
+  isTxClaimable,
+  isTxCompleted
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useAccountType } from './useAccountType'
@@ -75,6 +76,7 @@ function createNotificationForTransaction(tx: MergedTransaction) {
   const txName = `Transaction ${shortenTxHash(tx.txId)} on ${getNetworkName(
     tx.sourceChainId
   )}`
+  const destinationChainName = getNetworkName(tx.destinationChainId)
 
   let notificationObject = undefined
 
@@ -96,6 +98,13 @@ function createNotificationForTransaction(tx: MergedTransaction) {
     notificationObject = {
       text: `${txName} is ready to be claimed. Please claim the funds.`,
       tag: 'claimable'
+    }
+  }
+
+  if (isTxCompleted(tx)) {
+    notificationObject = {
+      text: `${txName} was successful. Start using your funds on ${destinationChainName}.`,
+      tag: 'success'
     }
   }
 
@@ -749,22 +758,23 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      createNotificationForTransaction(tx)
-
       if (!isTxPending(tx)) {
         // if not pending we don't need to check for status, we accept whatever status is passed in
+        createNotificationForTransaction(tx)
         updateCachedTransaction(tx)
         return
       }
 
       if (isTeleportTx(tx)) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
+        createNotificationForTransaction(updatedTeleportTransfer)
         updateCachedTransaction(updatedTeleportTransfer)
         return
       }
 
       if (tx.isCctp) {
         const updatedCctpTransfer = await getUpdatedCctpTransfer(tx)
+        createNotificationForTransaction(updatedCctpTransfer)
         updateCachedTransaction(updatedCctpTransfer)
         return
       }
@@ -772,6 +782,7 @@ export const useTransactionHistory = (
       // ETH or token withdrawal
       if (tx.isWithdrawal) {
         const updatedWithdrawal = await getUpdatedWithdrawal(tx)
+        createNotificationForTransaction(updatedWithdrawal)
         updateCachedTransaction(updatedWithdrawal)
         return
       }
@@ -781,12 +792,14 @@ export const useTransactionHistory = (
       // ETH deposit to the same address
       if (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
+        createNotificationForTransaction(updatedEthDeposit)
         updateCachedTransaction(updatedEthDeposit)
         return
       }
 
       // Token deposit or ETH deposit to a different destination address
       const updatedRetryableDeposit = await getUpdatedRetryableDeposit(tx)
+      createNotificationForTransaction(updatedRetryableDeposit)
       updateCachedTransaction(updatedRetryableDeposit)
     },
     [updateCachedTransaction]
