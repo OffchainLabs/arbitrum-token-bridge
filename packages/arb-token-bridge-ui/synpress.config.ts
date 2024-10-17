@@ -20,7 +20,6 @@ import { contractAbi, contractByteCode } from './testErc20Token'
 import {
   checkForAssertions,
   generateActivityOnChains,
-  NetworkType,
   fundEth,
   setupCypressTasks,
   getCustomDestinationAddress,
@@ -74,12 +73,6 @@ export default defineConfig({
         process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
       )
 
-      const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
-      const ethBridger = await EthBridger.fromProvider(childProvider)
-      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
-
-      const nativeToken = await fetchNativeCurrency({ provider: childProvider })
-
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
       }
@@ -95,6 +88,16 @@ export default defineConfig({
         )
       }
 
+      const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+      const ethBridger = await EthBridger.fromProvider(childProvider)
+      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
+
+      console.log({ isCustomFeeToken §})
+
+      const nativeToken = await fetchNativeCurrency({ provider: childProvider })
+
+      console.group({ nativeToken })
+      
       const userWalletAddress = await userWallet.getAddress()
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
