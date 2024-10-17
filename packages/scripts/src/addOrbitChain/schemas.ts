@@ -135,7 +135,7 @@ export const chainSchema = z
             chainId: 8453,
             name: "Base",
           };
-        case 8453: // Base
+        case 84532: // Base Sepolia
           return {
             rpcUrl: "https://sepolia.base.org",
             blockExplorer: "https://sepolia.basescan.io",
