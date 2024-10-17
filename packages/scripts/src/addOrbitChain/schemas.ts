@@ -2,7 +2,7 @@ import { z } from "zod";
 import { constants, ethers } from "ethers";
 import { getOctokit } from "@actions/github";
 
-export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000];
+export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
 
 export const isValidAddress = (address: string): boolean => {
