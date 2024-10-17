@@ -8,6 +8,14 @@ module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'portal.arbitrum.io'
+      }
+    ]
+  },
   async headers() {
     return [
       {
