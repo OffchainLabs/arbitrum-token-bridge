@@ -26,10 +26,12 @@ describe('Login Account', () => {
         multiCallerAddress: getL1NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ETH_RPC_URL')
-      }).then(val => (l1ETHbal = formatAmount(val)))
+      }).then(
+        val => (l1ETHbal = formatAmount(val, { decimals: nativeTokenDecimals }))
+      )
     } else {
       getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
-        val => (l1ETHbal = formatAmount(val, { decimals: nativeTokenDecimals }))
+        val => (l1ETHbal = formatAmount(val))
       )
     }
     getInitialETHBalance(Cypress.env('ARB_RPC_URL')).then(

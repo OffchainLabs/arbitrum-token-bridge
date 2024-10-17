@@ -4,7 +4,7 @@
 
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
-import { MultiCaller } from '@arbitrum/sdk'
+import { EthBridger, MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import {
   defaultL2Network,
@@ -183,6 +183,28 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   })
 }
 
+export async function getNativeTokenDecimals({
+  parentProvider,
+  childProvider
+}: {
+  parentProvider: Provider
+  childProvider: Provider
+}) {
+  const multiCaller = await MultiCaller.fromProvider(parentProvider)
+  const ethBridger = await EthBridger.fromProvider(childProvider)
+  const isCustomFeeToken = typeof ethBridger.nativeToken !== 'undefined'
+
+  const nativeToken = isCustomFeeToken
+    ? (
+        await multiCaller.getTokenData([ethBridger.nativeToken!], {
+          decimals: true
+        })
+      )[0]
+    : undefined
+
+  return nativeToken?.decimals ?? 18
+}
+
 export const visitAfterSomeDelay = (
   url: string,
   options?: Partial<Cypress.VisitOptions>
@@ -221,20 +243,29 @@ export async function generateActivityOnChains({
   // whilst waiting for status we mine on both parentChain and childChain
   console.log('Generating activity on parentChain...')
   const minerParent = Wallet.createRandom().connect(parentProvider)
+
+  const decimals = await getNativeTokenDecimals({
+    parentProvider,
+    childProvider
+  })
+
   await fundEth({
     address: await minerParent.getAddress(),
     provider: parentProvider,
     sourceWallet: wallet,
-    networkType: 'parentChain'
+    networkType: 'parentChain',
+    amount: utils.parseUnits('0.2', decimals)
   })
 
   console.log('Generating activity on childChain...')
   const minerChild = Wallet.createRandom().connect(childProvider)
+
   await fundEth({
     address: await minerChild.getAddress(),
     provider: childProvider,
     sourceWallet: wallet,
-    networkType: 'childChain'
+    networkType: 'childChain',
+    amount: utils.parseEther('0.2')
   })
 
   await Promise.allSettled([keepMining(minerParent), keepMining(minerChild)])
@@ -293,13 +324,13 @@ export async function fundEth({
   provider,
   sourceWallet, // source wallet that will fund the `address`,
   networkType,
-  amount = utils.parseEther('2')
+  amount
 }: {
   address: string
   provider: Provider
   sourceWallet: Wallet
   networkType: NetworkType
-  amount?: BigNumber
+  amount: BigNumber
 }) {
   console.log(`Funding ETH ${address} on ${networkType}...`)
   const balance = await provider.getBalance(address)
