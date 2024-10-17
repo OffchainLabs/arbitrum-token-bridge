@@ -12,7 +12,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
-import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import { Erc20Bridger, EthBridger, MultiCaller } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
@@ -92,12 +92,20 @@ export default defineConfig({
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
-      console.log({ isCustomFeeToken §})
+      console.log({ isCustomFeeToken })
 
-      const nativeToken = await fetchNativeCurrency({ provider: childProvider })
+      const multiCaller = await MultiCaller.fromProvider(parentProvider)
 
-      console.group({ nativeToken })
-      
+      const nativeToken = isCustomFeeToken
+        ? (
+            await multiCaller.getTokenData([ethBridger.nativeToken!], {
+              decimals: true
+            })
+          )[0]
+        : undefined
+
+      console.log({ nativeToken })
+
       const userWalletAddress = await userWallet.getAddress()
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
@@ -208,7 +216,7 @@ export default defineConfig({
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
       config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
       config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken
-      config.env.NATIVE_TOKEN_DECIMALS = nativeToken.decimals
+      config.env.NATIVE_TOKEN_DECIMALS = nativeToken?.decimals ?? 18
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
