@@ -9,6 +9,7 @@ import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useNativeCurrencyDecimalsOnSourceChain } from '../../../hooks/useNativeCurrencyDecimalsOnSourceChain'
 
 export function useMaxAmount() {
   const {
@@ -19,6 +20,8 @@ export function useMaxAmount() {
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const nativeCurrencyDecimalsOnSourceChain =
+    useNativeCurrencyDecimalsOnSourceChain()
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
@@ -36,7 +39,7 @@ export function useMaxAmount() {
     if (nativeCurrency.isCustom && isDepositMode) {
       return utils.formatUnits(
         nativeCurrencySourceBalance,
-        nativeCurrency.decimals
+        nativeCurrencyDecimalsOnSourceChain
       )
     }
 
@@ -72,7 +75,8 @@ export function useMaxAmount() {
     isDepositMode,
     nativeCurrency.decimals,
     nativeCurrency.isCustom,
-    nativeCurrencyBalances.sourceBalance
+    nativeCurrencyBalances.sourceBalance,
+    nativeCurrencyDecimalsOnSourceChain
   ])
 
   const maxAmount = useMemo(() => {

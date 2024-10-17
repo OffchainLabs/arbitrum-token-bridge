@@ -16,6 +16,7 @@ describe('Login Account', () => {
   let l2ETHbal
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const nativeTokenDecimals = Cypress.env('NATIVE_TOKEN_DECIMALS')
   const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
 
   before(() => {
@@ -28,7 +29,7 @@ describe('Login Account', () => {
       }).then(val => (l1ETHbal = formatAmount(val)))
     } else {
       getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
-        val => (l1ETHbal = formatAmount(val))
+        val => (l1ETHbal = formatAmount(val, { decimals: nativeTokenDecimals }))
       )
     }
     getInitialETHBalance(Cypress.env('ARB_RPC_URL')).then(

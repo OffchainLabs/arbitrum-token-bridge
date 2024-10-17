@@ -36,6 +36,7 @@ import {
   registerLocalNetwork
 } from './src/util/networks'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
+import { fetchNativeCurrency } from './src/hooks/useNativeCurrency'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -76,6 +77,8 @@ export default defineConfig({
       const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
+
+      const nativeToken = await fetchNativeCurrency({ provider: childProvider })
 
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
@@ -202,6 +205,7 @@ export default defineConfig({
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
       config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
       config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken
+      config.env.NATIVE_TOKEN_DECIMALS = nativeToken.decimals
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
