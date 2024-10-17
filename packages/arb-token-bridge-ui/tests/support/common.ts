@@ -106,7 +106,7 @@ export const invalidTokenAddress = utils.computeAddress(utils.randomBytes(32))
 
 export const moreThanZeroBalance = /0(\.\d+)/
 
-export function getZeroToLessThanOneNativeToken(symbol: string) {
+export function getZeroToLessThanOneToken(symbol: string) {
   return new RegExp(`0(\\.\\d+)*( ${symbol})`)
 }
 

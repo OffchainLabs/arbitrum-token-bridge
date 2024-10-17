@@ -9,7 +9,7 @@ import {
   getL2NetworkConfig,
   getL1NetworkName,
   getL2NetworkName,
-  getZeroToLessThanOneNativeToken,
+  getZeroToLessThanOneToken,
   ERC20TokenSymbol
 } from '../../support/common'
 
@@ -29,7 +29,7 @@ const withdrawalTestCases = {
 describe('Withdraw ERC20 Token', () => {
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneNativeToken =
-    getZeroToLessThanOneNativeToken(nativeTokenSymbol)
+    getZeroToLessThanOneToken(nativeTokenSymbol)
   let ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
