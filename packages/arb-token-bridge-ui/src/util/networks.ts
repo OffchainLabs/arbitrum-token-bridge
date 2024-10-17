@@ -58,8 +58,29 @@ const l1Networks: { [chainId: number]: L1Network } = {
   }
 }
 
+export type BaseNetwork = L1Network & { isBase: true }
+
+const baseNetworks: { [chainId: number]: BaseNetwork } = {
+  [ChainId.Base]: {
+    chainId: ChainId.Base,
+    blockTime: 2,
+    isTestnet: false,
+    isBase: true
+  },
+  [ChainId.BaseSepolia]: {
+    chainId: ChainId.BaseSepolia,
+    blockTime: 2,
+    isTestnet: true,
+    isBase: true
+  }
+}
+
 export const getChains = () => {
-  const chains = [...Object.values(l1Networks), ...getArbitrumNetworks()]
+  const chains = [
+    ...Object.values(l1Networks),
+    ...Object.values(baseNetworks),
+    ...getArbitrumNetworks()
+  ]
 
   return chains.filter(chain => {
     // exclude L1 chains with no child chains
@@ -93,12 +114,16 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  let currentParentChain: L1Network | ArbitrumNetwork
+  let currentParentChain: L1Network | ArbitrumNetwork | BaseNetwork
 
   try {
     currentParentChain = getArbitrumNetwork(chainId)
   } catch (error) {
     return chainId
+  }
+
+  if (isBaseChain(currentParentChain)) {
+    return currentParentChain.parentChainId
   }
 
   // keep following the parent chains until we find the L1 chain
@@ -189,7 +214,9 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
   ChainId.Holesky,
-  ChainId.ArbitrumSepolia
+  ChainId.ArbitrumSepolia,
+  ChainId.BaseSepolia,
+  ChainId.Base
 ]
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -248,14 +275,27 @@ export const getExplorerUrl = (chainId: ChainId) => {
 export const getL1BlockTime = (chainId: number) => {
   const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
 
-  if (!chain || !isL1Chain(chain)) {
+  if (!chain || (!isL1Chain(chain) && !isBaseChain(chain))) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
+  }
+
+  const { isBase } = isNetwork(chainId)
+
+  if (isBase) {
+    // For Arbitrum L3s built on top of an OP Stack L2, `block.number` will return the L2 block number.
+    // L2 blocks in OP Stack chains are produced every 2 seconds
+    return 2
   }
 
   return chain.blockTime
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
+  // Base is not an Arbitrum chain so it doesn't work in the same way, and we don't support deposits from L1, or withdrawals from Base chains
+  if (isNetwork(chainId).isBase) {
+    return 0
+  }
+
   return getArbitrumNetwork(chainId).confirmPeriodBlocks
 }
 
@@ -389,6 +429,11 @@ function isTestnetChain(chainId: ChainId) {
     return l1Network.isTestnet
   }
 
+  const baseNetwork = baseNetworks[chainId]
+  if (baseNetwork) {
+    return baseNetwork.isTestnet
+  }
+
   try {
     return getArbitrumNetwork(chainId).isTestnet
   } catch {
@@ -492,6 +537,12 @@ function isArbitrumChain(
   chain: L1Network | ArbitrumNetwork
 ): chain is ArbitrumNetwork {
   return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'
+}
+
+function isBaseChain(
+  chain: L1Network | ArbitrumNetwork | BaseNetwork
+): chain is BaseNetwork {
+  return (chain as BaseNetwork).isBase === true
 }
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {

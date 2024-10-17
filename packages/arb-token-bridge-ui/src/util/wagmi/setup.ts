@@ -11,7 +11,9 @@ import {
   localL1Network as local,
   localL2Network as arbitrumLocal,
   localL3Network as l3Local,
-  holesky
+  holesky,
+  base,
+  baseSepolia
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
@@ -32,9 +34,11 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
+      base,
       // sepolia & arb sepolia are for tx history panel tests
       sepolia,
       arbitrumSepolia,
+      baseSepolia,
       holesky,
       // Orbit chains
       ...wagmiOrbitChains,
@@ -49,8 +53,10 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
+      base,
       sepolia,
       arbitrumSepolia,
+      baseSepolia,
       holesky,
       ...wagmiOrbitChains,
       ...customChains
@@ -71,8 +77,10 @@ enum TargetChainKey {
   Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
+  Base = 'base',
   Sepolia = 'sepolia',
-  ArbitrumSepolia = 'arbitrum-sepolia'
+  ArbitrumSepolia = 'arbitrum-sepolia',
+  BaseSepolia = 'base-sepolia'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
@@ -100,11 +108,17 @@ function getChainId(targetChainKey: TargetChainKey): number {
     case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
 
+    case TargetChainKey.Base:
+      return ChainId.Base
+
     case TargetChainKey.Sepolia:
       return ChainId.Sepolia
 
     case TargetChainKey.ArbitrumSepolia:
       return ChainId.ArbitrumSepolia
+
+    case TargetChainKey.BaseSepolia:
+      return ChainId.BaseSepolia
   }
 }
 
