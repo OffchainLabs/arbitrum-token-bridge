@@ -92,12 +92,14 @@ jobs:
         uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
           nitro-testnode-ref: badbcbea9b43d46e115da4d7c9f2f57c31af8431
+          l3-node: ${{ matrix.test.type != 'regular' }}
+          no-l3-token-bridge: ${{ matrix.test.type == 'regular' }}
           args: >-
             ${{
               (matrix.test.type == 'orbit-eth') && '--l3node --l3-token-bridge' ||
-              (matrix.test.type == 'orbit-custom-16dec' && '--l3node --l3-token-bridge --l3-fee-token --l3-fee-token-decimals 16') ||
-              (matrix.test.type == 'orbit-custom-18dec' && '--l3node --l3-token-bridge --l3-fee-token') ||
-              (matrix.test.type == 'orbit-custom-20dec' && '--l3node --l3-token-bridge --l3-fee-token --l3-fee-token-decimals 20') ||
+              (matrix.test.type == 'orbit-custom-16dec' && '--l3-fee-token --l3-fee-token-decimals 16') ||
+              (matrix.test.type == 'orbit-custom-18dec' && '--l3-fee-token') ||
+              (matrix.test.type == 'orbit-custom-20dec' && '--l3-fee-token --l3-fee-token-decimals 20') ||
               ''
             }}
 
