@@ -165,8 +165,17 @@ export const commitChangesAndCreatePR = async (
   console.log("Changes committed successfully");
   const issue = await getIssue(process.env.ISSUE_NUMBER!);
   console.log("Creating pull request...");
-  await createPullRequest(branchName, orbitChain.name, issue.html_url);
-  console.log("Pull request created successfully");
+  await createPullRequest(branchName, orbitChain.name, issue.html_url)
+    .catch((err) => {
+      if (err.message.includes("A pull request already exists")) {
+        console.log("Pull request already exists.");
+      } else {
+        throw err;
+      }
+    })
+    .then(() => {
+      console.log("Pull request created successfully");
+    });
   core.endGroup();
 };
 
@@ -357,14 +366,14 @@ export const transformIncomingDataToOrbitChain = (
       parentCustomGateway: chainData.parentCustomGateway,
       parentErc20Gateway: chainData.parentErc20Gateway,
       parentGatewayRouter: chainData.parentGatewayRouter,
-      parentMulticall: chainData.parentMulticall,
+      parentMultiCall: chainData.parentMultiCall,
       parentProxyAdmin: chainData.parentProxyAdmin,
       parentWeth: chainData.parentWeth,
       parentWethGateway: chainData.parentWethGateway,
       childCustomGateway: chainData.childCustomGateway,
       childErc20Gateway: chainData.childErc20Gateway,
       childGatewayRouter: chainData.childGatewayRouter,
-      childMulticall: chainData.childMulticall,
+      childMultiCall: chainData.childMultiCall,
       childProxyAdmin: chainData.childProxyAdmin,
       childWeth: chainData.childWeth,
       childWethGateway: chainData.childWethGateway,

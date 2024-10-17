@@ -42,14 +42,14 @@ export const tokenBridgeSchema = z.object({
   parentCustomGateway: addressSchema,
   parentErc20Gateway: addressSchema,
   parentGatewayRouter: addressSchema,
-  parentMulticall: addressSchema.optional(),
+  parentMultiCall: addressSchema.optional(),
   parentProxyAdmin: addressSchema,
   parentWeth: addressSchema,
   parentWethGateway: addressSchema,
   childCustomGateway: addressSchema,
   childErc20Gateway: addressSchema,
   childGatewayRouter: addressSchema,
-  childMulticall: addressSchema.optional(),
+  childMultiCall: addressSchema.optional(),
   childProxyAdmin: addressSchema,
   childWeth: addressSchema,
   childWethGateway: addressSchema,
@@ -144,7 +144,7 @@ export const chainSchema = z
       chain.tokenBridge.parentCustomGateway,
       chain.tokenBridge.parentErc20Gateway,
       chain.tokenBridge.parentGatewayRouter,
-      chain.tokenBridge.parentMulticall,
+      chain.tokenBridge.parentMultiCall,
       chain.tokenBridge.parentProxyAdmin,
       chain.tokenBridge.parentWeth,
       chain.tokenBridge.parentWethGateway,
@@ -157,7 +157,7 @@ export const chainSchema = z
       chain.tokenBridge.childCustomGateway,
       chain.tokenBridge.childErc20Gateway,
       chain.tokenBridge.childGatewayRouter,
-      chain.tokenBridge.childMulticall,
+      chain.tokenBridge.childMultiCall,
       chain.tokenBridge.childProxyAdmin,
     ].filter(
       (address): address is string =>
@@ -260,8 +260,8 @@ export const incomingChainDataSchema = z.object({
   childWeth: addressSchema,
   parentProxyAdmin: addressSchema,
   childProxyAdmin: addressSchema,
-  parentMulticall: addressSchema,
-  childMulticall: addressSchema,
+  parentMultiCall: addressSchema,
+  childMultiCall: addressSchema,
 });
 
 // Schema for the final OrbitChain structure
@@ -339,8 +339,8 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Child WETH": "childWeth",
   "Parent Proxy Admin": "parentProxyAdmin",
   "Child Proxy Admin": "childProxyAdmin",
-  "Parent MultiCall": "parentMulticall",
-  "Child Multicall": "childMulticall",
+  "Parent MultiCall": "parentMultiCall",
+  "Child Multicall": "childMultiCall",
   "Parent WETH": "parentWeth",
 };
 
