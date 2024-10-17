@@ -76,9 +76,9 @@ const baseNetworks: { [chainId: number]: BaseNetwork } = {
 }
 
 export const getChains = () => {
-  const chains = [
+  const chains: (L1Network | ArbitrumNetwork | BaseNetwork)[] = [
     ...Object.values(l1Networks),
-    ...Object.values(baseNetworks),
+    baseNetworks[ChainId.BaseSepolia] as BaseNetwork,
     ...getArbitrumNetworks()
   ]
 

@@ -39,7 +39,8 @@ export function isSupportedChainId(
     holesky.id,
     arbitrum.id,
     arbitrumNova.id,
-    base.id,
+    // Enable when there are Orbit Chains on Base
+    // base.id,
     arbitrumSepolia.id,
     baseSepolia.id,
     arbitrumLocal.id,

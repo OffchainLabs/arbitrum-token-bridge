@@ -108,8 +108,9 @@ function getChainId(targetChainKey: TargetChainKey): number {
     case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
 
-    case TargetChainKey.Base:
-      return ChainId.Base
+    // Enable when there are Orbit Chains on Base
+    // case TargetChainKey.Base:
+    // return ChainId.Base
 
     case TargetChainKey.Sepolia:
       return ChainId.Sepolia
