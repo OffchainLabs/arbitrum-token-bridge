@@ -100,8 +100,9 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     actions.app.setConnectionState(ConnectionState.LOADING)
 
     const {
-      isArbitrum: isConnectedToArbitrum,
-      isOrbitChain: isConnectedToOrbitChain
+      isArbitrum: isSourceChainArbitrum,
+      isOrbitChain: isSourceChainOrbitChain,
+      isBase: isSourceChainBaseChain
     } = isNetwork(networks.sourceChain.id)
     const isParentChainEthereum = isNetwork(
       parentChain.id
@@ -114,8 +115,8 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     })
 
     if (
-      (isParentChainEthereum && isConnectedToArbitrum) ||
-      isConnectedToOrbitChain
+      (isParentChainEthereum && isSourceChainArbitrum) ||
+      (isSourceChainOrbitChain && !isSourceChainBaseChain)
     ) {
       console.info('Withdrawal mode detected:')
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
