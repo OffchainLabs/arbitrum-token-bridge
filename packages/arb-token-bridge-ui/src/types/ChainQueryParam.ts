@@ -15,8 +15,7 @@ const chainQueryParams = [
   'sepolia',
   'arbitrum-one',
   'arbitrum-nova',
-  // Enable when there are Orbit Chains on Base
-  // 'base',
+  'base',
   'arbitrum-sepolia',
   'base-sepolia',
   'custom-localhost',
@@ -53,9 +52,8 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
 
-    // Enable when there are Orbit Chains on Base
-    // case ChainId.Base:
-    //   return 'base'
+    case ChainId.Base:
+      return 'base'
 
     case ChainId.Sepolia:
       return 'sepolia'
@@ -110,9 +108,8 @@ export function getChainForChainKeyQueryParam(
     case 'arbitrum-nova':
       return customChains.arbitrumNova
 
-    // Enable when there are Orbit Chains on Base
-    // case 'base':
-    //   return customChains.base
+    case 'base':
+      return customChains.base
 
     case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia
