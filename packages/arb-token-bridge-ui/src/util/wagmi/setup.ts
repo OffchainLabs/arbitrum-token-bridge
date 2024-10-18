@@ -28,18 +28,22 @@ const wagmiOrbitChains = getOrbitChains().map(chain =>
   getWagmiChain(chain.chainId)
 )
 
+const defaultChains = [
+  // mainnet, arb1, & arb nova are for network switch tests
+  mainnet,
+  arbitrum,
+  arbitrumNova,
+  base,
+  // sepolia & arb sepolia are for tx history panel tests
+  sepolia,
+  arbitrumSepolia,
+  baseSepolia,
+  holesky
+]
+
 const chainList = isTestingEnvironment
   ? [
-      // mainnet, arb1, & arb nova are for network switch tests
-      mainnet,
-      arbitrum,
-      arbitrumNova,
-      base,
-      // sepolia & arb sepolia are for tx history panel tests
-      sepolia,
-      arbitrumSepolia,
-      baseSepolia,
-      holesky,
+      ...defaultChains,
       // Orbit chains
       ...wagmiOrbitChains,
       // add local environments during testing
@@ -49,18 +53,7 @@ const chainList = isTestingEnvironment
       // user-added custom chains
       ...customChains
     ]
-  : [
-      mainnet,
-      arbitrum,
-      arbitrumNova,
-      base,
-      sepolia,
-      arbitrumSepolia,
-      baseSepolia,
-      holesky,
-      ...wagmiOrbitChains,
-      ...customChains
-    ]
+  : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
