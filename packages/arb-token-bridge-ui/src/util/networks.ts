@@ -60,11 +60,8 @@ export const getChains = () => {
   const chains = [...Object.values(l1Networks), ...getArbitrumNetworks()]
 
   return chains.filter(chain => {
-    // exclude non-Arbitrum parent chains with no child chains
-    if (
-      !('parentChainId' in chain) &&
-      getChildrenForNetwork(chain.chainId).length === 0
-    ) {
+    // exclude L1 chains with no child chains
+    if (isL1Chain(chain) && getChildrenForNetwork(chain.chainId).length === 0) {
       return false
     }
 
