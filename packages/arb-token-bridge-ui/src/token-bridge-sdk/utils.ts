@@ -138,7 +138,7 @@ export async function validateSignerChainId({
 
   if (signerChainId !== sourceChainId) {
     throw new Error(
-      `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}.`
+      `Signer is on chain ${signerChainId} but should be on chain ${sourceChainId}. Please try again after connecting to the correct chain in your wallet.`
     )
   }
 }

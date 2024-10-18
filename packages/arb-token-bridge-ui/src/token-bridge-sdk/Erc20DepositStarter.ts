@@ -23,6 +23,7 @@ import {
   validateSignerChainId
 } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
 export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
@@ -320,6 +321,12 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     })
 
     const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(depositToAddress, this.sourceChainProvider)) {
+      throw new Error(
+        `Parent chain token gateway router address provided is not a smart contract address.`
+      )
+    }
 
     const parentGatewayRouterAddressForChain =
       getArbitrumNetwork(

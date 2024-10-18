@@ -18,6 +18,7 @@ import {
   validateSignerChainId
 } from './utils'
 import { getL2ConfigForTeleport } from './teleport'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export class Erc20TeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_teleport'
@@ -199,6 +200,12 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     })
 
     const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(depositToAddress, this.sourceChainProvider)) {
+      throw new Error(
+        `Teleporter transfer address provided is not a smart contract address.`
+      )
+    }
 
     const l1TeleporterAddress =
       l1l3Bridger.l2Network.teleporter?.l1Teleporter.toLowerCase()

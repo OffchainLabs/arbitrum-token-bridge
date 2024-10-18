@@ -18,6 +18,7 @@ import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { isExperimentalFeatureEnabled } from '../util'
 import { isCustomDestinationAddressTx } from '../state/app/utils'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -150,6 +151,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
         })
 
     const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(depositToAddress, this.sourceChainProvider)) {
+      throw new Error(`Inbox address provided is not a smart contract address.`)
+    }
 
     const inboxAddressForChain =
       getArbitrumNetwork(destinationChainId).ethBridge.inbox.toLowerCase()

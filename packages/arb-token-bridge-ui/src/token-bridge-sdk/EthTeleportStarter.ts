@@ -14,6 +14,7 @@ import {
   percentIncrease,
   validateSignerChainId
 } from './utils'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
@@ -130,6 +131,10 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     })
 
     const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(depositToAddress, this.sourceChainProvider)) {
+      throw new Error(`Inbox address provided is not a smart contract address.`)
+    }
 
     const inboxAddressForChain =
       l1l3Bridger.l2Network.ethBridge.inbox.toLowerCase()

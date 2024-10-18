@@ -227,6 +227,12 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const withdrawToAddress = request.txRequest.to.toLowerCase()
 
+    if (!addressIsSmartContract(withdrawToAddress, this.sourceChainProvider)) {
+      throw new Error(
+        `Child chain token gateway router address provided is not a smart contract address.`
+      )
+    }
+
     const childGatewayRouterAddressForChain =
       getArbitrumNetwork(
         sourceChainId

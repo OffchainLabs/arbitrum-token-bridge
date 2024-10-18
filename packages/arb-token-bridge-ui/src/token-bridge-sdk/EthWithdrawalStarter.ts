@@ -14,6 +14,7 @@ import {
 } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { isExperimentalFeatureEnabled } from '../util'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'
@@ -76,6 +77,12 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     })
 
     const withdrawToAddress = request.txRequest.to
+
+    if (!addressIsSmartContract(withdrawToAddress, this.sourceChainProvider)) {
+      throw new Error(
+        `Native currency withdrawal request address is not a smart contract address.`
+      )
+    }
 
     if (withdrawToAddress.toLowerCase() !== ARB_SYS_ADDRESS.toLowerCase()) {
       throw new Error(
