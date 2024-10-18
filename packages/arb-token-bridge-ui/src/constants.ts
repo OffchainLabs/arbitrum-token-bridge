@@ -20,6 +20,8 @@ export const ETH_BALANCE_ARTICLE_LINK = `${SUPPORT_LINK_BASE}/hc/en-us/articles/
 
 export const CONFIRMATION_PERIOD_ARTICLE_LINK = `${SUPPORT_LINK_BASE}/hc/en-us/articles/18213843096091`
 
+export const FAST_WITHDRAWAL_DOCS_ARTICLE_LINK = `${DOCS_DOMAIN}/run-arbitrum-node/arbos-releases/arbos31#additional-requirement-for-arbitrum-orbit-chains-who-wish-to-enable-fast-withdrawals`
+
 export const ORBIT_QUICKSTART_LINK =
   'https://docs.arbitrum.io/launch-orbit-chain/orbit-quickstart'
 
