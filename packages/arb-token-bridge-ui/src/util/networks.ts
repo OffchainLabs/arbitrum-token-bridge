@@ -113,7 +113,7 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  let currentParentChain: L1Network | ArbitrumNetwork | BaseNetwork
+  let currentParentChain: NonArbParentNetwork | ArbitrumNetwork
 
   try {
     currentParentChain = getArbitrumNetwork(chainId)
@@ -308,7 +308,7 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
 }
 
-const defaultL1Network: L1Network = {
+const defaultL1Network: NonArbParentNetwork = {
   blockTime: 10,
   chainId: 1337,
   isTestnet: true
@@ -530,7 +530,7 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 
-export function getChildChainIds(chain: ArbitrumNetwork | L1Network) {
+export function getChildChainIds(chain: ArbitrumNetwork | NonArbParentNetwork) {
   const childChainIds = [
     ...getChildrenForNetwork(chain.chainId).map(chain => chain.chainId),
     ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
