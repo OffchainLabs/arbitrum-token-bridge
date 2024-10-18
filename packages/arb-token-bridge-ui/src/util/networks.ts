@@ -29,13 +29,13 @@ export enum ChainId {
   L3Local = 333333
 }
 
-type L1Network = {
+type NonArbParentNetwork = {
   chainId: ChainId
   blockTime: number
   isTestnet: boolean
 }
 
-const l1Networks: { [chainId: number]: L1Network } = {
+const l1Networks: { [chainId: number]: NonArbParentNetwork } = {
   [ChainId.Ethereum]: {
     chainId: ChainId.Ethereum,
     blockTime: 12,
@@ -58,25 +58,21 @@ const l1Networks: { [chainId: number]: L1Network } = {
   }
 }
 
-export type BaseNetwork = L1Network & { isBase: true }
-
-const baseNetworks: { [chainId: number]: BaseNetwork } = {
+const baseNetworks: { [chainId: number]: NonArbParentNetwork } = {
   [ChainId.Base]: {
     chainId: ChainId.Base,
     blockTime: 2,
-    isTestnet: false,
-    isBase: true
+    isTestnet: false
   },
   [ChainId.BaseSepolia]: {
     chainId: ChainId.BaseSepolia,
     blockTime: 2,
-    isTestnet: true,
-    isBase: true
+    isTestnet: true
   }
 }
 
 export const getChains = () => {
-  const chains: (L1Network | ArbitrumNetwork | BaseNetwork)[] = [
+  const chains: (NonArbParentNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
     ...Object.values(baseNetworks),
     ...getArbitrumNetworks()
@@ -522,7 +518,7 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
 
 function isNonArbParentChain(chain: {
   chainId: number
-}): chain is L1Network | BaseNetwork {
+}): chain is NonArbParentNetwork {
   return (
     typeof l1Networks[chain.chainId] !== 'undefined' ||
     typeof baseNetworks[chain.chainId] !== 'undefined'
