@@ -13,6 +13,7 @@ import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 const chainQueryParams = [
   'ethereum',
   'sepolia',
+  'holesky',
   'arbitrum-one',
   'arbitrum-nova',
   'base',
@@ -54,6 +55,9 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
 
     case ChainId.Base:
       return 'base'
+
+    case ChainId.Holesky:
+      return 'holesky'
 
     case ChainId.Sepolia:
       return 'sepolia'
@@ -101,6 +105,9 @@ export function getChainForChainKeyQueryParam(
 
     case 'sepolia':
       return chains.sepolia
+
+    case 'holesky':
+      return customChains.holesky
 
     case 'arbitrum-one':
       return chains.arbitrum
