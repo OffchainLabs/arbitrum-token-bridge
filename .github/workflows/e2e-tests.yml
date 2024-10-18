@@ -92,8 +92,8 @@ jobs:
         uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
           nitro-testnode-ref: badbcbea9b43d46e115da4d7c9f2f57c31af8431
-          l3-node: ${{ matrix.test.type != 'regular' && inputs.test_type.type != 'cctp' }}
-          no-l3-token-bridge: ${{ matrix.test.type == 'regular' || inputs.test_type.type == 'cctp' }}
+          l3-node: ${{ matrix.test.type != 'regular' }}
+          no-l3-token-bridge: ${{ matrix.test.type == 'regular' }}
           args: ${{ matrix.test.type == 'orbit-custom' && '--l3-fee-token' || '' }}
 
       - name: Run e2e tests via cypress-io/github-action
@@ -104,6 +104,7 @@ jobs:
             ${{ 
               (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
               (matrix.test.type == 'orbit-custom' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
+              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser chrome')
               'yarn test:e2e --browser chrome'
             }}
           wait-on: http://127.0.0.1:3000
