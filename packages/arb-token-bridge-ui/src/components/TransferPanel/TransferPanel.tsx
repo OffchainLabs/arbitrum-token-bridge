@@ -805,12 +805,19 @@ export function TransferPanel() {
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
-    const scaledAmount = selectedToken
-      ? amountBigNumber
-      : scaleToNativeTokenDecimals({
-          amount: amountBigNumber,
-          decimals: nativeCurrencyDecimalsOnSourceChain
-        })
+    const { isOrbitChain: isSourceOrbitChain } = isNetwork(
+      latestNetworks.current.sourceChain.id
+    )
+
+    const scaledAmount =
+      // only scale for native tokens, and
+      // only scale if sent from Orbit, because it's always 18 decimals there but the UI needs scaled amount
+      selectedToken || !isSourceOrbitChain
+        ? amountBigNumber
+        : scaleToNativeTokenDecimals({
+            amount: amountBigNumber,
+            decimals: nativeCurrencyDecimalsOnSourceChain
+          })
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
