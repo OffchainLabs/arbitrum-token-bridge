@@ -62,7 +62,10 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
-import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
+import {
+  getBridgeTransferProperties,
+  percentIncrease
+} from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
@@ -564,7 +567,8 @@ export function TransferPanel() {
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId,
-        destinationChainErc20Address
+        destinationChainErc20Address,
+        destinationAddress
       })
 
       const { isNativeCurrencyTransfer, isWithdrawal } =

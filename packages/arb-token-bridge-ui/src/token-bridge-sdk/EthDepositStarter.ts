@@ -1,5 +1,5 @@
 import { EthBridger } from '@arbitrum/sdk'
-import { BigNumber } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
 import {
   ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
@@ -14,6 +14,7 @@ import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { isExperimentalFeatureEnabled } from '../util'
 import { isCustomDestinationAddressTx } from '../state/app/utils'
+import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -32,6 +33,40 @@ export class EthDepositStarter extends BridgeTransferStarter {
     return this.ethBridger
   }
 
+  private async getParentRetryableGas({
+    signer,
+    amount
+  }: {
+    signer: Signer
+    amount: BigNumber
+  }) {
+    const address = await getAddressFromSigner(signer)
+
+    const isDifferentDestinationAddress = isCustomDestinationAddressTx({
+      sender: address,
+      destination: this.destinationAddress
+    })
+
+    if (!isDifferentDestinationAddress) {
+      return BigNumber.from(0)
+    }
+
+    // Eth transfers to a custom destination use retryables
+    // In the case of native currency we need to also approve native currency used for gas
+    const retryableGasEstimates = await this.transferEstimateGas({
+      amount,
+      signer
+    })
+    const parentGasPrice = await this.sourceChainProvider.getGasPrice()
+    const parentRetryableGas =
+      retryableGasEstimates.estimatedParentChainGas.mul(parentGasPrice)
+
+    return percentIncrease(
+      parentRetryableGas,
+      BigNumber.from(DEFAULT_GAS_PRICE_PERCENT_INCREASE)
+    )
+  }
+
   public async requiresNativeCurrencyApproval({
     amount,
     signer
@@ -40,6 +75,11 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const ethBridger = await this.getBridger()
 
     const { childNetwork } = ethBridger
+
+    const parentRetryableGas = await this.getParentRetryableGas({
+      signer,
+      amount
+    })
 
     if (typeof childNetwork.nativeToken === 'undefined') {
       return false // native currency doesn't require approval
@@ -53,7 +93,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     })
 
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
-    return customFeeTokenAllowanceForInbox.lt(amount)
+    return customFeeTokenAllowanceForInbox.lt(amount.add(parentRetryableGas))
   }
 
   public async approveNativeCurrencyEstimateGas({
@@ -71,9 +111,15 @@ export class EthDepositStarter extends BridgeTransferStarter {
     amount
   }: ApproveNativeCurrencyProps) {
     const ethBridger = await this.getBridger()
+
+    const parentRetryableGas = await this.getParentRetryableGas({
+      signer,
+      amount
+    })
+
     return ethBridger.approveGasToken({
       parentSigner: signer,
-      amount
+      amount: amount.add(parentRetryableGas)
     })
   }
 
