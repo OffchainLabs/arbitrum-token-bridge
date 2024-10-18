@@ -57,7 +57,7 @@ beforeAll(() => {
   const polterTestnet = orbitTestnets[polterTestnetChainId]
 
   if (!polterTestnet) {
-    throw new Error(`Could not find Xai Testnet in the Orbit chains list.`)
+    throw new Error(`Could not find Polter Testnet in the Orbit chains list.`)
   }
 
   registerCustomArbitrumNetwork(polterTestnet)
