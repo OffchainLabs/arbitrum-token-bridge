@@ -2,7 +2,7 @@ import { z } from "zod";
 import { constants, ethers } from "ethers";
 import { getOctokit } from "@actions/github";
 
-export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000];
+export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
 
 export const isValidAddress = (address: string): boolean => {
@@ -127,6 +127,20 @@ export const chainSchema = z
             blockExplorer: "https://holesky.etherscan.io/",
             chainId: 17000,
             name: "Holesky",
+          };
+        case 8453: // Base
+          return {
+            rpcUrl: "https://mainnet.base.org",
+            blockExplorer: "https://basescan.io",
+            chainId: 8453,
+            name: "Base",
+          };
+        case 84532: // Base Sepolia
+          return {
+            rpcUrl: "https://sepolia.base.org",
+            blockExplorer: "https://sepolia.basescan.io",
+            chainId: 84532,
+            name: "Base Sepolia",
           };
         default:
           throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
