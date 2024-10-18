@@ -12,7 +12,9 @@ import {
   arbitrumSepolia,
   localL1Network as local,
   localL2Network as arbitrumLocal,
-  localL3Network as l3Local
+  localL3Network as l3Local,
+  base,
+  baseSepolia
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
 import { getDestinationChainIds } from '../util/networks'
@@ -37,7 +39,9 @@ export function isSupportedChainId(
     holesky.id,
     arbitrum.id,
     arbitrumNova.id,
+    base.id,
     arbitrumSepolia.id,
+    baseSepolia.id,
     arbitrumLocal.id,
     l3Local.id,
     local.id,

@@ -11,6 +11,7 @@ import {
   EthL1L3Bridger,
   getArbitrumNetwork
 } from '@arbitrum/sdk'
+import { isDepositMode } from '../util/isDepositMode'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -28,8 +29,6 @@ export const getBridgeTransferProperties = (
   const sourceChainId = props.sourceChainId
   const destinationChainId = props.destinationChainId
 
-  const isSourceChainEthereumMainnetOrTestnet =
-    isNetwork(sourceChainId).isEthereumMainnetOrTestnet
   const isDestinationChainEthereumMainnetOrTestnet =
     isNetwork(destinationChainId).isEthereumMainnetOrTestnet
 
@@ -37,16 +36,16 @@ export const getBridgeTransferProperties = (
   const isDestinationChainArbitrum = isNetwork(destinationChainId).isArbitrum
 
   const isSourceChainOrbit = isNetwork(sourceChainId).isOrbitChain
-  const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
 
-  const isDeposit =
-    isSourceChainEthereumMainnetOrTestnet ||
-    (isSourceChainArbitrum && isDestinationChainOrbit)
+  const { isBase: isDestinationChainBase } = isNetwork(destinationChainId)
+
+  const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
 
   const isWithdrawal =
     (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) || //  l2 arbitrum chains to l1
     (isSourceChainOrbit && isDestinationChainEthereumMainnetOrTestnet) || // l2 orbit chains to l1
-    (isSourceChainOrbit && isDestinationChainArbitrum) // l3 orbit chains to l1
+    (isSourceChainOrbit && isDestinationChainArbitrum) || // l3 orbit chains to l1
+    (isSourceChainOrbit && isDestinationChainBase) // l3 orbit chain to Base l2
 
   const isTeleport = isValidTeleportChainPair({
     sourceChainId,

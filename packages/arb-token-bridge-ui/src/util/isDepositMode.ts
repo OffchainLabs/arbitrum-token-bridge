@@ -9,13 +9,16 @@ export function isDepositMode({
 }) {
   const {
     isEthereumMainnetOrTestnet: isSourceChainEthereum,
-    isArbitrum: isSourceChainArbitrum
+    isArbitrum: isSourceChainArbitrum,
+    isBase: isSourceChainBase
   } = isNetwork(sourceChainId)
   const { isOrbitChain: isDestinationChainOrbit } =
     isNetwork(destinationChainId)
 
   const isDepositMode =
-    isSourceChainEthereum || (isSourceChainArbitrum && isDestinationChainOrbit)
+    isSourceChainEthereum ||
+    isSourceChainBase ||
+    (isSourceChainArbitrum && isDestinationChainOrbit)
 
   return isDepositMode
 }

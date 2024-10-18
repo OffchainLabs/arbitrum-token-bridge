@@ -104,6 +104,25 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
             'AnyTrust protocol. Low fees for high-volume transactions. Secured by a trust-minimized Data Availability Committee (DAC).'
         }
       }
+    case ChainId.Base:
+      return {
+        color: '#0052ff',
+        network: {
+          name: 'Base',
+          logo: '/images/BaseWhite.svg',
+          description:
+            'Base is built as an Ethereum L2, decentralized with the Optimism Superchain, and incubated by Coinbase.'
+        }
+      }
+    case ChainId.BaseSepolia:
+      return {
+        color: '#0052ff',
+        network: {
+          name: 'Base Sepolia',
+          logo: '/images/BaseWhite.svg',
+          description: 'Base Sepolia is an Ethereum L2 testnet by Coinbase.'
+        }
+      }
     default: {
       // added Orbit chains
       const orbitChain = orbitChains[chainId]
