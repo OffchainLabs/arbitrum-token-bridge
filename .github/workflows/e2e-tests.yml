@@ -104,7 +104,7 @@ jobs:
             ${{ 
               (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
               (matrix.test.type == 'orbit-custom' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser chrome')
+              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser chrome') ||
               'yarn test:e2e --browser chrome'
             }}
           wait-on: http://127.0.0.1:3000
