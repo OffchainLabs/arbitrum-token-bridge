@@ -74,7 +74,15 @@ export function sanitizeQueryParams({
     isSupportedChainId(destinationChainId)
   ) {
     const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
-    return { sourceChainId: defaultSourceChainId!, destinationChainId }
+
+    if (typeof defaultSourceChainId === 'undefined') {
+      return {
+        sourceChainId: ChainId.Ethereum,
+        destinationChainId: ChainId.ArbitrumOne
+      }
+    }
+
+    return { sourceChainId: defaultSourceChainId, destinationChainId }
   }
 
   // sourceChainId is valid and destinationChainId is undefined
@@ -83,9 +91,17 @@ export function sanitizeQueryParams({
     !isSupportedChainId(destinationChainId)
   ) {
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
+
+    if (typeof defaultDestinationChainId === 'undefined') {
+      return {
+        sourceChainId: ChainId.Ethereum,
+        destinationChainId: ChainId.ArbitrumOne
+      }
+    }
+
     return {
       sourceChainId: sourceChainId,
-      destinationChainId: defaultDestinationChainId!
+      destinationChainId: defaultDestinationChainId
     }
   }
 
