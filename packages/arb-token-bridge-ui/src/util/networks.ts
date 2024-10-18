@@ -78,13 +78,16 @@ const baseNetworks: { [chainId: number]: BaseNetwork } = {
 export const getChains = () => {
   const chains: (L1Network | ArbitrumNetwork | BaseNetwork)[] = [
     ...Object.values(l1Networks),
-    baseNetworks[ChainId.BaseSepolia] as BaseNetwork,
+    ...Object.values(baseNetworks),
     ...getArbitrumNetworks()
   ]
 
   return chains.filter(chain => {
-    // exclude L1 chains with no child chains
-    if (isL1Chain(chain) && getChildrenForNetwork(chain.chainId).length === 0) {
+    // exclude L1 chains or Base Chains with no child chains
+    if (
+      !('parentChainId' in chain) &&
+      getChildrenForNetwork(chain.chainId).length === 0
+    ) {
       return false
     }
 

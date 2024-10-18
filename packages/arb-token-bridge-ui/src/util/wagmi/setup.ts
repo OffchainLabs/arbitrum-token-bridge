@@ -34,8 +34,7 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      // Enable when there are Orbit Chains on Base
-      // base,
+      base,
       // sepolia & arb sepolia are for tx history panel tests
       sepolia,
       arbitrumSepolia,
@@ -54,8 +53,7 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      // Enable when there are Orbit Chains on Base
-      // base,
+      base,
       sepolia,
       arbitrumSepolia,
       baseSepolia,
@@ -79,8 +77,7 @@ enum TargetChainKey {
   Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
-  // Enable when there are Orbit Chains on Base
-  // Base = 'base',
+  Base = 'base',
   Sepolia = 'sepolia',
   ArbitrumSepolia = 'arbitrum-sepolia',
   BaseSepolia = 'base-sepolia'
@@ -111,9 +108,8 @@ function getChainId(targetChainKey: TargetChainKey): number {
     case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
 
-    // Enable when there are Orbit Chains on Base
-    // case TargetChainKey.Base:
-    // return ChainId.Base
+    case TargetChainKey.Base:
+      return ChainId.Base
 
     case TargetChainKey.Sepolia:
       return ChainId.Sepolia

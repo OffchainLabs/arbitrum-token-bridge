@@ -39,9 +39,8 @@ export function getWagmiChain(chainId: number): Chain {
     case ChainId.ArbitrumNova:
       return arbitrumNova
 
-    // Enable when there are Orbit Chains on Base
-    // case ChainId.Base:
-    //   return base
+    case ChainId.Base:
+      return base
 
     // Testnets
     case ChainId.Sepolia:
