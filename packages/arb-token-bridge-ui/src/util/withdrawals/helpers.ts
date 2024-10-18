@@ -6,7 +6,7 @@ import {
   ChildTransactionReceipt
 } from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
-import { fetchErc20Data } from '../TokenUtils'
+import { fetchErc20Data, scaleToNativeTokenDecimals } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
@@ -87,7 +87,10 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
     sender: event.caller,
     destinationAddress: event.destination,
     type: AssetType.ETH,
-    value: callvalue,
+    value: scaleToNativeTokenDecimals({
+      amount: callvalue,
+      decimals: nativeCurrency.decimals
+    }),
     symbol: nativeCurrency.symbol,
     outgoingMessageState,
     l2TxHash: event.l2TxHash || event.transactionHash,
@@ -314,7 +317,10 @@ export async function mapWithdrawalToL2ToL1EventResult({
     sender: withdrawal.sender,
     destinationAddress: withdrawal.receiver,
     type: AssetType.ETH,
-    value: BigNumber.from(withdrawal.ethValue),
+    value: scaleToNativeTokenDecimals({
+      amount: BigNumber.from(withdrawal.ethValue),
+      decimals: nativeCurrency.decimals
+    }),
     outgoingMessageState,
     l2TxHash: l2TxReceipt.transactionHash,
     symbol: nativeCurrency.symbol,
