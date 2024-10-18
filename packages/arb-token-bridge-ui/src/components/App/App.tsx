@@ -25,7 +25,7 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -41,6 +41,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
+import { isDepositMode } from '../../util/isDepositMode'
 
 declare global {
   interface Window {
@@ -98,15 +99,6 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
-
-    const {
-      isArbitrum: isConnectedToArbitrum,
-      isOrbitChain: isConnectedToOrbitChain
-    } = isNetwork(networks.sourceChain.id)
-    const isParentChainEthereum = isNetwork(
-      parentChain.id
-    ).isEthereumMainnetOrTestnet
-
     actions.app.reset(networks.sourceChain.id)
     actions.app.setChainIds({
       l1NetworkChainId: parentChain.id,
@@ -114,14 +106,16 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     })
 
     if (
-      (isParentChainEthereum && isConnectedToArbitrum) ||
-      isConnectedToOrbitChain
+      isDepositMode({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
+      })
     ) {
-      console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-    } else {
       console.info('Deposit mode detected:')
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+    } else {
+      console.info('Withdrawal mode detected:')
+      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
 
     setTokenBridgeParams({
