@@ -141,7 +141,7 @@ export const searchAndSelectToken = ({
   tokenAddress: string
 }) => {
   // Click on the native token dropdown (Select token button)
-  cy.findSelectTokenButton(Cypress.env('NATIVE_TOKEN_SYMBOL')).click()
+  cy.findSelectTokenButton(Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
