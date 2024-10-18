@@ -112,8 +112,8 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  // the chain provided is an L1 chain, so we can return early
-  if (isL1Chain({ chainId })) {
+  // the chain provided is an L1 chain or Base chain, so we can return early
+  if (isNonArbParentChain({ chainId })) {
     return chainId
   }
 
@@ -125,13 +125,9 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  if (isBaseChain(currentParentChain)) {
-    return currentParentChain.parentChainId
-  }
-
-  // keep following the parent chains until we find the L1 chain
+  // keep following the parent chains until we find the L1/Base chain
   while (true) {
-    if (isL1Chain(currentParentChain)) {
+    if (isNonArbParentChain(currentParentChain)) {
       return currentParentChain.chainId
     }
 
@@ -278,16 +274,8 @@ export const getExplorerUrl = (chainId: ChainId) => {
 export const getL1BlockTime = (chainId: number) => {
   const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
 
-  if (!chain || (!isL1Chain(chain) && !isBaseChain(chain))) {
+  if (!chain || !('blockTime' in chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
-  }
-
-  const { isBase } = isNetwork(chainId)
-
-  if (isBase) {
-    // For Arbitrum L3s built on top of an OP Stack L2, `block.number` will return the L2 block number.
-    // L2 blocks in OP Stack chains are produced every 2 seconds
-    return 2
   }
 
   return chain.blockTime
@@ -532,20 +520,13 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainId] = chain.explorerUrl
 }
 
-function isL1Chain(chain: { chainId: number }): chain is L1Network {
-  return typeof l1Networks[chain.chainId] !== 'undefined'
-}
-
-function isArbitrumChain(
-  chain: L1Network | ArbitrumNetwork
-): chain is ArbitrumNetwork {
-  return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'
-}
-
-function isBaseChain(
-  chain: L1Network | ArbitrumNetwork | BaseNetwork
-): chain is BaseNetwork {
-  return (chain as BaseNetwork).isBase === true
+function isNonArbParentChain(chain: {
+  chainId: number
+}): chain is L1Network | BaseNetwork {
+  return (
+    typeof l1Networks[chain.chainId] !== 'undefined' ||
+    typeof baseNetworks[chain.chainId] !== 'undefined'
+  )
 }
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
@@ -593,7 +574,8 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     return []
   }
 
-  const parentChainId = isArbitrumChain(chain) ? chain.parentChainId : undefined
+  const parentChainId =
+    'parentChainId' in chain ? chain.parentChainId : undefined
 
   const validDestinationChainIds = getChildChainIds(chain)
 

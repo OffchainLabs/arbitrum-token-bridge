@@ -820,7 +820,7 @@
         "network": {
           "name": "Polter Testnet",
           "logo": "/images/PolterTestnetLogo.png",
-          "description": "A gaming testnet for Aavegotchi&apos;s Geist Mainnet."
+          "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
         },
         "nativeTokenData": {
           "name": "Aavegotchi GHST Token",
