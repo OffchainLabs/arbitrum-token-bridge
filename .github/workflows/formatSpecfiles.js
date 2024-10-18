@@ -14,7 +14,11 @@ switch (testType) {
       });
       tests.push({
         ...spec,
-        type: "orbit",
+        type: "orbit-eth",
+      });
+      tests.push({
+        ...spec,
+        type: "orbit-custom",
       });
     });
     break;

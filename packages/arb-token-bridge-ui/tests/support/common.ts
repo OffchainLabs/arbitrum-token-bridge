@@ -6,7 +6,11 @@ import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
-import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
+import {
+  defaultL2Network,
+  defaultL3Network,
+  defaultL3CustomGasTokenNetwork
+} from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
 
 export type NetworkType = 'parentChain' | 'childChain'
@@ -54,15 +58,21 @@ export const getL1NetworkConfig = (): NetworkConfig => {
 
 export const getL2NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH'
+  const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
+
+  const l3Network = isCustomFeeToken
+    ? defaultL3CustomGasTokenNetwork
+    : defaultL3Network
 
   return {
     networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
-    symbol: 'ETH',
+    symbol: nativeTokenSymbol,
     isTestnet: true,
     multiCall: isOrbitTest
-      ? defaultL3Network.tokenBridge!.childMultiCall
+      ? l3Network.tokenBridge!.childMultiCall
       : defaultL2Network.tokenBridge!.childMultiCall
   }
 }
@@ -92,10 +102,13 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
 export const ERC20TokenName = 'Test Arbitrum Token'
 export const ERC20TokenSymbol = 'TESTARB'
 export const ERC20TokenDecimals = 18
-export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
+export const invalidTokenAddress = utils.computeAddress(utils.randomBytes(32))
 
-export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const moreThanZeroBalance = /0(\.\d+)/
+
+export function getZeroToLessThanOneToken(symbol: string) {
+  return new RegExp(`0(\\.\\d+)*( ${symbol})`)
+}
 
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)
@@ -229,19 +242,28 @@ export async function generateActivityOnChains({
 
 export async function checkForAssertions({
   parentProvider,
-  isOrbitTest
+  testType
 }: {
   parentProvider: Provider
-  isOrbitTest: boolean
+  testType: 'regular' | 'orbit-eth' | 'orbit-custom'
 }) {
   const abi = [
     'function latestConfirmed() public view returns (uint64)',
     'function latestNodeCreated() public view returns (uint64)'
   ]
 
-  const rollupAddress = isOrbitTest
-    ? defaultL3Network.ethBridge.rollup
-    : defaultL2Network.ethBridge.rollup
+  let rollupAddress: string
+
+  switch (testType) {
+    case 'orbit-eth':
+      rollupAddress = defaultL3Network.ethBridge.rollup
+      break
+    case 'orbit-custom':
+      rollupAddress = defaultL3CustomGasTokenNetwork.ethBridge.rollup
+      break
+    default:
+      rollupAddress = defaultL2Network.ethBridge.rollup
+  }
 
   const rollupContract = new ethers.Contract(rollupAddress, abi, parentProvider)
 

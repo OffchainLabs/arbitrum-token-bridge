@@ -1,15 +1,19 @@
 /**
- * When user wants to bridge ETH from L1 to L2
+ * When user wants to bridge native token from L1 to L2
  */
 
 import {
   getL1NetworkName,
   getL2NetworkName,
-  zeroToLessThanOneETH
+  getZeroToLessThanOneToken
 } from '../../support/common'
 
-describe('Deposit ETH', () => {
+describe('Deposit native token', () => {
   const ETHAmountToDeposit = 0.0001
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
+  const zeroToLessThanOneNativeToken =
+    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
@@ -24,15 +28,15 @@ describe('Deposit ETH', () => {
   it('should show gas estimations and bridge successfully', () => {
     cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
-    cy.findGasFeeSummary(zeroToLessThanOneETH)
-    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+    cy.findGasFeeSummary(zeroToLessThanOneEth)
+    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
+    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     cy.findMoveFundsButton().click()
     cy.confirmMetamaskTransaction()
     cy.findTransactionInTransactionHistory({
       duration: depositTime,
       amount: ETHAmountToDeposit,
-      symbol: 'ETH'
+      symbol: nativeTokenSymbol
     })
     cy.closeTransactionHistoryPanel()
     cy.findAmountInput().should('have.value', '')
