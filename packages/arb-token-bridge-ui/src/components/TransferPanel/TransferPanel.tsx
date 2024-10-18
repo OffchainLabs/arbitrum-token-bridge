@@ -816,7 +816,7 @@ export function TransferPanel() {
         ? amountBigNumber
         : scaleToNativeTokenDecimals({
             amount: amountBigNumber,
-            decimals: nativeCurrencyDecimalsOnSourceChain
+            decimals: nativeCurrency.decimals
           })
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
