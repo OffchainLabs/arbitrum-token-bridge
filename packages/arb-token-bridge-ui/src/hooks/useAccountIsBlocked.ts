@@ -2,29 +2,48 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
-import { ApiResponseSuccess } from '../pages/api/screenings'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { Address } from '../util/AddressUtils'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
+/**
+ * Checks if an address is blocked using the external Screenings API service.
+ * @param {Address} address - The address to check.
+ * @returns {Promise<boolean>} true if blocked or the request fails
+ */
 async function isBlocked(address: Address): Promise<boolean> {
-  if (
-    process.env.NODE_ENV !== 'production' ||
-    process.env.NEXT_PUBLIC_IS_E2E_TEST
-  ) {
+  try {
+    if (
+      process.env.NODE_ENV !== 'production' ||
+      process.env.NEXT_PUBLIC_IS_E2E_TEST
+    ) {
+      return false
+    }
+
+    const url = new URL(process.env.NEXT_PUBLIC_SCREENING_API_ENDPOINT ?? '')
+    url.searchParams.set('address', address)
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const { blocked } = await response.json()
+    return blocked
+  } catch (error) {
+    console.error('Failed to check if address is blocked', error)
+    captureSentryErrorWithExtraData({
+      error,
+      originFunction: 'isBlocked',
+      additionalData: { address }
+    })
+
     return false
   }
-
-  const searchParams = new URLSearchParams({ address })
-  const response = await fetch('/api/screenings?' + searchParams, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
-  })
-
-  if (!response.ok) {
-    return false
-  }
-
-  return ((await response.json()) as ApiResponseSuccess).blocked
 }
 
 async function fetcher(address: Address): Promise<boolean> {
