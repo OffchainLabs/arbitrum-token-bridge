@@ -385,6 +385,14 @@ function isTestnetChain(chainId: ChainId) {
   }
 }
 
+function getIsArbitrumChain(chainId: ChainId) {
+  try {
+    return !!getArbitrumNetwork(chainId).parentChainId
+  } catch (error) {
+    return false
+  }
+}
+
 export function isNetwork(chainId: ChainId) {
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
@@ -404,7 +412,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia
 
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
-  const isOrbitChain = !isCoreChain
+  const isOrbitChain = getIsArbitrumChain(chainId) && !isCoreChain
 
   return {
     // L1
