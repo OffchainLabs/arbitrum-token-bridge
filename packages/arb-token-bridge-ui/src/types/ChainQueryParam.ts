@@ -16,7 +16,9 @@ const chainQueryParams = [
   'holesky',
   'arbitrum-one',
   'arbitrum-nova',
+  'base',
   'arbitrum-sepolia',
+  'base-sepolia',
   'custom-localhost',
   'arbitrum-localhost',
   'l3-localhost'
@@ -51,6 +53,9 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
 
+    case ChainId.Base:
+      return 'base'
+
     case ChainId.Holesky:
       return 'holesky'
 
@@ -59,6 +64,9 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
 
     case ChainId.ArbitrumSepolia:
       return 'arbitrum-sepolia'
+
+    case ChainId.BaseSepolia:
+      return 'base-sepolia'
 
     case ChainId.Local:
       return 'custom-localhost'
@@ -107,8 +115,14 @@ export function getChainForChainKeyQueryParam(
     case 'arbitrum-nova':
       return customChains.arbitrumNova
 
+    case 'base':
+      return customChains.base
+
     case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia
+
+    case 'base-sepolia':
+      return customChains.baseSepolia
 
     case 'custom-localhost':
       return customChains.localL1Network
