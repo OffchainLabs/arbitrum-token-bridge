@@ -541,6 +541,57 @@
           "logoUrl": "/images/ApeTokenLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 1625,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x7983403dDA368AA7d67145a9b81c5c517F364c42",
+        "inbox": "0x7AD2a94BefF3294a31894cFb5ba4206957a53c19",
+        "outbox": "0x1153a1e4B1523DFf36f77d696bd6eBF2B0e7DAbF",
+        "rollup": "0xf993AF239770932A0EDaB88B6A5ba3708Bd58239",
+        "sequencerInbox": "0x8D99372612e8cFE7163B1a453831Bc40eAeb3cF3"
+      },
+      "nativeToken": "0x9C7BEBa8F6eF6643aBd725e45a4E8387eF260649",
+      "explorerUrl": "https://explorer.gravity.xyz",
+      "rpcUrl": "https://rpc.gravity.xyz",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Gravity Alpha",
+      "slug": "gravity-alpha",
+      "parentChainId": 1,
+      "retryableLifetimeSeconds": 604800,
+      "tokenBridge": {
+        "parentCustomGateway": "0xa26Fd1c23634870303e42311E114D5cc8301Ed1E",
+        "parentErc20Gateway": "0xb23988D9728EF147EAa02D602D7e067B6131A1bB",
+        "parentGatewayRouter": "0x8713569d016f981D956715e9EE2795382168b5c0",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0xBbc3872E30C91ef69336937838c2a283F79f7E68",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xC18EADE2B2CdA6AcFAc4fd2226C724a1008b02Ab",
+        "childErc20Gateway": "0xD330E617270F375Bd476896f3A8AE9041264E13d",
+        "childGatewayRouter": "0xf1cA401FB474520EbaBb285670891dEbd7C505Bc",
+        "childMultiCall": "0xABF31e3A13528082cE5bb05D6E88749556DAFD5F",
+        "childProxyAdmin": "0xB881cf085a78491AaA71Bf22bc87E67865a4409a",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFAC43",
+        "network": {
+          "name": "Gravity Alpha",
+          "logo": "/images/GravityAlpha_Logo.png",
+          "description": "The Magnet Chain for Web3."
+        },
+        "nativeTokenData": {
+          "name": "G",
+          "symbol": "G",
+          "decimals": 18,
+          "logoUrl": "/images/GravityAlpha_NativeTokenLogo.png"
+        }
+      }
     }
   ],
   "testnet": [
