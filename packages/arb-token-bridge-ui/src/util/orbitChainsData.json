@@ -491,6 +491,56 @@
           "logoUrl": "/images/sxTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 33139,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x6B71AFb4b7725227ab944c96FE018AB9dc0434b8",
+        "inbox": "0x1B98e4ED82Ee1a91A65a38C690e2266364064D15",
+        "outbox": "0x4F405BA65291063d8A524c2bDf55d4e67405c2aF",
+        "rollup": "0x374de579AE15aD59eD0519aeAf1A23F348Df259c",
+        "sequencerInbox": "0xE6a92Ae29E24C343eE66A2B3D3ECB783d65E4a3C"
+      },
+      "explorerUrl": "https://apescan.io",
+      "nativeToken": "0x7f9FBf9bDd3F4105C478b996B648FE6e828a1e98",
+      "rpcUrl": "https://apechain.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "ApeChain",
+      "slug": "apechain",
+      "parentChainId": 42161,
+      "retryableLifetimeSeconds": 604800,
+      "tokenBridge": {
+        "parentCustomGateway": "0xEd543dA6fE33cceE50DC024b78C27959235D0ab0",
+        "parentErc20Gateway": "0xB603a1C07A11945bFe4855347c88583e31b8ddB0",
+        "parentGatewayRouter": "0xD57Df5C2Dc2D60307a74944191f2aA5B7BD4a700",
+        "parentMultiCall": "0x411f8A148e448bBe75382d4FFABee0796484f3c6",
+        "parentProxyAdmin": "0x1E5f8ff72895aEa53DD62b590dA51E92dC75b507",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x49607221AF038229cEc6c85DB37a652E00226D29",
+        "childErc20Gateway": "0xf9710169D2f3524E7Bf068F6DDF6b2cc65D38a14",
+        "childGatewayRouter": "0x31eFB847d3f7A0C9Ba1364a6423aEa0a7a60BF3C",
+        "childMultiCall": "0x350186513FB2C148A50439311533656EF8096D9C",
+        "childProxyAdmin": "0x965a8220D41A031b1F71d94feFBf13dE4f686B33",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#0054FA",
+        "network": {
+          "name": "ApeChain",
+          "logo": "/images/ApeChainLogo.svg",
+          "description": "ApeChain is a dedicated infrastructure layer to power the ApeCoin ecosystem."
+        },
+        "nativeTokenData": {
+          "name": "ApeCoin",
+          "symbol": "APE",
+          "decimals": 18,
+          "logoUrl": "/images/ApeTokenLogo.svg"
+        }
+      }
     }
   ],
   "testnet": [
