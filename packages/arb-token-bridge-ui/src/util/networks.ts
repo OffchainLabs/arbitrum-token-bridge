@@ -29,13 +29,14 @@ export enum ChainId {
   L3Local = 333333
 }
 
-type NonArbParentNetwork = {
+/** The network that you reference when calling `block.number` in solidity */
+type BlockNumberReferenceNetwork = {
   chainId: ChainId
   blockTime: number
   isTestnet: boolean
 }
 
-const l1Networks: { [chainId: number]: NonArbParentNetwork } = {
+const l1Networks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   [ChainId.Ethereum]: {
     chainId: ChainId.Ethereum,
     blockTime: 12,
@@ -58,7 +59,7 @@ const l1Networks: { [chainId: number]: NonArbParentNetwork } = {
   }
 }
 
-const baseNetworks: { [chainId: number]: NonArbParentNetwork } = {
+const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   [ChainId.Base]: {
     chainId: ChainId.Base,
     blockTime: 2,
@@ -72,7 +73,7 @@ const baseNetworks: { [chainId: number]: NonArbParentNetwork } = {
 }
 
 export const getChains = () => {
-  const chains: (NonArbParentNetwork | ArbitrumNetwork)[] = [
+  const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
     ...Object.values(baseNetworks),
     ...getArbitrumNetworks()
@@ -81,7 +82,7 @@ export const getChains = () => {
   return chains.filter(chain => {
     // exclude L1 chains or Base Chains with no child chains
     if (
-      isNonArbParentChain(chain) &&
+      isBlockNumberReferenceNetwork(chain) &&
       getChildrenForNetwork(chain.chainId).length === 0
     ) {
       return false
@@ -109,11 +110,11 @@ export function getBaseChainIdByChainId({
   chainId: number
 }): number {
   // the chain provided is an L1 chain or Base chain, so we can return early
-  if (isNonArbParentChain({ chainId })) {
+  if (isBlockNumberReferenceNetwork({ chainId })) {
     return chainId
   }
 
-  let currentParentChain: NonArbParentNetwork | ArbitrumNetwork
+  let currentParentChain: BlockNumberReferenceNetwork | ArbitrumNetwork
 
   try {
     currentParentChain = getArbitrumNetwork(chainId)
@@ -123,7 +124,7 @@ export function getBaseChainIdByChainId({
 
   // keep following the parent chains until we find the L1/Base chain
   while (true) {
-    if (isNonArbParentChain(currentParentChain)) {
+    if (isBlockNumberReferenceNetwork(currentParentChain)) {
       return currentParentChain.chainId
     }
 
@@ -270,7 +271,7 @@ export const getExplorerUrl = (chainId: ChainId) => {
 export const getL1BlockTime = (chainId: number) => {
   const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
 
-  if (!chain || !isNonArbParentChain(chain)) {
+  if (!chain || !isBlockNumberReferenceNetwork(chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
 
@@ -308,7 +309,7 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
 }
 
-const defaultL1Network: NonArbParentNetwork = {
+const defaultL1Network: BlockNumberReferenceNetwork = {
   blockTime: 10,
   chainId: 1337,
   isTestnet: true
@@ -525,14 +526,14 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
 }
 
 function isArbitrumChain(
-  chain: NonArbParentNetwork | ArbitrumNetwork
+  chain: BlockNumberReferenceNetwork | ArbitrumNetwork
 ): chain is ArbitrumNetwork {
   return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'
 }
 
-function isNonArbParentChain(chain: {
+function isBlockNumberReferenceNetwork(chain: {
   chainId: number
-}): chain is NonArbParentNetwork {
+}): chain is BlockNumberReferenceNetwork {
   return (
     typeof l1Networks[chain.chainId] !== 'undefined' ||
     typeof baseNetworks[chain.chainId] !== 'undefined'
@@ -544,7 +545,9 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 
-export function getChildChainIds(chain: ArbitrumNetwork | NonArbParentNetwork) {
+export function getChildChainIds(
+  chain: ArbitrumNetwork | BlockNumberReferenceNetwork
+) {
   const childChainIds = [
     ...getChildrenForNetwork(chain.chainId).map(chain => chain.chainId),
     ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
