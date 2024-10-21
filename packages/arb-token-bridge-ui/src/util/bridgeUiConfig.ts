@@ -111,7 +111,7 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           name: 'Base',
           logo: '/images/BaseWhite.svg',
           description:
-            'Base is built as an Ethereum L2, decentralized with the Optimism Superchain, and incubated by Coinbase.'
+            'Base is an Optimistic Rollup built by Coinbase with the OP Stack.'
         }
       }
     case ChainId.BaseSepolia:
