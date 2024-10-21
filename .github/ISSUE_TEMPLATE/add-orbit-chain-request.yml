@@ -1,7 +1,7 @@
 name: Add Orbit Chain Request
 description: File a request to have your Orbit chain added to the bridge
 title: "[feat]: Add Orbit chain "
-labels: ["feat", "triage"]
+labels: ["Type: Add Orbit Chain"]
 body:
   - type: markdown
     attributes:
@@ -172,10 +172,6 @@ body:
     attributes:
       value: |
         ## Parent chain token bridge contract addresses
-  - type: markdown
-    attributes:
-      value: |
-        You can find this information under the `"l2Contracts" : {...}` key.
   - type: input
     id: parent-custom-gateway
     attributes:
@@ -224,10 +220,6 @@ body:
     attributes:
       value: |
         ## Orbit chain token bridge contract addresses 
-  - type: markdown
-    attributes:
-      value: |
-        You can find this information under the `"l3Contracts" : {...}` key.
   - type: input
     id: child-custom-gateway
     attributes:
