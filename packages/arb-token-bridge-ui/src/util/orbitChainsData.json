@@ -592,6 +592,50 @@
           "logoUrl": "/images/GravityAlpha_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 98865,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0xd53645c6b5e19b3CE2d00bA27d734dCC928FCC54",
+        "inbox": "0xC45276467BDb1a9D083010c7CA7Fe2d593a10d01",
+        "outbox": "0x4e3C79Bf30Fc3d4Cf975dE1596e7Fb9Bfd0bf192",
+        "rollup": "0x59EF2FBa6ED4366cb1C3F67f232aaf824B536AB9",
+        "sequencerInbox": "0x3fD761A6eFC2137F03f03Da3d46933dD2e6FF0BB"
+      },
+      "explorerUrl": "https://explorer.plumenetwork.xyz/",
+      "rpcUrl": "https://rpc.plumenetwork.xyz/",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Plume",
+      "slug": "plume",
+      "parentChainId": 1,
+      "retryableLifetimeSeconds": 604800,
+      "tokenBridge": {
+        "parentCustomGateway": "0x7F78Bb34c2525d0a42989B0228376edE11611a6D",
+        "parentErc20Gateway": "0x54504F3F4304394BedE5420a565b79d41E3060BC",
+        "parentGatewayRouter": "0x5b4658BA87c2aB8A5555D402B0dc4a4Fa0546134",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "parentWethGateway": "0x82F584b8edfb05464163D7492c503D49a64FAD8d",
+        "childCustomGateway": "0x7175aEB9E6d3F655A88B9dfF749885aC0424b680",
+        "childErc20Gateway": "0x44891414f8341AdaD491f8834887e6175247afB1",
+        "childGatewayRouter": "0xd6b34ac21080906B948fA1109D43b9809A1e6F72",
+        "childMultiCall": "0x3FEbE2c44F4791747C8490d91e286b36cE3A494B",
+        "childProxyAdmin": "0x88840385B56b609c53381703fC29DD3d883bc8Af",
+        "childWeth": "0x626613B473F7eF65747967017C11225436EFaEd7",
+        "childWethGateway": "0x773c2fA1F9c4E497f443c506C4dFB1174831A435"
+      },
+      "bridgeUiConfig": {
+        "color": "#F43B3A",
+        "network": {
+          "name": "Plume",
+          "logo": "/images/Plume_Logo.svg",
+          "description": "Bringing the real world onchain. Optimized for real world assets."
+        }
+      }
     }
   ],
   "testnet": [
