@@ -6,8 +6,7 @@ import { warning } from "@actions/core";
 import axios from "axios";
 import * as fs from "fs";
 import sharp from "sharp";
-// @ts-expect-error - @actions/exec is not typed
-import { exec } from "@actions/exec";
+import prettier from "prettier";
 
 import {
   commitChanges,
@@ -435,7 +434,14 @@ export const updateOrbitChainsFile = (
 
 export async function runPrettier(targetJsonPath: string): Promise<void> {
   try {
-    await exec("yarn", ["prettier:format", targetJsonPath]);
+    const fileContent = fs.readFileSync(targetJsonPath, "utf8");
+    const prettierConfig = await prettier.resolveConfig(targetJsonPath);
+    const formattedContent = await prettier.format(fileContent, {
+      ...prettierConfig,
+      filepath: targetJsonPath,
+    });
+    fs.writeFileSync(targetJsonPath, formattedContent);
+    console.log(`Prettier formatting applied to ${targetJsonPath}`);
   } catch (error) {
     warning(`Failed to run Prettier: ${error}`);
   }
