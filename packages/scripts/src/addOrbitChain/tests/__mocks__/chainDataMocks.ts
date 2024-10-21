@@ -228,7 +228,6 @@ export const mockOrbitChain: OrbitChain = {
   name: "Xai",
   slug: "xai",
   parentChainId: 42161,
-  retryableLifetimeSeconds: 604800,
   tokenBridge: {
     parentGatewayRouter: "0x22CCA5Dc96a4Ac1EC32c9c7C5ad4D66254a24C35",
     childGatewayRouter: "0xd096e8dE90D34de758B0E0bA4a796eA2e1e272cF",
