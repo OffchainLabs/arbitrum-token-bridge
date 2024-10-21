@@ -6,6 +6,8 @@ import { warning } from "@actions/core";
 import axios from "axios";
 import * as fs from "fs";
 import sharp from "sharp";
+// @ts-expect-error - @actions/exec is not typed
+import { exec } from "@actions/exec";
 
 import {
   commitChanges,
@@ -430,3 +432,11 @@ export const updateOrbitChainsFile = (
 
   return orbitChains;
 };
+
+export async function runPrettier(targetJsonPath: string): Promise<void> {
+  try {
+    await exec("yarn", ["prettier:format", targetJsonPath]);
+  } catch (error) {
+    warning(`Failed to run Prettier: ${error}`);
+  }
+}
