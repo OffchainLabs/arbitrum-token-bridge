@@ -2,18 +2,19 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import * as core from "@actions/core";
-import { warning } from "@actions/core";
 import axios from "axios";
+import { fileTypeFromBuffer } from "file-type";
 import * as fs from "fs";
+import path from "path";
 import sharp from "sharp";
 
+import { lookup } from "mime-types";
 import {
   commitChanges,
   createBranch,
   createPullRequest,
-  getContent,
   getIssue,
-  updateContent,
+  saveImageToGitHub,
 } from "./github";
 import {
   chainDataLabelToKey,
@@ -29,6 +30,11 @@ import {
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
+
+export const getFileExtension = (mimeType: string): string => {
+  const extension = lookup(mimeType);
+  return extension ? `.${extension}` : "";
+};
 
 export const initializeAndFetchData = async (): Promise<void> => {
   core.startGroup("Initialization and Data Fetching");
@@ -262,49 +268,66 @@ export const resizeImage = async (
   return resizedImage;
 };
 
-export const fetchAndSaveImage = async (
-  urlOrPath: string,
-  fileName: string,
-  branchName: string
-): Promise<string> => {
-  const isLocalPath = !urlOrPath.startsWith("http");
-  if (isLocalPath) {
+export const fetchAndProcessImage = async (
+  urlOrPath: string
+): Promise<{ buffer: Buffer; fileExtension: string }> => {
+  let imageBuffer: Buffer;
+  let fileExtension: string;
+
+  // Check if the URL is an IPFS URL or starts with http/https
+  if (urlOrPath.startsWith("ipfs://") || urlOrPath.startsWith("http")) {
+    // Handle remote URLs (including IPFS)
+    if (urlOrPath.startsWith("ipfs://")) {
+      urlOrPath = `https://ipfs.io/ipfs/${urlOrPath.slice(7)}`;
+    }
+
+    console.log("Fetching image from:", urlOrPath);
+
+    const response = await axios.get(urlOrPath, {
+      responseType: "arraybuffer",
+      timeout: 10000, // 10 seconds timeout
+    });
+
+    if (response.status !== 200) {
+      throw new Error(`Failed to fetch image. Status: ${response.status}`);
+    }
+
+    imageBuffer = Buffer.from(response.data);
+
+    // Try to determine file extension from response headers
+    fileExtension = lookup(response.headers["content-type"] as string) || "";
+    if (!fileExtension) {
+      // If not found in headers, try to determine from the image data
+      const detectedType = await fileTypeFromBuffer(imageBuffer);
+      fileExtension = detectedType ? `.${detectedType.ext}` : "";
+    }
+  } else {
+    // Handle local paths
     const localPath = `../../arb-token-bridge-ui/public/${urlOrPath}`;
     if (!fs.existsSync(localPath)) {
       throw new Error(
         `Provided local path '${localPath}' did not match any existing images.`
       );
     }
-    return urlOrPath;
+    imageBuffer = fs.readFileSync(localPath);
+    fileExtension = path.extname(localPath);
   }
 
-  const fileExtension = urlOrPath.split(".").pop()?.split("?")[0] || "";
-  if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension)) {
-    throw new Error(
-      `Invalid image extension '${fileExtension}'. Expected: ${SUPPORTED_IMAGE_EXTENSIONS.join(
-        ", "
-      )}.`
+  // If still not found, default to .png
+  if (!fileExtension) {
+    console.warn("Could not determine file type, defaulting to .png");
+    fileExtension = ".png";
+  }
+
+  if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension.replace(".", ""))) {
+    console.warn(
+      `Unsupported image extension '${fileExtension}'. Converting to PNG.`
     );
+
+    // Convert the image to PNG using sharp
+    imageBuffer = await sharp(imageBuffer).png().toBuffer();
+    fileExtension = ".png";
   }
-
-  const imageSavePath = `images/${fileName}.${fileExtension}`;
-  const fullSavePath = `../../arb-token-bridge-ui/public/${imageSavePath}`;
-
-  // Create directories if they don't exist
-  const dirs = fullSavePath.split("/").slice(0, -1).join("/");
-  if (!fs.existsSync(dirs)) {
-    fs.mkdirSync(dirs, { recursive: true });
-  }
-
-  if (fs.existsSync(fullSavePath)) {
-    warning(
-      `${fileName} already exists at '${imageSavePath}'. Using the existing image.`
-    );
-    return `/${imageSavePath}`;
-  }
-
-  const response = await axios.get(urlOrPath, { responseType: "arraybuffer" });
-  let imageBuffer = Buffer.from(response.data);
 
   // Resize the image
   try {
@@ -317,20 +340,17 @@ export const fetchAndSaveImage = async (
     }
   }
 
-  // Check if the file already exists in the repository
-  let sha: string | undefined;
-  try {
-    const { data } = await getContent(branchName, imageSavePath);
+  return { buffer: imageBuffer, fileExtension };
+};
 
-    if ("sha" in data) {
-      sha = data.sha;
-    }
-  } catch (error) {
-    // File doesn't exist, which is fine
-  }
-
-  await updateContent(branchName, imageSavePath, imageBuffer, sha);
-
+export const fetchAndSaveImage = async (
+  urlOrPath: string,
+  fileName: string,
+  branchName: string
+): Promise<string> => {
+  const { buffer, fileExtension } = await fetchAndProcessImage(urlOrPath);
+  const imageSavePath = `images/${fileName}${fileExtension}`;
+  await saveImageToGitHub(branchName, imageSavePath, buffer);
   return `/${imageSavePath}`;
 };
 
