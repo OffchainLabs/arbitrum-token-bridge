@@ -252,7 +252,10 @@ function NetworksPanel({
     const coreNetworks = chainIds.filter(
       chainId => isNetwork(chainId).isCoreChain
     )
-    const otherNetworks = chainIds.filter(chainId => isNetwork(chainId).isBase)
+    const otherNetworks = chainIds.filter(
+      chainId =>
+        !isNetwork(chainId).isCoreChain && !isNetwork(chainId).isOrbitChain
+    )
     const orbitNetworks = chainIds.filter(
       chainId => isNetwork(chainId).isOrbitChain
     )

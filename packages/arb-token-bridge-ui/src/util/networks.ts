@@ -81,7 +81,7 @@ export const getChains = () => {
   return chains.filter(chain => {
     // exclude L1 chains or Base Chains with no child chains
     if (
-      !('parentChainId' in chain) &&
+      isNonArbParentChain(chain) &&
       getChildrenForNetwork(chain.chainId).length === 0
     ) {
       return false
@@ -206,12 +206,12 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
   )
 }
 
+// Only support testnet chains
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
   ChainId.Holesky,
   ChainId.ArbitrumSepolia,
-  ChainId.BaseSepolia,
-  ChainId.Base
+  ChainId.BaseSepolia
 ]
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -270,7 +270,7 @@ export const getExplorerUrl = (chainId: ChainId) => {
 export const getL1BlockTime = (chainId: number) => {
   const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
 
-  if (!chain || !('blockTime' in chain)) {
+  if (!chain || !isNonArbParentChain(chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
 
