@@ -524,6 +524,12 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainId] = chain.explorerUrl
 }
 
+function isArbitrumChain(
+  chain: NonArbParentNetwork | ArbitrumNetwork
+): chain is ArbitrumNetwork {
+  return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'
+}
+
 function isNonArbParentChain(chain: {
   chainId: number
 }): chain is NonArbParentNetwork {
@@ -578,8 +584,7 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     return []
   }
 
-  const parentChainId =
-    'parentChainId' in chain ? chain.parentChainId : undefined
+  const parentChainId = isArbitrumChain(chain) ? chain.parentChainId : undefined
 
   const validDestinationChainIds = getChildChainIds(chain)
 
