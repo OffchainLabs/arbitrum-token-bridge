@@ -52,6 +52,15 @@ beforeAll(() => {
   })
 
   registerCustomArbitrumNetwork(xaiTestnet)
+
+  const polterTestnetChainId = 631571
+  const polterTestnet = orbitTestnets[polterTestnetChainId]
+
+  if (!polterTestnet) {
+    throw new Error(`Could not find Polter Testnet in the Orbit chains list.`)
+  }
+
+  registerCustomArbitrumNetwork(polterTestnet)
 })
 
 describe('getBaseChainIdByChainId', () => {
@@ -253,5 +262,21 @@ describe('getDestinationChainIds', () => {
 
     expect(defaultChainId).toBe(ChainId.Sepolia)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
+  })
+
+  it('should return a sorted list for Base Sepolia', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.BaseSepolia)
+    const defaultChainId = destinationChainIds[0]
+    const nonDefaultChainIds = destinationChainIds.slice(1)
+
+    expect(defaultChainId).toBe(631571)
+    expect(isAscending(nonDefaultChainIds)).toBe(true)
+  })
+
+  // Enable when there are Orbit Chains on Base
+  it('should not return a list for Base', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.Base)
+
+    expect(destinationChainIds).toHaveLength(0)
   })
 })
