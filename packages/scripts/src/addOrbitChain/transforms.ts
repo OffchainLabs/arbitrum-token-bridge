@@ -3,6 +3,8 @@
 
 import * as core from "@actions/core";
 import { warning } from "@actions/core";
+import { getArbitrumNetworkInformationFromRollup } from "@arbitrum/sdk";
+import { JsonRpcProvider } from "@ethersproject/providers";
 import axios from "axios";
 import * as fs from "fs";
 import sharp from "sharp";
@@ -118,7 +120,7 @@ export const createAndValidateOrbitChain = async (
 ) => {
   core.startGroup("Orbit Chain Creation and Validation");
   console.log("Creating OrbitChain object...");
-  const orbitChain = transformIncomingDataToOrbitChain(
+  const orbitChain = await transformIncomingDataToOrbitChain(
     validatedIncomingData,
     chainLogoPath,
     nativeTokenLogoPath
@@ -131,7 +133,7 @@ export const createAndValidateOrbitChain = async (
 };
 
 export const updateAndValidateOrbitChainsList = async (
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>,
+  orbitChain: OrbitChain,
   targetJsonPath: string
 ) => {
   core.startGroup("Orbit ChainsList Update and Validation");
@@ -153,7 +155,7 @@ export const commitChangesAndCreatePR = async (
   branchName: string,
   targetJsonPath: string,
   updatedOrbitChainsList: ReturnType<typeof updateOrbitChainsFile>,
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>
+  orbitChain: OrbitChain
 ) => {
   core.startGroup("Commit Changes and Create Pull Request");
   console.log("Preparing to commit changes...");
@@ -181,7 +183,7 @@ export const commitChangesAndCreatePR = async (
 
 export const setOutputs = (
   branchName: string,
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>,
+  orbitChain: OrbitChain,
   targetJsonPath: string
 ) => {
   core.startGroup("Set Outputs");
@@ -334,23 +336,28 @@ export const fetchAndSaveImage = async (
   return `/${imageSavePath}`;
 };
 
-export const transformIncomingDataToOrbitChain = (
+export const transformIncomingDataToOrbitChain = async (
   chainData: IncomingChainData,
   chainLogoPath: string,
   nativeTokenLogoPath?: string
-): OrbitChain => {
+): Promise<OrbitChain> => {
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
+  const provider = new JsonRpcProvider(chainData.rpcUrl);
+  const rollupData = await getArbitrumNetworkInformationFromRollup(
+    chainData.rollup,
+    provider
+  );
 
   return {
     chainId: parseInt(chainData.chainId, 10),
-    confirmPeriodBlocks: parseInt(chainData.confirmPeriodBlocks, 10),
+    confirmPeriodBlocks: rollupData.confirmPeriodBlocks,
     ethBridge: {
-      bridge: chainData.bridge,
-      inbox: chainData.inbox,
-      outbox: chainData.outbox,
+      bridge: rollupData.ethBridge.bridge,
+      inbox: rollupData.ethBridge.inbox,
+      outbox: rollupData.ethBridge.outbox,
       rollup: chainData.rollup,
-      sequencerInbox: chainData.sequencerInbox,
+      sequencerInbox: rollupData.ethBridge.sequencerInbox,
     },
     nativeToken: chainData.nativeTokenAddress,
     explorerUrl: chainData.explorerUrl,
