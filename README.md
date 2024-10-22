@@ -128,6 +128,12 @@ It is important for any code change to pass both unit and end-to-end tests. This
       ./test-node.bash --init --no-simple --tokenbridge --l3node --l3-token-bridge
       ```
 
+      To run with a custom fee token also include the following flags:
+
+      ```bash
+      --l3-fee-token --l3-fee-token-decimals 18
+      ```
+
    2. When the Nitro test-node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes.
 
 2. At the root of the token bridge UI:
