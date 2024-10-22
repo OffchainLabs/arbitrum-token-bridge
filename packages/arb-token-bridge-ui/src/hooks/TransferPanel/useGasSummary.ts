@@ -137,7 +137,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (amountBigNumber.gt(balance)) {
+    if (balance && amountBigNumber.gt(balance)) {
       return {
         status: 'insufficientBalance',
         estimatedParentChainGasFees,
@@ -145,7 +145,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (gasEstimatesError) {
+    if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
       return {
         status: 'error',
         estimatedParentChainGasFees,

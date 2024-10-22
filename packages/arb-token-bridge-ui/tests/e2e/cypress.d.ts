@@ -27,7 +27,6 @@ import {
   closeTransactionHistoryPanel,
   claimCctp
 } from '../support/commands'
-import { NetworkType, NetworkName } from '../support/common'
 
 declare global {
   namespace Cypress {
@@ -36,15 +35,10 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
-      connectToApp(): typeof connectToApp
+      connectToApp: typeof connectToApp
       // eslint-disable-next-line no-unused-vars
-      login(options: {
-        networkType: NetworkType
-        networkName?: NetworkName
-        url?: string
-        query?: { [s: string]: string }
-      }): typeof login
-      logout(): typeof logout
+      login: typeof login
+      logout: typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       openTransactionsPanel: typeof openTransactionsPanel
       searchAndSelectToken({
