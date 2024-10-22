@@ -3,15 +3,7 @@ import {
   ERC20BridgeToken
 } from '../../hooks/arbTokenBridge.types'
 import { Context } from '..'
-import { ConnectionState } from '../../util'
 import { WarningTokens } from './state'
-
-export const setConnectionState = (
-  { state }: Context,
-  connectionState: ConnectionState
-) => {
-  state.app.connectionState = connectionState
-}
 
 export const setChainIds = (
   { state }: Context,
@@ -40,7 +32,6 @@ export const reset = ({ state }: Context, newChainId: number) => {
   }
 
   state.app.arbTokenBridge = {} as ArbTokenBridge
-  state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
 }
 

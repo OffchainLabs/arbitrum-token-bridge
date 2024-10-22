@@ -11,7 +11,6 @@ import {
   L2ToL3MessageData,
   TxnType
 } from '../../hooks/useTransactions'
-import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
 
@@ -85,7 +84,6 @@ export interface WarningTokens {
 export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
-  connectionState: number
   selectedToken: ERC20BridgeToken | null
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
@@ -95,7 +93,6 @@ export type AppState = {
 export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
-  connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
   selectedToken: null,
