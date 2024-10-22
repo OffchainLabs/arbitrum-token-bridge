@@ -3,7 +3,6 @@ import { Chain, useAccount } from 'wagmi'
 import { BigNumber } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { ChildToParentMessage } from '@arbitrum/sdk'
 
