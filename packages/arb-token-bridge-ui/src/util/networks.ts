@@ -449,10 +449,7 @@ export async function registerLocalNetwork() {
     try {
       const data = await fetchErc20Data({
         address: defaultL3CustomGasTokenNetwork.nativeToken!,
-        provider: new StaticJsonRpcProvider(
-          process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL ||
-            'http://127.0.0.1:8547'
-        )
+        provider: new StaticJsonRpcProvider(localL2NetworkRpcUrl)
       })
       if (data.symbol === 'TN') {
         isLocalCustomNativeToken = true
