@@ -69,9 +69,7 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
-      await registerLocalNetwork(
-        process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
-      )
+      await registerLocalNetwork()
 
       const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
       const ethBridger = await EthBridger.fromProvider(childProvider)
