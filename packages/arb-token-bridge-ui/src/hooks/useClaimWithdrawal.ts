@@ -15,6 +15,7 @@ import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { useExecutedMessagesCache } from './useExecutedMessagesCache'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -31,6 +32,7 @@ export function useClaimWithdrawal(
   const { data: signer } = useSigner({ chainId: tx.parentChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
   const [isClaiming, setIsClaiming] = useState(false)
+  const [, addToExecutedMessagesCache] = useExecutedMessagesCache()
 
   const claim = useCallback(async () => {
     if (isClaiming || !tx.isWithdrawal || tx.isCctp) {
@@ -95,6 +97,10 @@ export function useClaimWithdrawal(
           l1Signer: signer
         })
       }
+
+      if (res.status === 1) {
+        addToExecutedMessagesCache([event])
+      }
     } catch (error: any) {
       err = error
     } finally {
@@ -132,7 +138,8 @@ export function useClaimWithdrawal(
     isClaiming,
     signer,
     tx,
-    updatePendingTransaction
+    updatePendingTransaction,
+    addToExecutedMessagesCache
   ])
 
   return { claim, isClaiming }

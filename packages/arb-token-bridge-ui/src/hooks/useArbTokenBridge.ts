@@ -443,12 +443,7 @@ export const useArbTokenBridge = (
       parentChainProvider
     )
     const res = await messageWriter.execute(childChainProvider)
-
     const rec = await res.wait()
-
-    if (rec.status === 1) {
-      addToExecutedMessagesCache([event])
-    }
 
     return rec
   }
@@ -500,12 +495,7 @@ export const useArbTokenBridge = (
     )
 
     const res = await messageWriter.execute(childChainProvider)
-
     const rec = await res.wait()
-
-    if (rec.status === 1) {
-      addToExecutedMessagesCache([event])
-    }
 
     return rec
   }
