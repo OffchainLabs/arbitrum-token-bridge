@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAccount, WagmiConfig } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
-import { useCallback, useEffect, useState } from 'react'
 
 import merge from 'lodash-es/merge'
 import axios from 'axios'
@@ -21,13 +20,6 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
-import { isNetwork } from '../../util/networks'
-import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { getNetworkName } from '../../util/networks'
-import {
-  ArbQueryParamProvider,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
@@ -37,9 +29,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
-import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
-import { onDisconnectHandler } from '../../util/walletConnectUtils'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { isDepositMode } from '../../util/isDepositMode'
 
 declare global {
@@ -164,8 +153,6 @@ function AppContent() {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
-
-  useSyncConnectedChainToAnalytics()
 
   if (!tosAccepted) {
     return (
