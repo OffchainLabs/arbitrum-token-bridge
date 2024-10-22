@@ -431,7 +431,7 @@ export const useArbTokenBridge = (
     }
 
     if (!walletAddress) {
-      return
+      throw new Error('Wallet address not found')
     }
 
     const parentChainProvider = getProviderForChainId(event.parentChainId)
@@ -487,7 +487,7 @@ export const useArbTokenBridge = (
     }
 
     if (!walletAddress) {
-      return
+      throw new Error('Wallet address not found')
     }
 
     const parentChainProvider = getProviderForChainId(event.parentChainId)
