@@ -2,9 +2,8 @@
  * When user wants to bridge USDC through CCTP from L1 to L2
  */
 
-import { getZeroToLessThanOneNativeToken } from '../../support/common'
+import { getZeroToLessThanOneToken } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
-import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -65,9 +64,7 @@ const confirmAndApproveCctpDeposit = () => {
 describe('Deposit USDC through CCTP', () => {
   // Happy Path
   const USDCAmountToSend = 0.0001
-  const zeroToLessThanOneNativeToken = getZeroToLessThanOneNativeToken(
-    Cypress.env('NATIVE_TOKEN_SYMBOL')
-  )
+  const zeroToLessThanOneETH = getZeroToLessThanOneToken('ETH')
 
   beforeEach(() => {
     cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
@@ -81,8 +78,8 @@ describe('Deposit USDC through CCTP', () => {
     })
 
     cy.typeAmount(USDCAmountToSend)
-    cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-    cy.findGasFeeForChain('Sepolia', zeroToLessThanOneNativeToken)
+    cy.findGasFeeSummary(zeroToLessThanOneETH)
+    cy.findGasFeeForChain('Sepolia', zeroToLessThanOneETH)
     cy.findGasFeeForChain(
       /You'll have to pay Arbitrum Sepolia gas fee upon claiming./i
     )

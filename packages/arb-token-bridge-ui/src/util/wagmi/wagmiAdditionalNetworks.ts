@@ -95,6 +95,28 @@ export const arbitrumSepolia: Chain = {
   }
 }
 
+export const baseSepolia: Chain = {
+  id: ChainId.BaseSepolia,
+  name: 'Base Sepolia',
+  network: 'base-sepolia',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.BaseSepolia]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.BaseSepolia]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Basescan',
+      url: explorerUrls[ChainId.BaseSepolia]!
+    },
+    default: { name: 'Basescan', url: explorerUrls[ChainId.BaseSepolia]! }
+  }
+}
+
 export const arbitrumNova: Chain = {
   id: ChainId.ArbitrumNova,
   name: 'Arbitrum Nova',
@@ -111,6 +133,25 @@ export const arbitrumNova: Chain = {
   blockExplorers: {
     etherscan: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' },
     default: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' }
+  }
+}
+
+export const base: Chain = {
+  id: ChainId.Base,
+  name: 'Base',
+  network: 'base',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Base]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Base]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: { name: 'Basescan', url: explorerUrls[ChainId.Base]! },
+    default: { name: 'Basescan', url: explorerUrls[ChainId.Base]! }
   }
 }
 

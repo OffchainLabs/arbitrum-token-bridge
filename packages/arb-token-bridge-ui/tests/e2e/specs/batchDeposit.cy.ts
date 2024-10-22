@@ -6,7 +6,7 @@ import {
   getL1NetworkName,
   getL2NetworkConfig,
   getL2NetworkName,
-  getZeroToLessThanOneNativeToken
+  getZeroToLessThanOneToken
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
@@ -17,9 +17,9 @@ describe('Batch Deposit', () => {
     childErc20Balance: string
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
-  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
+  const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
   const zeroToLessThanOneNativeToken =
-    getZeroToLessThanOneNativeToken(nativeTokenSymbol)
+    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   beforeEach(() => {
     getInitialERC20Balance({

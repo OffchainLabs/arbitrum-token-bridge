@@ -5,15 +5,15 @@
 import {
   getL1NetworkName,
   getL2NetworkName,
-  getZeroToLessThanOneNativeToken
+  getZeroToLessThanOneToken
 } from '../../support/common'
 
 describe('Deposit native token', () => {
   const ETHAmountToDeposit = 0.0001
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
-  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
+  const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
   const zeroToLessThanOneNativeToken =
-    getZeroToLessThanOneNativeToken(nativeTokenSymbol)
+    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'

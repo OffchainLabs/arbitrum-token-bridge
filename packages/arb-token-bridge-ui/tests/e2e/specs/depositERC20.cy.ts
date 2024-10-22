@@ -6,7 +6,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getL1NetworkConfig,
-  getZeroToLessThanOneNativeToken,
+  getZeroToLessThanOneToken,
   moreThanZeroBalance,
   getL1NetworkName,
   getL2NetworkName,
@@ -34,9 +34,9 @@ describe('Deposit Token', () => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
-  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
+  const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
   const zeroToLessThanOneNativeToken =
-    getZeroToLessThanOneNativeToken(nativeTokenSymbol)
+    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   // Happy Path
   Object.keys(depositTestCases).forEach(tokenType => {

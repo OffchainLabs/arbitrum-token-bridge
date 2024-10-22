@@ -58,7 +58,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
 
 export const getL2NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH'
   const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
 
   const l3Network = isCustomFeeToken
@@ -106,7 +106,7 @@ export const invalidTokenAddress = utils.computeAddress(utils.randomBytes(32))
 
 export const moreThanZeroBalance = /0(\.\d+)/
 
-export function getZeroToLessThanOneNativeToken(symbol: string) {
+export function getZeroToLessThanOneToken(symbol: string) {
   return new RegExp(`0(\\.\\d+)*( ${symbol})`)
 }
 

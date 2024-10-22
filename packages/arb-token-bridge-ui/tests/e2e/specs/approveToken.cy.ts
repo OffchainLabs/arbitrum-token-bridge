@@ -2,7 +2,7 @@ import {
   importTokenThroughUI,
   ERC20TokenName,
   ERC20TokenSymbol,
-  getZeroToLessThanOneNativeToken,
+  getZeroToLessThanOneToken,
   getL1NetworkName,
   getL2NetworkName
 } from '../../support/common'
@@ -11,8 +11,8 @@ const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN')
 
 describe('Approve token for deposit', () => {
   // log in to metamask
-  const zeroToLessThanOneEth = getZeroToLessThanOneNativeToken('ETH')
-  const zeroToLessThanOneNativeToken = getZeroToLessThanOneNativeToken(
+  const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
+  const zeroToLessThanOneNativeToken = getZeroToLessThanOneToken(
     Cypress.env('NATIVE_TOKEN_SYMBOL')
   )
 
