@@ -29,11 +29,11 @@ describe("Transforms", () => {
   });
 
   describe("transformIncomingDataToOrbitChain", () => {
-    it("should transform incoming chain data to OrbitChain format", () => {
+    it("should transform incoming chain data to OrbitChain format", async () => {
       const chainLogoPath = "/images/mockChain_Logo.png";
       const nativeTokenLogoPath = "/images/mockChain_NativeTokenLogo.png";
 
-      const result = transformIncomingDataToOrbitChain(
+      const result = await transformIncomingDataToOrbitChain(
         mockIncomingChainData as IncomingChainData,
         chainLogoPath,
         nativeTokenLogoPath
