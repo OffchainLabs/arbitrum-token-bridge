@@ -72,6 +72,10 @@ export default defineConfig({
 
       await registerLocalNetwork()
 
+      const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+      const ethBridger = await EthBridger.fromProvider(childProvider)
+      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
+
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
       }
@@ -86,10 +90,6 @@ export default defineConfig({
           'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
         )
       }
-
-      const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
-      const ethBridger = await EthBridger.fromProvider(childProvider)
-      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       console.log({ isCustomFeeToken })
 

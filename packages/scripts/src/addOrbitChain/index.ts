@@ -8,6 +8,7 @@ import {
   updateAndValidateOrbitChainsList,
   commitChangesAndCreatePR,
   setOutputs,
+  runPrettier,
 } from "./transforms";
 
 /**
@@ -35,6 +36,8 @@ export async function addOrbitChain(targetJsonPath: string): Promise<void> {
       orbitChain,
       targetJsonPath
     );
+
+    await runPrettier(targetJsonPath);
 
     await commitChangesAndCreatePR(
       branchName,
