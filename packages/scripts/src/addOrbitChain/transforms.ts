@@ -8,6 +8,7 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import axios from "axios";
 import * as fs from "fs";
 import sharp from "sharp";
+import prettier from "prettier";
 
 import {
   commitChanges,
@@ -436,3 +437,18 @@ export const updateOrbitChainsFile = (
 
   return orbitChains;
 };
+
+export async function runPrettier(targetJsonPath: string): Promise<void> {
+  try {
+    const fileContent = fs.readFileSync(targetJsonPath, "utf8");
+    const prettierConfig = await prettier.resolveConfig(targetJsonPath);
+    const formattedContent = await prettier.format(fileContent, {
+      ...prettierConfig,
+      filepath: targetJsonPath,
+    });
+    fs.writeFileSync(targetJsonPath, formattedContent);
+    console.log(`Prettier formatting applied to ${targetJsonPath}`);
+  } catch (error) {
+    warning(`Failed to run Prettier: ${error}`);
+  }
+}
