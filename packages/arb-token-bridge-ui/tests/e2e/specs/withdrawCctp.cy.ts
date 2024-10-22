@@ -3,6 +3,7 @@
  */
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -77,11 +78,27 @@ describe('Withdraw USDC through CCTP', () => {
     cy.confirmSpending(USDCAmountToSend.toString())
     // eslint-disable-next-line
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction(undefined)
+    cy.confirmMetamaskTransaction({ gasConfig: 'aggressive' })
     cy.findTransactionInTransactionHistory({
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
+    cy.findClaimButton(
+      formatAmount(USDCAmountToSend, {
+        symbol: 'USDC'
+      }),
+      { timeout: 120_000 }
+    ).click()
+    cy.allowMetamaskToSwitchNetwork()
+    cy.rejectMetamaskTransaction()
+    cy.changeMetamaskNetwork('arbitrum-sepolia')
+  })
+
+  it('should claim deposit', () => {
+    cy.changeMetamaskNetwork('sepolia')
+    cy.claimCctp(0.00012, { accept: true })
+    cy.closeTransactionHistoryPanel()
+    cy.claimCctp(0.00013, { accept: true })
   })
 
   it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
@@ -113,5 +130,14 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )
+    cy.closeTransactionDetails()
+    cy.findClaimButton(
+      formatAmount(USDCAmountToSend, {
+        symbol: 'USDC'
+      }),
+      { timeout: 120_000 }
+    ).click()
+    cy.allowMetamaskToSwitchNetwork()
+    cy.rejectMetamaskTransaction()
   })
 })

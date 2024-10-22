@@ -16,6 +16,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -29,17 +30,13 @@ enum DestinationAddressWarnings {
 }
 
 type DestinationAddressStore = {
-  error: DestinationAddressErrors | null
   destinationAddress: string | undefined
-  setError: (error: DestinationAddressErrors | null) => void
   setDestinationAddress: (destinationAddress: string | undefined) => void
 }
 
 export const useDestinationAddressStore = create<DestinationAddressStore>(
   set => ({
-    error: null,
     destinationAddress: undefined,
-    setError: error => set(() => ({ error })),
     setDestinationAddress: destinationAddress =>
       set(() => ({ destinationAddress }))
   })
@@ -144,7 +141,7 @@ export const AdvancedSettings = () => {
   }, [destinationAddress, isEOA])
 
   // Disabled for ETH
-  if (!selectedToken) {
+  if (!selectedToken && !isExperimentalFeatureEnabled('eth-custom-dest')) {
     return null
   }
 

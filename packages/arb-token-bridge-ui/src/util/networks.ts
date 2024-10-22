@@ -20,20 +20,23 @@ export enum ChainId {
   // L2
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
+  Base = 8453,
   // L2 Testnets
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
+  BaseSepolia = 84532,
   // L3 Testnets
   L3Local = 333333
 }
 
-type L1Network = {
+/** The network that you reference when calling `block.number` in solidity */
+type BlockNumberReferenceNetwork = {
   chainId: ChainId
   blockTime: number
   isTestnet: boolean
 }
 
-const l1Networks: { [chainId: number]: L1Network } = {
+const l1Networks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   [ChainId.Ethereum]: {
     chainId: ChainId.Ethereum,
     blockTime: 12,
@@ -56,12 +59,32 @@ const l1Networks: { [chainId: number]: L1Network } = {
   }
 }
 
+const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
+  [ChainId.Base]: {
+    chainId: ChainId.Base,
+    blockTime: 2,
+    isTestnet: false
+  },
+  [ChainId.BaseSepolia]: {
+    chainId: ChainId.BaseSepolia,
+    blockTime: 2,
+    isTestnet: true
+  }
+}
+
 export const getChains = () => {
-  const chains = [...Object.values(l1Networks), ...getArbitrumNetworks()]
+  const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
+    ...Object.values(l1Networks),
+    ...Object.values(baseNetworks),
+    ...getArbitrumNetworks()
+  ]
 
   return chains.filter(chain => {
-    // exclude L1 chains with no child chains
-    if (isL1Chain(chain) && getChildrenForNetwork(chain.chainId).length === 0) {
+    // exclude L1 chains or Base Chains with no child chains
+    if (
+      isBlockNumberReferenceNetwork(chain) &&
+      getChildrenForNetwork(chain.chainId).length === 0
+    ) {
       return false
     }
 
@@ -86,12 +109,12 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  // the chain provided is an L1 chain, so we can return early
-  if (isL1Chain({ chainId })) {
+  // the chain provided is an L1 chain or Base chain, so we can return early
+  if (isBlockNumberReferenceNetwork({ chainId })) {
     return chainId
   }
 
-  let currentParentChain: L1Network | ArbitrumNetwork
+  let currentParentChain: BlockNumberReferenceNetwork | ArbitrumNetwork
 
   try {
     currentParentChain = getArbitrumNetwork(chainId)
@@ -99,9 +122,9 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  // keep following the parent chains until we find the L1 chain
+  // keep following the parent chains until we find the L1/Base chain
   while (true) {
-    if (isL1Chain(currentParentChain)) {
+    if (isBlockNumberReferenceNetwork(currentParentChain)) {
       return currentParentChain.chainId
     }
 
@@ -184,10 +207,12 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
   )
 }
 
+// Only support testnet chains
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
   ChainId.Holesky,
-  ChainId.ArbitrumSepolia
+  ChainId.ArbitrumSepolia,
+  ChainId.BaseSepolia
 ]
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -208,10 +233,18 @@ export const rpcURLs: { [chainId: number]: string } = {
     fallback: 'https://arb1.arbitrum.io/rpc'
   }),
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
+  [ChainId.Base]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.Base),
+    fallback: 'https://mainnet.base.org'
+  }),
   // L2 Testnets
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
     env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
     fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
+  }),
+  [ChainId.BaseSepolia]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.BaseSepolia),
+    fallback: 'https://sepolia.base.org'
   })
 }
 
@@ -224,8 +257,10 @@ export const explorerUrls: { [chainId: number]: string } = {
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
+  [ChainId.Base]: 'https://basescan.org',
   // L2 Testnets
-  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io'
+  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
+  [ChainId.BaseSepolia]: 'https://sepolia.basescan.org'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -236,7 +271,7 @@ export const getExplorerUrl = (chainId: ChainId) => {
 export const getL1BlockTime = (chainId: number) => {
   const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
 
-  if (!chain || !isL1Chain(chain)) {
+  if (!chain || !isBlockNumberReferenceNetwork(chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
 
@@ -244,6 +279,11 @@ export const getL1BlockTime = (chainId: number) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
+  // Base is not an Arbitrum chain so it doesn't work in the same way, and we don't support deposits from L1, or withdrawals from Base chains
+  if (isNetwork(chainId).isBase) {
+    return 0
+  }
+
   return getArbitrumNetwork(chainId).confirmPeriodBlocks
 }
 
@@ -269,7 +309,7 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
 }
 
-const defaultL1Network: L1Network = {
+const defaultL1Network: BlockNumberReferenceNetwork = {
   blockTime: 10,
   chainId: 1337,
   isTestnet: true
@@ -377,11 +417,24 @@ function isTestnetChain(chainId: ChainId) {
     return l1Network.isTestnet
   }
 
+  const baseNetwork = baseNetworks[chainId]
+  if (baseNetwork) {
+    return baseNetwork.isTestnet
+  }
+
   try {
     return getArbitrumNetwork(chainId).isTestnet
   } catch {
     // users could have data in local storage for chains that aren't supported anymore, avoid app error
     return true
+  }
+}
+
+function getIsArbitrumChain(chainId: ChainId) {
+  try {
+    return !!getArbitrumNetwork(chainId).parentChainId
+  } catch (error) {
+    return false
   }
 }
 
@@ -397,14 +450,19 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
+  const isBaseMainnet = chainId === ChainId.Base
+  const isBaseSepolia = chainId === ChainId.BaseSepolia
+
   const isEthereumMainnetOrTestnet =
     isEthereumMainnet || isSepolia || isHolesky || isLocal
 
   const isArbitrum =
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia
 
+  const isBase = isBaseMainnet || isBaseSepolia
+
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
-  const isOrbitChain = !isCoreChain
+  const isOrbitChain = getIsArbitrumChain(chainId) && !isCoreChain
 
   return {
     // L1
@@ -416,8 +474,11 @@ export function isNetwork(chainId: ChainId) {
     isArbitrum,
     isArbitrumOne,
     isArbitrumNova,
+    isBase,
+    isBaseMainnet,
     // L2 Testnets
     isArbitrumSepolia,
+    isBaseSepolia,
     // Orbit chains
     isOrbitChain,
     // General
@@ -464,14 +525,19 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainId] = chain.explorerUrl
 }
 
-function isL1Chain(chain: { chainId: number }): chain is L1Network {
-  return typeof l1Networks[chain.chainId] !== 'undefined'
-}
-
 function isArbitrumChain(
-  chain: L1Network | ArbitrumNetwork
+  chain: BlockNumberReferenceNetwork | ArbitrumNetwork
 ): chain is ArbitrumNetwork {
   return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'
+}
+
+function isBlockNumberReferenceNetwork(chain: {
+  chainId: number
+}): chain is BlockNumberReferenceNetwork {
+  return (
+    typeof l1Networks[chain.chainId] !== 'undefined' ||
+    typeof baseNetworks[chain.chainId] !== 'undefined'
+  )
 }
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
@@ -479,12 +545,39 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 
-export function getChildChainIds(chain: ArbitrumNetwork | L1Network) {
+export function getChildChainIds(
+  chain: ArbitrumNetwork | BlockNumberReferenceNetwork
+) {
   const childChainIds = [
     ...getChildrenForNetwork(chain.chainId).map(chain => chain.chainId),
     ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
   ]
   return Array.from(new Set(childChainIds))
+}
+
+/**
+ * Sorts an array of chain IDs in ascending order (default) but keep core chains on top.
+ * This is helpful e.g. when we grab the default chain which is the first chain on top.
+ */
+export function sortChainIds(chainIds: number[]) {
+  return chainIds.sort((a, b) => {
+    const { isCoreChain: isCoreChainA } = isNetwork(a)
+    const { isCoreChain: isCoreChainB } = isNetwork(b)
+
+    if (isCoreChainA && isCoreChainB) {
+      // Both are core chains, sort in ascending order
+      return a - b
+    } else if (isCoreChainA) {
+      // Only A is core chain, it should come first
+      return -1
+    } else if (isCoreChainB) {
+      // Only B is core chain, it should come first
+      return 1
+    } else {
+      // Neither are core chains, sort in ascending order
+      return a - b
+    }
+  })
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
@@ -499,9 +592,8 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
   const validDestinationChainIds = getChildChainIds(chain)
 
   if (parentChainId) {
-    // always make parent chain the first element
-    return [parentChainId, ...validDestinationChainIds]
+    return sortChainIds([parentChainId, ...validDestinationChainIds])
   }
 
-  return validDestinationChainIds
+  return sortChainIds(validDestinationChainIds)
 }

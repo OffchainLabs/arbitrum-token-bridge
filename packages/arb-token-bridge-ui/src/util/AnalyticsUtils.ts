@@ -19,6 +19,18 @@ export type ProviderName =
   | 'Other'
 
 type AnalyticsEventMap = {
+  'Transfer Button Click': {
+    type: TransferDirection
+    isCctpTransfer: boolean
+    isCustomDestinationTransfer: boolean
+    tokenSymbol?: string
+    assetType: AssetType
+    parentChainErc20Address?: string
+    accountType: AccountType
+    network: string
+    amount: number
+    amount2?: number
+  }
   Deposit: {
     tokenSymbol?: string
     assetType: AssetType
@@ -86,6 +98,13 @@ type AnalyticsEventMap = {
     amount: number
     complete: boolean
     version: number
+  }
+  'Project Click': {
+    network: string
+    projectName: string
+  }
+  'Show All Projects Click': {
+    network: string
   }
 }
 

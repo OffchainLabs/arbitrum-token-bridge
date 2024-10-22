@@ -1,15 +1,14 @@
 import dayjs from 'dayjs'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
-import { constants, utils } from 'ethers'
+import { utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount, useChainId, useSigner } from 'wagmi'
+import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
@@ -20,16 +19,14 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
-import { useAppContextActions, useAppContextState } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import {
   AdvancedSettings,
   useDestinationAddressStore
@@ -51,9 +48,7 @@ import {
   useTokenFromSearchParams
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
-import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
@@ -74,8 +69,29 @@ import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { normalizeTimestamp } from '../../state/app/utils'
-import { getDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
+import { ExternalLink } from '../common/ExternalLink'
+import { isExperimentalFeatureEnabled } from '../../util'
+import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
+import { MoveFundsButton } from './MoveFundsButton'
+import { ProjectsListing } from '../common/ProjectsListing'
+import { useAmountBigNumber } from './hooks/useAmountBigNumber'
+
+const signerUndefinedError = 'Signer is undefined'
+const transferNotAllowedError = 'Transfer not allowed'
+
+const networkConnectionWarningToast = () =>
+  warningToast(
+    <>
+      Network connection issue. Please contact{' '}
+      <ExternalLink href={GET_HELP_LINK} className="underline">
+        support
+      </ExternalLink>
+      .
+    </>,
+    { autoClose: false }
+  )
 
 export function TransferPanel() {
   const { tokenFromSearchParams, setTokenQueryParam } =
@@ -92,39 +108,36 @@ export function TransferPanel() {
     app: {
       connectionState,
       selectedToken,
-      arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token },
+      arbTokenBridge: { token },
       warningTokens
     }
   } = useAppState()
-  const { layout } = useAppContextState()
-  const { isTransferring } = layout
-  const { address: walletAddress, isConnected } = useAccount()
+  const { address: walletAddress } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
-  const chainId = useChainId()
+  // do not use `useChainId` because it won't detect chains outside of our wagmi config
+  const latestChain = useLatest(useNetwork())
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
+  const {
+    current: {
+      childChain,
+      childChainProvider,
+      parentChain,
+      parentChainProvider,
+      isDepositMode,
+      isTeleportMode
+    }
+  } = useLatest(useNetworksRelationship(latestNetworks.current))
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
-  const { data: parentSigner } = useSigner({
-    chainId: parentChain.id
-  })
-  const { data: childSigner } = useSigner({
-    chainId: childChain.id
+  const { data: signer } = useSigner({
+    chainId: networks.sourceChain.id
   })
 
   const { openTransactionHistoryPanel, setTransferring } =
@@ -133,10 +146,7 @@ export function TransferPanel() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
-  const latestEth = useLatest(eth)
-
-  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
-  const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
+  const isTransferAllowed = useLatest(useIsTransferAllowed())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -162,6 +172,8 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
+  const isCustomDestinationTransfer = !!destinationAddress
+
   const {
     updateEthParentBalance,
     updateErc20ParentBalances,
@@ -170,11 +182,16 @@ export function TransferPanel() {
 
   const [isCctp, setIsCctp] = useState(false)
 
-  const { transferReady } = useTransferReadiness()
+  const { destinationAddressError } = useDestinationAddressError()
 
-  const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
-    networks.destinationChain.id
-  )
+  const [showProjectsListing, setShowProjectsListing] = useState(false)
+
+  const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+  useEffect(() => {
+    // hide Project listing when networks are changed
+    setShowProjectsListing(false)
+  }, [childChain.id, parentChain.id])
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
@@ -222,19 +239,7 @@ export function TransferPanel() {
     }
   }
 
-  const amountBigNumber = useMemo(() => {
-    try {
-      const amountSafe = amount || '0'
-
-      if (selectedToken) {
-        return utils.parseUnits(amountSafe, selectedToken.decimals)
-      }
-
-      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
-    } catch (error) {
-      return constants.Zero
-    }
-  }, [amount, selectedToken, nativeCurrency])
+  const amountBigNumber = useAmountBigNumber()
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
     const waitForInput = openUSDCDepositConfirmationDialog()
@@ -333,40 +338,14 @@ export function TransferPanel() {
     if (!selectedToken) {
       return
     }
-    if (!walletAddress) {
-      return
-    }
-    const signer = isDepositMode ? parentSigner : childSigner
     if (!signer) {
-      throw 'Signer is undefined'
+      throw new Error(signerUndefinedError)
+    }
+    if (!isTransferAllowed) {
+      throw new Error(transferNotAllowedError)
     }
 
     setTransferring(true)
-    const childChainName = getNetworkName(childChain.id)
-    const isConnectedToTheWrongChain =
-      chainId !== latestNetworks.current.sourceChain.id
-
-    if (isConnectedToTheWrongChain) {
-      trackEvent('Switch Network and Transfer', {
-        type: isDepositMode ? 'Deposit' : 'Withdrawal',
-        tokenSymbol: 'USDC',
-        assetType: 'ERC-20',
-        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: childChainName,
-        amount: Number(amount),
-        version: 2
-      })
-
-      const switchTargetChainId = latestNetworks.current.sourceChain.id
-      try {
-        await switchNetworkAsync?.(switchTargetChainId)
-      } catch (error) {
-        captureSentryErrorWithExtraData({
-          error,
-          originFunction: 'transferCctp switchNetworkAsync'
-        })
-      }
-    }
 
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
@@ -387,16 +366,6 @@ export function TransferPanel() {
       } else {
         const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
         if (!withdrawalConfirmation) return
-      }
-
-      const destinationAddressError = await getDestinationAddressError({
-        destinationAddress,
-        isSenderSmartContractWallet: isSmartContractWallet,
-        isTeleportMode
-      })
-      if (destinationAddressError) {
-        console.error(destinationAddressError)
-        return
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -468,6 +437,8 @@ export function TransferPanel() {
         )
       }
 
+      const childChainName = getNetworkName(childChain.id)
+
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
         trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
@@ -536,41 +507,22 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
-    const signerUndefinedError = 'Signer is undefined'
+    const sourceChainId = latestNetworks.current.sourceChain.id
 
-    try {
-      setTransferring(true)
-      if (chainId !== networks.sourceChain.id) {
-        await switchNetworkAsync?.(networks.sourceChain.id)
-      }
-    } finally {
-      setTransferring(false)
+    if (!isTransferAllowed) {
+      throw new Error(transferNotAllowedError)
     }
 
-    if (!isConnected) {
-      return
-    }
-    if (!walletAddress) {
-      return
-    }
-
-    const hasBothSigners = parentSigner && childSigner
-    if (isEOA && !hasBothSigners) {
-      throw signerUndefinedError
-    }
-
-    const destinationAddressError = await getDestinationAddressError({
-      destinationAddress,
-      isSenderSmartContractWallet: isSmartContractWallet,
-      isTeleportMode
-    })
-    if (destinationAddressError) {
-      console.error(destinationAddressError)
-      return
+    if (!signer) {
+      throw new Error(signerUndefinedError)
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && !selectedToken) {
+    if (
+      isSmartContractWallet &&
+      !selectedToken &&
+      !isExperimentalFeatureEnabled('eth-custom-dest')
+    ) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
       return
     }
@@ -587,16 +539,7 @@ export function TransferPanel() {
 
     setTransferring(true)
 
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
-
     try {
-      if (
-        (isDepositMode && !parentSigner) ||
-        (!isDepositMode && !childSigner)
-      ) {
-        throw signerUndefinedError
-      }
-
       const warningToken =
         selectedToken && warningTokens[selectedToken.address.toLowerCase()]
       if (warningToken) {
@@ -607,65 +550,6 @@ export function TransferPanel() {
         return
       }
 
-      const depositRequiresChainSwitch = () => {
-        const isParentChainEthereum = isNetwork(
-          parentChain.id
-        ).isEthereumMainnetOrTestnet
-
-        return (
-          isDepositMode &&
-          ((isParentChainEthereum && isConnectedToArbitrum.current) ||
-            isConnectedToOrbitChain.current)
-        )
-      }
-
-      const withdrawalRequiresChainSwitch = () => {
-        const isConnectedToEthereum =
-          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-
-        const { isOrbitChain: isSourceChainOrbit } = isNetwork(childChain.id)
-
-        return (
-          !isDepositMode &&
-          (isConnectedToEthereum ||
-            (isConnectedToArbitrum.current && isSourceChainOrbit))
-        )
-      }
-
-      if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
-        trackEvent('Switch Network and Transfer', {
-          type: isTeleportMode
-            ? 'Teleport'
-            : isDepositMode
-            ? 'Deposit'
-            : 'Withdrawal',
-          tokenSymbol: selectedToken?.symbol,
-          assetType: selectedToken ? 'ERC-20' : 'ETH',
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: childChainName,
-          amount: Number(amount),
-          amount2: isBatchTransfer ? Number(amount2) : undefined,
-          version: 2
-        })
-
-        const switchTargetChainId = latestNetworks.current.sourceChain.id
-
-        await switchNetworkAsync?.(switchTargetChainId)
-
-        // keep checking till we know the connected chain-pair are correct for transfer
-        while (
-          depositRequiresChainSwitch() ||
-          withdrawalRequiresChainSwitch() ||
-          !latestEth.current ||
-          !arbTokenBridgeLoaded
-        ) {
-          await new Promise(r => setTimeout(r, 100))
-        }
-
-        await new Promise(r => setTimeout(r, 3000))
-      }
-
-      const sourceChainId = latestNetworks.current.sourceChain.id
       const destinationChainId = latestNetworks.current.destinationChain.id
 
       const sourceChainErc20Address = isDepositMode
@@ -675,8 +559,6 @@ export function TransferPanel() {
       const destinationChainErc20Address = isDepositMode
         ? selectedToken?.l2Address
         : selectedToken?.address
-
-      const signer = isDepositMode ? parentSigner : childSigner
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
@@ -691,8 +573,6 @@ export function TransferPanel() {
           sourceChainErc20Address,
           destinationChainId
         })
-
-      if (!signer) throw Error('Signer not connected!')
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
@@ -709,19 +589,17 @@ export function TransferPanel() {
       }
 
       // SCW transfers are not enabled for ETH transfers yet
-      if (isNativeCurrencyTransfer && isSmartContractWallet) {
+      if (
+        isNativeCurrencyTransfer &&
+        isSmartContractWallet &&
+        !isExperimentalFeatureEnabled('eth-custom-dest')
+      ) {
         console.error(
           "ETH transfers aren't enabled for smart contract wallets."
         )
         return
       }
 
-      // if destination address is added, validate it
-      const destinationAddressError = await getDestinationAddressError({
-        destinationAddress,
-        isSenderSmartContractWallet: isSmartContractWallet,
-        isTeleportMode
-      })
       if (destinationAddressError) {
         console.error(destinationAddressError)
         return
@@ -900,8 +778,6 @@ export function TransferPanel() {
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
-
     if (!isSmartContractWallet) {
       trackEvent(
         isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
@@ -911,7 +787,9 @@ export function TransferPanel() {
           accountType: 'EOA',
           network: getNetworkName(childChain.id),
           amount: Number(amount),
-          amount2: isBatchTransfer ? Number(amount2) : undefined
+          amount2: isBatchTransfer ? Number(amount2) : undefined,
+          isCustomDestinationTransfer,
+          parentChainErc20Address: selectedToken?.address
         }
       )
     }
@@ -958,6 +836,11 @@ export function TransferPanel() {
     setTransferring(false)
     clearAmountInput()
 
+    // for custom orbit pages, show Projects' listing after transfer
+    if (isDepositMode && isNetwork(childChain.id).isOrbitChain) {
+      setShowProjectsListing(true)
+    }
+
     await (sourceChainTransaction as TransactionResponse).wait()
 
     // tx confirmed, update balances
@@ -970,6 +853,87 @@ export function TransferPanel() {
     if (nativeCurrency.isCustom) {
       await updateErc20ParentBalances([nativeCurrency.address])
     }
+  }
+
+  const trackTransferButtonClick = useCallback(() => {
+    trackEvent('Transfer Button Click', {
+      type: isTeleportMode
+        ? 'Teleport'
+        : isDepositMode
+        ? 'Deposit'
+        : 'Withdrawal',
+      isCctpTransfer,
+      tokenSymbol: selectedToken?.symbol,
+      assetType: selectedToken ? 'ERC-20' : 'ETH',
+      accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+      network: childChain.name,
+      amount: Number(amount),
+      amount2: isBatchTransfer ? Number(amount2) : undefined,
+      isCustomDestinationTransfer,
+      parentChainErc20Address: selectedToken?.address
+    })
+  }, [
+    amount,
+    amount2,
+    childChain.name,
+    isBatchTransfer,
+    isCctpTransfer,
+    isDepositMode,
+    isSmartContractWallet,
+    isTeleportMode,
+    selectedToken,
+    isCustomDestinationTransfer
+  ])
+
+  const moveFundsButtonOnClick = async () => {
+    const isConnectedToTheWrongChain =
+      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
+
+    const sourceChainId = latestNetworks.current.sourceChain.id
+    const childChainName = getNetworkName(childChain.id)
+    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+    trackTransferButtonClick()
+
+    try {
+      setTransferring(true)
+      if (isConnectedToTheWrongChain) {
+        trackEvent('Switch Network and Transfer', {
+          type: isTeleportMode
+            ? 'Teleport'
+            : isDepositMode
+            ? 'Deposit'
+            : 'Withdrawal',
+          tokenSymbol: selectedToken?.symbol,
+          assetType: selectedToken ? 'ERC-20' : 'ETH',
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: childChainName,
+          amount: Number(amount),
+          amount2: isBatchTransfer ? Number(amount2) : undefined,
+          version: 2
+        })
+        await switchNetworkAsync?.(sourceChainId)
+      }
+    } catch (error) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+      return networkConnectionWarningToast()
+    } finally {
+      setTransferring(false)
+    }
+
+    if (!isTransferAllowed) {
+      return networkConnectionWarningToast()
+    }
+
+    if (isCctpTransfer) {
+      return transferCctp()
+    }
+    if (isDepositMode && selectedToken) {
+      return depositToken()
+    }
+    return transfer()
   }
 
   return (
@@ -1014,67 +978,7 @@ export function TransferPanel() {
           amount={parseFloat(amount)}
           token={selectedToken}
         />
-        <div className="transfer-panel-stats">
-          {isDepositMode ? (
-            <Button
-              variant="primary"
-              loading={isTransferring}
-              disabled={!transferReady.deposit}
-              onClick={() => {
-                if (isCctpTransfer) {
-                  transferCctp()
-                } else if (selectedToken) {
-                  depositToken()
-                } else {
-                  transfer()
-                }
-              }}
-              style={{
-                borderColor: destinationChainUIcolor,
-                backgroundColor: `${destinationChainUIcolor}66`
-              }}
-              className={twMerge(
-                'w-full border bg-eth-dark py-3 text-lg',
-                'disabled:!border-white/10 disabled:!bg-white/10',
-                'lg:text-2xl'
-              )}
-            >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(
-                    networks.destinationChain.id
-                  )}`}
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              loading={isTransferring}
-              disabled={!transferReady.withdrawal}
-              onClick={() => {
-                if (isCctpTransfer) {
-                  transferCctp()
-                } else {
-                  transfer()
-                }
-              }}
-              style={{
-                borderColor: destinationChainUIcolor,
-                backgroundColor: `${destinationChainUIcolor}66`
-              }}
-              className={twMerge(
-                'w-full border py-3 text-lg',
-                'disabled:!border-white/10 disabled:!bg-white/10',
-                'lg:text-2xl'
-              )}
-            >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(
-                    networks.destinationChain.id
-                  )}`}
-            </Button>
-          )}
-        </div>
+        <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportDialog
@@ -1116,6 +1020,8 @@ export function TransferPanel() {
           </Tippy>
         )}
       </div>
+
+      {showProjectsListing && <ProjectsListing />}
     </>
   )
 }
