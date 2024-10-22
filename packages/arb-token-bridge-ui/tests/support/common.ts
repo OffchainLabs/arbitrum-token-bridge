@@ -112,7 +112,7 @@ export function getZeroToLessThanOneToken(symbol: string) {
 
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)
-  cy.findSelectTokenButton('ETH').click()
+  cy.findSelectTokenButton(Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
