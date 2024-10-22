@@ -1,7 +1,7 @@
 name: Add Orbit Chain Request
 description: File a request to have your Orbit chain added to the bridge
 title: "[feat]: Add Orbit chain "
-labels: ["feat", "triage"]
+labels: ["Type: Add Orbit Chain"]
 body:
   - type: markdown
     attributes:
@@ -121,50 +121,20 @@ body:
     attributes:
       value: |
         Please fill out this section with your chain configuration details and contract addresses. As a reminder, you can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
-  - type: input
-    id: confirmPeriodBlocks
-    attributes:
-      label: confirmPeriodBlocks
-      placeholder: ex. 45818
-    validations:
-      required: true
 
   - type: markdown
     attributes:
       value: |
-        ## Rollup contract addresses
+        ## Rollup contract address
   - type: markdown
     attributes:
       value: |
         You can find this information under the `"coreContracts" : {...}` key.
   - type: input
-    id: bridge
-    attributes:
-      label: bridge
-    validations:
-      required: true    
-  - type: input
-    id: inbox
-    attributes:
-      label: inbox
-    validations:
-      required: true
-  - type: input
-    id: outbox
-    attributes:
-      label: outbox
-    validations:
-      required: true
-  - type: input
     id: rollup
     attributes:
       label: rollup
-    validations:
-      required: true
-  - type: input
-    id: sequencerInbox
-    attributes:
-      label: sequencerInbox
+      description: Please provide the address of the rollup contract. Other core contract addresses will be fetched automatically.
     validations:
       required: true
 
@@ -172,10 +142,6 @@ body:
     attributes:
       value: |
         ## Parent chain token bridge contract addresses
-  - type: markdown
-    attributes:
-      value: |
-        You can find this information under the `"l2Contracts" : {...}` key.
   - type: input
     id: parent-custom-gateway
     attributes:
@@ -224,10 +190,6 @@ body:
     attributes:
       value: |
         ## Orbit chain token bridge contract addresses 
-  - type: markdown
-    attributes:
-      value: |
-        You can find this information under the `"l3Contracts" : {...}` key.
   - type: input
     id: child-custom-gateway
     attributes:
