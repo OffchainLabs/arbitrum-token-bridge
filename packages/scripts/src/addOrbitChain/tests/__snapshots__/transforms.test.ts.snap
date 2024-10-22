@@ -69,7 +69,7 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
   "name": "Test Chain",
   "nativeToken": "0x0000000000000000000000000000000000000006",
   "parentChainId": 421614,
-  "rpcUrl": "https://testrpc.com",
+  "rpcUrl": "https://sepolia-rollup.arbitrum.io/rpc",
   "slug": "test-chain",
   "tokenBridge": {
     "childCustomGateway": "0x0000000000000000000000000000000000000014",
