@@ -7,6 +7,8 @@ import { L2ToL1EventResult } from './arbTokenBridge.types'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
 
+const LOCAL_STORAGE_KEY = 'arbitrum:bridge:executed-messages'
+
 export type ExecutedMessagesCache = {
   [id: string]: boolean
 }
@@ -34,10 +36,7 @@ function getExecutedMessagesCacheKey({
 export function checkExecutedMessagesCache(
   params: ExecutedMessagesCacheKeyParams
 ): boolean {
-  const cache = JSON.parse(
-    localStorage.getItem('arbitrum:bridge:executed-messages') || '{}'
-  )
-
+  const cache = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}')
   return typeof cache[getExecutedMessagesCacheKey(params)] !== 'undefined'
 }
 
@@ -46,10 +45,7 @@ export function useExecutedMessagesCache() {
   const { childChain } = useNetworksRelationship(networks)
 
   const [executedMessagesCache, setExecutedMessagesCache] =
-    useLocalStorage<ExecutedMessagesCache>(
-      'arbitrum:bridge:executed-messages',
-      {}
-    ) as [
+    useLocalStorage<ExecutedMessagesCache>(LOCAL_STORAGE_KEY, {}) as [
       ExecutedMessagesCache,
       React.Dispatch<ExecutedMessagesCache>,
       React.Dispatch<void>
