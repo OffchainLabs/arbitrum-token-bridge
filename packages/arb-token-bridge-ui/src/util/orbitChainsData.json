@@ -782,56 +782,6 @@
       }
     },
     {
-      "chainId": 1183,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0xCAeCF7c5c2769e250Ef69592dD470D40BC61D1f7",
-        "inbox": "0x44199D537Aa690bE3B4446602e0c66F2B992D51e",
-        "outbox": "0xAD6A8df458dBD6b440F50313C5d53E3C5b4734e9",
-        "rollup": "0x357717a0F9Ac8714A5995109Fba3BAd3b5f0954F",
-        "sequencerInbox": "0x146bCf344F949ad4c9Fcf339eb4415981aE21dF9"
-      },
-      "nativeToken": "0x566f8345F7bF45358FaB2802C19c60D691dE04e4",
-      "explorerUrl": "https://testnet.theatlas.tech",
-      "rpcUrl": "https://theatlas.tech",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Atlas Testnet",
-      "slug": "atlas-testnet",
-      "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
-      "tokenBridge": {
-        "parentCustomGateway": "0xE5A8943e36f93491f97A521447772fCF529533B5",
-        "parentErc20Gateway": "0xBc89C0A2CCA8A0e1583AA6d4e22B36E26661C78E",
-        "parentGatewayRouter": "0xc93fDF8327e04776fd184188bB4EC8521E5E96D7",
-        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x2c2Be954C9B79d9cA2CF145d9d6363F3c3784615",
-        "childErc20Gateway": "0xDfCD9f6154BEA2E98e8aE493f3Fec2E22De52D6a",
-        "childGatewayRouter": "0xBc63Ec54dA9Ee3B2b3D4cA5DE3622a3F85e0F219",
-        "childMultiCall": "0x54AFaf5Fd025A99708e73e52c317454bD52B1e77",
-        "childProxyAdmin": "0xE1C9a27C47bb9691bA5b4E35eb7617B39F6098B9",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#889B6F",
-        "network": {
-          "name": "Atlas Testnet",
-          "logo": "/images/AtlasLogo.png",
-          "description": "Aarc is the first modular layer for unified borderless dapps."
-        },
-        "nativeTokenData": {
-          "name": "Aarc",
-          "symbol": "AARC",
-          "decimals": 18,
-          "logoUrl": "/images/AtlasLogo.png"
-        }
-      }
-    },
-    {
       "chainId": 2730,
       "confirmPeriodBlocks": 64,
       "ethBridge": {
