@@ -14,12 +14,13 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
-import { getL2ERC20Address } from './src/util/TokenUtils'
+import { fetchErc20Data, getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import { contractAbi, contractByteCode } from './testErc20Token'
 import {
   checkForAssertions,
   generateActivityOnChains,
+  NetworkType,
   fundEth,
   setupCypressTasks,
   getCustomDestinationAddress,
@@ -68,6 +69,16 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
+
+      try {
+        const data = await fetchErc20Data({
+          address: defaultL3CustomGasTokenNetwork.nativeToken!,
+          provider: new StaticJsonRpcProvider('http://127.0.0.1:8547')
+        })
+        console.log({ data })
+      } catch (e) {
+        console.log({ e })
+      }
 
       await registerLocalNetwork()
 

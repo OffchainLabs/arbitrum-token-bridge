@@ -66,7 +66,7 @@ function getErc20DataCache(params: GetErc20DataCacheParams): Erc20Data | null
 function getErc20DataCache(
   params?: GetErc20DataCacheParams
 ): Erc20DataCache | (Erc20Data | null) {
-  if (typeof window.localStorage === 'undefined') {
+  if (typeof window?.localStorage === 'undefined') {
     return null
   }
 
