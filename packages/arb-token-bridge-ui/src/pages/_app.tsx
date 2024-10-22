@@ -13,20 +13,12 @@ import 'tippy.js/themes/light.css'
 
 import '@rainbow-me/rainbowkit/styles.css'
 
-import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
 import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
 import { isUserRejectedError } from '../util/isUserRejectedError'
-
-if (
-  process.env.NODE_ENV !== 'production' ||
-  process.env.NEXT_PUBLIC_IS_E2E_TEST
-) {
-  registerLocalNetwork()
-}
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
