@@ -24,10 +24,7 @@ function isClassicL2ToL1TransactionEvent(
   return typeof (event as any).batchNumber !== 'undefined'
 }
 
-function getExecutedMessagesCacheKey({
-  event,
-  childChainId
-}: ExecutedMessagesCacheKeyParams) {
+function getCacheKey({ event, childChainId }: ExecutedMessagesCacheKeyParams) {
   return isClassicL2ToL1TransactionEvent(event)
     ? `childChainId: ${childChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
     : `childChainId: ${childChainId}, position: ${event.position.toString()}`
@@ -37,7 +34,7 @@ export function checkExecutedMessagesCache(
   params: ExecutedMessagesCacheKeyParams
 ): boolean {
   const cache = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}')
-  return typeof cache[getExecutedMessagesCacheKey(params)] !== 'undefined'
+  return typeof cache[getCacheKey(params)] !== 'undefined'
 }
 
 export function useExecutedMessagesCache() {
@@ -56,7 +53,7 @@ export function useExecutedMessagesCache() {
       const added: { [cacheKey: string]: boolean } = {}
 
       events.forEach((event: L2ToL1EventResult) => {
-        const cacheKey = getExecutedMessagesCacheKey({
+        const cacheKey = getCacheKey({
           event,
           childChainId: childChain.id
         })
