@@ -6,7 +6,7 @@ import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
 import { useAppState } from '../../state'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { getExplorerUrl } from '../../util/networks'
 import { useDestinationAddressStore } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 

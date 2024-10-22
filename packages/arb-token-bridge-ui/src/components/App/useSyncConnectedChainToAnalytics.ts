@@ -41,7 +41,6 @@ function getBaseUrl(url: string | undefined): string | null {
 
 export function useSyncConnectedChainToAnalytics() {
   const { isConnected, connector } = useAccount()
-
   const [networks] = useNetworks()
   const { parentChain, childChain } = useNetworksRelationship(networks)
 

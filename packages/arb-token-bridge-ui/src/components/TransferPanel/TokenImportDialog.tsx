@@ -75,7 +75,6 @@ export function TokenImportDialog({
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
   const actions = useActions()

@@ -12,7 +12,9 @@ import {
   arbitrumSepolia,
   localL1Network as local,
   localL2Network as arbitrumLocal,
-  localL3Network as l3Local
+  localL3Network as l3Local,
+  base,
+  baseSepolia
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
 import { getDestinationChainIds } from '../util/networks'
@@ -37,7 +39,9 @@ export function isSupportedChainId(
     holesky.id,
     arbitrum.id,
     arbitrumNova.id,
+    base.id,
     arbitrumSepolia.id,
+    baseSepolia.id,
     arbitrumLocal.id,
     l3Local.id,
     local.id,
@@ -74,7 +78,15 @@ export function sanitizeQueryParams({
     isSupportedChainId(destinationChainId)
   ) {
     const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
-    return { sourceChainId: defaultSourceChainId!, destinationChainId }
+
+    if (typeof defaultSourceChainId === 'undefined') {
+      return {
+        sourceChainId: ChainId.Ethereum,
+        destinationChainId: ChainId.ArbitrumOne
+      }
+    }
+
+    return { sourceChainId: defaultSourceChainId, destinationChainId }
   }
 
   // sourceChainId is valid and destinationChainId is undefined
@@ -83,9 +95,17 @@ export function sanitizeQueryParams({
     !isSupportedChainId(destinationChainId)
   ) {
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
+
+    if (typeof defaultDestinationChainId === 'undefined') {
+      return {
+        sourceChainId: ChainId.Ethereum,
+        destinationChainId: ChainId.ArbitrumOne
+      }
+    }
+
     return {
       sourceChainId: sourceChainId,
-      destinationChainId: defaultDestinationChainId!
+      destinationChainId: defaultDestinationChainId
     }
   }
 

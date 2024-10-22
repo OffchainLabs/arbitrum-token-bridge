@@ -1,6 +1,6 @@
 {
-  "mainnet": {
-    "660279": {
+  "mainnet": [
+    {
       "chainId": 660279,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
@@ -50,7 +50,7 @@
         }
       }
     },
-    "1380012617": {
+    {
       "chainId": 1380012617,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
@@ -93,7 +93,7 @@
         }
       }
     },
-    "4078": {
+    {
       "chainId": 4078,
       "parentChainId": 42161,
       "confirmPeriodBlocks": 7200,
@@ -136,7 +136,7 @@
         }
       }
     },
-    "70700": {
+    {
       "chainId": 70700,
       "confirmPeriodBlocks": 40320,
       "ethBridge": {
@@ -178,7 +178,7 @@
         }
       }
     },
-    "70701": {
+    {
       "chainId": 70701,
       "confirmPeriodBlocks": 43200,
       "ethBridge": {
@@ -220,7 +220,7 @@
         }
       }
     },
-    "12324": {
+    {
       "chainId": 12324,
       "confirmPeriodBlocks": 7200,
       "ethBridge": {
@@ -263,7 +263,7 @@
         }
       }
     },
-    "94524": {
+    {
       "chainId": 94524,
       "confirmPeriodBlocks": 40320,
       "ethBridge": {
@@ -306,9 +306,9 @@
         }
       }
     },
-    "1996": {
+    {
       "chainId": 1996,
-      "confirmPeriodBlocks": 20,
+      "confirmPeriodBlocks": 45818,
       "ethBridge": {
         "bridge": "0x2f285781B8d58678a3483de52D618198E4d27532",
         "inbox": "0x718E2a83775343d5c0B1eE0676703cBAF30CaFCD",
@@ -356,7 +356,7 @@
         }
       }
     },
-    "55244": {
+    {
       "chainId": 55244,
       "confirmPeriodBlocks": 40320,
       "ethBridge": {
@@ -399,7 +399,7 @@
         }
       }
     },
-    "228": {
+    {
       "chainId": 228,
       "confirmPeriodBlocks": 7200,
       "ethBridge": {
@@ -442,7 +442,7 @@
         }
       }
     },
-    "4162": {
+    {
       "chainId": 4162,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
@@ -491,10 +491,111 @@
           "logoUrl": "/images/sxTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 33139,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x6B71AFb4b7725227ab944c96FE018AB9dc0434b8",
+        "inbox": "0x1B98e4ED82Ee1a91A65a38C690e2266364064D15",
+        "outbox": "0x4F405BA65291063d8A524c2bDf55d4e67405c2aF",
+        "rollup": "0x374de579AE15aD59eD0519aeAf1A23F348Df259c",
+        "sequencerInbox": "0xE6a92Ae29E24C343eE66A2B3D3ECB783d65E4a3C"
+      },
+      "explorerUrl": "https://apescan.io",
+      "nativeToken": "0x7f9FBf9bDd3F4105C478b996B648FE6e828a1e98",
+      "rpcUrl": "https://apechain.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "ApeChain",
+      "slug": "apechain",
+      "parentChainId": 42161,
+      "retryableLifetimeSeconds": 604800,
+      "tokenBridge": {
+        "parentCustomGateway": "0xEd543dA6fE33cceE50DC024b78C27959235D0ab0",
+        "parentErc20Gateway": "0xB603a1C07A11945bFe4855347c88583e31b8ddB0",
+        "parentGatewayRouter": "0xD57Df5C2Dc2D60307a74944191f2aA5B7BD4a700",
+        "parentMultiCall": "0x411f8A148e448bBe75382d4FFABee0796484f3c6",
+        "parentProxyAdmin": "0x1E5f8ff72895aEa53DD62b590dA51E92dC75b507",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x49607221AF038229cEc6c85DB37a652E00226D29",
+        "childErc20Gateway": "0xf9710169D2f3524E7Bf068F6DDF6b2cc65D38a14",
+        "childGatewayRouter": "0x31eFB847d3f7A0C9Ba1364a6423aEa0a7a60BF3C",
+        "childMultiCall": "0x350186513FB2C148A50439311533656EF8096D9C",
+        "childProxyAdmin": "0x965a8220D41A031b1F71d94feFBf13dE4f686B33",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#0054FA",
+        "network": {
+          "name": "ApeChain",
+          "logo": "/images/ApeChainLogo.svg",
+          "description": "ApeChain is a dedicated infrastructure layer to power the ApeCoin ecosystem."
+        },
+        "nativeTokenData": {
+          "name": "ApeCoin",
+          "symbol": "APE",
+          "decimals": 18,
+          "logoUrl": "/images/ApeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 1625,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x7983403dDA368AA7d67145a9b81c5c517F364c42",
+        "inbox": "0x7AD2a94BefF3294a31894cFb5ba4206957a53c19",
+        "outbox": "0x1153a1e4B1523DFf36f77d696bd6eBF2B0e7DAbF",
+        "rollup": "0xf993AF239770932A0EDaB88B6A5ba3708Bd58239",
+        "sequencerInbox": "0x8D99372612e8cFE7163B1a453831Bc40eAeb3cF3"
+      },
+      "nativeToken": "0x9C7BEBa8F6eF6643aBd725e45a4E8387eF260649",
+      "explorerUrl": "https://explorer.gravity.xyz",
+      "rpcUrl": "https://rpc.gravity.xyz",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Gravity Alpha",
+      "slug": "gravity-alpha",
+      "parentChainId": 1,
+      "retryableLifetimeSeconds": 604800,
+      "tokenBridge": {
+        "parentCustomGateway": "0xa26Fd1c23634870303e42311E114D5cc8301Ed1E",
+        "parentErc20Gateway": "0xb23988D9728EF147EAa02D602D7e067B6131A1bB",
+        "parentGatewayRouter": "0x8713569d016f981D956715e9EE2795382168b5c0",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0xBbc3872E30C91ef69336937838c2a283F79f7E68",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xC18EADE2B2CdA6AcFAc4fd2226C724a1008b02Ab",
+        "childErc20Gateway": "0xD330E617270F375Bd476896f3A8AE9041264E13d",
+        "childGatewayRouter": "0xf1cA401FB474520EbaBb285670891dEbd7C505Bc",
+        "childMultiCall": "0xABF31e3A13528082cE5bb05D6E88749556DAFD5F",
+        "childProxyAdmin": "0xB881cf085a78491AaA71Bf22bc87E67865a4409a",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFAC43",
+        "network": {
+          "name": "Gravity Alpha",
+          "logo": "/images/GravityAlpha_Logo.png",
+          "description": "The Magnet Chain for Web3."
+        },
+        "nativeTokenData": {
+          "name": "G",
+          "symbol": "G",
+          "decimals": 18,
+          "logoUrl": "/images/GravityAlpha_NativeTokenLogo.png"
+        }
+      }
     }
-  },
-  "testnet": {
-    "37714555429": {
+  ],
+  "testnet": [
+    {
       "chainId": 37714555429,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -544,7 +645,7 @@
         }
       }
     },
-    "53457": {
+    {
       "chainId": 53457,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -594,7 +695,7 @@
         }
       }
     },
-    "12325": {
+    {
       "chainId": 12325,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -637,7 +738,7 @@
         }
       }
     },
-    "1918988905": {
+    {
       "chainId": 1918988905,
       "confirmPeriodBlocks": 64,
       "ethBridge": {
@@ -680,57 +781,7 @@
         }
       }
     },
-    "1183": {
-      "chainId": 1183,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0xCAeCF7c5c2769e250Ef69592dD470D40BC61D1f7",
-        "inbox": "0x44199D537Aa690bE3B4446602e0c66F2B992D51e",
-        "outbox": "0xAD6A8df458dBD6b440F50313C5d53E3C5b4734e9",
-        "rollup": "0x357717a0F9Ac8714A5995109Fba3BAd3b5f0954F",
-        "sequencerInbox": "0x146bCf344F949ad4c9Fcf339eb4415981aE21dF9"
-      },
-      "nativeToken": "0x566f8345F7bF45358FaB2802C19c60D691dE04e4",
-      "explorerUrl": "https://testnet.theatlas.tech",
-      "rpcUrl": "https://theatlas.tech",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Atlas Testnet",
-      "slug": "atlas-testnet",
-      "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
-      "tokenBridge": {
-        "parentCustomGateway": "0xE5A8943e36f93491f97A521447772fCF529533B5",
-        "parentErc20Gateway": "0xBc89C0A2CCA8A0e1583AA6d4e22B36E26661C78E",
-        "parentGatewayRouter": "0xc93fDF8327e04776fd184188bB4EC8521E5E96D7",
-        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x2c2Be954C9B79d9cA2CF145d9d6363F3c3784615",
-        "childErc20Gateway": "0xDfCD9f6154BEA2E98e8aE493f3Fec2E22De52D6a",
-        "childGatewayRouter": "0xBc63Ec54dA9Ee3B2b3D4cA5DE3622a3F85e0F219",
-        "childMultiCall": "0x54AFaf5Fd025A99708e73e52c317454bD52B1e77",
-        "childProxyAdmin": "0xE1C9a27C47bb9691bA5b4E35eb7617B39F6098B9",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#889B6F",
-        "network": {
-          "name": "Atlas Testnet",
-          "logo": "/images/AtlasLogo.png",
-          "description": "Aarc is the first modular layer for unified borderless dapps."
-        },
-        "nativeTokenData": {
-          "name": "Aarc",
-          "symbol": "AARC",
-          "decimals": 18,
-          "logoUrl": "/images/AtlasLogo.png"
-        }
-      }
-    },
-    "2730": {
+    {
       "chainId": 2730,
       "confirmPeriodBlocks": 64,
       "ethBridge": {
@@ -779,6 +830,56 @@
           "logoUrl": "/images/xrTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 631571,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0x133634FA8F372e59422744759a67796F01428BDD",
+        "inbox": "0x81Bf51dEC736adA7E256ed6C092CAe24D62a1ca7",
+        "outbox": "0x020e1cb41cF68999D988c20Ef40E2C58e1947db2",
+        "rollup": "0xAFcb6cF53AB01ac39577A592E141F614171c9371",
+        "sequencerInbox": "0x2453eb0d6F58C01Adb87505A4348fB5EEceB007D"
+      },
+      "nativeToken": "0xe97f36a00058AA7DfC4E85d23532C3f70453a7aE",
+      "explorerUrl": "https://polter-testnet.explorer.alchemy.com",
+      "rpcUrl": "https://geist-polter.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Polter Testnet",
+      "slug": "polter-testnet",
+      "parentChainId": 84532,
+      "retryableLifetimeSeconds": 604800,
+      "tokenBridge": {
+        "parentCustomGateway": "0x24e1e6375f0f0Eecd38266357cADE57cA3A348F3",
+        "parentErc20Gateway": "0x9014E7244116b965F0D1059f80e2bD8169957117",
+        "parentGatewayRouter": "0xE38553a7989feD9e240DE8B0f5ed166BF75a088A",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x7965162499751ABf89b8e3C640f8229AD8EeB022",
+        "childErc20Gateway": "0xA8E8b5D957e4ad9335E504442e877E513BD50729",
+        "childGatewayRouter": "0xF654086B1118fE98ea045De8D6dC0F1C53Da5B76",
+        "childMultiCall": "0xb97c5bC7DB7532471726550480A855484a408d00",
+        "childProxyAdmin": "0xda11A4ecaAcA51b1f2e2109a2EEFaC438409b68D",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#03AB2A",
+        "network": {
+          "name": "Polter Testnet",
+          "logo": "/images/PolterTestnetLogo.png",
+          "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
+        },
+        "nativeTokenData": {
+          "name": "Aavegotchi GHST Token",
+          "symbol": "GHST",
+          "decimals": 18,
+          "logoUrl": "/images/ghst.png"
+        }
+      }
     }
-  }
+  ]
 }

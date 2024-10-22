@@ -43,6 +43,7 @@ module.exports = {
         'gray-dark': '#6D6D6D',
         'line-gray': '#F4F4F4',
         dark: '#1A1C1D', // (or default-black)
+        'dark-hover': '#2b2e30', // (or default-black-hover)
 
         'bg-gray-1': '#191919',
 
