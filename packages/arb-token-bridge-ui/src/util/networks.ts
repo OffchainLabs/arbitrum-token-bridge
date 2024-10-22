@@ -6,11 +6,11 @@ import {
   getArbitrumNetworks,
   registerCustomArbitrumNetwork
 } from '@arbitrum/sdk'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
+import { fetchErc20Data } from './TokenUtils'
 
 export enum ChainId {
   // L1
@@ -447,13 +447,14 @@ export async function registerLocalNetwork() {
     let isLocalCustomNativeToken = false
 
     try {
-      const erc20 = ERC20__factory.connect(
-        defaultL3CustomGasTokenNetwork.nativeToken!,
-        new StaticJsonRpcProvider(localL2NetworkRpcUrl)
-      )
-      const symbol = await erc20.symbol()
-
-      if (symbol === 'TN') {
+      const data = await fetchErc20Data({
+        address: defaultL3CustomGasTokenNetwork.nativeToken!,
+        provider: new StaticJsonRpcProvider(
+          process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL ||
+            'http://127.0.0.1:8547'
+        )
+      })
+      if (data.symbol === 'TN') {
         isLocalCustomNativeToken = true
       }
     } catch (e) {

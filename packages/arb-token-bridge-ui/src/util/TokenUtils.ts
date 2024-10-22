@@ -66,6 +66,10 @@ function getErc20DataCache(params: GetErc20DataCacheParams): Erc20Data | null
 function getErc20DataCache(
   params?: GetErc20DataCacheParams
 ): Erc20DataCache | (Erc20Data | null) {
+  if (typeof window.localStorage === 'undefined') {
+    return null
+  }
+
   const cache: Erc20DataCache = JSON.parse(
     // intentionally using || instead of ?? for it to work with an empty string
     localStorage.getItem(erc20DataCacheLocalStorageKey) || '{}'
