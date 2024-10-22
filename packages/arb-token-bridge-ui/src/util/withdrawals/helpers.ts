@@ -9,8 +9,8 @@ import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgra
 import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
-  L2ToL1EventResult,
-  L2ToL1EventResultPlus,
+  ChildToParentEventResult,
+  ChildToParentEventResultPlus,
   NodeBlockDeadlineStatus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
@@ -23,7 +23,7 @@ import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
  * `l2TxHash` exists on result from subgraph
  * `transactionHash` exists on result from event logs
  */
-export type EthWithdrawal = L2ToL1EventResult & {
+export type EthWithdrawal = ChildToParentEventResult & {
   l2TxHash?: string
   transactionHash?: string
   direction: 'withdrawal'
@@ -33,12 +33,12 @@ export type EthWithdrawal = L2ToL1EventResult & {
 }
 
 export const updateAdditionalWithdrawalData = async (
-  withdrawalTx: L2ToL1EventResultPlus,
+  withdrawalTx: ChildToParentEventResultPlus,
   l1Provider: Provider,
   l2Provider: Provider
 ) => {
   const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
-    withdrawalTx as L2ToL1EventResultPlus,
+    withdrawalTx as ChildToParentEventResultPlus,
     l1Provider,
     l2Provider
   )
@@ -71,7 +71,7 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
   event: EthWithdrawal
   l1Provider: Provider
   l2Provider: Provider
-}): Promise<L2ToL1EventResultPlus> {
+}): Promise<ChildToParentEventResultPlus> {
   const { callvalue } = event
   const outgoingMessageState = await getOutgoingMessageState(
     event,
@@ -98,7 +98,7 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
 }
 
 export async function getOutgoingMessageState(
-  event: L2ToL1EventResult,
+  event: ChildToParentEventResult,
   l1Provider: Provider,
   l2Provider: Provider,
   l2ChainID: number
@@ -125,7 +125,7 @@ export async function getOutgoingMessageState(
 }
 
 export async function attachNodeBlockDeadlineToEvent(
-  event: L2ToL1EventResultPlus,
+  event: ChildToParentEventResultPlus,
   l1Provider: Provider,
   l2Provider: Provider
 ) {
@@ -187,7 +187,7 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
   result: WithdrawalInitiated
   l1Provider: Provider
   l2Provider: Provider
-}): Promise<L2ToL1EventResultPlus | undefined> {
+}): Promise<ChildToParentEventResultPlus | undefined> {
   const { symbol, decimals } = await fetchErc20Data({
     address: result.l1Token,
     provider: l1Provider
@@ -264,7 +264,7 @@ export async function mapWithdrawalToL2ToL1EventResult({
   withdrawal: FetchWithdrawalsFromSubgraphResult
   l1Provider: Provider
   l2Provider: Provider
-}): Promise<L2ToL1EventResultPlus | undefined> {
+}): Promise<ChildToParentEventResultPlus | undefined> {
   // get transaction receipt
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.l2TxHash)
   const l2TxReceipt = new ChildTransactionReceipt(txReceipt)
@@ -303,7 +303,7 @@ export async function mapWithdrawalToL2ToL1EventResult({
       l2TxHash: l2TxReceipt.transactionHash,
       parentChainId: withdrawal.parentChainId,
       childChainId: withdrawal.childChainId
-    } as L2ToL1EventResultPlus
+    } as ChildToParentEventResultPlus
   }
 
   const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
@@ -321,5 +321,5 @@ export async function mapWithdrawalToL2ToL1EventResult({
     decimals: nativeCurrency.decimals,
     parentChainId: withdrawal.parentChainId,
     childChainId: withdrawal.childChainId
-  } as L2ToL1EventResultPlus
+  } as ChildToParentEventResultPlus
 }

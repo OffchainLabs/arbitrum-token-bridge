@@ -14,7 +14,7 @@ import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
   AssetType,
-  L2ToL1EventResultPlus,
+  ChildToParentEventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
 import { isTeleportTx, Transaction } from './useTransactions'
@@ -170,7 +170,7 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
     )
   }
 
-  let withdrawal: L2ToL1EventResultPlus | undefined
+  let withdrawal: ChildToParentEventResultPlus | undefined
 
   if (isWithdrawalFromSubgraph(tx)) {
     withdrawal = await mapWithdrawalToL2ToL1EventResult({

@@ -17,9 +17,9 @@ import {
   ArbTokenBridge,
   ContractStorage,
   ERC20BridgeToken,
-  L2ToL1EventResultPlus,
+  ChildToParentEventResultPlus,
   TokenType,
-  L2ToL1EventResult
+  ChildToParentEventResult
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
@@ -41,7 +41,7 @@ export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
-function isClassicL2ToL1TransactionEvent(
+function isClassicChildToParentTransactionEvent(
   event: ChildToParentTransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
@@ -51,16 +51,16 @@ export function getExecutedMessagesCacheKey({
   event,
   l2ChainId
 }: {
-  event: L2ToL1EventResult
+  event: ChildToParentEventResult
   l2ChainId: number
 }) {
-  return isClassicL2ToL1TransactionEvent(event)
+  return isClassicChildToParentTransactionEvent(event)
     ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
     : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
 
 export function getUniqueIdOrHashFromEvent(
-  event: L2ToL1EventResult
+  event: ChildToParentEventResult
 ): BigNumber {
   const anyEvent = event as any
 
@@ -81,14 +81,14 @@ class TokenDisabledError extends Error {
 }
 
 export interface TokenBridgeParams {
-  l1: { provider: JsonRpcProvider; network: Chain }
-  l2: { provider: JsonRpcProvider; network: Chain }
+  parent: { provider: JsonRpcProvider; network: Chain }
+  child: { provider: JsonRpcProvider; network: Chain }
 }
 
 export const useArbTokenBridge = (
   params: TokenBridgeParams
 ): ArbTokenBridge => {
-  const { l1, l2 } = params
+  const { parent, child } = params
   const { address: walletAddress } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
@@ -97,27 +97,27 @@ export const useArbTokenBridge = (
   const { destinationAddress } = useDestinationAddressStore()
 
   const {
-    erc20: [, updateErc20L1Balance]
+    erc20: [, updateErc20ParentBalance]
   } = useBalance({
-    chainId: l1.network.id,
+    chainId: parent.network.id,
     walletAddress
   })
   const {
-    erc20: [, updateErc20L2Balance]
+    erc20: [, updateErc20ChildBalance]
   } = useBalance({
-    chainId: l2.network.id,
+    chainId: child.network.id,
     walletAddress
   })
   const {
-    erc20: [, updateErc20L1CustomDestinationBalance]
+    erc20: [, updateErc20ParentCustomDestinationBalance]
   } = useBalance({
-    chainId: l1.network.id,
+    chainId: parent.network.id,
     walletAddress: destinationAddress
   })
   const {
-    erc20: [, updateErc20CustomDestinationL2Balance]
+    erc20: [, updateErc20ChildCustomDestinationBalance]
   } = useBalance({
-    chainId: l2.network.id,
+    chainId: child.network.id,
     walletAddress: destinationAddress
   })
 
@@ -135,7 +135,10 @@ export const useArbTokenBridge = (
       React.Dispatch<void>
     ]
 
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
+  const parentNetworkID = useMemo(
+    () => String(parent.network.id),
+    [parent.network.id]
+  )
 
   const [transactions, { addTransaction, updateTransaction }] =
     useTransactions()
@@ -158,8 +161,8 @@ export const useArbTokenBridge = (
   }
 
   const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.id
-    const l2ChainID = l2.network.id
+    const parentChainID = parent.network.id
+    const childChainID = child.network.id
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -169,7 +172,7 @@ export const useArbTokenBridge = (
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
         tokenData
 
-      if (![l1ChainID, l2ChainID].includes(chainId)) {
+      if (![parentChainID, childChainID].includes(chainId)) {
         continue
       }
 
@@ -205,17 +208,18 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+        const parentAddress =
+          bridgeInfo[parentNetworkID]?.tokenAddress.toLowerCase()
 
-        if (!l1Address) {
+        if (!parentAddress) {
           return
         }
 
-        bridgeTokensToAdd[l1Address] = {
+        bridgeTokensToAdd[parentAddress] = {
           name,
           type: TokenType.ERC20,
           symbol,
-          address: l1Address,
+          address: parentAddress,
           l2Address: address.toLowerCase(),
           decimals,
           logoURI,
@@ -237,31 +241,35 @@ export const useArbTokenBridge = (
       }
     }
 
-    // add L1 tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
-    const l1AddressesOfBridgedTokens = new Set(
+    // add parent chain tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
+    const parentAddressesOfBridgedTokens = new Set(
       Object.keys(bridgeTokensToAdd).map(
-        l1Address =>
-          l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
+        parentAddress =>
+          parentAddress.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
       )
     )
-    for (const l1TokenData of candidateUnbridgedTokensToAdd) {
-      if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
-        bridgeTokensToAdd[l1TokenData.address] = l1TokenData
+    for (const parentTokenData of candidateUnbridgedTokensToAdd) {
+      if (
+        !parentAddressesOfBridgedTokens.has(
+          parentTokenData.address.toLowerCase()
+        )
+      ) {
+        bridgeTokensToAdd[parentTokenData.address] = parentTokenData
       }
     }
 
     // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
     setBridgeTokens(oldBridgeTokens => {
-      const l1Addresses: string[] = []
-      const l2Addresses: string[] = []
+      const parentChainAddresses: string[] = []
+      const childChainAddresses: string[] = []
 
       // USDC is not on any token list as it's unbridgeable
       // but we still want to detect its balance on user's wallet
-      if (isNetwork(l2ChainID).isArbitrumOne) {
-        l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
+      if (isNetwork(childChainID).isArbitrumOne) {
+        childChainAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumSepolia) {
-        l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
+      if (isNetwork(childChainID).isArbitrumSepolia) {
+        childChainAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
 
       for (const tokenAddress in bridgeTokensToAdd) {
@@ -271,10 +279,10 @@ export const useArbTokenBridge = (
         }
         const { address, l2Address } = tokenToAdd
         if (address) {
-          l1Addresses.push(address)
+          parentChainAddresses.push(address)
         }
         if (l2Address) {
-          l2Addresses.push(l2Address)
+          childChainAddresses.push(l2Address)
         }
 
         // Add the new list id being imported (`listId`) to the existing list ids (from `oldBridgeTokens[address]`)
@@ -284,8 +292,8 @@ export const useArbTokenBridge = (
         tokenToAdd.listIds = new Set([...oldListIds, listId])
       }
 
-      updateErc20L1Balance(l1Addresses)
-      updateErc20L2Balance(l2Addresses)
+      updateErc20ParentBalance(parentChainAddresses)
+      updateErc20ChildBalance(childChainAddresses)
 
       return {
         ...oldBridgeTokens,
@@ -294,78 +302,81 @@ export const useArbTokenBridge = (
     })
   }
 
-  async function addToken(erc20L1orL2Address: string) {
-    let l1Address: string
-    let l2Address: string | undefined
+  async function addToken(erc20ParentOrChildAddress: string) {
+    let parentChainAddress: string
+    let childChainAddress: string | undefined
 
     if (!walletAddress) {
       return
     }
 
-    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
-    const maybeL1Address = await getL1ERC20Address({
-      erc20L2Address: lowercasedErc20L1orL2Address,
-      l2Provider: l2.provider
+    const lowercasedErc20ParentOrChildAddress =
+      erc20ParentOrChildAddress.toLowerCase()
+    const maybeParentAddress = await getL1ERC20Address({
+      erc20L2Address: lowercasedErc20ParentOrChildAddress,
+      l2Provider: child.provider
     })
 
-    if (maybeL1Address) {
-      // looks like l2 address was provided
-      l1Address = maybeL1Address
-      l2Address = lowercasedErc20L1orL2Address
+    if (maybeParentAddress) {
+      // child chain address provided
+      parentChainAddress = maybeParentAddress
+      childChainAddress = lowercasedErc20ParentOrChildAddress
     } else {
-      // looks like l1 address was provided
-      l1Address = lowercasedErc20L1orL2Address
+      // parent chain address provided
+      parentChainAddress = lowercasedErc20ParentOrChildAddress
 
       // while deriving the child-chain address, it can be a teleport transfer too, in that case derive L3 address from L1 address
       // else, derive the L2 address from L1 address OR L3 address from L2 address
       if (
         isValidTeleportChainPair({
-          sourceChainId: l1.network.id,
-          destinationChainId: l2.network.id
+          sourceChainId: parent.network.id,
+          destinationChainId: child.network.id
         })
       ) {
-        // this can be a bit hard to follow, but it will resolve when we have code-wide better naming for variables
-        // here `l2Address` actually means `childChainAddress`, and `l2.provider` is actually being used as a child-chain-provider, which in this case will be L3
-        l2Address = await getL3ERC20Address({
-          erc20L1Address: l1Address,
-          l1Provider: l1.provider,
-          l3Provider: l2.provider // in case of teleport transfer, the l2.provider being used here is actually the l3 provider
+        // child chain address is actually the L3 address in this case
+        childChainAddress = await getL3ERC20Address({
+          erc20L1Address: parentChainAddress,
+          l1Provider: parent.provider,
+          l3Provider: child.provider
         })
       } else {
-        l2Address = await getL2ERC20Address({
-          erc20L1Address: l1Address,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
+        childChainAddress = await getL2ERC20Address({
+          erc20L1Address: parentChainAddress,
+          l1Provider: parent.provider,
+          l2Provider: child.provider
         })
       }
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const erc20Params = { address: l1Address, provider: l1.provider }
+    const erc20Params = {
+      address: parentChainAddress,
+      provider: parent.provider
+    }
 
     if (!(await isValidErc20(erc20Params))) {
-      throw new Error(`${l1Address} is not a valid ERC-20 token`)
+      throw new Error(`${parentChainAddress} is not a valid ERC-20 token`)
     }
 
     const { name, symbol, decimals } = await fetchErc20Data(erc20Params)
 
     const isDisabled = await l1TokenIsDisabled({
-      erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+      erc20L1Address: parentChainAddress,
+      l1Provider: parent.provider,
+      l2Provider: child.provider
     })
 
     if (isDisabled) {
       throw new TokenDisabledError('Token currently disabled')
     }
 
-    const l1AddressLowerCased = l1Address.toLowerCase()
-    bridgeTokensToAdd[l1AddressLowerCased] = {
+    const parentAddressLowerCased = parentChainAddress.toLowerCase()
+    bridgeTokensToAdd[parentAddressLowerCased] = {
       name,
       type: TokenType.ERC20,
       symbol,
-      address: l1AddressLowerCased,
-      l2Address: l2Address?.toLowerCase(),
+      address: parentAddressLowerCased,
+      l2Address: childChainAddress?.toLowerCase(),
       decimals,
       listIds: new Set()
     }
@@ -374,56 +385,56 @@ export const useArbTokenBridge = (
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
 
-    updateErc20L1Balance([l1AddressLowerCased])
-    if (l2Address) {
-      updateErc20L2Balance([l2Address])
+    updateErc20ParentBalance([parentAddressLowerCased])
+    if (childChainAddress) {
+      updateErc20ChildBalance([childChainAddress])
     }
   }
 
   const updateTokenData = useCallback(
-    async (l1Address: string) => {
+    async (parentAddress: string) => {
       if (typeof bridgeTokens === 'undefined') {
         return
       }
-      const l1AddressLowerCased = l1Address.toLowerCase()
-      const bridgeToken = bridgeTokens[l1AddressLowerCased]
+      const parentAddressLowerCased = parentAddress.toLowerCase()
+      const bridgeToken = bridgeTokens[parentAddressLowerCased]
 
       if (!bridgeToken) {
         return
       }
 
-      const newBridgeTokens = { [l1AddressLowerCased]: bridgeToken }
+      const newBridgeTokens = { [parentAddressLowerCased]: bridgeToken }
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
       })
       const { l2Address } = bridgeToken
-      updateErc20L1Balance([l1AddressLowerCased])
+      updateErc20ParentBalance([parentAddressLowerCased])
       if (destinationAddress) {
-        updateErc20L1CustomDestinationBalance([l1AddressLowerCased])
+        updateErc20ParentCustomDestinationBalance([parentAddressLowerCased])
       }
       if (l2Address) {
-        updateErc20L2Balance([l2Address])
+        updateErc20ChildBalance([l2Address])
         if (destinationAddress) {
-          updateErc20CustomDestinationL2Balance([l2Address])
+          updateErc20ChildCustomDestinationBalance([l2Address])
         }
       }
     },
     [
       bridgeTokens,
       setBridgeTokens,
-      updateErc20L1Balance,
-      updateErc20L2Balance,
-      updateErc20L1CustomDestinationBalance,
-      updateErc20CustomDestinationL2Balance
+      updateErc20ParentBalance,
+      updateErc20ChildBalance,
+      updateErc20ParentCustomDestinationBalance,
+      updateErc20ChildCustomDestinationBalance
     ]
   )
 
   async function triggerOutboxToken({
     event,
-    l1Signer
+    parentSigner
   }: {
-    event: L2ToL1EventResultPlus
-    l1Signer: Signer
+    event: ChildToParentEventResultPlus
+    parentSigner: Signer
   }) {
     // sanity check
     if (!event) {
@@ -438,7 +449,7 @@ export const useArbTokenBridge = (
     const childChainProvider = getProviderForChainId(event.childChainId)
 
     const messageWriter = ChildToParentMessage.fromEvent(
-      l1Signer,
+      parentSigner,
       event,
       parentChainProvider
     )
@@ -453,8 +464,8 @@ export const useArbTokenBridge = (
     return rec
   }
 
-  function addL2NativeToken(erc20L2Address: string) {
-    const token = getL2NativeToken(erc20L2Address, l2.network.id)
+  function addChildNativeToken(erc20ChildAddress: string) {
+    const token = getL2NativeToken(erc20ChildAddress, child.network.id)
 
     setBridgeTokens(oldBridgeTokens => {
       return {
@@ -476,10 +487,10 @@ export const useArbTokenBridge = (
 
   async function triggerOutboxEth({
     event,
-    l1Signer
+    parentSigner
   }: {
-    event: L2ToL1EventResultPlus
-    l1Signer: Signer
+    event: ChildToParentEventResultPlus
+    parentSigner: Signer
   }) {
     // sanity check
     if (!event) {
@@ -494,7 +505,7 @@ export const useArbTokenBridge = (
     const childChainProvider = getProviderForChainId(event.childChainId)
 
     const messageWriter = ChildToParentMessage.fromEvent(
-      l1Signer,
+      parentSigner,
       event,
       parentChainProvider
     )
@@ -510,13 +521,13 @@ export const useArbTokenBridge = (
     return rec
   }
 
-  function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
+  function addToExecutedMessagesCache(events: ChildToParentEventResult[]) {
     const added: { [cacheKey: string]: boolean } = {}
 
-    events.forEach((event: L2ToL1EventResult) => {
+    events.forEach((event: ChildToParentEventResult) => {
       const cacheKey = getExecutedMessagesCacheKey({
         event,
-        l2ChainId: l2.network.id
+        l2ChainId: child.network.id
       })
 
       added[cacheKey] = true
@@ -532,7 +543,7 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
-      addL2NativeToken,
+      addChildNativeToken,
       addTokensFromList,
       removeTokensFromList,
       updateTokenData,

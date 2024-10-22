@@ -64,9 +64,9 @@ export type NodeBlockDeadlineStatus =
   | NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
   | NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
 
-export type L2ToL1EventResult = ChildToParentTransactionEvent
+export type ChildToParentEventResult = ChildToParentTransactionEvent
 
-export type L2ToL1EventResultPlus = L2ToL1EventResult & {
+export type ChildToParentEventResultPlus = ChildToParentEventResult & {
   sender?: string
   destinationAddress?: string
   l2TxHash?: string
@@ -139,20 +139,20 @@ export type DepositGasEstimates = GasEstimates & {
 
 export interface ArbTokenBridgeEth {
   triggerOutbox: (params: {
-    event: L2ToL1EventResultPlus
-    l1Signer: Signer
+    event: ChildToParentEventResultPlus
+    parentSigner: Signer
   }) => Promise<void | ContractReceipt>
 }
 
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
-  addL2NativeToken: (erc20L2Address: string) => void
+  addChildNativeToken: (erc20L2Address: string) => void
   addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   triggerOutbox: (params: {
-    event: L2ToL1EventResultPlus
-    l1Signer: Signer
+    event: ChildToParentEventResultPlus
+    parentSigner: Signer
   }) => Promise<void | ContractReceipt>
 }
 

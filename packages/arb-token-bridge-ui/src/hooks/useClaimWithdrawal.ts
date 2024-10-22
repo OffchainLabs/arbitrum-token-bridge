@@ -5,7 +5,7 @@ import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
-import { AssetType, L2ToL1EventResultPlus } from './arbTokenBridge.types'
+import { AssetType, ChildToParentEventResultPlus } from './arbTokenBridge.types'
 import { setParentChainTxDetailsOfWithdrawalClaimTx } from '../components/TransactionHistory/helpers'
 import { ChildTransactionReceipt } from '@arbitrum/sdk'
 import { ContractReceipt, utils } from 'ethers'
@@ -64,7 +64,7 @@ export function useClaimWithdrawal(
           })
         : await fetchNativeCurrency({ provider: childChainProvider })
 
-    const extendedEvent: L2ToL1EventResultPlus = {
+    const extendedEvent: ChildToParentEventResultPlus = {
       ...event,
       sender: tx.sender,
       destinationAddress: tx.destination,
@@ -87,12 +87,12 @@ export function useClaimWithdrawal(
       if (tx.assetType === AssetType.ETH) {
         res = await arbTokenBridge.eth.triggerOutbox({
           event: extendedEvent,
-          l1Signer: signer
+          parentSigner: signer
         })
       } else {
         res = await arbTokenBridge.token.triggerOutbox({
           event: extendedEvent,
-          l1Signer: signer
+          parentSigner: signer
         })
       }
     } catch (error: any) {
