@@ -86,7 +86,6 @@ export const chainSchema = z
     name: z.string().min(1),
     slug: z.string().min(1),
     parentChainId: z.number().int().positive(),
-    retryableLifetimeSeconds: z.number().int().positive().default(604800),
     tokenBridge: tokenBridgeSchema,
     bridgeUiConfig: bridgeUiConfigSchema,
   })
