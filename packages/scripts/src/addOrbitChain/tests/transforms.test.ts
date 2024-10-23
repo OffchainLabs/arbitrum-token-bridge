@@ -1,9 +1,15 @@
-/* eslint-disable jest/no-mocks-import */
-
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { IncomingChainData } from "../schemas";
 import {
   extractRawChainData,
@@ -20,6 +26,7 @@ import {
   mockOrbitChain,
 } from "./__mocks__/chainDataMocks";
 import { warning } from "@actions/core";
+import axios from "axios";
 
 describe("Transforms", () => {
   describe("extractRawChainData", () => {
@@ -301,6 +308,27 @@ describe("Transforms", () => {
     it("should handle invalid IPFS hashes gracefully", async () => {
       const invalidIpfsUrl = "ipfs://InvalidHash123";
       await expect(fetchAndProcessImage(invalidIpfsUrl)).rejects.toThrow();
+    });
+
+    it("should handle non-image buffers and convert to webp", async () => {
+      // Create a mock non-image buffer
+      const nonImageBuffer = Buffer.from("not an image");
+
+      // Mock axios to return our non-image buffer
+      const mockUrl = "https://example.com/unknown-file";
+      vi.spyOn(axios, "get").mockResolvedValueOnce({
+        status: 200,
+        data: nonImageBuffer,
+        headers: {
+          "content-type": "application/octet-stream",
+        },
+      });
+
+      const { buffer, fileExtension } = await fetchAndProcessImage(mockUrl);
+
+      expect(buffer).toBeTruthy();
+      expect(buffer.length).toBeGreaterThan(0);
+      expect(fileExtension).toBe(".webp");
     });
   });
 });
