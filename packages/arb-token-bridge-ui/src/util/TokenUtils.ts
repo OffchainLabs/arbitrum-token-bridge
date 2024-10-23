@@ -502,34 +502,3 @@ export async function isGatewayRegistered({
     childProvider: childChainProvider
   })
 }
-
-export function scaleToNativeTokenDecimals({
-  amount,
-  decimals
-}: {
-  amount: BigNumber
-  decimals: number
-}) {
-  // do nothing for 18 decimals
-  if (decimals === 18) {
-    return amount
-  }
-
-  if (decimals < 18) {
-    const scaledAmount = amount.div(
-      BigNumber.from(10).pow(BigNumber.from(18 - decimals))
-    )
-    // round up if necessary
-    if (
-      scaledAmount
-        .mul(BigNumber.from(10).pow(BigNumber.from(18 - decimals)))
-        .lt(amount)
-    ) {
-      return scaledAmount.add(BigNumber.from(1))
-    }
-    return scaledAmount
-  }
-
-  // decimals > 18
-  return amount.mul(BigNumber.from(10).pow(BigNumber.from(decimals - 18)))
-}

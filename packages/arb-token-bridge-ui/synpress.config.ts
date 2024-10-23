@@ -91,8 +91,6 @@ export default defineConfig({
         )
       }
 
-      console.log({ isCustomFeeToken })
-
       const userWalletAddress = await userWallet.getAddress()
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.

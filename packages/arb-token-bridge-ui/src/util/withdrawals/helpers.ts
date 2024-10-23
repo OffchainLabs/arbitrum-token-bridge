@@ -5,8 +5,9 @@ import {
   ChildToParentMessageReader,
   ChildTransactionReceipt
 } from '@arbitrum/sdk'
+import { scaleToNativeTokenDecimals } from '@arbitrum/sdk/dist/lib/utils/lib'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
-import { fetchErc20Data, scaleToNativeTokenDecimals } from '../TokenUtils'
+import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,

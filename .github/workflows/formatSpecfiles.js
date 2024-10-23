@@ -32,7 +32,6 @@ switch (testType) {
         ...spec,
         type: "orbit-custom-20dec",
         typeName: "with L3 (20 decimals custom)",
-        testnodeArgs: "--l3node --l3-token-bridge --l3-fee-token --l3-fee-token-decimals 20",
       });
     });
     break;
@@ -42,7 +41,6 @@ switch (testType) {
     tests.push({
       name: "cctp",
       typeName: "",
-      testnodeArgs: "",
       file: "tests/e2e/specs/**/*Cctp.cy.{js,jsx,ts,tsx}",
       recordVideo: false,
       type: "cctp",

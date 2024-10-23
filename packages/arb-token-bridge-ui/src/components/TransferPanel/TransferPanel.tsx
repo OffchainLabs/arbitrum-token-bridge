@@ -6,6 +6,7 @@ import { useLatest } from 'react-use'
 import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
+import { scaleToNativeTokenDecimals } from '@arbitrum/sdk/dist/lib/utils/lib'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -22,10 +23,7 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import {
-  isGatewayRegistered,
-  scaleToNativeTokenDecimals
-} from '../../util/TokenUtils'
+import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -692,8 +690,6 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return false
       }
 
-      console.warn('decimals: ', nativeCurrencyDecimalsOnSourceChain)
-
       // token approval
       if (selectedToken) {
         const isTokenApprovalRequired =
@@ -719,15 +715,6 @@ export function TransferPanel() {
           }
         }
       }
-
-      const isTokenApprovalRequired_TestCheck =
-        await bridgeTransferStarter.requiresTokenApproval({
-          amount: amountBigNumber,
-          signer,
-          destinationAddress
-        })
-
-      console.warn({ isTokenApprovalRequired_TestCheck })
 
       // show a delay in case of SCW because tx is executed in an external app
       if (isSmartContractWallet) {
@@ -788,7 +775,6 @@ export function TransferPanel() {
             }
           : { transfer_type: 'native currency' }
       })
-      console.warn({ error })
     } finally {
       setTransferring(false)
     }
