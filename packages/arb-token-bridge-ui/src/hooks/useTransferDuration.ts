@@ -4,7 +4,7 @@ import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
 import {
-  getBaseChainIdByChainId,
+  getBlockNumberReferenceChainIdByChainId,
   getConfirmPeriodBlocks,
   getL1BlockTime,
   isNetwork
@@ -121,7 +121,7 @@ export function getWithdrawalConfirmationDate({
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
 
-  const baseChainId = getBaseChainIdByChainId({
+  const baseChainId = getBlockNumberReferenceChainIdByChainId({
     chainId: withdrawalFromChainId
   })
   // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
