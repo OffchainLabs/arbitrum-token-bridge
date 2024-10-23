@@ -43,7 +43,7 @@ export const SidePanel = ({
     // prevent flickering caused by race conditions
     setTimeout(() => {
       setIsClosing(false)
-    }, 0)
+    }, 10)
   }, [onClose, setIsClosing])
 
   return (
