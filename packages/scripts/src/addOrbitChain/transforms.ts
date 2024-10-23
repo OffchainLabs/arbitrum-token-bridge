@@ -390,7 +390,6 @@ export const transformIncomingDataToOrbitChain = async (
     name: chainData.name,
     slug: nameToSlug(chainData.name),
     parentChainId,
-    retryableLifetimeSeconds: 604800,
     tokenBridge: {
       parentCustomGateway: chainData.parentCustomGateway,
       parentErc20Gateway: chainData.parentErc20Gateway,
