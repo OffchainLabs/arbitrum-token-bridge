@@ -28,7 +28,6 @@ export function createMockOrbitChain({
     isTestnet,
     name: `Mocked Orbit Chain ${chainId}`,
     slug: `mocked-orbit-chain-${chainId}`,
-    parentChainId,
-    retryableLifetimeSeconds: 604800
+    parentChainId
   }
 }

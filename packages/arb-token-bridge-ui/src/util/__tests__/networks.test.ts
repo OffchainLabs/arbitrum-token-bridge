@@ -32,7 +32,6 @@ beforeAll(() => {
     isTestnet: true,
     name: 'Arbitrum Local',
     parentChainId: 1337,
-    retryableLifetimeSeconds: 604800,
     tokenBridge: {
       parentCustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
       parentErc20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
