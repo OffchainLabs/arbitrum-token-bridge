@@ -317,20 +317,20 @@ export const fetchAndProcessImage = async (
     fileExtension = path.extname(localPath);
   }
 
-  // If still not found, default to .png
+  // If still not found, default to .webp
   if (!fileExtension) {
-    console.warn("Could not determine file type, defaulting to .png");
-    fileExtension = ".png";
+    console.warn("Could not determine file type, defaulting to .webp");
+    fileExtension = ".webp";
   }
 
   if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension.replace(".", ""))) {
     console.warn(
-      `Unsupported image extension '${fileExtension}'. Converting to PNG.`
+      `Unsupported image extension '${fileExtension}'. Converting to WEBP.`
     );
 
-    // Convert the image to PNG using sharp
-    imageBuffer = await sharp(imageBuffer).png().toBuffer();
-    fileExtension = ".png";
+    // Convert the image to .webp using sharp
+    imageBuffer = await sharp(imageBuffer).webp().toBuffer();
+    fileExtension = ".webp";
   }
 
   // Resize the image

@@ -261,6 +261,47 @@ describe("Transforms", () => {
       const invalidUrl = "https://example.com/nonexistent-image.png";
       await expect(fetchAndProcessImage(invalidUrl)).rejects.toThrow();
     });
+
+    it("should handle IPFS gateway URLs correctly", async () => {
+      const ipfsGatewayUrl =
+        "https://ipfs.io/ipfs/QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym";
+      const { buffer, fileExtension } = await fetchAndProcessImage(
+        ipfsGatewayUrl
+      );
+
+      expect(buffer).toBeTruthy();
+      expect(buffer.length).toBeGreaterThan(0);
+      expect(fileExtension).toBeTruthy();
+
+      // Verify the image can be processed by sharp
+      const metadata = await sharp(buffer).metadata();
+      expect(metadata.format).toBeTruthy();
+      expect(metadata.width).toBeGreaterThan(0);
+      expect(metadata.height).toBeGreaterThan(0);
+    });
+
+    it("should convert IPFS protocol URLs to gateway URLs", async () => {
+      const ipfsProtocolUrl =
+        "ipfs://QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym";
+      const { buffer, fileExtension } = await fetchAndProcessImage(
+        ipfsProtocolUrl
+      );
+
+      expect(buffer).toBeTruthy();
+      expect(buffer.length).toBeGreaterThan(0);
+      expect(fileExtension).toBeTruthy();
+
+      // Verify the image can be processed by sharp
+      const metadata = await sharp(buffer).metadata();
+      expect(metadata.format).toBeTruthy();
+      expect(metadata.width).toBeGreaterThan(0);
+      expect(metadata.height).toBeGreaterThan(0);
+    });
+
+    it("should handle invalid IPFS hashes gracefully", async () => {
+      const invalidIpfsUrl = "ipfs://InvalidHash123";
+      await expect(fetchAndProcessImage(invalidIpfsUrl)).rejects.toThrow();
+    });
   });
 });
 
