@@ -692,6 +692,8 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return false
       }
 
+      console.warn('decimals: ', nativeCurrencyDecimalsOnSourceChain)
+
       // token approval
       if (selectedToken) {
         const isTokenApprovalRequired =
@@ -717,6 +719,15 @@ export function TransferPanel() {
           }
         }
       }
+
+      const isTokenApprovalRequired_TestCheck =
+        await bridgeTransferStarter.requiresTokenApproval({
+          amount: amountBigNumber,
+          signer,
+          destinationAddress
+        })
+
+      console.warn({ isTokenApprovalRequired_TestCheck })
 
       // show a delay in case of SCW because tx is executed in an external app
       if (isSmartContractWallet) {
@@ -777,6 +788,7 @@ export function TransferPanel() {
             }
           : { transfer_type: 'native currency' }
       })
+      console.warn({ error })
     } finally {
       setTransferring(false)
     }
