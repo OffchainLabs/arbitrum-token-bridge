@@ -102,7 +102,7 @@ jobs:
           args: >-
             ${{
               (matrix.test.type == 'orbit-eth') && '--l3node --l3-token-bridge' ||
-              (matrix.test.type == 'orbit-custom-16dec' && '--l3-fee-token --l3-fee-token-decimals 16') ||
+              (matrix.test.type == 'orbit-custom-6dec' && '--l3-fee-token --l3-fee-token-decimals 6') ||
               (matrix.test.type == 'orbit-custom-18dec' && '--l3-fee-token') ||
               (matrix.test.type == 'orbit-custom-20dec' && '--l3-fee-token --l3-fee-token-decimals 20') ||
               ''
@@ -115,7 +115,7 @@ jobs:
           command: >-
             ${{
               (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
-              (matrix.test.type == 'orbit-custom-16dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
+              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
               (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
               (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
               (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser chrome') ||

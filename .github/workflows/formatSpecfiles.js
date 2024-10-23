@@ -12,25 +12,21 @@ switch (testType) {
         ...spec,
         type: "regular",
         typeName: "",
-        testnodeArgs: "",
       });
       tests.push({
         ...spec,
         type: "orbit-eth",
         typeName: "with L3 (ETH)",
-        testnodeArgs: "--l3node --l3-token-bridge",
       });
       tests.push({
         ...spec,
-        type: "orbit-custom-16dec",
-        typeName: "with L3 (16 decimals custom)",
-        testnodeArgs: "--l3node --l3-token-bridge --l3-fee-token --l3-fee-token-decimals 16",
+        type: "orbit-custom-6dec",
+        typeName: "with L3 (6 decimals custom)",
       });
       tests.push({
         ...spec,
         type: "orbit-custom-18dec",
         typeName: "with L3 (18 decimals custom)",
-        testnodeArgs: "--l3node --l3-token-bridge --l3-fee-token",
       });
       tests.push({
         ...spec,
