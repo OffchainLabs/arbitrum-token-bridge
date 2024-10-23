@@ -18,7 +18,6 @@
       "name": "Xai",
       "slug": "xai",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xb15A0826d65bE4c2fDd961b72636168ee70Af030",
         "parentErc20Gateway": "0xb591cE747CF19cF30e11d656EB94134F523A9e77",
@@ -67,7 +66,6 @@
       "name": "RARI Mainnet",
       "slug": "rari-mainnet",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x8bE956aB42274056ef4471BEb211b33e258b7324",
         "parentErc20Gateway": "0x46406c88285AD9BE2fB23D9aD96Cb578d824cAb6",
@@ -108,7 +106,6 @@
       "rpcUrl": "https://muster.alt.technology",
       "name": "Muster",
       "slug": "muster",
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": false,
       "tokenBridge": {
@@ -235,7 +232,6 @@
       "name": "L3X Network",
       "slug": "l3x-network",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": false,
       "tokenBridge": {
@@ -280,7 +276,6 @@
       "name": "XCHAIN",
       "slug": "xchain",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xEFb1F8ae759c595907782e9bD45F119c9814b308",
         "parentErc20Gateway": "0xFFb821ca61e823a884D79226B0fcD7a99A4d48aa",
@@ -324,7 +319,6 @@
       "name": "Sanko",
       "slug": "sanko",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x5414Dc7c8DB4BeDbf3c772768aE1F5e984bdf47a",
         "parentErc20Gateway": "0xb4951c0C41CFceB0D195A95FE66280457A80a990",
@@ -373,7 +367,6 @@
       "name": "Superposition",
       "slug": "superposition",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xacb51eA5b465692c889C36615a398BA14D42b619",
         "parentErc20Gateway": "0x62bEd4b862254789825Cd6F2352aa2b76B16145e",
@@ -416,7 +409,6 @@
       "name": "Mind Network",
       "slug": "mind-network",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xA6a623F64931Bcf1368B120e9Dc29254676D0D8E",
         "parentErc20Gateway": "0x281587c05DeA1a1ceCE83F6FFea23c5aFd287fb3",
@@ -460,7 +452,6 @@
       "name": "SX",
       "slug": "sx",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x54F4853fDfC80F6bA4e66a7946c2B9086B1dE45F",
         "parentErc20Gateway": "0xB4968C66BECc8fb4f73b50354301c1aDb2Abaa91",
@@ -510,7 +501,6 @@
       "name": "ApeChain",
       "slug": "apechain",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xEd543dA6fE33cceE50DC024b78C27959235D0ab0",
         "parentErc20Gateway": "0xB603a1C07A11945bFe4855347c88583e31b8ddB0",
@@ -561,7 +551,6 @@
       "name": "Gravity Alpha",
       "slug": "gravity-alpha",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xa26Fd1c23634870303e42311E114D5cc8301Ed1E",
         "parentErc20Gateway": "0xb23988D9728EF147EAa02D602D7e067B6131A1bB",
@@ -611,7 +600,6 @@
       "name": "Xai Testnet",
       "slug": "xai-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": true,
       "tokenBridge": {
@@ -663,7 +651,6 @@
       "name": "DODOchain Testnet",
       "slug": "dodochain-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xeCa856BE0041184eeda8F2c98896AC4693b168EA",
         "parentErc20Gateway": "0xf57F874845CD652e69f69f020A4d46F4e427bb43",
@@ -712,7 +699,6 @@
       "name": "L3X Network Testnet",
       "slug": "l3x-network-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x00eE97A18A85a58fbfddA2CCa2Bdb3B88d1068b3",
         "parentErc20Gateway": "0xD2e9EA14CE4C61630a87bC652f5cD51deA7C66bA",
@@ -755,7 +741,6 @@
       "name": "RARI Testnet",
       "slug": "rari-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x7EDA0d4c14Af6B0920F4e3C0F0cA18d18212fB0A",
         "parentErc20Gateway": "0x2c9Dd2b2cd55266e3b5c3C95840F3c037fbCb856",
@@ -801,7 +786,6 @@
       "name": "XR Sepolia",
       "slug": "xr-sepolia",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x5F1ac3cd4553bA45fccF135d057795717b37B9Ef",
         "parentErc20Gateway": "0xd0CD7B9F4cB10B21abBfFA874F0d0ad1a41bD51C",
@@ -851,7 +835,6 @@
       "name": "Polter Testnet",
       "slug": "polter-testnet",
       "parentChainId": 84532,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x24e1e6375f0f0Eecd38266357cADE57cA3A348F3",
         "parentErc20Gateway": "0x9014E7244116b965F0D1059f80e2bD8169957117",
