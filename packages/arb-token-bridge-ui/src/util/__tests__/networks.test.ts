@@ -32,7 +32,6 @@ beforeAll(() => {
     isTestnet: true,
     name: 'Arbitrum Local',
     parentChainId: 1337,
-    retryableLifetimeSeconds: 604800,
     tokenBridge: {
       parentCustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
       parentErc20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
@@ -52,6 +51,15 @@ beforeAll(() => {
   })
 
   registerCustomArbitrumNetwork(xaiTestnet)
+
+  const polterTestnetChainId = 631571
+  const polterTestnet = orbitTestnets[polterTestnetChainId]
+
+  if (!polterTestnet) {
+    throw new Error(`Could not find Polter Testnet in the Orbit chains list.`)
+  }
+
+  registerCustomArbitrumNetwork(polterTestnet)
 })
 
 describe('getBaseChainIdByChainId', () => {
@@ -253,5 +261,21 @@ describe('getDestinationChainIds', () => {
 
     expect(defaultChainId).toBe(ChainId.Sepolia)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
+  })
+
+  it('should return a sorted list for Base Sepolia', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.BaseSepolia)
+    const defaultChainId = destinationChainIds[0]
+    const nonDefaultChainIds = destinationChainIds.slice(1)
+
+    expect(defaultChainId).toBe(631571)
+    expect(isAscending(nonDefaultChainIds)).toBe(true)
+  })
+
+  // Enable when there are Orbit Chains on Base
+  it('should not return a list for Base', () => {
+    const destinationChainIds = getDestinationChainIds(ChainId.Base)
+
+    expect(destinationChainIds).toHaveLength(0)
   })
 })
