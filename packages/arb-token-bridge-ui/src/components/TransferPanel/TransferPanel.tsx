@@ -625,8 +625,6 @@ export function TransferPanel() {
           }
         })
 
-      console.warn({ isNativeCurrencyApprovalRequired })
-
       if (isNativeCurrencyApprovalRequired) {
         // show native currency approval dialog
         const userConfirmation = await customFeeTokenApproval()
@@ -645,8 +643,6 @@ export function TransferPanel() {
         if (approvalTx) {
           await approvalTx.wait()
         }
-
-        console.warn('approved')
       }
 
       // checks for the selected token
@@ -702,7 +698,6 @@ export function TransferPanel() {
             signer,
             destinationAddress
           })
-        console.warn({ isTokenApprovalRequired })
         if (isTokenApprovalRequired) {
           const userConfirmation = await tokenAllowanceApproval()
           if (!userConfirmation) return false
@@ -718,7 +713,6 @@ export function TransferPanel() {
           if (approvalTx) {
             await approvalTx.wait()
           }
-          console.warn('token approved')
         }
       }
 
@@ -771,7 +765,6 @@ export function TransferPanel() {
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (error) {
-      console.warn({ error })
       captureSentryErrorWithExtraData({
         error,
         originFunction: 'bridgeTransferStarter.transfer',
