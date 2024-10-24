@@ -121,13 +121,13 @@ export function getWithdrawalConfirmationDate({
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
 
-  const baseChainId = getBlockNumberReferenceChainIdByChainId({
+  const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId({
     chainId: withdrawalFromChainId
   })
   // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
   // and similarly, the confirm period blocks is always the number of blocks on the base chain
   const confirmationSeconds =
-    getL1BlockTime(baseChainId) *
+    getL1BlockTime(blockNumberReferenceChainId) *
       getConfirmPeriodBlocks(withdrawalFromChainId) +
     CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MIN
   return createdAtDate.add(confirmationSeconds, 'second')
