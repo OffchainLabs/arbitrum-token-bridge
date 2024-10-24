@@ -13,7 +13,10 @@ import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
 } from './TokenDepositCheckDialog'
-import { TokenImportDialog } from './TokenImportDialog'
+import {
+  TokenImportDialog,
+  useTokenImportDialogStore
+} from './TokenImportDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -47,7 +50,6 @@ import {
   getWarningTokenDescription,
   useTokenFromSearchParams
 } from './TransferPanelUtils'
-import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -106,7 +108,6 @@ export function TransferPanel() {
 
   const {
     app: {
-      connectionState,
       selectedToken,
       arbTokenBridge: { token },
       warningTokens
@@ -171,6 +172,7 @@ export function TransferPanel() {
   ] = useDialog()
 
   const { destinationAddress } = useDestinationAddressStore()
+  const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
 
   const isCustomDestinationTransfer = !!destinationAddress
 
@@ -193,6 +195,14 @@ export function TransferPanel() {
     setShowProjectsListing(false)
   }, [childChain.id, parentChain.id])
 
+  useEffect(() => {
+    if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
+      return
+    }
+
+    openTokenImportDialog()
+  }, [importTokenModalStatus, openTokenImportDialog])
+
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
@@ -204,11 +214,6 @@ export function TransferPanel() {
     setAmount('')
     setAmount2('')
   }
-
-  useImportTokenModal({
-    importTokenModalStatus,
-    connectionState
-  })
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
