@@ -11,6 +11,7 @@ type SidePanelProps = {
   children: React.ReactNode
   panelClassNameOverrides?: string
   scrollable?: boolean
+  dialogWrapperClassName?: string
 }
 
 export const SidePanel = ({
@@ -19,7 +20,8 @@ export const SidePanel = ({
   onClose,
   children,
   panelClassNameOverrides = '',
-  scrollable = true
+  scrollable = true,
+  dialogWrapperClassName
 }: SidePanelProps) => {
   const [open, setOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
@@ -41,7 +43,7 @@ export const SidePanel = ({
     // prevent flickering caused by race conditions
     setTimeout(() => {
       setIsClosing(false)
-    }, 0)
+    }, 10)
   }, [onClose, setIsClosing])
 
   return (
@@ -49,7 +51,10 @@ export const SidePanel = ({
       <Dialog
         open={open}
         onClose={handleCloseStart}
-        className="fixed z-40 h-screen max-h-screen"
+        className={twMerge(
+          'fixed z-40 h-screen max-h-screen',
+          dialogWrapperClassName
+        )}
       >
         <Transition.Child
           as={Fragment}
