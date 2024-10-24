@@ -12,68 +12,35 @@ import {
 } from "./schemas";
 import { updateOrbitChainsFile } from "../addOrbitChain/transforms";
 
+const SAMPLE_SIZE = 100;
+const NUMBER_OF_SAMPLES = 20;
+
 async function calculateAverageBlockTime(
   provider: ethers.providers.JsonRpcProvider
 ): Promise<number> {
+  const blockDifference = 1000;
   const latestBlock = await provider.getBlock("latest");
-  const oldBlock = await provider.getBlock(latestBlock.number - 1000);
+  const oldBlock = await provider.getBlock(
+    latestBlock.number - blockDifference
+  );
   const timeDifference = latestBlock.timestamp - oldBlock.timestamp;
-  const blockDifference = latestBlock.number - oldBlock.number;
   return timeDifference / blockDifference;
 }
 
-async function sampleNodeCreationTimes(
+async function calculateEstimatedConfirmationBlocks(
   rollupContract: ethers.Contract,
-  sampleSize = 100
+  startBlock: number,
+  endBlock: number
 ): Promise<number> {
-  const samples: number[] = [];
-  const latestNodeCreated = await rollupContract.latestNodeCreated();
-
-  // Determine the maximum number of samples we can take
-  const maxSamples = Math.min(
-    sampleSize,
-    Math.floor(latestNodeCreated.toNumber() / 100)
-  );
-
-  for (let i = 0; i < maxSamples; i++) {
-    const endNodeNum = latestNodeCreated.sub(i * 100);
-    const startNodeNum = latestNodeCreated.sub((i + 1) * 100);
-
-    // Ensure we're not trying to access negative node numbers
-    if (startNodeNum.lt(0)) {
-      break;
-    }
-
-    const endNode = await rollupContract.getNode(endNodeNum);
-    const startNode = await rollupContract.getNode(startNodeNum);
-    const timeDiff = Number(BigInt(endNode[10]) - BigInt(startNode[10]));
-    samples.push(timeDiff / 100);
-  }
-
-  // If we couldn't get any samples, throw an error
-  if (samples.length === 0) {
-    throw new Error(
-      "Unable to sample node creation times: not enough historical data"
-    );
-  }
-
-  // Calculate mean and standard deviation
-  const mean = samples.reduce((a, b) => a + b) / samples.length;
-  const variance =
-    samples.reduce((a, b) => a + Math.pow(b - mean, 2), 0) /
-    (samples.length - 1);
-  const stdDev = Math.sqrt(variance);
-
-  // Calculate 95% confidence interval
-  const confidenceInterval = 1.96 * (stdDev / Math.sqrt(samples.length));
-
-  console.log(`Mean node creation time: ${mean.toFixed(2)} blocks`);
+  const t1 = await getNodeCreatedAtBlock(rollupContract, endBlock);
+  const t2 = await getNodeCreatedAtBlock(rollupContract, startBlock);
+  const blockRange = endBlock - startBlock;
+  const averageCreationTime = calculateAverageCreationTime(t1, t2, blockRange);
+  const eta = calculateEtaForConfirmation(averageCreationTime);
   console.log(
-    `95% Confidence Interval: ±${confidenceInterval.toFixed(2)} blocks`
+    `ETA for confirmation (range ${startBlock}-${endBlock}): ${eta} blocks`
   );
-  console.log(`Number of samples: ${samples.length}`);
-
-  return mean + confidenceInterval; // Return upper bound of confidence interval
+  return eta;
 }
 
 export async function calculateConfirmationTime(
@@ -113,30 +80,48 @@ export async function calculateConfirmationTime(
     );
 
     try {
-      const averageCreationTime = await sampleNodeCreationTimes(rollupContract);
-      summary.averageNodeCreationTime = BigInt(Math.round(averageCreationTime));
-
-      const estimatedConfirmationTimeBlocks = averageCreationTime * 2;
-
-      // Calculate average block time
       const averageBlockTime = await calculateAverageBlockTime(provider);
       console.log(`Average block time: ${averageBlockTime.toFixed(2)} seconds`);
 
-      // Convert blocks to minutes
-      const estimatedConfirmationTimeMinutes =
-        (estimatedConfirmationTimeBlocks * averageBlockTime) / 60;
+      // Old method: calculate estimated confirmation time blocks
+      const latestNode = await getLatestNodeCreated(rollupContract);
+      const oldEstimatedConfirmationTimeBlocks =
+        await calculateEstimatedConfirmationBlocks(
+          rollupContract,
+          Math.max(0, latestNode - SAMPLE_SIZE),
+          latestNode
+        );
+
+      // New method: perform analysis with 10 samples
+      const newEstimatedConfirmationTimeBlocks =
+        await analyzeNodeCreationSamples(rollupContract, NUMBER_OF_SAMPLES);
+
+      const oldEstimatedConfirmationTimeSeconds = Math.round(
+        oldEstimatedConfirmationTimeBlocks * averageBlockTime
+      );
+      const newEstimatedConfirmationTimeSeconds = Math.round(
+        newEstimatedConfirmationTimeBlocks * averageBlockTime
+      );
 
       console.log(
-        `Estimated confirmation time: ${estimatedConfirmationTimeMinutes.toFixed(
-          2
-        )} minutes`
+        `Old Estimated confirmation time: ${oldEstimatedConfirmationTimeBlocks} blocks (${oldEstimatedConfirmationTimeSeconds} seconds)`
+      );
+      console.log(
+        `New Estimated confirmation time: ${newEstimatedConfirmationTimeBlocks} blocks (${newEstimatedConfirmationTimeSeconds} seconds)`
+      );
+      console.log(
+        `Difference: ${Math.abs(
+          oldEstimatedConfirmationTimeBlocks -
+            newEstimatedConfirmationTimeBlocks
+        )} blocks (${Math.abs(
+          oldEstimatedConfirmationTimeSeconds -
+            newEstimatedConfirmationTimeSeconds
+        )} seconds)`
       );
 
-      summary.estimatedConfirmationTime = Math.ceil(
-        estimatedConfirmationTimeMinutes
-      );
+      // For now, we'll use the old method for consistency, but you can change this if needed
+      summary.estimatedConfirmationTime = oldEstimatedConfirmationTimeSeconds;
 
-      // Update the orbitChainsData.json file
       const updatedChain = {
         ...validatedChain,
         estimatedConfirmationTime: summary.estimatedConfirmationTime,
@@ -153,16 +138,11 @@ export async function calculateConfirmationTime(
       console.log(error);
       summary.usedFallback = true;
 
-      // Fallback: use confirmPeriodBlocks and calculated average block time
       const averageBlockTime = await calculateAverageBlockTime(provider);
-      const estimatedConfirmationTimeMinutes =
-        (validatedChain.confirmPeriodBlocks * averageBlockTime) / 60;
-
-      summary.estimatedConfirmationTime = Math.ceil(
-        estimatedConfirmationTimeMinutes
+      summary.estimatedConfirmationTime = Math.round(
+        validatedChain.confirmPeriodBlocks * averageBlockTime
       );
 
-      // Update the orbitChainsData.json file with fallback value
       const updatedChain = {
         ...validatedChain,
         estimatedConfirmationTime: summary.estimatedConfirmationTime,
@@ -182,9 +162,7 @@ export async function calculateConfirmationTime(
   } finally {
     console.log(`Chain ${chainId} (${summary.chainName}):`);
     console.log(
-      `  Estimated Confirmation Time: ${summary.estimatedConfirmationTime.toFixed(
-        2
-      )} minutes`
+      `  Estimated Confirmation Time: ${summary.estimatedConfirmationTime} seconds`
     );
     console.log(`  Used Fallback: ${summary.usedFallback}`);
   }
@@ -257,4 +235,73 @@ export async function updateAllConfirmationTimes(): Promise<void> {
       );
     }
   }
+}
+
+async function getLatestNodeCreated(
+  rollupContract: ethers.Contract
+): Promise<number> {
+  return await rollupContract.latestNodeCreated();
+}
+
+async function getNodeCreatedAtBlock(
+  rollupContract: ethers.Contract,
+  nodeId: number
+): Promise<number> {
+  const node = await rollupContract.getNode(nodeId);
+  return node.createdAtBlock;
+}
+
+function calculateAverageCreationTime(
+  t1: number,
+  t2: number,
+  range: number
+): number {
+  return (t1 - t2) / range;
+}
+
+function calculateEtaForConfirmation(averageCreationTime: number): number {
+  return 2 * averageCreationTime;
+}
+
+export async function analyzeNodeCreationSamples(
+  rollupContract: ethers.Contract,
+  numberOfSamples: number
+): Promise<number> {
+  console.log(
+    `Analyzing ${numberOfSamples} samples for node creation times...`
+  );
+  const samples: number[] = [];
+
+  const latestNode = await getLatestNodeCreated(rollupContract);
+  let currentEndNode = latestNode;
+
+  for (let i = 0; i < numberOfSamples; i++) {
+    const startNode = Math.max(0, currentEndNode - SAMPLE_SIZE);
+    if (startNode === currentEndNode) {
+      console.log(
+        `Reached the earliest node, stopping sampling at ${i} samples.`
+      );
+      break;
+    }
+    const eta = await calculateEstimatedConfirmationBlocks(
+      rollupContract,
+      startNode,
+      currentEndNode
+    );
+    samples.push(eta);
+    currentEndNode = startNode;
+  }
+
+  const mean = samples.reduce((a, b) => a + b) / samples.length;
+  const variance =
+    samples.reduce((a, b) => a + Math.pow(b - mean, 2), 0) /
+    (samples.length - 1);
+  const stdDev = Math.sqrt(variance);
+
+  console.log(`Mean ETA for confirmation: ${mean.toFixed(2)} blocks`);
+  console.log(`Variance: ${variance.toFixed(2)}`);
+  console.log(`Standard Deviation: ${stdDev.toFixed(2)}`);
+  console.log(`Number of samples: ${samples.length}`);
+
+  return Math.round(mean);
 }
