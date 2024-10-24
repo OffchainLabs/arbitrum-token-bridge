@@ -69,7 +69,6 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
   "name": "Test Chain",
   "nativeToken": "0x0000000000000000000000000000000000000006",
   "parentChainId": 421614,
-  "retryableLifetimeSeconds": 604800,
   "rpcUrl": "https://sepolia-rollup.arbitrum.io/rpc",
   "slug": "test-chain",
   "tokenBridge": {
@@ -131,7 +130,6 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
       \\"name\\": \\"Xai\\",
       \\"slug\\": \\"xai\\",
       \\"parentChainId\\": 42161,
-      \\"retryableLifetimeSeconds\\": 604800,
       \\"tokenBridge\\": {
         \\"parentGatewayRouter\\": \\"0x22CCA5Dc96a4Ac1EC32c9c7C5ad4D66254a24C35\\",
         \\"childGatewayRouter\\": \\"0xd096e8dE90D34de758B0E0bA4a796eA2e1e272cF\\",
@@ -189,7 +187,6 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
       \\"name\\": \\"Updated Chain\\",
       \\"slug\\": \\"xai\\",
       \\"parentChainId\\": 42161,
-      \\"retryableLifetimeSeconds\\": 604800,
       \\"tokenBridge\\": {
         \\"parentGatewayRouter\\": \\"0x22CCA5Dc96a4Ac1EC32c9c7C5ad4D66254a24C35\\",
         \\"childGatewayRouter\\": \\"0xd096e8dE90D34de758B0E0bA4a796eA2e1e272cF\\",
@@ -273,7 +270,6 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
       \\"name\\": \\"Xai\\",
       \\"slug\\": \\"xai\\",
       \\"parentChainId\\": 42161,
-      \\"retryableLifetimeSeconds\\": 604800,
       \\"tokenBridge\\": {
         \\"parentGatewayRouter\\": \\"0x22CCA5Dc96a4Ac1EC32c9c7C5ad4D66254a24C35\\",
         \\"childGatewayRouter\\": \\"0xd096e8dE90D34de758B0E0bA4a796eA2e1e272cF\\",
