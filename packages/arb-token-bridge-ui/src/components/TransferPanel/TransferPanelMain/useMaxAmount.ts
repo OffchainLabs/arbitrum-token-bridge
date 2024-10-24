@@ -46,7 +46,7 @@ export function useMaxAmount() {
     // ETH deposits and ETH/custom fee token withdrawals
     const nativeCurrencyBalanceFormatted = utils.formatUnits(
       nativeCurrencySourceBalance,
-      nativeCurrency.decimals
+      nativeCurrencyDecimalsOnSourceChain
     )
 
     if (
@@ -73,7 +73,6 @@ export function useMaxAmount() {
     estimatedChildChainGasFees,
     estimatedParentChainGasFees,
     isDepositMode,
-    nativeCurrency.decimals,
     nativeCurrency.isCustom,
     nativeCurrencyBalances.sourceBalance,
     nativeCurrencyDecimalsOnSourceChain
