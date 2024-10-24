@@ -26,8 +26,8 @@ Test Chain
 ### Chain description
 A test chain.
 
-### Chain logo
-https://example.com/logo.png
+### Chain logo  
+https://ipfs.io/ipfs/QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym
 
 ### Brand color
 #FF0000

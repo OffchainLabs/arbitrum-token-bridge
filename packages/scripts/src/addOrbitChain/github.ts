@@ -124,3 +124,31 @@ const createPullRequest = async (
 };
 
 export { commitChanges, createBranch, createPullRequest, getContent, getIssue };
+
+export const saveImageToGitHub = async (
+  branchName: string,
+  imageSavePath: string,
+  imageBuffer: Buffer
+): Promise<void> => {
+  try {
+    // Check if the file already exists in the repository
+    let sha: string | undefined;
+    try {
+      const { data } = await getContent(branchName, imageSavePath);
+
+      if ("sha" in data) {
+        sha = data.sha;
+      }
+    } catch (error) {
+      // File doesn't exist, which is fine
+      console.log(`File ${imageSavePath} doesn't exist in the repository yet.`);
+    }
+
+    // Update or create the file in the repository
+    await updateContent(branchName, imageSavePath, imageBuffer, sha);
+    console.log(`Successfully saved image to GitHub at ${imageSavePath}`);
+  } catch (error) {
+    console.error("Error saving image to GitHub:", error);
+    throw error;
+  }
+};
