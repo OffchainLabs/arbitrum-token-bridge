@@ -119,11 +119,11 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     }
 
     setTokenBridgeParams({
-      l1: {
+      parent: {
         network: parentChain,
         provider: parentChainProvider
       },
-      l2: {
+      child: {
         network: childChain,
         provider: childChainProvider
       }
