@@ -25,7 +25,8 @@ import {
   getCustomDestinationAddress,
   ERC20TokenSymbol,
   ERC20TokenDecimals,
-  ERC20TokenName
+  ERC20TokenName,
+  getNativeTokenDecimals
 } from './tests/support/common'
 
 import {
@@ -200,6 +201,10 @@ export default defineConfig({
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
       config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
       config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken
+      config.env.NATIVE_TOKEN_DECIMALS = await getNativeTokenDecimals({
+        parentProvider,
+        childProvider
+      })
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
@@ -297,6 +302,10 @@ async function approveCustomFeeToken({
 
 async function fundUserWalletNativeCurrency() {
   const childEthBridger = await EthBridger.fromProvider(childProvider)
+  const decimals = await getNativeTokenDecimals({
+    parentProvider,
+    childProvider
+  })
 
   const address = await userWallet.getAddress()
 
@@ -306,18 +315,21 @@ async function fundUserWalletNativeCurrency() {
   )
 
   const userBalance = await tokenContract.balanceOf(address)
-  const shouldFund = userBalance.lt(utils.parseEther('0.3'))
+  const shouldFund = userBalance.lt(utils.parseUnits('0.3', decimals))
 
   if (!shouldFund) {
     console.log(
-      `User wallet has enough L3 native currency for testing, skip funding...`
+      `User wallet has enough custom native currency for testing, skip funding...`
     )
     return
   }
 
   console.log(`Funding native currency to user wallet on L2...`)
 
-  const tx = await tokenContract.transfer(address, utils.parseEther('3'))
+  const tx = await tokenContract.transfer(
+    address,
+    utils.parseUnits('3', decimals)
+  )
   await tx.wait()
 }
 
