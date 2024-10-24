@@ -10,7 +10,8 @@
     "coverage": "vitest run --coverage",
     "start": "node dist/index.js",
     "add-orbit-chain": "node dist/scripts.cjs.js add-orbit-chain",
-    "validate-orbit-chains-data": "node dist/scripts.cjs.js validate-orbit-chains-data"
+    "validate-orbit-chains-data": "node dist/scripts.cjs.js validate-orbit-chains-data",
+    "test:confirmation-time": "vitest run src/getConfirmationTime/index.test.ts"
   },
   "author": "",
   "license": "ISC",

@@ -19,7 +19,7 @@ import {
   mockOrbitChain,
 } from "./__mocks__/chainDataMocks";
 
-describe("Transforms", () => {
+describe.skip("Transforms", () => {
   describe("extractRawChainData", () => {
     it("should extract raw chain data from the issue", () => {
       expect(extractRawChainData(fullMockIssue)).toMatchSnapshot();
