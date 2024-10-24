@@ -1,4 +1,4 @@
-import { BigNumber, constants } from 'ethers'
+import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import {
   Erc20Bridger,

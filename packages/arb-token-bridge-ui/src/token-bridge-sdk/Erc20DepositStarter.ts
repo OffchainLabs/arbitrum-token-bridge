@@ -92,6 +92,11 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       return false // native currency doesn't require approval
     }
 
+    const nativeCurrency = ERC20__factory.connect(
+      l2Network.nativeToken,
+      this.sourceChainProvider
+    )
+
     const customFeeTokenAllowanceForSourceChainGateway =
       await fetchErc20Allowance({
         address: l2Network.nativeToken,
@@ -116,11 +121,6 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
           )
           .add(gasEstimates.estimatedChildChainSubmissionCost)
       )
-    )
-
-    const nativeCurrency = ERC20__factory.connect(
-      l2Network.nativeToken,
-      this.sourceChainProvider
     )
 
     const estimatedDestinationChainGasFee = scaleToNativeTokenDecimals({
@@ -173,6 +173,11 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Network does not have a custom native token')
     }
 
+    const nativeCurrency = ERC20__factory.connect(
+      l2Network.nativeToken,
+      this.sourceChainProvider
+    )
+
     const gasEstimates = await this.transferEstimateGas({ amount, signer })
 
     const destinationChainGasPrice =
@@ -189,11 +194,6 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
           )
           .add(gasEstimates.estimatedChildChainSubmissionCost)
       )
-    )
-
-    const nativeCurrency = ERC20__factory.connect(
-      l2Network.nativeToken,
-      this.sourceChainProvider
     )
 
     const estimatedDestinationChainGasFee = scaleToNativeTokenDecimals({
