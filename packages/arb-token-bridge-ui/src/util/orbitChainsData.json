@@ -631,6 +631,49 @@
           "logoUrl": "/images/ghst.png"
         }
       }
+    },
+    {
+      "chainId": 10058111,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x37d3139024D017C2152849B154F2631E2F2C8560",
+        "inbox": "0x21092752C8BB70b8043379a00dCB9aCdA2302181",
+        "outbox": "0xb07b44B3D5C7df02905B9c156Ba44b5762f7b268",
+        "rollup": "0x49B3Bb2c0E54F548F17473d7669b14E009Da407c",
+        "sequencerInbox": "0x627C3Eac80782493B3a633F09C82F510ad710A2D"
+      },
+      "explorerUrl": "https://spotlight-mainnet.explorer.alchemy.com",
+      "rpcUrl": "https://spotlight-mainnet.g.alchemy.com/public",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Spotlight Mainnet",
+      "slug": "spotlight-mainnet",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x443E16416b49Ad675F7E4F00CbA3916F5564DEf3",
+        "parentErc20Gateway": "0xaB24881b11c1c7eb6b9C22288eDB12B67defCEb9",
+        "parentGatewayRouter": "0xf50201e8963A07cEF57f58C56C2349b10B487091",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        "parentWethGateway": "0x44a9a5C2416702BeDC562f8023f19Bc1D732bE94",
+        "childCustomGateway": "0x4aF09A0bD7657cC027D9F3592d092FdEF6D72895",
+        "childErc20Gateway": "0x88fe5E5D022871120F57463b2a979e7478435628",
+        "childGatewayRouter": "0x29c413c7e9f13fC6ee43D43A021A28319412FB90",
+        "childMultiCall": "0x0877A4e5265A8A0E84E60441E63361435d3edC00",
+        "childProxyAdmin": "0x1067df41b7fE8Ef5221eE514b0461f617311f3e5",
+        "childWeth": "0x0203A44796263b86f22Eb8F20C7A2FEc18eB4f53",
+        "childWethGateway": "0xbB5a4466199fc2C63be4749D42D4fb4cD6F890d7"
+      },
+      "bridgeUiConfig": {
+        "color": "#F3C34D",
+        "network": {
+          "name": "Spotlight Mainnet",
+          "logo": "/images/SpotlightLogo.svg",
+          "description": ""
+        }
+      }
     }
   ],
   "testnet": [
