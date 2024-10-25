@@ -996,7 +996,7 @@
         "color": "#12266B",
         "network": {
           "name": "Social Testnet",
-          "logo": "/images/SocialTestnetLogo.png",
+          "logo": "/images/SocialTestnetLogo.svg",
           "description": ""
         },
         "nativeTokenData": {
