@@ -80,7 +80,6 @@ export const chainSchema = z
     nativeToken: addressSchema.optional(),
     explorerUrl: urlSchema,
     rpcUrl: urlSchema,
-    isArbitrum: z.boolean().default(true),
     isCustom: z.boolean().default(true),
     isTestnet: z.boolean(),
     name: z.string().min(1),
