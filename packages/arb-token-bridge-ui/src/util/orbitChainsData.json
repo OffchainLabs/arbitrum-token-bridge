@@ -631,56 +631,6 @@
           "logoUrl": "/images/ghst.png"
         }
       }
-    },
-    {
-      "chainId": 749,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0x57dfFb3C5446342B35217B76bA422d6aefe624c5",
-        "inbox": "0xb1118863AFdbEe5515C0D3a2522d642E65C0feA2",
-        "outbox": "0x41f72BdF0c63102052b4a22B92999f632bd1910f",
-        "rollup": "0x2Cd91ca21c843c7E1A06d122FdE5618E915685C4",
-        "sequencerInbox": "0x43ECa7bc80Dd5e6d0a26B3fe71F659d04074ad45"
-      },
-      "nativeToken": "0x79a1ca540e4b72280b8220e1fb6799cbca540bbd",
-      "explorerUrl": "https://socialnetwork-testnet.explorer.alchemy.com",
-      "rpcUrl": "https://socialnetwork-testnet.g.alchemy.com/public",
-      "isArbitrum": true,
-      "isCustom": true,
-      "isTestnet": false,
-      "name": "Social Testnet",
-      "slug": "social-testnet",
-      "parentChainId": 17000,
-      "tokenBridge": {
-        "parentCustomGateway": "0xA44D215Af25B6C41aEB396470bD566e6Ff6aF883",
-        "parentErc20Gateway": "0xD2cC26a4134e9a4A265dE3F5F53EF200fbceCBa7",
-        "parentGatewayRouter": "0x6b08DFE55c4705F462CFA8055B2B38E66322D585",
-        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x850d2501E6Da6B105aFb689529497B7024776E78",
-        "childErc20Gateway": "0xe17851222aba0821EAfc4F0AE8fDf4d8827124fa",
-        "childGatewayRouter": "0x9A2e67eE268cE392A2D91D8fF87bac1D45980B98",
-        "childMultiCall": "0xc5DD7Dab959Eb221911a58dC469d769270C2De2F",
-        "childProxyAdmin": "0xe762728C1022dAe5D2d0f4a0317944B9d70B309C",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#12266B",
-        "network": {
-          "name": "Social Testnet",
-          "logo": "/images/SocialTestnetLogo.png",
-          "description": ""
-        },
-        "nativeTokenData": {
-          "name": "social.network",
-          "symbol": "EARTH",
-          "decimals": 18,
-          "logoUrl": ""
-        }
-      }
     }
   ],
   "testnet": [
@@ -961,6 +911,56 @@
           "symbol": "GHST",
           "decimals": 18,
           "logoUrl": "/images/ghst.png"
+        }
+      }
+    },
+    {
+      "chainId": 749,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x57dfFb3C5446342B35217B76bA422d6aefe624c5",
+        "inbox": "0xb1118863AFdbEe5515C0D3a2522d642E65C0feA2",
+        "outbox": "0x41f72BdF0c63102052b4a22B92999f632bd1910f",
+        "rollup": "0x2Cd91ca21c843c7E1A06d122FdE5618E915685C4",
+        "sequencerInbox": "0x43ECa7bc80Dd5e6d0a26B3fe71F659d04074ad45"
+      },
+      "nativeToken": "0x79a1ca540e4b72280b8220e1fb6799cbca540bbd",
+      "explorerUrl": "https://socialnetwork-testnet.explorer.alchemy.com",
+      "rpcUrl": "https://socialnetwork-testnet.g.alchemy.com/public",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Social Testnet",
+      "slug": "social-testnet",
+      "parentChainId": 17000,
+      "tokenBridge": {
+        "parentCustomGateway": "0xA44D215Af25B6C41aEB396470bD566e6Ff6aF883",
+        "parentErc20Gateway": "0xD2cC26a4134e9a4A265dE3F5F53EF200fbceCBa7",
+        "parentGatewayRouter": "0x6b08DFE55c4705F462CFA8055B2B38E66322D585",
+        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x850d2501E6Da6B105aFb689529497B7024776E78",
+        "childErc20Gateway": "0xe17851222aba0821EAfc4F0AE8fDf4d8827124fa",
+        "childGatewayRouter": "0x9A2e67eE268cE392A2D91D8fF87bac1D45980B98",
+        "childMultiCall": "0xc5DD7Dab959Eb221911a58dC469d769270C2De2F",
+        "childProxyAdmin": "0xe762728C1022dAe5D2d0f4a0317944B9d70B309C",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#12266B",
+        "network": {
+          "name": "Social Testnet",
+          "logo": "/images/SocialTestnetLogo.png",
+          "description": ""
+        },
+        "nativeTokenData": {
+          "name": "social.network",
+          "symbol": "EARTH",
+          "decimals": 18,
+          "logoUrl": ""
         }
       }
     }
