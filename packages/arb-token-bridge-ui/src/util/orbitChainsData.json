@@ -925,7 +925,6 @@
       "nativeToken": "0x79a1ca540e4b72280b8220e1fb6799cbca540bbd",
       "explorerUrl": "https://socialnetwork-testnet.explorer.alchemy.com",
       "rpcUrl": "https://socialnetwork-testnet.g.alchemy.com/public",
-      "isArbitrum": true,
       "isCustom": true,
       "isTestnet": true,
       "name": "Social Testnet",
