@@ -179,6 +179,9 @@ export function WithdrawalConfirmationDialog(
                         <ExternalLink
                           href={FAST_WITHDRAWAL_DOCS_ARTICLE_LINK}
                           className="underline"
+                          onClick={e => {
+                            e.stopPropagation()
+                          }}
                         >
                           Learn more.
                         </ExternalLink>
