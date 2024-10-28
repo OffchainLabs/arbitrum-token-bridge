@@ -18,7 +18,6 @@
       "name": "Xai",
       "slug": "xai",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xb15A0826d65bE4c2fDd961b72636168ee70Af030",
         "parentErc20Gateway": "0xb591cE747CF19cF30e11d656EB94134F523A9e77",
@@ -67,7 +66,6 @@
       "name": "RARI Mainnet",
       "slug": "rari-mainnet",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x8bE956aB42274056ef4471BEb211b33e258b7324",
         "parentErc20Gateway": "0x46406c88285AD9BE2fB23D9aD96Cb578d824cAb6",
@@ -108,7 +106,6 @@
       "rpcUrl": "https://muster.alt.technology",
       "name": "Muster",
       "slug": "muster",
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": false,
       "tokenBridge": {
@@ -235,7 +232,6 @@
       "name": "L3X Network",
       "slug": "l3x-network",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": false,
       "tokenBridge": {
@@ -280,7 +276,6 @@
       "name": "XCHAIN",
       "slug": "xchain",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xEFb1F8ae759c595907782e9bD45F119c9814b308",
         "parentErc20Gateway": "0xFFb821ca61e823a884D79226B0fcD7a99A4d48aa",
@@ -324,7 +319,6 @@
       "name": "Sanko",
       "slug": "sanko",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x5414Dc7c8DB4BeDbf3c772768aE1F5e984bdf47a",
         "parentErc20Gateway": "0xb4951c0C41CFceB0D195A95FE66280457A80a990",
@@ -373,7 +367,6 @@
       "name": "Superposition",
       "slug": "superposition",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xacb51eA5b465692c889C36615a398BA14D42b619",
         "parentErc20Gateway": "0x62bEd4b862254789825Cd6F2352aa2b76B16145e",
@@ -416,7 +409,6 @@
       "name": "Mind Network",
       "slug": "mind-network",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xA6a623F64931Bcf1368B120e9Dc29254676D0D8E",
         "parentErc20Gateway": "0x281587c05DeA1a1ceCE83F6FFea23c5aFd287fb3",
@@ -460,7 +452,6 @@
       "name": "SX",
       "slug": "sx",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x54F4853fDfC80F6bA4e66a7946c2B9086B1dE45F",
         "parentErc20Gateway": "0xB4968C66BECc8fb4f73b50354301c1aDb2Abaa91",
@@ -510,7 +501,6 @@
       "name": "ApeChain",
       "slug": "apechain",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xEd543dA6fE33cceE50DC024b78C27959235D0ab0",
         "parentErc20Gateway": "0xB603a1C07A11945bFe4855347c88583e31b8ddB0",
@@ -561,7 +551,6 @@
       "name": "Gravity Alpha",
       "slug": "gravity-alpha",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xa26Fd1c23634870303e42311E114D5cc8301Ed1E",
         "parentErc20Gateway": "0xb23988D9728EF147EAa02D602D7e067B6131A1bB",
@@ -592,6 +581,99 @@
           "logoUrl": "/images/GravityAlpha_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 63157,
+      "confirmPeriodBlocks": 274908,
+      "ethBridge": {
+        "bridge": "0x9F904Fea0efF79708B37B99960e05900fE310A8E",
+        "inbox": "0x32AB85A3F0C702EbE74f73C5934b7Fb8452B492f",
+        "outbox": "0x7cF0a5D0211AC30365bA8C1cB8CFD4caF64b2D60",
+        "rollup": "0x58E3fe88b1E8a7e2D578000aCD9C6d5989FE9e09",
+        "sequencerInbox": "0x400f7c5DaC37aAEe3cE007e43Db54424414743f5"
+      },
+      "nativeToken": "0xcD2F22236DD9Dfe2356D7C543161D4d260FD9BcB",
+      "explorerUrl": "https://geist-mainnet.explorer.alchemy.com",
+      "rpcUrl": "https://geist-mainnet.g.alchemy.com/public",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Geist Mainnet",
+      "slug": "geist-mainnet",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0xb2F230EC2E6c29F631614E1343b5a20a8CB86D7b",
+        "parentErc20Gateway": "0xcCc3f0920fb4e12241475dfB2Bf33EB7E7FeFF05",
+        "parentGatewayRouter": "0xD570870a6b8bFda7baC6bD0c424B5E9674c990A2",
+        "parentMultiCall": "0xb444317D808b5cFfE66495920D40A35E7D247cC4",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xE281b9E84d52152D0C83B7AA18045057450c60E1",
+        "childErc20Gateway": "0x73031e600c05293c51Ccde9b4488f3DAd54982e0",
+        "childGatewayRouter": "0x8c34AFB2685a2B600498f81B50E4F145E1873b4E",
+        "childMultiCall": "0x67a910a43F74fA4aAc8Ffd9c120E2E7472945a89",
+        "childProxyAdmin": "0x25a7F575dD5C10a7FcCc4E3E3A49c85E0C76faa0",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#EB4A9D",
+        "network": {
+          "name": "Geist Mainnet",
+          "logo": "/images/GeistMainnetLogo.svg",
+          "description": ""
+        },
+        "nativeTokenData": {
+          "name": "Aavegotchi",
+          "symbol": "GHST",
+          "decimals": 18,
+          "logoUrl": "/images/ghst.png"
+        }
+      }
+    },
+    {
+      "chainId": 10058111,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x37d3139024D017C2152849B154F2631E2F2C8560",
+        "inbox": "0x21092752C8BB70b8043379a00dCB9aCdA2302181",
+        "outbox": "0xb07b44B3D5C7df02905B9c156Ba44b5762f7b268",
+        "rollup": "0x49B3Bb2c0E54F548F17473d7669b14E009Da407c",
+        "sequencerInbox": "0x627C3Eac80782493B3a633F09C82F510ad710A2D"
+      },
+      "explorerUrl": "https://spotlight-mainnet.explorer.alchemy.com",
+      "rpcUrl": "https://spotlight-mainnet.g.alchemy.com/public",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Spotlight Mainnet",
+      "slug": "spotlight-mainnet",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x443E16416b49Ad675F7E4F00CbA3916F5564DEf3",
+        "parentErc20Gateway": "0xaB24881b11c1c7eb6b9C22288eDB12B67defCEb9",
+        "parentGatewayRouter": "0xf50201e8963A07cEF57f58C56C2349b10B487091",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        "parentWethGateway": "0x44a9a5C2416702BeDC562f8023f19Bc1D732bE94",
+        "childCustomGateway": "0x4aF09A0bD7657cC027D9F3592d092FdEF6D72895",
+        "childErc20Gateway": "0x88fe5E5D022871120F57463b2a979e7478435628",
+        "childGatewayRouter": "0x29c413c7e9f13fC6ee43D43A021A28319412FB90",
+        "childMultiCall": "0x0877A4e5265A8A0E84E60441E63361435d3edC00",
+        "childProxyAdmin": "0x1067df41b7fE8Ef5221eE514b0461f617311f3e5",
+        "childWeth": "0x0203A44796263b86f22Eb8F20C7A2FEc18eB4f53",
+        "childWethGateway": "0xbB5a4466199fc2C63be4749D42D4fb4cD6F890d7"
+      },
+      "bridgeUiConfig": {
+        "color": "#F3C34D",
+        "network": {
+          "name": "Spotlight Mainnet",
+          "logo": "/images/SpotlightLogo.svg",
+          "description": ""
+        }
+      }
     }
   ],
   "testnet": [
@@ -611,7 +693,6 @@
       "name": "Xai Testnet",
       "slug": "xai-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": true,
       "tokenBridge": {
@@ -663,7 +744,6 @@
       "name": "DODOchain Testnet",
       "slug": "dodochain-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xeCa856BE0041184eeda8F2c98896AC4693b168EA",
         "parentErc20Gateway": "0xf57F874845CD652e69f69f020A4d46F4e427bb43",
@@ -712,7 +792,6 @@
       "name": "L3X Network Testnet",
       "slug": "l3x-network-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x00eE97A18A85a58fbfddA2CCa2Bdb3B88d1068b3",
         "parentErc20Gateway": "0xD2e9EA14CE4C61630a87bC652f5cD51deA7C66bA",
@@ -755,7 +834,6 @@
       "name": "RARI Testnet",
       "slug": "rari-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x7EDA0d4c14Af6B0920F4e3C0F0cA18d18212fB0A",
         "parentErc20Gateway": "0x2c9Dd2b2cd55266e3b5c3C95840F3c037fbCb856",
@@ -799,7 +877,6 @@
       "name": "XR Sepolia",
       "slug": "xr-sepolia",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x5F1ac3cd4553bA45fccF135d057795717b37B9Ef",
         "parentErc20Gateway": "0xd0CD7B9F4cB10B21abBfFA874F0d0ad1a41bD51C",
@@ -849,7 +926,6 @@
       "name": "Polter Testnet",
       "slug": "polter-testnet",
       "parentChainId": 84532,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x24e1e6375f0f0Eecd38266357cADE57cA3A348F3",
         "parentErc20Gateway": "0x9014E7244116b965F0D1059f80e2bD8169957117",
@@ -878,6 +954,56 @@
           "symbol": "GHST",
           "decimals": 18,
           "logoUrl": "/images/ghst.png"
+        }
+      }
+    },
+    {
+      "chainId": 749,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x57dfFb3C5446342B35217B76bA422d6aefe624c5",
+        "inbox": "0xb1118863AFdbEe5515C0D3a2522d642E65C0feA2",
+        "outbox": "0x41f72BdF0c63102052b4a22B92999f632bd1910f",
+        "rollup": "0x2Cd91ca21c843c7E1A06d122FdE5618E915685C4",
+        "sequencerInbox": "0x43ECa7bc80Dd5e6d0a26B3fe71F659d04074ad45"
+      },
+      "nativeToken": "0x79a1ca540e4b72280b8220e1fb6799cbca540bbd",
+      "explorerUrl": "https://socialnetwork-testnet.explorer.alchemy.com",
+      "rpcUrl": "https://socialnetwork-testnet.g.alchemy.com/public",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Social Testnet",
+      "slug": "social-testnet",
+      "parentChainId": 17000,
+      "tokenBridge": {
+        "parentCustomGateway": "0xA44D215Af25B6C41aEB396470bD566e6Ff6aF883",
+        "parentErc20Gateway": "0xD2cC26a4134e9a4A265dE3F5F53EF200fbceCBa7",
+        "parentGatewayRouter": "0x6b08DFE55c4705F462CFA8055B2B38E66322D585",
+        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x850d2501E6Da6B105aFb689529497B7024776E78",
+        "childErc20Gateway": "0xe17851222aba0821EAfc4F0AE8fDf4d8827124fa",
+        "childGatewayRouter": "0x9A2e67eE268cE392A2D91D8fF87bac1D45980B98",
+        "childMultiCall": "0xc5DD7Dab959Eb221911a58dC469d769270C2De2F",
+        "childProxyAdmin": "0xe762728C1022dAe5D2d0f4a0317944B9d70B309C",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#12266B",
+        "network": {
+          "name": "Social Testnet",
+          "logo": "/images/SocialTestnetLogo.svg",
+          "description": ""
+        },
+        "nativeTokenData": {
+          "name": "social.network",
+          "symbol": "EARTH",
+          "decimals": 18,
+          "logoUrl": ""
         }
       }
     }
