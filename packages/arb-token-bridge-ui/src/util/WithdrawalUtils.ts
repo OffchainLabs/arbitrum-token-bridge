@@ -115,12 +115,18 @@ const DEFAULT_CONFIRMATION_TIME = 7 * SECONDS_IN_DAY
 const DEFAULT_FAST_WITHDRAWAL_TIME = SECONDS_IN_DAY
 const DEFAULT_TESTNET_CONFIRMATION_TIME = SECONDS_IN_HOUR
 
-function formatDuration(seconds: number): string {
-  if (seconds < SECONDS_IN_MINUTE) return `${seconds} seconds`
-  if (seconds < SECONDS_IN_HOUR)
-    return `${Math.round(seconds / SECONDS_IN_MINUTE)} minutes`
-  if (seconds < SECONDS_IN_DAY)
+function formatDuration(seconds: number, short = false): string {
+  if (seconds < SECONDS_IN_MINUTE) {
+    return `${seconds} ${short ? 'secs' : 'seconds'}`
+  }
+  if (seconds < SECONDS_IN_HOUR) {
+    return `${Math.round(seconds / SECONDS_IN_MINUTE)} ${
+      short ? 'mins' : 'minutes'
+    }`
+  }
+  if (seconds < SECONDS_IN_DAY) {
     return `${Math.round(seconds / SECONDS_IN_HOUR)} hours`
+  }
   return `${Math.round(seconds / SECONDS_IN_DAY)} days`
 }
 
@@ -152,6 +158,10 @@ export function getConfirmationTime(chainId: number) {
   const confirmationTimeInReadableFormat = formatDuration(
     confirmationTimeInSeconds
   )
+  const confirmationTimeInReadableFormatShort = formatDuration(
+    confirmationTimeInSeconds,
+    true
+  )
 
   return {
     fastWithdrawalActive,
@@ -159,6 +169,7 @@ export function getConfirmationTime(chainId: number) {
     isDefaultFastWithdrawal,
     isCustomFastWithdrawal,
     confirmationTimeInSeconds,
-    confirmationTimeInReadableFormat
+    confirmationTimeInReadableFormat,
+    confirmationTimeInReadableFormatShort
   }
 }

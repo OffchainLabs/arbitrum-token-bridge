@@ -262,27 +262,37 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {(isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia) && (
-        <div
-          className={twMerge(
-            'grid grid-cols-[260px_auto] items-center text-sm font-light'
-          )}
-        >
-          <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
-        </div>
-      )}
+      {!isDepositMode &&
+        (isDestinationChainArbitrumOne ||
+          isDestinationChainArbitrumSepolia) && (
+          <div
+            className={twMerge(
+              'grid grid-cols-[260px_auto] items-center text-sm font-light'
+            )}
+          >
+            <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
+          </div>
+        )}
     </TransferPanelSummaryContainer>
   )
 }
 
 function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
-  const { confirmationTimeInReadableFormat, isDefaultConfirmationTime } =
-    getConfirmationTime(chainId)
+  const {
+    confirmationTimeInReadableFormat,
+    confirmationTimeInReadableFormatShort,
+    isDefaultConfirmationTime
+  } = getConfirmationTime(chainId)
   return (
     <>
-      <span>Confirmation time:</span>
+      <span className="whitespace-nowrap">Confirmation time:</span>
       <span className="flex items-center font-medium">
-        {confirmationTimeInReadableFormat}
+        <span className="hidden sm:inline">
+          {confirmationTimeInReadableFormat}
+        </span>
+        <span className="sm:hidden">
+          {confirmationTimeInReadableFormatShort}
+        </span>
         {!isDefaultConfirmationTime && (
           <Tooltip
             content={
