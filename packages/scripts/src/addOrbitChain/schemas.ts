@@ -12,7 +12,7 @@ export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
 
 export const getParentChainInfo = (parentChainId: number) => {
-  const INFURA_KEY = process.env.INFURA_KEY;
+  const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
 
   console.log("Is INFURA_KEY defined?", INFURA_KEY !== undefined);
 
@@ -209,6 +209,12 @@ export const chainSchema = z
       chainName: string
     ) => {
       const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+
+      // Add provider event listeners for detailed logging
+      provider.on("debug", (info) => {
+        console.log(`Provider Debug [${chainName}]:`, info);
+      });
+
       for (const address of addresses) {
         try {
           const code = await provider.getCode(address);
@@ -217,21 +223,25 @@ export const chainSchema = z
             console.warn(
               `Address ${address} on ${chainName} (chainId: ${chainId}) is not a contract. Verify manually: ${explorerLink}`
             );
-            // TODO: Uncomment this when we can verify all contracts
-            // ctx.addIssue({
-            //   code: z.ZodIssueCode.custom,
-            //   message: `Address at ${address} is not a contract on ${chainName}. Verify manually: ${explorerLink}`,
-            // });
           }
         } catch (error) {
           const explorerLink = `${blockExplorer}/address/${address}`;
-          console.log(
-            `Error checking contract at ${address} on ${chainName} (chainId: ${chainId}). Verify manually: ${explorerLink}`
+          console.error(
+            `Error checking contract at ${address} on ${chainName} (chainId: ${chainId}):`,
+            {
+              error:
+                error instanceof Error
+                  ? {
+                      name: error.name,
+                      message: error.message,
+                      stack: error.stack,
+                    }
+                  : error,
+              rpcUrl,
+              chainId,
+            }
           );
-          // ctx.addIssue({
-          //   code: z.ZodIssueCode.custom,
-          //   message: `Error checking contract at ${address} on ${chainName}. Verify manually: ${explorerLink}`,
-          // });
+          console.log(`Please verify manually: ${explorerLink}`);
         }
       }
     };
