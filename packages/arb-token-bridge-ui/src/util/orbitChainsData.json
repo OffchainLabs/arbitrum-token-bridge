@@ -642,7 +642,6 @@
       },
       "explorerUrl": "https://spotlight-mainnet.explorer.alchemy.com",
       "rpcUrl": "https://spotlight-mainnet.g.alchemy.com/public",
-      "isArbitrum": true,
       "isCustom": true,
       "isTestnet": false,
       "name": "Spotlight Mainnet",
