@@ -1,43 +1,61 @@
 import { z } from "zod";
 import { constants, ethers } from "ethers";
 import { getOctokit } from "@actions/github";
+import path from "path";
+import * as dotenv from "dotenv";
 
+// Load .env from the UI project directory
+dotenv.config({
+  path: path.resolve(__dirname, "../../../arb-token-bridge-ui/.env"),
+});
 export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
 
 export const getParentChainInfo = (parentChainId: number) => {
+  const INFURA_KEY = process.env.INFURA_KEY;
+
   switch (parentChainId) {
     case 1: // Ethereum Mainnet
       return {
-        rpcUrl: "https://eth.llamarpc.com",
+        rpcUrl: INFURA_KEY
+          ? `https://mainnet.infura.io/v3/${INFURA_KEY}`
+          : "https://eth.llamarpc.com",
         blockExplorer: "https://etherscan.io",
         chainId: 1,
         name: "Ethereum",
       };
     case 42161: // Arbitrum One
       return {
-        rpcUrl: "https://arb1.arbitrum.io/rpc",
+        rpcUrl: INFURA_KEY
+          ? `https://arbitrum-mainnet.infura.io/v3/${INFURA_KEY}`
+          : "https://arb1.arbitrum.io/rpc",
         blockExplorer: "https://arbiscan.io",
         chainId: 42161,
         name: "Arbitrum One",
       };
     case 11155111: // Sepolia
       return {
-        rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+        rpcUrl: INFURA_KEY
+          ? `https://sepolia.infura.io/v3/${INFURA_KEY}`
+          : "https://ethereum-sepolia-rpc.publicnode.com",
         blockExplorer: "https://sepolia.etherscan.io",
         chainId: 11155111,
         name: "Sepolia",
       };
     case 421614: // Arbitrum Sepolia
       return {
-        rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
+        rpcUrl: INFURA_KEY
+          ? `https://arbitrum-sepolia.infura.io/v3/${INFURA_KEY}`
+          : "https://sepolia-rollup.arbitrum.io/rpc",
         blockExplorer: "https://sepolia.arbiscan.io",
         chainId: 421614,
         name: "Arbitrum Sepolia",
       };
     case 17000: // Holesky
       return {
-        rpcUrl: "https://ethereum-holesky-rpc.publicnode.com",
+        rpcUrl: INFURA_KEY
+          ? `https://holesky.infura.io/v3/${INFURA_KEY}`
+          : "https://ethereum-holesky-rpc.publicnode.com",
         blockExplorer: "https://holesky.etherscan.io/",
         chainId: 17000,
         name: "Holesky",
