@@ -370,6 +370,12 @@ export const transformIncomingDataToOrbitChain = async (
   console.log("Parent chain info:", parentChainInfo);
   const provider = new JsonRpcProvider(parentChainInfo.rpcUrl);
   console.log("Provider:", provider);
+  try {
+    const network = await provider.getNetwork();
+    console.log("Connected to network:", network);
+  } catch (error) {
+    console.error("Connection error:", error);
+  }
   const rollupData = await getArbitrumNetworkInformationFromRollup(
     chainData.rollup,
     provider
