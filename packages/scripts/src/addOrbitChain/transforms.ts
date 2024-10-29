@@ -22,6 +22,7 @@ import {
 } from "./github";
 import {
   chainDataLabelToKey,
+  getParentChainInfo,
   IncomingChainData,
   Issue,
   OrbitChain,
@@ -365,7 +366,8 @@ export const transformIncomingDataToOrbitChain = async (
 ): Promise<OrbitChain> => {
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
-  const provider = new JsonRpcProvider(chainData.rpcUrl);
+  const parentChainInfo = getParentChainInfo(parentChainId);
+  const provider = new JsonRpcProvider(parentChainInfo.rpcUrl);
   const rollupData = await getArbitrumNetworkInformationFromRollup(
     chainData.rollup,
     provider
