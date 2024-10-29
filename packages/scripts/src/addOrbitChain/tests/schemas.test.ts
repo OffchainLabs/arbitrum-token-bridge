@@ -91,10 +91,6 @@ describe("Validation Functions", () => {
       expect(descriptionSchema.parse("A description")).toBe("A description.");
       expect(descriptionSchema.parse("A description.")).toBe("A description.");
     });
-
-    it("should throw for descriptions that are too long", () => {
-      expect(() => descriptionSchema.parse("A".repeat(251))).toThrow();
-    });
   });
 
   describe("ethBridgeSchema", () => {

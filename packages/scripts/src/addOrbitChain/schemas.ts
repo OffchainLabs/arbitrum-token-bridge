@@ -27,8 +27,13 @@ export const colorHexSchema = z
 
 export const descriptionSchema = z
   .string()
-  .max(190)
-  .transform((desc) => (desc.endsWith(".") ? desc : `${desc}.`));
+  .optional()
+  .transform((desc) => {
+    if (!desc) {
+      return desc;
+    }
+    return desc.endsWith(".") ? desc : `${desc}.`;
+  });
 
 export const ethBridgeSchema = z.object({
   bridge: addressSchema,
