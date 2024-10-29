@@ -37,7 +37,7 @@ export const getParentChainInfo = (parentChainId: number) => {
       };
     case 17000: // Holesky
       return {
-        rpcUrl: "https://ethereum-holesky-rpc.publicnode.com	",
+        rpcUrl: "https://ethereum-holesky-rpc.publicnode.com",
         blockExplorer: "https://holesky.etherscan.io/",
         chainId: 17000,
         name: "Holesky",
