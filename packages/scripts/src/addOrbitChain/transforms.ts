@@ -359,6 +359,16 @@ export const fetchAndSaveImage = async (
   return `/${imageSavePath}`;
 };
 
+class LoggingProvider extends JsonRpcProvider {
+  perform(method: string, parameters: any): Promise<any> {
+    console.log(">>>", method, parameters);
+    return super.perform(method, parameters).then((result) => {
+      console.log("<<<", method, parameters, result);
+      return result;
+    });
+  }
+}
+
 export const transformIncomingDataToOrbitChain = async (
   chainData: IncomingChainData,
   chainLogoPath: string,
@@ -368,7 +378,7 @@ export const transformIncomingDataToOrbitChain = async (
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
   const parentChainInfo = getParentChainInfo(parentChainId);
   console.log("Parent chain info:", parentChainInfo);
-  const provider = new JsonRpcProvider(parentChainInfo.rpcUrl);
+  const provider = new LoggingProvider(parentChainInfo.rpcUrl);
   console.log("Provider:", provider);
   try {
     const network = await provider.getNetwork();
