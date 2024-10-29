@@ -5,6 +5,62 @@ import { getOctokit } from "@actions/github";
 export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
 
+export const getParentChainInfo = (parentChainId: number) => {
+  switch (parentChainId) {
+    case 1: // Ethereum Mainnet
+      return {
+        rpcUrl: "https://eth.llamarpc.com",
+        blockExplorer: "https://etherscan.io",
+        chainId: 1,
+        name: "Ethereum",
+      };
+    case 42161: // Arbitrum One
+      return {
+        rpcUrl: "https://arb1.arbitrum.io/rpc",
+        blockExplorer: "https://arbiscan.io",
+        chainId: 42161,
+        name: "Arbitrum One",
+      };
+    case 11155111: // Sepolia
+      return {
+        rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+        blockExplorer: "https://sepolia.etherscan.io",
+        chainId: 11155111,
+        name: "Sepolia",
+      };
+    case 421614: // Arbitrum Sepolia
+      return {
+        rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
+        blockExplorer: "https://sepolia.arbiscan.io",
+        chainId: 421614,
+        name: "Arbitrum Sepolia",
+      };
+    case 17000: // Holesky
+      return {
+        rpcUrl: "https://ethereum-holesky-rpc.publicnode.com",
+        blockExplorer: "https://holesky.etherscan.io/",
+        chainId: 17000,
+        name: "Holesky",
+      };
+    case 8453: // Base
+      return {
+        rpcUrl: "https://mainnet.base.org",
+        blockExplorer: "https://basescan.io",
+        chainId: 8453,
+        name: "Base",
+      };
+    case 84532: // Base Sepolia
+      return {
+        rpcUrl: "https://sepolia.base.org",
+        blockExplorer: "https://sepolia.basescan.io",
+        chainId: 84532,
+        name: "Base Sepolia",
+      };
+    default:
+      throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
+  }
+};
+
 export const isValidAddress = (address: string): boolean => {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 };
@@ -94,62 +150,6 @@ export const chainSchema = z
     bridgeUiConfig: bridgeUiConfigSchema,
   })
   .superRefine(async (chain, ctx) => {
-    const getParentChainInfo = (parentChainId: number) => {
-      switch (parentChainId) {
-        case 1: // Ethereum Mainnet
-          return {
-            rpcUrl: "https://eth.llamarpc.com",
-            blockExplorer: "https://etherscan.io",
-            chainId: 1,
-            name: "Ethereum",
-          };
-        case 42161: // Arbitrum One
-          return {
-            rpcUrl: "https://arb1.arbitrum.io/rpc",
-            blockExplorer: "https://arbiscan.io",
-            chainId: 42161,
-            name: "Arbitrum One",
-          };
-        case 11155111: // Sepolia
-          return {
-            rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
-            blockExplorer: "https://sepolia.etherscan.io",
-            chainId: 11155111,
-            name: "Sepolia",
-          };
-        case 421614: // Arbitrum Sepolia
-          return {
-            rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
-            blockExplorer: "https://sepolia.arbiscan.io",
-            chainId: 421614,
-            name: "Arbitrum Sepolia",
-          };
-        case 17000: // Holesky
-          return {
-            rpcUrl: "https://ethereum-holesky-rpc.publicnode.com	",
-            blockExplorer: "https://holesky.etherscan.io/",
-            chainId: 17000,
-            name: "Holesky",
-          };
-        case 8453: // Base
-          return {
-            rpcUrl: "https://mainnet.base.org",
-            blockExplorer: "https://basescan.io",
-            chainId: 8453,
-            name: "Base",
-          };
-        case 84532: // Base Sepolia
-          return {
-            rpcUrl: "https://sepolia.base.org",
-            blockExplorer: "https://sepolia.basescan.io",
-            chainId: 84532,
-            name: "Base Sepolia",
-          };
-        default:
-          throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
-      }
-    };
-
     const parentChainInfo = getParentChainInfo(chain.parentChainId);
 
     const parentAddressesToCheck = [
