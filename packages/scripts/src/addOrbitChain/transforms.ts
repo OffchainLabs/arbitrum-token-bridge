@@ -384,7 +384,6 @@ export const transformIncomingDataToOrbitChain = async (
     nativeToken: chainData.nativeTokenAddress,
     explorerUrl: chainData.explorerUrl,
     rpcUrl: chainData.rpcUrl,
-    isArbitrum: true,
     isCustom: true,
     isTestnet,
     name: chainData.name,
