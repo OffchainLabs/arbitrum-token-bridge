@@ -83,8 +83,13 @@ export const colorHexSchema = z
 
 export const descriptionSchema = z
   .string()
-  .max(190)
-  .transform((desc) => (desc.endsWith(".") ? desc : `${desc}.`));
+  .optional()
+  .transform((desc) => {
+    if (!desc) {
+      return desc;
+    }
+    return desc.endsWith(".") ? desc : `${desc}.`;
+  });
 
 export const ethBridgeSchema = z.object({
   bridge: addressSchema,
@@ -136,7 +141,6 @@ export const chainSchema = z
     nativeToken: addressSchema.optional(),
     explorerUrl: urlSchema,
     rpcUrl: urlSchema,
-    isArbitrum: z.boolean().default(true),
     isCustom: z.boolean().default(true),
     isTestnet: z.boolean(),
     name: z.string().min(1),

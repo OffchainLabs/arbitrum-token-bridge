@@ -185,7 +185,10 @@ function NetworkRow({
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-[1.1]">{network.name}</span>
         {network.description && (
-          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15] text-white/70">
+          <p
+            className="line-clamp-3 text-left text-xs leading-[1.15] text-white/70"
+            title={network.description}
+          >
             {network.description}
           </p>
         )}
