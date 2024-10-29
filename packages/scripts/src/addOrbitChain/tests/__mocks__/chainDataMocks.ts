@@ -222,7 +222,6 @@ export const mockOrbitChain: OrbitChain = {
   nativeToken: "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66",
   explorerUrl: "https://explorer.xai-chain.net",
   rpcUrl: "https://xai-chain.net/rpc",
-  isArbitrum: true,
   isCustom: true,
   isTestnet: false,
   name: "Xai",
