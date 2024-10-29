@@ -367,12 +367,28 @@ export const transformIncomingDataToOrbitChain = async (
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
   const parentChainInfo = getParentChainInfo(parentChainId);
+  console.log("Parent chain info:", parentChainInfo);
   const provider = new JsonRpcProvider(parentChainInfo.rpcUrl);
+  console.log("Provider:", provider);
   const rollupData = await getArbitrumNetworkInformationFromRollup(
     chainData.rollup,
     provider
-  );
-
+  )
+    .catch((error) => {
+      console.error("Error fetching rollup data:", error);
+    })
+    .then(() => {
+      return {
+        confirmPeriodBlocks: 0,
+        ethBridge: {
+          bridge: "",
+          inbox: "",
+          outbox: "",
+          sequencerInbox: "",
+        },
+      };
+    });
+  console.log("Rollup data:", rollupData);
   return {
     chainId: parseInt(chainData.chainId, 10),
     confirmPeriodBlocks: rollupData.confirmPeriodBlocks,
