@@ -255,80 +255,9 @@ describe("Transforms", () => {
       expect(stats.size).toBeGreaterThan(0);
     });
 
-    it("should download, process, and save the chain logo image from IPFS URL", async () => {
-      const ipfsUrl = "ipfs://QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym";
-      const { buffer, fileExtension } = await fetchAndProcessImage(ipfsUrl);
-
-      expect(buffer).toBeTruthy();
-      expect(buffer.length).toBeGreaterThan(0);
-      expect(fileExtension).toBe(".png");
-    });
-
     it("should throw an error if the image fetch fails", async () => {
       const invalidUrl = "https://example.com/nonexistent-image.png";
       await expect(fetchAndProcessImage(invalidUrl)).rejects.toThrow();
-    });
-
-    it("should handle IPFS gateway URLs correctly", async () => {
-      const ipfsGatewayUrl =
-        "https://ipfs.io/ipfs/QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym";
-      const { buffer, fileExtension } = await fetchAndProcessImage(
-        ipfsGatewayUrl
-      );
-
-      expect(buffer).toBeTruthy();
-      expect(buffer.length).toBeGreaterThan(0);
-      expect(fileExtension).toBeTruthy();
-
-      // Verify the image can be processed by sharp
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.format).toBeTruthy();
-      expect(metadata.width).toBeGreaterThan(0);
-      expect(metadata.height).toBeGreaterThan(0);
-    });
-
-    it("should convert IPFS protocol URLs to gateway URLs", async () => {
-      const ipfsProtocolUrl =
-        "ipfs://QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym";
-      const { buffer, fileExtension } = await fetchAndProcessImage(
-        ipfsProtocolUrl
-      );
-
-      expect(buffer).toBeTruthy();
-      expect(buffer.length).toBeGreaterThan(0);
-      expect(fileExtension).toBeTruthy();
-
-      // Verify the image can be processed by sharp
-      const metadata = await sharp(buffer).metadata();
-      expect(metadata.format).toBeTruthy();
-      expect(metadata.width).toBeGreaterThan(0);
-      expect(metadata.height).toBeGreaterThan(0);
-    });
-
-    it("should handle invalid IPFS hashes gracefully", async () => {
-      const invalidIpfsUrl = "ipfs://InvalidHash123";
-      await expect(fetchAndProcessImage(invalidIpfsUrl)).rejects.toThrow();
-    });
-
-    it("should handle non-image buffers and convert to webp", async () => {
-      // Create a mock non-image buffer
-      const nonImageBuffer = Buffer.from("not an image");
-
-      // Mock axios to return our non-image buffer
-      const mockUrl = "https://example.com/unknown-file";
-      vi.spyOn(axios, "get").mockResolvedValueOnce({
-        status: 200,
-        data: nonImageBuffer,
-        headers: {
-          "content-type": "application/octet-stream",
-        },
-      });
-
-      const { buffer, fileExtension } = await fetchAndProcessImage(mockUrl);
-
-      expect(buffer).toBeTruthy();
-      expect(buffer.length).toBeGreaterThan(0);
-      expect(fileExtension).toBe(".webp");
     });
   });
 });

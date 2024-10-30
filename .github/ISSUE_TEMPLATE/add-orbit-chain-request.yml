@@ -40,11 +40,12 @@ body:
       placeholder: ex. "#FFFFFF"
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: chain-logo
     attributes:
       label: Chain logo
-      description: Link to the chain logo file.
+      description: Please drag and drop your chain logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      placeholder: Drag and drop your chain logo image here...
     validations:
       required: true
   - type: input
@@ -105,11 +106,12 @@ body:
       placeholder: ex. ETH
     validations:
       required: false
-  - type: input
+  - type: textarea
     id: native-token-logo
     attributes:
       label: Native token logo
-      description: Link to the native token logo file.
+      description: Please drag and drop your native token logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      placeholder: Drag and drop your native token logo image here...
     validations:
       required: false
 

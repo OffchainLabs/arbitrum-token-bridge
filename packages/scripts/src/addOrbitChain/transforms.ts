@@ -213,6 +213,17 @@ export const setOutputs = (
   core.endGroup();
 };
 
+export const extractImageUrlFromMarkdown = (
+  markdown: string
+): string | null => {
+  // Match markdown image syntax: ![alt text](url)
+  const markdownMatch = markdown.match(/!\[.*?\]\((.*?)\)/);
+  if (markdownMatch && markdownMatch[1]) {
+    return markdownMatch[1];
+  }
+  return markdown;
+};
+
 export const extractRawChainData = (
   issue: Issue
 ): Record<string, string | boolean | undefined> => {
@@ -228,7 +239,12 @@ export const extractRawChainData = (
     const key = chainDataLabelToKey[trimmedLabel] || trimmedLabel;
 
     if (trimmedValue !== "_No response_") {
-      rawData[key] = trimmedValue;
+      if (key === "chainLogo" || key === "nativeTokenLogo") {
+        const imageUrl = extractImageUrlFromMarkdown(trimmedValue);
+        rawData[key] = imageUrl || trimmedValue;
+      } else {
+        rawData[key] = trimmedValue;
+      }
     }
   }
 
@@ -279,13 +295,7 @@ export const fetchAndProcessImage = async (
   let imageBuffer: Buffer;
   let fileExtension: string;
 
-  // Check if the URL is an IPFS URL or starts with http/https
-  if (urlOrPath.startsWith("ipfs://") || urlOrPath.startsWith("http")) {
-    // Handle remote URLs (including IPFS)
-    if (urlOrPath.startsWith("ipfs://")) {
-      urlOrPath = `https://ipfs.io/ipfs/${urlOrPath.slice(7)}`;
-    }
-
+  if (urlOrPath.startsWith("http")) {
     console.log("Fetching image from:", urlOrPath);
 
     const response = await axios.get(urlOrPath, {
