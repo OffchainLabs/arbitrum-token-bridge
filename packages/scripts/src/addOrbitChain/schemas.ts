@@ -211,11 +211,6 @@ export const chainSchema = z
     ) => {
       const provider = getProvider({ rpcUrl, name: chainName, chainId });
 
-      // Add provider event listeners for detailed logging
-      provider.on("debug", (info) => {
-        console.log(`Provider Debug [${chainName}]:`, info);
-      });
-
       for (const address of addresses) {
         try {
           const code = await provider.getCode(address);
