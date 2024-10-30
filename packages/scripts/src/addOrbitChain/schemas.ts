@@ -14,6 +14,7 @@ const ZERO_ADDRESS = constants.AddressZero;
 
 export const getParentChainInfo = (parentChainId: number) => {
   const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
+  const HOLESKY_INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY_HOLESKY;
 
   switch (parentChainId) {
     case 1: // Ethereum Mainnet
@@ -54,8 +55,8 @@ export const getParentChainInfo = (parentChainId: number) => {
       };
     case 17000: // Holesky
       return {
-        rpcUrl: INFURA_KEY
-          ? `https://holesky.infura.io/v3/${INFURA_KEY}`
+        rpcUrl: HOLESKY_INFURA_KEY
+          ? `https://holesky.infura.io/v3/${HOLESKY_INFURA_KEY}`
           : "https://ethereum-holesky-rpc.publicnode.com",
         blockExplorer: "https://holesky.etherscan.io/",
         chainId: 17000,
