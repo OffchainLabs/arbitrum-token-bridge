@@ -258,3 +258,124 @@ export const mockOrbitChain: OrbitChain = {
     },
   },
 };
+
+export const mockIssueWithNoProxyAdmin: Issue = {
+  body: `
+### Chain ID
+
+383353
+
+### Chain name
+
+CheeseChain
+
+### Parent Custom Gateway
+
+0x762AE18EDA279709C106eC76d4b3985366D87C3F
+
+### Parent ERC20 Gateway
+
+0x4D692d1B2E5Cef2A6092de572231D54D07691aA0
+
+### Parent Gateway Router
+
+0xA4BD9786c885EB99Cb6C6886d8f9CE8d96cE99F6
+
+### Parent MultiCall
+
+0x909b042B88F587d745dBF52e2569545376f6eAA4
+
+### Parent Proxy Admin
+
+_No response_
+
+### Parent WETH
+
+0x0000000000000000000000000000000000000000
+
+### Parent WETH Gateway
+
+0x0000000000000000000000000000000000000000
+
+### Child Custom Gateway
+
+0x1Dd3e9AbA3A50D071C250356551c774B5F28B567
+
+### Child ERC20 Gateway
+
+0x8737E402817e5B82B0ED43dC791e4E260e00c9d5
+
+### Child Gateway Router
+
+0x1E7090DCA131C7DE551becE4eCd2eBD5a37Aff0D
+
+### Child Multicall
+
+0x36528Af3c5Ef49fDbB87EcB87027c98DeeD57a00
+
+### Child Proxy Admin
+
+_No response_
+
+### Child WETH
+
+0x0000000000000000000000000000000000000000
+
+### Child WETH Gateway
+
+0x0000000000000000000000000000000000000000
+`,
+  html_url: "https://github.com/example/issue/1",
+  state: "open",
+};
+
+export const mockNoProxyAdminData = {
+  chainId: "383353",
+  name: "CheeseChain",
+  parentCustomGateway: "0x762AE18EDA279709C106eC76d4b3985366D87C3F",
+  parentErc20Gateway: "0x4D692d1B2E5Cef2A6092de572231D54D07691aA0",
+  parentGatewayRouter: "0xA4BD9786c885EB99Cb6C6886d8f9CE8d96cE99F6",
+  parentMultiCall: "0x909b042B88F587d745dBF52e2569545376f6eAA4",
+  parentWeth: "0x0000000000000000000000000000000000000000",
+  parentWethGateway: "0x0000000000000000000000000000000000000000",
+  childCustomGateway: "0x1Dd3e9AbA3A50D071C250356551c774B5F28B567",
+  childErc20Gateway: "0x8737E402817e5B82B0ED43dC791e4E260e00c9d5",
+  childGatewayRouter: "0x1E7090DCA131C7DE551becE4eCd2eBD5a37Aff0D",
+  childMultiCall: "0x36528Af3c5Ef49fDbB87EcB87027c98DeeD57a00",
+  childWeth: "0x0000000000000000000000000000000000000000",
+  childWethGateway: "0x0000000000000000000000000000000000000000",
+  parentProxyAdmin: "0x0000000000000000000000000000000000000000",
+  childProxyAdmin: "0x0000000000000000000000000000000000000000",
+};
+
+export const mockValidTokenBridge = {
+  parentGatewayRouter: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  childGatewayRouter: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  parentErc20Gateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  childErc20Gateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  parentCustomGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  childCustomGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  parentWethGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  childWethGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  parentWeth: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  childWeth: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  parentMultiCall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  childMultiCall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+};
+
+export const mockValidTokenBridgeWithProxyAdmin = {
+  ...mockValidTokenBridge,
+  parentProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  childProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+};
+
+export const mockValidTokenBridgeWithUndefinedProxyAdmin = {
+  ...mockValidTokenBridge,
+  parentProxyAdmin: undefined,
+  childProxyAdmin: undefined,
+};
+
+export const mockValidTokenBridgeWithOneProxyAdmin = {
+  ...mockValidTokenBridge,
+  parentProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+};

@@ -37,6 +37,27 @@ exports[`Transforms > extractRawChainData > should extract raw chain data from t
 }
 `;
 
+exports[`Transforms > extractRawChainData > should handle missing proxy admin responses correctly 1`] = `
+{
+  "chainId": "383353",
+  "childCustomGateway": "0x1Dd3e9AbA3A50D071C250356551c774B5F28B567",
+  "childErc20Gateway": "0x8737E402817e5B82B0ED43dC791e4E260e00c9d5",
+  "childGatewayRouter": "0x1E7090DCA131C7DE551becE4eCd2eBD5a37Aff0D",
+  "childMultiCall": "0x36528Af3c5Ef49fDbB87EcB87027c98DeeD57a00",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "childWeth": "0x0000000000000000000000000000000000000000",
+  "childWethGateway": "0x0000000000000000000000000000000000000000",
+  "name": "CheeseChain",
+  "parentCustomGateway": "0x762AE18EDA279709C106eC76d4b3985366D87C3F",
+  "parentErc20Gateway": "0x4D692d1B2E5Cef2A6092de572231D54D07691aA0",
+  "parentGatewayRouter": "0xA4BD9786c885EB99Cb6C6886d8f9CE8d96cE99F6",
+  "parentMultiCall": "0x909b042B88F587d745dBF52e2569545376f6eAA4",
+  "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "parentWeth": "0x0000000000000000000000000000000000000000",
+  "parentWethGateway": "0x0000000000000000000000000000000000000000",
+}
+`;
+
 exports[`Transforms > transformIncomingDataToOrbitChain > should transform incoming chain data to OrbitChain format 1`] = `
 {
   "bridgeUiConfig": {

@@ -32,9 +32,11 @@ import {
   validateOrbitChain,
   validateOrbitChainsList,
 } from "./schemas";
+import { constants } from "ethers";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
+const ZERO_ADDRESS = constants.AddressZero;
 
 export const getFileExtension = (mimeType: string): string => {
   const extension = lookup(mimeType);
@@ -229,6 +231,12 @@ export const extractRawChainData = (
 
     if (trimmedValue !== "_No response_") {
       rawData[key] = trimmedValue;
+    } else {
+      if (key === "parentProxyAdmin" || key === "childProxyAdmin") {
+        rawData[key] = ZERO_ADDRESS;
+      } else {
+        rawData[key] = undefined;
+      }
     }
   }
 

@@ -172,7 +172,7 @@ body:
     attributes:
       label: Parent Proxy Admin
     validations:
-      required: true
+      required: false
   - type: input
     id: parent-weth
     attributes:
@@ -220,7 +220,7 @@ body:
     attributes:
       label: Child Proxy Admin
     validations:
-      required: true
+      required: false
   - type: input
     id: child-weth
     attributes:

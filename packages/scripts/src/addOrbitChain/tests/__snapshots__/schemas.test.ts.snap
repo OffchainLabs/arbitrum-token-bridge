@@ -1,5 +1,62 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Validation Functions > tokenBridgeSchema > proxy admin validation > should validate tokenBridge objects with missing proxy admin fields and default to zero address 1`] = `
+{
+  "childCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "childWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+}
+`;
+
+exports[`Validation Functions > tokenBridgeSchema > proxy admin validation > should validate tokenBridge objects with only one proxy admin field 1`] = `
+{
+  "childCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "childWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentProxyAdmin": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+}
+`;
+
+exports[`Validation Functions > tokenBridgeSchema > proxy admin validation > should validate tokenBridge objects with undefined proxy admin fields 1`] = `
+{
+  "childCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "childWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+}
+`;
+
 exports[`Validation Functions > tokenBridgeSchema > should throw for invalid tokenBridge objects 1`] = `
 "[
   {
@@ -17,15 +74,6 @@ exports[`Validation Functions > tokenBridgeSchema > should throw for invalid tok
     \\"received\\": \\"undefined\\",
     \\"path\\": [
       \\"parentErc20Gateway\\"
-    ],
-    \\"message\\": \\"Required\\"
-  },
-  {
-    \\"code\\": \\"invalid_type\\",
-    \\"expected\\": \\"string\\",
-    \\"received\\": \\"undefined\\",
-    \\"path\\": [
-      \\"parentProxyAdmin\\"
     ],
     \\"message\\": \\"Required\\"
   },
@@ -62,15 +110,6 @@ exports[`Validation Functions > tokenBridgeSchema > should throw for invalid tok
     \\"received\\": \\"undefined\\",
     \\"path\\": [
       \\"childErc20Gateway\\"
-    ],
-    \\"message\\": \\"Required\\"
-  },
-  {
-    \\"code\\": \\"invalid_type\\",
-    \\"expected\\": \\"string\\",
-    \\"received\\": \\"undefined\\",
-    \\"path\\": [
-      \\"childProxyAdmin\\"
     ],
     \\"message\\": \\"Required\\"
   },
@@ -116,6 +155,44 @@ exports[`Validation Functions > tokenBridgeSchema > should validate correct toke
   "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentProxyAdmin": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+}
+`;
+
+exports[`Validation Functions > tokenBridgeSchema > should validate tokenBridge objects with missing proxy admin fields and default to zero address 1`] = `
+{
+  "childCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "childWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+}
+`;
+
+exports[`Validation Functions > tokenBridgeSchema > should validate tokenBridge objects with null proxy admin fields 1`] = `
+{
+  "childCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "childWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
   "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 }
