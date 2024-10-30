@@ -1,15 +1,6 @@
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { ConnectionInfo } from "ethers/lib/utils";
 
-class LoggingProvider extends StaticJsonRpcProvider {
-  perform(method: string, parameters: any): Promise<any> {
-    console.log(">>>", method, parameters);
-    return super.perform(method, parameters).then((result) => {
-      console.log("<<<", method, parameters, result);
-      return result;
-    });
-  }
-}
 export const getProvider = (chainInfo: {
   rpcUrl: string;
   name: string;
@@ -28,7 +19,7 @@ export const getProvider = (chainInfo: {
     },
   };
 
-  const provider = new LoggingProvider(connection, {
+  const provider = new StaticJsonRpcProvider(connection, {
     name: chainInfo.name,
     chainId: chainInfo.chainId,
   });

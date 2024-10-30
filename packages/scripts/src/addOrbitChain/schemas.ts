@@ -15,8 +15,6 @@ const ZERO_ADDRESS = constants.AddressZero;
 export const getParentChainInfo = (parentChainId: number) => {
   const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
 
-  console.log("Is INFURA_KEY defined?", INFURA_KEY !== undefined);
-
   switch (parentChainId) {
     case 1: // Ethereum Mainnet
       return {
