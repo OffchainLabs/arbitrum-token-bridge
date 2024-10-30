@@ -28,10 +28,10 @@ body:
     attributes:
       label: Chain description
       description: |
-        A short chain description that will be visible in the networks dropdown. Please make sure this is no longer than 130 characters.
+        A short chain description that will be visible in the networks dropdown.
       placeholder: ex. An amazing chain that does amazing things.
     validations:
-      required: true
+      required: false
   - type: input
     id: brand-color
     attributes:
