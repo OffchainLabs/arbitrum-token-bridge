@@ -232,11 +232,7 @@ export const extractRawChainData = (
     if (trimmedValue !== "_No response_") {
       rawData[key] = trimmedValue;
     } else {
-      if (key === "parentProxyAdmin" || key === "childProxyAdmin") {
-        rawData[key] = ZERO_ADDRESS;
-      } else {
-        rawData[key] = undefined;
-      }
+      rawData[key] = undefined;
     }
   }
 
@@ -404,14 +400,14 @@ export const transformIncomingDataToOrbitChain = async (
       parentErc20Gateway: chainData.parentErc20Gateway,
       parentGatewayRouter: chainData.parentGatewayRouter,
       parentMultiCall: chainData.parentMultiCall,
-      parentProxyAdmin: chainData.parentProxyAdmin,
+      parentProxyAdmin: ZERO_ADDRESS,
       parentWeth: chainData.parentWeth,
       parentWethGateway: chainData.parentWethGateway,
       childCustomGateway: chainData.childCustomGateway,
       childErc20Gateway: chainData.childErc20Gateway,
       childGatewayRouter: chainData.childGatewayRouter,
       childMultiCall: chainData.childMultiCall,
-      childProxyAdmin: chainData.childProxyAdmin,
+      childProxyAdmin: ZERO_ADDRESS,
       childWeth: chainData.childWeth,
       childWethGateway: chainData.childWethGateway,
     },

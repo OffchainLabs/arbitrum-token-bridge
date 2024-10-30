@@ -162,7 +162,6 @@ export const chainSchema = z
       chain.tokenBridge.parentErc20Gateway,
       chain.tokenBridge.parentGatewayRouter,
       chain.tokenBridge.parentMultiCall,
-      chain.tokenBridge.parentProxyAdmin,
       chain.tokenBridge.parentWeth,
       chain.tokenBridge.parentWethGateway,
     ].filter(
@@ -175,7 +174,6 @@ export const chainSchema = z
       chain.tokenBridge.childErc20Gateway,
       chain.tokenBridge.childGatewayRouter,
       chain.tokenBridge.childMultiCall,
-      chain.tokenBridge.childProxyAdmin,
     ].filter(
       (address): address is string =>
         typeof address === "string" && address !== ZERO_ADDRESS
@@ -275,8 +273,6 @@ export const incomingChainDataSchema = z.object({
   childWethGateway: addressSchema,
   parentWeth: addressSchema,
   childWeth: addressSchema,
-  parentProxyAdmin: addressSchema,
-  childProxyAdmin: addressSchema,
   parentMultiCall: addressSchema,
   childMultiCall: addressSchema,
 });
@@ -354,8 +350,6 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Parent WETH Gateway": "parentWethGateway",
   "Child WETH Gateway": "childWethGateway",
   "Child WETH": "childWeth",
-  "Parent Proxy Admin": "parentProxyAdmin",
-  "Child Proxy Admin": "childProxyAdmin",
   "Parent MultiCall": "parentMultiCall",
   "Child Multicall": "childMultiCall",
   "Parent WETH": "parentWeth",

@@ -23,7 +23,6 @@ import {
 import {
   fullMockIssue,
   mockIncomingChainData,
-  mockIssueWithNoProxyAdmin,
   mockOrbitChain,
 } from "./__mocks__/chainDataMocks";
 import { warning } from "@actions/core";
@@ -33,20 +32,6 @@ describe("Transforms", () => {
   describe("extractRawChainData", () => {
     it("should extract raw chain data from the issue", () => {
       expect(extractRawChainData(fullMockIssue)).toMatchSnapshot();
-    });
-
-    it("should handle missing proxy admin responses correctly", () => {
-      const result = extractRawChainData(mockIssueWithNoProxyAdmin);
-
-      // Verify that proxy admin fields default to zero address when "_No response_" is given
-      expect(result.parentProxyAdmin).toBe(
-        "0x0000000000000000000000000000000000000000"
-      );
-      expect(result.childProxyAdmin).toBe(
-        "0x0000000000000000000000000000000000000000"
-      );
-
-      expect(result).toMatchSnapshot();
     });
   });
 
