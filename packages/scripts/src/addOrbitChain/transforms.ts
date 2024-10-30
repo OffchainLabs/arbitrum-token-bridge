@@ -4,11 +4,6 @@
 import * as core from "@actions/core";
 import { warning } from "@actions/core";
 import { getArbitrumNetworkInformationFromRollup } from "@arbitrum/sdk";
-import {
-  JsonRpcProvider,
-  StaticJsonRpcProvider,
-  ConnectionInfo,
-} from "@ethersproject/providers";
 import axios from "axios";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "fs";
@@ -36,6 +31,7 @@ import {
   validateOrbitChain,
   validateOrbitChainsList,
 } from "./schemas";
+import { getProvider } from "./provider";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
@@ -363,16 +359,6 @@ export const fetchAndSaveImage = async (
   return `/${imageSavePath}`;
 };
 
-class LoggingProvider extends StaticJsonRpcProvider {
-  perform(method: string, parameters: any): Promise<any> {
-    console.log(">>>", method, parameters);
-    return super.perform(method, parameters).then((result) => {
-      console.log("<<<", method, parameters, result);
-      return result;
-    });
-  }
-}
-
 export const transformIncomingDataToOrbitChain = async (
   chainData: IncomingChainData,
   chainLogoPath: string,
@@ -382,25 +368,7 @@ export const transformIncomingDataToOrbitChain = async (
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
   const parentChainInfo = getParentChainInfo(parentChainId);
   console.log("Parent chain info:", parentChainInfo);
-
-  const connection: ConnectionInfo = {
-    url: parentChainInfo.rpcUrl,
-    timeout: 30000,
-    allowGzip: true,
-    skipFetchSetup: true,
-    throttleLimit: 3,
-    throttleSlotInterval: 1000,
-    headers: {
-      Accept: "*/*",
-      "Accept-Encoding": "gzip, deflate, br",
-    },
-  };
-
-  const provider = new LoggingProvider(connection, {
-    name: "arbitrum",
-    chainId: parentChainId,
-  });
-
+  const provider = getProvider(parentChainInfo);
   console.log("Provider:", provider);
   try {
     const network = await provider.getNetwork();

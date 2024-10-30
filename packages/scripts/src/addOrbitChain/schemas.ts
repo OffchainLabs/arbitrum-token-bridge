@@ -3,6 +3,7 @@ import { constants, ethers } from "ethers";
 import { getOctokit } from "@actions/github";
 import path from "path";
 import * as dotenv from "dotenv";
+import { getProvider } from "./provider";
 
 // Load .env from the UI project directory
 dotenv.config({
@@ -208,7 +209,7 @@ export const chainSchema = z
       chainId: number,
       chainName: string
     ) => {
-      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      const provider = getProvider({ rpcUrl, name: chainName, chainId });
 
       // Add provider event listeners for detailed logging
       provider.on("debug", (info) => {
