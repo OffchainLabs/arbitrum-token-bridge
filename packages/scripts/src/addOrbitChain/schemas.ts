@@ -220,29 +220,17 @@ export const chainSchema = z
         try {
           const code = await provider.getCode(address);
           if (code === "0x") {
-            const explorerLink = `${blockExplorer}/address/${address}`;
-            console.warn(
-              `Address ${address} on ${chainName} (chainId: ${chainId}) is not a contract. Verify manually: ${explorerLink}`
-            );
+            throw new Error("Address is not a contract");
           }
         } catch (error) {
           const explorerLink = `${blockExplorer}/address/${address}`;
-          console.error(
-            `Error checking contract at ${address} on ${chainName} (chainId: ${chainId}):`,
-            {
-              error:
-                error instanceof Error
-                  ? {
-                      name: error.name,
-                      message: error.message,
-                      stack: error.stack,
-                    }
-                  : error,
-              rpcUrl,
-              chainId,
-            }
-          );
-          console.log(`Please verify manually: ${explorerLink}`);
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `
+Error checking contract at ${address} on ${chainName}. 
+    Verify manually: ${explorerLink} 
+    Error: ${(error as Error).message}`,
+          });
         }
       }
     };
