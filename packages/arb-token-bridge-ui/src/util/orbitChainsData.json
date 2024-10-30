@@ -1002,6 +1002,48 @@
           "logoUrl": ""
         }
       }
+    },
+    {
+      "chainId": 10058112,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x213Ee94CcA491114D5B0d0205bf39Cca3Cac8c0E",
+        "inbox": "0x697e423bE474d5F8Cfc137e25FA7126d78f739F0",
+        "outbox": "0x24fc7a378b414b3C696C534ecf46c9ec851B4Ced",
+        "rollup": "0x9aB882E957FE252eD5B51c2e563dE4d5aF7F403A",
+        "sequencerInbox": "0x82cCD1Ca341c0D182914D3523cF30e20eCB6500C"
+      },
+      "explorerUrl": "https://spotlight-sepolia.explorer.alchemy.com",
+      "rpcUrl": "https://spotlight-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Spotlight Sepolia",
+      "slug": "spotlight-sepolia",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2F3DfA444d5Fb39EF0DBa72C1bDE63b57Cb09CbE",
+        "parentErc20Gateway": "0x1e6db0611edE41aC803143150cA97DB669779554",
+        "parentGatewayRouter": "0x670208A92c54b6c2dfce8A2F8Dd987c7fB5F7412",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+        "parentWethGateway": "0xE6BbbF315D6F8bE7D80d7024f96dE5a9624eD7e2",
+        "childCustomGateway": "0x2f22b5A9506057DCEa319b8D91DC33e8Ab168922",
+        "childErc20Gateway": "0xcA3911f6Fd9AF0f32F5071C3358AD8Af0FDA7548",
+        "childGatewayRouter": "0x2C8A8631bdA3Bb10718B51A621863336E94aeC78",
+        "childMultiCall": "0x64088415e4b28355Dea0736aDfD537DD99cf74A5",
+        "childProxyAdmin": "0xf5025153F164168F80e87960939448636E1ceF5f",
+        "childWeth": "0x4F2A7641aBc8Fb1Df44Ab61C7d17F6cA7Bc6C529",
+        "childWethGateway": "0x8B81dA74fdcedD8384Da34Fe12cf89b6dE15e7cb"
+      },
+      "bridgeUiConfig": {
+        "color": "#F3C34D",
+        "network": {
+          "name": "Spotlight Sepolia",
+          "logo": "/images/SpotlightLogo.svg",
+          "description": ""
+        }
+      }
     }
   ]
 }
