@@ -226,11 +226,10 @@ Please verify contract manually by visiting ${explorerLink}`;
           console.error(warningMsg + `\n\n==================\n\n${error}`);
           warning(warningMsg);
 
-          // TODO: Uncomment this once when we have api keys for all RPC providers
-          //           ctx.addIssue({
-          //             code: z.ZodIssueCode.custom,
-          //             message: warningMsg,
-          //           });
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: warningMsg,
+          });
         }
       }
     };
