@@ -106,7 +106,7 @@ export type ChainWithRpcUrl = ArbitrumNetwork & {
   slug?: string
 }
 
-export function getBaseChainIdByChainId({
+export function getBlockNumberReferenceChainIdByChainId({
   chainId
 }: {
   chainId: number
@@ -271,7 +271,9 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getL1BlockTime = (chainId: number) => {
-  const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
+  const chain = getChainByChainId(
+    getBlockNumberReferenceChainIdByChainId({ chainId })
+  )
 
   if (!chain || !isBlockNumberReferenceNetwork(chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
