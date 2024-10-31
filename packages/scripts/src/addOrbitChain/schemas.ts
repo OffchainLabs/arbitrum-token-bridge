@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { constants, ethers } from "ethers";
+import { constants } from "ethers";
+import { warning } from "@actions/core";
 import { getOctokit } from "@actions/github";
 import path from "path";
 import * as dotenv from "dotenv";
@@ -218,13 +219,18 @@ export const chainSchema = z
           }
         } catch (error) {
           const explorerLink = `${blockExplorer}/address/${address}`;
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `
-Error checking contract at ${address} on ${chainName}. 
-    Verify manually: ${explorerLink} 
-    Error: ${(error as Error).message}`,
-          });
+          const warningMsg = `
+Failed to verify contract at ${address} on ${chainName}
+
+Please verify contract manually by visiting ${explorerLink}`;
+          console.error(warningMsg + `\n\n==================\n\n${error}`);
+          warning(warningMsg);
+
+          // TODO: Uncomment this once when we have api keys for all RPC providers
+          //           ctx.addIssue({
+          //             code: z.ZodIssueCode.custom,
+          //             message: warningMsg,
+          //           });
         }
       }
     };
