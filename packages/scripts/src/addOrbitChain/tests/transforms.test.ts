@@ -10,8 +10,9 @@ import {
   it,
   vi,
 } from "vitest";
-import { IncomingChainData } from "../schemas";
+import { IncomingChainData, Issue } from "../schemas";
 import {
+  extractImageUrlFromMarkdown,
   extractRawChainData,
   fetchAndProcessImage,
   nameToSlug,
@@ -258,6 +259,27 @@ describe("Transforms", () => {
     it("should throw an error if the image fetch fails", async () => {
       const invalidUrl = "https://example.com/nonexistent-image.png";
       await expect(fetchAndProcessImage(invalidUrl)).rejects.toThrow();
+    });
+  });
+
+  describe("Image URL Extraction", () => {
+    it("should handle both markdown and direct URL for chain and token logos", () => {
+      const issue: Issue = {
+        body: `
+### Chain logo
+![chain-logo](https://example.com/chain-logo.png)
+### Native token logo
+https://example.com/token-logo.png
+### Chain name
+Test Chain
+          `,
+        state: "open",
+        html_url: "https://github.com/example/repo/issues/1",
+      };
+
+      const result = extractRawChainData(issue);
+      expect(result.chainLogo).toBe("https://example.com/chain-logo.png");
+      expect(result.nativeTokenLogo).toBe("https://example.com/token-logo.png");
     });
   });
 });

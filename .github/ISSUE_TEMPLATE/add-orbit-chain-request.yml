@@ -84,7 +84,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Fill out this section if you are using a native token other than ETH. If you are using ETH as your gas token you can leave this blank.
+        Fill out this section if you are using a native token other than ETH. 
+         ⚠️ IMPORTANT: If you are using ETH as your gas token you can leave this blank.
   - type: input
     id: native-token-address
     attributes:
@@ -96,14 +97,14 @@ body:
     id: native-token-name
     attributes:
       label: Native token name
-      placeholder: ex. Ether
+      placeholder: ex. My Custom Token
     validations:
       required: false
   - type: input
     id: native-token-symbol
     attributes:
       label: Native token symbol
-      placeholder: ex. ETH
+      placeholder: ex. MCT
     validations:
       required: false
   - type: textarea
@@ -111,7 +112,7 @@ body:
     attributes:
       label: Native token logo
       description: Please drag and drop your native token logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
-      placeholder: Drag and drop your native token logo image here...
+      placeholder: Drag and drop your native token logo image here (skip if using ETH)...
     validations:
       required: false
 
