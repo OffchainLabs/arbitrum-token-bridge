@@ -1,7 +1,9 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  scaleFrom18DecimalsToNativeTokenDecimals
+} from '@arbitrum/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { scaleToNativeTokenDecimals } from '@arbitrum/sdk/dist/lib/utils/lib'
 import {
   ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
@@ -123,10 +125,11 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       )
     )
 
-    const estimatedDestinationChainGasFee = scaleToNativeTokenDecimals({
-      amount: utils.parseEther(String(estimatedDestinationChainGasFeeEth)),
-      decimals: await nativeCurrency.decimals()
-    })
+    const estimatedDestinationChainGasFee =
+      scaleFrom18DecimalsToNativeTokenDecimals({
+        amount: utils.parseEther(String(estimatedDestinationChainGasFeeEth)),
+        decimals: await nativeCurrency.decimals()
+      })
 
     // We want to bridge a certain amount of an ERC-20 token, but the Retryable fees on the destination chain will be paid in the custom fee token
     // We have to check if the native-token spending allowance is enough to cover the fees
@@ -196,10 +199,11 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       )
     )
 
-    const estimatedDestinationChainGasFee = scaleToNativeTokenDecimals({
-      amount: utils.parseEther(String(estimatedDestinationChainGasFeeEth)),
-      decimals: await nativeCurrency.decimals()
-    })
+    const estimatedDestinationChainGasFee =
+      scaleFrom18DecimalsToNativeTokenDecimals({
+        amount: utils.parseEther(String(estimatedDestinationChainGasFeeEth)),
+        decimals: await nativeCurrency.decimals()
+      })
 
     return erc20Bridger.approveGasToken({
       erc20ParentAddress: this.sourceChainErc20Address,

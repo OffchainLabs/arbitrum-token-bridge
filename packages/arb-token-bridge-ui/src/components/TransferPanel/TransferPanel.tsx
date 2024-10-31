@@ -6,7 +6,7 @@ import { useLatest } from 'react-use'
 import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
-import { scaleToNativeTokenDecimals } from '@arbitrum/sdk/dist/lib/utils/lib'
+import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -812,7 +812,7 @@ export function TransferPanel() {
       // only scale if sent from Orbit, because it's always 18 decimals there but the UI needs scaled amount
       selectedToken || !isSourceOrbitChain
         ? amountBigNumber
-        : scaleToNativeTokenDecimals({
+        : scaleFrom18DecimalsToNativeTokenDecimals({
             amount: amountBigNumber,
             decimals: nativeCurrency.decimals
           })

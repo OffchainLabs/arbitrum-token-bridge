@@ -3,9 +3,9 @@ import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import {
   ChildToParentMessageReader,
-  ChildTransactionReceipt
+  ChildTransactionReceipt,
+  scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
-import { scaleToNativeTokenDecimals } from '@arbitrum/sdk/dist/lib/utils/lib'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
 import { fetchErc20Data } from '../TokenUtils'
 import {
@@ -88,7 +88,7 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
     sender: event.caller,
     destinationAddress: event.destination,
     type: AssetType.ETH,
-    value: scaleToNativeTokenDecimals({
+    value: scaleFrom18DecimalsToNativeTokenDecimals({
       amount: callvalue,
       decimals: nativeCurrency.decimals
     }),
@@ -318,7 +318,7 @@ export async function mapWithdrawalToL2ToL1EventResult({
     sender: withdrawal.sender,
     destinationAddress: withdrawal.receiver,
     type: AssetType.ETH,
-    value: scaleToNativeTokenDecimals({
+    value: scaleFrom18DecimalsToNativeTokenDecimals({
       amount: BigNumber.from(withdrawal.ethValue),
       decimals: nativeCurrency.decimals
     }),

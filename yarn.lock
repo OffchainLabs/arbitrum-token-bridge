@@ -89,10 +89,10 @@
     async-mutex "^0.4.0"
     ethers "^5.1.0"
 
-"@arbitrum/sdk@^4.0.2-beta.0":
-  version "4.0.2-beta.0"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.2-beta.0.tgz#864e38797d9f25e0b0d6a5f0147d60bd5b5db3b6"
-  integrity sha512-Q22DqEYzlkspvx6h9LUgTFgpUr9PNtPiyp4hTaODOdNl+cbpVAz6G9x04iMAnNia9sP0KffhDD5WxS4CzFrFFw==
+"@arbitrum/sdk@^4.0.2-beta.1":
+  version "4.0.2-beta.1"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.2-beta.1.tgz#c6c6c5784a8eaa6a4edab3600f765e9f82ce5988"
+  integrity sha512-a5DG6+Ld3X4L8H3CTUl3gc27Bj/Pqjo+5UZiCI97SM2mHtHKWF1BgQ+FCk/8bgFUP5nS9dXBl5tPJRtCFfOe0A==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
