@@ -33,7 +33,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     return this.ethBridger
   }
 
-  private async getParentRetryableGas({
+  private async getDepositRetryableFees({
     signer,
     amount
   }: {
@@ -76,7 +76,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
     const { childNetwork } = ethBridger
 
-    const parentRetryableGas = await this.getParentRetryableGas({
+    const parentRetryableGas = await this.getDepositRetryableFees({
       signer,
       amount
     })
@@ -112,7 +112,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
   }: ApproveNativeCurrencyProps) {
     const ethBridger = await this.getBridger()
 
-    const parentRetryableGas = await this.getParentRetryableGas({
+    const parentRetryableGas = await this.getDepositRetryableFees({
       signer,
       amount
     })
