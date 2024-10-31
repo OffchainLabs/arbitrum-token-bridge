@@ -22,6 +22,7 @@ async function isBlocked(address: Address): Promise<boolean> {
 
     const url = new URL(process.env.NEXT_PUBLIC_SCREENING_API_ENDPOINT ?? '')
     url.searchParams.set('address', address)
+    url.searchParams.set('ref', window.location.hostname)
 
     const response = await fetch(url, {
       method: 'GET',

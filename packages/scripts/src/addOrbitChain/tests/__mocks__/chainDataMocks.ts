@@ -26,8 +26,8 @@ Test Chain
 ### Chain description
 A test chain.
 
-### Chain logo
-https://example.com/logo.png
+### Chain logo  
+https://ipfs.io/ipfs/QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym
 
 ### Brand color
 #FF0000
@@ -222,7 +222,6 @@ export const mockOrbitChain: OrbitChain = {
   nativeToken: "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66",
   explorerUrl: "https://explorer.xai-chain.net",
   rpcUrl: "https://xai-chain.net/rpc",
-  isArbitrum: true,
   isCustom: true,
   isTestnet: false,
   name: "Xai",
