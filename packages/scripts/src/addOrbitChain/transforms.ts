@@ -466,11 +466,13 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
     const config = await import(
       "../../../arb-token-bridge-ui/prettier.config.js"
     );
-
+    console.log({ prettier, config });
     const formattedContent = await prettier.format(fileContent, {
+      parser: "json",
       tabWidth: 2,
       singleQuote: false,
     });
+    console.log({ formattedContent });
     const formattedContent2 = await prettier.format(fileContent, {
       ...config,
       filepath: targetJsonPath,
