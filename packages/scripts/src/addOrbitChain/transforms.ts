@@ -9,8 +9,6 @@ import { fileTypeFromBuffer } from "file-type";
 import * as fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import prettier from "prettier";
-
 import { lookup } from "mime-types";
 import {
   commitChanges,
@@ -463,13 +461,30 @@ export const updateOrbitChainsFile = (
 export async function runPrettier(targetJsonPath: string): Promise<void> {
   try {
     const fileContent = fs.readFileSync(targetJsonPath, "utf8");
-    console.log(prettier);
-    console.dir(prettier);
+
+    // Import prettier dynamically to ensure we get the full module
+    const prettier = await import("prettier");
+    console.log({ prettier });
     const prettierConfig = await prettier.resolveConfig(targetJsonPath);
+    console.log({ prettierConfig });
     const formattedContent = await prettier.format(fileContent, {
       ...prettierConfig,
       filepath: targetJsonPath,
     });
+
+    const formattedContent2 = await prettier.format(fileContent, {
+      // Explicit parser based on file extension
+      parser: "json",
+      // Explicit config to ensure it works in CI
+      printWidth: 80,
+      tabWidth: 2,
+      singleQuote: false,
+      trailingComma: "all",
+      bracketSpacing: true,
+      endOfLine: "lf",
+    });
+
+    console.log({ formattedContent, formattedContent2 });
     fs.writeFileSync(targetJsonPath, formattedContent);
     console.log(`Prettier formatting applied to ${targetJsonPath}`);
   } catch (error) {
