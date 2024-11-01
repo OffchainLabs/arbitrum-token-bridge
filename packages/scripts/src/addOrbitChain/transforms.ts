@@ -71,7 +71,7 @@ export const processChainData = async (): Promise<{
   const validatedIncomingData = await validateIncomingChainData(rawChainData);
 
   const branchName = `add-orbit-chain/${stripWhitespace(
-    validatedIncomingData.name
+    validatedIncomingData.name,
   )}`;
   console.log(`Creating new branch: ${branchName}`);
   await createBranch(branchName);
@@ -83,17 +83,17 @@ export const processChainData = async (): Promise<{
 
 export const handleImages = async (
   branchName: string,
-  validatedIncomingData: IncomingChainData
+  validatedIncomingData: IncomingChainData,
 ): Promise<{ chainLogoPath: string; nativeTokenLogoPath?: string }> => {
   core.startGroup("Image Processing");
   console.log("Starting image processing...");
   console.log(
-    `Fetching and saving chain logo: ${validatedIncomingData.chainLogo}`
+    `Fetching and saving chain logo: ${validatedIncomingData.chainLogo}`,
   );
   const chainLogoPath = await fetchAndSaveImage(
     validatedIncomingData.chainLogo,
     `${stripWhitespace(validatedIncomingData.name)}_Logo`,
-    branchName
+    branchName,
   );
   console.log(`Chain logo saved at: ${chainLogoPath}`);
 
@@ -103,7 +103,7 @@ export const handleImages = async (
     validatedIncomingData.nativeTokenLogo
   ) {
     console.log(
-      `Fetching and saving native token logo: ${validatedIncomingData.nativeTokenLogo}`
+      `Fetching and saving native token logo: ${validatedIncomingData.nativeTokenLogo}`,
     );
     nativeTokenLogoPath =
       validatedIncomingData.chainLogo === validatedIncomingData.nativeTokenLogo
@@ -111,7 +111,7 @@ export const handleImages = async (
         : await fetchAndSaveImage(
             validatedIncomingData.nativeTokenLogo,
             `${stripWhitespace(validatedIncomingData.name)}_NativeTokenLogo`,
-            branchName
+            branchName,
           );
     console.log(`Native token logo saved at: ${nativeTokenLogoPath}`);
   } else {
@@ -125,14 +125,14 @@ export const handleImages = async (
 export const createAndValidateOrbitChain = async (
   validatedIncomingData: IncomingChainData,
   chainLogoPath: string,
-  nativeTokenLogoPath?: string
+  nativeTokenLogoPath?: string,
 ) => {
   core.startGroup("Orbit Chain Creation and Validation");
   console.log("Creating OrbitChain object...");
   const orbitChain = await transformIncomingDataToOrbitChain(
     validatedIncomingData,
     chainLogoPath,
-    nativeTokenLogoPath
+    nativeTokenLogoPath,
   );
   console.log("Orbit Chain object created, validating...");
   await validateOrbitChain(orbitChain);
@@ -143,7 +143,7 @@ export const createAndValidateOrbitChain = async (
 
 export const updateAndValidateOrbitChainsList = async (
   orbitChain: OrbitChain,
-  targetJsonPath: string
+  targetJsonPath: string,
 ) => {
   core.startGroup("Orbit ChainsList Update and Validation");
   console.log("Updating OrbitChainsList...");
@@ -151,7 +151,7 @@ export const updateAndValidateOrbitChainsList = async (
   console.log(`Network type determined: ${networkType}`);
   const updatedOrbitChainsList = updateOrbitChainsFile(
     orbitChain,
-    targetJsonPath
+    targetJsonPath,
   );
   console.log("Orbit ChainsList updated, validating...");
   await validateOrbitChainsList(updatedOrbitChainsList);
@@ -164,7 +164,7 @@ export const commitChangesAndCreatePR = async (
   branchName: string,
   targetJsonPath: string,
   updatedOrbitChainsList: ReturnType<typeof updateOrbitChainsFile>,
-  orbitChain: OrbitChain
+  orbitChain: OrbitChain,
 ) => {
   core.startGroup("Commit Changes and Create Pull Request");
   console.log("Preparing to commit changes...");
@@ -193,7 +193,7 @@ export const commitChangesAndCreatePR = async (
 export const setOutputs = (
   branchName: string,
   orbitChain: OrbitChain,
-  targetJsonPath: string
+  targetJsonPath: string,
 ) => {
   core.startGroup("Set Outputs");
   console.log("Setting output values...");
@@ -202,7 +202,7 @@ export const setOutputs = (
   console.log(`Set output - branch_name: ${branchName}`);
   core.setOutput(
     "issue_url",
-    getIssue(process.env.ISSUE_NUMBER!).then((issue) => issue.html_url)
+    getIssue(process.env.ISSUE_NUMBER!).then((issue) => issue.html_url),
   );
   console.log("Set output - issue_url (promise)");
   core.setOutput("orbit_list_path", repoRelativePath);
@@ -214,7 +214,7 @@ export const setOutputs = (
 };
 
 export const extractRawChainData = (
-  issue: Issue
+  issue: Issue,
 ): Record<string, string | boolean | undefined> => {
   const pattern = /###\s*(.*?)\s*\n\s*([\s\S]*?)(?=###|$)/g;
   const rawData: Record<string, string | boolean | undefined> = {};
@@ -242,7 +242,7 @@ export const nameToSlug = (name: string): string =>
 
 export const resizeImage = async (
   imageBuffer: Buffer,
-  maxSizeKB = MAX_IMAGE_SIZE_KB
+  maxSizeKB = MAX_IMAGE_SIZE_KB,
 ): Promise<Buffer> => {
   console.log("Resizing image...");
   let resizedImage = imageBuffer;
@@ -274,7 +274,7 @@ export const resizeImage = async (
 };
 
 export const fetchAndProcessImage = async (
-  urlOrPath: string
+  urlOrPath: string,
 ): Promise<{ buffer: Buffer; fileExtension: string }> => {
   let imageBuffer: Buffer;
   let fileExtension: string;
@@ -311,7 +311,7 @@ export const fetchAndProcessImage = async (
     const localPath = `../../arb-token-bridge-ui/public/${urlOrPath}`;
     if (!fs.existsSync(localPath)) {
       throw new Error(
-        `Provided local path '${localPath}' did not match any existing images.`
+        `Provided local path '${localPath}' did not match any existing images.`,
       );
     }
     imageBuffer = fs.readFileSync(localPath);
@@ -326,7 +326,7 @@ export const fetchAndProcessImage = async (
 
   if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension.replace(".", ""))) {
     console.warn(
-      `Unsupported image extension '${fileExtension}'. Converting to WEBP.`
+      `Unsupported image extension '${fileExtension}'. Converting to WEBP.`,
     );
 
     // Convert the image to .webp using sharp
@@ -351,7 +351,7 @@ export const fetchAndProcessImage = async (
 export const fetchAndSaveImage = async (
   urlOrPath: string,
   fileName: string,
-  branchName: string
+  branchName: string,
 ): Promise<string> => {
   const { buffer, fileExtension } = await fetchAndProcessImage(urlOrPath);
   const imageSavePath = `images/${fileName}${fileExtension}`;
@@ -362,7 +362,7 @@ export const fetchAndSaveImage = async (
 export const transformIncomingDataToOrbitChain = async (
   chainData: IncomingChainData,
   chainLogoPath: string,
-  nativeTokenLogoPath?: string
+  nativeTokenLogoPath?: string,
 ): Promise<OrbitChain> => {
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
@@ -370,7 +370,7 @@ export const transformIncomingDataToOrbitChain = async (
   const provider = getProvider(parentChainInfo);
   const rollupData = await getArbitrumNetworkInformationFromRollup(
     chainData.rollup,
-    provider
+    provider,
   );
 
   return {
@@ -428,7 +428,7 @@ export const transformIncomingDataToOrbitChain = async (
 
 export const updateOrbitChainsFile = (
   orbitChain: OrbitChain,
-  targetJsonPath: string
+  targetJsonPath: string,
 ): OrbitChainsList => {
   // Read the file contents
   const fileContents = fs.readFileSync(targetJsonPath, "utf8");
@@ -440,7 +440,7 @@ export const updateOrbitChainsFile = (
 
   // Find the index of the chain if it already exists
   const existingIndex = orbitChains[networkType].findIndex(
-    (chain) => chain.chainId === orbitChain.chainId
+    (chain) => chain.chainId === orbitChain.chainId,
   );
 
   if (existingIndex !== -1) {
@@ -463,6 +463,8 @@ export const updateOrbitChainsFile = (
 export async function runPrettier(targetJsonPath: string): Promise<void> {
   try {
     const fileContent = fs.readFileSync(targetJsonPath, "utf8");
+    console.log(prettier);
+    console.dir(prettier);
     const prettierConfig = await prettier.resolveConfig(targetJsonPath);
     const formattedContent = await prettier.format(fileContent, {
       ...prettierConfig,
