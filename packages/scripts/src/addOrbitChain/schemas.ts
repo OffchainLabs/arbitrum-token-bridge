@@ -1,43 +1,64 @@
 import { z } from "zod";
-import { constants, ethers } from "ethers";
+import { constants } from "ethers";
+import { warning } from "@actions/core";
 import { getOctokit } from "@actions/github";
+import path from "path";
+import * as dotenv from "dotenv";
+import { getProvider } from "./provider";
 
+// Load .env from the UI project directory
+dotenv.config({
+  path: path.resolve(__dirname, "../../../arb-token-bridge-ui/.env"),
+});
 export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
 
 export const getParentChainInfo = (parentChainId: number) => {
+  const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
+  const HOLESKY_INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY_HOLESKY;
+
   switch (parentChainId) {
     case 1: // Ethereum Mainnet
       return {
-        rpcUrl: "https://eth.llamarpc.com",
+        rpcUrl: INFURA_KEY
+          ? `https://mainnet.infura.io/v3/${INFURA_KEY}`
+          : "https://eth.llamarpc.com",
         blockExplorer: "https://etherscan.io",
         chainId: 1,
         name: "Ethereum",
       };
     case 42161: // Arbitrum One
       return {
-        rpcUrl: "https://arb1.arbitrum.io/rpc",
+        rpcUrl: INFURA_KEY
+          ? `https://arbitrum-mainnet.infura.io/v3/${INFURA_KEY}`
+          : "https://arb1.arbitrum.io/rpc",
         blockExplorer: "https://arbiscan.io",
         chainId: 42161,
         name: "Arbitrum One",
       };
     case 11155111: // Sepolia
       return {
-        rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+        rpcUrl: INFURA_KEY
+          ? `https://sepolia.infura.io/v3/${INFURA_KEY}`
+          : "https://ethereum-sepolia-rpc.publicnode.com",
         blockExplorer: "https://sepolia.etherscan.io",
         chainId: 11155111,
         name: "Sepolia",
       };
     case 421614: // Arbitrum Sepolia
       return {
-        rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
+        rpcUrl: INFURA_KEY
+          ? `https://arbitrum-sepolia.infura.io/v3/${INFURA_KEY}`
+          : "https://sepolia-rollup.arbitrum.io/rpc",
         blockExplorer: "https://sepolia.arbiscan.io",
         chainId: 421614,
         name: "Arbitrum Sepolia",
       };
     case 17000: // Holesky
       return {
-        rpcUrl: "https://ethereum-holesky-rpc.publicnode.com",
+        rpcUrl: HOLESKY_INFURA_KEY
+          ? `https://holesky.infura.io/v3/${HOLESKY_INFURA_KEY}`
+          : "https://ethereum-holesky-rpc.publicnode.com",
         blockExplorer: "https://holesky.etherscan.io/",
         chainId: 17000,
         name: "Holesky",
@@ -188,30 +209,27 @@ export const chainSchema = z
       chainId: number,
       chainName: string
     ) => {
-      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      const provider = getProvider({ rpcUrl, name: chainName, chainId });
+
       for (const address of addresses) {
         try {
           const code = await provider.getCode(address);
           if (code === "0x") {
-            const explorerLink = `${blockExplorer}/address/${address}`;
-            console.warn(
-              `Address ${address} on ${chainName} (chainId: ${chainId}) is not a contract. Verify manually: ${explorerLink}`
-            );
-            // TODO: Uncomment this when we can verify all contracts
-            // ctx.addIssue({
-            //   code: z.ZodIssueCode.custom,
-            //   message: `Address at ${address} is not a contract on ${chainName}. Verify manually: ${explorerLink}`,
-            // });
+            throw new Error("Address is not a contract");
           }
         } catch (error) {
           const explorerLink = `${blockExplorer}/address/${address}`;
-          console.log(
-            `Error checking contract at ${address} on ${chainName} (chainId: ${chainId}). Verify manually: ${explorerLink}`
-          );
-          // ctx.addIssue({
-          //   code: z.ZodIssueCode.custom,
-          //   message: `Error checking contract at ${address} on ${chainName}. Verify manually: ${explorerLink}`,
-          // });
+          const warningMsg = `
+Failed to verify contract at ${address} on ${chainName}
+
+Please verify contract manually by visiting ${explorerLink}`;
+          console.error(warningMsg + `\n\n==================\n\n${error}`);
+          warning(warningMsg);
+
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: warningMsg,
+          });
         }
       }
     };

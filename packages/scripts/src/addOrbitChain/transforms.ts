@@ -4,7 +4,6 @@
 import * as core from "@actions/core";
 import { warning } from "@actions/core";
 import { getArbitrumNetworkInformationFromRollup } from "@arbitrum/sdk";
-import { JsonRpcProvider } from "@ethersproject/providers";
 import axios from "axios";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "fs";
@@ -32,6 +31,7 @@ import {
   validateOrbitChain,
   validateOrbitChainsList,
 } from "./schemas";
+import { getProvider } from "./provider";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
@@ -377,7 +377,7 @@ export const transformIncomingDataToOrbitChain = async (
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
   const parentChainInfo = getParentChainInfo(parentChainId);
-  const provider = new JsonRpcProvider(parentChainInfo.rpcUrl);
+  const provider = getProvider(parentChainInfo);
   const rollupData = await getArbitrumNetworkInformationFromRollup(
     chainData.rollup,
     provider
