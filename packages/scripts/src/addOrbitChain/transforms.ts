@@ -465,12 +465,6 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
     // Import prettier dynamically to ensure we get the full module
     const prettier = await import("prettier");
     console.log({ prettier });
-    const prettierConfig = await prettier.resolveConfig(targetJsonPath);
-    console.log({ prettierConfig });
-    const formattedContent = await prettier.format(fileContent, {
-      ...prettierConfig,
-      filepath: targetJsonPath,
-    });
 
     const formattedContent2 = await prettier.format(fileContent, {
       // Explicit parser based on file extension
@@ -483,8 +477,16 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
       bracketSpacing: true,
       endOfLine: "lf",
     });
+    console.log({ formattedContent2 });
 
-    console.log({ formattedContent, formattedContent2 });
+    const prettierConfig = await prettier.resolveConfig(targetJsonPath);
+    console.log({ prettierConfig });
+    const formattedContent = await prettier.format(fileContent, {
+      ...prettierConfig,
+      filepath: targetJsonPath,
+    });
+
+    console.log({ formattedContent });
     fs.writeFileSync(targetJsonPath, formattedContent);
     console.log(`Prettier formatting applied to ${targetJsonPath}`);
   } catch (error) {
