@@ -465,9 +465,9 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
     const fileContent = fs.readFileSync(targetJsonPath, "utf8");
     console.log(prettier);
     console.dir(prettier);
-    // const prettierConfig = await prettier.resolveConfig(targetJsonPath);
+    const prettierConfig = await prettier.resolveConfig(targetJsonPath);
     const formattedContent = await prettier.format(fileContent, {
-      // ...prettierConfig,
+      ...prettierConfig,
       filepath: targetJsonPath,
     });
     fs.writeFileSync(targetJsonPath, formattedContent);
