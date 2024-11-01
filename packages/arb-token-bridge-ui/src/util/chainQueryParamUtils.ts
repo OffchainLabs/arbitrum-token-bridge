@@ -2,8 +2,11 @@ import { Chain } from 'wagmi'
 import * as chains from 'wagmi/chains'
 
 import {
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
+  base,
+  baseSepolia,
   localL1Network,
   localL2Network,
   localL3Network
@@ -22,14 +25,23 @@ export function getChainForChainKeyQueryParam(
     case 'sepolia':
       return chains.sepolia
 
+    case 'holesky':
+      return holesky
+
     case 'arbitrum-one':
       return chains.arbitrum
 
     case 'arbitrum-nova':
       return arbitrumNova
 
+    case 'base':
+      return base
+
     case 'arbitrum-sepolia':
       return arbitrumSepolia
+
+    case 'base-sepolia':
+      return baseSepolia
 
     case 'custom-localhost':
       return localL1Network

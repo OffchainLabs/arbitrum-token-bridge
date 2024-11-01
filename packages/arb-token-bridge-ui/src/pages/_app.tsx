@@ -1,7 +1,6 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import * as Sentry from '@sentry/react'
-import { BrowserTracing } from '@sentry/browser'
 import posthog from 'posthog-js'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -14,7 +13,6 @@ import 'tippy.js/themes/light.css'
 
 import '@rainbow-me/rainbowkit/styles.css'
 
-import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
@@ -25,13 +23,6 @@ import { getChainForChainKeyQueryParam } from '../util/chainQueryParamUtils'
 
 const siteTitle = 'Bridge to Arbitrum'
 
-if (
-  process.env.NODE_ENV !== 'production' ||
-  process.env.NEXT_PUBLIC_IS_E2E_TEST
-) {
-  registerLocalNetwork()
-}
-
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
 dayjs.extend(timeZone)
@@ -40,7 +31,7 @@ dayjs.extend(advancedFormat)
 Sentry.init({
   environment: process.env.NODE_ENV,
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  integrations: [new BrowserTracing()],
+  integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 0.025,
   maxValueLength: 0,
   // https://docs.sentry.io/platforms/javascript/guides/react/configuration/filtering/#filtering-error-events

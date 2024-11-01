@@ -1,7 +1,7 @@
 name: Add Orbit Chain Request
 description: File a request to have your Orbit chain added to the bridge
-title: "[feat]: "
-labels: ["feat", "triage"]
+title: "[feat]: Add Orbit chain "
+labels: ["Type: Add Orbit Chain"]
 body:
   - type: markdown
     attributes:
@@ -28,15 +28,15 @@ body:
     attributes:
       label: Chain description
       description: |
-        A short chain description that will be visible in the networks dropdown. Please make sure this is no longer than 130 characters.
+        A short chain description that will be visible in the networks dropdown.
       placeholder: ex. An amazing chain that does amazing things.
     validations:
-      required: true
+      required: false
   - type: input
     id: brand-color
     attributes:
       label: Brand color
-      description: The primary hex code color of your chain.
+      description: The primary hex code color of your chain. Must have a contrast ratio of at least 3:1 against white (#FFFFFF) for accessibility.
       placeholder: ex. "#FFFFFF"
     validations:
       required: true
@@ -59,11 +59,20 @@ body:
       label: Explorer URL
     validations:
       required: true
-  - type: input
+      
+  - type: dropdown
     id: parent-chain-id
     attributes:
-      label: Parent chain ID
-      placeholder: ex. 42161
+      label: Parent Chain ID
+      description: Select the parent chain for your Orbit chain.
+      options:
+        - "1"
+        - "42161"
+        - "421614"
+        - "11155111"
+        - "17000"
+        - "8453"
+        - "84532"
     validations:
       required: true
 
@@ -78,7 +87,7 @@ body:
   - type: input
     id: native-token-address
     attributes:
-      label: Native token address
+      label: Native token address on Parent Chain
       placeholder: ex. 0x0000000000000000000000000000000000000000
     validations:
       required: false
@@ -88,7 +97,7 @@ body:
       label: Native token name
       placeholder: ex. Ether
     validations:
-      required: false           
+      required: false
   - type: input
     id: native-token-symbol
     attributes:
@@ -112,50 +121,20 @@ body:
     attributes:
       value: |
         Please fill out this section with your chain configuration details and contract addresses. As a reminder, you can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
-  - type: input
-    id: confirmPeriodBlocks
-    attributes:
-      label: confirmPeriodBlocks
-      placeholder: ex. 45818
-    validations:
-      required: true
 
   - type: markdown
     attributes:
       value: |
-        ## Rollup contract addresses
+        ## Rollup contract address
   - type: markdown
     attributes:
       value: |
         You can find this information under the `"coreContracts" : {...}` key.
   - type: input
-    id: bridge
-    attributes:
-      label: bridge
-    validations:
-      required: true    
-  - type: input
-    id: inbox
-    attributes:
-      label: inbox
-    validations:
-      required: true
-  - type: input
-    id: outbox
-    attributes:
-      label: outbox
-    validations:
-      required: true
-  - type: input
     id: rollup
     attributes:
       label: rollup
-    validations:
-      required: true
-  - type: input
-    id: sequencerInbox
-    attributes:
-      label: sequencerInbox
+      description: Please provide the address of the rollup contract. Other core contract addresses will be fetched automatically.
     validations:
       required: true
 
@@ -163,50 +142,47 @@ body:
     attributes:
       value: |
         ## Parent chain token bridge contract addresses
-  - type: markdown
-    attributes:
-      value: |
-        You can find this information under the `"l2Contracts" : {...}` key.
   - type: input
-    id: parent-customGateway
+    id: parent-custom-gateway
     attributes:
-      label: customGateway
+      label: Parent Custom Gateway
     validations:
       required: true
   - type: input
-    id: parent-ERC20Gateway
+    id: parent-erc20-gateway
     attributes:
-      label: ERC20Gateway
+      label: Parent ERC20 Gateway
+      description: This is also called the standard gateway. [Read more](https://docs.arbitrum.io/build-decentralized-apps/token-bridging/token-bridge-erc20#default-standard-bridging).
     validations:
       required: true
   - type: input
-    id: parent-gatewayRouter
+    id: parent-gateway-router
     attributes:
-      label: gatewayRouter
+      label: Parent Gateway Router
     validations:
       required: true
   - type: input
     id: parent-multicall
     attributes:
-      label: multicall
+      label: Parent MultiCall
     validations:
       required: true
   - type: input
-    id: parent-proxyAdmin
+    id: parent-proxy-admin
     attributes:
-      label: proxyAdmin
+      label: Parent Proxy Admin
     validations:
       required: true
   - type: input
     id: parent-weth
     attributes:
-      label: weth
+      label: Parent WETH
     validations:
       required: true
   - type: input
-    id: parent-wethGateway
+    id: parent-weth-gateway
     attributes:
-      label: wethGateway
+      label: Parent WETH Gateway
     validations:
       required: true
 
@@ -214,49 +190,55 @@ body:
     attributes:
       value: |
         ## Orbit chain token bridge contract addresses 
-  - type: markdown
-    attributes:
-      value: |
-        You can find this information under the `"l3Contracts" : {...}` key.
   - type: input
-    id: child-customGateway
+    id: child-custom-gateway
     attributes:
-      label: customGateway
+      label: Child Custom Gateway
     validations:
       required: true
   - type: input
-    id: child-ERC20Gateway
+    id: child-erc20-gateway
     attributes:
-      label: ERC20Gateway
+      label: Child ERC20 Gateway
+      description: This is also called the standard gateway. [Read more](https://docs.arbitrum.io/build-decentralized-apps/token-bridging/token-bridge-erc20#default-standard-bridging).
     validations:
       required: true
   - type: input
-    id: child-gatewayRouter
+    id: child-gateway-router
     attributes:
-      label: gatewayRouter
+      label: Child Gateway Router
     validations:
       required: true
   - type: input
     id: child-multicall
     attributes:
-      label: multicall
+      label: Child Multicall
     validations:
       required: true
   - type: input
-    id: child-proxyAdmin
+    id: child-proxy-admin
     attributes:
-      label: proxyAdmin
+      label: Child Proxy Admin
     validations:
       required: true
   - type: input
     id: child-weth
     attributes:
-      label: weth
+      label: Child WETH
     validations:
       required: true
   - type: input
-    id: child-wethGateway
+    id: child-weth-gateway
     attributes:
-      label: wethGateway
+      label: Child WETH Gateway
     validations:
       required: true
+
+  - type: input
+    id: launch-date
+    attributes:
+      label: Launch Date
+      description: When is the chain expected to go live on the bridge? (YYYY-MM-DD) Leave empty if the the chain is already live.
+      placeholder: ex. 2023-12-31
+    validations:
+      required: false

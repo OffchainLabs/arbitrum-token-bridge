@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
+import { SiteBanner } from './SiteBanner'
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
@@ -54,7 +55,16 @@ export function Layout(props: LayoutProps) {
         <div className="flex flex-row">
           <AppSidebar />
 
-          <main className="grow">{props.children}</main>
+          <main className="grow">
+            {/* 
+                Warning: DO NOT remove the `SiteBanner` component. 
+                It also dynamically displays Arbiscan/Novascan status. 
+                To hide or remove its content, simply empty out its children instead of removing the entire component. 
+              */}
+            <SiteBanner />
+
+            {props.children}
+          </main>
 
           <Toast />
         </div>
