@@ -469,6 +469,7 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
     console.log({ prettier, config });
     const formattedContent = await prettier.format(fileContent, {
       parser: "json",
+      plugins: ["prettier-plugin-json-formats"],
       tabWidth: 2,
       singleQuote: false,
     });
