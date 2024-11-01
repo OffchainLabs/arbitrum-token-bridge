@@ -25,6 +25,7 @@ type AnalyticsEventMap = {
     accountType: AccountType
     network: string
     amount: number
+    amount2?: number
   }
   Withdraw: {
     tokenSymbol?: string

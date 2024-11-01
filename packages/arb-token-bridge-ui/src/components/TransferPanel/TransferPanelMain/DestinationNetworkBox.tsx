@@ -1,11 +1,9 @@
-import { constants, utils } from 'ethers'
-import { useAccount } from 'wagmi'
+import { constants } from 'ethers'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useDestinationAddressStore } from '../AdvancedSettings'
 import {
   BalancesContainer,
-  ETHBalance,
   NetworkContainer,
   NetworkListboxPlusBalancesContainer
 } from '../TransferPanelMain'
@@ -27,7 +25,10 @@ import {
 } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { ether } from '../../../constants'
+import { formatAmount } from '../../../util/NumberUtils'
+import { Loader } from '../../common/atoms/Loader'
+import { useAmount2InputVisibility } from './SourceNetworkBox'
 
 function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -47,13 +48,28 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
       />
     )
   }
+  if (!nativeCurrencyBalances.destinationBalance) {
+    return (
+      <p className="flex items-center gap-1">
+        <span className="font-light">{prefix}</span>
+        <Loader color="white" size="small" />
+      </p>
+    )
+  }
 
   return (
-    <ETHBalance
-      balance={nativeCurrencyBalances.destinationBalance}
-      on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
-      prefix={prefix}
-    />
+    <p>
+      <span className="font-light">{prefix}</span>
+      <span
+        aria-label={`ETH balance amount on ${
+          isDepositMode ? NetworkType.childChain : NetworkType.parentChain
+        }`}
+      >
+        {formatAmount(nativeCurrencyBalances.destinationBalance, {
+          symbol: ether.symbol
+        })}
+      </span>
+    </p>
   )
 }
 
@@ -138,16 +154,14 @@ export function DestinationNetworkBox({
 }: {
   showUsdcSpecificInfo: boolean
 }) {
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { destinationAddress } = useDestinationAddressStore()
-  const [{ amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
   const [
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog
   ] = useDialog()
+  const { isAmount2InputVisible } = useAmount2InputVisibility()
 
   return (
     <>
@@ -161,17 +175,12 @@ export function DestinationNetworkBox({
             onClick={openDestinationNetworkSelectionDialog}
           />
           <BalancesContainer>
-            {destinationAddressOrWalletAddress &&
-              utils.isAddress(destinationAddressOrWalletAddress) && (
-                <>
-                  <DestinationNetworkBalance
-                    showUsdcSpecificInfo={showUsdcSpecificInfo}
-                  />
-                  {isBatchTransferSupported && Number(amount2) > 0 && (
-                    <NativeCurrencyDestinationBalance />
-                  )}
-                </>
-              )}
+            <DestinationNetworkBalance
+              showUsdcSpecificInfo={showUsdcSpecificInfo}
+            />
+            {isBatchTransferSupported && isAmount2InputVisible && (
+              <NativeCurrencyDestinationBalance />
+            )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
         <EstimatedGas chainType="destination" />
