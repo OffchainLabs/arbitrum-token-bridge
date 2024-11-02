@@ -50,6 +50,12 @@ jobs:
         env:
           ISSUE_NUMBER: ${{ inputs.issue_number }}
 
+      - name: Create branch
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -b feat/add-orbit-chain-${{ inputs.issue_number }}
+
       - name: Run addOrbitChain script
         run: yarn workspace scripts add-orbit-chain ../../packages/arb-token-bridge-ui/src/util/orbitChainsData.json
         env:
@@ -61,6 +67,12 @@ jobs:
       - name: Format files
         run: yarn prettier --write "packages/arb-token-bridge-ui/src/**/*.{ts,tsx,js,jsx,json}"
 
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "feat: add ${{ steps.issue.outputs.result }}"
+          git push origin feat/add-orbit-chain-${{ inputs.issue_number }}
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
@@ -68,6 +80,6 @@ jobs:
           commit-message: "feat: add ${{ steps.issue.outputs.result }}"
           title: "feat: add ${{ steps.issue.outputs.result }}"
           body: "Automated pull request to add ${{ steps.issue.outputs.result }} to the bridge. Closes #${{ inputs.issue_number }}"
-          branch: "feat/add-orbit-chain-${{ inputs.issue_number }}"
+          branch: feat/add-orbit-chain-${{ inputs.issue_number }}
           base: main
           delete-branch: true
