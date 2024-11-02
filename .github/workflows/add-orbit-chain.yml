@@ -28,7 +28,7 @@ jobs:
           node-version: '20'
           cache: 'yarn'
 
-      - name: Install dependencies
+      - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Build scripts

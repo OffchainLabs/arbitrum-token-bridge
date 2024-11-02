@@ -4,7 +4,6 @@
   "description": "Collection of utility scripts",
   "main": "dist/index.js",
   "type": "commonjs",
-  "private": true,
   "scripts": {
     "build": "vite build",
     "test": "vitest",
