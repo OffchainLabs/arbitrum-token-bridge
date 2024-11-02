@@ -28,11 +28,27 @@ jobs:
           node-version: '20'
           cache: 'yarn'
 
-      - name: Install node_modules
-        run: cd packages/scripts && yarn install
+      - name: Install dependencies
+        uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Build scripts
         run: yarn workspace scripts build
+
+      - name: Get issue details
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.ISSUE_NUMBER)
+            });
+            const chainName = issue.data.title.match(/Add (.*?) to/i)?.[1] || 'Orbit chain';
+            return chainName;
+          result-encoding: string
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
 
       - name: Run addOrbitChain script
         run: yarn workspace scripts add-orbit-chain ../../packages/arb-token-bridge-ui/src/util/orbitChainsData.json
@@ -41,3 +57,17 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_INFURA_KEY_HOLESKY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY_HOLESKY }}
+
+      - name: Format files
+        run: yarn prettier --write "packages/arb-token-bridge-ui/src/**/*.{ts,tsx,js,jsx,json}"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "feat: add ${{ steps.issue.outputs.result }}"
+          title: "feat: add ${{ steps.issue.outputs.result }}"
+          body: "Automated pull request to add ${{ steps.issue.outputs.result }} to the bridge. Closes #${{ inputs.issue_number }}"
+          branch: "feat/add-orbit-chain-${{ inputs.issue_number }}"
+          base: main
+          delete-branch: true

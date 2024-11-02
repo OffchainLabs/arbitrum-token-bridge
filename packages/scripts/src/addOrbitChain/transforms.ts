@@ -30,9 +30,6 @@ import {
   validateOrbitChainsList,
 } from "./schemas";
 import { getProvider } from "./provider";
-import * as prettier from "prettier/standalone";
-import parserBabel from "prettier/plugins/babel";
-import * as prettierPluginEstree from "prettier/plugins/estree";
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
 
@@ -459,27 +456,3 @@ export const updateOrbitChainsFile = (
 
   return orbitChains;
 };
-
-export async function runPrettier(targetJsonPath: string): Promise<void> {
-  try {
-    const fileContent = fs.readFileSync(targetJsonPath, "utf8");
-
-    console.log(fileContent);
-    // Import standalone prettier
-
-    const config = (await import(
-      "../../../arb-token-bridge-ui/prettier.config.js"
-    )) as any;
-
-    const formattedContent = await prettier.format(fileContent, {
-      ...config,
-      parser: "json",
-      plugins: [...config.plugins, parserBabel, prettierPluginEstree],
-    });
-
-    fs.writeFileSync(targetJsonPath, formattedContent);
-    console.log(`Prettier formatting applied to ${targetJsonPath}`);
-  } catch (error) {
-    warning(`Failed to run Prettier: ${error}`);
-  }
-}
