@@ -265,12 +265,17 @@ export const orbitChainsListSchema = z.object({
 
 const imageContentSchema = z.string().refine(
   (content) => {
-    // Match only markdown image syntax: ![alt text](url)
-    return /!\[.*?\]\(https:\/\/.*?\)/.test(content);
+    // Match either:
+    // 1. Markdown image syntax: ![alt text](url)
+    // 2. Direct https URL
+    return (
+      /!\[.*?\]\(https:\/\/.*?\)/.test(content) || // Markdown format
+      /^https:\/\/.*$/.test(content) // Direct URL
+    );
   },
   {
     message:
-      "Invalid image format. Please provide a valid markdown format image url.",
+      "Invalid image format. Please provide either a valid markdown format image (![alt](url)) or a direct HTTPS URL.",
   }
 );
 
