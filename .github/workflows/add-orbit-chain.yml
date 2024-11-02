@@ -45,7 +45,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: parseInt(process.env.ISSUE_NUMBER)
             });
-            const chainName = issue.data.title.match(/Add (.*?) to/i)?.[1] || 'Orbit chain';
+            const chainName = issue.data.title.match(/Add Orbit chain\s+(\S+)/i)?.[1] || 'Orbit chain';
             return chainName;
           result-encoding: string
         env:
