@@ -462,6 +462,7 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
   try {
     const fileContent = fs.readFileSync(targetJsonPath, "utf8");
 
+    console.log(fileContent);
     // Import standalone prettier
     const prettier = await import("prettier");
     const config = (await import(
@@ -469,7 +470,7 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
     )) as any;
     const formattedContent = await prettier.format(fileContent, {
       ...config,
-      filepath: targetJsonPath,
+      parser: "babel",
     });
 
     fs.writeFileSync(targetJsonPath, formattedContent);
