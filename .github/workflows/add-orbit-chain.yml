@@ -57,12 +57,14 @@ jobs:
           timestamp=$(date +%s)
           echo "name=feat/add-orbit-chain-${{ inputs.issue_number }}-${timestamp}" >> $GITHUB_OUTPUT
 
-      - name: Create and switch to branch
+      - name: Configure Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Create branch
+        run: |
           git checkout -b ${{ steps.branch.outputs.name }}
-          git push -u origin ${{ steps.branch.outputs.name }}
 
       - name: Run addOrbitChain script
         run: yarn workspace scripts add-orbit-chain ../../packages/arb-token-bridge-ui/src/util/orbitChainsData.json
@@ -75,11 +77,17 @@ jobs:
       - name: Format files
         run: yarn prettier --write "packages/arb-token-bridge-ui/src/**/*.{ts,tsx,js,jsx,json}"
 
-      - name: Commit and push changes
+      - name: Stage changes
         run: |
           git add packages/arb-token-bridge-ui/src/**/*
           git add packages/arb-token-bridge-ui/public/**/*
+
+      - name: Commit changes
+        run: |
           git commit -m "feat: add ${{ steps.issue.outputs.result }}"
+
+      - name: Push changes
+        run: |
           git push origin ${{ steps.branch.outputs.name }}
 
       - name: Create Pull Request
