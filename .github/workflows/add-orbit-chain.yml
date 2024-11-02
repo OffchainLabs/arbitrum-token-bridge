@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -67,12 +68,6 @@ jobs:
       - name: Format files
         run: yarn prettier --write "packages/arb-token-bridge-ui/src/**/*.{ts,tsx,js,jsx,json}"
 
-      - name: Commit changes
-        run: |
-          git add .
-          git commit -m "feat: add ${{ steps.issue.outputs.result }}"
-          git push origin feat/add-orbit-chain-${{ inputs.issue_number }}
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
@@ -83,3 +78,6 @@ jobs:
           branch: feat/add-orbit-chain-${{ inputs.issue_number }}
           base: main
           delete-branch: true
+          add-paths: |
+            packages/arb-token-bridge-ui/src/**/*
+            packages/arb-token-bridge-ui/public/**/*
