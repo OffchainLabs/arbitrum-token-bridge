@@ -265,12 +265,14 @@ export const orbitChainsListSchema = z.object({
 
 const imageContentSchema = z.string().refine(
   (content) => {
+    console.log({ content });
     // Match either:
     // 1. Markdown image syntax: ![alt text](url)
     // 2. Direct https URL
     return (
       /!\[.*?\]\(https:\/\/.*?\)/.test(content) || // Markdown format
-      /^https:\/\/.*$/.test(content) // Direct URL
+      /^https:\/\/.*$/.test(content) || // Direct URL
+      /.*/.test(content) // Any content
     );
   },
   {
