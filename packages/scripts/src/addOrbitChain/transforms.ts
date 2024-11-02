@@ -301,12 +301,10 @@ export const fetchAndSaveImage = async (
   const { buffer, fileExtension } = await fetchAndProcessImage(urlOrPath);
   const imageSavePath = `images/${fileName}${fileExtension}`;
 
-  // Create the images directory if it doesn't exist
   const fullPath = path.join(
     process.cwd(),
     "../../packages/arb-token-bridge-ui/public/images"
   );
-  fs.mkdirSync(fullPath, { recursive: true });
 
   // Save the file locally
   fs.writeFileSync(path.join(fullPath, `${fileName}${fileExtension}`), buffer);
