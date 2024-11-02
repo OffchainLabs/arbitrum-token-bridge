@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import * as core from "@actions/core";
-import { warning } from "@actions/core";
 import { getArbitrumNetworkInformationFromRollup } from "@arbitrum/sdk";
 import axios from "axios";
 import { fileTypeFromBuffer } from "file-type";
@@ -10,13 +9,7 @@ import * as fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import { lookup } from "mime-types";
-import {
-  commitChanges,
-  createBranch,
-  createPullRequest,
-  getIssue,
-  saveImageToGitHub,
-} from "./github";
+import { getIssue, saveImageToGitHub } from "./github";
 import {
   chainDataLabelToKey,
   getParentChainInfo,
@@ -70,8 +63,7 @@ export const processChainData = async (): Promise<{
   const branchName = `add-orbit-chain/${stripWhitespace(
     validatedIncomingData.name,
   )}`;
-  console.log(`Creating new branch: ${branchName}`);
-  await createBranch(branchName);
+  console.log(`Branch name generated: ${branchName}`);
 
   console.log("Chain data processing completed successfully");
   core.endGroup();
@@ -157,61 +149,8 @@ export const updateAndValidateOrbitChainsList = async (
   return updatedOrbitChainsList;
 };
 
-export const commitChangesAndCreatePR = async (
-  branchName: string,
-  targetJsonPath: string,
-  updatedOrbitChainsList: ReturnType<typeof updateOrbitChainsFile>,
-  orbitChain: OrbitChain,
-) => {
-  core.startGroup("Commit Changes and Create Pull Request");
-  console.log("Preparing to commit changes...");
-  const repoRelativePath = targetJsonPath.replace(/^\.\.\/\.\.\//, "");
-  console.log(`Repo relative path: ${repoRelativePath}`);
-  const fileContents = JSON.stringify(updatedOrbitChainsList, null, 2);
-  console.log("Committing changes...");
-  await commitChanges(branchName, repoRelativePath, fileContents);
-  console.log("Changes committed successfully");
-  const issue = await getIssue(process.env.ISSUE_NUMBER!);
-  console.log("Creating pull request...");
-  await createPullRequest(branchName, orbitChain.name, issue.html_url)
-    .catch((err) => {
-      if (err.message.includes("A pull request already exists")) {
-        console.log("Pull request already exists.");
-      } else {
-        throw err;
-      }
-    })
-    .then(() => {
-      console.log("Pull request created successfully");
-    });
-  core.endGroup();
-};
-
-export const setOutputs = (
-  branchName: string,
-  orbitChain: OrbitChain,
-  targetJsonPath: string,
-) => {
-  core.startGroup("Set Outputs");
-  console.log("Setting output values...");
-  const repoRelativePath = targetJsonPath.replace(/^\.\.\/\.\.\//, "");
-  core.setOutput("branch_name", branchName);
-  console.log(`Set output - branch_name: ${branchName}`);
-  core.setOutput(
-    "issue_url",
-    getIssue(process.env.ISSUE_NUMBER!).then((issue) => issue.html_url),
-  );
-  console.log("Set output - issue_url (promise)");
-  core.setOutput("orbit_list_path", repoRelativePath);
-  console.log(`Set output - orbit_list_path: ${repoRelativePath}`);
-  core.setOutput("chain_name", orbitChain.name);
-  console.log(`Set output - chain_name: ${orbitChain.name}`);
-  console.log("All outputs set successfully");
-  core.endGroup();
-};
-
 export const extractImageUrlFromMarkdown = (
-  markdown: string
+  markdown: string,
 ): string | null => {
   // Match markdown image syntax: ![alt text](url)
   const markdownMatch = markdown.match(/!\[.*?\]\((.*?)\)/);
@@ -250,6 +189,7 @@ export const extractRawChainData = (
 
 export const stripWhitespace = (text: string): string =>
   text.replace(/\s+/g, "");
+
 export const nameToSlug = (name: string): string =>
   name.toLowerCase().replace(/\s+/g, "-");
 
@@ -292,7 +232,13 @@ export const fetchAndProcessImage = async (
   let imageBuffer: Buffer;
   let fileExtension: string;
 
-  if (urlOrPath.startsWith("http")) {
+  // Check if the URL is an IPFS URL or starts with http/https
+  if (urlOrPath.startsWith("ipfs://") || urlOrPath.startsWith("http")) {
+    // Handle remote URLs (including IPFS)
+    if (urlOrPath.startsWith("ipfs://")) {
+      urlOrPath = `https://ipfs.io/ipfs/${urlOrPath.slice(7)}`;
+    }
+
     console.log("Fetching image from:", urlOrPath);
 
     const response = await axios.get(urlOrPath, {
