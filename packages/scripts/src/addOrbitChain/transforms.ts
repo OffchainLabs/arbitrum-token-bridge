@@ -9,7 +9,7 @@ import * as fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import { lookup } from "mime-types";
-import { getIssue, saveImageToGitHub } from "./github";
+import { getIssue } from "./github";
 import {
   chainDataLabelToKey,
   getParentChainInfo,
@@ -296,12 +296,22 @@ export const fetchAndProcessImage = async (
 
 export const fetchAndSaveImage = async (
   urlOrPath: string,
-  fileName: string,
-  branchName: string
+  fileName: string
 ): Promise<string> => {
   const { buffer, fileExtension } = await fetchAndProcessImage(urlOrPath);
   const imageSavePath = `images/${fileName}${fileExtension}`;
-  await saveImageToGitHub(branchName, imageSavePath, buffer);
+
+  // Create the images directory if it doesn't exist
+  const fullPath = path.join(
+    process.cwd(),
+    "../../packages/arb-token-bridge-ui/public/images"
+  );
+  fs.mkdirSync(fullPath, { recursive: true });
+
+  // Save the file locally
+  fs.writeFileSync(path.join(fullPath, `${fileName}${fileExtension}`), buffer);
+  console.log(`Successfully saved image to ${imageSavePath}`);
+
   return `/${imageSavePath}`;
 };
 
