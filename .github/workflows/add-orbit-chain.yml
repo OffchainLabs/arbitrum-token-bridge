@@ -90,5 +90,5 @@ jobs:
           title: "feat: add ${{ steps.issue.outputs.result }}"
           body: "Automated pull request to add ${{ steps.issue.outputs.result }} to the bridge. Closes #${{ inputs.issue_number }}"
           branch: ${{ steps.branch.outputs.name }}
-          base: main
+          base: master
           delete-branch: true
