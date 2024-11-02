@@ -462,23 +462,16 @@ export async function runPrettier(targetJsonPath: string): Promise<void> {
   try {
     const fileContent = fs.readFileSync(targetJsonPath, "utf8");
 
+    // Import standalone prettier
     const prettier = await import("prettier");
-    const config = await import(
+    const config = (await import(
       "../../../arb-token-bridge-ui/prettier.config.js"
-    );
-    console.log({ prettier, config });
+    )) as any;
     const formattedContent = await prettier.format(fileContent, {
-      parser: "json",
-      plugins: ["prettier-plugin-json-formats"],
-      tabWidth: 2,
-      singleQuote: false,
-    });
-    console.log({ formattedContent });
-    const formattedContent2 = await prettier.format(fileContent, {
       ...config,
       filepath: targetJsonPath,
     });
-    console.log({ formattedContent2 });
+
     fs.writeFileSync(targetJsonPath, formattedContent);
     console.log(`Prettier formatting applied to ${targetJsonPath}`);
   } catch (error) {
