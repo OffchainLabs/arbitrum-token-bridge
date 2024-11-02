@@ -87,7 +87,7 @@ jobs:
       - name: Create Pull Request
         run: |
           gh pr create \
-            --title "feat: add ${{ steps.issue.outputs.result }}" \
+            --title "feat: add Orbit chain ${{ steps.issue.outputs.result }}" \
             --body "Automated pull request to add ${{ steps.issue.outputs.result }} to the bridge. Closes #${{ inputs.issue_number }}" \
             --base master \
             --head ${{ steps.branch.outputs.name }}
