@@ -263,28 +263,12 @@ export const orbitChainsListSchema = z.object({
   testnet: z.array(chainSchema),
 });
 
-const imageContentSchema = z.string().refine(
-  (content) => {
-    // Match either:
-    // 1. Markdown image syntax: ![alt text](url)
-    // 2. Direct https URL
-    return (
-      /!\[.*?\]\(https:\/\/.*?\)/.test(content) || // Markdown format
-      /^https:\/\/.*$/.test(content) || // Direct URL
-    );
-  },
-  {
-    message:
-      "Invalid image format. Please provide either a valid markdown format image (![alt](url)) or a direct HTTPS URL.",
-  }
-);
-
 // Schema for incoming data from GitHub issue
 export const incomingChainDataSchema = z.object({
   chainId: z.string().regex(/^\d+$/),
   name: z.string().min(1),
   description: descriptionSchema,
-  chainLogo: imageContentSchema,
+  chainLogo: urlSchema,
   color: colorHexSchema,
   rpcUrl: z.string().url(),
   explorerUrl: z.string().url(),
@@ -293,7 +277,7 @@ export const incomingChainDataSchema = z.object({
   nativeTokenAddress: addressSchema.optional(),
   nativeTokenName: z.string().optional(),
   nativeTokenSymbol: z.string().optional(),
-  nativeTokenLogo: imageContentSchema.optional(),
+  nativeTokenLogo: urlSchema.optional(),
   bridge: addressSchema,
   inbox: addressSchema,
   outbox: addressSchema,
