@@ -44,7 +44,8 @@ body:
     id: chain-logo
     attributes:
       label: Chain logo
-      description: Please drag and drop your chain logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      description: |
+        Please drag and drop your chain logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
       placeholder: Drag and drop your chain logo image here...
     validations:
       required: true
@@ -111,7 +112,8 @@ body:
     id: native-token-logo
     attributes:
       label: Native token logo
-      description: Please drag and drop your native token logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      description: |
+        Please drag and drop your native token logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
       placeholder: Drag and drop your native token logo image here (skip if using ETH)...
     validations:
       required: false
