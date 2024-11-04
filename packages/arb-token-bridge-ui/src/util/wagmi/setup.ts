@@ -12,7 +12,9 @@ import {
   localL1Network as local,
   localL2Network as arbitrumLocal,
   localL3Network as l3Local,
-  holesky
+  holesky,
+  base,
+  baseSepolia
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
@@ -27,16 +29,22 @@ const wagmiOrbitChains = getOrbitChains().map(chain =>
   getWagmiChain(chain.chainId)
 )
 
+const defaultChains = [
+  // mainnet, arb1, & arb nova are for network switch tests
+  mainnet,
+  arbitrum,
+  arbitrumNova,
+  base,
+  // sepolia & arb sepolia are for tx history panel tests
+  sepolia,
+  arbitrumSepolia,
+  baseSepolia,
+  holesky
+]
+
 const chainList = isTestingEnvironment
   ? [
-      // mainnet, arb1, & arb nova are for network switch tests
-      mainnet,
-      arbitrum,
-      arbitrumNova,
-      // sepolia & arb sepolia are for tx history panel tests
-      sepolia,
-      arbitrumSepolia,
-      holesky,
+      ...defaultChains,
       // Orbit chains
       ...wagmiOrbitChains,
       // add local environments during testing
@@ -46,16 +54,7 @@ const chainList = isTestingEnvironment
       // user-added custom chains
       ...customChains
     ]
-  : [
-      mainnet,
-      arbitrum,
-      arbitrumNova,
-      sepolia,
-      arbitrumSepolia,
-      holesky,
-      ...wagmiOrbitChains,
-      ...customChains
-    ]
+  : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
@@ -72,8 +71,10 @@ enum TargetChainKey {
   Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
+  Base = 'base',
   Sepolia = 'sepolia',
-  ArbitrumSepolia = 'arbitrum-sepolia'
+  ArbitrumSepolia = 'arbitrum-sepolia',
+  BaseSepolia = 'base-sepolia'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
@@ -101,11 +102,17 @@ function getChainId(targetChainKey: TargetChainKey): number {
     case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
 
+    case TargetChainKey.Base:
+      return ChainId.Base
+
     case TargetChainKey.Sepolia:
       return ChainId.Sepolia
 
     case TargetChainKey.ArbitrumSepolia:
       return ChainId.ArbitrumSepolia
+
+    case TargetChainKey.BaseSepolia:
+      return ChainId.BaseSepolia
   }
 }
 

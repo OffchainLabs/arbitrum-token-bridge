@@ -94,6 +94,9 @@ export const getDepositStatus = (
     }
   }
 
+  const isNativeTokenTransferToSameAddress =
+    tx.assetType === AssetType.ETH && !isCustomDestinationAddressTx(tx)
+
   const { parentToChildMsgData: l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
     return DepositStatus.L2_PENDING
@@ -104,11 +107,11 @@ export const getDepositStatus = (
     case ParentToChildMessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
     case ParentToChildMessageStatus.EXPIRED:
-      return tx.assetType === AssetType.ETH
+      return isNativeTokenTransferToSameAddress
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.EXPIRED
     case ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD: {
-      return tx.assetType === AssetType.ETH
+      return isNativeTokenTransferToSameAddress
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
     }
