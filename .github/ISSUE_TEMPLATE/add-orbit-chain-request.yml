@@ -28,10 +28,10 @@ body:
     attributes:
       label: Chain description
       description: |
-        A short chain description that will be visible in the networks dropdown. Please make sure this is no longer than 130 characters.
+        A short chain description that will be visible in the networks dropdown.
       placeholder: ex. An amazing chain that does amazing things.
     validations:
-      required: true
+      required: false
   - type: input
     id: brand-color
     attributes:
@@ -40,11 +40,13 @@ body:
       placeholder: ex. "#FFFFFF"
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: chain-logo
     attributes:
       label: Chain logo
-      description: Link to the chain logo file.
+      description: |
+        Please drag and drop your chain logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      placeholder: Drag and drop your chain logo image here...
     validations:
       required: true
   - type: input
@@ -83,7 +85,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Fill out this section if you are using a native token other than ETH. If you are using ETH as your gas token you can leave this blank.
+        Fill out this section if you are using a native token other than ETH. 
+         ⚠️ IMPORTANT: If you are using ETH as your gas token you can leave this blank.
   - type: input
     id: native-token-address
     attributes:
@@ -95,21 +98,23 @@ body:
     id: native-token-name
     attributes:
       label: Native token name
-      placeholder: ex. Ether
+      placeholder: ex. My Custom Token
     validations:
       required: false
   - type: input
     id: native-token-symbol
     attributes:
       label: Native token symbol
-      placeholder: ex. ETH
+      placeholder: ex. MCT
     validations:
       required: false
-  - type: input
+  - type: textarea
     id: native-token-logo
     attributes:
       label: Native token logo
-      description: Link to the native token logo file.
+      description: |
+        Please drag and drop your native token logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      placeholder: Drag and drop your native token logo image here (skip if using ETH)...
     validations:
       required: false
 

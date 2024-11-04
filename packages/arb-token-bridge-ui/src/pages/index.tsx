@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { ComponentType, useEffect } from 'react'
 import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
 import { decodeString, encodeString } from 'use-query-params'
@@ -7,7 +7,8 @@ import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { Loader } from '../components/common/atoms/Loader'
 import {
   getCustomChainsFromLocalStorage,
-  mapCustomChainToNetworkData
+  mapCustomChainToNetworkData,
+  registerLocalNetwork
 } from '../util/networks'
 import { getOrbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
@@ -17,17 +18,32 @@ import {
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 
-const App = dynamic(() => import('../components/App/App'), {
-  ssr: false,
-  loading: () => (
-    <>
-      <div className="h-12 w-full lg:h-16" />
-      <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
-        <Loader size="large" color="white" />
-      </div>
-    </>
-  )
-})
+const App = dynamic(
+  () => {
+    return new Promise<{ default: ComponentType }>(async resolve => {
+      if (
+        process.env.NODE_ENV !== 'production' ||
+        process.env.NEXT_PUBLIC_IS_E2E_TEST
+      ) {
+        await registerLocalNetwork()
+      }
+
+      const AppComponent = await import('../components/App/App')
+      resolve(AppComponent)
+    })
+  },
+  {
+    ssr: false,
+    loading: () => (
+      <>
+        <div className="h-12 w-full lg:h-16" />
+        <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
+          <Loader size="large" color="white" />
+        </div>
+      </>
+    )
+  }
+)
 
 function getDestinationWithSanitizedQueryParams(
   sanitized: {
@@ -89,9 +105,11 @@ function addOrbitChainsToArbitrumSDK() {
   )
 }
 
-export function getServerSideProps({
+export async function getServerSideProps({
   query
-}: GetServerSidePropsContext): GetServerSidePropsResult<Record<string, never>> {
+}: GetServerSidePropsContext): Promise<
+  GetServerSidePropsResult<Record<string, never>>
+> {
   const sourceChainId = decodeChainQueryParam(query.sourceChain)
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
   const experiments = decodeString(query.experiments)
@@ -103,6 +121,12 @@ export function getServerSideProps({
     }
   }
 
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_IS_E2E_TEST
+  ) {
+    await registerLocalNetwork()
+  }
   // it's necessary to call this before sanitization to make sure all chains are registered
   addOrbitChainsToArbitrumSDK()
 

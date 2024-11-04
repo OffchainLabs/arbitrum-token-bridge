@@ -1,9 +1,86 @@
 import { z } from "zod";
-import { constants, ethers } from "ethers";
+import { constants } from "ethers";
+import { warning } from "@actions/core";
 import { getOctokit } from "@actions/github";
+import path from "path";
+import * as dotenv from "dotenv";
+import { getProvider } from "./provider";
 
+// Load .env from the UI project directory
+dotenv.config({
+  path: path.resolve(__dirname, "../../../arb-token-bridge-ui/.env"),
+});
 export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
+
+export const getParentChainInfo = (parentChainId: number) => {
+  const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
+  const HOLESKY_INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY_HOLESKY;
+
+  switch (parentChainId) {
+    case 1: // Ethereum Mainnet
+      return {
+        rpcUrl: INFURA_KEY
+          ? `https://mainnet.infura.io/v3/${INFURA_KEY}`
+          : "https://eth.llamarpc.com",
+        blockExplorer: "https://etherscan.io",
+        chainId: 1,
+        name: "Ethereum",
+      };
+    case 42161: // Arbitrum One
+      return {
+        rpcUrl: INFURA_KEY
+          ? `https://arbitrum-mainnet.infura.io/v3/${INFURA_KEY}`
+          : "https://arb1.arbitrum.io/rpc",
+        blockExplorer: "https://arbiscan.io",
+        chainId: 42161,
+        name: "Arbitrum One",
+      };
+    case 11155111: // Sepolia
+      return {
+        rpcUrl: INFURA_KEY
+          ? `https://sepolia.infura.io/v3/${INFURA_KEY}`
+          : "https://ethereum-sepolia-rpc.publicnode.com",
+        blockExplorer: "https://sepolia.etherscan.io",
+        chainId: 11155111,
+        name: "Sepolia",
+      };
+    case 421614: // Arbitrum Sepolia
+      return {
+        rpcUrl: INFURA_KEY
+          ? `https://arbitrum-sepolia.infura.io/v3/${INFURA_KEY}`
+          : "https://sepolia-rollup.arbitrum.io/rpc",
+        blockExplorer: "https://sepolia.arbiscan.io",
+        chainId: 421614,
+        name: "Arbitrum Sepolia",
+      };
+    case 17000: // Holesky
+      return {
+        rpcUrl: HOLESKY_INFURA_KEY
+          ? `https://holesky.infura.io/v3/${HOLESKY_INFURA_KEY}`
+          : "https://ethereum-holesky-rpc.publicnode.com",
+        blockExplorer: "https://holesky.etherscan.io/",
+        chainId: 17000,
+        name: "Holesky",
+      };
+    case 8453: // Base
+      return {
+        rpcUrl: "https://mainnet.base.org",
+        blockExplorer: "https://basescan.io",
+        chainId: 8453,
+        name: "Base",
+      };
+    case 84532: // Base Sepolia
+      return {
+        rpcUrl: "https://sepolia.base.org",
+        blockExplorer: "https://sepolia.basescan.io",
+        chainId: 84532,
+        name: "Base Sepolia",
+      };
+    default:
+      throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
+  }
+};
 
 export const isValidAddress = (address: string): boolean => {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -27,8 +104,13 @@ export const colorHexSchema = z
 
 export const descriptionSchema = z
   .string()
-  .max(190)
-  .transform((desc) => (desc.endsWith(".") ? desc : `${desc}.`));
+  .optional()
+  .transform((desc) => {
+    if (!desc) {
+      return desc;
+    }
+    return desc.endsWith(".") ? desc : `${desc}.`;
+  });
 
 export const ethBridgeSchema = z.object({
   bridge: addressSchema,
@@ -80,73 +162,15 @@ export const chainSchema = z
     nativeToken: addressSchema.optional(),
     explorerUrl: urlSchema,
     rpcUrl: urlSchema,
-    isArbitrum: z.boolean().default(true),
     isCustom: z.boolean().default(true),
     isTestnet: z.boolean(),
     name: z.string().min(1),
     slug: z.string().min(1),
     parentChainId: z.number().int().positive(),
-    retryableLifetimeSeconds: z.number().int().positive().default(604800),
     tokenBridge: tokenBridgeSchema,
     bridgeUiConfig: bridgeUiConfigSchema,
   })
   .superRefine(async (chain, ctx) => {
-    const getParentChainInfo = (parentChainId: number) => {
-      switch (parentChainId) {
-        case 1: // Ethereum Mainnet
-          return {
-            rpcUrl: "https://eth.llamarpc.com",
-            blockExplorer: "https://etherscan.io",
-            chainId: 1,
-            name: "Ethereum",
-          };
-        case 42161: // Arbitrum One
-          return {
-            rpcUrl: "https://arb1.arbitrum.io/rpc",
-            blockExplorer: "https://arbiscan.io",
-            chainId: 42161,
-            name: "Arbitrum One",
-          };
-        case 11155111: // Sepolia
-          return {
-            rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
-            blockExplorer: "https://sepolia.etherscan.io",
-            chainId: 11155111,
-            name: "Sepolia",
-          };
-        case 421614: // Arbitrum Sepolia
-          return {
-            rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
-            blockExplorer: "https://sepolia.arbiscan.io",
-            chainId: 421614,
-            name: "Arbitrum Sepolia",
-          };
-        case 17000: // Holesky
-          return {
-            rpcUrl: "https://ethereum-holesky-rpc.publicnode.com	",
-            blockExplorer: "https://holesky.etherscan.io/",
-            chainId: 17000,
-            name: "Holesky",
-          };
-        case 8453: // Base
-          return {
-            rpcUrl: "https://mainnet.base.org",
-            blockExplorer: "https://basescan.io",
-            chainId: 8453,
-            name: "Base",
-          };
-        case 84532: // Base Sepolia
-          return {
-            rpcUrl: "https://sepolia.base.org",
-            blockExplorer: "https://sepolia.basescan.io",
-            chainId: 84532,
-            name: "Base Sepolia",
-          };
-        default:
-          throw new Error(`Unsupported parent chain ID: ${parentChainId}`);
-      }
-    };
-
     const parentChainInfo = getParentChainInfo(chain.parentChainId);
 
     const parentAddressesToCheck = [
@@ -185,30 +209,27 @@ export const chainSchema = z
       chainId: number,
       chainName: string
     ) => {
-      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      const provider = getProvider({ rpcUrl, name: chainName, chainId });
+
       for (const address of addresses) {
         try {
           const code = await provider.getCode(address);
           if (code === "0x") {
-            const explorerLink = `${blockExplorer}/address/${address}`;
-            console.warn(
-              `Address ${address} on ${chainName} (chainId: ${chainId}) is not a contract. Verify manually: ${explorerLink}`
-            );
-            // TODO: Uncomment this when we can verify all contracts
-            // ctx.addIssue({
-            //   code: z.ZodIssueCode.custom,
-            //   message: `Address at ${address} is not a contract on ${chainName}. Verify manually: ${explorerLink}`,
-            // });
+            throw new Error("Address is not a contract");
           }
         } catch (error) {
           const explorerLink = `${blockExplorer}/address/${address}`;
-          console.log(
-            `Error checking contract at ${address} on ${chainName} (chainId: ${chainId}). Verify manually: ${explorerLink}`
-          );
-          // ctx.addIssue({
-          //   code: z.ZodIssueCode.custom,
-          //   message: `Error checking contract at ${address} on ${chainName}. Verify manually: ${explorerLink}`,
-          // });
+          const warningMsg = `
+Failed to verify contract at ${address} on ${chainName}
+
+Please verify contract manually by visiting ${explorerLink}`;
+          console.error(warningMsg + `\n\n==================\n\n${error}`);
+          warning(warningMsg);
+
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: warningMsg,
+          });
         }
       }
     };
@@ -242,12 +263,23 @@ export const orbitChainsListSchema = z.object({
   testnet: z.array(chainSchema),
 });
 
+const imageContentSchema = z.string().refine(
+  (content) => {
+    // Match only markdown image syntax: ![alt text](url)
+    return /!\[.*?\]\(https:\/\/.*?\)/.test(content);
+  },
+  {
+    message:
+      "Invalid image format. Please provide a valid markdown format image url.",
+  }
+);
+
 // Schema for incoming data from GitHub issue
 export const incomingChainDataSchema = z.object({
   chainId: z.string().regex(/^\d+$/),
   name: z.string().min(1),
   description: descriptionSchema,
-  chainLogo: z.string().url(),
+  chainLogo: imageContentSchema,
   color: colorHexSchema,
   rpcUrl: z.string().url(),
   explorerUrl: z.string().url(),
@@ -256,7 +288,7 @@ export const incomingChainDataSchema = z.object({
   nativeTokenAddress: addressSchema.optional(),
   nativeTokenName: z.string().optional(),
   nativeTokenSymbol: z.string().optional(),
-  nativeTokenLogo: z.string().url().optional(),
+  nativeTokenLogo: imageContentSchema.optional(),
   bridge: addressSchema,
   inbox: addressSchema,
   outbox: addressSchema,

@@ -1,12 +1,20 @@
-/* eslint-disable jest/no-mocks-import */
-
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { IncomingChainData } from "../schemas";
 import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { IncomingChainData, Issue } from "../schemas";
+import {
+  extractImageUrlFromMarkdown,
   extractRawChainData,
+  fetchAndProcessImage,
   nameToSlug,
   resizeImage,
   stripWhitespace,
@@ -18,6 +26,8 @@ import {
   mockIncomingChainData,
   mockOrbitChain,
 } from "./__mocks__/chainDataMocks";
+import { warning } from "@actions/core";
+import axios from "axios";
 
 describe("Transforms", () => {
   describe("extractRawChainData", () => {
@@ -193,4 +203,115 @@ describe("Transforms", () => {
       expect(resizedAspectRatio).toBeCloseTo(originalAspectRatio, 2);
     });
   });
+  describe("Image Download and Processing", () => {
+    const downloadedImagePath = path.join(
+      process.cwd(),
+      "..",
+      "..",
+      "arb-token-bridge-ui",
+      "public",
+      "images",
+      "downloaded_chain_logo.png"
+    );
+
+    // Clean up downloaded image after tests
+    // Comment out the following 'after' block if you want to inspect the downloaded image
+    afterAll(() => {
+      if (fs.existsSync(downloadedImagePath)) {
+        fs.unlinkSync(downloadedImagePath);
+        console.log("Cleaned up downloaded image");
+      }
+    });
+
+    it("should download, process, and save the chain logo image from fullMockIssue", async () => {
+      const rawChainData = extractRawChainData(fullMockIssue);
+      const imageUrl = rawChainData.chainLogo as string;
+
+      expect(imageUrl).toBeTruthy();
+      expect(imageUrl.startsWith("https://")).toBe(true);
+
+      const { buffer, fileExtension } = await fetchAndProcessImage(imageUrl);
+
+      expect(buffer).toBeTruthy();
+      expect(buffer.length).toBeGreaterThan(0);
+      expect(fileExtension).toBeTruthy();
+
+      const fileName = "downloaded_chain_logo";
+      const savedImagePath = saveImageLocally(buffer, fileName, fileExtension);
+
+      expect(savedImagePath).toBeTruthy();
+      console.log(`Image downloaded and saved to: ${savedImagePath}`);
+
+      const fullSavePath = path.join(
+        process.cwd(),
+        "..",
+        "..",
+        "arb-token-bridge-ui",
+        "public",
+        savedImagePath
+      );
+      expect(fs.existsSync(fullSavePath)).toBe(true);
+
+      const stats = fs.statSync(fullSavePath);
+      expect(stats.size).toBeGreaterThan(0);
+    });
+
+    it("should throw an error if the image fetch fails", async () => {
+      const invalidUrl = "https://example.com/nonexistent-image.png";
+      await expect(fetchAndProcessImage(invalidUrl)).rejects.toThrow();
+    });
+  });
+
+  describe("Image URL Extraction", () => {
+    it("should handle both markdown and direct URL for chain and token logos", () => {
+      const issue: Issue = {
+        body: `
+### Chain logo
+![chain-logo](https://example.com/chain-logo.png)
+### Native token logo
+https://example.com/token-logo.png
+### Chain name
+Test Chain
+          `,
+        state: "open",
+        html_url: "https://github.com/example/repo/issues/1",
+      };
+
+      const result = extractRawChainData(issue);
+      expect(result.chainLogo).toBe("https://example.com/chain-logo.png");
+      expect(result.nativeTokenLogo).toBe("https://example.com/token-logo.png");
+    });
+  });
 });
+
+const saveImageLocally = (
+  imageBuffer: Buffer,
+  fileName: string,
+  fileExtension: string
+): string => {
+  const imageSavePath = `images/${fileName}${fileExtension}`;
+  const fullSavePath = path.join(
+    process.cwd(),
+    "..",
+    "..",
+    "arb-token-bridge-ui",
+    "public",
+    imageSavePath
+  );
+
+  // Create directories if they don't exist
+  const dirs = path.dirname(fullSavePath);
+  if (!fs.existsSync(dirs)) {
+    fs.mkdirSync(dirs, { recursive: true });
+  }
+
+  if (fs.existsSync(fullSavePath)) {
+    warning(
+      `${fileName} already exists at '${imageSavePath}'. Overwriting the existing image.`
+    );
+  }
+
+  fs.writeFileSync(fullSavePath, imageBuffer);
+
+  return `/${imageSavePath}`;
+};
