@@ -24,7 +24,7 @@
     "**/@walletconnect/ethereum-provider": "2.13.1",
     "**/@ethersproject/providers/ws": "7.5.10",
     "**/@synthetixio/synpress/ws": "8.17.1",
-    "**/elliptic": "6.5.7"
+    "**/elliptic": "6.6.0"
   },
   "keywords": [],
   "author": "",

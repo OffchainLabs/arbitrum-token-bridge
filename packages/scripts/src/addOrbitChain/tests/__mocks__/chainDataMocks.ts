@@ -27,7 +27,7 @@ Test Chain
 A test chain.
 
 ### Chain logo  
-https://ipfs.io/ipfs/QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym
+![chain-logo](https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5)
 
 ### Brand color
 #FF0000
@@ -54,7 +54,7 @@ Test Token
 TST
 
 ### Native token logo
-https://example.com/token-logo.png
+![token-logo](https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5)
 
 ### bridge
 0x0000000000000000000000000000000000000002
@@ -121,7 +121,8 @@ export const mockRawData = {
   chainId: "42161",
   name: "Test Chain",
   description: "A test chain.",
-  chainLogo: "https://example.com/logo.png",
+  chainLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   color: "#FF0000",
   rpcUrl: "https://rpc.example.com",
   explorerUrl: "https://explorer.example.com",
@@ -130,7 +131,8 @@ export const mockRawData = {
   nativeTokenAddress: "0x0000000000000000000000000000000000000001",
   nativeTokenName: "Test Token",
   nativeTokenSymbol: "TST",
-  nativeTokenLogo: "https://example.com/token-logo.png",
+  nativeTokenLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   bridge: "0x0000000000000000000000000000000000000002",
   inbox: "0x0000000000000000000000000000000000000003",
   outbox: "0x0000000000000000000000000000000000000004",
@@ -178,7 +180,8 @@ export const mockIncomingChainData: IncomingChainData = {
   chainId: "1234567890",
   name: "Test Chain",
   description: "This is a test chain.",
-  chainLogo: "https://example.com/testchain.png",
+  chainLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   color: "#FF0000",
   rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
   explorerUrl: "https://testexplorer.com",
@@ -187,7 +190,8 @@ export const mockIncomingChainData: IncomingChainData = {
   nativeTokenAddress: "0x0000000000000000000000000000000000000006",
   nativeTokenName: "Test Token",
   nativeTokenSymbol: "TEST",
-  nativeTokenLogo: "https://example.com/testtoken.png",
+  nativeTokenLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   bridge: "0x0000000000000000000000000000000000000001",
   inbox: "0x0000000000000000000000000000000000000002",
   outbox: "0x0000000000000000000000000000000000000003",
