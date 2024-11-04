@@ -32,10 +32,11 @@ import {
   validateOrbitChainsList,
 } from "./schemas";
 import { getProvider } from "./provider";
+import { ethers } from "ethers";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
-const ZERO_ADDRESS = fs.constants.AddressZero;
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 
 export const getFileExtension = (mimeType: string): string => {
   const extension = lookup(mimeType);

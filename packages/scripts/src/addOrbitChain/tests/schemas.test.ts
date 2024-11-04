@@ -191,7 +191,7 @@ describe("Validation Functions", () => {
     }, 1000000);
   });
 
-  describe.skip("validateOrbitChainsList", () => {
+  describe("validateOrbitChainsList", () => {
     it("should validate the entire orbitChainsList without throwing errors", async () => {
       await expect(
         validateOrbitChainsList(orbitChainsList)
