@@ -1,10 +1,16 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
+import fetchRetry from 'fetch-retry'
 
 import { trackEvent } from '../util/AnalyticsUtils'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+
+const fetchWithRetry = fetchRetry(fetch, {
+  retries: 3,
+  retryDelay: (attempt: number) => attempt * 250 // should be short because it blocks the user
+})
 
 /**
  * Checks if an address is blocked using the external Screenings API service.
@@ -24,13 +30,16 @@ async function isBlocked(address: Address): Promise<boolean> {
     url.searchParams.set('address', address)
     url.searchParams.set('ref', window.location.hostname)
 
-    const response = await fetch(url, {
+    const response = await fetchWithRetry(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorData = await response
+        .text()
+        .catch(() => 'Failed to get response text')
+      throw new Error(`HTTP ${response.status}: ${errorData}`)
     }
 
     const { blocked } = await response.json()
