@@ -81,8 +81,7 @@ export const handleImages = async (
   );
   const chainLogoPath = await fetchAndSaveImage(
     validatedIncomingData.chainLogo,
-    `${stripWhitespace(validatedIncomingData.name)}_Logo`,
-    branchName
+    `${stripWhitespace(validatedIncomingData.name)}_Logo`
   );
   console.log(`Chain logo saved at: ${chainLogoPath}`);
 
@@ -99,8 +98,7 @@ export const handleImages = async (
         ? chainLogoPath
         : await fetchAndSaveImage(
             validatedIncomingData.nativeTokenLogo,
-            `${stripWhitespace(validatedIncomingData.name)}_NativeTokenLogo`,
-            branchName
+            `${stripWhitespace(validatedIncomingData.name)}_NativeTokenLogo`
           );
     console.log(`Native token logo saved at: ${nativeTokenLogoPath}`);
   } else {
