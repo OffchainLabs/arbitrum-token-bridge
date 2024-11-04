@@ -4,7 +4,7 @@ exports[`Transforms > extractRawChainData > should extract raw chain data from t
 {
   "bridge": "0x0000000000000000000000000000000000000002",
   "chainId": "42161",
-  "chainLogo": "https://ipfs.io/ipfs/QmYAX3R4LhoFenKsMEq6nPBZzmNx9mNkQW1PUwqYfxK3Ym",
+  "chainLogo": "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   "childCustomGateway": "0x000000000000000000000000000000000000000E",
   "childErc20Gateway": "0x000000000000000000000000000000000000000F",
   "childGatewayRouter": "0x0000000000000000000000000000000000000010",
@@ -18,7 +18,7 @@ exports[`Transforms > extractRawChainData > should extract raw chain data from t
   "inbox": "0x0000000000000000000000000000000000000003",
   "name": "Test Chain",
   "nativeTokenAddress": "0x0000000000000000000000000000000000000001",
-  "nativeTokenLogo": "https://example.com/token-logo.png",
+  "nativeTokenLogo": "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   "nativeTokenName": "Test Token",
   "nativeTokenSymbol": "TST",
   "outbox": "0x0000000000000000000000000000000000000004",
