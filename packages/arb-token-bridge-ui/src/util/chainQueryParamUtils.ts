@@ -10,7 +10,7 @@ import {
   localL1Network,
   localL2Network,
   localL3Network
-} from '../util/wagmi/wagmiAdditionalNetworks'
+} from './wagmi/wagmiAdditionalNetworks'
 import { ChainKeyQueryParam } from '../types/ChainQueryParam'
 import { getOrbitChains } from './orbitChainsList'
 import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
