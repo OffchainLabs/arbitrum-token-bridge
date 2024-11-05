@@ -250,47 +250,13 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  // Check what type of CCTP (deposit, withdrawal or all) to fetch
-  // We need this because of Smart Contract Wallets
-  const cctpTypeToFetch = useCallback(
-    (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (isLoadingAccountType || !chain) {
-        return undefined
-      }
-      if (isSmartContractWallet) {
-        // fetch based on the connected network
-        if (chain.id === chainPair.parentChainId) {
-          return 'deposits'
-        }
-        if (chain.id === chainPair.childChainId) {
-          return 'withdrawals'
-        }
-        return undefined
-      }
-      // EOA
-      return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
-        ? 'all'
-        : undefined
-    },
-    [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
-  )
-
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
     l2ChainId: ChainId.ArbitrumOne,
     pageNumber: 0,
-    pageSize: cctpTypeToFetch({
-      parentChainId: ChainId.Ethereum,
-      childChainId: ChainId.ArbitrumOne
-    })
-      ? 1000
-      : 0,
-    type:
-      cctpTypeToFetch({
-        parentChainId: ChainId.Ethereum,
-        childChainId: ChainId.ArbitrumOne
-      }) ?? 'all'
+    pageSize: 1000,
+    type: 'all'
   })
 
   const cctpTransfersTestnet = useCctpFetching({
@@ -298,17 +264,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Sepolia,
     l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
-    pageSize: cctpTypeToFetch({
-      parentChainId: ChainId.Sepolia,
-      childChainId: ChainId.ArbitrumSepolia
-    })
-      ? 1000
-      : 0,
-    type:
-      cctpTypeToFetch({
-        parentChainId: ChainId.Sepolia,
-        childChainId: ChainId.ArbitrumSepolia
-      }) ?? 'all'
+    pageSize: 1000,
+    type: 'all'
   })
 
   // TODO: Clean up this logic when introducing testnet/mainnet split
