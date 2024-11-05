@@ -721,6 +721,55 @@
           "logoUrl": "/images/EduChainTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 383353,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xA337997ab18164Dfe1e8A94E8D912e8d4e2ce173",
+        "inbox": "0x58e3F0ed71ac29501326aeE9564674E43812cc24",
+        "outbox": "0x9bAA9C2c313510D4f3CB2673b2f2603ED45d6eDd",
+        "rollup": "0xb9E6B5AcB523D431f6D136C56d371271456757E7",
+        "sequencerInbox": "0x714d792CB8BFB9F70Cde071904d8743280267ab2"
+      },
+      "nativeToken": "0x05AEa20947A9A376eF50218633BB0a5A05d40A0C",
+      "explorerUrl": "https://fetascan.xyz/",
+      "rpcUrl": "https://rpc.cheesechain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "CheeseChain",
+      "slug": "cheesechain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x762AE18EDA279709C106eC76d4b3985366D87C3F",
+        "parentErc20Gateway": "0x4D692d1B2E5Cef2A6092de572231D54D07691aA0",
+        "parentGatewayRouter": "0xA4BD9786c885EB99Cb6C6886d8f9CE8d96cE99F6",
+        "parentMultiCall": "0x909b042B88F587d745dBF52e2569545376f6eAA4",
+        "parentProxyAdmin": "0xB9b62DF4C8F4605E0772d05506203D7bd4d2F968",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x1Dd3e9AbA3A50D071C250356551c774B5F28B567",
+        "childErc20Gateway": "0x8737E402817e5B82B0ED43dC791e4E260e00c9d5",
+        "childGatewayRouter": "0x1E7090DCA131C7DE551becE4eCd2eBD5a37Aff0D",
+        "childMultiCall": "0x36528Af3c5Ef49fDbB87EcB87027c98DeeD57a00",
+        "childProxyAdmin": "0xe63cE9FeF9FC31FfcbD54D1aCfFEAcAf737e2626",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#E07800",
+        "network": {
+          "name": "CheeseChain",
+          "logo": "/images/CheeseChain_Logo.png",
+          "description": "CheeseChain is a user-first L3 changing the model for building in crypto."
+        },
+        "nativeTokenData": {
+          "name": "Cheese",
+          "symbol": "CHEESE",
+          "decimals": 18,
+          "logoUrl": "/images/CheeseChain_NativeTokenLogo.jpg"
+        }
+      }
     }
   ],
   "testnet": [
