@@ -32,11 +32,11 @@ import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
 
-type NetworkType = 'core' | 'other' | 'orbit'
+type NetworkType = 'core' | 'more' | 'orbit'
 
 enum ChainGroupName {
   core = 'CORE CHAINS',
-  other = 'OTHER CHAINS',
+  more = 'MORE CHAINS',
   orbit = 'ORBIT CHAINS'
 }
 
@@ -49,8 +49,8 @@ const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   core: {
     name: ChainGroupName.core
   },
-  other: {
-    name: ChainGroupName.other,
+  more: {
+    name: ChainGroupName.more,
     description: (
       <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
         <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
@@ -255,7 +255,7 @@ function NetworksPanel({
     const coreNetworks = chainIds.filter(
       chainId => isNetwork(chainId).isCoreChain
     )
-    const otherNetworks = chainIds.filter(
+    const moreNetworks = chainIds.filter(
       chainId =>
         !isNetwork(chainId).isCoreChain && !isNetwork(chainId).isOrbitChain
     )
@@ -265,7 +265,7 @@ function NetworksPanel({
 
     return {
       core: coreNetworks,
-      other: otherNetworks,
+      more: moreNetworks,
       orbit: orbitNetworks
     }
   }, [debouncedNetworkSearched, chainIds])
@@ -284,8 +284,8 @@ function NetworksPanel({
         groupedNetworks.push(ChainGroupName.core, ...networksToShow.core)
       }
 
-      if (networksToShow.other.length > 0) {
-        groupedNetworks.push(ChainGroupName.other, ...networksToShow.other)
+      if (networksToShow.more.length > 0) {
+        groupedNetworks.push(ChainGroupName.more, ...networksToShow.more)
       }
 
       if (networksToShow.orbit.length > 0) {
@@ -328,9 +328,9 @@ function NetworksPanel({
         )
       }
 
-      if (networkOrChainTypeName === ChainGroupName.other) {
+      if (networkOrChainTypeName === ChainGroupName.more) {
         return (
-          <ChainTypeInfoRow chainGroup={chainGroupInfo.other} style={style} />
+          <ChainTypeInfoRow chainGroup={chainGroupInfo.more} style={style} />
         )
       }
 

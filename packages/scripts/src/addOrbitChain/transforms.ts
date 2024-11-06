@@ -309,12 +309,23 @@ export const fetchAndProcessImage = async (
 
     imageBuffer = Buffer.from(response.data);
 
-    // Try to determine file extension from response headers
-    fileExtension = lookup(response.headers["content-type"] as string) || "";
-    if (!fileExtension) {
-      // If not found in headers, try to determine from the image data
-      const detectedType = await fileTypeFromBuffer(imageBuffer);
-      fileExtension = detectedType ? `.${detectedType.ext}` : "";
+    const isSVG =
+      response.headers["content-type"]?.includes("svg") ||
+      imageBuffer.toString("utf8").trim().toLowerCase().startsWith("<svg") ||
+      imageBuffer
+        .toString("utf8")
+        .includes('xmlns="http://www.w3.org/2000/svg"');
+
+    if (isSVG) {
+      fileExtension = ".svg";
+    } else {
+      // Try to determine file extension from response headers
+      fileExtension = lookup(response.headers["content-type"] as string) || "";
+      if (!fileExtension) {
+        // If not found in headers, try to determine from the image data
+        const detectedType = await fileTypeFromBuffer(imageBuffer);
+        fileExtension = detectedType ? `.${detectedType.ext}` : "";
+      }
     }
   } else {
     // Handle local paths
@@ -334,6 +345,11 @@ export const fetchAndProcessImage = async (
     fileExtension = ".webp";
   }
 
+  // we don't need to convert or resize SVGs
+  if (fileExtension === ".svg") {
+    return { buffer: imageBuffer, fileExtension };
+  }
+
   if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension.replace(".", ""))) {
     console.warn(
       `Unsupported image extension '${fileExtension}'. Converting to WEBP.`
@@ -344,7 +360,7 @@ export const fetchAndProcessImage = async (
     fileExtension = ".webp";
   }
 
-  // Resize the image
+  // Resize the image (only for non-SVG)
   try {
     imageBuffer = await resizeImage(imageBuffer);
   } catch (error) {
