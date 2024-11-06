@@ -41,7 +41,7 @@ export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
-function isClassicChildToParentTransactionEvent(
+function isClassicL2ToL1TransactionEvent(
   event: ChildToParentTransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
@@ -54,7 +54,7 @@ export function getExecutedMessagesCacheKey({
   event: ChildToParentEventResult
   l2ChainId: number
 }) {
-  return isClassicChildToParentTransactionEvent(event)
+  return isClassicL2ToL1TransactionEvent(event)
     ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
     : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
@@ -241,7 +241,7 @@ export const useArbTokenBridge = (
       }
     }
 
-    // add parent chain tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
+    // add parent chain tokens only if they aren't already bridged (i.e., if they haven't already been added as child arb-tokens to the list)
     const parentAddressesOfBridgedTokens = new Set(
       Object.keys(bridgeTokensToAdd).map(
         parentAddress =>
