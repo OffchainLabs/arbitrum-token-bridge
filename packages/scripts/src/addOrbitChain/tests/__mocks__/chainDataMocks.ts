@@ -26,8 +26,8 @@ Test Chain
 ### Chain description
 A test chain.
 
-### Chain logo
-https://example.com/logo.png
+### Chain logo  
+![chain-logo](https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5)
 
 ### Brand color
 #FF0000
@@ -54,7 +54,7 @@ Test Token
 TST
 
 ### Native token logo
-https://example.com/token-logo.png
+![token-logo](https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5)
 
 ### bridge
 0x0000000000000000000000000000000000000002
@@ -121,7 +121,8 @@ export const mockRawData = {
   chainId: "42161",
   name: "Test Chain",
   description: "A test chain.",
-  chainLogo: "https://example.com/logo.png",
+  chainLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   color: "#FF0000",
   rpcUrl: "https://rpc.example.com",
   explorerUrl: "https://explorer.example.com",
@@ -130,7 +131,8 @@ export const mockRawData = {
   nativeTokenAddress: "0x0000000000000000000000000000000000000001",
   nativeTokenName: "Test Token",
   nativeTokenSymbol: "TST",
-  nativeTokenLogo: "https://example.com/token-logo.png",
+  nativeTokenLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   bridge: "0x0000000000000000000000000000000000000002",
   inbox: "0x0000000000000000000000000000000000000003",
   outbox: "0x0000000000000000000000000000000000000004",
@@ -178,20 +180,22 @@ export const mockIncomingChainData: IncomingChainData = {
   chainId: "1234567890",
   name: "Test Chain",
   description: "This is a test chain.",
-  chainLogo: "https://example.com/testchain.png",
+  chainLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   color: "#FF0000",
-  rpcUrl: "https://testrpc.com",
+  rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
   explorerUrl: "https://testexplorer.com",
   parentChainId: "421614",
   confirmPeriodBlocks: "150",
   nativeTokenAddress: "0x0000000000000000000000000000000000000006",
   nativeTokenName: "Test Token",
   nativeTokenSymbol: "TEST",
-  nativeTokenLogo: "https://example.com/testtoken.png",
+  nativeTokenLogo:
+    "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   bridge: "0x0000000000000000000000000000000000000001",
   inbox: "0x0000000000000000000000000000000000000002",
   outbox: "0x0000000000000000000000000000000000000003",
-  rollup: "0x0000000000000000000000000000000000000004",
+  rollup: "0xeedE9367Df91913ab149e828BDd6bE336df2c892",
   sequencerInbox: "0x0000000000000000000000000000000000000005",
   parentGatewayRouter: "0x0000000000000000000000000000000000000009",
   childGatewayRouter: "0x0000000000000000000000000000000000000016",
@@ -222,13 +226,11 @@ export const mockOrbitChain: OrbitChain = {
   nativeToken: "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66",
   explorerUrl: "https://explorer.xai-chain.net",
   rpcUrl: "https://xai-chain.net/rpc",
-  isArbitrum: true,
   isCustom: true,
   isTestnet: false,
   name: "Xai",
   slug: "xai",
   parentChainId: 42161,
-  retryableLifetimeSeconds: 604800,
   tokenBridge: {
     parentGatewayRouter: "0x22CCA5Dc96a4Ac1EC32c9c7C5ad4D66254a24C35",
     childGatewayRouter: "0xd096e8dE90D34de758B0E0bA4a796eA2e1e272cF",
