@@ -211,6 +211,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0xc24A365A870821EB83Fd216c9596eDD89479d8d7',
       l1Address: '0xCF67815ccE72E682Eb4429eCa46843bed81Ca739',
       l2Address: '0x34fb4148fdc1ab3054ac85d32de887c58538bb57'
+    },
+    {
+      symbol: 'mPendleOFT',
+      l2CustomAddr: '',
+      l1Address: '0x83e817E1574e2201a005EC0f7e700ED5606F555E',
+      l2Address: '0x87ABaD012da6DcD0438e36967FcaD54C9d64F86C'
     }
   ],
   [ChainId.ArbitrumNova]: []
