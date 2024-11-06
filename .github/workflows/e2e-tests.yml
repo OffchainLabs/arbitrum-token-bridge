@@ -27,9 +27,14 @@ jobs:
       - id: set-matrix
         run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js ${{ inputs.test_type }} | jq . --compact-output)" >> $GITHUB_OUTPUT
 
+  build:
+    name: 'Build'
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
   test-e2e:
     name: "${{ matrix.test.name }}${{ matrix.test.type == 'orbit-eth' && ' with L3' || matrix.test.type == 'orbit-custom' && ' with custom fee token' || ''}}"
-    needs: [load-e2e-files]
+    needs: [build, load-e2e-files]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -69,13 +74,14 @@ jobs:
         uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Restore build artifacts
-        uses: ./.github/actions/build-artifacts/restore
+        uses: ./.github/actions/restore-build-artifacts
 
       - name: Install cypress
         run: yarn cypress install
 
       - name: Install linux dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install --no-install-recommends -y \
           fluxbox \
           xvfb

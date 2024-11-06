@@ -106,7 +106,7 @@ export type ChainWithRpcUrl = ArbitrumNetwork & {
   slug?: string
 }
 
-export function getBaseChainIdByChainId({
+export function getBlockNumberReferenceChainIdByChainId({
   chainId
 }: {
   chainId: number
@@ -271,7 +271,9 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getL1BlockTime = (chainId: number) => {
-  const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
+  const chain = getChainByChainId(
+    getBlockNumberReferenceChainIdByChainId({ chainId })
+  )
 
   if (!chain || !isBlockNumberReferenceNetwork(chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
@@ -333,7 +335,6 @@ export const defaultL2Network: ArbitrumNetwork = {
   isCustom: true,
   isTestnet: true,
   name: 'Arbitrum Local',
-  retryableLifetimeSeconds: 604800,
   tokenBridge: {
     parentCustomGateway: '0x8407E6180dC009D20D26D4BABB4790C1d4E6D2aA',
     parentErc20Gateway: '0x00D9fE1a2B67B8151aEdE8855c95E58D73FB4245',
@@ -368,7 +369,6 @@ export const defaultL3Network: ArbitrumNetwork = {
   isCustom: true,
   isTestnet: true,
   name: 'L3 Local',
-  retryableLifetimeSeconds: 604800,
   tokenBridge: {
     parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
     parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',

@@ -196,7 +196,6 @@ async function mapOrbitConfigToOrbitChain(
     isTestnet,
     name: data.chainInfo.chainName,
     parentChainId: data.chainInfo.parentChainId,
-    retryableLifetimeSeconds: 604800,
     nativeToken: data.chainInfo.nativeToken,
     tokenBridge: {
       parentCustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
