@@ -59,7 +59,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
     // Eth transfers to a custom destination use retryables
     // In the case of native currency we need to also approve native currency used for gas
-    const retryableGasEstimates = await this.transferEstimateGas({
+    const gasEstimates = await this.transferEstimateGas({
       amount,
       signer,
       destinationAddress
@@ -70,9 +70,9 @@ export class EthDepositStarter extends BridgeTransferStarter {
       BigNumber.from(DEFAULT_GAS_PRICE_PERCENT_INCREASE)
     )
 
-    return retryableGasEstimates.estimatedChildChainGas
+    return gasEstimates.estimatedChildChainGas
       .mul(gasPrice)
-      .add(retryableGasEstimates.estimatedChildChainSubmissionCost)
+      .add(gasEstimates.estimatedChildChainSubmissionCost)
   }
 
   public async requiresNativeCurrencyApproval({
@@ -93,7 +93,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       await fetchNativeCurrency({ provider: this.destinationChainProvider })
     ).decimals
 
-    const parentRetryableGas = scaleFrom18DecimalsToNativeTokenDecimals({
+    const retryableFees = scaleFrom18DecimalsToNativeTokenDecimals({
       amount: await this.getDepositRetryableFees({
         signer,
         amount,
@@ -110,7 +110,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     })
 
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
-    return customFeeTokenAllowanceForInbox.lt(amount.add(parentRetryableGas))
+    return customFeeTokenAllowanceForInbox.lt(amount.add(retryableFees))
   }
 
   public async approveNativeCurrencyEstimateGas({
@@ -130,7 +130,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
   }: ApproveNativeCurrencyProps) {
     const ethBridger = await this.getBridger()
 
-    const parentRetryableGas = await this.getDepositRetryableFees({
+    const retryableFees = await this.getDepositRetryableFees({
       signer,
       amount,
       destinationAddress
@@ -138,7 +138,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
     return ethBridger.approveGasToken({
       parentSigner: signer,
-      amount: amount.add(parentRetryableGas)
+      amount: amount.add(retryableFees)
     })
   }
 
