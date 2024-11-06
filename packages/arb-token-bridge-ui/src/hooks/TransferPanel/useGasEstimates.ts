@@ -32,8 +32,7 @@ async function fetcher([
     sourceChainId,
     sourceChainErc20Address,
     destinationChainId,
-    destinationChainErc20Address,
-    destinationAddress
+    destinationChainErc20Address
   })
 
   return await bridgeTransferStarter.transferEstimateGas({
