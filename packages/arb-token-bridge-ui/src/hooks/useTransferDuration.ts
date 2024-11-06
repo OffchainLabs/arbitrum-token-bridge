@@ -122,6 +122,12 @@ export function getWithdrawalConfirmationDate({
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
 
+  const { confirmationTimeInSeconds, fastWithdrawalActive } =
+    getConfirmationTime(withdrawalFromChainId)
+  if (fastWithdrawalActive && confirmationTimeInSeconds) {
+    return createdAtDate.add(confirmationTimeInSeconds, 'second')
+  }
+
   const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId({
     chainId: withdrawalFromChainId
   })
