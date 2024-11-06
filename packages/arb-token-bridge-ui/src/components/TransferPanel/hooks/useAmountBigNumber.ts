@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useAppState } from '../../../state'
 import { constants, utils } from 'ethers'
-import { useNativeCurrencyDecimalsOnSourceChain } from '../../../hooks/useNativeCurrencyDecimalsOnSourceChain'
+import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 
 export function useAmountBigNumber() {
   const {
@@ -10,7 +10,7 @@ export function useAmountBigNumber() {
   } = useAppState()
   const [{ amount }] = useArbQueryParams()
   const nativeCurrencyDecimalsOnSourceChain =
-    useNativeCurrencyDecimalsOnSourceChain()
+    useSourceChainNativeCurrencyDecimals()
 
   return useMemo(() => {
     try {

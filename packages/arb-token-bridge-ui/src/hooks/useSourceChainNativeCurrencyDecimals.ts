@@ -3,7 +3,7 @@ import { useNativeCurrency } from './useNativeCurrency'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
 
-export const useNativeCurrencyDecimalsOnSourceChain = () => {
+export const useSourceChainNativeCurrencyDecimals = () => {
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({

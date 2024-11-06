@@ -33,7 +33,7 @@ import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
-import { useNativeCurrencyDecimalsOnSourceChain } from '../../../hooks/useNativeCurrencyDecimalsOnSourceChain'
+import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 
 function Amount2ToggleButton({
   onClick
@@ -94,7 +94,7 @@ export function SourceNetworkBox() {
   const { errorMessages } = useTransferReadiness()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const nativeCurrencyDecimalsOnSourceChain =
-    useNativeCurrencyDecimalsOnSourceChain()
+    useSourceChainNativeCurrencyDecimals()
 
   const isCctpTransfer = useIsCctpTransfer()
 

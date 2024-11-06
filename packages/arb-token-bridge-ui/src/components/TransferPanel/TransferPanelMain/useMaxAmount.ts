@@ -9,7 +9,7 @@ import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
-import { useNativeCurrencyDecimalsOnSourceChain } from '../../../hooks/useNativeCurrencyDecimalsOnSourceChain'
+import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 
 export function useMaxAmount() {
   const {
@@ -21,7 +21,7 @@ export function useMaxAmount() {
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const nativeCurrencyDecimalsOnSourceChain =
-    useNativeCurrencyDecimalsOnSourceChain()
+    useSourceChainNativeCurrencyDecimals()
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()

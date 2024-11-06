@@ -32,7 +32,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
-import { useNativeCurrencyDecimalsOnSourceChain } from '../../hooks/useNativeCurrencyDecimalsOnSourceChain'
+import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -246,7 +246,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { balance, symbol } = useTokenInfo(token)
   const nativeCurrencyDecimalsOnSourceChain =
-    useNativeCurrencyDecimalsOnSourceChain()
+    useSourceChainNativeCurrencyDecimals()
 
   const isArbitrumNativeUSDC =
     isTokenArbitrumOneNativeUSDC(token?.address) ||

@@ -1,12 +1,12 @@
 import { useAppState } from '../../state'
-import { useNativeCurrencyDecimalsOnSourceChain } from '../useNativeCurrencyDecimalsOnSourceChain'
+import { useSourceChainNativeCurrencyDecimals } from '../useSourceChainNativeCurrencyDecimals'
 
 export function useSelectedTokenDecimals() {
   const {
     app: { selectedToken }
   } = useAppState()
   const nativeCurrencyDecimalsOnSourceChain =
-    useNativeCurrencyDecimalsOnSourceChain()
+    useSourceChainNativeCurrencyDecimals()
 
   return selectedToken
     ? selectedToken.decimals

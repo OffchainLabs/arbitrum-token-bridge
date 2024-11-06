@@ -78,7 +78,7 @@ import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
-import { useNativeCurrencyDecimalsOnSourceChain } from '../../hooks/useNativeCurrencyDecimalsOnSourceChain'
+import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -134,7 +134,7 @@ export function TransferPanel() {
   } = useLatest(useNetworksRelationship(latestNetworks.current))
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const nativeCurrencyDecimalsOnSourceChain =
-    useNativeCurrencyDecimalsOnSourceChain()
+    useSourceChainNativeCurrencyDecimals()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -807,15 +807,15 @@ export function TransferPanel() {
       latestNetworks.current.sourceChain.id
     )
 
-    const scaledAmount =
-      // only scale for native tokens, and
-      // only scale if sent from Orbit, because it's always 18 decimals there but the UI needs scaled amount
-      selectedToken || !isSourceOrbitChain
-        ? amountBigNumber
-        : scaleFrom18DecimalsToNativeTokenDecimals({
-            amount: amountBigNumber,
-            decimals: nativeCurrency.decimals
-          })
+    // only scale for native tokens, and
+    // only scale if sent from Orbit, because it's always 18 decimals there but the UI needs scaled amount
+    const scaledAmount = scaleFrom18DecimalsToNativeTokenDecimals({
+      amount: amountBigNumber,
+      decimals: nativeCurrency.decimals
+    })
+
+    const isNativeTokenWithdrawalFromOrbit =
+      !selectedToken && isSourceOrbitChain
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
@@ -825,7 +825,7 @@ export function TransferPanel() {
       walletAddress,
       destinationAddress,
       nativeCurrency,
-      amount: scaledAmount,
+      amount: isNativeTokenWithdrawalFromOrbit ? scaledAmount : amountBigNumber,
       amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
       timestampCreated
     })
@@ -844,7 +844,9 @@ export function TransferPanel() {
           walletAddress,
           destinationAddress,
           nativeCurrency,
-          amount: scaledAmount,
+          amount: isNativeTokenWithdrawalFromOrbit
+            ? scaledAmount
+            : amountBigNumber,
           amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
           timestampCreated
         })
