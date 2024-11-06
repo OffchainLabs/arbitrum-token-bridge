@@ -268,14 +268,16 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     type: 'all'
   })
 
-  // TODO: Clean up this logic when introducing testnet/mainnet split
-  const combinedCctpTransfers = [
+  const combinedCctpMainnetTransfers = [
     ...(cctpTransfersMainnet.deposits?.completed || []),
     ...(cctpTransfersMainnet.withdrawals?.completed || []),
+    ...(cctpTransfersMainnet.deposits?.pending || []),
+    ...(cctpTransfersMainnet.withdrawals?.pending || [])
+  ]
+
+  const combinedCctpTestnetTransfers = [
     ...(cctpTransfersTestnet.deposits?.completed || []),
     ...(cctpTransfersTestnet.withdrawals?.completed || []),
-    ...(cctpTransfersMainnet.deposits?.pending || []),
-    ...(cctpTransfersMainnet.withdrawals?.pending || []),
     ...(cctpTransfersTestnet.deposits?.pending || []),
     ...(cctpTransfersTestnet.withdrawals?.pending || [])
   ]
@@ -420,7 +422,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const transactions = [
     ...deposits,
     ...withdrawals,
-    ...combinedCctpTransfers
+    ...(isTestnetMode
+      ? combinedCctpTestnetTransfers
+      : combinedCctpMainnetTransfers)
   ].flat()
 
   return {
