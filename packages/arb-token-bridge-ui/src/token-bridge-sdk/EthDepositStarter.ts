@@ -145,11 +145,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({
-    amount,
-    signer,
-    destinationAddress
-  }: TransferEstimateGas) {
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
     const address = await getAddressFromSigner(signer)
 
     return depositEthEstimateGas({
@@ -157,17 +153,17 @@ export class EthDepositStarter extends BridgeTransferStarter {
       address,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider,
-      destinationAddress
+      destinationAddress: this.destinationAddress
     })
   }
 
-  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+  public async transfer({ amount, signer }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
     const isDifferentDestinationAddress = isCustomDestinationAddressTx({
       sender: address,
-      destination: destinationAddress
+      destination: this.destinationAddress
     })
 
     // TODO: remove this when eth-custom-dest feature is live
@@ -186,7 +182,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
           parentProvider: this.sourceChainProvider,
           childProvider: this.destinationChainProvider,
           // we know it's defined
-          destinationAddress: String(destinationAddress)
+          destinationAddress: String(this.destinationAddress)
         })
       : await ethBridger.getDepositRequest({
           amount,
@@ -206,7 +202,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
           amount,
           parentSigner: signer,
           childProvider: this.destinationChainProvider,
-          destinationAddress: String(destinationAddress),
+          destinationAddress: String(this.destinationAddress),
           overrides: parentChainOverrides,
           retryableGasOverrides: {
             // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
