@@ -768,7 +768,9 @@
           "symbol": "CHEESE",
           "decimals": 18,
           "logoUrl": "/images/CheeseChain_NativeTokenLogo.jpg"
-        }
+        },
+        "fastWithdrawalTime": 900000,
+        "fastWithdrawalActive": true
       }
     }
   ],
@@ -952,9 +954,7 @@
           "name": "RARI Testnet",
           "description": "A testnet chain designed specifically for NFT royalties and creator empowerment.",
           "logo": "/images/RARIMainnetLogo.svg"
-        },
-        "fastWithdrawalTime": 1800000,
-        "fastWithdrawalActive": true
+        }
       }
     },
     {
