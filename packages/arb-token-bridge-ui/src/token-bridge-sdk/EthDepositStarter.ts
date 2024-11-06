@@ -164,7 +164,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       address,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider,
-      destinationAddress: destinationAddress
+      destinationAddress
     })
   }
 

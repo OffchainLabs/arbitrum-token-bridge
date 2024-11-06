@@ -72,7 +72,9 @@ export async function depositEthEstimateGas(
   } = params
   const ethBridger = await EthBridger.fromProvider(childChainProvider)
 
-  const customFeeToken = typeof ethBridger.nativeToken !== 'undefined'
+  const customFeeToken =
+    typeof ethBridger.nativeToken !== 'undefined' &&
+    ethBridger.nativeToken !== constants.AddressZero
 
   const isDifferentDestinationAddress = isCustomDestinationAddressTx({
     sender: address,
