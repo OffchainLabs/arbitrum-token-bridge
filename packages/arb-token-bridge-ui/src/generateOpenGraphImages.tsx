@@ -4,6 +4,7 @@ import sharp from 'sharp'
 import fs from 'fs'
 import { ChainId, isNetwork } from './util/networks'
 import { getBridgeUiConfigForChain } from './util/bridgeUiConfig'
+import { orbitMainnets } from './util/orbitChainsList'
 
 const dimensions = {
   width: 1200,
@@ -37,48 +38,23 @@ async function getFonts(): Promise<Font[]> {
   ]
 }
 
-type Chain = {
-  id: ChainId | number
-  name?: string
-  slug?: string
-  logo: string
-}
+type Chain = ChainId | number
 
 type ChainCombination = [Chain, Chain]
 
+const chainToLogo: { [key: Chain]: string } = {
+  [ChainId.Ethereum]: 'https://l2beat.com/icons/ethereum.png',
+  [ChainId.ArbitrumOne]: 'https://l2beat.com/icons/arbitrum.png',
+  [ChainId.ArbitrumNova]: 'https://l2beat.com/icons/nova.png'
+}
+
 const configs: ChainCombination[] = [
-  [
-    {
-      id: ChainId.Ethereum,
-      logo: 'https://l2beat.com/icons/ethereum.png'
-    },
-    {
-      id: ChainId.ArbitrumOne,
-      logo: 'https://l2beat.com/icons/arbitrum.png'
-    }
-  ],
-  [
-    {
-      id: ChainId.Ethereum,
-      logo: 'https://l2beat.com/icons/ethereum.png'
-    },
-    {
-      id: ChainId.ArbitrumNova,
-      logo: 'https://l2beat.com/icons/nova.png'
-    }
-  ],
-  [
-    {
-      id: ChainId.ArbitrumOne,
-      logo: 'https://l2beat.com/icons/arbitrum.png'
-    },
-    {
-      id: 660279,
-      name: 'Xai',
-      slug: 'xai',
-      logo: 'https://bin.bnbstatic.com/static/research/xai.png'
-    }
-  ]
+  [ChainId.Ethereum, ChainId.ArbitrumOne],
+  [ChainId.Ethereum, ChainId.ArbitrumNova],
+  [ChainId.ArbitrumOne, 660279],
+  ...Object.values(orbitMainnets).map(
+    chain => [chain.parentChainId, chain.chainId] as ChainCombination
+  )
 ]
 
 function ChainWrapper({
@@ -88,7 +64,7 @@ function ChainWrapper({
   chain: Chain
   direction: 'From' | 'To'
 }) {
-  const chainConfig = getBridgeUiConfigForChain(chain.id)
+  const chainConfig = getBridgeUiConfigForChain(chain)
   return (
     <div
       style={{
@@ -114,9 +90,15 @@ function ChainWrapper({
           borderRadius: '5px'
         }}
       >
-        {direction}: {chainConfig.network.name ?? chain.name}
+        {direction}: {chainConfig.network.name}
       </span>
-      <img src={chain.logo} width={80} height={80} style={{ opacity: 0.5 }} />
+      <img
+        src={chainToLogo[chain]}
+        alt="logo"
+        width={80}
+        height={80}
+        style={{ opacity: 0.5 }}
+      />
     </div>
   )
 }
@@ -220,13 +202,42 @@ function getCoreChainImage(from: Chain, to: Chain) {
 }
 
 async function getOrbitChainImage(orbitChain: Chain) {
-  const chainConfig = getBridgeUiConfigForChain(orbitChain.id)
+  const chainConfig = getBridgeUiConfigForChain(orbitChain)
+  const isWebp = chainConfig.network.logo.endsWith('.webp')
+  const isSvg = chainConfig.network.logo.endsWith('.svg')
+  const isJpg =
+    chainConfig.network.logo.endsWith('.jpeg') ||
+    chainConfig.network.logo.endsWith('.jpg')
+  const isPng = chainConfig.network.logo.endsWith('.png')
 
-  const svgContent = await sharp(
-    Buffer.from(fs.readFileSync(`./public${chainConfig.network.logo}`, 'utf8'))
-  )
-    .resize(120)
-    .toBuffer()
+  let imageContent = Buffer.from('')
+
+  try {
+    if (isWebp || isPng) {
+      console.log('orbitChain? ', orbitChain)
+      console.log('isWebp? ', isWebp)
+      console.log('isPng? ', isPng)
+      return (
+        <div
+          style={{
+            ...dimensions,
+            display: 'flex'
+          }}
+        >
+          LOL
+        </div>
+      )
+    }
+    const logoFileBuffer = Buffer.from(
+      fs.readFileSync(`./public${chainConfig.network.logo}`, 'utf8')
+    )
+
+    imageContent = isSvg
+      ? await sharp(logoFileBuffer).resize(120).toBuffer()
+      : await sharp(logoFileBuffer).toBuffer()
+  } catch (error) {
+    console.error(error)
+  }
 
   return (
     <div
@@ -256,7 +267,8 @@ async function getOrbitChainImage(orbitChain: Chain) {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          position: 'relative'
+          position: 'relative',
+          textAlign: 'center'
         }}
       >
         <ArbitrumLogo
@@ -269,7 +281,9 @@ async function getOrbitChainImage(orbitChain: Chain) {
           height={168}
         />
         <img
-          src={`data:image/png;base64,${svgContent.toString('base64')}`}
+          src={`data:image/${
+            isJpg ? 'jpeg' : 'png'
+          };base64,${imageContent.toString('base64')}`}
           width={120}
           height={120}
           alt="logo"
@@ -285,7 +299,7 @@ async function getOrbitChainImage(orbitChain: Chain) {
             marginBottom: '30px'
           }}
         >
-          {(chainConfig.network.name ?? orbitChain.name).toUpperCase()}
+          {chainConfig.network.name.toUpperCase()}
         </span>
         <span
           style={{
@@ -302,25 +316,33 @@ async function getOrbitChainImage(orbitChain: Chain) {
     </div>
   )
 }
-
-async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
+async function generateSvg(orbitChain: Chain): Promise<void>
+async function generateSvg({
+  from,
+  to
+}: {
+  from: Chain
+  to: Chain
+}): Promise<void>
+async function generateSvg(
+  chainsOrOrbitChain: Chain | { from: Chain; to: Chain }
+): Promise<void> {
   const fonts = await getFonts()
-
-  const { isCoreChain: isFromCoreChain } = isNetwork(from.id)
-  const { isCoreChain: isToCoreChain } = isNetwork(to.id)
-  const isOrbitChain = !isFromCoreChain || !isToCoreChain
+  const isOrbitChain = typeof chainsOrOrbitChain === 'number'
 
   const svg = await satori(
     isOrbitChain
-      ? await getOrbitChainImage(isFromCoreChain ? to : from)
-      : getCoreChainImage(from, to),
+      ? await getOrbitChainImage(chainsOrOrbitChain)
+      : getCoreChainImage(chainsOrOrbitChain.from, chainsOrOrbitChain.to),
     {
       ...dimensions,
       fonts
     }
   )
 
-  const file = `${from.id}-to-${to.id}.jpg`
+  const file = isOrbitChain
+    ? `${chainsOrOrbitChain}.jpg`
+    : `${chainsOrOrbitChain.from}-to-${chainsOrOrbitChain.to}.jpg`
   const filePath = `./public/images/__auto-generated/open-graph/${file}`
 
   await sharp(Buffer.from(svg))
@@ -332,8 +354,17 @@ async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
 
 async function main() {
   for (const combination of configs) {
-    await generateSvg({ from: combination[0], to: combination[1] })
-    await generateSvg({ from: combination[1], to: combination[0] })
+    const { isCoreChain: isFirstCoreChain } = isNetwork(combination[0])
+    const { isCoreChain: isSecondCoreChain } = isNetwork(combination[1])
+
+    if (!isFirstCoreChain) {
+      await generateSvg(combination[0])
+    } else if (!isSecondCoreChain) {
+      await generateSvg(combination[1])
+    } else {
+      await generateSvg({ from: combination[0], to: combination[1] })
+      await generateSvg({ from: combination[1], to: combination[0] })
+    }
   }
 }
 
