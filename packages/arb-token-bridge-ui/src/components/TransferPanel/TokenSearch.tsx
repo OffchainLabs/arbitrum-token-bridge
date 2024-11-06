@@ -385,7 +385,7 @@ function TokensPanel({
     let isSuccessful = false
 
     try {
-      // Try to add the token as an L2-native token
+      // Try to add the token as a child chain native token
       token.addChildNativeToken(newToken)
       isSuccessful = true
     } catch (error) {
