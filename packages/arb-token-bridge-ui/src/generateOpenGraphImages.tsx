@@ -219,9 +219,15 @@ function getCoreChainImage(from: Chain, to: Chain) {
   )
 }
 
-function getOrbitChainImage(orbitChain: Chain) {
+async function getOrbitChainImage(orbitChain: Chain) {
   const chainConfig = getBridgeUiConfigForChain(orbitChain.id)
-  console.log('chainConfig.network.logo? ', chainConfig.network.logo)
+
+  const svgContent = await sharp(
+    Buffer.from(fs.readFileSync(`./public${chainConfig.network.logo}`, 'utf8'))
+  )
+    .resize(120)
+    .toBuffer()
+
   return (
     <div
       style={{
@@ -263,17 +269,20 @@ function getOrbitChainImage(orbitChain: Chain) {
           height={168}
         />
         <img
-          src={`https://bridge.arbitrum.io${chainConfig.network.logo}`}
+          src={`data:image/png;base64,${svgContent.toString('base64')}`}
           width={120}
           height={120}
           alt="logo"
+          style={{ marginBottom: '40px' }}
         />
         <span
           style={{
             fontSize: '140px',
             fontWeight: '500',
             color: 'white',
-            letterSpacing: '4px'
+            letterSpacing: '4px',
+            lineHeight: '1',
+            marginBottom: '30px'
           }}
         >
           {(chainConfig.network.name ?? orbitChain.name).toUpperCase()}
@@ -283,7 +292,8 @@ function getOrbitChainImage(orbitChain: Chain) {
             fontSize: '60px',
             fontWeight: '500',
             color: 'white',
-            letterSpacing: '4px'
+            letterSpacing: '4px',
+            lineHeight: '1'
           }}
         >
           BRIDGE
@@ -302,7 +312,7 @@ async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
 
   const svg = await satori(
     isOrbitChain
-      ? getOrbitChainImage(isFromCoreChain ? to : from)
+      ? await getOrbitChainImage(isFromCoreChain ? to : from)
       : getCoreChainImage(from, to),
     {
       ...dimensions,
