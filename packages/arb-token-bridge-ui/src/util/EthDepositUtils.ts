@@ -14,7 +14,7 @@ function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({
   // todo(spsjvc): properly estimate these values
   //
   // this hardcoding is only necessary for Orbit chains that have a custom fee token (where estimation may fail due to low allowance)
-  if (isCustomDestinationAddressTx) {
+  if (!isCustomDestinationAddressTx) {
     return {
       estimatedParentChainGas: BigNumber.from(100_000),
       estimatedChildChainGas: constants.Zero,
