@@ -39,16 +39,18 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   private async getDepositRetryableFees({
     signer,
-    amount
+    amount,
+    destinationAddress
   }: {
     signer: Signer
     amount: BigNumber
+    destinationAddress?: string
   }) {
     const address = await getAddressFromSigner(signer)
 
     const isDifferentDestinationAddress = isCustomDestinationAddressTx({
       sender: address,
-      destination: this.destinationAddress
+      destination: destinationAddress
     })
 
     if (!isDifferentDestinationAddress) {
@@ -59,7 +61,8 @@ export class EthDepositStarter extends BridgeTransferStarter {
     // In the case of native currency we need to also approve native currency used for gas
     const retryableGasEstimates = await this.transferEstimateGas({
       amount,
-      signer
+      signer,
+      destinationAddress
     })
 
     const gasPrice = percentIncrease(
@@ -74,7 +77,8 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async requiresNativeCurrencyApproval({
     amount,
-    signer
+    signer,
+    destinationAddress
   }: RequiresNativeCurrencyApprovalProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
@@ -92,7 +96,8 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const parentRetryableGas = scaleFrom18DecimalsToNativeTokenDecimals({
       amount: await this.getDepositRetryableFees({
         signer,
-        amount
+        amount,
+        destinationAddress
       }),
       decimals: nativeTokenDecimals
     })
@@ -120,13 +125,15 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async approveNativeCurrency({
     signer,
-    amount
+    amount,
+    destinationAddress
   }: ApproveNativeCurrencyProps) {
     const ethBridger = await this.getBridger()
 
     const parentRetryableGas = await this.getDepositRetryableFees({
       signer,
-      amount
+      amount,
+      destinationAddress
     })
 
     return ethBridger.approveGasToken({
@@ -145,7 +152,11 @@ export class EthDepositStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    signer,
+    destinationAddress
+  }: TransferEstimateGas) {
     const address = await getAddressFromSigner(signer)
 
     return depositEthEstimateGas({
@@ -153,17 +164,17 @@ export class EthDepositStarter extends BridgeTransferStarter {
       address,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider,
-      destinationAddress: this.destinationAddress
+      destinationAddress: destinationAddress
     })
   }
 
-  public async transfer({ amount, signer }: TransferProps) {
+  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
     const isDifferentDestinationAddress = isCustomDestinationAddressTx({
       sender: address,
-      destination: this.destinationAddress
+      destination: destinationAddress
     })
 
     // TODO: remove this when eth-custom-dest feature is live
@@ -182,7 +193,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
           parentProvider: this.sourceChainProvider,
           childProvider: this.destinationChainProvider,
           // we know it's defined
-          destinationAddress: String(this.destinationAddress)
+          destinationAddress: String(destinationAddress)
         })
       : await ethBridger.getDepositRequest({
           amount,
@@ -202,7 +213,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
           amount,
           parentSigner: signer,
           childProvider: this.destinationChainProvider,
-          destinationAddress: String(this.destinationAddress),
+          destinationAddress: String(destinationAddress),
           overrides: parentChainOverrides,
           retryableGasOverrides: {
             // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)

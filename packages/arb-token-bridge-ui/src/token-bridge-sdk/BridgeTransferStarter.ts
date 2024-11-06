@@ -66,6 +66,7 @@ export type TransferProps = {
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
   signer: Signer
+  destinationAddress?: string
   options?: {
     approvalAmountIncrease?: BigNumber
   }
@@ -79,6 +80,7 @@ export type ApproveNativeCurrencyEstimateGasProps = {
 export type ApproveNativeCurrencyProps = {
   signer: Signer
   amount: BigNumber
+  destinationAddress?: string
   options?: {
     approvalAmountIncrease?: BigNumber
   }
@@ -109,7 +111,6 @@ export abstract class BridgeTransferStarter {
     this.destinationChainProvider = props.destinationChainProvider
     this.sourceChainErc20Address = props.sourceChainErc20Address
     this.destinationChainErc20Address = props.destinationChainErc20Address
-    this.destinationAddress = props.destinationAddress
   }
 
   public abstract requiresNativeCurrencyApproval(
