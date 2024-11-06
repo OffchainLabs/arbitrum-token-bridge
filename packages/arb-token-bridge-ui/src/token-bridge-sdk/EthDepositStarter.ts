@@ -1,4 +1,7 @@
-import { EthBridger } from '@arbitrum/sdk'
+import {
+  EthBridger,
+  scaleFrom18DecimalsToNativeTokenDecimals
+} from '@arbitrum/sdk'
 import { BigNumber, Signer } from 'ethers'
 import {
   ApproveNativeCurrencyEstimateGasProps,
@@ -15,6 +18,7 @@ import { fetchErc20Allowance } from '../util/TokenUtils'
 import { isExperimentalFeatureEnabled } from '../util'
 import { isCustomDestinationAddressTx } from '../state/app/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
+import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -57,14 +61,15 @@ export class EthDepositStarter extends BridgeTransferStarter {
       amount,
       signer
     })
-    const parentGasPrice = await this.sourceChainProvider.getGasPrice()
-    const parentRetryableGas =
-      retryableGasEstimates.estimatedParentChainGas.mul(parentGasPrice)
 
-    return percentIncrease(
-      parentRetryableGas,
+    const gasPrice = percentIncrease(
+      await this.destinationChainProvider.getGasPrice(),
       BigNumber.from(DEFAULT_GAS_PRICE_PERCENT_INCREASE)
     )
+
+    return retryableGasEstimates.estimatedChildChainGas
+      .mul(gasPrice)
+      .add(retryableGasEstimates.estimatedChildChainSubmissionCost)
   }
 
   public async requiresNativeCurrencyApproval({
@@ -76,14 +81,21 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
     const { childNetwork } = ethBridger
 
-    const parentRetryableGas = await this.getDepositRetryableFees({
-      signer,
-      amount
-    })
-
     if (typeof childNetwork.nativeToken === 'undefined') {
       return false // native currency doesn't require approval
     }
+
+    const nativeTokenDecimals = (
+      await fetchNativeCurrency({ provider: this.destinationChainProvider })
+    ).decimals
+
+    const parentRetryableGas = scaleFrom18DecimalsToNativeTokenDecimals({
+      amount: await this.getDepositRetryableFees({
+        signer,
+        amount
+      }),
+      decimals: nativeTokenDecimals
+    })
 
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
       address: childNetwork.nativeToken,
