@@ -89,6 +89,17 @@
     async-mutex "^0.4.0"
     ethers "^5.1.0"
 
+"@arbitrum/sdk@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.2.tgz#23555858f49e2b237b94a65bd486c65edb7b1690"
+  integrity sha512-KkuXNwbG5c/hCT66EG2tFMHXxIDCvt9dxAIeykZYnW7KyEH5GNlRwaPzwo6MU0shHNc0qg6pZzy2XakJWuSw2Q==
+  dependencies:
+    "@ethersproject/address" "^5.0.8"
+    "@ethersproject/bignumber" "^5.1.1"
+    "@ethersproject/bytes" "^5.0.8"
+    async-mutex "^0.4.0"
+    ethers "^5.1.0"
+
 "@babel/code-frame@7.12.11":
   version "7.12.11"
   resolved "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.12.11.tgz"
