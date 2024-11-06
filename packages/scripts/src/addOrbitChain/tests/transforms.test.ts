@@ -12,7 +12,6 @@ import {
 } from "vitest";
 import { IncomingChainData, Issue } from "../schemas";
 import {
-  extractImageUrlFromMarkdown,
   extractRawChainData,
   fetchAndProcessImage,
   nameToSlug,
@@ -259,6 +258,33 @@ describe("Transforms", () => {
     it("should throw an error if the image fetch fails", async () => {
       const invalidUrl = "https://example.com/nonexistent-image.png";
       await expect(fetchAndProcessImage(invalidUrl)).rejects.toThrow();
+    });
+
+    it("should correctly identify and handle SVG images without extension", async () => {
+      const svgContent = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+          <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
+        </svg>`;
+
+      // Mock axios for this test
+      const mockAxios = vi.spyOn(axios, "get").mockResolvedValueOnce({
+        status: 200,
+        data: svgContent,
+        headers: {
+          "content-type": "application/octet-stream", // Intentionally wrong content-type
+        },
+      });
+
+      const { buffer, fileExtension } = await fetchAndProcessImage(
+        "https://example.com/logo"
+      );
+
+      // Verify it detected SVG correctly
+      expect(fileExtension).toBe(".svg");
+      // Verify the SVG content wasn't modified
+      expect(buffer.toString("utf8").trim()).toBe(svgContent.trim());
+
+      mockAxios.mockRestore();
     });
   });
 
