@@ -4,7 +4,7 @@
 
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
-import { MultiCaller } from '@arbitrum/sdk'
+import { EthBridger, MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import {
   defaultL2Network,
@@ -12,7 +12,6 @@ import {
   defaultL3CustomGasTokenNetwork
 } from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
-import { getNativeTokenDecimals } from '../../src/util/TokenUtils'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -359,4 +358,26 @@ export function setupCypressTasks(
       return walletConnectedToDapp
     }
   })
+}
+
+export async function getNativeTokenDecimals({
+  parentProvider,
+  childProvider
+}: {
+  parentProvider: Provider
+  childProvider: Provider
+}) {
+  const multiCaller = await MultiCaller.fromProvider(parentProvider)
+  const ethBridger = await EthBridger.fromProvider(childProvider)
+  const isCustomFeeToken = typeof ethBridger.nativeToken !== 'undefined'
+
+  const nativeToken = isCustomFeeToken
+    ? (
+        await multiCaller.getTokenData([ethBridger.nativeToken!], {
+          decimals: true
+        })
+      )[0]
+    : undefined
+
+  return nativeToken?.decimals ?? 18
 }
