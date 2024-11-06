@@ -12,7 +12,7 @@ import {
   defaultL3CustomGasTokenNetwork
 } from '../../src/util/networks'
 import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
-import { getNativeTokenDecimals } from '../../src/hooks/useNativeCurrency'
+import { getNativeTokenDecimals } from '../../src/util/TokenUtils'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =

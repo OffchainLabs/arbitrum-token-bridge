@@ -1,10 +1,5 @@
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import {
-  EthBridger,
-  ArbitrumNetwork,
-  getArbitrumNetwork,
-  MultiCaller
-} from '@arbitrum/sdk'
+import { EthBridger, ArbitrumNetwork, getArbitrumNetwork } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
 import { ETHER_TOKEN_LOGO, ether } from '../constants'
@@ -55,28 +50,6 @@ export function useNativeCurrency({
   )
 
   return data
-}
-
-export async function getNativeTokenDecimals({
-  parentProvider,
-  childProvider
-}: {
-  parentProvider: Provider
-  childProvider: Provider
-}) {
-  const multiCaller = await MultiCaller.fromProvider(parentProvider)
-  const ethBridger = await EthBridger.fromProvider(childProvider)
-  const isCustomFeeToken = typeof ethBridger.nativeToken !== 'undefined'
-
-  const nativeToken = isCustomFeeToken
-    ? (
-        await multiCaller.getTokenData([ethBridger.nativeToken!], {
-          decimals: true
-        })
-      )[0]
-    : undefined
-
-  return nativeToken?.decimals ?? 18
 }
 
 export async function fetchNativeCurrency({

@@ -502,3 +502,25 @@ export async function isGatewayRegistered({
     childProvider: childChainProvider
   })
 }
+
+export async function getNativeTokenDecimals({
+  parentProvider,
+  childProvider
+}: {
+  parentProvider: Provider
+  childProvider: Provider
+}) {
+  const multiCaller = await MultiCaller.fromProvider(parentProvider)
+  const ethBridger = await EthBridger.fromProvider(childProvider)
+  const isCustomFeeToken = typeof ethBridger.nativeToken !== 'undefined'
+
+  const nativeToken = isCustomFeeToken
+    ? (
+        await multiCaller.getTokenData([ethBridger.nativeToken!], {
+          decimals: true
+        })
+      )[0]
+    : undefined
+
+  return nativeToken?.decimals ?? 18
+}
