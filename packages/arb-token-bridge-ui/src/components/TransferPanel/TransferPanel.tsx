@@ -571,8 +571,7 @@ export function TransferPanel() {
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId,
-        destinationChainErc20Address,
-        destinationAddress
+        destinationChainErc20Address
       })
 
       const { isNativeCurrencyTransfer, isWithdrawal } =
