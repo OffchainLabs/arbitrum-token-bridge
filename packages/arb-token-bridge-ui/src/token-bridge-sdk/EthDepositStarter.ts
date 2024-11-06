@@ -57,6 +57,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
       return BigNumber.from(0)
     }
 
+    const nativeTokenDecimals = (
+      await fetchNativeCurrency({ provider: this.destinationChainProvider })
+    ).decimals
+
     // Eth transfers to a custom destination use retryables
     // In the case of native currency we need to also approve native currency used for gas
     const gasEstimates = await this.transferEstimateGas({
@@ -70,9 +74,12 @@ export class EthDepositStarter extends BridgeTransferStarter {
       BigNumber.from(DEFAULT_GAS_PRICE_PERCENT_INCREASE)
     )
 
-    return gasEstimates.estimatedChildChainGas
-      .mul(gasPrice)
-      .add(gasEstimates.estimatedChildChainSubmissionCost)
+    return scaleFrom18DecimalsToNativeTokenDecimals({
+      amount: gasEstimates.estimatedChildChainGas
+        .mul(gasPrice)
+        .add(gasEstimates.estimatedChildChainSubmissionCost),
+      decimals: nativeTokenDecimals
+    })
   }
 
   public async requiresNativeCurrencyApproval({
@@ -89,17 +96,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
       return false // native currency doesn't require approval
     }
 
-    const nativeTokenDecimals = (
-      await fetchNativeCurrency({ provider: this.destinationChainProvider })
-    ).decimals
-
-    const retryableFees = scaleFrom18DecimalsToNativeTokenDecimals({
-      amount: await this.getDepositRetryableFees({
-        signer,
-        amount,
-        destinationAddress
-      }),
-      decimals: nativeTokenDecimals
+    const retryableFees = await this.getDepositRetryableFees({
+      signer,
+      amount,
+      destinationAddress
     })
 
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
