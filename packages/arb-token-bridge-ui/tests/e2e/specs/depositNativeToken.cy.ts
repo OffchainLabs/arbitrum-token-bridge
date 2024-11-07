@@ -49,10 +49,7 @@ describe('Deposit native token', () => {
     cy.login({ networkType: 'parentChain' })
 
     cy.typeAmount(ETHAmountToDeposit)
-
-    context('should fill custom destination address successfully', () => {
-      cy.fillCustomDestinationAddress()
-    })
+    cy.fillCustomDestinationAddress()
 
     cy.findGasFeeSummary(zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
@@ -80,6 +77,7 @@ describe('Deposit native token', () => {
     )
 
     cy.closeTransactionDetails()
+    cy.closeTransactionHistoryPanel()
     cy.findAmountInput().should('have.value', '')
     cy.findMoveFundsButton().should('be.disabled')
   })
