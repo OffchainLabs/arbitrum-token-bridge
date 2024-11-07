@@ -213,9 +213,15 @@ async function getOrbitChainImage(orbitChain: Chain) {
   let imageContent = Buffer.from('')
 
   try {
-    if (isWebp || isPng) {
-      console.log('orbitChain? ', orbitChain)
+    if (isWebp) {
       console.log('isWebp? ', isWebp)
+      const logoFileBuffer = fs.readFileSync(
+        `./public${chainConfig.network.logo}`
+      )
+      imageContent = await sharp(logoFileBuffer).png().toBuffer()
+      console.log('img? ', imageContent)
+    }
+    if (isPng) {
       console.log('isPng? ', isPng)
       return (
         <div
@@ -234,7 +240,7 @@ async function getOrbitChainImage(orbitChain: Chain) {
 
     imageContent = isSvg
       ? await sharp(logoFileBuffer).resize(120).toBuffer()
-      : await sharp(logoFileBuffer).toBuffer()
+      : await sharp(logoFileBuffer).png().toBuffer()
   } catch (error) {
     console.error(error)
   }
@@ -354,12 +360,9 @@ async function generateSvg(
 
 async function main() {
   for (const combination of configs) {
-    const { isCoreChain: isFirstCoreChain } = isNetwork(combination[0])
-    const { isCoreChain: isSecondCoreChain } = isNetwork(combination[1])
+    const { isCoreChain: isChildChainCoreChain } = isNetwork(combination[1])
 
-    if (!isFirstCoreChain) {
-      await generateSvg(combination[0])
-    } else if (!isSecondCoreChain) {
+    if (!isChildChainCoreChain) {
       await generateSvg(combination[1])
     } else {
       await generateSvg({ from: combination[0], to: combination[1] })
