@@ -9,6 +9,7 @@ import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 
 export function useMaxAmount() {
   const {
@@ -19,6 +20,8 @@ export function useMaxAmount() {
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
@@ -36,14 +39,14 @@ export function useMaxAmount() {
     if (nativeCurrency.isCustom && isDepositMode) {
       return utils.formatUnits(
         nativeCurrencySourceBalance,
-        nativeCurrency.decimals
+        nativeCurrencyDecimalsOnSourceChain
       )
     }
 
     // ETH deposits and ETH/custom fee token withdrawals
     const nativeCurrencyBalanceFormatted = utils.formatUnits(
       nativeCurrencySourceBalance,
-      nativeCurrency.decimals
+      nativeCurrencyDecimalsOnSourceChain
     )
 
     if (
@@ -70,9 +73,9 @@ export function useMaxAmount() {
     estimatedChildChainGasFees,
     estimatedParentChainGasFees,
     isDepositMode,
-    nativeCurrency.decimals,
     nativeCurrency.isCustom,
-    nativeCurrencyBalances.sourceBalance
+    nativeCurrencyBalances.sourceBalance,
+    nativeCurrencyDecimalsOnSourceChain
   ])
 
   const maxAmount = useMemo(() => {
