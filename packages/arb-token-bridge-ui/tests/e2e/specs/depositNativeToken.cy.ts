@@ -9,7 +9,7 @@ import {
 } from '../../support/common'
 
 describe('Deposit native token', () => {
-  const ETHAmountToDeposit = 0.0001
+  const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
   const zeroToLessThanOneNativeToken =
@@ -39,6 +39,45 @@ describe('Deposit native token', () => {
       symbol: nativeTokenSymbol
     })
     cy.closeTransactionHistoryPanel()
+    cy.findAmountInput().should('have.value', '')
+    cy.findMoveFundsButton().should('be.disabled')
+  })
+
+  it('should deposit to custom destination address successfully', () => {
+    const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
+
+    cy.login({ networkType: 'parentChain' })
+
+    context('should fill custom destination address successfully', () => {
+      cy.fillCustomDestinationAddress()
+    })
+
+    cy.findGasFeeSummary(zeroToLessThanOneEth)
+    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
+    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
+    cy.findMoveFundsButton().click()
+    cy.confirmMetamaskTransaction()
+
+    const txData = {
+      amount: ETHAmountToDeposit,
+      symbol: 'ETH'
+    }
+
+    cy.findTransactionInTransactionHistory({
+      duration: depositTime,
+      ...txData
+    })
+
+    cy.findTransactionInTransactionHistory({
+      duration: depositTime,
+      ...txData
+    })
+    cy.openTransactionDetails(txData)
+    cy.findTransactionDetailsCustomDestinationAddress(
+      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+    )
+
+    cy.closeTransactionDetails()
     cy.findAmountInput().should('have.value', '')
     cy.findMoveFundsButton().should('be.disabled')
   })
