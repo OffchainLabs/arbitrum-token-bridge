@@ -443,7 +443,7 @@ export const NetworkSelectionContainer = (
       })
 
       actions.app.setSelectedToken(null)
-      setDestinationAddress('')
+      setDestinationAddress(undefined)
       setAdvancedSettingsCollapsed(true)
     },
     [
