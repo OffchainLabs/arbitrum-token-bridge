@@ -48,6 +48,8 @@ describe('Deposit native token', () => {
 
     cy.login({ networkType: 'parentChain' })
 
+    cy.typeAmount(ETHAmountToDeposit)
+    
     context('should fill custom destination address successfully', () => {
       cy.fillCustomDestinationAddress()
     })
