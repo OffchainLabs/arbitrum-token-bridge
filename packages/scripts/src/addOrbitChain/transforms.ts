@@ -23,8 +23,11 @@ import {
   validateOrbitChainsList,
 } from "./schemas";
 import { getProvider } from "./provider";
+import { ethers } from "ethers";
+
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 
 export const getFileExtension = (mimeType: string): string => {
   const extension = lookup(mimeType);
@@ -364,14 +367,14 @@ export const transformIncomingDataToOrbitChain = async (
       parentErc20Gateway: chainData.parentErc20Gateway,
       parentGatewayRouter: chainData.parentGatewayRouter,
       parentMultiCall: chainData.parentMultiCall,
-      parentProxyAdmin: chainData.parentProxyAdmin,
+      parentProxyAdmin: ZERO_ADDRESS,
       parentWeth: chainData.parentWeth,
       parentWethGateway: chainData.parentWethGateway,
       childCustomGateway: chainData.childCustomGateway,
       childErc20Gateway: chainData.childErc20Gateway,
       childGatewayRouter: chainData.childGatewayRouter,
       childMultiCall: chainData.childMultiCall,
-      childProxyAdmin: chainData.childProxyAdmin,
+      childProxyAdmin: ZERO_ADDRESS,
       childWeth: chainData.childWeth,
       childWethGateway: chainData.childWethGateway,
     },
