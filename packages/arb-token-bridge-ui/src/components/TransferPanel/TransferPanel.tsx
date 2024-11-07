@@ -618,6 +618,7 @@ export function TransferPanel() {
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
           amount: amountBigNumber,
+          destinationAddress,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
               ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
@@ -633,6 +634,7 @@ export function TransferPanel() {
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
           amount: amountBigNumber,
+          destinationAddress,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
               ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
@@ -739,7 +741,8 @@ export function TransferPanel() {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer
+          signer,
+          destinationAddress
         })) as DepositGasEstimates
 
         if (!gasEstimates.estimatedChildChainSubmissionCost) {
