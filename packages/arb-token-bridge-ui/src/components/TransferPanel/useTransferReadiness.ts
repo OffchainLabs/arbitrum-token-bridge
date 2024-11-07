@@ -14,7 +14,6 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage,
   getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
@@ -264,18 +263,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
     if (DISABLED_CHAIN_IDS.includes(childChain.id)) {
       return notReady()
-    }
-
-    // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
-    if (isSmartContractWallet && !selectedToken) {
-      return notReady({
-        errorMessages: {
-          inputAmount1:
-            getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
-              { asset: nativeCurrency.symbol }
-            )
-        }
-      })
     }
 
     // teleport transfers using SC wallets not enabled yet
