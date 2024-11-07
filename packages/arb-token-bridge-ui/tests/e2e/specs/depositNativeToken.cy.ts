@@ -59,7 +59,7 @@ describe('Deposit native token', () => {
 
     const txData = {
       amount: ETHAmountToDeposit,
-      symbol: 'ETH'
+      symbol: nativeTokenSymbol
     }
 
     cy.findTransactionInTransactionHistory({

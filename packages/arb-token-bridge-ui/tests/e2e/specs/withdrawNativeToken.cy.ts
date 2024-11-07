@@ -178,7 +178,7 @@ describe('Withdraw native token', () => {
 
       const txData = {
         amount: ETHToWithdraw,
-        symbol: 'ETH'
+        symbol: nativeTokenSymbol
       }
 
       cy.findTransactionInTransactionHistory({
