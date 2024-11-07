@@ -31,7 +31,10 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useDestinationAddressStore } from '../TransferPanel/AdvancedSettings'
+import {
+  useAdvancedSettingsStore,
+  useDestinationAddressStore
+} from '../TransferPanel/AdvancedSettings'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -403,6 +406,7 @@ export const NetworkSelectionContainer = (
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const { setDestinationAddress } = useDestinationAddressStore()
+  const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
 
   const isSource = props.type === 'source'
 
@@ -440,6 +444,7 @@ export const NetworkSelectionContainer = (
 
       actions.app.setSelectedToken(null)
       setDestinationAddress('')
+      setAdvancedSettingsCollapsed(true)
     },
     [
       actions.app,
@@ -447,7 +452,8 @@ export const NetworkSelectionContainer = (
       networks,
       openOneNovaTransferDialog,
       setNetworks,
-      setDestinationAddress
+      setDestinationAddress,
+      setAdvancedSettingsCollapsed
     ]
   )
 
