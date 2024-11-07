@@ -4,7 +4,7 @@ import sharp from 'sharp'
 import fs from 'fs'
 import { ChainId, isNetwork } from './util/networks'
 import { getBridgeUiConfigForChain } from './util/bridgeUiConfig'
-import { orbitMainnets } from './util/orbitChainsList'
+import { orbitMainnets, orbitTestnets } from './util/orbitChainsList'
 
 const dimensions = {
   width: 1200,
@@ -53,6 +53,9 @@ const configs: ChainCombination[] = [
   [ChainId.Ethereum, ChainId.ArbitrumNova],
   [ChainId.ArbitrumOne, 660279],
   ...Object.values(orbitMainnets).map(
+    chain => [chain.parentChainId, chain.chainId] as ChainCombination
+  ),
+  ...Object.values(orbitTestnets).map(
     chain => [chain.parentChainId, chain.chainId] as ChainCombination
   )
 ]
@@ -203,47 +206,14 @@ function getCoreChainImage(from: Chain, to: Chain) {
 
 async function getOrbitChainImage(orbitChain: Chain) {
   const chainConfig = getBridgeUiConfigForChain(orbitChain)
-  const isWebp = chainConfig.network.logo.endsWith('.webp')
   const isSvg = chainConfig.network.logo.endsWith('.svg')
-  const isJpg =
-    chainConfig.network.logo.endsWith('.jpeg') ||
-    chainConfig.network.logo.endsWith('.jpg')
-  const isPng = chainConfig.network.logo.endsWith('.png')
+  const logoFileBuffer = fs.readFileSync(`./public${chainConfig.network.logo}`)
 
-  let imageContent = Buffer.from('')
+  console.log(`Generating image for ${orbitChain}`)
 
-  try {
-    if (isWebp) {
-      console.log('isWebp? ', isWebp)
-      const logoFileBuffer = fs.readFileSync(
-        `./public${chainConfig.network.logo}`
-      )
-      imageContent = await sharp(logoFileBuffer).png().toBuffer()
-      console.log('img? ', imageContent)
-    }
-    if (isPng) {
-      console.log('isPng? ', isPng)
-      return (
-        <div
-          style={{
-            ...dimensions,
-            display: 'flex'
-          }}
-        >
-          LOL
-        </div>
-      )
-    }
-    const logoFileBuffer = Buffer.from(
-      fs.readFileSync(`./public${chainConfig.network.logo}`, 'utf8')
-    )
-
-    imageContent = isSvg
-      ? await sharp(logoFileBuffer).resize(120).toBuffer()
-      : await sharp(logoFileBuffer).png().toBuffer()
-  } catch (error) {
-    console.error(error)
-  }
+  const imageContent = isSvg
+    ? await sharp(logoFileBuffer).resize(120).toBuffer()
+    : await sharp(logoFileBuffer).png().toBuffer()
 
   return (
     <div
@@ -287,9 +257,7 @@ async function getOrbitChainImage(orbitChain: Chain) {
           height={168}
         />
         <img
-          src={`data:image/${
-            isJpg ? 'jpeg' : 'png'
-          };base64,${imageContent.toString('base64')}`}
+          src={`data:image/png;base64,${imageContent.toString('base64')}`}
           width={120}
           height={120}
           alt="logo"

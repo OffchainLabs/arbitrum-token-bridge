@@ -20,6 +20,7 @@ import '../styles/purple.css'
 import { ChainKeyQueryParam } from '../types/ChainQueryParam'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { getChainForChainKeyQueryParam } from '../util/chainQueryParamUtils'
+import { isNetwork } from '../util/networks'
 
 const siteTitle = 'Bridge to Arbitrum'
 
@@ -89,17 +90,34 @@ function DynamicMetaData({
   sourceChainSlug: ChainKeyQueryParam
   destinationChainSlug: ChainKeyQueryParam
 }) {
+  const sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
   const sourceChain: ChainBlob = {
-    name: getChainForChainKeyQueryParam(sourceChainSlug).name,
+    name: sourceChainInfo.name,
     slug: sourceChainSlug
   }
+  const destinationChainInfo =
+    getChainForChainKeyQueryParam(destinationChainSlug)
   const destinationChain: ChainBlob = {
-    name: getChainForChainKeyQueryParam(destinationChainSlug).name,
+    name: destinationChainInfo.name,
     slug: destinationChainSlug
   }
+  const { isOrbitChain: isSourceOrbitChain } = isNetwork(sourceChainInfo.id)
+  const { isOrbitChain: isDestinationOrbitChain } = isNetwork(
+    destinationChainInfo.id
+  )
 
   const siteDescription = `Bridge from ${sourceChain.name} to ${destinationChain.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
   const siteDomain = 'https://bridge.arbitrum.io'
+
+  let metaImagePath = `${sourceChainInfo.id}-to-${destinationChainInfo.id}.jpg`
+
+  if (isSourceOrbitChain) {
+    metaImagePath = `${sourceChainInfo.id}.jpg`
+  }
+
+  if (isDestinationOrbitChain) {
+    metaImagePath = `${destinationChainInfo.id}.jpg`
+  }
 
   return (
     <>
@@ -118,7 +136,7 @@ function DynamicMetaData({
       <meta
         name="og:image"
         property="og:image"
-        content={`${siteDomain}/images/__auto-generated/open-graph/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+        content={`${siteDomain}/images/__auto-generated/open-graph/${metaImagePath}`}
       />
 
       {/* <!-- Twitter Meta Tags --> */}
