@@ -145,7 +145,7 @@ describe('Withdraw native token', () => {
       const ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'childChain' })
-      
+
       cy.typeAmount(ETHToWithdraw)
       cy.fillCustomDestinationAddress()
       cy.findMoveFundsButton().click()
