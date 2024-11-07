@@ -192,7 +192,6 @@ describe('Withdraw native token', () => {
 
       // close popup
       cy.closeTransactionDetails()
-      cy.closeTransactionHistoryPanel()
 
       context('transfer panel amount should be reset', () => {
         cy.closeTransactionHistoryPanel()
