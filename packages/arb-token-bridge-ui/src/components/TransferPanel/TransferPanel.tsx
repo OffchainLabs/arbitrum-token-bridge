@@ -73,7 +73,6 @@ import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
-import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
@@ -521,16 +520,6 @@ export function TransferPanel() {
       throw new Error(signerUndefinedError)
     }
 
-    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (
-      isSmartContractWallet &&
-      !selectedToken &&
-      !isExperimentalFeatureEnabled('eth-custom-dest')
-    ) {
-      console.error("ETH transfers aren't enabled for smart contract wallets.")
-      return
-    }
-
     // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && isTeleportMode) {
       console.error(
@@ -590,18 +579,6 @@ export function TransferPanel() {
         throw Error(
           'Source chain token address not found for ERC-20 withdrawal.'
         )
-      }
-
-      // SCW transfers are not enabled for ETH transfers yet
-      if (
-        isNativeCurrencyTransfer &&
-        isSmartContractWallet &&
-        !isExperimentalFeatureEnabled('eth-custom-dest')
-      ) {
-        console.error(
-          "ETH transfers aren't enabled for smart contract wallets."
-        )
-        return
       }
 
       if (destinationAddressError) {

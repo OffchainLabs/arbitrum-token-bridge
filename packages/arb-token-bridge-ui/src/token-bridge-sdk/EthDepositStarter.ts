@@ -15,7 +15,6 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { isExperimentalFeatureEnabled } from '../util'
 import { isCustomDestinationAddressTx } from '../state/app/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
 import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
@@ -176,15 +175,6 @@ export class EthDepositStarter extends BridgeTransferStarter {
       sender: address,
       destination: destinationAddress
     })
-
-    // TODO: remove this when eth-custom-dest feature is live
-    // this is a safety check, this shouldn't happen
-    if (
-      isDifferentDestinationAddress &&
-      !isExperimentalFeatureEnabled('eth-custom-dest')
-    ) {
-      throw 'Native currency transfers to a custom destination address are not supported yet.'
-    }
 
     const depositRequest = isDifferentDestinationAddress
       ? await ethBridger.getDepositToRequest({
