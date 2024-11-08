@@ -41,9 +41,6 @@ https://explorer.example.com
 ### Parent chain ID
 1
 
-### confirmPeriodBlocks
-100
-
 ### Native token address on Parent Chain
 0x0000000000000000000000000000000000000001
 
