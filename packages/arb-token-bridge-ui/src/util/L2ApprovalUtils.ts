@@ -70,7 +70,7 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
     {
       symbol: 'USDC.e',
       l1Address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-      l2Address: '0x46b991acbd9290967a3a9e02f14895c2f9fe809a'
+      l2Address: '0x094ae96521f35284e04fdf023ca06fe878e307fd'
     }
   ]
 }
