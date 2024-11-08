@@ -110,7 +110,6 @@ function DynamicMetaData({
 
   return (
     <>
-      <title>{siteTitle}</title>
       <meta name="description" content={siteDescription} />
 
       {/* <!-- Facebook Meta Tags --> */}
@@ -160,6 +159,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
           destinationChainSlug={destinationChainSlug}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{siteTitle}</title>
       </Head>
       <Layout>
         <Component {...pageProps} />
