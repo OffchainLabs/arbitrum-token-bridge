@@ -358,7 +358,7 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Child Gateway Router": "childGatewayRouter",
   "Parent ERC20 Gateway": "parentErc20Gateway",
   "Child ERC20 Gateway": "childErc20Gateway",
-  "Parent Custom Gateway": "pare  ntCustomGateway",
+  "Parent Custom Gateway": "parentCustomGateway",
   "Child Custom Gateway": "childCustomGateway",
   "Parent WETH Gateway": "parentWethGateway",
   "Child WETH Gateway": "childWethGateway",
