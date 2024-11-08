@@ -16,7 +16,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { isExperimentalFeatureEnabled } from '../../util'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -41,6 +40,17 @@ export const useDestinationAddressStore = create<DestinationAddressStore>(
       set(() => ({ destinationAddress }))
   })
 )
+
+type AdvancedSettingsStore = {
+  advancedSettingsCollapsed: boolean
+  setAdvancedSettingsCollapsed: (collapsed: boolean) => void
+}
+
+export const useAdvancedSettingsStore = create<AdvancedSettingsStore>(set => ({
+  advancedSettingsCollapsed: true,
+  setAdvancedSettingsCollapsed: collapsed =>
+    set(() => ({ advancedSettingsCollapsed: collapsed }))
+}))
 
 async function getDestinationAddressWarning({
   destinationAddress,
@@ -74,9 +84,8 @@ async function getDestinationAddressWarning({
 }
 
 export const AdvancedSettings = () => {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { advancedSettingsCollapsed, setAdvancedSettingsCollapsed } =
+    useAdvancedSettingsStore()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -88,7 +97,6 @@ export const AdvancedSettings = () => {
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 
-  const [collapsed, setCollapsed] = useState(true)
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
@@ -98,7 +106,7 @@ export const AdvancedSettings = () => {
 
   useEffect(() => {
     // Initially hide for EOA
-    setCollapsed(isEOA)
+    setAdvancedSettingsCollapsed(isEOA)
     // Initially lock for EOA
     setInputLocked(isEOA)
   }, [isEOA])
@@ -140,21 +148,16 @@ export const AdvancedSettings = () => {
     return isEOA && !destinationAddress
   }, [destinationAddress, isEOA])
 
-  // Disabled for ETH
-  if (!selectedToken && !isExperimentalFeatureEnabled('eth-custom-dest')) {
-    return null
-  }
-
   if (!isEOA && !isSmartContractWallet) {
     return null
   }
 
   function handleVisibility() {
     if (!collapsible) {
-      setCollapsed(false)
+      setAdvancedSettingsCollapsed(false)
       return
     }
-    setCollapsed(!collapsed)
+    setAdvancedSettingsCollapsed(!advancedSettingsCollapsed)
   }
 
   return (
@@ -171,12 +174,12 @@ export const AdvancedSettings = () => {
           <ChevronDownIcon
             className={twMerge(
               'ml-1 h-4 w-4 transition-transform duration-200',
-              collapsed ? 'rotate-0' : '-rotate-180'
+              advancedSettingsCollapsed ? 'rotate-0' : '-rotate-180'
             )}
           />
         )}
       </button>
-      <Transition isOpen={!collapsed}>
+      <Transition isOpen={!advancedSettingsCollapsed}>
         <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
           <p className="text-sm font-light">
             {isEOA ? (
