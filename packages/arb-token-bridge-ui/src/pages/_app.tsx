@@ -17,9 +17,11 @@ import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
-import { ChainKeyQueryParam } from '../types/ChainQueryParam'
+import {
+  ChainKeyQueryParam,
+  getChainForChainKeyQueryParam
+} from '../types/ChainQueryParam'
 import { isUserRejectedError } from '../util/isUserRejectedError'
-import { getChainForChainKeyQueryParam } from '../util/chainQueryParamUtils'
 import { isNetwork } from '../util/networks'
 
 const siteTitle = 'Bridge to Arbitrum'

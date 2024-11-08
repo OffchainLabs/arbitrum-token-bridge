@@ -28,11 +28,11 @@ import {
 
 import {
   ChainKeyQueryParam,
+  getChainForChainKeyQueryParam,
   getChainQueryParamForChain,
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../util/networks'
-import { getChainForChainKeyQueryParam } from '../util/chainQueryParamUtils'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'
