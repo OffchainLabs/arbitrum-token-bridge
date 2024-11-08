@@ -12,17 +12,10 @@ const dimensions = {
 } as const
 
 async function getFonts(): Promise<Font[]> {
-  const unica77_light = fs.readFileSync('./src/font/Unica77LL-Light.otf')
   const unica77_regular = fs.readFileSync('./src/font/Unica77LL-Regular.otf')
   const unica77_medium = fs.readFileSync('./src/font/Unica77LL-Medium.otf')
 
   return [
-    {
-      name: 'Unica77',
-      data: unica77_light,
-      weight: 300,
-      style: 'normal'
-    },
     {
       name: 'Unica77',
       data: unica77_regular,

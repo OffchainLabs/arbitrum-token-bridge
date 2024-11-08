@@ -78,11 +78,6 @@ if (
   })
 }
 
-type ChainBlob = {
-  name: string
-  slug: string
-}
-
 function DynamicMetaData({
   sourceChainSlug,
   destinationChainSlug
@@ -91,22 +86,14 @@ function DynamicMetaData({
   destinationChainSlug: ChainKeyQueryParam
 }) {
   const sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
-  const sourceChain: ChainBlob = {
-    name: sourceChainInfo.name,
-    slug: sourceChainSlug
-  }
   const destinationChainInfo =
     getChainForChainKeyQueryParam(destinationChainSlug)
-  const destinationChain: ChainBlob = {
-    name: destinationChainInfo.name,
-    slug: destinationChainSlug
-  }
   const { isOrbitChain: isSourceOrbitChain } = isNetwork(sourceChainInfo.id)
   const { isOrbitChain: isDestinationOrbitChain } = isNetwork(
     destinationChainInfo.id
   )
 
-  const siteDescription = `Bridge from ${sourceChain.name} to ${destinationChain.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
+  const siteDescription = `Bridge from ${sourceChainInfo.name} to ${destinationChainInfo.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
   const siteDomain = 'https://bridge.arbitrum.io'
 
   let metaImagePath = `${sourceChainInfo.id}-to-${destinationChainInfo.id}.jpg`
@@ -151,7 +138,7 @@ function DynamicMetaData({
       <meta name="twitter:description" content={siteDescription} />
       <meta
         name="twitter:image"
-        content={`${siteDomain}/images/__auto-generated/open-graph/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+        content={`${siteDomain}/images/__auto-generated/open-graph/${metaImagePath}`}
       />
     </>
   )
