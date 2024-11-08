@@ -65,7 +65,7 @@ body:
   - type: dropdown
     id: parent-chain-id
     attributes:
-      label: Parent Chain ID
+      label: Parent chain ID
       description: Select the parent chain for your Orbit chain.
       options:
         - "1"
@@ -211,7 +211,7 @@ body:
   - type: input
     id: child-multicall
     attributes:
-      label: Child Multicall
+      label: Child MultiCall
     validations:
       required: true
   - type: input
