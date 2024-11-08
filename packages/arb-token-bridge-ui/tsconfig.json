@@ -13,15 +13,9 @@
     "incremental": true,
     "jsx": "preserve",
     "paths": {
-      "@/images/*": [
-        "./public/images/*"
-      ],
-      "@/icons/*": [
-        "./public/icons/*"
-      ],
-      "@/token-bridge-sdk/*": [
-        "./src/token-bridge-sdk/*"
-      ]
+      "@/images/*": ["./public/images/*"],
+      "@/icons/*": ["./public/icons/*"],
+      "@/token-bridge-sdk/*": ["./src/token-bridge-sdk/*"]
     },
     "plugins": [
       {
@@ -30,7 +24,5 @@
     ],
     "strictNullChecks": true
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
