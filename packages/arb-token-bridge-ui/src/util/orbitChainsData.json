@@ -1091,7 +1091,7 @@
         "color": "#12266B",
         "network": {
           "name": "Social Testnet",
-          "logo": "/images/SocialTestnetLogo.svg",
+          "logo": "/images/SocialTestnetLogo.webp",
           "description": ""
         },
         "nativeTokenData": {

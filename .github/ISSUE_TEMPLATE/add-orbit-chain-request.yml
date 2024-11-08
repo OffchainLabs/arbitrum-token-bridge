@@ -173,12 +173,6 @@ body:
     validations:
       required: true
   - type: input
-    id: parent-proxy-admin
-    attributes:
-      label: Parent Proxy Admin
-    validations:
-      required: true
-  - type: input
     id: parent-weth
     attributes:
       label: Parent WETH
@@ -218,12 +212,6 @@ body:
     id: child-multicall
     attributes:
       label: Child Multicall
-    validations:
-      required: true
-  - type: input
-    id: child-proxy-admin
-    attributes:
-      label: Child Proxy Admin
     validations:
       required: true
   - type: input
