@@ -599,7 +599,7 @@ function isBlockNumberReferenceNetwork(chain: {
 }
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
-  [ChainId.Ethereum]: [1380012617, 70700, 70701], // Rari, PopApex and PopBoss
+  [ChainId.Ethereum]: [1380012617, 70700, 70701, 55244], // Rari, PopApex, PopBoss, Superposition
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 
