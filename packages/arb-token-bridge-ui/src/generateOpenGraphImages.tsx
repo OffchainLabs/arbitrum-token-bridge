@@ -211,9 +211,19 @@ async function getOrbitChainImage(orbitChain: Chain) {
 
   console.log(`Generating image for ${orbitChain}`)
 
-  const imageContent = isSvg
-    ? await sharp(logoFileBuffer).resize(120).toBuffer()
-    : await sharp(logoFileBuffer).png().toBuffer()
+  const imageContent = await (async function () {
+    if (isSvg) {
+      return await sharp(logoFileBuffer)
+        .resize({
+          width: 120,
+          height: 120,
+          fit: 'contain',
+          background: 'transparent'
+        })
+        .toBuffer()
+    }
+    return await sharp(logoFileBuffer).png().toBuffer()
+  })()
 
   return (
     <div
