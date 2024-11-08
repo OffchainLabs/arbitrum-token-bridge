@@ -2,23 +2,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import * as core from "@actions/core";
-import { warning } from "@actions/core";
 import { getArbitrumNetworkInformationFromRollup } from "@arbitrum/sdk";
 import axios from "axios";
 import { fileTypeFromBuffer } from "file-type";
 import * as fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import prettier from "prettier";
-
 import { lookup } from "mime-types";
-import {
-  commitChanges,
-  createBranch,
-  createPullRequest,
-  getIssue,
-  saveImageToGitHub,
-} from "./github";
+import { getIssue } from "./github";
 import {
   chainDataLabelToKey,
   getParentChainInfo,
@@ -75,8 +66,7 @@ export const processChainData = async (): Promise<{
   const branchName = `add-orbit-chain/${stripWhitespace(
     validatedIncomingData.name
   )}`;
-  console.log(`Creating new branch: ${branchName}`);
-  await createBranch(branchName);
+  console.log(`Branch name generated: ${branchName}`);
 
   console.log("Chain data processing completed successfully");
   core.endGroup();
@@ -94,8 +84,7 @@ export const handleImages = async (
   );
   const chainLogoPath = await fetchAndSaveImage(
     validatedIncomingData.chainLogo,
-    `${stripWhitespace(validatedIncomingData.name)}_Logo`,
-    branchName
+    `${stripWhitespace(validatedIncomingData.name)}_Logo`
   );
   console.log(`Chain logo saved at: ${chainLogoPath}`);
 
@@ -112,8 +101,7 @@ export const handleImages = async (
         ? chainLogoPath
         : await fetchAndSaveImage(
             validatedIncomingData.nativeTokenLogo,
-            `${stripWhitespace(validatedIncomingData.name)}_NativeTokenLogo`,
-            branchName
+            `${stripWhitespace(validatedIncomingData.name)}_NativeTokenLogo`
           );
     console.log(`Native token logo saved at: ${nativeTokenLogoPath}`);
   } else {
@@ -160,59 +148,6 @@ export const updateAndValidateOrbitChainsList = async (
   console.log("Orbit ChainsList validated successfully");
   core.endGroup();
   return updatedOrbitChainsList;
-};
-
-export const commitChangesAndCreatePR = async (
-  branchName: string,
-  targetJsonPath: string,
-  updatedOrbitChainsList: ReturnType<typeof updateOrbitChainsFile>,
-  orbitChain: OrbitChain
-) => {
-  core.startGroup("Commit Changes and Create Pull Request");
-  console.log("Preparing to commit changes...");
-  const repoRelativePath = targetJsonPath.replace(/^\.\.\/\.\.\//, "");
-  console.log(`Repo relative path: ${repoRelativePath}`);
-  const fileContents = JSON.stringify(updatedOrbitChainsList, null, 2);
-  console.log("Committing changes...");
-  await commitChanges(branchName, repoRelativePath, fileContents);
-  console.log("Changes committed successfully");
-  const issue = await getIssue(process.env.ISSUE_NUMBER!);
-  console.log("Creating pull request...");
-  await createPullRequest(branchName, orbitChain.name, issue.html_url)
-    .catch((err) => {
-      if (err.message.includes("A pull request already exists")) {
-        console.log("Pull request already exists.");
-      } else {
-        throw err;
-      }
-    })
-    .then(() => {
-      console.log("Pull request created successfully");
-    });
-  core.endGroup();
-};
-
-export const setOutputs = (
-  branchName: string,
-  orbitChain: OrbitChain,
-  targetJsonPath: string
-) => {
-  core.startGroup("Set Outputs");
-  console.log("Setting output values...");
-  const repoRelativePath = targetJsonPath.replace(/^\.\.\/\.\.\//, "");
-  core.setOutput("branch_name", branchName);
-  console.log(`Set output - branch_name: ${branchName}`);
-  core.setOutput(
-    "issue_url",
-    getIssue(process.env.ISSUE_NUMBER!).then((issue) => issue.html_url)
-  );
-  console.log("Set output - issue_url (promise)");
-  core.setOutput("orbit_list_path", repoRelativePath);
-  console.log(`Set output - orbit_list_path: ${repoRelativePath}`);
-  core.setOutput("chain_name", orbitChain.name);
-  console.log(`Set output - chain_name: ${orbitChain.name}`);
-  console.log("All outputs set successfully");
-  core.endGroup();
 };
 
 export const extractImageUrlFromMarkdown = (
@@ -378,12 +313,20 @@ export const fetchAndProcessImage = async (
 
 export const fetchAndSaveImage = async (
   urlOrPath: string,
-  fileName: string,
-  branchName: string
+  fileName: string
 ): Promise<string> => {
   const { buffer, fileExtension } = await fetchAndProcessImage(urlOrPath);
   const imageSavePath = `images/${fileName}${fileExtension}`;
-  await saveImageToGitHub(branchName, imageSavePath, buffer);
+
+  const fullPath = path.join(
+    process.cwd(),
+    "../../packages/arb-token-bridge-ui/public/images"
+  );
+
+  // Save the file locally
+  fs.writeFileSync(path.join(fullPath, `${fileName}${fileExtension}`), buffer);
+  console.log(`Successfully saved image to ${imageSavePath}`);
+
   return `/${imageSavePath}`;
 };
 
@@ -487,18 +430,3 @@ export const updateOrbitChainsFile = (
 
   return orbitChains;
 };
-
-export async function runPrettier(targetJsonPath: string): Promise<void> {
-  try {
-    const fileContent = fs.readFileSync(targetJsonPath, "utf8");
-    const prettierConfig = await prettier.resolveConfig(targetJsonPath);
-    const formattedContent = await prettier.format(fileContent, {
-      ...prettierConfig,
-      filepath: targetJsonPath,
-    });
-    fs.writeFileSync(targetJsonPath, formattedContent);
-    console.log(`Prettier formatting applied to ${targetJsonPath}`);
-  } catch (error) {
-    warning(`Failed to run Prettier: ${error}`);
-  }
-}
