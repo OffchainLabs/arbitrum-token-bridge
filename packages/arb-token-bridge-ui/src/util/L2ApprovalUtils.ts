@@ -64,6 +64,14 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l1Address: '0xd781cea0b8D5dDd0aeeD1dF7aC109C974A221B00',
       l2Address: '0xe267c440dbfb1e185d506c2cc3c44eb21340e046'
     }
+  ],
+  // pop apex
+  [70700]: [
+    {
+      symbol: 'USDC.e',
+      l1Address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+      l2Address: '0x46b991acbd9290967a3a9e02f14895c2f9fe809a'
+    }
   ]
 }
 
