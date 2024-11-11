@@ -1,10 +1,11 @@
 import dayjs from 'dayjs'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Tab } from '@headlessui/react'
 import { create } from 'zustand'
 
-import { UseTransactionHistoryResult } from '../../hooks/useTransactionHistory'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
+import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import {
   isTxClaimable,
   isTxCompleted,
@@ -15,7 +16,7 @@ import {
 import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { Address } from '../../util/AddressUtils'
+import { useAccount } from 'wagmi'
 
 const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
@@ -46,12 +47,35 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
   reset: () => set({ tx: null })
 }))
 
-export const TransactionHistory = ({
-  props
-}: {
-  props: UseTransactionHistoryResult & { address: Address | undefined }
-}) => {
-  const { transactions, address } = props
+function useTransactionHistoryProps() {
+  const { address } = useAccount()
+
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
+
+  const { transactions, updatePendingTransaction } = transactionHistoryProps
+
+  const pendingTransactions = useMemo(() => {
+    return transactions.filter(isTxPending)
+  }, [transactions])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      pendingTransactions.forEach(updatePendingTransaction)
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [pendingTransactions, updatePendingTransaction])
+
+  return transactionHistoryProps
+}
+
+export const TransactionHistory = () => {
+  const props = useTransactionHistoryProps()
+  const { transactions } = props
+
+  const { address } = useAccount()
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -94,8 +118,14 @@ export const TransactionHistory = ({
   const settledTransactions = groupedTransactions.settled
 
   return (
-    <>
-      <Tab.Group key={address} as="div" className="h-full overflow-hidden">
+    <div className="rounded border border-white/30 p-4">
+      <TransactionStatusInfo />
+
+      <Tab.Group
+        key={address}
+        as="div"
+        className="h-full overflow-hidden rounded"
+      >
         <Tab.List className="mb-4 flex border-b border-white/30">
           <TabButton
             aria-label="show pending transactions"
@@ -133,6 +163,6 @@ export const TransactionHistory = ({
         </Tab.Panels>
       </Tab.Group>
       <TransactionsTableDetails address={address} />
-    </>
+    </div>
   )
 }

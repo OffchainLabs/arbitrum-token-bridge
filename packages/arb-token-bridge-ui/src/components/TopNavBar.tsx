@@ -21,7 +21,7 @@ export function TopNavBar() {
   return (
     <Tab.List
       className={twMerge(
-        'grid max-w-[600px] grid-cols-2 rounded bg-white/20 p-[8px] text-white'
+        'grid w-full max-w-[600px] grid-cols-2 bg-white/20 p-[8px] text-white md:rounded'
       )}
     >
       {/* <StyledTab>

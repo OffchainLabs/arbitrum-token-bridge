@@ -87,12 +87,7 @@ const Content = ({
     )
   }
 
-  return (
-    <div className="flex space-x-2">
-      <DocumentTextIcon width={20} />
-      <span>See transaction history</span>
-    </div>
-  )
+  return null
 }
 
 export const TransactionStatusInfo = () => {
@@ -143,23 +138,17 @@ export const TransactionStatusInfo = () => {
   }, [numClaimableTransactions, numPendingTransactions, numRetryablesToRedeem])
 
   return (
-    <Button
+    <div
       className={twMerge(
-        'mb-3 mt-3 w-full rounded-none border-x-0 border-white/30 p-3 text-left sm:rounded sm:border md:mt-0',
+        'mb-3 mt-3 w-full rounded-none border-x-0 border-white/30 px-3 py-2 text-left text-sm text-white sm:rounded sm:border md:mt-0',
         buttonClassName
       )}
-      onClick={openTransactionHistoryPanel}
-      textLeft
-      showArrow
-      truncate={false}
-      variant="primary"
-      aria-label="Open Transaction History"
     >
       <Content
         numClaimableTransactions={numClaimableTransactions}
         numRetryablesToRedeem={numRetryablesToRedeem}
         numPendingTransactions={numPendingTransactions}
       />
-    </Button>
+    </div>
   )
 }
