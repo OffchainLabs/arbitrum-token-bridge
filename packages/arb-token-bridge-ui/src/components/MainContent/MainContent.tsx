@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { useLocalStorage } from '@uidotdev/usehooks'
+import { Tab } from '@headlessui/react'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { SidePanel } from '../common/SidePanel'
@@ -11,6 +12,7 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
+import { TopNavBar } from '../TopNavBar'
 
 function TransactionHistorySidePanel() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
@@ -55,13 +57,21 @@ export function MainContent() {
 
   return (
     <>
-      <div className="main-panel mx-auto flex w-full flex-col sm:max-w-[600px] sm:pb-12 sm:pt-6">
-        <TransactionStatusInfo />
-
-        <TransferPanel />
+      <div className="main-panel mx-auto flex w-full flex-col gap-3 sm:max-w-[600px] sm:pb-12 sm:pt-6">
+        <Tab.Group>
+          <TopNavBar />
+          {/* <TransactionStatusInfo /> */}
+          <Tab.Panels>
+            {/* <Tab.Panel>BUY PANEL</Tab.Panel> */}
+            <Tab.Panel>
+              <TransferPanel />
+            </Tab.Panel>
+            <Tab.Panel>
+              <TransactionHistorySidePanel />
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
       </div>
-
-      <TransactionHistorySidePanel />
 
       {/* Settings panel */}
       <SettingsDialog />
