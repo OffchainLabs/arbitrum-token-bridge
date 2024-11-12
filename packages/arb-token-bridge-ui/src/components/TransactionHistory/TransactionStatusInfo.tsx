@@ -92,7 +92,6 @@ const Content = ({
 
 export const TransactionStatusInfo = () => {
   const { address } = useAccount()
-  const { openTransactionHistoryPanel } = useAppContextActions()
   const { transactions } = useTransactionHistory(address)
 
   const {
@@ -136,6 +135,10 @@ export const TransactionStatusInfo = () => {
     }
     return 'bg-gray-1 text-white/70'
   }, [numClaimableTransactions, numPendingTransactions, numRetryablesToRedeem])
+
+  if (Content === null) {
+    return null
+  }
 
   return (
     <div

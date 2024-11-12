@@ -118,7 +118,7 @@ export const TransactionHistory = () => {
   const settledTransactions = groupedTransactions.settled
 
   return (
-    <div className="rounded border border-white/30 p-4">
+    <div className="m-auto w-full max-w-[1000px] rounded border border-white/30 bg-[#191919] p-4">
       <TransactionStatusInfo />
 
       <Tab.Group
@@ -141,8 +141,8 @@ export const TransactionHistory = () => {
           </TabButton>
         </Tab.List>
 
-        <Tab.Panels className="h-full overflow-hidden">
-          <Tab.Panel className="h-full">
+        <Tab.Panels className="h-full w-full overflow-hidden">
+          <Tab.Panel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
               address={address}
@@ -151,7 +151,7 @@ export const TransactionHistory = () => {
               oldestTxTimeAgoString={oldestTxTimeAgoString}
             />
           </Tab.Panel>
-          <Tab.Panel className="h-full">
+          <Tab.Panel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
               address={address}

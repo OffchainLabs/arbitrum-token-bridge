@@ -13,15 +13,15 @@ export function MainContent() {
 
   return (
     <>
-      <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pb-12 sm:pt-6">
+      <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
         <Tab.Group>
           <TopNavBar />
-          <Tab.Panels>
+          <Tab.Panels className="flex w-full items-center justify-center">
             {/* <Tab.Panel>BUY PANEL</Tab.Panel> */}
-            <Tab.Panel className="sm:max-w-[600px]">
+            <Tab.Panel className="w-full sm:max-w-[600px]">
               <TransferPanel />
             </Tab.Panel>
-            <Tab.Panel className="px-4">
+            <Tab.Panel className="w-full px-4">
               <TransactionHistory />
             </Tab.Panel>
           </Tab.Panels>
