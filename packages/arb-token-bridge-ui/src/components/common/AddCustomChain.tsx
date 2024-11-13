@@ -42,12 +42,6 @@ type Contracts = {
 
 type OrbitConfig = {
   chainInfo: {
-    minL2BaseFee?: number
-    networkFeeReceiver?: string
-    infrastructureFeeCollector?: string
-    batchPoster?: string
-    staker?: string
-    chainOwner?: string
     chainName: string
     chainId: number
     parentChainId: number
@@ -59,11 +53,8 @@ type OrbitConfig = {
     rollup: string
     inbox: string
     outbox: string
-    adminProxy?: string
     sequencerInbox: string
     bridge: string
-    utils?: string
-    validatorWalletCreator?: string
   }
   tokenBridgeContracts: {
     l2Contracts: Contracts
@@ -109,12 +100,6 @@ const zContract = z.object({
 
 const ZodOrbitConfig = z.object({
   chainInfo: z.object({
-    minL2BaseFee: z.number().nonnegative().int().optional(),
-    networkFeeReceiver: zAddress.optional(),
-    infrastructureFeeCollector: zAddress.optional(),
-    batchPoster: zAddress.optional(),
-    staker: zAddress.optional(),
-    chainOwner: zAddress.optional(),
     chainName: z.string(),
     chainId: zChainId,
     parentChainId: zParentChainId,
@@ -126,11 +111,8 @@ const ZodOrbitConfig = z.object({
     rollup: zAddress,
     inbox: zAddress,
     outbox: zAddress,
-    adminProxy: zAddress.optional(),
     sequencerInbox: zAddress,
-    bridge: zAddress,
-    utils: zAddress.optional(),
-    validatorWalletCreator: zAddress.optional()
+    bridge: zAddress
   }),
   tokenBridgeContracts: z.object({
     l2Contracts: zContract,
@@ -300,12 +282,6 @@ export const AddCustomChain = () => {
           >
             {`{
   chainInfo: {
-    minL2BaseFee?: number
-    networkFeeReceiver?: string
-    infrastructureFeeCollector?: string
-    batchPoster?: string
-    staker?: string
-    chainOwner?: string
     chainName: string
     chainId: number
     parentChainId: number
@@ -317,11 +293,8 @@ export const AddCustomChain = () => {
     rollup: string
     inbox: string
     outbox: string
-    adminProxy?: string
     sequencerInbox: string
     bridge: string
-    utils?: string
-    validatorWalletCreator?: string
   }
   tokenBridgeContracts: {
     l2Contracts: {
