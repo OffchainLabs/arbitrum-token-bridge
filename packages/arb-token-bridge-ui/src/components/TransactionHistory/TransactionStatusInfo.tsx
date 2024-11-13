@@ -131,7 +131,11 @@ export const TransactionStatusInfo = () => {
     return 'bg-gray-1 text-white/70'
   }, [numClaimableTransactions, numPendingTransactions, numRetryablesToRedeem])
 
-  if (Content === null) {
+  if (
+    numClaimableTransactions === 0 &&
+    numRetryablesToRedeem === 0 &&
+    numPendingTransactions === 0
+  ) {
     return null
   }
 
