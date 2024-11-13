@@ -768,7 +768,9 @@
           "symbol": "CHEESE",
           "decimals": 18,
           "logoUrl": "/images/CheeseChain_NativeTokenLogo.jpg"
-        }
+        },
+        "fastWithdrawalTime": 900000,
+        "fastWithdrawalActive": true
       }
     },
     {
@@ -1183,6 +1185,55 @@
           "name": "Spotlight Sepolia",
           "logo": "/images/SpotlightLogo.svg",
           "description": ""
+        }
+      }
+    },
+    {
+      "chainId": 79479957,
+      "confirmPeriodBlocks": 25,
+      "ethBridge": {
+        "bridge": "0xC703f27438898BebE682D253185149cBeaC1621c",
+        "inbox": "0x46C42Cf5127ffd6dE2d9f231173C6d81E5010726",
+        "outbox": "0x5B8220489827Be74CeD6b7974C3a80d3ba8dbf91",
+        "rollup": "0x82332BE0ef83A2b7Df91DCDCF481c393455E0D31",
+        "sequencerInbox": "0x9555B5F427c7B1E69C35d3DE855D4F1BffBc593B"
+      },
+      "nativeToken": "0x9c5EB9723728123AF896089b902CB17B44Fd09e6",
+      "explorerUrl": "https://explorerl2.toronto.sx.technology",
+      "rpcUrl": "https://rpc.sx-rollup-testnet.t.raas.gelato.cloud",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "SX Toronto",
+      "slug": "sx-toronto",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2e4C4583a0A228d1A695365b1AE5C32e688ba4B6",
+        "parentErc20Gateway": "0xa66971304463c017F4D152685B1483cc63Fd116d",
+        "parentGatewayRouter": "0xEb362E3C9B081baE0024b34955a132B93D05047f",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8f10E93e92Ed34390E73fBdc0988230a72DC0597",
+        "childErc20Gateway": "0x015B81e0Ead225800cbb11cD95a7048F5E301771",
+        "childGatewayRouter": "0x650cD99b736173d8AB9aeF9f4b3B5DA8EE054adC",
+        "childMultiCall": "0xB1e5913C889727796B3e79712C2A27Be58a166cf",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#2196F3",
+        "network": {
+          "name": "SX Toronto",
+          "logo": "/images/SXToronto_Logo.png",
+          "description": "The testnet chain that powers SX Bet Toronto."
+        },
+        "nativeTokenData": {
+          "name": "SX Toronto Network",
+          "symbol": "SX",
+          "decimals": 18,
+          "logoUrl": "/images/SXToronto_NativeTokenLogo.png"
         }
       }
     }
