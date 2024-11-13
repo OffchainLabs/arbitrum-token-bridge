@@ -7,6 +7,8 @@ import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
 import { z } from 'zod'
 import { RollupAdminLogic__factory } from '@arbitrum/sdk/dist/lib/abi/factories/RollupAdminLogic__factory'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { stackoverflowDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 import {
   ChainId,
@@ -40,12 +42,12 @@ type Contracts = {
 
 type OrbitConfig = {
   chainInfo: {
-    minL2BaseFee: number
-    networkFeeReceiver: string
-    infrastructureFeeCollector: string
-    batchPoster: string
-    staker: string
-    chainOwner: string
+    minL2BaseFee?: number
+    networkFeeReceiver?: string
+    infrastructureFeeCollector?: string
+    batchPoster?: string
+    staker?: string
+    chainOwner?: string
     chainName: string
     chainId: number
     parentChainId: number
@@ -57,11 +59,11 @@ type OrbitConfig = {
     rollup: string
     inbox: string
     outbox: string
-    adminProxy: string
+    adminProxy?: string
     sequencerInbox: string
     bridge: string
-    utils: string
-    validatorWalletCreator: string
+    utils?: string
+    validatorWalletCreator?: string
   }
   tokenBridgeContracts: {
     l2Contracts: Contracts
@@ -107,12 +109,12 @@ const zContract = z.object({
 
 const ZodOrbitConfig = z.object({
   chainInfo: z.object({
-    minL2BaseFee: z.number().nonnegative().int(),
-    networkFeeReceiver: zAddress,
-    infrastructureFeeCollector: zAddress,
-    batchPoster: zAddress,
-    staker: zAddress,
-    chainOwner: zAddress,
+    minL2BaseFee: z.number().nonnegative().int().optional(),
+    networkFeeReceiver: zAddress.optional(),
+    infrastructureFeeCollector: zAddress.optional(),
+    batchPoster: zAddress.optional(),
+    staker: zAddress.optional(),
+    chainOwner: zAddress.optional(),
     chainName: z.string(),
     chainId: zChainId,
     parentChainId: zParentChainId,
@@ -124,11 +126,11 @@ const ZodOrbitConfig = z.object({
     rollup: zAddress,
     inbox: zAddress,
     outbox: zAddress,
-    adminProxy: zAddress,
+    adminProxy: zAddress.optional(),
     sequencerInbox: zAddress,
     bridge: zAddress,
-    utils: zAddress,
-    validatorWalletCreator: zAddress
+    utils: zAddress.optional(),
+    validatorWalletCreator: zAddress.optional()
   }),
   tokenBridgeContracts: z.object({
     l2Contracts: zContract,
@@ -278,11 +280,73 @@ export const AddCustomChain = () => {
 
   return (
     <>
-      <textarea
-        onChange={e => setChainJson(e.target.value)}
-        placeholder="Paste the JSON configuration from the 'outputInfo.json' file that's generated at the end of the custom Orbit chain deployment."
-        className="min-h-[154px] w-full rounded border border-gray-dark bg-dark p-4 text-sm font-light text-white placeholder:text-white/70"
-      />
+      <div className="mb-4 flex flex-col items-stretch gap-2 lg:flex-row">
+        <textarea
+          onChange={e => setChainJson(e.target.value)}
+          placeholder={`Paste the JSON configuration from the 'outputInfo.json' file that's generated at the end of the custom Orbit chain deployment.
+`}
+          className="h-auto min-h-[200px] w-full rounded border border-gray-dark bg-dark p-4 font-mono text-xs font-light text-white placeholder:text-white/70"
+        />
+        <div className="flex flex-col gap-2">
+          <p className="text-sm">
+            Below shows the type we validate against.
+            <br />
+            <code>?</code> means optional.
+          </p>
+          <SyntaxHighlighter
+            className="max-h-[200px] text-xs"
+            language="typescript"
+            style={stackoverflowDark}
+          >
+            {`{
+  chainInfo: {
+    minL2BaseFee?: number
+    networkFeeReceiver?: string
+    infrastructureFeeCollector?: string
+    batchPoster?: string
+    staker?: string
+    chainOwner?: string
+    chainName: string
+    chainId: number
+    parentChainId: number
+    rpcUrl: string
+    explorerUrl: string
+    nativeToken?: string
+  }
+  coreContracts: {
+    rollup: string
+    inbox: string
+    outbox: string
+    adminProxy?: string
+    sequencerInbox: string
+    bridge: string
+    utils?: string
+    validatorWalletCreator?: string
+  }
+  tokenBridgeContracts: {
+    l2Contracts: {
+      customGateway: string
+      multicall: string
+      proxyAdmin: string
+      router: string
+      standardGateway: string
+      weth: string
+      wethGateway: string
+    }
+    l3Contracts: {
+      customGateway: string
+      multicall: string
+      proxyAdmin: string
+      router: string
+      standardGateway: string
+      weth: string
+      wethGateway: string
+    }
+  }
+}`}
+          </SyntaxHighlighter>
+        </div>
+      </div>
       {error && (
         <div className="relative">
           <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded border border-gray-dark bg-dark p-4 text-sm text-error">
@@ -296,7 +360,7 @@ export const AddCustomChain = () => {
           </pre>
         </div>
       )}
-      <div className="flex w-full justify-end">
+      <div className="mb-4 flex w-full justify-end">
         {addingChain ? (
           <Loader size="small" color="white" />
         ) : (
@@ -312,7 +376,7 @@ export const AddCustomChain = () => {
 
       {/* Custom chain list */}
       {customChains.length > 0 && !addingChain && (
-        <div className="mt-4">
+        <div>
           <div className="heading mb-4 text-lg">Live Orbit Chains</div>
           <table className="w-full text-left">
             <thead className="border-b border-gray-dark">
