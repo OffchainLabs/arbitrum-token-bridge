@@ -143,8 +143,7 @@ export function TransferPanel() {
     chainId: networks.sourceChain.id
   })
 
-  const { openTransactionHistoryPanel, setTransferring } =
-    useAppContextActions()
+  const { setTransferring } = useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const isCctpTransfer = useIsCctpTransfer()
@@ -498,7 +497,6 @@ export function TransferPanel() {
       }
 
       addPendingTransaction(newTransfer)
-      openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
     } catch (e) {
@@ -833,7 +831,6 @@ export function TransferPanel() {
       )
     }
 
-    openTransactionHistoryPanel()
     setTransferring(false)
     clearAmountInput()
 
