@@ -118,26 +118,28 @@ export const TransactionHistory = () => {
   const settledTransactions = groupedTransactions.settled
 
   return (
-    <div className="m-auto w-full max-w-[1000px] rounded border border-white/30 bg-[#191919] p-4">
-      <TransactionStatusInfo />
+    <div className="m-auto w-full max-w-[100vw] border-y border-white/30 bg-[#191919] py-4 pl-4 md:max-w-[1000px] md:rounded md:border-x md:pr-4">
+      <div className="pr-4 md:pr-0">
+        <TransactionStatusInfo />
+      </div>
 
       <Tab.Group
         key={address}
         as="div"
-        className="h-full overflow-hidden rounded"
+        className="h-full overflow-hidden rounded pr-4 md:pr-0"
       >
         <Tab.List className="mb-4 flex border-b border-white/30">
           <TabButton
             aria-label="show pending transactions"
             className={tabClasses}
           >
-            <span className="text-xs md:text-base">Pending transactions</span>
+            <span className="text-sm md:text-base">Pending transactions</span>
           </TabButton>
           <TabButton
             aria-label="show settled transactions"
             className={tabClasses}
           >
-            <span className="text-xs md:text-base">Settled transactions</span>
+            <span className="text-sm md:text-base">Settled transactions</span>
           </TabButton>
         </Tab.List>
 

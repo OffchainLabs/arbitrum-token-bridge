@@ -189,7 +189,7 @@ export function TransactionsTableRow({
     <div
       data-testid={testId}
       className={twMerge(
-        'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_170px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
+        'relative grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_170px_140px] items-center justify-between border-b border-white/30 text-xs text-white md:mx-4',
         className
       )}
     >

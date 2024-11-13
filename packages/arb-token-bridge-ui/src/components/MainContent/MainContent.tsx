@@ -21,7 +21,7 @@ export function MainContent() {
             <Tab.Panel className="w-full sm:max-w-[600px]">
               <TransferPanel />
             </Tab.Panel>
-            <Tab.Panel className="w-full px-4">
+            <Tab.Panel className="w-full md:px-4">
               <TransactionHistory />
             </Tab.Panel>
           </Tab.Panels>

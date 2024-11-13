@@ -5,18 +5,13 @@
 
 import { useAccount } from 'wagmi'
 import { useMemo } from 'react'
-import {
-  DocumentTextIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import ArrowsIcon from '@/images/arrows.svg'
 
 import { isDepositReadyToRedeem } from '../../state/app/utils'
-import { useAppContextActions } from '../App/AppContext'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { Button } from '../common/Button'
 import { isTxClaimable, isTxPending } from './helpers'
 
 const Content = ({
@@ -143,7 +138,7 @@ export const TransactionStatusInfo = () => {
   return (
     <div
       className={twMerge(
-        'mb-3 mt-3 w-full rounded-none border-x-0 border-white/30 px-3 py-2 text-left text-sm text-white sm:rounded sm:border md:mt-0',
+        'mb-3 mt-3 w-full rounded border-x-0 border-white/30 px-3 py-2 text-left text-sm text-white sm:border md:mt-0',
         buttonClassName
       )}
     >

@@ -151,8 +151,8 @@ export const TransactionHistoryTable = (
     oldestTxTimeAgoString
   } = props
 
-  const contentAboveTable = useRef<HTMLDivElement>(null)
-
+  const TABLE_HEADER_HEIGHT = 52
+  const TABLE_ROW_HEIGHT = 60
   const isTxHistoryEmpty = transactions.length === 0
   const isPendingTab = selectedTabIndex === 0
 
@@ -162,6 +162,9 @@ export const TransactionHistoryTable = (
   const tableRef = useRef<Table | null>(null)
 
   const tableHeight = useMemo(() => {
+    if (window.innerWidth < 768) {
+      return TABLE_ROW_HEIGHT * (transactions.length + 1) + TABLE_HEADER_HEIGHT
+    }
     const SIDE_PANEL_HEADER_HEIGHT = 125
     const viewportHeight = window.innerHeight
     const contentWrapperOffsetTop = contentWrapperRef.current?.offsetTop ?? 0
@@ -170,7 +173,7 @@ export const TransactionHistoryTable = (
       viewportHeight - contentWrapperOffsetTop - SIDE_PANEL_HEADER_HEIGHT,
       0
     )
-  }, [contentWrapperRef.current?.offsetTop])
+  }, [contentWrapperRef.current?.offsetTop, transactions.length])
 
   const pendingTokenDepositsCount = useMemo(() => {
     return transactions.filter(tx => isTokenDeposit(tx) && isTxPending(tx))
@@ -206,14 +209,13 @@ export const TransactionHistoryTable = (
   return (
     <ContentWrapper
       ref={contentWrapperRef}
-      className="block h-full min-h-[1px] w-full overflow-auto rounded border border-white p-0 text-left"
+      className="relative block h-full min-h-[1px] w-full overflow-y-auto rounded p-0 text-left md:overflow-x-hidden md:border md:border-white"
     >
       <div
         className={twMerge(
-          'w-full rounded-tr-lg px-4 pt-4',
+          'sticky left-0 w-full rounded-tr-lg md:px-4 md:pt-4',
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
-        ref={contentAboveTable}
       >
         {loading ? (
           <div className="flex h-[28px] items-center space-x-2">
@@ -221,7 +223,7 @@ export const TransactionHistoryTable = (
             <HistoryLoader />
           </div>
         ) : (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center justify-start space-x-1">
               <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
               <span className="text-xs">
@@ -241,11 +243,11 @@ export const TransactionHistoryTable = (
         ref={tableRef}
         width={960}
         height={tableHeight}
-        rowHeight={60}
+        rowHeight={TABLE_ROW_HEIGHT}
         rowCount={transactions.length}
-        headerHeight={52}
+        headerHeight={TABLE_HEADER_HEIGHT}
         headerRowRenderer={props => (
-          <div className="mx-4 flex w-[920px] border-b border-white/30 text-white">
+          <div className="flex w-[960px] border-b border-white/30 text-white md:mx-4">
             {props.columns}
           </div>
         )}
