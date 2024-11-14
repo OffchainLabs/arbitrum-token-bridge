@@ -3,6 +3,7 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { PropsWithChildren } from 'react'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
+import { useTransactionReminderInfo } from './TransactionHistory/useTransactionReminderInfo'
 
 function StyledTab({ children, ...props }: PropsWithChildren) {
   return (
@@ -18,6 +19,7 @@ function StyledTab({ children, ...props }: PropsWithChildren) {
 StyledTab.displayName = 'StyledTab'
 
 export function TopNavBar() {
+  const { colorClassName } = useTransactionReminderInfo()
   return (
     <Tab.List
       className={twMerge(
@@ -44,7 +46,10 @@ export function TopNavBar() {
           height={24}
           alt="history icon"
         />
-        Txn History
+        Txn History{' '}
+        <span
+          className={twMerge('h-3 w-3 rounded-full', colorClassName.light)}
+        />
       </StyledTab>
     </Tab.List>
   )
