@@ -124,8 +124,8 @@ export const searchAndSelectToken = ({
   tokenName: string
   tokenAddress: string
 }) => {
-  // Click on the ETH dropdown (Select token button)
-  cy.findSelectTokenButton('ETH').click()
+  // Click on the native token dropdown (Select token button)
+  cy.findSelectTokenButton(Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
@@ -253,7 +253,7 @@ export function openTransactionDetails({
   amount: number
   amount2?: number
   symbol: string
-  symbol2: string
+  symbol2?: string
 }): Cypress.Chainable<JQuery<HTMLElement>> {
   cy.findTransactionInTransactionHistory({
     amount,

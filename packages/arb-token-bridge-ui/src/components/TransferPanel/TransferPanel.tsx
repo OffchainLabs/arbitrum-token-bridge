@@ -6,6 +6,7 @@ import { useLatest } from 'react-use'
 import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
+import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -73,12 +74,12 @@ import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
-import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
 import { Button } from '../common/Button'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
+import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -133,6 +134,8 @@ export function TransferPanel() {
     }
   } = useLatest(useNetworksRelationship(latestNetworks.current))
   const isBatchTransferSupported = useIsBatchTransferSupported()
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -520,16 +523,6 @@ export function TransferPanel() {
       throw new Error(signerUndefinedError)
     }
 
-    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (
-      isSmartContractWallet &&
-      !selectedToken &&
-      !isExperimentalFeatureEnabled('eth-custom-dest')
-    ) {
-      console.error("ETH transfers aren't enabled for smart contract wallets.")
-      return
-    }
-
     // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && isTeleportMode) {
       console.error(
@@ -591,18 +584,6 @@ export function TransferPanel() {
         )
       }
 
-      // SCW transfers are not enabled for ETH transfers yet
-      if (
-        isNativeCurrencyTransfer &&
-        isSmartContractWallet &&
-        !isExperimentalFeatureEnabled('eth-custom-dest')
-      ) {
-        console.error(
-          "ETH transfers aren't enabled for smart contract wallets."
-        )
-        return
-      }
-
       if (destinationAddressError) {
         console.error(destinationAddressError)
         return
@@ -617,9 +598,10 @@ export function TransferPanel() {
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
           amount: amountBigNumber,
+          destinationAddress,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
               : undefined
           }
         })
@@ -632,9 +614,10 @@ export function TransferPanel() {
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
           amount: amountBigNumber,
+          destinationAddress,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
               : undefined
           }
         })
@@ -738,7 +721,8 @@ export function TransferPanel() {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer
+          signer,
+          destinationAddress
         })) as DepositGasEstimates
 
         if (!gasEstimates.estimatedChildChainSubmissionCost) {
@@ -747,6 +731,7 @@ export function TransferPanel() {
         }
 
         overrides.maxSubmissionCost = utils
+          // we are not scaling these to native decimals because arbitrum-sdk does it for us
           .parseEther(amount2)
           .add(gasEstimates.estimatedChildChainSubmissionCost)
         overrides.excessFeeRefundAddress = destinationAddress
@@ -801,6 +786,20 @@ export function TransferPanel() {
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
+    const { isOrbitChain: isSourceOrbitChain } = isNetwork(
+      latestNetworks.current.sourceChain.id
+    )
+
+    // only scale for native tokens, and
+    // only scale if sent from Orbit, because it's always 18 decimals there but the UI needs scaled amount
+    const scaledAmount = scaleFrom18DecimalsToNativeTokenDecimals({
+      amount: amountBigNumber,
+      decimals: nativeCurrency.decimals
+    })
+
+    const isNativeTokenWithdrawalFromOrbit =
+      !selectedToken && isSourceOrbitChain
+
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
       parentChainId: parentChain.id,
@@ -809,7 +808,7 @@ export function TransferPanel() {
       walletAddress,
       destinationAddress,
       nativeCurrency,
-      amount: amountBigNumber,
+      amount: isNativeTokenWithdrawalFromOrbit ? scaledAmount : amountBigNumber,
       amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
       timestampCreated
     })
@@ -828,7 +827,9 @@ export function TransferPanel() {
           walletAddress,
           destinationAddress,
           nativeCurrency,
-          amount: amountBigNumber,
+          amount: isNativeTokenWithdrawalFromOrbit
+            ? scaledAmount
+            : amountBigNumber,
           amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
           timestampCreated
         })

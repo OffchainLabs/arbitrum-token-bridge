@@ -15,30 +15,8 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  build:
-    name: "Build"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@main
-
-      - name: Build
-        run: yarn build
-        env:
-          NEXT_PUBLIC_IS_E2E_TEST: true
-          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
-
-      - name: Cache build artifacts
-        uses: ./.github/actions/build-artifacts/cache
-
   cctp-e2e-tests:
     name: "CCTP E2E Tests"
-    needs: [build]
     uses: ./.github/workflows/e2e-tests.yml
     with:
       test_type: 'cctp'

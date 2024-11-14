@@ -1,4 +1,4 @@
-import { BigNumber, constants } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import useSWR from 'swr'
 import { useAccount } from 'wagmi'
 
@@ -8,6 +8,7 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useAppState } from '../../state'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
+import { useDestinationAddressStore } from '../../components/TransferPanel/AdvancedSettings'
 
 async function fetcher([
   walletAddress,
@@ -15,6 +16,7 @@ async function fetcher([
   destinationChainId,
   sourceChainErc20Address,
   destinationChainErc20Address,
+  destinationAddress,
   amount
 ]: [
   walletAddress: string | undefined,
@@ -22,6 +24,7 @@ async function fetcher([
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
   destinationChainErc20Address: string | undefined,
+  destinationAddress: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
   const _walletAddress = walletAddress ?? constants.AddressZero
@@ -37,7 +40,8 @@ async function fetcher([
 
   return await bridgeTransferStarter.transferEstimateGas({
     amount,
-    signer
+    signer,
+    destinationAddress
   })
 }
 
@@ -54,6 +58,7 @@ export function useGasEstimates({
   error: any
 } {
   const [{ sourceChain, destinationChain }] = useNetworks()
+  const { destinationAddress } = useDestinationAddressStore()
   const {
     app: { selectedToken: token }
   } = useAppState()
@@ -63,6 +68,12 @@ export function useGasEstimates({
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
 
+  const sanitizedDestinationAddress = utils.isAddress(
+    String(destinationAddress)
+  )
+    ? destinationAddress
+    : undefined
+
   const { data: gasEstimates, error } = useSWR(
     [
       sourceChain.id,
@@ -70,6 +81,7 @@ export function useGasEstimates({
       sourceChainErc20Address,
       destinationChainErc20Address,
       amountToTransfer.toString(), // BigNumber is not serializable
+      sanitizedDestinationAddress,
       walletAddress,
       'gasEstimates'
     ],
@@ -79,6 +91,7 @@ export function useGasEstimates({
       _sourceChainErc20Address,
       _destinationChainErc20Address,
       _amount,
+      _destinationAddress,
       _walletAddress
     ]) =>
       fetcher([
@@ -87,6 +100,7 @@ export function useGasEstimates({
         _destinationChainId,
         _sourceChainErc20Address,
         _destinationChainErc20Address,
+        _destinationAddress,
         BigNumber.from(_amount)
       ]),
     {
