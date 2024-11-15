@@ -854,7 +854,7 @@
         "network": {
           "name": "Aleph Zero EVM",
           "logo": "/images/AlephZeroEVM_Logo.svg",
-          "description": "Aleph Zero is a Layer 1 with scalable, secure, fast client-side ZK privacy and an EVM Layer 2 for DeFi, gaming, and enterprise solutions."
+          "description": "Aleph Zero EVM is a Layer 2 for DeFi, gaming, and enterprise solutions."
         },
         "nativeTokenData": {
           "name": "AZERO",
