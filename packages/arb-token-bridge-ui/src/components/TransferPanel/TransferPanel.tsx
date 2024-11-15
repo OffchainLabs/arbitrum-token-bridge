@@ -78,6 +78,7 @@ import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useSelectedTabIndex } from '../MainContent/MainContent'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -144,6 +145,7 @@ export function TransferPanel() {
   })
 
   const { setTransferring } = useAppContextActions()
+  const { openTransactionHistory } = useSelectedTabIndex()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const isCctpTransfer = useIsCctpTransfer()
@@ -497,6 +499,7 @@ export function TransferPanel() {
       }
 
       addPendingTransaction(newTransfer)
+      openTransactionHistory()
       setTransferring(false)
       clearAmountInput()
     } catch (e) {
@@ -831,6 +834,7 @@ export function TransferPanel() {
       )
     }
 
+    openTransactionHistory()
     setTransferring(false)
     clearAmountInput()
 
