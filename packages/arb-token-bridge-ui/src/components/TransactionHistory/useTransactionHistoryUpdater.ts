@@ -1,13 +1,13 @@
-import { useAccount } from 'wagmi'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useEffect, useMemo } from 'react'
 
 import { isTxPending } from './helpers'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 export function useTransactionHistoryUpdater() {
-  const { address } = useAccount()
+  const { sanitizedAddress } = useTransactionHistoryAddressStore()
 
-  const transactionHistoryProps = useTransactionHistory(address, {
+  const transactionHistoryProps = useTransactionHistory(sanitizedAddress, {
     runFetcher: true
   })
 

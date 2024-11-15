@@ -1,8 +1,8 @@
 import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
 import { Tab } from '@headlessui/react'
-import { create } from 'zustand'
 import { useAccount } from 'wagmi'
+import { create } from 'zustand'
 
 import { TransactionHistoryTable } from './TransactionHistoryTable'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
@@ -17,6 +17,7 @@ import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { TransactionHistorySearchBar } from './TransactionHistorySearchBar'
 
 function useTransactionHistoryUpdater() {
   const { address } = useAccount()
@@ -72,7 +73,6 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
 }))
 
 export const TransactionHistory = () => {
-  const { address } = useAccount()
   const props = useTransactionHistoryUpdater()
   const { transactions } = props
 
@@ -118,12 +118,13 @@ export const TransactionHistory = () => {
 
   return (
     <div className="m-auto w-full max-w-[100vw] border-y border-white/30 bg-[#191919] py-4 pl-4 md:max-w-[1000px] md:rounded md:border-x md:pr-4">
+      <TransactionHistorySearchBar />
+
       <div className="pr-4 md:pr-0">
         <TransactionStatusInfo />
       </div>
 
       <Tab.Group
-        key={address}
         as="div"
         className="h-full overflow-hidden rounded pr-4 md:pr-0"
       >
@@ -146,7 +147,6 @@ export const TransactionHistory = () => {
           <Tab.Panel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
-              address={address}
               transactions={pendingTransactions}
               selectedTabIndex={0}
               oldestTxTimeAgoString={oldestTxTimeAgoString}
@@ -155,7 +155,6 @@ export const TransactionHistory = () => {
           <Tab.Panel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
-              address={address}
               transactions={settledTransactions}
               selectedTabIndex={1}
               oldestTxTimeAgoString={oldestTxTimeAgoString}
@@ -163,7 +162,7 @@ export const TransactionHistory = () => {
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
-      <TransactionsTableDetails address={address} />
+      <TransactionsTableDetails />
     </div>
   )
 }
