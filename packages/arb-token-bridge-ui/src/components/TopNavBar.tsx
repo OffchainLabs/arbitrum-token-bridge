@@ -22,6 +22,8 @@ StyledTab.displayName = 'StyledTab'
 export function TopNavBar() {
   const { colorClassName } = useTransactionReminderInfo()
 
+  // without calling this, the site won't fetch the transactions and
+  // hence we won't be able to determine the transaction status (the dot)
   useTransactionHistoryUpdater()
 
   return (
