@@ -1,9 +1,9 @@
 import dayjs from 'dayjs'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Tab } from '@headlessui/react'
 import { create } from 'zustand'
+import { useAccount } from 'wagmi'
 
-import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import {
@@ -16,7 +16,7 @@ import {
 import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { useAccount } from 'wagmi'
+import { useTransactionHistoryUpdater } from './useTransactionHistoryUpdater'
 
 const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
@@ -47,35 +47,10 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
   reset: () => set({ tx: null })
 }))
 
-function useTransactionHistoryProps() {
-  const { address } = useAccount()
-
-  const transactionHistoryProps = useTransactionHistory(address, {
-    runFetcher: true
-  })
-
-  const { transactions, updatePendingTransaction } = transactionHistoryProps
-
-  const pendingTransactions = useMemo(() => {
-    return transactions.filter(isTxPending)
-  }, [transactions])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      pendingTransactions.forEach(updatePendingTransaction)
-    }, 10_000)
-
-    return () => clearInterval(interval)
-  }, [pendingTransactions, updatePendingTransaction])
-
-  return transactionHistoryProps
-}
-
 export const TransactionHistory = () => {
-  const props = useTransactionHistoryProps()
-  const { transactions } = props
-
   const { address } = useAccount()
+  const props = useTransactionHistoryUpdater()
+  const { transactions } = props
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)

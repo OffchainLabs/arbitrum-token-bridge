@@ -4,6 +4,7 @@ import { PropsWithChildren } from 'react'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import { useTransactionReminderInfo } from './TransactionHistory/useTransactionReminderInfo'
+import { useTransactionHistoryUpdater } from './TransactionHistory/useTransactionHistoryUpdater'
 
 function StyledTab({ children, ...props }: PropsWithChildren) {
   return (
@@ -20,6 +21,9 @@ StyledTab.displayName = 'StyledTab'
 
 export function TopNavBar() {
   const { colorClassName } = useTransactionReminderInfo()
+
+  useTransactionHistoryUpdater()
+
   return (
     <Tab.List
       className={twMerge(
