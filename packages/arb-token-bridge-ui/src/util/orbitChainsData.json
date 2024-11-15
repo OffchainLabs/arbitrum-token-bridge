@@ -853,14 +853,14 @@
         "color": "#00EAC7",
         "network": {
           "name": "Aleph Zero EVM",
-          "logo": "/images/AlephZeroEVM_Logo.svg",
+          "logo": "/images/AlephZeroEVM_Logo.webp",
           "description": "Aleph Zero EVM is a Layer 2 for DeFi, gaming, and enterprise solutions."
         },
         "nativeTokenData": {
           "name": "AZERO",
           "symbol": "AZERO",
           "decimals": 18,
-          "logoUrl": "/images/AlephZeroEVM_NativeTokenLogo.svg"
+          "logoUrl": "/images/AlephZeroEVM_Logo.webp"
         }
       }
     }
