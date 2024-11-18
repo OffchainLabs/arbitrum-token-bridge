@@ -141,6 +141,65 @@ describe('Withdraw native token', () => {
       }
     )
 
+    it('should withdraw to custom destination address successfully', () => {
+      const ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+
+      cy.login({ networkType: 'childChain' })
+
+      cy.typeAmount(ETHToWithdraw)
+      cy.fillCustomDestinationAddress()
+      cy.findMoveFundsButton().click()
+      cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
+
+      // the Continue withdrawal button should be disabled at first
+      cy.findByRole('button', {
+        name: /Continue/i
+      }).should('be.disabled')
+
+      cy.findByRole('switch', {
+        name: /before I can claim my funds/i
+      })
+        .should('be.visible')
+        .click()
+
+      cy.findByRole('switch', {
+        name: /after claiming my funds/i
+      })
+        .should('be.visible')
+        .click()
+      // the Continue withdrawal button should not be disabled now
+      cy.findByRole('button', {
+        name: /Continue/i
+      })
+        .should('be.enabled')
+        .click()
+
+      cy.confirmMetamaskTransaction()
+
+      const txData = {
+        amount: ETHToWithdraw,
+        symbol: nativeTokenSymbol
+      }
+
+      cy.findTransactionInTransactionHistory({
+        duration: 'an hour',
+        ...txData
+      })
+      cy.openTransactionDetails(txData)
+      cy.findTransactionDetailsCustomDestinationAddress(
+        Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+      )
+
+      // close popup
+      cy.closeTransactionDetails()
+
+      context('transfer panel amount should be reset', () => {
+        cy.closeTransactionHistoryPanel()
+        cy.findAmountInput().should('have.value', '')
+        cy.findMoveFundsButton().should('be.disabled')
+      })
+    })
+
     // TODO => test for bridge amount higher than user's L2 ETH balance
   })
 
