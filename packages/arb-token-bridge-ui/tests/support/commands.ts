@@ -248,8 +248,9 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
 }
 
 export function startTransfer() {
+  cy.wait(5_000)
   cy.findMoveFundsButton().click()
-  cy.wait(15_000)
+  cy.wait(10_000)
   cy.confirmMetamaskTransaction()
 }
 
