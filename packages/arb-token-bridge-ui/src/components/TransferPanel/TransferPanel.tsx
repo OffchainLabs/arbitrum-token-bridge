@@ -835,7 +835,6 @@ export function TransferPanel() {
 
     openTransactionHistoryPanel()
     setTransferring(false)
-    clearAmountInput()
 
     // for custom orbit pages, show Projects' listing after transfer
     if (isDepositMode && isNetwork(childChain.id).isOrbitChain) {
@@ -854,6 +853,8 @@ export function TransferPanel() {
     if (nativeCurrency.isCustom) {
       await updateErc20ParentBalances([nativeCurrency.address])
     }
+
+    clearAmountInput()
   }
 
   const trackTransferButtonClick = useCallback(() => {
