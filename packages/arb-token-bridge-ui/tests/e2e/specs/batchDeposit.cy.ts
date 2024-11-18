@@ -268,7 +268,7 @@ describe('Batch Deposit', () => {
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
       cy.closeTransactionDetails()
-      cy.cy.switchToTransferPanelTab()
+      cy.switchToTransferPanelTab()
     })
 
     context('transfer panel amount should be reset', () => {
