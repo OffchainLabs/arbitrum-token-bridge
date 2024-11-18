@@ -315,6 +315,11 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
 }
 
+export const l2UsdcGatewayAddresses: { [chainId: number]: string } = {
+  // PoP Apex
+  70700: '0x97e2b88b44946cd932fb85675412699723200987'
+}
+
 const defaultL1Network: BlockNumberReferenceNetwork = {
   blockTime: 10,
   chainId: 1337,
