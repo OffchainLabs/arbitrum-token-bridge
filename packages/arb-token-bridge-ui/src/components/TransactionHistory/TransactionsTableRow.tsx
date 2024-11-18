@@ -193,6 +193,7 @@ export function TransactionsTableRow({
         className
       )}
     >
+      <div className="absolute bottom-0">{testId}</div>
       <div className="pr-3 align-middle">{txRelativeTime}</div>
       <div className="flex flex-col space-y-1">
         <div className="flex items-center pr-3 align-middle">
@@ -208,7 +209,6 @@ export function TransactionsTableRow({
             </span>
           </TransactionsTableExternalLink>
         </div>
-        <span>{testId}</span>
         {isBatchTransfer(tx) && (
           <BatchTransferNativeTokenTooltip tx={tx}>
             <div className="flex items-center pr-3 align-middle">
