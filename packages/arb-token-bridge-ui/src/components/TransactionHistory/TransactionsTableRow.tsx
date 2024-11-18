@@ -208,6 +208,7 @@ export function TransactionsTableRow({
             </span>
           </TransactionsTableExternalLink>
         </div>
+        <span>{testId}</span>
         {isBatchTransfer(tx) && (
           <BatchTransferNativeTokenTooltip tx={tx}>
             <div className="flex items-center pr-3 align-middle">
