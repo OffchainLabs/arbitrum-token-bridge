@@ -247,6 +247,12 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
+export function startTransfer() {
+  cy.findMoveFundsButton()
+  cy.wait(15_000)
+  cy.confirmMetamaskTransaction()
+}
+
 export function findSelectTokenButton(
   text: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -397,6 +403,7 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
+  startTransfer,
   findSelectTokenButton,
   closeTransactionHistoryPanel,
   openTransactionDetails,
