@@ -511,7 +511,6 @@ export function TransferPanel() {
 
   const transfer = async () => {
     const sourceChainId = latestNetworks.current.sourceChain.id
-    const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
     if (!isTransferAllowed) {
       throw new Error(transferNotAllowedError)
