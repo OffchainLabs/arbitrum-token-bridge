@@ -9,21 +9,23 @@ import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 const fetchWithRetry = fetchRetry(fetch, {
   retries: 3,
-  retryDelay: (attempt: number) => attempt * 250 // should be short because it blocks the user
+  retryDelay: (attempt: number) => attempt * 500 // should be short because it blocks the user
 })
+
+type BlockedResponse = { blocked: boolean; hasConnectionError: boolean }
 
 /**
  * Checks if an address is blocked using the external Screenings API service.
  * @param {Address} address - The address to check.
- * @returns {Promise<boolean>} true if blocked or the request fails
+ * @returns {Promise<BlockedResponse>}
  */
-async function isBlocked(address: Address): Promise<boolean> {
+async function isBlocked(address: Address): Promise<BlockedResponse> {
   try {
     if (
       process.env.NODE_ENV !== 'production' ||
       process.env.NEXT_PUBLIC_IS_E2E_TEST
     ) {
-      return false
+      return { blocked: false, hasConnectionError: false }
     }
 
     const url = new URL(process.env.NEXT_PUBLIC_SCREENING_API_ENDPOINT ?? '')
@@ -43,7 +45,7 @@ async function isBlocked(address: Address): Promise<boolean> {
     }
 
     const { blocked } = await response.json()
-    return blocked
+    return { blocked, hasConnectionError: false }
   } catch (error) {
     console.error('Failed to check if address is blocked', error)
     captureSentryErrorWithExtraData({
@@ -52,18 +54,18 @@ async function isBlocked(address: Address): Promise<boolean> {
       additionalData: { address }
     })
 
-    return false
+    return { blocked: false, hasConnectionError: true }
   }
 }
 
-async function fetcher(address: Address): Promise<boolean> {
-  const accountIsBlocked = await isBlocked(address)
+async function fetcher(address: Address): Promise<BlockedResponse> {
+  const result = await isBlocked(address)
 
-  if (accountIsBlocked) {
+  if (result.blocked) {
     trackEvent('Address Block', { address })
   }
 
-  return accountIsBlocked
+  return result
 }
 
 export function useAccountIsBlocked() {
@@ -78,11 +80,18 @@ export function useAccountIsBlocked() {
     return [address.toLowerCase(), 'useAccountIsBlocked']
   }, [address])
 
-  const { data: isBlocked } = useSWRImmutable<boolean>(
+  const { data, isLoading } = useSWRImmutable<BlockedResponse>(
     queryKey,
     // Extracts the first element of the query key as the fetcher param
     ([_address]) => fetcher(_address)
   )
 
-  return { isBlocked }
+  if (!address || isLoading) {
+    return { isBlocked: false, hasConnectionError: false }
+  }
+
+  return {
+    isBlocked: data?.blocked,
+    hasConnectionError: data?.hasConnectionError
+  }
 }

@@ -16,7 +16,7 @@ import { useLocalStorage } from '@uidotdev/usehooks'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
-import { BlockedDialog } from './BlockedDialog'
+import { BlockedDialog, ConnectionErrorDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
@@ -160,7 +160,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 
 function AppContent() {
   const { address, isConnected } = useAccount()
-  const { isBlocked } = useAccountIsBlocked()
+  const { isBlocked, hasConnectionError } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
   const { openConnectModal } = useConnectModal()
 
@@ -204,10 +204,17 @@ function AppContent() {
         address={address}
         isOpen={true}
         closeable={false}
-        // ignoring until we use the package
-        // https://github.com/OffchainLabs/config-monorepo/pull/11
-        //
-        // eslint-disable-next-line
+        onClose={() => {}}
+      />
+    )
+  }
+
+  if (address && hasConnectionError) {
+    return (
+      <ConnectionErrorDialog
+        address={address}
+        isOpen={true}
+        closeable={false}
         onClose={() => {}}
       />
     )
