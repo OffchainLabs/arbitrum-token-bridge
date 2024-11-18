@@ -7,7 +7,7 @@
   {
     "name": "Deposit native token",
     "file": "tests/e2e/specs/**/depositNativeToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "Withdraw native token",
@@ -27,7 +27,7 @@
   {
     "name": "Batch deposit",
     "file": "tests/e2e/specs/**/batchDeposit.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "TX history",
