@@ -94,7 +94,7 @@ describe('Redeem ERC20 Deposit', () => {
           symbol: 'WETH'
         })
 
-        cy.closeTransactionHistoryPanel()
+        cy.switchToTransferPanelTab()
 
         // wait for the destination balance to update
         cy.wait(5_000)

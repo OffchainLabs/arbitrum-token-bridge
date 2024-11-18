@@ -142,7 +142,7 @@ describe('Withdraw ERC20 Token', () => {
         })
 
         context('transfer panel amount should be reset', () => {
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
           cy.findAmountInput().should('have.value', '')
           cy.findMoveFundsButton().should('be.disabled')
         })
@@ -175,7 +175,7 @@ describe('Withdraw ERC20 Token', () => {
           })}`
         ).should('be.visible')
 
-        cy.closeTransactionHistoryPanel()
+        cy.switchToTransferPanelTab()
 
         cy.searchAndSelectToken({
           tokenName: testCase.symbol,
@@ -265,7 +265,7 @@ describe('Withdraw ERC20 Token', () => {
 
           // close popup
           cy.closeTransactionDetails()
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
 
           // the balance on the source chain should not be the same as before
           cy.findByLabelText(`${testCase.symbol} balance amount on childChain`)

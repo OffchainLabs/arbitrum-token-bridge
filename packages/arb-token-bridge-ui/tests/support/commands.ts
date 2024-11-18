@@ -256,8 +256,12 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
-export function closeTransactionHistoryPanel() {
-  cy.findByLabelText('Close side panel').click()
+export function switchToTransferPanelTab() {
+  return cy.findByLabelText('Switch to Bridge Tab').click()
+}
+
+export function switchToTransferHistoryTab() {
+  return cy.findByLabelText('Switch to Transaction History Tab').click()
 }
 
 export function openTransactionDetails({
@@ -398,7 +402,8 @@ Cypress.Commands.addAll({
   findGasFeeSummary,
   findMoveFundsButton,
   findSelectTokenButton,
-  closeTransactionHistoryPanel,
+  switchToTransferPanelTab,
+  switchToTransferHistoryTab,
   openTransactionDetails,
   closeTransactionDetails,
   findTransactionInTransactionHistory,

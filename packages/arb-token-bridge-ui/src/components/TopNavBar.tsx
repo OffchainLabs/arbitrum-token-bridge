@@ -36,11 +36,11 @@ export function TopNavBar() {
         />
         Buy
       </StyledTab> */}
-      <StyledTab>
+      <StyledTab aria-label="Switch to Bridge Tab">
         <PaperAirplaneIcon className="h-3 w-3" />
         Bridge
       </StyledTab>
-      <StyledTab>
+      <StyledTab aria-label="Switch to Transaction History Tab">
         <Image
           src="/icons/history.svg"
           width={24}

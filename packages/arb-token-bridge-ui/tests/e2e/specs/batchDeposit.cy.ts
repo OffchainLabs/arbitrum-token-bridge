@@ -152,7 +152,7 @@ describe('Batch Deposit', () => {
         duration: 'a few seconds ago',
         ...txData
       })
-      cy.closeTransactionHistoryPanel()
+      cy.switchToTransferPanelTab()
     })
 
     context('funds should reach destination account successfully', () => {
@@ -268,7 +268,7 @@ describe('Batch Deposit', () => {
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
       cy.closeTransactionDetails()
-      cy.closeTransactionHistoryPanel()
+      cy.cy.switchToTransferPanelTab()
     })
 
     context('transfer panel amount should be reset', () => {

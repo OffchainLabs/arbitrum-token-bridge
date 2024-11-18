@@ -96,7 +96,7 @@ describe('Withdraw native token', () => {
           })
 
           context('transfer panel amount should be reset', () => {
-            cy.closeTransactionHistoryPanel()
+            cy.switchToTransferPanelTab()
             cy.findAmountInput().should('have.value', '')
             cy.findMoveFundsButton().should('be.disabled')
           })
@@ -128,7 +128,7 @@ describe('Withdraw native token', () => {
             })}`
           ).should('be.visible')
 
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
 
           // the balance on the destination chain should not be the same as before
           cy.findByLabelText(
@@ -194,7 +194,7 @@ describe('Withdraw native token', () => {
       cy.closeTransactionDetails()
 
       context('transfer panel amount should be reset', () => {
-        cy.closeTransactionHistoryPanel()
+        cy.switchToTransferPanelTab()
         cy.findAmountInput().should('have.value', '')
         cy.findMoveFundsButton().should('be.disabled')
       })
