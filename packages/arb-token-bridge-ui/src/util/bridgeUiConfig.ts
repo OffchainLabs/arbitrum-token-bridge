@@ -129,9 +129,13 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
 
       if (orbitChain) {
         const bridgeUiConfig = orbitChain.bridgeUiConfig
-        if (orbitChain.bridgeUiConfig.nativeTokenData) {
+        if (
+          orbitChain.bridgeUiConfig.nativeTokenData &&
+          orbitChain.bridgeUiConfig.nativeTokenData.decimals !== 18
+        ) {
           // we can do this because the native token's number of decimals is always 18 on its Orbit chain
           // and this number of decimals's main use is for the wallet to add the Orbit chain
+          //
           // in other cases when we need to know the number of decimals at the Parent chain,
           // we always call `useNativeCurrency` to fetch it using the parent chain provider
           // with the token address
