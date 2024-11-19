@@ -29,7 +29,7 @@ function mockClassicDepositTransaction(
     l2NetworkID: '42161',
     timestampCreated: dateYearAgo.toISOString(),
     timestampResolved: dateYearAgo.toISOString(),
-    parentToChildMsgData: {
+    l1ToL2MsgData: {
       fetchingUpdate: false,
       status: ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: undefined,

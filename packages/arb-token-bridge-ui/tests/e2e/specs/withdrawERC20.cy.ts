@@ -153,9 +153,7 @@ describe('Withdraw ERC20 Token', () => {
 
         cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
 
-        cy.findByLabelText('Open Transaction History')
-          .should('be.visible')
-          .click()
+        cy.switchToTransactionHistoryTab('pending')
 
         cy.findClaimButton(
           formatAmount(ERC20AmountToSend, {
