@@ -376,7 +376,7 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Child MultiCall": "childMultiCall",
   "Parent WETH": "parentWeth",
   "Fast Withdrawals active": "fastWithdrawalActive",
-  "Fast Withdrawals time in minutes": "fastWithdrawalTime",
+  "Fast Withdrawals time in minutes": "fastWithdrawalMinutes",
 };
 
 export interface Issue {
