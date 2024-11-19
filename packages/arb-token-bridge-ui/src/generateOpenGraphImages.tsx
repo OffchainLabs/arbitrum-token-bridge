@@ -38,13 +38,15 @@ type ChainCombination = [Chain, Chain]
 const chainToLogo: { [key: Chain]: string } = {
   [ChainId.Ethereum]: 'https://l2beat.com/icons/ethereum.png',
   [ChainId.ArbitrumOne]: 'https://l2beat.com/icons/arbitrum.png',
-  [ChainId.ArbitrumNova]: 'https://l2beat.com/icons/nova.png'
+  [ChainId.ArbitrumNova]: 'https://l2beat.com/icons/nova.png',
+  [ChainId.Sepolia]: 'https://l2beat.com/icons/ethereum.png',
+  [ChainId.ArbitrumSepolia]: 'https://l2beat.com/icons/arbitrum.png'
 }
 
 const configs: ChainCombination[] = [
   [ChainId.Ethereum, ChainId.ArbitrumOne],
   [ChainId.Ethereum, ChainId.ArbitrumNova],
-  [ChainId.ArbitrumOne, 660279],
+  [ChainId.Sepolia, ChainId.ArbitrumSepolia],
   ...Object.values(orbitMainnets).map(
     chain => [chain.parentChainId, chain.chainId] as ChainCombination
   ),
@@ -67,7 +69,7 @@ function ChainWrapper({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '760px',
+        width: '825px',
         gap: '6px',
         padding: '25px',
         backgroundColor: `${chainConfig.color}40`,
@@ -90,7 +92,7 @@ function ChainWrapper({
       </span>
       <img
         src={chainToLogo[chain]}
-        alt="logo"
+        alt={`${chainConfig.network.name} logo`}
         width={80}
         height={80}
         style={{ opacity: 0.5 }}
