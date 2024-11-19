@@ -76,6 +76,7 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -104,13 +105,11 @@ export function TransferPanel() {
     useState(false)
 
   const {
-    app: {
-      connectionState,
-      selectedToken,
-      arbTokenBridge: { token },
-      warningTokens
-    }
+    app: { selectedToken, warningTokens }
   } = useAppState()
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
   const { address: walletAddress } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -207,8 +206,7 @@ export function TransferPanel() {
   }
 
   useImportTokenModal({
-    importTokenModalStatus,
-    connectionState
+    importTokenModalStatus
   })
 
   const isBridgingANewStandardToken = useMemo(() => {
@@ -852,7 +850,7 @@ export function TransferPanel() {
     await Promise.all([updateEthParentBalance(), updateEthChildBalance()])
 
     if (selectedToken) {
-      token.updateTokenData(selectedToken.address)
+      updateTokenData(selectedToken.address)
     }
 
     if (nativeCurrency.isCustom) {

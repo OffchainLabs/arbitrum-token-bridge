@@ -15,6 +15,8 @@ import {
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
+import { BridgeTokenList } from '../util/TokenListUtils'
+
 export { OutgoingMessageState }
 
 export enum TokenType {
@@ -147,6 +149,7 @@ export interface ArbTokenBridgeToken {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
+  addBridgeTokenListToBridge: (bridgeTokenList: BridgeTokenList) => void
 }
 
 export interface ArbTokenBridge {
