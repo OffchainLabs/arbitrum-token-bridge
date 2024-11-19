@@ -81,8 +81,6 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
     "parentWeth": "0x0000000000000000000000000000000000000012",
     "parentWethGateway": "0x0000000000000000000000000000000000000013",
   },
-  "fastWithdrawalTime": 90000,
-  "fastWithdrawalActive": true
 }
 `;
 
