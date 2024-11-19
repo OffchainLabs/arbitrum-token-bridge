@@ -223,6 +223,8 @@ export const mockOrbitChain: OrbitChain = {
       decimals: 18,
       logoUrl: "/images/XaiLogo.svg",
     },
+    fastWithdrawalTime: 90000,
+    fastWithdrawalActive: true,
   },
 };
 

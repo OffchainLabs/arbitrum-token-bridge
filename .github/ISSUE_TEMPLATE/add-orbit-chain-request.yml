@@ -227,6 +227,23 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: fast-withdrawal
+    attributes:
+      label: Fast Withdrawals active
+      description: Only check this if your chain has Fast Withdrawals enabled. We will show information in our UI that your chain has Fast Withdrawals implemented and that withdrawals will take less time than usual.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+  - type: input
+    id: fast-withdrawal-time
+    attributes:
+      label: Fast Withdrawals time in minutes
+      description: Only fill this if your chain has Fast Withdrawals enabled.
+    validations:
+      required: false
+
   - type: input
     id: launch-date
     attributes:

@@ -45,6 +45,8 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
       "logo": "/images/mockChain_Logo.png",
       "name": "Test Chain",
     },
+    fastWithdrawalActive: true,
+    fastWithdrawalTime: 90000,
   },
   "chainId": 1234567890,
   "confirmPeriodBlocks": 150,
@@ -149,7 +151,9 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
           \\"symbol\\": \\"XAI\\",
           \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
-        }
+        },
+        \\"fastWithdrawalTime\\": 90000,
+        \\"fastWithdrawalActive\\": true
       }
     }
   ]
@@ -205,7 +209,9 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
           \\"symbol\\": \\"XAI\\",
           \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
-        }
+        },
+        \\"fastWithdrawalTime\\": 90000,
+        \\"fastWithdrawalActive\\": true
       }
     },
     {
@@ -287,7 +293,9 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
           \\"symbol\\": \\"XAI\\",
           \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
-        }
+        },
+        \\"fastWithdrawalTime\\": 90000,
+        \\"fastWithdrawalActive\\": true
       }
     }
   ],
