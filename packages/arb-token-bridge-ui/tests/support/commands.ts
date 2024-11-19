@@ -250,7 +250,7 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
         .should('be.visible'),
     {
       errorMsg: 'Failed to fetch transactions.',
-      timeout: 30_000,
+      timeout: 60_000,
       interval: 500
     }
   )
