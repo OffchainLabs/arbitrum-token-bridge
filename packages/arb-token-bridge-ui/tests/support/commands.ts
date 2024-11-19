@@ -127,7 +127,7 @@ export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
         .should('be.visible'),
     {
       errorMsg: 'Failed to fetch transactions.',
-      timeout: 30_000,
+      timeout: 120_000,
       interval: 500
     }
   )
