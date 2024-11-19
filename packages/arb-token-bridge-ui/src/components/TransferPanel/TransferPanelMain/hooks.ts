@@ -10,6 +10,7 @@ import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { TokenType } from '../../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
+import { useArbTokenBridge } from '../../../hooks/useArbTokenBridge'
 
 const commonUSDC = {
   name: 'USD Coin',
@@ -22,11 +23,11 @@ const commonUSDC = {
 export function useUpdateUSDCTokenData() {
   const actions = useActions()
   const {
-    app: {
-      arbTokenBridge: { token },
-      selectedToken
-    }
+    app: { selectedToken }
   } = useAppState()
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
   const {
@@ -47,7 +48,7 @@ export function useUpdateUSDCTokenData() {
     }
 
     if (isArbOneUSDC && isDestinationChainArbitrumOne) {
-      token.updateTokenData(CommonAddress.Ethereum.USDC)
+      updateTokenData(CommonAddress.Ethereum.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
         address: CommonAddress.Ethereum.USDC,
@@ -56,7 +57,7 @@ export function useUpdateUSDCTokenData() {
     }
 
     if (isArbSepoliaUSDC && isDestinationChainArbitrumSepolia) {
-      token.updateTokenData(CommonAddress.Sepolia.USDC)
+      updateTokenData(CommonAddress.Sepolia.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
         address: CommonAddress.Sepolia.USDC,
@@ -69,6 +70,6 @@ export function useUpdateUSDCTokenData() {
     isDestinationChainArbitrumOne,
     isDestinationChainArbitrumSepolia,
     selectedToken,
-    token
+    updateTokenData
   ])
 }
