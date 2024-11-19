@@ -152,7 +152,7 @@ export const bridgeUiConfigSchema = z.object({
       logoUrl: z.string().optional(),
     })
     .optional(),
-  fastWithdrawalTime: z.number().optional(),
+  fastWithdrawalTime: z.number().int().positive().optional(),
   fastWithdrawalActive: z.boolean().optional(),
 });
 

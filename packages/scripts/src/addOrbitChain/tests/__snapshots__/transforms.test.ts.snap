@@ -34,6 +34,8 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
 {
   "bridgeUiConfig": {
     "color": "#FF0000",
+    "fastWithdrawalActive": true,
+    "fastWithdrawalTime": 90000,
     "nativeTokenData": {
       "decimals": 18,
       "logoUrl": "/images/mockChain_NativeTokenLogo.png",
@@ -45,8 +47,6 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
       "logo": "/images/mockChain_Logo.png",
       "name": "Test Chain",
     },
-    fastWithdrawalActive: true,
-    fastWithdrawalTime: 90000,
   },
   "chainId": 1234567890,
   "confirmPeriodBlocks": 150,
