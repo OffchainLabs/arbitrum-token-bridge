@@ -71,6 +71,7 @@ describe('Redeem ERC20 Deposit', () => {
         // open transaction history and wait for deposit to fetch data
         cy.switchToTransactionHistoryTab('pending')
 
+        // give ci more time to fetch the transactions
         cy.wait(15_000)
 
         // find the Retry button and the amount in the row
