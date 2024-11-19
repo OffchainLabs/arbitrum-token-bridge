@@ -41,14 +41,6 @@ export function getInsufficientFundsForGasFeesErrorMessage({
   )
 }
 
-export function getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage({
-  asset
-}: {
-  asset: string
-}) {
-  return `${asset} transfers using smart contract wallets aren't supported yet.`
-}
-
 export function getSmartContractWalletTeleportTransfersNotSupportedErrorMessage() {
   return `LayerLeap transfers using smart contract wallets aren't supported yet.`
 }
