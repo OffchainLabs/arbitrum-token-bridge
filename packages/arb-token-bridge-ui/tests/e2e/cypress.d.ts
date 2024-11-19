@@ -16,6 +16,7 @@ import {
   findGasFeeSummary,
   findGasFeeForChain,
   findMoveFundsButton,
+  startTransfer,
   findSelectTokenButton,
   openTransactionDetails,
   closeTransactionDetails,
@@ -65,6 +66,7 @@ declare global {
       findGasFeeForChain: typeof findGasFeeForChain
       findGasFeeSummary: typeof findGasFeeSummary
       findMoveFundsButton: typeof findMoveFundsButton
+      startTransfer: typeof startTransfer
       findSelectTokenButton: typeof findSelectTokenButton
       openTransactionDetails: typeof openTransactionDetails
       closeTransactionDetails: typeof closeTransactionDetails

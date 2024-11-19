@@ -131,8 +131,7 @@ describe('Batch Deposit', () => {
     }
 
     context('should deposit successfully', () => {
-      cy.findMoveFundsButton().click()
-      cy.confirmMetamaskTransaction()
+      cy.startTransfer()
       cy.findTransactionInTransactionHistory({
         ...txData,
         duration: depositTime
@@ -237,8 +236,7 @@ describe('Batch Deposit', () => {
     }
 
     context('should deposit successfully', () => {
-      cy.findMoveFundsButton().click()
-      cy.confirmMetamaskTransaction()
+      cy.startTransfer()
       cy.findTransactionInTransactionHistory({
         ...txData,
         duration: depositTime

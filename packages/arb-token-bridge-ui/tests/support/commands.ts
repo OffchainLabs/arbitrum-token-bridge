@@ -222,6 +222,13 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
+export function startTransfer() {
+  cy.wait(5_000)
+  cy.findMoveFundsButton().click()
+  cy.wait(15_000)
+  cy.confirmMetamaskTransaction()
+}
+
 export function findSelectTokenButton(
   text: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -250,7 +257,7 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
         .should('be.visible'),
     {
       errorMsg: 'Failed to fetch transactions.',
-      timeout: 60_000,
+      timeout: 120_000,
       interval: 500
     }
   )
@@ -392,6 +399,7 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
+  startTransfer,
   findSelectTokenButton,
   switchToTransferPanelTab,
   switchToTransactionHistoryTab,

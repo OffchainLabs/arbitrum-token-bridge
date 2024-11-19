@@ -89,8 +89,7 @@ describe('Deposit Token', () => {
         })
 
         context('should deposit successfully', () => {
-          cy.findMoveFundsButton().click()
-          cy.confirmMetamaskTransaction()
+          cy.startTransfer()
           cy.findTransactionInTransactionHistory({
             duration: depositTime,
             amount: ERC20AmountToSend,
@@ -131,8 +130,7 @@ describe('Deposit Token', () => {
         })
 
         context('should deposit successfully', () => {
-          cy.findMoveFundsButton().click()
-          cy.confirmMetamaskTransaction()
+          cy.startTransfer()
           const txData = {
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
