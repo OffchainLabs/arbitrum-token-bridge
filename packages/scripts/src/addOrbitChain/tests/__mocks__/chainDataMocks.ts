@@ -174,7 +174,7 @@ export const mockIncomingChainData: IncomingChainData = {
   childWeth: "0x0000000000000000000000000000000000000019",
   parentMultiCall: "0x0000000000000000000000000000000000000010",
   childMultiCall: "0x0000000000000000000000000000000000000017",
-  fastWithdrawalMinutes: 1500,
+  fastWithdrawalMinutes: "1500",
   fastWithdrawalActive: true,
 };
 
