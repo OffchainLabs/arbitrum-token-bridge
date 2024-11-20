@@ -156,7 +156,7 @@ describe("Validation Functions", () => {
           decimals: 18,
           logoUrl: "https://example.com/token-logo.png",
         },
-        fastWithdrawalTime: 90000,
+        fastWithdrawalTime: 900000,
         fastWithdrawalActive: true,
       };
       expect(() =>

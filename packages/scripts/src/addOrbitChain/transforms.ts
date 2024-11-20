@@ -397,7 +397,7 @@ export const transformIncomingDataToOrbitChain = async (
       }),
       ...(chainData.fastWithdrawalActive && {
         fastWithdrawalTime: chainData.fastWithdrawalMinutes
-          ? Number(chainData.fastWithdrawalMinutes) * 60
+          ? Number(chainData.fastWithdrawalMinutes) * 60 * 1000
           : undefined,
         fastWithdrawalActive: true,
       }),
