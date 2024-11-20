@@ -54,7 +54,7 @@ describe('useBalance', () => {
     jest.restoreAllMocks()
   })
 
-  it('getter return null for undefined walletAddress', async () => {
+  it('getter return 0 for undefined walletAddress', async () => {
     // This should not be called. It's here to avoid false positive
     const getBalanceSpy = jest.spyOn(provider, 'getBalance')
     getBalanceSpy.mockImplementationOnce(() =>
@@ -83,7 +83,7 @@ describe('useBalance', () => {
 
     expect(getBalanceSpy).not.toHaveBeenCalled()
     expect(getTokenDataSpy).not.toHaveBeenCalled()
-    expect(ethBalance).toBeNull()
+    expect(ethBalance?.toNumber()).toEqual(0)
     expect(erc20Balances).toBeNull()
   })
 

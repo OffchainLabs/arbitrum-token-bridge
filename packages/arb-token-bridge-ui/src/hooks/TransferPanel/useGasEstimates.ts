@@ -1,6 +1,6 @@
-import { BigNumber, Signer, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
@@ -11,7 +11,7 @@ import { useNetworks } from '../useNetworks'
 import { useDestinationAddressStore } from '../../components/TransferPanel/AdvancedSettings'
 
 async function fetcher([
-  signer,
+  walletAddress,
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
@@ -19,7 +19,7 @@ async function fetcher([
   destinationAddress,
   amount
 ]: [
-  signer: Signer,
+  walletAddress: string | undefined,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
@@ -27,6 +27,9 @@ async function fetcher([
   destinationAddress: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
+  const _walletAddress = walletAddress ?? constants.AddressZero
+  const sourceProvider = getProviderForChainId(sourceChainId)
+  const signer = sourceProvider.getSigner(_walletAddress)
   // use chainIds to initialize the bridgeTransferStarter to save RPC calls
   const bridgeTransferStarter = BridgeTransferStarterFactory.create({
     sourceChainId,
@@ -61,7 +64,6 @@ export function useGasEstimates({
   } = useAppState()
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(token)
-  const { data: signer } = useSigner()
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
@@ -73,18 +75,16 @@ export function useGasEstimates({
     : undefined
 
   const { data: gasEstimates, error } = useSWR(
-    signer
-      ? ([
-          sourceChain.id,
-          destinationChain.id,
-          sourceChainErc20Address,
-          destinationChainErc20Address,
-          amountToTransfer.toString(), // BigNumber is not serializable
-          sanitizedDestinationAddress,
-          walletAddress,
-          'gasEstimates'
-        ] as const)
-      : null,
+    [
+      sourceChain.id,
+      destinationChain.id,
+      sourceChainErc20Address,
+      destinationChainErc20Address,
+      amountToTransfer.toString(), // BigNumber is not serializable
+      sanitizedDestinationAddress,
+      walletAddress,
+      'gasEstimates'
+    ],
     ([
       _sourceChainId,
       _destinationChainId,
@@ -93,20 +93,16 @@ export function useGasEstimates({
       _amount,
       _destinationAddress,
       _walletAddress
-    ]) => {
-      const sourceProvider = getProviderForChainId(_sourceChainId)
-      const _signer = sourceProvider.getSigner(_walletAddress)
-
-      return fetcher([
-        _signer,
+    ]) =>
+      fetcher([
+        _walletAddress,
         _sourceChainId,
         _destinationChainId,
         _sourceChainErc20Address,
         _destinationChainErc20Address,
         _destinationAddress,
         BigNumber.from(_amount)
-      ])
-    },
+      ]),
     {
       refreshInterval: 30_000,
       shouldRetryOnError: true,
@@ -114,6 +110,10 @@ export function useGasEstimates({
       errorRetryInterval: 5_000
     }
   )
+
+  if (typeof walletAddress === 'undefined') {
+    return { gasEstimates, error: 'walletNotConnected' }
+  }
 
   return { gasEstimates, error }
 }

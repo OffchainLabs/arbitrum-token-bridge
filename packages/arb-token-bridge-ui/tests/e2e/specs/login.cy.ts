@@ -44,7 +44,7 @@ describe('Login Account', () => {
     cy.findByText(/Agree to Terms and Continue/i)
       .should('be.visible')
       .click()
-    cy.findByText('Connect a Wallet').should('be.visible')
+    cy.findAllByText('Connect Wallet').first().should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
   })
 
