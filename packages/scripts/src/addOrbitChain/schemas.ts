@@ -264,45 +264,35 @@ export const orbitChainsListSchema = z.object({
 });
 
 // Schema for incoming data from GitHub issue
-export const incomingChainDataSchema = z
-  .object({
-    chainId: z.string().regex(/^\d+$/),
-    name: z.string().min(1),
-    description: descriptionSchema,
-    chainLogo: urlSchema,
-    color: colorHexSchema,
-    rpcUrl: z.string().url(),
-    explorerUrl: z.string().url(),
-    parentChainId: z.string().regex(/^\d+$/),
-    nativeTokenAddress: addressSchema.optional(),
-    nativeTokenName: z.string().optional(),
-    nativeTokenSymbol: z.string().optional(),
-    nativeTokenLogo: urlSchema.optional(),
-    rollup: addressSchema,
-    parentGatewayRouter: addressSchema,
-    childGatewayRouter: addressSchema,
-    parentErc20Gateway: addressSchema,
-    childErc20Gateway: addressSchema,
-    parentCustomGateway: addressSchema,
-    childCustomGateway: addressSchema,
-    parentWethGateway: addressSchema,
-    childWethGateway: addressSchema,
-    parentWeth: addressSchema,
-    childWeth: addressSchema,
-    parentMultiCall: addressSchema,
-    childMultiCall: addressSchema,
-    fastWithdrawalActive: z.boolean(),
-    fastWithdrawalMinutes: z.number().optional(),
-  })
-  .refine(
-    (data) =>
-      !data.fastWithdrawalActive || data.fastWithdrawalMinutes !== undefined,
-    {
-      message:
-        "`fastWithdrawalActive` is true but `fastWithdrawalMinutes` is undefined, expected a number.",
-      path: ["fastWithdrawalMinutes"],
-    }
-  );
+export const incomingChainDataSchema = z.object({
+  chainId: z.string().regex(/^\d+$/),
+  name: z.string().min(1),
+  description: descriptionSchema,
+  chainLogo: urlSchema,
+  color: colorHexSchema,
+  rpcUrl: z.string().url(),
+  explorerUrl: z.string().url(),
+  parentChainId: z.string().regex(/^\d+$/),
+  nativeTokenAddress: addressSchema.optional(),
+  nativeTokenName: z.string().optional(),
+  nativeTokenSymbol: z.string().optional(),
+  nativeTokenLogo: urlSchema.optional(),
+  rollup: addressSchema,
+  parentGatewayRouter: addressSchema,
+  childGatewayRouter: addressSchema,
+  parentErc20Gateway: addressSchema,
+  childErc20Gateway: addressSchema,
+  parentCustomGateway: addressSchema,
+  childCustomGateway: addressSchema,
+  parentWethGateway: addressSchema,
+  childWethGateway: addressSchema,
+  parentWeth: addressSchema,
+  childWeth: addressSchema,
+  parentMultiCall: addressSchema,
+  childMultiCall: addressSchema,
+  fastWithdrawalActive: z.boolean(),
+  fastWithdrawalMinutes: z.number().optional(),
+});
 
 // Schema for the final OrbitChain structure
 export const orbitChainSchema = chainSchema;
