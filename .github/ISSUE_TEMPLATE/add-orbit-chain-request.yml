@@ -65,7 +65,7 @@ body:
   - type: dropdown
     id: parent-chain-id
     attributes:
-      label: Parent Chain ID
+      label: Parent chain ID
       description: Select the parent chain for your Orbit chain.
       options:
         - "1"
@@ -173,12 +173,6 @@ body:
     validations:
       required: true
   - type: input
-    id: parent-proxy-admin
-    attributes:
-      label: Parent Proxy Admin
-    validations:
-      required: true
-  - type: input
     id: parent-weth
     attributes:
       label: Parent WETH
@@ -217,13 +211,7 @@ body:
   - type: input
     id: child-multicall
     attributes:
-      label: Child Multicall
-    validations:
-      required: true
-  - type: input
-    id: child-proxy-admin
-    attributes:
-      label: Child Proxy Admin
+      label: Child MultiCall
     validations:
       required: true
   - type: input

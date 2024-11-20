@@ -125,14 +125,14 @@ export const tokenBridgeSchema = z.object({
   parentErc20Gateway: addressSchema,
   parentGatewayRouter: addressSchema,
   parentMultiCall: addressSchema.optional(),
-  parentProxyAdmin: addressSchema,
+  parentProxyAdmin: addressSchema.optional().default(ZERO_ADDRESS),
   parentWeth: addressSchema,
   parentWethGateway: addressSchema,
   childCustomGateway: addressSchema,
   childErc20Gateway: addressSchema,
   childGatewayRouter: addressSchema,
   childMultiCall: addressSchema.optional(),
-  childProxyAdmin: addressSchema,
+  childProxyAdmin: addressSchema.optional().default(ZERO_ADDRESS),
   childWeth: addressSchema,
   childWethGateway: addressSchema,
 });
@@ -183,7 +183,6 @@ export const chainSchema = z
       chain.tokenBridge.parentErc20Gateway,
       chain.tokenBridge.parentGatewayRouter,
       chain.tokenBridge.parentMultiCall,
-      chain.tokenBridge.parentProxyAdmin,
       chain.tokenBridge.parentWeth,
       chain.tokenBridge.parentWethGateway,
     ].filter(
@@ -196,7 +195,6 @@ export const chainSchema = z
       chain.tokenBridge.childErc20Gateway,
       chain.tokenBridge.childGatewayRouter,
       chain.tokenBridge.childMultiCall,
-      chain.tokenBridge.childProxyAdmin,
     ].filter(
       (address): address is string =>
         typeof address === "string" && address !== ZERO_ADDRESS
@@ -263,37 +261,21 @@ export const orbitChainsListSchema = z.object({
   testnet: z.array(chainSchema),
 });
 
-const imageContentSchema = z.string().refine(
-  (content) => {
-    // Match only markdown image syntax: ![alt text](url)
-    return /!\[.*?\]\(https:\/\/.*?\)/.test(content);
-  },
-  {
-    message:
-      "Invalid image format. Please provide a valid markdown format image url.",
-  }
-);
-
 // Schema for incoming data from GitHub issue
 export const incomingChainDataSchema = z.object({
   chainId: z.string().regex(/^\d+$/),
   name: z.string().min(1),
   description: descriptionSchema,
-  chainLogo: imageContentSchema,
+  chainLogo: urlSchema,
   color: colorHexSchema,
   rpcUrl: z.string().url(),
   explorerUrl: z.string().url(),
   parentChainId: z.string().regex(/^\d+$/),
-  confirmPeriodBlocks: z.string().regex(/^\d+$/),
   nativeTokenAddress: addressSchema.optional(),
   nativeTokenName: z.string().optional(),
   nativeTokenSymbol: z.string().optional(),
-  nativeTokenLogo: imageContentSchema.optional(),
-  bridge: addressSchema,
-  inbox: addressSchema,
-  outbox: addressSchema,
+  nativeTokenLogo: urlSchema.optional(),
   rollup: addressSchema,
-  sequencerInbox: addressSchema,
   parentGatewayRouter: addressSchema,
   childGatewayRouter: addressSchema,
   parentErc20Gateway: addressSchema,
@@ -304,8 +286,6 @@ export const incomingChainDataSchema = z.object({
   childWethGateway: addressSchema,
   parentWeth: addressSchema,
   childWeth: addressSchema,
-  parentProxyAdmin: addressSchema,
-  childProxyAdmin: addressSchema,
   parentMultiCall: addressSchema,
   childMultiCall: addressSchema,
 });
@@ -364,16 +344,11 @@ export const chainDataLabelToKey: Record<string, string> = {
   "RPC URL": "rpcUrl",
   "Explorer URL": "explorerUrl",
   "Parent chain ID": "parentChainId",
-  confirmPeriodBlocks: "confirmPeriodBlocks",
   "Native token address on Parent Chain": "nativeTokenAddress",
   "Native token name": "nativeTokenName",
   "Native token symbol": "nativeTokenSymbol",
   "Native token logo": "nativeTokenLogo",
-  bridge: "bridge",
-  inbox: "inbox",
-  outbox: "outbox",
   rollup: "rollup",
-  sequencerInbox: "sequencerInbox",
   "Parent Gateway Router": "parentGatewayRouter",
   "Child Gateway Router": "childGatewayRouter",
   "Parent ERC20 Gateway": "parentErc20Gateway",
@@ -383,10 +358,8 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Parent WETH Gateway": "parentWethGateway",
   "Child WETH Gateway": "childWethGateway",
   "Child WETH": "childWeth",
-  "Parent Proxy Admin": "parentProxyAdmin",
-  "Child Proxy Admin": "childProxyAdmin",
   "Parent MultiCall": "parentMultiCall",
-  "Child Multicall": "childMultiCall",
+  "Child MultiCall": "childMultiCall",
   "Parent WETH": "parentWeth",
 };
 

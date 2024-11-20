@@ -1,5 +1,8 @@
-import { EthBridger } from '@arbitrum/sdk'
-import { BigNumber } from 'ethers'
+import {
+  EthBridger,
+  scaleFrom18DecimalsToNativeTokenDecimals
+} from '@arbitrum/sdk'
+import { BigNumber, Signer } from 'ethers'
 import {
   ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
@@ -12,8 +15,9 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { isExperimentalFeatureEnabled } from '../util'
 import { isCustomDestinationAddressTx } from '../state/app/utils'
+import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
+import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -32,9 +36,55 @@ export class EthDepositStarter extends BridgeTransferStarter {
     return this.ethBridger
   }
 
+  private async getDepositRetryableFees({
+    signer,
+    amount,
+    destinationAddress
+  }: {
+    signer: Signer
+    amount: BigNumber
+    destinationAddress?: string
+  }) {
+    const address = await getAddressFromSigner(signer)
+
+    const isDifferentDestinationAddress = isCustomDestinationAddressTx({
+      sender: address,
+      destination: destinationAddress
+    })
+
+    if (!isDifferentDestinationAddress) {
+      return BigNumber.from(0)
+    }
+
+    const nativeTokenDecimals = (
+      await fetchNativeCurrency({ provider: this.destinationChainProvider })
+    ).decimals
+
+    // Eth transfers to a custom destination use retryables
+    // In the case of native currency we need to also approve native currency used for gas
+    const gasEstimates = await this.transferEstimateGas({
+      amount,
+      signer,
+      destinationAddress
+    })
+
+    const gasPrice = percentIncrease(
+      await this.destinationChainProvider.getGasPrice(),
+      BigNumber.from(DEFAULT_GAS_PRICE_PERCENT_INCREASE)
+    )
+
+    return scaleFrom18DecimalsToNativeTokenDecimals({
+      amount: gasEstimates.estimatedChildChainGas
+        .mul(gasPrice)
+        .add(gasEstimates.estimatedChildChainSubmissionCost),
+      decimals: nativeTokenDecimals
+    })
+  }
+
   public async requiresNativeCurrencyApproval({
     amount,
-    signer
+    signer,
+    destinationAddress
   }: RequiresNativeCurrencyApprovalProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
@@ -45,6 +95,12 @@ export class EthDepositStarter extends BridgeTransferStarter {
       return false // native currency doesn't require approval
     }
 
+    const retryableFees = await this.getDepositRetryableFees({
+      signer,
+      amount,
+      destinationAddress
+    })
+
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
       address: childNetwork.nativeToken,
       provider: this.sourceChainProvider,
@@ -53,7 +109,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     })
 
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
-    return customFeeTokenAllowanceForInbox.lt(amount)
+    return customFeeTokenAllowanceForInbox.lt(amount.add(retryableFees))
   }
 
   public async approveNativeCurrencyEstimateGas({
@@ -68,12 +124,20 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async approveNativeCurrency({
     signer,
-    amount
+    amount,
+    destinationAddress
   }: ApproveNativeCurrencyProps) {
     const ethBridger = await this.getBridger()
+
+    const retryableFees = await this.getDepositRetryableFees({
+      signer,
+      amount,
+      destinationAddress
+    })
+
     return ethBridger.approveGasToken({
       parentSigner: signer,
-      amount
+      amount: amount.add(retryableFees)
     })
   }
 
@@ -111,15 +175,6 @@ export class EthDepositStarter extends BridgeTransferStarter {
       sender: address,
       destination: destinationAddress
     })
-
-    // TODO: remove this when eth-custom-dest feature is live
-    // this is a safety check, this shouldn't happen
-    if (
-      isDifferentDestinationAddress &&
-      !isExperimentalFeatureEnabled('eth-custom-dest')
-    ) {
-      throw 'Native currency transfers to a custom destination address are not supported yet.'
-    }
 
     const depositRequest = isDifferentDestinationAddress
       ? await ethBridger.getDepositToRequest({

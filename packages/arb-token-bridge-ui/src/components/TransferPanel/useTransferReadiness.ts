@@ -14,7 +14,6 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage,
   getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
@@ -266,14 +265,12 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
-    // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
-    if (isSmartContractWallet && !selectedToken) {
+    // disable deposits to L3X
+    if (isDepositMode && childChain.id === 12324) {
       return notReady({
         errorMessages: {
           inputAmount1:
-            getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
-              { asset: nativeCurrency.symbol }
-            )
+            'Deposits to the L3X chain are currently disabled. Withdrawals remain available. Please complete any pending transactions or reach out to support for further assistance.'
         }
       })
     }

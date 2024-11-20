@@ -1,16 +1,14 @@
 import { useAppState } from '../../state'
-import { useNativeCurrency } from '../useNativeCurrency'
-import { useNetworksRelationship } from '../useNetworksRelationship'
-import { useNetworks } from '../useNetworks'
+import { useSourceChainNativeCurrencyDecimals } from '../useSourceChainNativeCurrencyDecimals'
 
 export function useSelectedTokenDecimals() {
   const {
     app: { selectedToken }
   } = useAppState()
-  const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
 
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  return selectedToken ? selectedToken.decimals : nativeCurrency.decimals
+  return selectedToken
+    ? selectedToken.decimals
+    : nativeCurrencyDecimalsOnSourceChain
 }
