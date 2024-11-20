@@ -291,7 +291,7 @@ export const incomingChainDataSchema = z.object({
   parentMultiCall: addressSchema,
   childMultiCall: addressSchema,
   fastWithdrawalActive: z.boolean(),
-  fastWithdrawalMinutes: z.number().optional(),
+  fastWithdrawalMinutes: z.string().regex(/^\d+$/).optional(),
 });
 
 // Schema for the final OrbitChain structure
