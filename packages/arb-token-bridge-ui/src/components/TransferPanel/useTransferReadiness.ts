@@ -265,6 +265,16 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
+    // disable deposits to L3X
+    if (isDepositMode && childChain.id === 12324) {
+      return notReady({
+        errorMessages: {
+          inputAmount1:
+            'Deposits to the L3X chain are currently disabled. Withdrawals remain available. Please complete any pending transactions or reach out to support for further assistance.'
+        }
+      })
+    }
+
     // teleport transfers using SC wallets not enabled yet
     if (isSmartContractWallet && isTeleportMode) {
       return notReady({
