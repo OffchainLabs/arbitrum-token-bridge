@@ -16,7 +16,7 @@ export type BridgeUiConfig = {
     logo: string
     description?: string
   }
-  nativeTokenData?: NativeCurrencyBase
+  nativeTokenData?: Omit<NativeCurrencyBase, 'decimals'>
   fastWithdrawalTime?: number
   fastWithdrawalActive?: boolean
 }

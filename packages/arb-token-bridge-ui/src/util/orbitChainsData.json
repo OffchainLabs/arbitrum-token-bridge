@@ -44,7 +44,6 @@
         "nativeTokenData": {
           "name": "Xai",
           "symbol": "XAI",
-          "decimals": 18,
           "logoUrl": "/images/XaiLogo.svg"
         }
       }
@@ -345,7 +344,6 @@
         "nativeTokenData": {
           "name": "DMT",
           "symbol": "DMT",
-          "decimals": 18,
           "logoUrl": "/images/SankoLogo.png"
         }
       }
@@ -478,7 +476,6 @@
         "nativeTokenData": {
           "name": "SX Network",
           "symbol": "SX",
-          "decimals": 18,
           "logoUrl": "/images/sxTokenLogo.png"
         }
       }
@@ -527,7 +524,6 @@
         "nativeTokenData": {
           "name": "ApeCoin",
           "symbol": "APE",
-          "decimals": 18,
           "logoUrl": "/images/ApeTokenLogo.svg"
         }
       }
@@ -576,7 +572,6 @@
         "nativeTokenData": {
           "name": "G",
           "symbol": "G",
-          "decimals": 18,
           "logoUrl": "/images/GravityAlpha_NativeTokenLogo.png"
         }
       }
@@ -625,7 +620,6 @@
         "nativeTokenData": {
           "name": "Aavegotchi",
           "symbol": "GHST",
-          "decimals": 18,
           "logoUrl": "/images/ghst.png"
         }
       }
@@ -717,7 +711,6 @@
         "nativeTokenData": {
           "name": "EDU",
           "symbol": "EDU",
-          "decimals": 18,
           "logoUrl": "/images/EduChainTokenLogo.png"
         }
       }
@@ -766,7 +759,6 @@
         "nativeTokenData": {
           "name": "Cheese",
           "symbol": "CHEESE",
-          "decimals": 18,
           "logoUrl": "/images/CheeseChain_NativeTokenLogo.jpg"
         },
         "fastWithdrawalTime": 900000,
@@ -859,7 +851,6 @@
         "nativeTokenData": {
           "name": "AZERO",
           "symbol": "AZERO",
-          "decimals": 18,
           "logoUrl": "/images/AlephZeroEVM_Logo.webp"
         }
       }
@@ -910,7 +901,6 @@
         "nativeTokenData": {
           "name": "Xai",
           "symbol": "sXAI",
-          "decimals": 18,
           "logoUrl": "/images/XaiLogo.svg"
         }
       }
@@ -959,7 +949,6 @@
         "nativeTokenData": {
           "name": "Berd",
           "symbol": "BERD",
-          "decimals": 18,
           "logoUrl": ""
         }
       }
@@ -1092,7 +1081,6 @@
         "nativeTokenData": {
           "name": "tXR",
           "symbol": "tXR",
-          "decimals": 18,
           "logoUrl": "/images/xrTokenLogo.png"
         }
       }
@@ -1141,7 +1129,6 @@
         "nativeTokenData": {
           "name": "Aavegotchi GHST Token",
           "symbol": "GHST",
-          "decimals": 18,
           "logoUrl": "/images/ghst.png"
         }
       }
@@ -1190,7 +1177,6 @@
         "nativeTokenData": {
           "name": "social.network",
           "symbol": "EARTH",
-          "decimals": 18,
           "logoUrl": ""
         }
       }
@@ -1281,7 +1267,6 @@
         "nativeTokenData": {
           "name": "SX Toronto Network",
           "symbol": "SX",
-          "decimals": 18,
           "logoUrl": "/images/SXToronto_NativeTokenLogo.png"
         }
       }
@@ -1330,7 +1315,6 @@
         "nativeTokenData": {
           "name": "USDC",
           "symbol": "USDC",
-          "decimals": 18,
           "logoUrl": "/images/UsdcLogo.svg"
         }
       }
