@@ -5,7 +5,8 @@
     "additional.d.ts",
     "next.config.js",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "build/types/**/*.ts"
   ],
   "compilerOptions": {
     "noEmit": true,
@@ -15,7 +16,13 @@
       "@/images/*": ["./public/images/*"],
       "@/icons/*": ["./public/icons/*"],
       "@/token-bridge-sdk/*": ["./src/token-bridge-sdk/*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "strictNullChecks": true
   },
   "exclude": ["node_modules"]
 }
