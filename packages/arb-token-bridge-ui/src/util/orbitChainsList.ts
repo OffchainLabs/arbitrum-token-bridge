@@ -18,7 +18,6 @@ export type BridgeUiConfig = {
   }
   nativeTokenData?: NativeCurrencyBase
   fastWithdrawalTime?: number
-  fastWithdrawalActive?: boolean
 }
 
 export type OrbitChainConfig = ChainWithRpcUrl & {
