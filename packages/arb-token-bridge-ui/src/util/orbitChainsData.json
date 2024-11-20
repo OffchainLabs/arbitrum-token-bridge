@@ -769,8 +769,7 @@
           "decimals": 18,
           "logoUrl": "/images/CheeseChain_NativeTokenLogo.jpg"
         },
-        "fastWithdrawalTime": 900000,
-        "fastWithdrawalActive": true
+        "fastWithdrawalTime": 900000
       }
     },
     {
