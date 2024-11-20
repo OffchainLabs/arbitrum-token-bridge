@@ -965,48 +965,6 @@
       }
     },
     {
-      "chainId": 12325,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0x98DBc5f9d4BB16A7c8C21e36789E673b6E0FDf37",
-        "inbox": "0xB0e78299F14b50d151a5eF92b6465bb807B6e56b",
-        "outbox": "0x243487a26284B17b70E8A183a7a1FeB5A6b00824",
-        "rollup": "0xce99C9E7566438a8311424aD0287EB0fDEAc55A2",
-        "sequencerInbox": "0xd598F60Ae694bE2aF9D6933aD9e9f7A431A2005E"
-      },
-      "explorerUrl": "https://explorer-testnet.l3x.com",
-      "rpcUrl": "https://rpc-testnet.l3x.com",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "L3X Network Testnet",
-      "slug": "l3x-network-testnet",
-      "parentChainId": 421614,
-      "tokenBridge": {
-        "parentCustomGateway": "0x00eE97A18A85a58fbfddA2CCa2Bdb3B88d1068b3",
-        "parentErc20Gateway": "0xD2e9EA14CE4C61630a87bC652f5cD51deA7C66bA",
-        "parentGatewayRouter": "0x8D684F7fA0aE2a13e0a1FAa60699ee2db46505a8",
-        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
-        "parentWethGateway": "0xB001D0E3a43EbB820E82720a2Bd74f4C03a5b424",
-        "childCustomGateway": "0xcc3fa38D4a18474DF92107d328bF4A6F7C9fA29A",
-        "childErc20Gateway": "0x7aeD67245Db9b4E6bB26791b48E20aBbA9411EdD",
-        "childGatewayRouter": "0xF40E36d3043373Ce6F89abe3914d631135342C28",
-        "childMultiCall": "0xa8D4b59f0FB23CB785d360E73C7364dDB3e34A62",
-        "childProxyAdmin": "0xC381Ff423f37d42b0b9B84195D9C9C31eDc26e73",
-        "childWeth": "0x6793D074d3A410C803B8C2086E569883D6e928F1",
-        "childWethGateway": "0x4F24D0244B29d76ED1FBD3c8a9967b72b78B9DBd"
-      },
-      "bridgeUiConfig": {
-        "color": "#3ABE7B",
-        "network": {
-          "name": "L3X Network Testnet",
-          "logo": "/images/L3XLogo.png",
-          "description": "Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network."
-        }
-      }
-    },
-    {
       "chainId": 1918988905,
       "confirmPeriodBlocks": 64,
       "ethBridge": {
@@ -1135,7 +1093,7 @@
         "color": "#03AB2A",
         "network": {
           "name": "Polter Testnet",
-          "logo": "/images/PolterTestnetLogo.png",
+          "logo": "/images/PolterTestnetLogo.webp",
           "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
         },
         "nativeTokenData": {
