@@ -28,10 +28,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import {
-  AdvancedSettings,
-  useDestinationAddressStore
-} from './AdvancedSettings'
+import { AdvancedSettings } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
@@ -153,7 +150,7 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2 }] = useArbQueryParams()
+  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -172,8 +169,6 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
-
-  const { destinationAddress } = useDestinationAddressStore()
 
   const isCustomDestinationTransfer = !!destinationAddress
 

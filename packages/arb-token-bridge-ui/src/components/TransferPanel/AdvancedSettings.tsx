@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 import { create } from 'zustand'
@@ -9,13 +9,13 @@ import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
-import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -27,19 +27,6 @@ export enum DestinationAddressErrors {
 enum DestinationAddressWarnings {
   CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is the right address.'
 }
-
-type DestinationAddressStore = {
-  destinationAddress: string | undefined
-  setDestinationAddress: (destinationAddress: string | undefined) => void
-}
-
-export const useDestinationAddressStore = create<DestinationAddressStore>(
-  set => ({
-    destinationAddress: undefined,
-    setDestinationAddress: destinationAddress =>
-      set(() => ({ destinationAddress }))
-  })
-)
 
 type AdvancedSettingsStore = {
   advancedSettingsCollapsed: boolean
@@ -100,15 +87,16 @@ export const AdvancedSettings = () => {
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  const { destinationAddress, setDestinationAddress } =
-    useDestinationAddressStore()
+  const [{ destinationAddress }, setQueryParams] = useArbQueryParams()
   const { destinationAddressError: error } = useDestinationAddressError()
 
   useEffect(() => {
-    // Initially hide for EOA
-    setAdvancedSettingsCollapsed(isEOA)
-    // Initially lock for EOA
-    setInputLocked(isEOA)
+    // Initially hide for EOA and if destination address query param is empty
+    setAdvancedSettingsCollapsed(
+      isEOA && typeof destinationAddress === 'undefined'
+    )
+    // Initially lock for EOA and if destination address query param is empty
+    setInputLocked(isEOA && typeof destinationAddress === 'undefined')
   }, [isEOA])
 
   useEffect(() => {
@@ -147,6 +135,20 @@ export const AdvancedSettings = () => {
     // - destination address is not empty
     return isEOA && !destinationAddress
   }, [destinationAddress, isEOA])
+
+  const setDestinationAddress = useCallback(
+    (value: string | undefined) => {
+      if (!value) {
+        setQueryParams({ destinationAddress: undefined })
+        return
+      }
+
+      setQueryParams({
+        destinationAddress: value.toLowerCase().trim()
+      })
+    },
+    [setQueryParams]
+  )
 
   if (!isEOA && !isSmartContractWallet) {
     return null
@@ -210,12 +212,10 @@ export const AdvancedSettings = () => {
             <input
               className="w-full bg-transparent text-white placeholder-white/50"
               placeholder={isEOA ? address : 'Enter Custom Destination Address'}
-              value={destinationAddress}
+              value={destinationAddress ?? ''}
               disabled={inputLocked}
               spellCheck={false}
-              onChange={e =>
-                setDestinationAddress(e.target.value?.toLowerCase().trim())
-              }
+              onChange={e => setDestinationAddress(e.target.value)}
               aria-label="Custom Destination Address Input"
             />
             {isEOA && (

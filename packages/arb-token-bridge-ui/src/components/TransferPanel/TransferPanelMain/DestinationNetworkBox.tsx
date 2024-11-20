@@ -1,7 +1,6 @@
 import { constants } from 'ethers'
 
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useDestinationAddressStore } from '../AdvancedSettings'
 import {
   BalancesContainer,
   NetworkContainer,
@@ -30,6 +29,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
 import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -150,7 +150,7 @@ function DestinationNetworkBalance() {
 
 export function DestinationNetworkBox() {
   const [networks] = useNetworks()
-  const { destinationAddress } = useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const [
     destinationNetworkSelectionDialogProps,
