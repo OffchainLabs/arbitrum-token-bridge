@@ -153,7 +153,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
   const destinationChainInfo =
     getChainForChainKeyQueryParam(destinationChainSlug)
 
-  const destinationChainName = destinationChainInfo.name
+  const siteTitle = `Bridge to ${destinationChainInfo.name}`
 
   return (
     <>
@@ -164,7 +164,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* title must be here because it doesn't render if it's in DynamicMetaData */}
-        <title>Bridge to {destinationChainName}</title>
+        <title>{siteTitle}</title>
       </Head>
       <Layout>
         <Component {...pageProps} />
