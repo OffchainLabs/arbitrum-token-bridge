@@ -35,7 +35,6 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
   "bridgeUiConfig": {
     "color": "#FF0000",
     "nativeTokenData": {
-      "decimals": 18,
       "logoUrl": "/images/mockChain_NativeTokenLogo.png",
       "name": "Test Token",
       "symbol": "TEST",
@@ -147,7 +146,6 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
         \\"nativeTokenData\\": {
           \\"name\\": \\"Xai\\",
           \\"symbol\\": \\"XAI\\",
-          \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
         }
       }
@@ -203,7 +201,6 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
         \\"nativeTokenData\\": {
           \\"name\\": \\"Xai\\",
           \\"symbol\\": \\"XAI\\",
-          \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
         }
       }
@@ -285,7 +282,6 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
         \\"nativeTokenData\\": {
           \\"name\\": \\"Xai\\",
           \\"symbol\\": \\"XAI\\",
-          \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
         }
       }
