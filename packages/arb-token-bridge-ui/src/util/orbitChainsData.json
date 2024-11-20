@@ -1093,7 +1093,7 @@
         "color": "#03AB2A",
         "network": {
           "name": "Polter Testnet",
-          "logo": "/images/PolterTestnetLogo.png",
+          "logo": "/images/PolterTestnetLogo.webp",
           "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
         },
         "nativeTokenData": {

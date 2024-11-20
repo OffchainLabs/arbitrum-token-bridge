@@ -1,6 +1,5 @@
 import { Chain } from 'wagmi'
 import * as chains from 'wagmi/chains'
-
 import {
   ChainId,
   getCustomChainFromLocalStorageById,
