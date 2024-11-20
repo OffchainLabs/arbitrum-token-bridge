@@ -265,8 +265,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
-    // disable deposits to L3X mainnet and testnet
-    if (isDepositMode && (childChain.id === 12324 || childChain.id === 12325)) {
+    // disable deposits to L3X
+    if (isDepositMode && childChain.id === 12324) {
       return notReady({
         errorMessages: {
           inputAmount1:
