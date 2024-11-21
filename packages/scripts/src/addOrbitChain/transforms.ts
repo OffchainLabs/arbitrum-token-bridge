@@ -179,6 +179,8 @@ export const extractRawChainData = (
       if (key === "chainLogo" || key === "nativeTokenLogo") {
         const imageUrl = extractImageUrlFromMarkdown(trimmedValue);
         rawData[key] = imageUrl || trimmedValue;
+      } else if (key === "fastWithdrawalActive") {
+        rawData[key] = trimmedValue === "Yes";
       } else {
         rawData[key] = trimmedValue;
       }
@@ -391,6 +393,11 @@ export const transformIncomingDataToOrbitChain = async (
           symbol: chainData.nativeTokenSymbol || "",
           logoUrl: nativeTokenLogoPath,
         },
+      }),
+      ...(chainData.fastWithdrawalActive && {
+        fastWithdrawalTime: chainData.fastWithdrawalMinutes
+          ? Number(chainData.fastWithdrawalMinutes) * 60 * 1000
+          : undefined,
       }),
     },
   };

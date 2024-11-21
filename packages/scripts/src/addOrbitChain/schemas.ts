@@ -151,6 +151,7 @@ export const bridgeUiConfigSchema = z.object({
       logoUrl: z.string().optional(),
     })
     .optional(),
+  fastWithdrawalTime: z.number().int().positive().optional(),
 });
 
 export const chainSchema = z
@@ -287,6 +288,8 @@ export const incomingChainDataSchema = z.object({
   childWeth: addressSchema,
   parentMultiCall: addressSchema,
   childMultiCall: addressSchema,
+  fastWithdrawalActive: z.boolean(),
+  fastWithdrawalMinutes: z.string().regex(/^\d+$/).optional(),
 });
 
 // Schema for the final OrbitChain structure
@@ -360,6 +363,8 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Parent MultiCall": "parentMultiCall",
   "Child MultiCall": "childMultiCall",
   "Parent WETH": "parentWeth",
+  "Fast Withdrawals active": "fastWithdrawalActive",
+  "Fast Withdrawals time in minutes": "fastWithdrawalMinutes",
 };
 
 export interface Issue {
