@@ -222,7 +222,6 @@ export const mockOrbitChain: OrbitChain = {
     nativeTokenData: {
       name: "Xai",
       symbol: "XAI",
-      decimals: 18,
       logoUrl: "/images/XaiLogo.svg",
     },
     fastWithdrawalTime: 900000,
