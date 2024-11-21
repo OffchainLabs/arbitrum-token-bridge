@@ -226,7 +226,6 @@ export const mockOrbitChain: OrbitChain = {
       logoUrl: "/images/XaiLogo.svg",
     },
     fastWithdrawalTime: 900000,
-    fastWithdrawalActive: true,
   },
 };
 

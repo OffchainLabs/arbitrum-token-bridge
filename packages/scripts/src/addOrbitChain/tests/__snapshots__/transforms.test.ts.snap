@@ -34,7 +34,6 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
 {
   "bridgeUiConfig": {
     "color": "#FF0000",
-    "fastWithdrawalActive": true,
     "fastWithdrawalTime": 900000,
     "nativeTokenData": {
       "decimals": 18,
@@ -152,8 +151,7 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
           \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
         },
-        \\"fastWithdrawalTime\\": 900000,
-        \\"fastWithdrawalActive\\": true
+        \\"fastWithdrawalTime\\": 900000
       }
     }
   ]
@@ -210,8 +208,7 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
           \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
         },
-        \\"fastWithdrawalTime\\": 900000,
-        \\"fastWithdrawalActive\\": true
+        \\"fastWithdrawalTime\\": 900000
       }
     },
     {
@@ -294,8 +291,7 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
           \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
         },
-        \\"fastWithdrawalTime\\": 900000,
-        \\"fastWithdrawalActive\\": true
+        \\"fastWithdrawalTime\\": 900000
       }
     }
   ],

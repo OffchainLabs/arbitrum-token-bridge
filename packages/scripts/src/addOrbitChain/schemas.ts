@@ -153,7 +153,6 @@ export const bridgeUiConfigSchema = z.object({
     })
     .optional(),
   fastWithdrawalTime: z.number().int().positive().optional(),
-  fastWithdrawalActive: z.boolean().optional(),
 });
 
 export const chainSchema = z
