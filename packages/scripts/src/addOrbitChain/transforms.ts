@@ -391,7 +391,6 @@ export const transformIncomingDataToOrbitChain = async (
         nativeTokenData: {
           name: chainData.nativeTokenName || "",
           symbol: chainData.nativeTokenSymbol || "",
-          decimals: 18,
           logoUrl: nativeTokenLogoPath,
         },
       }),

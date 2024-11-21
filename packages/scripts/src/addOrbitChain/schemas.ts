@@ -148,7 +148,6 @@ export const bridgeUiConfigSchema = z.object({
     .object({
       name: z.string().min(1),
       symbol: z.string().min(1),
-      decimals: z.number().int().positive(),
       logoUrl: z.string().optional(),
     })
     .optional(),
