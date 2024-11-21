@@ -240,7 +240,7 @@ body:
     id: fast-withdrawal-time
     attributes:
       label: Fast Withdrawals time in minutes
-      description: Only fill this if your chain has Fast Withdrawals enabled. Leaving this blank will set a default value (1 day).
+      description: Only fill this if your chain has Fast Withdrawals enabled.
       placeholder: ex. 1440
     validations:
       required: false
