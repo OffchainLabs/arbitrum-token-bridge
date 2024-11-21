@@ -769,8 +769,7 @@
           "decimals": 18,
           "logoUrl": "/images/CheeseChain_NativeTokenLogo.jpg"
         },
-        "fastWithdrawalTime": 900000,
-        "fastWithdrawalActive": true
+        "fastWithdrawalTime": 900000
       }
     },
     {
@@ -1093,7 +1092,7 @@
         "color": "#03AB2A",
         "network": {
           "name": "Polter Testnet",
-          "logo": "/images/PolterTestnetLogo.png",
+          "logo": "/images/PolterTestnetLogo.webp",
           "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
         },
         "nativeTokenData": {
