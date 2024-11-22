@@ -154,6 +154,8 @@ export function TransferPanel() {
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
+  const latestDestinationAddress = useLatest(destinationAddress)
+
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
@@ -170,7 +172,7 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
-  const isCustomDestinationTransfer = !!destinationAddress
+  const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
   const {
     updateEthParentBalance,
@@ -342,6 +344,8 @@ export function TransferPanel() {
     if (!isTransferAllowed) {
       throw new Error(transferNotAllowedError)
     }
+
+    const destinationAddress = latestDestinationAddress.current
 
     setTransferring(true)
 
@@ -581,6 +585,8 @@ export function TransferPanel() {
         return
       }
 
+      const destinationAddress = latestDestinationAddress.current
+
       const isCustomNativeTokenAmount2 =
         nativeCurrency.isCustom &&
         isBatchTransferSupported &&
@@ -757,6 +763,8 @@ export function TransferPanel() {
 
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
+
+    const destinationAddress = latestDestinationAddress.current
 
     if (!isSmartContractWallet) {
       trackEvent(
