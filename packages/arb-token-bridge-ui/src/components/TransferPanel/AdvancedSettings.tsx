@@ -145,13 +145,8 @@ export const AdvancedSettings = () => {
   }, [destinationAddress, isEOA])
 
   useEffect(() => {
-    if (!debouncedDestinationAddress) {
-      setQueryParams({ destinationAddress: undefined })
-      return
-    }
-
     setQueryParams({
-      destinationAddress: debouncedDestinationAddress.toLowerCase()
+      destinationAddress: debouncedDestinationAddress?.toLowerCase()
     })
   }, [debouncedDestinationAddress])
 
