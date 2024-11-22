@@ -153,7 +153,7 @@ export const AdvancedSettings = () => {
     setQueryParams({
       destinationAddress: debouncedDestinationAddress
     })
-  }, [debouncedDestinationAddress])
+  }, [debouncedDestinationAddress, setQueryParams])
 
   if (!isEOA && !isSmartContractWallet) {
     return null
