@@ -42,22 +42,24 @@ export function TransactionHistorySearchBar() {
   useEffect(() => {
     if (address === '' && connectedAddress) {
       setSanitizedAddress(connectedAddress)
+      setSearchError(undefined)
     }
-  }, [address, connectedAddress, setSanitizedAddress])
+  }, [address, connectedAddress, setSanitizedAddress, setSearchError])
 
   const searchTxForAddress = useCallback(() => {
-    if (isAddress(address)) {
+    if (address !== '' && isAddress(address)) {
       setSanitizedAddress(address)
+      setSearchError(undefined)
     } else {
       setSearchError(TransactionHistorySearchError.INVALID_ADDRESS)
     }
   }, [address, setSanitizedAddress, setSearchError])
 
   return (
-    <div className="mb-4 flex flex-row items-stretch">
+    <div className="mb-4 flex flex-row items-stretch pr-4 md:pr-0">
       <form
         className={twMerge(
-          'flex items-center justify-center overflow-hidden rounded border border-gray-dark bg-black text-white md:w-1/2'
+          'flex w-full items-center justify-center overflow-hidden rounded border border-gray-dark bg-black text-white md:w-1/2'
         )}
         onSubmit={event => event.preventDefault()}
       >

@@ -53,7 +53,7 @@ export const ContentWrapper = forwardRef<
     <div
       ref={ref}
       className={twMerge(
-        'w-full flex-col items-center rounded p-4 text-center text-xs text-white',
+        'w-full flex-col items-center rounded px-3 py-2 text-center text-sm text-white lg:text-left',
         className
       )}
       {...props}
@@ -210,7 +210,7 @@ export const TransactionHistoryTable = (
     >
       <div
         className={twMerge(
-          'sticky left-0 w-full rounded-tr-lg md:px-4 md:pt-4',
+          'sticky left-0 w-full rounded-tr-lg pr-4 md:px-4 md:pt-4',
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
       >

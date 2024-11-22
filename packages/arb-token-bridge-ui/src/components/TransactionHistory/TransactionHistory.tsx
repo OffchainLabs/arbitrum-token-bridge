@@ -1,23 +1,12 @@
-import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
-import { Tab } from '@headlessui/react'
 import { useAccount } from 'wagmi'
 import { create } from 'zustand'
 
-import { TransactionHistoryTable } from './TransactionHistoryTable'
-import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
-import {
-  isTxClaimable,
-  isTxCompleted,
-  isTxExpired,
-  isTxFailed,
-  isTxPending
-} from './helpers'
 import { MergedTransaction } from '../../state/app/state'
-import { TabButton } from '../common/Tab'
-import { TransactionsTableDetails } from './TransactionsTableDetails'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { TransactionHistorySearchBar } from './TransactionHistorySearchBar'
+import { TransactionHistorySearchResults } from './TransactionHistorySearchResults'
+import { isTxPending } from './helpers'
 
 function useTransactionHistoryUpdater() {
   const { address } = useAccount()
@@ -73,96 +62,13 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
 }))
 
 export const TransactionHistory = () => {
-  const props = useTransactionHistoryUpdater()
-  const { transactions } = props
-
-  const oldestTxTimeAgoString = useMemo(() => {
-    return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
-  }, [transactions])
-
-  const groupedTransactions = useMemo(
-    () =>
-      transactions.reduce(
-        (acc, tx) => {
-          if (isTxCompleted(tx) || isTxExpired(tx)) {
-            acc.settled.push(tx)
-          }
-          if (isTxPending(tx)) {
-            acc.pending.push(tx)
-          }
-          if (isTxClaimable(tx)) {
-            acc.claimable.push(tx)
-          }
-          if (isTxFailed(tx)) {
-            acc.failed.push(tx)
-          }
-          return acc
-        },
-        {
-          settled: [] as MergedTransaction[],
-          pending: [] as MergedTransaction[],
-          claimable: [] as MergedTransaction[],
-          failed: [] as MergedTransaction[]
-        }
-      ),
-    [transactions]
-  )
-
-  const pendingTransactions = [
-    ...groupedTransactions.failed,
-    ...groupedTransactions.pending,
-    ...groupedTransactions.claimable
-  ]
-
-  const settledTransactions = groupedTransactions.settled
+  useTransactionHistoryUpdater()
 
   return (
     <div className="m-auto w-full max-w-[100vw] border-y border-white/30 bg-[#191919] py-4 pl-4 md:max-w-[1000px] md:rounded md:border-x md:pr-4">
       <TransactionHistorySearchBar />
 
-      <div className="pr-4 md:pr-0">
-        <TransactionStatusInfo />
-      </div>
-
-      <Tab.Group
-        as="div"
-        className="h-full overflow-hidden rounded pr-4 md:pr-0"
-      >
-        <Tab.List className="mb-4 flex border-b border-white/30">
-          <TabButton
-            aria-label="show pending transactions"
-            className={tabClasses}
-          >
-            <span className="text-sm md:text-base">Pending transactions</span>
-          </TabButton>
-          <TabButton
-            aria-label="show settled transactions"
-            className={tabClasses}
-          >
-            <span className="text-sm md:text-base">Settled transactions</span>
-          </TabButton>
-        </Tab.List>
-
-        <Tab.Panels className="h-full w-full overflow-hidden">
-          <Tab.Panel className="h-full w-full">
-            <TransactionHistoryTable
-              {...props}
-              transactions={pendingTransactions}
-              selectedTabIndex={0}
-              oldestTxTimeAgoString={oldestTxTimeAgoString}
-            />
-          </Tab.Panel>
-          <Tab.Panel className="h-full w-full">
-            <TransactionHistoryTable
-              {...props}
-              transactions={settledTransactions}
-              selectedTabIndex={1}
-              oldestTxTimeAgoString={oldestTxTimeAgoString}
-            />
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
-      <TransactionsTableDetails />
+      <TransactionHistorySearchResults />
     </div>
   )
 }
