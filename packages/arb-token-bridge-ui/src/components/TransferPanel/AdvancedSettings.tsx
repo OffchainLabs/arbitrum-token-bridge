@@ -146,7 +146,7 @@ export const AdvancedSettings = () => {
 
   useEffect(() => {
     setQueryParams({
-      destinationAddress: debouncedDestinationAddress?.toLowerCase()
+      destinationAddress: debouncedDestinationAddress
     })
   }, [debouncedDestinationAddress])
 
@@ -215,7 +215,9 @@ export const AdvancedSettings = () => {
               value={destinationAddress}
               disabled={inputLocked}
               spellCheck={false}
-              onChange={e => setDestinationAddress(e.target.value)}
+              onChange={e =>
+                setDestinationAddress(e.target.value?.toLowerCase().trim())
+              }
               aria-label="Custom Destination Address Input"
             />
             {isEOA && (
