@@ -262,17 +262,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode &&
-        (isDestinationChainArbitrumOne ||
-          isDestinationChainArbitrumSepolia) && (
-          <div
-            className={twMerge(
-              'grid grid-cols-[260px_auto] items-center text-sm font-light'
-            )}
-          >
-            <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
-          </div>
-        )}
+      {!isDepositMode && (
+        <div
+          className={twMerge(
+            'grid grid-cols-[260px_auto] items-center text-sm font-light'
+          )}
+        >
+          <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
+        </div>
+      )}
     </TransferPanelSummaryContainer>
   )
 }
@@ -281,7 +279,7 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
   const {
     confirmationTimeInReadableFormat,
     confirmationTimeInReadableFormatShort,
-    isDefaultConfirmationTime
+    fastWithdrawalActive
   } = getConfirmationTime(chainId)
   return (
     <>
@@ -293,7 +291,7 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
         <span className="sm:hidden">
           {confirmationTimeInReadableFormatShort}
         </span>
-        {!isDefaultConfirmationTime && (
+        {fastWithdrawalActive && (
           <Tooltip
             content={
               'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
