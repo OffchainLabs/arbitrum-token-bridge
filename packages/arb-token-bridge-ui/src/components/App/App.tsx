@@ -37,6 +37,7 @@ import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useInterval } from 'react-use'
 import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 
 declare global {
   interface Window {
@@ -65,6 +66,9 @@ function AppContent() {
   const {
     token: { updateTokenData }
   } = useArbTokenBridge()
+  const { updateUSDCBalances } = useUpdateUSDCBalances({
+    walletAddress: address
+  })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
@@ -83,6 +87,7 @@ function AppContent() {
   }, [actions.app])
 
   useInterval(() => {
+    updateUSDCBalances()
     if (selectedToken) {
       updateTokenData(selectedToken.address)
     }
