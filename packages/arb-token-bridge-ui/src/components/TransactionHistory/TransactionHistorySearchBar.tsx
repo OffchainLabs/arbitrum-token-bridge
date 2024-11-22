@@ -7,6 +7,10 @@ import { twMerge } from 'tailwind-merge'
 
 import { Button } from '../common/Button'
 
+export enum TransactionHistorySearchError {
+  INVALID_ADDRESS = 'That doesn’t seem to be a valid address, please try again.'
+}
+
 type TransactionHistoryAddressStore = {
   address: string
   sanitizedAddress: Address | undefined
@@ -31,7 +35,7 @@ export const useTransactionHistoryAddressStore =
   }))
 
 export function TransactionHistorySearchBar() {
-  const { address, setAddress, setSanitizedAddress } =
+  const { address, setAddress, setSanitizedAddress, setSearchError } =
     useTransactionHistoryAddressStore()
   const { address: connectedAddress } = useAccount()
 
@@ -44,8 +48,10 @@ export function TransactionHistorySearchBar() {
   const searchTxForAddress = useCallback(() => {
     if (isAddress(address)) {
       setSanitizedAddress(address)
+    } else {
+      setSearchError(TransactionHistorySearchError.INVALID_ADDRESS)
     }
-  }, [address, setSanitizedAddress])
+  }, [address, setSanitizedAddress, setSearchError])
 
   return (
     <div className="mb-4 flex flex-row items-stretch">
