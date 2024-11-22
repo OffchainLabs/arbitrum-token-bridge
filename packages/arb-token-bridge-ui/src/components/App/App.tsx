@@ -13,15 +13,11 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
-import { ConnectionState } from '../../util'
-import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
-import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
-import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
@@ -34,14 +30,14 @@ import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { sanitizeQueryParams } from '../../hooks/useNetworks'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
-import { isDepositMode } from '../../util/isDepositMode'
+import { useInterval } from 'react-use'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 
 declare global {
   interface Window {
@@ -58,85 +54,24 @@ const rainbowkitTheme = merge(darkTheme(), {
   }
 } as Theme)
 
-const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
+function AppContent() {
+  const { address, isConnected } = useAccount()
+  const { isBlocked } = useAccountIsBlocked()
+  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
+  const { openConnectModal } = useConnectModal()
   const actions = useActions()
   const {
     app: { selectedToken }
   } = useAppState()
-  const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
+  const { updateUSDCBalances } = useUpdateUSDCBalances({
+    walletAddress: address
+  })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
-
-  const [tokenBridgeParams, setTokenBridgeParams] =
-    useState<TokenBridgeParams | null>(null)
-
-  useEffect(() => {
-    if (!nativeCurrency.isCustom) {
-      return
-    }
-
-    const selectedTokenAddress = selectedToken?.address.toLowerCase()
-    const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
-    // This handles a super weird edge case where, for example:
-    //
-    // Your setup is: from Arbitrum One to Mainnet, and you have $ARB selected as the token you want to bridge over.
-    // You then switch your destination network to a network that has $ARB as its native currency.
-    // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
-    if (
-      selectedTokenAddress === nativeCurrency.address ||
-      selectedTokenL2Address === nativeCurrency.address
-    ) {
-      actions.app.setSelectedToken(null)
-    }
-  }, [selectedToken, nativeCurrency])
-
-  // Listen for account and network changes
-  useEffect(() => {
-    // Any time one of those changes
-    setTokenBridgeParams(null)
-    actions.app.setConnectionState(ConnectionState.LOADING)
-    actions.app.reset(networks.sourceChain.id)
-    actions.app.setChainIds({
-      l1NetworkChainId: parentChain.id,
-      l2NetworkChainId: childChain.id
-    })
-
-    if (
-      isDepositMode({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      })
-    ) {
-      console.info('Deposit mode detected:')
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
-      console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-    }
-
-    setTokenBridgeParams({
-      l1: {
-        network: parentChain,
-        provider: parentChainProvider
-      },
-      l2: {
-        network: childChain,
-        provider: childChainProvider
-      }
-    })
-  }, [
-    networks.sourceChain.id,
-    parentChain.id,
-    childChain.id,
-    parentChain,
-    childChain,
-    parentChainProvider,
-    childChainProvider
-  ])
 
   useEffect(() => {
     axios
@@ -149,20 +84,14 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       .catch(err => {
         console.warn('Failed to fetch warning tokens:', err)
       })
-  }, [])
+  }, [actions.app])
 
-  if (!tokenBridgeParams) {
-    return null
-  }
-
-  return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
-}
-
-function AppContent() {
-  const { address, isConnected } = useAccount()
-  const { isBlocked } = useAccountIsBlocked()
-  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
-  const { openConnectModal } = useConnectModal()
+  useInterval(() => {
+    updateUSDCBalances()
+    if (selectedToken) {
+      updateTokenData(selectedToken.address)
+    }
+  }, 10_000)
 
   useEffect(() => {
     if (tosAccepted && !isConnected) {
@@ -219,8 +148,6 @@ function AppContent() {
         <HeaderAccountPopover />
       </Header>
       <TokenListSyncer />
-      <BalanceUpdater />
-      <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
     </>
   )

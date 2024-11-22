@@ -21,6 +21,7 @@ import {
   Transaction,
   ParentToChildMessageData
 } from './useTransactions'
+import { BridgeTokenList } from '../util/TokenListUtils'
 
 export { OutgoingMessageState }
 
@@ -154,6 +155,7 @@ export interface ArbTokenBridgeToken {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
+  addBridgeTokenListToBridge: (bridgeTokenList: BridgeTokenList) => void
 }
 
 export interface TransactionActions {

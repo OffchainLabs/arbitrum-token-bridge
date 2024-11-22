@@ -33,6 +33,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useBridgeTokensStore } from '../../hooks/useBridgeTokensStore'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -238,11 +239,7 @@ function ArbitrumTokenBadge() {
 }
 
 function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens }
-    }
-  } = useAppState()
+  const { bridgeTokens } = useBridgeTokensStore()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { balance, symbol } = useTokenInfo(token)
   const nativeCurrencyDecimalsOnSourceChain =
