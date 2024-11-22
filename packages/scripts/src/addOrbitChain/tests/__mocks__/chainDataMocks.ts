@@ -174,6 +174,8 @@ export const mockIncomingChainData: IncomingChainData = {
   childWeth: "0x0000000000000000000000000000000000000019",
   parentMultiCall: "0x0000000000000000000000000000000000000010",
   childMultiCall: "0x0000000000000000000000000000000000000017",
+  fastWithdrawalMinutes: "15",
+  fastWithdrawalActive: true,
 };
 
 export const mockOrbitChain: OrbitChain = {
@@ -220,9 +222,9 @@ export const mockOrbitChain: OrbitChain = {
     nativeTokenData: {
       name: "Xai",
       symbol: "XAI",
-      decimals: 18,
       logoUrl: "/images/XaiLogo.svg",
     },
+    fastWithdrawalTime: 900000,
   },
 };
 
