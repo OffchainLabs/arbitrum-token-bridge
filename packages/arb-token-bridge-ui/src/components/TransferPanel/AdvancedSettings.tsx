@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
 import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
+import { useDebounce } from '@uidotdev/usehooks'
 
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
@@ -87,7 +88,11 @@ export const AdvancedSettings = () => {
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  const [{ destinationAddress }, setQueryParams] = useArbQueryParams()
+  const [, setQueryParams] = useArbQueryParams()
+  const [destinationAddress, setDestinationAddress] = useState<
+    string | undefined
+  >()
+  const debouncedDestinationAddress = useDebounce(destinationAddress, 200)
   const { destinationAddressError: error } = useDestinationAddressError()
 
   useEffect(() => {
@@ -136,19 +141,16 @@ export const AdvancedSettings = () => {
     return isEOA && !destinationAddress
   }, [destinationAddress, isEOA])
 
-  const setDestinationAddress = useCallback(
-    (value: string | undefined) => {
-      if (!value) {
-        setQueryParams({ destinationAddress: undefined })
-        return
-      }
+  useEffect(() => {
+    if (!debouncedDestinationAddress) {
+      setQueryParams({ destinationAddress: undefined })
+      return
+    }
 
-      setQueryParams({
-        destinationAddress: value.toLowerCase().trim()
-      })
-    },
-    [setQueryParams]
-  )
+    setQueryParams({
+      destinationAddress: debouncedDestinationAddress.toLowerCase()
+    })
+  }, [debouncedDestinationAddress])
 
   if (!isEOA && !isSmartContractWallet) {
     return null
