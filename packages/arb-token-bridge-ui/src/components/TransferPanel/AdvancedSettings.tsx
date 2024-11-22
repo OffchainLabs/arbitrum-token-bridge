@@ -98,14 +98,24 @@ export const AdvancedSettings = () => {
   const debouncedDestinationAddress = useDebounce(destinationAddress, 100)
   const { destinationAddressError: error } = useDestinationAddressError()
 
+  const [initialDestinationAddressFromQueryParams] = useState(
+    destinationAddressFromQueryParams
+  )
+
   useEffect(() => {
     // Initially hide for EOA and if destination address query param is empty
     setAdvancedSettingsCollapsed(
-      isEOA && typeof destinationAddress === 'undefined'
+      isEOA && typeof initialDestinationAddressFromQueryParams === 'undefined'
     )
     // Initially lock for EOA and if destination address query param is empty
-    setInputLocked(isEOA && typeof destinationAddress === 'undefined')
-  }, [isEOA])
+    setInputLocked(
+      isEOA && typeof initialDestinationAddressFromQueryParams === 'undefined'
+    )
+  }, [
+    initialDestinationAddressFromQueryParams,
+    isEOA,
+    setAdvancedSettingsCollapsed
+  ])
 
   useEffect(() => {
     // isSubscribed makes sure that only the latest state is written
