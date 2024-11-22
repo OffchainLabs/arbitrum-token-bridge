@@ -212,7 +212,7 @@ export const AdvancedSettings = () => {
             <input
               className="w-full bg-transparent text-white placeholder-white/50"
               placeholder={isEOA ? address : 'Enter Custom Destination Address'}
-              value={destinationAddress ?? ''}
+              value={destinationAddress}
               disabled={inputLocked}
               spellCheck={false}
               onChange={e => setDestinationAddress(e.target.value)}
