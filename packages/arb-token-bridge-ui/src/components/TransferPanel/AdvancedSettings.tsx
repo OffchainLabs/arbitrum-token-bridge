@@ -92,9 +92,9 @@ export const AdvancedSettings = () => {
     { destinationAddress: destinationAddressFromQueryParams },
     setQueryParams
   ] = useArbQueryParams()
-  const [destinationAddress, setDestinationAddress] = useState<
-    string | undefined
-  >(destinationAddressFromQueryParams)
+  const [destinationAddress, setDestinationAddress] = useState(
+    destinationAddressFromQueryParams
+  )
   const debouncedDestinationAddress = useDebounce(destinationAddress, 100)
   const { destinationAddressError: error } = useDestinationAddressError()
 
