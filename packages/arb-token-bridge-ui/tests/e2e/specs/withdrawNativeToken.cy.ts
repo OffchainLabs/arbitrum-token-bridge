@@ -61,7 +61,7 @@ describe('Withdraw native token', () => {
           ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
           cy.login({ networkType: 'childChain' })
           cy.typeAmount(ETHToWithdraw)
-          cy.startTransfer()
+          cy.findMoveFundsButton().click()
           cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
           // the Continue withdrawal button should be disabled at first
@@ -148,7 +148,7 @@ describe('Withdraw native token', () => {
 
       cy.typeAmount(ETHToWithdraw)
       cy.fillCustomDestinationAddress()
-      cy.startTransfer()
+      cy.findMoveFundsButton().click()
       cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
       // the Continue withdrawal button should be disabled at first
