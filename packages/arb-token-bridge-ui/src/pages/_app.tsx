@@ -7,6 +7,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
+import type { Chain } from 'wagmi'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -23,8 +24,6 @@ import {
 } from '../types/ChainQueryParam'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { isNetwork } from '../util/networks'
-
-const siteTitle = 'Bridge to Arbitrum'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
@@ -81,19 +80,18 @@ if (
 }
 
 function DynamicMetaData({
-  sourceChainSlug,
-  destinationChainSlug
+  sourceChainInfo,
+  destinationChainInfo
 }: {
-  sourceChainSlug: ChainKeyQueryParam
-  destinationChainSlug: ChainKeyQueryParam
+  sourceChainInfo: Chain
+  destinationChainInfo: Chain
 }) {
-  const sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
-  const destinationChainInfo =
-    getChainForChainKeyQueryParam(destinationChainSlug)
   const { isOrbitChain: isSourceOrbitChain } = isNetwork(sourceChainInfo.id)
   const { isOrbitChain: isDestinationOrbitChain } = isNetwork(
     destinationChainInfo.id
   )
+
+  const siteTitle = `Bridge to ${destinationChainInfo.name}`
 
   const siteDescription = `Bridge from ${sourceChainInfo.name} to ${destinationChainInfo.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
   const siteDomain = 'https://bridge.arbitrum.io'
@@ -151,14 +149,21 @@ export default function App({ Component, pageProps, router }: AppProps) {
   const destinationChainSlug = (router.query.destinationChain?.toString() ??
     'arbitrum-one') as ChainKeyQueryParam
 
+  const sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
+  const destinationChainInfo =
+    getChainForChainKeyQueryParam(destinationChainSlug)
+
+  const siteTitle = `Bridge to ${destinationChainInfo.name}`
+
   return (
     <>
       <Head>
         <DynamicMetaData
-          sourceChainSlug={sourceChainSlug}
-          destinationChainSlug={destinationChainSlug}
+          sourceChainInfo={sourceChainInfo}
+          destinationChainInfo={destinationChainInfo}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* title must be here because it doesn't render if it's in DynamicMetaData */}
         <title>{siteTitle}</title>
       </Head>
       <Layout>
