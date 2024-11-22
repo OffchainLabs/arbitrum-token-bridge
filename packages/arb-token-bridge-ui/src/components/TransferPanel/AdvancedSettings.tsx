@@ -92,7 +92,7 @@ export const AdvancedSettings = () => {
   const [destinationAddress, setDestinationAddress] = useState<
     string | undefined
   >()
-  const debouncedDestinationAddress = useDebounce(destinationAddress, 200)
+  const debouncedDestinationAddress = useDebounce(destinationAddress, 100)
   const { destinationAddressError: error } = useDestinationAddressError()
 
   useEffect(() => {

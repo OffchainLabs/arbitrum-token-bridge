@@ -103,7 +103,7 @@ describe('Withdraw ERC20 Token', () => {
         })
 
         context('should show clickable withdraw button', () => {
-          cy.findMoveFundsButton().click()
+          cy.startTransfer()
         })
 
         context('should withdraw successfully', () => {
@@ -220,7 +220,7 @@ describe('Withdraw ERC20 Token', () => {
         })
 
         context('should show clickable withdraw button', () => {
-          cy.findMoveFundsButton().click()
+          cy.startTransfer()
         })
 
         context('should initiate withdrawal successfully', () => {
