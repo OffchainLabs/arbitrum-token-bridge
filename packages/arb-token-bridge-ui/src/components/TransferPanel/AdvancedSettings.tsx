@@ -141,10 +141,15 @@ export const AdvancedSettings = () => {
     // cannot collapse if:
     // - SCW because the destination address is mandatory
     // - destination address is not empty
-    return isEOA && !destinationAddress
-  }, [destinationAddress, isEOA])
+    return isEOA && !destinationAddressFromQueryParams
+  }, [destinationAddressFromQueryParams, isEOA])
 
   useEffect(() => {
+    if (!debouncedDestinationAddress) {
+      setQueryParams({ destinationAddress: undefined })
+      return
+    }
+
     setQueryParams({
       destinationAddress: debouncedDestinationAddress
     })
@@ -160,6 +165,8 @@ export const AdvancedSettings = () => {
       return
     }
     setAdvancedSettingsCollapsed(!advancedSettingsCollapsed)
+    setDestinationAddress(undefined)
+    setQueryParams({ destinationAddress: undefined })
   }
 
   return (
