@@ -88,10 +88,13 @@ export const AdvancedSettings = () => {
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  const [, setQueryParams] = useArbQueryParams()
+  const [
+    { destinationAddress: destinationAddressFromQueryParams },
+    setQueryParams
+  ] = useArbQueryParams()
   const [destinationAddress, setDestinationAddress] = useState<
     string | undefined
-  >()
+  >(destinationAddressFromQueryParams)
   const debouncedDestinationAddress = useDebounce(destinationAddress, 100)
   const { destinationAddressError: error } = useDestinationAddressError()
 
