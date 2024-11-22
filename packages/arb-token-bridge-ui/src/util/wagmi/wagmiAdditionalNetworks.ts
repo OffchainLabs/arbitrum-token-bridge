@@ -3,15 +3,33 @@ import { Chain, sepolia as sepoliaDefault } from 'wagmi'
 import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
+import { NativeCurrencyBase } from '../../hooks/useNativeCurrency'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
   const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
+
+  let nativeCurrency: NativeCurrencyBase = nativeTokenData
+    ? {
+        ...nativeTokenData,
+        decimals: 18
+      }
+    : ether
+
+  if (chain.chainId === ChainId.L3Local) {
+    nativeCurrency = chain.nativeToken
+      ? {
+          name: 'testnode',
+          symbol: 'TN',
+          decimals: 18
+        }
+      : ether
+  }
 
   return {
     id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: nativeTokenData ?? ether,
+    nativeCurrency,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
@@ -85,6 +103,28 @@ export const arbitrumSepolia: Chain = {
   }
 }
 
+export const baseSepolia: Chain = {
+  id: ChainId.BaseSepolia,
+  name: 'Base Sepolia',
+  network: 'base-sepolia',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.BaseSepolia]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.BaseSepolia]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Basescan',
+      url: explorerUrls[ChainId.BaseSepolia]!
+    },
+    default: { name: 'Basescan', url: explorerUrls[ChainId.BaseSepolia]! }
+  }
+}
+
 export const arbitrumNova: Chain = {
   id: ChainId.ArbitrumNova,
   name: 'Arbitrum Nova',
@@ -101,6 +141,25 @@ export const arbitrumNova: Chain = {
   blockExplorers: {
     etherscan: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' },
     default: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' }
+  }
+}
+
+export const base: Chain = {
+  id: ChainId.Base,
+  name: 'Base',
+  network: 'base',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Base]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Base]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: { name: 'Basescan', url: explorerUrls[ChainId.Base]! },
+    default: { name: 'Basescan', url: explorerUrls[ChainId.Base]! }
   }
 }
 

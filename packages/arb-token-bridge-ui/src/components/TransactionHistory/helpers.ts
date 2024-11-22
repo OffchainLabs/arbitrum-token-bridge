@@ -191,26 +191,50 @@ export function addDepositToCache(tx: Deposit) {
     return
   }
 
-  const cachedDeposits = getDepositsWithoutStatusesFromCache(
+  const cachedDepositsForSender = getDepositsWithoutStatusesFromCache(
     tx.sender.toLowerCase()
   )
 
-  const foundInCache = cachedDeposits.find(cachedTx =>
+  const foundInCacheForSender = cachedDepositsForSender.find(cachedTx =>
     isSameTransaction(
       { ...cachedTx, txId: cachedTx.txID },
       { ...tx, txId: tx.txID }
     )
   )
 
-  if (foundInCache) {
+  if (!foundInCacheForSender) {
+    const newCachedDepositsForSender = [tx, ...cachedDepositsForSender]
+
+    localStorage.setItem(
+      `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.sender.toLowerCase()}`,
+      JSON.stringify(newCachedDepositsForSender)
+    )
+  }
+
+  if (!isCustomDestinationAddressTx(tx) || !tx.destination) {
     return
   }
 
-  const newCachedDeposits = [tx, ...cachedDeposits]
+  const cachedDepositsForReceiver = getDepositsWithoutStatusesFromCache(
+    tx.destination.toLowerCase()
+  )
+
+  const foundInCacheForReceiver = cachedDepositsForReceiver.find(cachedTx =>
+    isSameTransaction(
+      { ...cachedTx, txId: cachedTx.txID },
+      { ...tx, txId: tx.txID }
+    )
+  )
+
+  if (foundInCacheForReceiver) {
+    return
+  }
+
+  const newCachedDepositsForReceiver = [tx, ...cachedDepositsForReceiver]
 
   localStorage.setItem(
-    `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.sender.toLowerCase()}`,
-    JSON.stringify(newCachedDeposits)
+    `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.destination.toLowerCase()}`,
+    JSON.stringify(newCachedDepositsForReceiver)
   )
 }
 

@@ -127,7 +127,7 @@ export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
         .should('be.visible'),
     {
       errorMsg: 'Failed to fetch transactions.',
-      timeout: 30_000,
+      timeout: 120_000,
       interval: 500
     }
   )
@@ -140,8 +140,8 @@ export const searchAndSelectToken = ({
   tokenName: string
   tokenAddress: string
 }) => {
-  // Click on the ETH dropdown (Select token button)
-  cy.findSelectTokenButton('ETH').click()
+  // Click on the native token dropdown (Select token button)
+  cy.findSelectTokenButton(Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
@@ -247,6 +247,13 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
+export function startTransfer() {
+  cy.wait(5_000)
+  cy.findMoveFundsButton().click()
+  cy.wait(15_000)
+  cy.confirmMetamaskTransaction()
+}
+
 export function findSelectTokenButton(
   text: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -269,7 +276,7 @@ export function openTransactionDetails({
   amount: number
   amount2?: number
   symbol: string
-  symbol2: string
+  symbol2?: string
 }): Cypress.Chainable<JQuery<HTMLElement>> {
   cy.findTransactionInTransactionHistory({
     amount,
@@ -397,6 +404,7 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
+  startTransfer,
   findSelectTokenButton,
   closeTransactionHistoryPanel,
   openTransactionDetails,
