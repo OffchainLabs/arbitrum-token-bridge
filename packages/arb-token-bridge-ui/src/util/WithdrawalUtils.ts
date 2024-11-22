@@ -112,7 +112,6 @@ const SECONDS_IN_MINUTE = 60
 const SECONDS_IN_HOUR = 3600
 const SECONDS_IN_DAY = 86400
 const DEFAULT_CONFIRMATION_TIME = 7 * SECONDS_IN_DAY
-const DEFAULT_FAST_WITHDRAWAL_TIME = SECONDS_IN_DAY
 const DEFAULT_TESTNET_CONFIRMATION_TIME = SECONDS_IN_HOUR
 
 function formatDuration(seconds: number, short = false): string {
@@ -135,19 +134,14 @@ function formatDuration(seconds: number, short = false): string {
  * @param {number} chainId - The ID of the parent chain.
  */
 export function getConfirmationTime(chainId: number) {
-  const { fastWithdrawalTime, fastWithdrawalActive } =
-    getBridgeUiConfigForChain(chainId)
+  const { fastWithdrawalTime } = getBridgeUiConfigForChain(chainId)
   const isTestnet = isNetwork(chainId).isTestnet
 
-  const isDefaultConfirmationTime = !fastWithdrawalActive
-  const isDefaultFastWithdrawal = fastWithdrawalActive && !fastWithdrawalTime
-  const isCustomFastWithdrawal = fastWithdrawalActive && !!fastWithdrawalTime
+  const fastWithdrawalActive = typeof fastWithdrawalTime !== 'undefined'
 
   let confirmationTimeInSeconds: number
 
-  if (isDefaultFastWithdrawal) {
-    confirmationTimeInSeconds = DEFAULT_FAST_WITHDRAWAL_TIME
-  } else if (isCustomFastWithdrawal) {
+  if (fastWithdrawalActive) {
     confirmationTimeInSeconds = fastWithdrawalTime / 1000
   } else {
     confirmationTimeInSeconds = isTestnet
@@ -165,9 +159,6 @@ export function getConfirmationTime(chainId: number) {
 
   return {
     fastWithdrawalActive,
-    isDefaultConfirmationTime,
-    isDefaultFastWithdrawal,
-    isCustomFastWithdrawal,
     confirmationTimeInSeconds,
     confirmationTimeInReadableFormat,
     confirmationTimeInReadableFormatShort
