@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Chain, useAccount } from 'wagmi'
 import { BigNumber } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
@@ -36,6 +36,7 @@ import { isNetwork } from '../util/networks'
 import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useBridgeTokensStore } from './useBridgeTokensStore'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -90,9 +91,7 @@ export const useArbTokenBridge = (
 ): ArbTokenBridge => {
   const { l1, l2 } = params
   const { address: walletAddress } = useAccount()
-  const [bridgeTokens, setBridgeTokens] = useState<
-    ContractStorage<ERC20BridgeToken> | undefined
-  >(undefined)
+  const { bridgeTokens, setBridgeTokens } = useBridgeTokensStore()
 
   const { destinationAddress } = useDestinationAddressStore()
 
