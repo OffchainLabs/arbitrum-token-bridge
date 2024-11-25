@@ -246,7 +246,9 @@ async function getOrbitChainImage(orbitChain: Chain) {
           justifyContent: 'center',
           alignItems: 'center',
           position: 'relative',
-          textAlign: 'center'
+          textAlign: 'center',
+          paddingLeft: '40px',
+          paddingRight: '40px'
         }}
       >
         <ArbitrumLogo
@@ -267,7 +269,7 @@ async function getOrbitChainImage(orbitChain: Chain) {
         />
         <span
           style={{
-            fontSize: '140px',
+            fontSize: '112px',
             fontWeight: '500',
             color: 'white',
             letterSpacing: '4px',
