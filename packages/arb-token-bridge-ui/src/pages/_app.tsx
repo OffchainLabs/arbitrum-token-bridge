@@ -159,6 +159,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
     siteTitle = `Bridge to ${destinationChainInfo.name}`
   } catch (error) {
     // custom orbit chain will go into here
+    // however we sanitize the query params so after the first rendering,
+    // the chains will be set to sepolia <-> arbitrum sepolia regardless
+    // custom chain will only be selectable from the dropdown, not from query param
     sourceChainInfo = getChainForChainKeyQueryParam('sepolia')
     destinationChainInfo = getChainForChainKeyQueryParam('arbitrum-sepolia')
     siteTitle = `Bridge to Custom Arbitrum Orbit Chain`
