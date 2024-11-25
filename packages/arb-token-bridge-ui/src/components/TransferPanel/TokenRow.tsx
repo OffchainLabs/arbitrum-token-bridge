@@ -32,6 +32,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
+import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -244,6 +245,8 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { balance, symbol } = useTokenInfo(token)
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
 
   const isArbitrumNativeUSDC =
     isTokenArbitrumOneNativeUSDC(token?.address) ||
@@ -266,6 +269,13 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
     return typeof bridgeTokens[token.address] !== 'undefined'
   }, [bridgeTokens, isArbitrumNativeUSDC, token])
 
+  const decimals = useMemo(() => {
+    if (token) {
+      return token.decimals
+    }
+    return nativeCurrencyDecimalsOnSourceChain
+  }, [nativeCurrencyDecimalsOnSourceChain, token])
+
   if (!tokenIsAddedToTheBridge) {
     return <span className="arb-hover text-sm">Import</span>
   }
@@ -279,7 +289,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
     <span className="flex items-center whitespace-nowrap text-sm text-white/70">
       {balance ? (
         formatAmount(balance, {
-          decimals: token?.decimals,
+          decimals,
           symbol
         })
       ) : (

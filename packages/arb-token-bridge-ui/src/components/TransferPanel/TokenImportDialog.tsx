@@ -17,7 +17,6 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
@@ -78,7 +77,6 @@ export function TokenImportDialog({
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
 
@@ -297,12 +295,6 @@ export function TokenImportDialog({
       storeNewToken(l1Address).catch(() => {
         setStatus(ImportStatus.ERROR)
       })
-    }
-
-    // do not allow import of withdraw-only tokens at deposit mode
-    if (isDepositMode && isWithdrawOnlyToken(l1Address, childChain.id)) {
-      openTransferDisabledDialog()
-      return
     }
 
     if (isTransferDisabledToken(l1Address, childChain.id)) {

@@ -32,11 +32,13 @@ import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
 
-type NetworkType = 'core' | 'orbit'
+type NetworkType = 'core' | 'more' | 'orbit'
 
 enum ChainGroupName {
   core = 'CORE CHAINS',
+  more = 'MORE CHAINS',
   orbit = 'ORBIT CHAINS'
 }
 
@@ -48,6 +50,19 @@ type ChainGroupInfo = {
 const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   core: {
     name: ChainGroupName.core
+  },
+  more: {
+    name: ChainGroupName.more,
+    description: (
+      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+        <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
+        <span>
+          Independent projects using non-Arbitrum technology. These chains have
+          varying degrees of decentralization.{' '}
+          <span className="font-semibold">Bridge at your own risk.</span>
+        </span>
+      </p>
+    )
   },
   orbit: {
     name: ChainGroupName.orbit,
@@ -72,7 +87,7 @@ function ChainTypeInfoRow({
   style: CSSProperties
 }) {
   const { name, description } = chainGroup
-  const isCoreGroup = chainGroup.name === ChainGroupName.core
+  const isOrbitGroup = chainGroup.name === ChainGroupName.orbit
 
   return (
     <div
@@ -80,7 +95,7 @@ function ChainTypeInfoRow({
       style={style}
       className={twMerge(
         'px-4 py-3',
-        !isCoreGroup &&
+        !isOrbitGroup &&
           'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-white/30 before:content-[""]'
       )}
     >
@@ -172,7 +187,10 @@ function NetworkRow({
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-[1.1]">{network.name}</span>
         {network.description && (
-          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15] text-white/70">
+          <p
+            className="line-clamp-3 text-left text-xs leading-[1.15] text-white/70"
+            title={network.description}
+          >
             {network.description}
           </p>
         )}
@@ -237,7 +255,11 @@ function NetworksPanel({
     }
 
     const coreNetworks = chainIds.filter(
-      chainId => !isNetwork(chainId).isOrbitChain
+      chainId => isNetwork(chainId).isCoreChain
+    )
+    const moreNetworks = chainIds.filter(
+      chainId =>
+        !isNetwork(chainId).isCoreChain && !isNetwork(chainId).isOrbitChain
     )
     const orbitNetworks = chainIds.filter(
       chainId => isNetwork(chainId).isOrbitChain
@@ -245,6 +267,7 @@ function NetworksPanel({
 
     return {
       core: coreNetworks,
+      more: moreNetworks,
       orbit: orbitNetworks
     }
   }, [debouncedNetworkSearched, chainIds])
@@ -261,6 +284,10 @@ function NetworksPanel({
 
       if (networksToShow.core.length > 0) {
         groupedNetworks.push(ChainGroupName.core, ...networksToShow.core)
+      }
+
+      if (networksToShow.more.length > 0) {
+        groupedNetworks.push(ChainGroupName.more, ...networksToShow.more)
       }
 
       if (networksToShow.orbit.length > 0) {
@@ -300,6 +327,12 @@ function NetworksPanel({
       if (networkOrChainTypeName === ChainGroupName.core) {
         return (
           <ChainTypeInfoRow chainGroup={chainGroupInfo.core} style={style} />
+        )
+      }
+
+      if (networkOrChainTypeName === ChainGroupName.more) {
+        return (
+          <ChainTypeInfoRow chainGroup={chainGroupInfo.more} style={style} />
         )
       }
 
@@ -371,6 +404,8 @@ export const NetworkSelectionContainer = (
   const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+  const [, setQueryParams] = useArbQueryParams()
+  const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
 
   const isSource = props.type === 'source'
 
@@ -407,13 +442,17 @@ export const NetworkSelectionContainer = (
       })
 
       setSelectedToken(null)
+      setQueryParams({ destinationAddress: undefined })
+      setAdvancedSettingsCollapsed(true)
     },
     [
       isSource,
       networks,
-      openOneNovaTransferDialog,
       setNetworks,
-      setSelectedToken
+      setSelectedToken,
+      setQueryParams,
+      setAdvancedSettingsCollapsed,
+      openOneNovaTransferDialog
     ]
   )
 

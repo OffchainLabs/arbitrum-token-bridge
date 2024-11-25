@@ -1,14 +1,11 @@
 import React, { useEffect, useMemo } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { BigNumber, utils } from 'ethers'
+import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
-import { Loader } from '../common/atoms/Loader'
-import { formatAmount } from '../../util/NumberUtils'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
-import { useDestinationAddressStore } from './AdvancedSettings'
+import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -18,7 +15,6 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { ether } from '../../constants'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -30,7 +26,7 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { NetworkType } from './TransferPanelMain/utils'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -201,33 +197,6 @@ export function NetworkContainer({
   )
 }
 
-function StyledLoader() {
-  return <Loader color="white" size="small" />
-}
-
-export function ETHBalance({
-  balance,
-  prefix = '',
-  on
-}: {
-  balance: BigNumber | null
-  prefix?: string
-  on: NetworkType
-}) {
-  if (!balance) {
-    return <StyledLoader />
-  }
-
-  return (
-    <p>
-      <span className="font-light">{prefix}</span>
-      <span aria-label={`ETH balance amount on ${on}`}>
-        {formatAmount(balance, { symbol: ether.symbol })}
-      </span>
-    </p>
-  )
-}
-
 export function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
@@ -250,17 +219,15 @@ export function NetworkListboxPlusBalancesContainer({
 
 export function TransferPanelMain() {
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isTeleportMode } =
+  const { childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [selectedToken] = useSelectedToken()
 
   const { address: walletAddress } = useAccount()
 
-  const { destinationAddress, setDestinationAddress } =
-    useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
 
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
@@ -309,27 +276,15 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
-  const showUSDCSpecificInfo =
-    !isTeleportMode &&
-    ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-      (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia))
-
-  useEffect(() => {
-    // Different destination address only allowed for tokens
-    if (!selectedToken) {
-      setDestinationAddress(undefined)
-    }
-  }, [selectedToken, setDestinationAddress])
-
   useUpdateUSDCTokenData()
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <SourceNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <SourceNetworkBox />
 
       <SwitchNetworksButton />
 
-      <DestinationNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <DestinationNetworkBox />
 
       <TransferDisabledDialog />
     </div>

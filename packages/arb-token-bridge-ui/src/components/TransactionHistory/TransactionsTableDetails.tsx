@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 import { useTxDetailsStore } from './TransactionHistory'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
@@ -24,7 +25,9 @@ import { isTxCompleted } from './helpers'
 import { Address } from '../../util/AddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
-import { BatchTransferEthTooltip } from './TransactionHistoryTable'
+import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { isCustomDestinationAddressTx } from '../../state/app/utils'
 
 const DetailsBox = ({
   children,
@@ -63,7 +66,10 @@ export const TransactionsTableDetails = ({
     )
   }, [transactions, txFromStore])
 
-  if (!tx || !address) {
+  const childProvider = getProviderForChainId(tx?.childChainId ?? 0)
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
+
+  if (!tx || !address || !nativeCurrency) {
     return null
   }
 
@@ -77,8 +83,10 @@ export const TransactionsTableDetails = ({
 
   const isDifferentSourceAddress =
     address.toLowerCase() !== tx.sender?.toLowerCase()
-  const isDifferentDestinationAddress =
-    address.toLowerCase() !== tx.destination?.toLowerCase()
+  const isDifferentDestinationAddress = isCustomDestinationAddressTx({
+    sender: address,
+    destination: tx.destination
+  })
 
   const { sourceChainId, destinationChainId } = tx
 
@@ -153,17 +161,19 @@ export const TransactionsTableDetails = ({
                         )}
                       </div>
                       {isBatchTransfer(tx) && (
-                        <BatchTransferEthTooltip>
+                        <BatchTransferNativeTokenTooltip tx={tx}>
                           <div className="flex items-center space-x-2">
                             <Image
                               height={20}
                               width={20}
-                              alt="ETH logo"
-                              src={EthereumLogoRoundLight}
+                              alt={`${nativeCurrency.symbol} logo`}
+                              src={
+                                nativeCurrency.logoUrl ?? EthereumLogoRoundLight
+                              }
                             />
                             <span className="ml-2">
                               {formatAmount(Number(tx.value2), {
-                                symbol: ether.symbol
+                                symbol: nativeCurrency.symbol
                               })}
                             </span>
                             {isNetwork(tx.sourceChainId).isEthereumMainnet && (
@@ -172,7 +182,7 @@ export const TransactionsTableDetails = ({
                               </span>
                             )}
                           </div>
-                        </BatchTransferEthTooltip>
+                        </BatchTransferNativeTokenTooltip>
                       )}
                     </div>
                   </div>

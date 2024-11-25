@@ -17,6 +17,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneUSDCe,
+  getL2ERC20Address,
   isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
@@ -34,12 +35,12 @@ import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
-import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { Switch } from '../common/atoms/Switch'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -517,6 +518,7 @@ export function TokenSearch({
   close: () => void
 }) {
   const { address: walletAddress } = useAccount()
+  const { setAmount2 } = useSetInputAmount()
   const {
     app: {
       arbTokenBridge: { token, bridgeTokens }
@@ -524,13 +526,8 @@ export function TokenSearch({
   } = useAppState()
   const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    parentChain,
-    parentChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, parentChain, parentChainProvider, isTeleportMode } =
+    useNetworksRelationship(networks)
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
 
@@ -546,6 +543,11 @@ export function TokenSearch({
 
     if (!_token.address) {
       return
+    }
+
+    if (isTokenNativeUSDC(_token.address)) {
+      // not supported
+      setAmount2('')
     }
 
     try {
@@ -571,12 +573,6 @@ export function TokenSearch({
       if (data) {
         token.updateTokenData(_token.address)
         setSelectedToken(_token.address)
-      }
-
-      // do not allow import of withdraw-only tokens at deposit mode
-      if (isDepositMode && isWithdrawOnlyToken(_token.address, childChain.id)) {
-        openTransferDisabledDialog()
-        return
       }
 
       if (isTransferDisabledToken(_token.address, childChain.id)) {

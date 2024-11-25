@@ -224,10 +224,10 @@ export const USDCFastBridges: USDCFastBridgeInfo[] = [
     }: getHrefParams) => {
       switch (transferMode) {
         case 'deposit':
-          return `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
+          return `https://app.routernitro.com/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
         case 'withdraw':
         default:
-          return `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
+          return `https://app.routernitro.com/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
       }
     }
   }

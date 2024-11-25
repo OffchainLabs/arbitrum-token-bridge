@@ -1,4 +1,7 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  scaleFrom18DecimalsToNativeTokenDecimals
+} from '@arbitrum/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -75,7 +78,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
   public async requiresNativeCurrencyApproval({
     amount,
-    signer
+    signer,
+    options
   }: RequiresNativeCurrencyApprovalProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
@@ -120,15 +124,19 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
           .add(gasEstimates.estimatedChildChainSubmissionCost)
       )
     )
-    const estimatedDestinationChainGasFee = utils.parseUnits(
-      String(estimatedDestinationChainGasFeeEth),
-      await nativeCurrency.decimals()
-    )
+
+    const estimatedDestinationChainGasFee =
+      scaleFrom18DecimalsToNativeTokenDecimals({
+        amount: utils.parseEther(String(estimatedDestinationChainGasFeeEth)),
+        decimals: await nativeCurrency.decimals()
+      })
 
     // We want to bridge a certain amount of an ERC-20 token, but the Retryable fees on the destination chain will be paid in the custom fee token
     // We have to check if the native-token spending allowance is enough to cover the fees
     return customFeeTokenAllowanceForSourceChainGateway.lt(
-      estimatedDestinationChainGasFee
+      estimatedDestinationChainGasFee.add(
+        options?.approvalAmountIncrease ?? BigNumber.from(0)
+      )
     )
   }
 
@@ -153,7 +161,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
   public async approveNativeCurrency({
     signer,
-    amount
+    amount,
+    options
   }: ApproveNativeCurrencyProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
@@ -190,15 +199,18 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       )
     )
 
-    const estimatedDestinationChainGasFee = utils.parseUnits(
-      String(estimatedDestinationChainGasFeeEth),
-      await nativeCurrency.decimals()
-    )
+    const estimatedDestinationChainGasFee =
+      scaleFrom18DecimalsToNativeTokenDecimals({
+        amount: utils.parseEther(String(estimatedDestinationChainGasFeeEth)),
+        decimals: await nativeCurrency.decimals()
+      })
 
     return erc20Bridger.approveGasToken({
       erc20ParentAddress: this.sourceChainErc20Address,
       parentSigner: signer,
-      amount: estimatedDestinationChainGasFee
+      amount: estimatedDestinationChainGasFee.add(
+        options?.approvalAmountIncrease ?? BigNumber.from(0)
+      )
     })
   }
 

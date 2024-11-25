@@ -9,7 +9,7 @@ import {
   getL2NetworkConfig,
   getL1NetworkName,
   getL2NetworkName,
-  zeroToLessThanOneETH,
+  getZeroToLessThanOneToken,
   ERC20TokenSymbol
 } from '../../support/common'
 
@@ -27,6 +27,9 @@ const withdrawalTestCases = {
 }
 
 describe('Withdraw ERC20 Token', () => {
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const zeroToLessThanOneNativeToken =
+    getZeroToLessThanOneToken(nativeTokenSymbol)
   let ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
@@ -70,7 +73,7 @@ describe('Withdraw ERC20 Token', () => {
         cy.findSourceChainButton(getL2NetworkName())
         cy.findDestinationChainButton(getL1NetworkName())
         cy.findMoveFundsButton().should('be.disabled')
-        cy.findSelectTokenButton('ETH')
+        cy.findSelectTokenButton(nativeTokenSymbol)
       })
 
       it(`should withdraw ${tokenType} to the same address successfully`, () => {
@@ -86,8 +89,11 @@ describe('Withdraw ERC20 Token', () => {
 
         context('should show summary', () => {
           cy.typeAmount(ERC20AmountToSend)
-          cy.findGasFeeSummary(zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+          cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
+          cy.findGasFeeForChain(
+            getL2NetworkName(),
+            zeroToLessThanOneNativeToken
+          )
           cy.findGasFeeForChain(
             new RegExp(
               `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
@@ -134,6 +140,12 @@ describe('Withdraw ERC20 Token', () => {
             symbol: testCase.symbol
           })
         })
+
+        context('transfer panel amount should be reset', () => {
+          cy.closeTransactionHistoryPanel()
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
+        })
       })
 
       it('should claim funds', { defaultCommandTimeout: 200_000 }, () => {
@@ -163,7 +175,7 @@ describe('Withdraw ERC20 Token', () => {
           })}`
         ).should('be.visible')
 
-        cy.findByLabelText('Close side panel').click()
+        cy.closeTransactionHistoryPanel()
 
         cy.searchAndSelectToken({
           tokenName: testCase.symbol,
@@ -190,8 +202,11 @@ describe('Withdraw ERC20 Token', () => {
 
         context('should show summary', () => {
           cy.typeAmount(ERC20AmountToSend)
-          cy.findGasFeeSummary(zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+          cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
+          cy.findGasFeeForChain(
+            getL2NetworkName(),
+            zeroToLessThanOneNativeToken
+          )
           cy.findGasFeeForChain(
             new RegExp(
               `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
@@ -250,13 +265,16 @@ describe('Withdraw ERC20 Token', () => {
 
           // close popup
           cy.closeTransactionDetails()
-          cy.findByLabelText('Close side panel').click()
+          cy.closeTransactionHistoryPanel()
 
           // the balance on the source chain should not be the same as before
           cy.findByLabelText(`${testCase.symbol} balance amount on childChain`)
             .should('be.visible')
             .its('text')
             .should('not.eq', l2ERC20bal)
+
+          cy.findAmountInput().should('have.value', '')
+          cy.findMoveFundsButton().should('be.disabled')
         })
       })
 

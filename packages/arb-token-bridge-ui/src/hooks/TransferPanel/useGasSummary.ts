@@ -63,6 +63,9 @@ export function useGasSummary(): UseGasSummaryResult {
       amount: amountBigNumber,
       sourceChainErc20Address: isDepositMode
         ? selectedToken?.address
+        : isTokenArbitrumOneNativeUSDC(selectedToken?.address) ||
+          isTokenArbitrumSepoliaNativeUSDC(selectedToken?.address)
+        ? selectedToken?.address
         : selectedToken?.l2Address,
       destinationChainErc20Address: isDepositMode
         ? selectedToken?.l2Address
@@ -81,7 +84,7 @@ export function useGasSummary(): UseGasSummaryResult {
   }, [estimateGasResult, parentChainGasPrice])
 
   const estimatedChildChainGasFees = useMemo(() => {
-    if (!estimateGasResult) {
+    if (!estimateGasResult?.estimatedChildChainGas) {
       return
     }
     if (
@@ -120,7 +123,7 @@ export function useGasSummary(): UseGasSummaryResult {
       return {
         status: 'unavailable',
         estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees: undefined
+        estimatedChildChainGasFees
       }
     }
 

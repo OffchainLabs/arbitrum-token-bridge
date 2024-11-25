@@ -22,6 +22,7 @@ import { Loader } from '../common/atoms/Loader'
 import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
+import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 function MaxButton({
   className = '',
@@ -73,14 +74,17 @@ function MaxButton({
 }
 
 function SourceChainTokenBalance({
-  balanceOverride
+  balanceOverride,
+  symbolOverride
 }: {
   balanceOverride?: AmountInputOptions['balance']
+  symbolOverride?: AmountInputOptions['symbol']
 }) {
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isDepositMode, childChainProvider } =
     useNetworksRelationship(networks)
+  const selectedTokenDecimals = useSelectedTokenDecimals()
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
@@ -95,11 +99,15 @@ function SourceChainTokenBalance({
     balanceOverride ??
     (selectedToken ? tokenBalance : nativeCurrencyBalances.sourceBalance)
 
-  const formattedBalance = balance
-    ? formatAmount(balance, {
-        decimals: selectedToken?.decimals ?? nativeCurrency.decimals
-      })
-    : null
+  const formattedBalance =
+    balance !== null
+      ? formatAmount(balance, {
+          decimals: selectedTokenDecimals
+        })
+      : null
+
+  const symbol =
+    symbolOverride ?? selectedToken?.symbol ?? nativeCurrency.symbol
 
   if (formattedBalance) {
     return (
@@ -107,9 +115,9 @@ function SourceChainTokenBalance({
         <span className="text-sm font-light text-white">Balance: </span>
         <span
           className="whitespace-nowrap text-sm text-white"
-          aria-label={`${
-            selectedToken?.symbol ?? nativeCurrency.symbol
-          } balance amount on ${isDepositMode ? 'parentChain' : 'childChain'}`}
+          aria-label={`${symbol} balance amount on ${
+            isDepositMode ? 'parentChain' : 'childChain'
+          }`}
         >
           {formattedBalance}
         </span>
@@ -176,17 +184,16 @@ function ErrorMessage({
     case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
     case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
       return (
-        <>
-          <span className="text-sm text-brick">
-            This token can&apos;t be bridged over.
-          </span>{' '}
+        <div className="text-sm text-brick">
+          <span>This token can&apos;t be bridged over.</span>{' '}
           <button
             className="arb-hover underline"
             onClick={openTransferDisabledDialog}
           >
-            Learn more.
+            Learn more
           </button>
-        </>
+          <span>.</span>
+        </div>
       )
   }
 }
@@ -280,7 +287,10 @@ export const TransferPanelMainInput = React.memo(
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
               <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-                <SourceChainTokenBalance balanceOverride={options?.balance} />
+                <SourceChainTokenBalance
+                  balanceOverride={options?.balance}
+                  symbolOverride={options?.symbol}
+                />
                 <MaxButton onClick={handleMaxButtonClick} />
               </div>
             </div>

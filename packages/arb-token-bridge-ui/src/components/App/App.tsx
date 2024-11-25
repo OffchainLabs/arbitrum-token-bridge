@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import * as Sentry from '@sentry/react'
 
 import { useAccount, useNetwork, WagmiConfig, useDisconnect } from 'wagmi'
 import {
@@ -26,7 +25,7 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -38,9 +37,10 @@ import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
-import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
+import { isDepositMode } from '../../util/isDepositMode'
 
 declare global {
   interface Window {
@@ -74,15 +74,6 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
-
-    const {
-      isArbitrum: isConnectedToArbitrum,
-      isOrbitChain: isConnectedToOrbitChain
-    } = isNetwork(networks.sourceChain.id)
-    const isParentChainEthereum = isNetwork(
-      parentChain.id
-    ).isEthereumMainnetOrTestnet
-
     actions.app.reset()
     actions.app.setChainIds({
       l1NetworkChainId: parentChain.id,
@@ -90,14 +81,16 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     })
 
     if (
-      (isParentChainEthereum && isConnectedToArbitrum) ||
-      isConnectedToOrbitChain
+      isDepositMode({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
+      })
     ) {
-      console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-    } else {
       console.info('Deposit mode detected:')
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+    } else {
+      console.info('Withdrawal mode detected:')
+      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
 
     setTokenBridgeParams({
@@ -140,41 +133,8 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
-// connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4
-function getWalletName(connectorName: string): ProviderName {
-  switch (connectorName) {
-    case 'MetaMask':
-    case 'Coinbase Wallet':
-    case 'Trust Wallet':
-    case 'Safe':
-    case 'Injected':
-    case 'Ledger':
-      return connectorName
-
-    case 'WalletConnectLegacy':
-    case 'WalletConnect':
-      return 'WalletConnect'
-
-    default:
-      return 'Other'
-  }
-}
-
-/** given our RPC url, sanitize it before logging to Sentry, to only pass the url and not the keys */
-function getBaseUrl(url: string) {
-  try {
-    const urlObject = new URL(url)
-    return `${urlObject.protocol}//${urlObject.hostname}`
-  } catch {
-    // if invalid url passed
-    return ''
-  }
-}
-
 function AppContent() {
-  const [networks] = useNetworks()
-  const { parentChain, childChain } = useNetworksRelationship(networks)
-  const { address, isConnected, connector } = useAccount()
+  const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
   const { openConnectModal } = useConnectModal()
@@ -185,28 +145,7 @@ function AppContent() {
     }
   }, [isConnected, tosAccepted, openConnectModal])
 
-  useEffect(() => {
-    if (isConnected && connector) {
-      const walletName = getWalletName(connector.name)
-      trackEvent('Connect Wallet Click', { walletName })
-    }
-
-    // set a custom tag in sentry to filter issues by connected wallet.name
-    Sentry.setTag('wallet.name', connector?.name ?? '')
-  }, [isConnected, connector])
-
-  useEffect(() => {
-    Sentry.setTag('network.parent_chain_id', parentChain.id)
-    Sentry.setTag(
-      'network.parent_chain_rpc_url',
-      getBaseUrl(rpcURLs[parentChain.id] ?? '')
-    )
-    Sentry.setTag('network.child_chain_id', childChain.id)
-    Sentry.setTag(
-      'network.child_chain_rpc_url',
-      getBaseUrl(rpcURLs[childChain.id] ?? '')
-    )
-  }, [childChain.id, parentChain.id])
+  useSyncConnectedChainToAnalytics()
 
   if (!tosAccepted) {
     return (

@@ -1,6 +1,9 @@
 // tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
+import { ethers } from 'ethers'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
 import { ChainId, isNetwork } from '../util/networks'
 import {
   isTokenArbitrumOneUSDCe,
@@ -131,12 +134,6 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2Address: '0xa4431f62db9955bfd056c30e5ae703bf0d0eaec8'
     },
     {
-      symbol: 'GSWIFT',
-      l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
-      l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
-      l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
-    },
-    {
       symbol: 'eETH',
       l2CustomAddr: '',
       l1Address: '0x35fA164735182de50811E8e2E824cFb9B6118ac2',
@@ -195,9 +192,57 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8',
       l1Address: '0x0B7f0e51Cd1739D6C96982D55aD8fA634dd43A9C',
       l2Address: '0x6Ab317237cc72B2cdb54EcfcC180b61E00F7df76'
+    },
+    // LayerZero tokens
+    {
+      symbol: 'GSWIFT',
+      l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
+    },
+    {
+      symbol: 'ZRO',
+      l2CustomAddr: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+      l1Address: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+      l2Address: '0xd99f14023f6bde3142d339b6c069b2b711da7e37'
+    },
+    {
+      symbol: 'G3',
+      l2CustomAddr: '0xc24A365A870821EB83Fd216c9596eDD89479d8d7',
+      l1Address: '0xCF67815ccE72E682Eb4429eCa46843bed81Ca739',
+      l2Address: '0x34fb4148fdc1ab3054ac85d32de887c58538bb57'
+    },
+    {
+      symbol: 'mPendleOFT',
+      l2CustomAddr: '',
+      l1Address: '0x83e817E1574e2201a005EC0f7e700ED5606F555E',
+      l2Address: '0x87ABaD012da6DcD0438e36967FcaD54C9d64F86C'
     }
   ],
   [ChainId.ArbitrumNova]: []
+}
+
+async function isLayerZeroToken(
+  parentChainErc20Address: string,
+  parentChainId: number
+) {
+  const parentProvider = getProviderForChainId(parentChainId)
+
+  // https://github.com/LayerZero-Labs/LayerZero-v2/blob/592625b9e5967643853476445ffe0e777360b906/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol#L37
+  const layerZeroTokenOftContract = new ethers.Contract(
+    parentChainErc20Address,
+    [
+      'function oftVersion() external pure virtual returns (bytes4 interfaceId, uint64 version)'
+    ],
+    parentProvider
+  )
+
+  try {
+    const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
+    return !!_isLayerZeroToken
+  } catch (error) {
+    return false
+  }
 }
 
 /**
@@ -205,10 +250,15 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
  * @param erc20L1Address
  * @param childChainId
  */
-export function isWithdrawOnlyToken(
-  parentChainErc20Address: string,
+export async function isWithdrawOnlyToken({
+  parentChainErc20Address,
+  parentChainId,
+  childChainId
+}: {
+  parentChainErc20Address: string
+  parentChainId: number
   childChainId: number
-) {
+}) {
   // disable USDC.e deposits for Orbit chains
   if (
     (isTokenArbitrumOneUSDCe(parentChainErc20Address) ||
@@ -218,7 +268,17 @@ export function isWithdrawOnlyToken(
     return true
   }
 
-  return (withdrawOnlyTokens[childChainId] ?? [])
+  const inWithdrawOnlyList = (withdrawOnlyTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(parentChainErc20Address.toLowerCase())
+
+  if (inWithdrawOnlyList) {
+    return true
+  }
+
+  if (await isLayerZeroToken(parentChainErc20Address, parentChainId)) {
+    return true
+  }
+
+  return false
 }

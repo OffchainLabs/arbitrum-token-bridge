@@ -14,12 +14,6 @@ import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
 
-export enum WhiteListState {
-  VERIFYING,
-  ALLOWED,
-  DISALLOWED
-}
-
 export enum DepositStatus {
   L1_PENDING = 1,
   L1_FAILURE = 2,
@@ -91,7 +85,6 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  verifying: WhiteListState
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
   arbTokenBridgeLoaded: boolean
@@ -103,7 +96,6 @@ export const defaultState: AppState = {
   connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
-  verifying: WhiteListState.ALLOWED,
   arbTokenBridgeLoaded: false
 }
 export const state: AppState = {

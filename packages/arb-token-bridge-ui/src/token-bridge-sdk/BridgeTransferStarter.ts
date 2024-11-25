@@ -46,6 +46,7 @@ export type BridgeTransferStarterPropsWithChainIds = {
 export type TransferEstimateGas = {
   amount: BigNumber
   signer: Signer
+  destinationAddress?: string
 }
 
 export type TransferOverrides = {
@@ -63,6 +64,10 @@ export type TransferProps = {
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
   signer: Signer
+  destinationAddress?: string
+  options?: {
+    approvalAmountIncrease?: BigNumber
+  }
 }
 
 export type ApproveNativeCurrencyEstimateGasProps = {
@@ -73,6 +78,10 @@ export type ApproveNativeCurrencyEstimateGasProps = {
 export type ApproveNativeCurrencyProps = {
   signer: Signer
   amount: BigNumber
+  destinationAddress?: string
+  options?: {
+    approvalAmountIncrease?: BigNumber
+  }
 }
 
 export type RequiresTokenApprovalProps = {

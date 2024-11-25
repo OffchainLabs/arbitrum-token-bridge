@@ -10,6 +10,7 @@ import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -26,10 +27,13 @@ export const useTransferDisabledDialogStore =
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
-  const { isTeleportMode } = useNetworksRelationship(networks)
+  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
   const [selectedToken, setSelectedToken] = useSelectedToken()
+  const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
+    useSelectedTokenIsWithdrawOnly()
   const {
     isOpen: isOpenTransferDisabledDialog,
+    openDialog: openTransferDisabledDialog,
     closeDialog: closeTransferDisabledDialog
   } = useTransferDisabledDialogStore()
   const unsupportedToken = sanitizeTokenSymbol(selectedToken?.symbol ?? '', {
@@ -52,6 +56,22 @@ export function TransferDisabledDialog() {
     }
     updateL2ChainIdForTeleport()
   }, [isTeleportMode, networks.destinationChainProvider])
+
+  useEffect(() => {
+    // do not allow import of withdraw-only tokens at deposit mode
+    if (
+      isDepositMode &&
+      isSelectedTokenWithdrawOnly &&
+      !isSelectedTokenWithdrawOnlyLoading
+    ) {
+      openTransferDisabledDialog()
+    }
+  }, [
+    isSelectedTokenWithdrawOnly,
+    isDepositMode,
+    openTransferDisabledDialog,
+    isSelectedTokenWithdrawOnlyLoading
+  ])
 
   const onClose = () => {
     setSelectedToken(null)

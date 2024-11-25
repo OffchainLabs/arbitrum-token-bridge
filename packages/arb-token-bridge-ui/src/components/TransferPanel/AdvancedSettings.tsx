@@ -5,19 +5,18 @@ import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
 import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
+import { useDebounce } from '@uidotdev/usehooks'
 
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
-import {
-  addressIsSmartContract,
-  addressIsDenylisted
-} from '../../util/AddressUtils'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -30,55 +29,16 @@ enum DestinationAddressWarnings {
   CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is the right address.'
 }
 
-type DestinationAddressStore = {
-  error: DestinationAddressErrors | null
-  destinationAddress: string | undefined
-  setError: (error: DestinationAddressErrors | null) => void
-  setDestinationAddress: (destinationAddress: string | undefined) => void
+type AdvancedSettingsStore = {
+  advancedSettingsCollapsed: boolean
+  setAdvancedSettingsCollapsed: (collapsed: boolean) => void
 }
 
-export const useDestinationAddressStore = create<DestinationAddressStore>(
-  set => ({
-    error: null,
-    destinationAddress: undefined,
-    setError: error => set(() => ({ error })),
-    setDestinationAddress: destinationAddress =>
-      set(() => ({ destinationAddress }))
-  })
-)
-
-export async function getDestinationAddressError({
-  destinationAddress,
-  isSmartContractWallet,
-  isTeleportMode
-}: {
-  destinationAddress?: string
-  isSmartContractWallet: boolean
-  isTeleportMode: boolean
-}): Promise<DestinationAddressErrors | null> {
-  if (!destinationAddress && isSmartContractWallet) {
-    // destination address required for contract wallets
-    return DestinationAddressErrors.REQUIRED_ADDRESS
-  }
-
-  if (!destinationAddress) {
-    return null
-  }
-
-  if (!isAddress(destinationAddress)) {
-    return DestinationAddressErrors.INVALID_ADDRESS
-  }
-  if (await addressIsDenylisted(destinationAddress)) {
-    return DestinationAddressErrors.DENYLISTED_ADDRESS
-  }
-
-  if (isTeleportMode) {
-    return DestinationAddressErrors.TELEPORT_DISABLED
-  }
-
-  // no error
-  return null
-}
+export const useAdvancedSettingsStore = create<AdvancedSettingsStore>(set => ({
+  advancedSettingsCollapsed: true,
+  setAdvancedSettingsCollapsed: collapsed =>
+    set(() => ({ advancedSettingsCollapsed: collapsed }))
+}))
 
 async function getDestinationAddressWarning({
   destinationAddress,
@@ -112,45 +72,50 @@ async function getDestinationAddressWarning({
 }
 
 export const AdvancedSettings = () => {
-  const [selectedToken] = useSelectedToken()
+  const { advancedSettingsCollapsed, setAdvancedSettingsCollapsed } =
+    useAdvancedSettingsStore()
   const [networks] = useNetworks()
   const {
     childChain,
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode,
-    isTeleportMode
+    isDepositMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 
-  const [collapsed, setCollapsed] = useState(true)
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  const { error, setError, destinationAddress, setDestinationAddress } =
-    useDestinationAddressStore()
+  const [
+    { destinationAddress: destinationAddressFromQueryParams },
+    setQueryParams
+  ] = useArbQueryParams()
+  const [destinationAddress, setDestinationAddress] = useState(
+    destinationAddressFromQueryParams
+  )
+  const debouncedDestinationAddress = useDebounce(destinationAddress, 100)
+  const { destinationAddressError: error } = useDestinationAddressError()
+
+  const [initialDestinationAddressFromQueryParams] = useState(
+    destinationAddressFromQueryParams
+  )
 
   useEffect(() => {
-    // Initially hide for EOA
-    setCollapsed(isEOA)
-    // Initially lock for EOA
-    setInputLocked(isEOA)
-  }, [isEOA])
-
-  useEffect(() => {
-    async function updateError() {
-      setError(
-        await getDestinationAddressError({
-          destinationAddress,
-          isSmartContractWallet,
-          isTeleportMode
-        })
-      )
-    }
-    updateError()
-  }, [destinationAddress, isSmartContractWallet, setError, isTeleportMode])
+    // Initially hide for EOA and if destination address query param is empty
+    setAdvancedSettingsCollapsed(
+      isEOA && typeof initialDestinationAddressFromQueryParams === 'undefined'
+    )
+    // Initially lock for EOA and if destination address query param is empty
+    setInputLocked(
+      isEOA && typeof initialDestinationAddressFromQueryParams === 'undefined'
+    )
+  }, [
+    initialDestinationAddressFromQueryParams,
+    isEOA,
+    setAdvancedSettingsCollapsed
+  ])
 
   useEffect(() => {
     // isSubscribed makes sure that only the latest state is written
@@ -178,20 +143,27 @@ export const AdvancedSettings = () => {
     childChainProvider,
     parentChainProvider,
     childChain.id,
-    parentChain.id
+    parentChain.id,
+    networks.destinationChain.id
   ])
 
   const collapsible = useMemo(() => {
     // cannot collapse if:
     // - SCW because the destination address is mandatory
     // - destination address is not empty
-    return isEOA && !destinationAddress
-  }, [destinationAddress, isEOA])
+    return isEOA && !destinationAddressFromQueryParams
+  }, [destinationAddressFromQueryParams, isEOA])
 
-  // Disabled for ETH
-  if (!selectedToken) {
-    return null
-  }
+  useEffect(() => {
+    if (!debouncedDestinationAddress) {
+      setQueryParams({ destinationAddress: undefined })
+      return
+    }
+
+    setQueryParams({
+      destinationAddress: debouncedDestinationAddress
+    })
+  }, [debouncedDestinationAddress, setQueryParams])
 
   if (!isEOA && !isSmartContractWallet) {
     return null
@@ -199,10 +171,12 @@ export const AdvancedSettings = () => {
 
   function handleVisibility() {
     if (!collapsible) {
-      setCollapsed(false)
+      setAdvancedSettingsCollapsed(false)
       return
     }
-    setCollapsed(!collapsed)
+    setAdvancedSettingsCollapsed(!advancedSettingsCollapsed)
+    setDestinationAddress(undefined)
+    setQueryParams({ destinationAddress: undefined })
   }
 
   return (
@@ -219,12 +193,12 @@ export const AdvancedSettings = () => {
           <ChevronDownIcon
             className={twMerge(
               'ml-1 h-4 w-4 transition-transform duration-200',
-              collapsed ? 'rotate-0' : '-rotate-180'
+              advancedSettingsCollapsed ? 'rotate-0' : '-rotate-180'
             )}
           />
         )}
       </button>
-      <Transition isOpen={!collapsed}>
+      <Transition isOpen={!advancedSettingsCollapsed}>
         <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
           <p className="text-sm font-light">
             {isEOA ? (

@@ -1,12 +1,7 @@
-import {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
+import { create } from 'zustand'
 
 import { getNetworkName } from '../../../util/networks'
 import {
@@ -36,33 +31,51 @@ import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useBalanceOnSourceChain } from '../../../hooks/useBalanceOnSourceChain'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
+import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 
 function Amount2ToggleButton({
   onClick
 }: {
   onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
 }) {
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
   return (
     <Button
       variant="secondary"
       className="border-white/30 shadow-2"
       onClick={onClick}
     >
-      <div className="flex items-center space-x-1">
+      <div
+        aria-label="Add native currency button"
+        className="flex items-center space-x-1"
+      >
         <PlusCircleIcon width={18} />
-        <span>Add ETH</span>
+        <span>Add {nativeCurrency.symbol}</span>
       </div>
     </Button>
   )
 }
 
-export function SourceNetworkBox({
-  showUsdcSpecificInfo
-}: {
-  showUsdcSpecificInfo: boolean
-}) {
-  const [isAmount2InputVisible, setIsAmount2InputVisible] = useState(false)
+export const useAmount2InputVisibility = create<{
+  isAmount2InputVisible: boolean
+  showAmount2Input: () => void
+}>(set => ({
+  isAmount2InputVisible: false,
+  showAmount2Input: () => {
+    set(() => ({
+      isAmount2InputVisible: true
+    }))
+  }
+}))
+
+export function SourceNetworkBox() {
+  const { isAmount2InputVisible, showAmount2Input } =
+    useAmount2InputVisibility()
 
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
@@ -77,7 +90,11 @@ export function SourceNetworkBox({
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
-  const ethBalanceSourceChain = useBalanceOnSourceChain(null)
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
+
+  const isCctpTransfer = useIsCctpTransfer()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -94,6 +111,12 @@ export function SourceNetworkBox({
       setAmount2(maxAmount2)
     }
   }, [amount2, maxAmount2, isMaxAmount2, setAmount2])
+
+  useEffect(() => {
+    if (isBatchTransferSupported && Number(amount2) > 0) {
+      showAmount2Input()
+    }
+  }, [isBatchTransferSupported, amount2, showAmount2Input])
 
   const maxButtonOnClick = useCallback(() => {
     if (typeof maxAmount !== 'undefined') {
@@ -122,11 +145,20 @@ export function SourceNetworkBox({
     () => ({
       symbol: nativeCurrency.symbol,
       disabled: true,
-      balance: ethBalanceSourceChain
-        ? Number(utils.formatEther(ethBalanceSourceChain))
+      balance: nativeCurrencyBalances.sourceBalance
+        ? Number(
+            utils.formatUnits(
+              nativeCurrencyBalances.sourceBalance,
+              nativeCurrencyDecimalsOnSourceChain
+            )
+          )
         : undefined
     }),
-    [ethBalanceSourceChain, nativeCurrency.symbol]
+    [
+      nativeCurrencyBalances,
+      nativeCurrency.symbol,
+      nativeCurrencyDecimalsOnSourceChain
+    ]
   )
 
   return (
@@ -150,9 +182,7 @@ export function SourceNetworkBox({
 
           {isBatchTransferSupported && !isAmount2InputVisible && (
             <div className="flex justify-end">
-              <Amount2ToggleButton
-                onClick={() => setIsAmount2InputVisible(true)}
-              />
+              <Amount2ToggleButton onClick={showAmount2Input} />
             </div>
           )}
 
@@ -167,16 +197,16 @@ export function SourceNetworkBox({
                 maxAmount={maxAmount2}
                 isMaxAmount={isMaxAmount2}
                 decimals={nativeCurrency.decimals}
+                aria-label="Amount2 input"
               />
               <p className="mt-1 text-xs font-light text-white">
-                You can transfer ETH in the same transaction if you wish to.
-                This is the approximate amount you will receive. The final
-                amount depends on actual gas usage.
+                You can transfer {nativeCurrency.symbol} in the same transaction
+                if you wish to.
               </p>
             </>
           )}
 
-          {showUsdcSpecificInfo && (
+          {isCctpTransfer && (
             <p className="mt-1 text-xs font-light text-white">
               Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
               <ExternalLink

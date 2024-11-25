@@ -45,19 +45,20 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transfer({ amount, signer }: TransferProps) {
+  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await EthBridger.fromProvider(this.sourceChainProvider)
 
     const request = await ethBridger.getWithdrawalRequest({
       amount,
-      destinationAddress: address,
+      destinationAddress: destinationAddress ?? address,
       from: address
     })
 
     const tx = await ethBridger.withdraw({
       ...request,
       childSigner: signer,
+      destinationAddress,
       overrides: {
         gasLimit: percentIncrease(
           await this.sourceChainProvider.estimateGas(request.txRequest),

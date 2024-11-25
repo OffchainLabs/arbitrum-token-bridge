@@ -100,8 +100,9 @@ export const SiteBanner = ({
 
   // show info-banner till expiry date if provided
   const showInfoBanner =
-    !expiryDate ||
-    (expiryDate && dayjs.utc().isBefore(dayjs(expiryDate).utc(true)))
+    !!children &&
+    (!expiryDate ||
+      (expiryDate && dayjs.utc().isBefore(dayjs(expiryDate).utc(true))))
 
   if (showArbiscanOneIncidentBanner) {
     return <SiteBannerArbiscanIncident type="arbitrum-one" />
