@@ -157,7 +157,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
     destinationChainInfo = getChainForChainKeyQueryParam(destinationChainSlug)
   } catch (error) {
     // 1. slug misspelling can enter this flow
-    // 2. when user selects a custom orbit chain, it will also go to this flow
+    // 2. when user selects a custom orbit chain, it will also go to this flow (they are only available in local storage and not on the server)
     sourceChainInfo = getChainForChainKeyQueryParam('ethereum')
     destinationChainInfo = getChainForChainKeyQueryParam('arbitrum-one')
   }
