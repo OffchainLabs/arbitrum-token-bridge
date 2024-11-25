@@ -249,18 +249,9 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
 
   cy.selectTransactionsPanelTab(tab)
 
-  // Waiting for transactions to be fetched
-  return cy.waitUntil(
-    () =>
-      cy
-        .findByText(/Showing \d+ \w+ transactions made in/)
-        .should('be.visible'),
-    {
-      errorMsg: 'Failed to fetch transactions.',
-      timeout: 120_000,
-      interval: 500
-    }
-  )
+  cy.findByText(/Showing \d+ \w+ transactions made in/, {
+    timeout: 120_000
+  }).should('be.visible')
 }
 
 export function openTransactionDetails({
