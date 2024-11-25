@@ -809,7 +809,8 @@
           "name": "AZERO",
           "symbol": "AZERO",
           "logoUrl": "/images/AlephZeroEVM_Logo.webp"
-        }
+        },
+        "fastWithdrawalTime": 21600000
       }
     },
     {
