@@ -3,7 +3,6 @@ import * as chains from 'wagmi/chains'
 import {
   ChainId,
   getCustomChainFromLocalStorageById,
-  getCustomChainsFromLocalStorage,
   getSupportedChainIds
 } from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
@@ -35,10 +34,7 @@ export function isValidChainQueryParam(value: string | number): boolean {
     const isValidOrbitChainSlug = getOrbitChains().some(
       chain => chain.slug === value
     )
-    const isValidCustomChainId = getCustomChainsFromLocalStorage().some(
-      chain => chain.chainId === Number(value)
-    )
-    return isValidCoreChainSlug || isValidOrbitChainSlug || isValidCustomChainId
+    return isValidCoreChainSlug || isValidOrbitChainSlug
   }
 
   const supportedNetworkIds = getSupportedChainIds({ includeTestnets: true })
@@ -137,10 +133,7 @@ export function getChainForChainKeyQueryParam(
       return customChains.localL3Network
 
     default:
-      const orbitChain = [
-        ...getOrbitChains(),
-        ...getCustomChainsFromLocalStorage()
-      ].find(
+      const orbitChain = getOrbitChains().find(
         chain =>
           chain.slug === chainKeyQueryParam ??
           chain.chainId === Number(chainKeyQueryParam)
