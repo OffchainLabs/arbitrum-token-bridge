@@ -32,7 +32,7 @@ export function isValidChainQueryParam(value: string | number): boolean {
     const isValidCoreChainSlug = (
       chainQueryParams as readonly string[]
     ).includes(value)
-    const isValidOrbitChainSlug = [...getOrbitChains()].some(
+    const isValidOrbitChainSlug = getOrbitChains().some(
       chain => chain.slug === value
     )
     const isValidCustomChainId = getCustomChainsFromLocalStorage().some(
