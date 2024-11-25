@@ -33,9 +33,9 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useArbQueryParams } from './useArbQueryParams'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -94,7 +94,7 @@ export const useArbTokenBridge = (
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
 
-  const { destinationAddress } = useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
 
   const {
     erc20: [, updateErc20L1Balance]
