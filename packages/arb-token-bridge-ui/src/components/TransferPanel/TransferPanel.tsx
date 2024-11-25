@@ -28,10 +28,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import {
-  AdvancedSettings,
-  useDestinationAddressStore
-} from './AdvancedSettings'
+import { AdvancedSettings } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
@@ -154,9 +151,11 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2 }] = useArbQueryParams()
+  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
+
+  const latestDestinationAddress = useLatest(destinationAddress)
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -174,9 +173,7 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
-  const { destinationAddress } = useDestinationAddressStore()
-
-  const isCustomDestinationTransfer = !!destinationAddress
+  const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
   const {
     updateEthParentBalance,
@@ -348,6 +345,8 @@ export function TransferPanel() {
     if (!isTransferAllowed) {
       throw new Error(transferNotAllowedError)
     }
+
+    const destinationAddress = latestDestinationAddress.current
 
     setTransferring(true)
 
@@ -587,6 +586,8 @@ export function TransferPanel() {
         return
       }
 
+      const destinationAddress = latestDestinationAddress.current
+
       const isCustomNativeTokenAmount2 =
         nativeCurrency.isCustom &&
         isBatchTransferSupported &&
@@ -763,6 +764,8 @@ export function TransferPanel() {
 
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
+
+    const destinationAddress = latestDestinationAddress.current
 
     if (!isSmartContractWallet) {
       trackEvent(

@@ -2,14 +2,12 @@ import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { isAddress } from 'ethers/lib/utils.js'
 
-import {
-  DestinationAddressErrors,
-  useDestinationAddressStore
-} from '../AdvancedSettings'
+import { DestinationAddressErrors } from '../AdvancedSettings'
 import { addressIsDenylisted } from '../../../util/AddressUtils'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 export async function getDestinationAddressError({
   destinationAddress,
@@ -42,7 +40,7 @@ export async function getDestinationAddressError({
 }
 
 export function useDestinationAddressError() {
-  const { destinationAddress } = useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { isTeleportMode } = useNetworksRelationship(networks)
   const { isSmartContractWallet: isSenderSmartContractWallet } =
