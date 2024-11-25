@@ -156,13 +156,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
     sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
     destinationChainInfo = getChainForChainKeyQueryParam(destinationChainSlug)
   } catch (error) {
-    // 1. misspelling can enter this flow
-    // 2. custom orbit chain will also go to this flow
-    // custom chain is only selectable from the dropdown, not from query params
-    // we sanitize the query params so after the first rendering,
-    // the custom orbit chain pair will be set to sepolia <-> arbitrum sepolia regardless
-    // meta info doesn't matter to the custom chain use case
-    // so we can default to this pair
+    // 1. slug misspelling can enter this flow
+    // 2. when user selects a custom orbit chain, it will also go to this flow
     sourceChainInfo = getChainForChainKeyQueryParam('ethereum')
     destinationChainInfo = getChainForChainKeyQueryParam('arbitrum-one')
   }
