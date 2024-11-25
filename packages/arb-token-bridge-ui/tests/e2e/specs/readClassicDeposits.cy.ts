@@ -46,11 +46,8 @@ describe('Read classic deposit messages', () => {
 
   context('User has classic native token deposit transaction', () => {
     it('can read successful native token deposit', () => {
-      // log in to metamask
-      cy.login({
-        networkType: 'parentChain',
-        networkName: 'mainnet'
-      })
+      cy.visit('/')
+
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
         JSON.stringify([
@@ -60,7 +57,12 @@ describe('Read classic deposit messages', () => {
           })
         ])
       )
-      window.location.reload() // reload the page to read the local storage
+
+      // log in to metamask
+      cy.login({
+        networkType: 'parentChain',
+        networkName: 'mainnet'
+      })
 
       cy.switchToTransactionHistoryTab('settled')
 
@@ -76,11 +78,8 @@ describe('Read classic deposit messages', () => {
 
   context('User has classic ERC-20 deposit transaction', () => {
     it('can read successful ERC-20 deposit', () => {
-      // log in to metamask
-      cy.login({
-        networkType: 'parentChain',
-        networkName: 'mainnet'
-      })
+      cy.visit('/')
+
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
         JSON.stringify([
@@ -92,7 +91,12 @@ describe('Read classic deposit messages', () => {
           })
         ])
       )
-      window.location.reload() // reload the page to read the local storage
+
+      // log in to metamask
+      cy.login({
+        networkType: 'parentChain',
+        networkName: 'mainnet'
+      })
 
       cy.switchToTransactionHistoryTab('settled')
 
