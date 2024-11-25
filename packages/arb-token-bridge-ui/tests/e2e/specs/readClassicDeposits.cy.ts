@@ -60,6 +60,7 @@ describe('Read classic deposit messages', () => {
           })
         ])
       )
+      window.location.reload() // reload the page to read the local storage
 
       cy.switchToTransactionHistoryTab('settled')
 
@@ -91,6 +92,7 @@ describe('Read classic deposit messages', () => {
           })
         ])
       )
+      window.location.reload() // reload the page to read the local storage
 
       cy.switchToTransactionHistoryTab('settled')
 
