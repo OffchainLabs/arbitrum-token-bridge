@@ -151,17 +151,18 @@ export default function App({ Component, pageProps, router }: AppProps) {
 
   let sourceChainInfo
   let destinationChainInfo
+  let siteTitle
 
   try {
     sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
     destinationChainInfo = getChainForChainKeyQueryParam(destinationChainSlug)
+    siteTitle = `Bridge to ${destinationChainInfo.name}`
   } catch (error) {
     // custom orbit chain will go into here
     sourceChainInfo = getChainForChainKeyQueryParam('sepolia')
     destinationChainInfo = getChainForChainKeyQueryParam('arbitrum-sepolia')
+    siteTitle = `Bridge to Custom Arbitrum Orbit Chain`
   }
-
-  const siteTitle = `Bridge to ${destinationChainInfo.name}`
 
   return (
     <>
