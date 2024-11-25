@@ -173,6 +173,7 @@ function BalancesContainer({
               })
             : undefined
         }
+        symbolOverride={showUsdcSpecificInfo ? 'USDC.e' : undefined}
       />
       {isBatchTransferSupported && isAmount2InputVisible && (
         <BalanceRow
