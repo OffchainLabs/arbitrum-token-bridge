@@ -4,8 +4,7 @@ import { useMemo } from 'react'
 import { useBalance } from './useBalance'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
-
-import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
+import { useArbQueryParams } from './useArbQueryParams'
 
 export function useBalances({
   parentWalletAddress,
@@ -18,7 +17,7 @@ export function useBalances({
   const { childChain, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
-  const { destinationAddress } = useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
   const _parentWalletAddress =

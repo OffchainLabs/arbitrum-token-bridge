@@ -8,7 +8,7 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useAppState } from '../../state'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
-import { useDestinationAddressStore } from '../../components/TransferPanel/AdvancedSettings'
+import { useArbQueryParams } from '../useArbQueryParams'
 
 async function fetcher([
   signer,
@@ -55,7 +55,7 @@ export function useGasEstimates({
   error: any
 } {
   const [{ sourceChain, destinationChain }] = useNetworks()
-  const { destinationAddress } = useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
   const {
     app: { selectedToken: token }
   } = useAppState()

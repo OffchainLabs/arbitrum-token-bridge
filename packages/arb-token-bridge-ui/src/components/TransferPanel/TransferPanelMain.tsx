@@ -7,7 +7,6 @@ import { useMedia } from 'react-use'
 
 import { useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
-import { useDestinationAddressStore } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -27,6 +26,7 @@ import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -230,8 +230,7 @@ export function TransferPanelMain() {
 
   const { address: walletAddress } = useAccount()
 
-  const { destinationAddress, setDestinationAddress } =
-    useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
 
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
