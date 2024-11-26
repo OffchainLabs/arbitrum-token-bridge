@@ -6,28 +6,39 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { Button } from '../common/Button'
+import { isValidTxHash } from './helpers'
 
 export enum TransactionHistorySearchError {
   INVALID_ADDRESS = 'That doesn’t seem to be a valid address, please try again.'
 }
 
 type TransactionHistoryAddressStore = {
-  address: string
+  addressOrTxHash: string
   sanitizedAddress: Address | undefined
+  sanitizedTxHash: string | undefined
   searchError: TransactionHistorySearchError | undefined
-  setAddress: (address: string) => void
+  setAddressOrTxHash: (addressOrTxHash: string) => void
   setSanitizedAddress: (address: string) => void
+  setSanitizedTxHash: (txHash: string) => void
   setSearchError: (error: TransactionHistorySearchError | undefined) => void
 }
 
 export const useTransactionHistoryAddressStore =
   create<TransactionHistoryAddressStore>(set => ({
-    address: '',
+    addressOrTxHash: '',
     sanitizedAddress: undefined,
-    setAddress: (address: string) => set({ address }),
+    setAddressOrTxHash: (addressOrTxHash: string) => set({ addressOrTxHash }),
     setSanitizedAddress: (address: string) => {
       if (isAddress(address)) {
         set({ sanitizedAddress: address })
+      }
+    },
+    sanitizedTxHash: undefined,
+    setSanitizedTxHash: (txHash: string) => {
+      if (isValidTxHash(txHash)) {
+        set({
+          sanitizedTxHash: txHash
+        })
       }
     },
     searchError: undefined,
@@ -36,30 +47,41 @@ export const useTransactionHistoryAddressStore =
   }))
 
 export function TransactionHistorySearchBar() {
-  const { address, setAddress, setSanitizedAddress, setSearchError } =
-    useTransactionHistoryAddressStore()
+  const {
+    addressOrTxHash,
+    setAddressOrTxHash,
+    setSanitizedAddress,
+    setSanitizedTxHash,
+    setSearchError
+  } = useTransactionHistoryAddressStore()
   const { address: connectedAddress } = useAccount()
 
   useEffect(() => {
-    if (address === '' && connectedAddress) {
+    if (addressOrTxHash === '' && connectedAddress) {
       setSanitizedAddress(connectedAddress)
       setSearchError(undefined)
     }
-  }, [address, connectedAddress, setSanitizedAddress, setSearchError])
+  }, [addressOrTxHash, connectedAddress, setSanitizedAddress, setSearchError])
 
   const searchTxForAddress = useCallback(() => {
-    if (address === '') {
+    if (addressOrTxHash === '') {
       return
     }
 
-    if (!isAddress(address)) {
+    if (isValidTxHash(addressOrTxHash)) {
+      setSanitizedTxHash(addressOrTxHash)
+      setSearchError(undefined)
+      return
+    }
+
+    if (!isAddress(addressOrTxHash)) {
       setSearchError(TransactionHistorySearchError.INVALID_ADDRESS)
       return
     }
 
-    setSanitizedAddress(address)
+    setSanitizedAddress(addressOrTxHash)
     setSearchError(undefined)
-  }, [address, setSanitizedAddress, setSearchError])
+  }, [addressOrTxHash, setSanitizedAddress, setSanitizedTxHash, setSearchError])
 
   return (
     <div className="mb-4 flex flex-row items-stretch pr-4 md:pr-0">
@@ -72,10 +94,10 @@ export function TransactionHistorySearchBar() {
         <MagnifyingGlassIcon className="ml-3 mr-1 h-3 w-3" />
         <input
           type="text"
-          value={address}
-          onChange={event => setAddress(event.target.value)}
+          value={addressOrTxHash}
+          onChange={event => setAddressOrTxHash(event.target.value)}
           inputMode="search"
-          placeholder="Search by address"
+          placeholder="Search by address or transaction hash"
           aria-label="Transaction history wallet address input"
           className="h-full w-full bg-transparent py-1 pl-1 pr-3 text-sm font-light placeholder:text-white/60"
           // stop password managers from autofilling
@@ -91,7 +113,7 @@ export function TransactionHistorySearchBar() {
             'disabled:border-y-0 disabled:border-r-0 disabled:border-l-gray-dark'
           )}
           onClick={searchTxForAddress}
-          disabled={!address}
+          disabled={!addressOrTxHash}
         >
           Search
         </Button>
