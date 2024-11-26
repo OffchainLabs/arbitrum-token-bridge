@@ -233,21 +233,21 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
   // L2
   [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.ArbitrumOne),
+    env: process.env.NEXT_PUBLIC_ARB_ONE_RPC_URL,
     fallback: 'https://arb1.arbitrum.io/rpc'
   }),
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   [ChainId.Base]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.Base),
+    env: process.env.NEXT_PUBLIC_BASE_RPC_URL,
     fallback: 'https://mainnet.base.org'
   }),
   // L2 Testnets
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
+    env: process.env.NEXT_PUBLIC_ARB_SEPOLIA_RPC_URL,
     fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
   }),
   [ChainId.BaseSepolia]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.BaseSepolia),
+    env: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL,
     fallback: 'https://sepolia.base.org'
   })
 }
