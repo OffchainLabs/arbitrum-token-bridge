@@ -36,7 +36,6 @@ export function MainContent() {
         <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
           <TopNavBar />
           <Tab.Panels className="flex w-full items-center justify-center">
-            {/* <Tab.Panel>BUY PANEL</Tab.Panel> */}
             <Tab.Panel className="w-full sm:max-w-[600px]">
               <TransferPanel />
             </Tab.Panel>

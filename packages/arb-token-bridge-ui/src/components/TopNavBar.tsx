@@ -27,15 +27,6 @@ export function TopNavBar() {
         'grid w-full max-w-[600px] grid-cols-2 bg-white/20 p-[8px] text-white md:rounded'
       )}
     >
-      {/* <StyledTab>
-        <Image
-          src="/icons/wallet.svg"
-          width={24}
-          height={24}
-          alt="wallet icon"
-        />
-        Buy
-      </StyledTab> */}
       <StyledTab aria-label="Switch to Bridge Tab">
         <PaperAirplaneIcon className="h-3 w-3" />
         Bridge
