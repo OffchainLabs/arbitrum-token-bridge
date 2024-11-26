@@ -1,6 +1,5 @@
 import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
-import { useAccount } from 'wagmi'
 import { Tab } from '@headlessui/react'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -22,9 +21,9 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 function useTransactionHistoryUpdater() {
-  const { address } = useAccount()
+  const { sanitizedAddress } = useTransactionHistoryAddressStore()
 
-  const transactionHistoryProps = useTransactionHistory(address, {
+  const transactionHistoryProps = useTransactionHistory(sanitizedAddress, {
     runFetcher: true
   })
 
