@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
+import { useAccount } from 'wagmi'
 import { Tab } from '@headlessui/react'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -17,8 +18,32 @@ import {
 } from './helpers'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { useTransactionHistoryUpdater } from './useTransactionHistoryUpdater'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
+
+function useTransactionHistoryUpdater() {
+  const { address } = useAccount()
+
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
+
+  const { transactions, updatePendingTransaction } = transactionHistoryProps
+
+  const pendingTransactions = useMemo(() => {
+    return transactions.filter(isTxPending)
+  }, [transactions])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      pendingTransactions.forEach(updatePendingTransaction)
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [pendingTransactions, updatePendingTransaction])
+
+  return transactionHistoryProps
+}
 
 const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
