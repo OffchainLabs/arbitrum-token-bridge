@@ -16,15 +16,15 @@ enum MainContentTabs {
 type MainContentTabStore = {
   selectedTab: MainContentTabs
   setSelectedTab: (index: MainContentTabs) => void
-  openBridge: () => void
-  openTransactionHistory: () => void
+  switchToBridgeTab: () => void
+  switchToTransactionHistoryTab: () => void
 }
 
 export const useMainContentTabs = create<MainContentTabStore>(set => ({
   selectedTab: MainContentTabs.Bridge,
   setSelectedTab: (index: MainContentTabs) => set({ selectedTab: index }),
-  openBridge: () => set({ selectedTab: MainContentTabs.Bridge }),
-  openTransactionHistory: () =>
+  switchToBridgeTab: () => set({ selectedTab: MainContentTabs.Bridge }),
+  switchToTransactionHistoryTab: () =>
     set({ selectedTab: MainContentTabs.TransactionHistory })
 }))
 
