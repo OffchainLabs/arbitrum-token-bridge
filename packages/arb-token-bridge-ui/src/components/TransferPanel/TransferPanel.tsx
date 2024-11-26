@@ -142,7 +142,7 @@ export function TransferPanel() {
   })
 
   const { setTransferring } = useAppContextActions()
-  const { openTransactionHistory } = useMainContentTabs()
+  const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const isCctpTransfer = useIsCctpTransfer()
@@ -498,7 +498,7 @@ export function TransferPanel() {
       }
 
       addPendingTransaction(newTransfer)
-      openTransactionHistory()
+      switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
     } catch (e) {
@@ -837,7 +837,7 @@ export function TransferPanel() {
       )
     }
 
-    openTransactionHistory()
+    switchToTransactionHistoryTab()
     setTransferring(false)
     clearAmountInput()
 
