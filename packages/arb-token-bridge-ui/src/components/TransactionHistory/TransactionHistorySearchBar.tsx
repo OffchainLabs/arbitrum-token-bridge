@@ -14,14 +14,14 @@ export enum TransactionHistorySearchError {
 type TransactionHistoryAddressStore = {
   address: string
   sanitizedAddress: Address | undefined
-  searchError: any
+  searchError: TransactionHistorySearchError | undefined
   setAddress: (address: string) => void
   setSanitizedAddress: (address: string) => void
-  setSearchError: (error: any) => void
+  setSearchError: (error: TransactionHistorySearchError | undefined) => void
 }
 
 export const useTransactionHistoryAddressStore =
-  create<TransactionHistoryAddressStore>((set, get) => ({
+  create<TransactionHistoryAddressStore>(set => ({
     address: '',
     sanitizedAddress: undefined,
     setAddress: (address: string) => set({ address }),
@@ -31,7 +31,8 @@ export const useTransactionHistoryAddressStore =
       }
     },
     searchError: undefined,
-    setSearchError: (error: string | undefined) => set({ searchError: error })
+    setSearchError: (error: TransactionHistorySearchError | undefined) =>
+      set({ searchError: error })
   }))
 
 export function TransactionHistorySearchBar() {
@@ -47,12 +48,17 @@ export function TransactionHistorySearchBar() {
   }, [address, connectedAddress, setSanitizedAddress, setSearchError])
 
   const searchTxForAddress = useCallback(() => {
-    if (address !== '' && isAddress(address)) {
-      setSanitizedAddress(address)
-      setSearchError(undefined)
-    } else {
-      setSearchError(TransactionHistorySearchError.INVALID_ADDRESS)
+    if (address === '') {
+      return
     }
+
+    if (!isAddress(address)) {
+      setSearchError(TransactionHistorySearchError.INVALID_ADDRESS)
+      return
+    }
+
+    setSanitizedAddress(address)
+    setSearchError(undefined)
   }, [address, setSanitizedAddress, setSearchError])
 
   return (
@@ -79,8 +85,13 @@ export function TransactionHistorySearchBar() {
         />
         <Button
           variant="secondary"
-          className="select-none rounded-l-none border-y-0 border-r-0 border-gray-dark bg-black py-[7px] hover:bg-white/20 hover:opacity-100"
+          className={twMerge(
+            'select-none rounded-l-none border-y-0 border-r-0 border-gray-dark bg-black py-[7px]',
+            'hover:bg-white/20 hover:opacity-100',
+            'disabled:border-y-0 disabled:border-r-0 disabled:border-l-gray-dark'
+          )}
           onClick={searchTxForAddress}
+          disabled={!address}
         >
           Search
         </Button>
