@@ -26,10 +26,6 @@ export function MainContent() {
     useLocalStorage<boolean>(statsLocalStorageKey)
   const { selectedIndex, setSelectedIndex } = useSelectedTabIndex()
 
-  // without calling this, the site won't fetch the transactions and
-  // hence we won't be able to determine the transaction status (the dot)
-  useTransactionHistoryUpdater()
-
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
