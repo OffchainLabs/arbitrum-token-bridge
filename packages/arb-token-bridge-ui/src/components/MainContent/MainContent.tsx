@@ -7,29 +7,36 @@ import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
-import { useTransactionHistoryUpdater } from '../TransactionHistory/useTransactionHistoryUpdater'
 
-type SelectedTabIndexStore = {
-  selectedIndex: number
-  setSelectedIndex: (index: number) => void
+enum MainContentTabs {
+  Bridge = 0,
+  TransactionHistory = 1
+}
+
+type MainContentTabStore = {
+  selectedTab: number
+  setSelectedTab: (index: number) => void
+  openBridge: () => void
   openTransactionHistory: () => void
 }
 
-export const useSelectedTabIndex = create<SelectedTabIndexStore>(set => ({
-  selectedIndex: 0,
-  setSelectedIndex: (index: number) => set({ selectedIndex: index }),
-  openTransactionHistory: () => set({ selectedIndex: 1 })
+export const useMainContentTabs = create<MainContentTabStore>(set => ({
+  selectedTab: MainContentTabs.Bridge,
+  setSelectedTab: (index: number) => set({ selectedTab: index }),
+  openBridge: () => set({ selectedTab: MainContentTabs.Bridge }),
+  openTransactionHistory: () =>
+    set({ selectedTab: MainContentTabs.TransactionHistory })
 }))
 
 export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-  const { selectedIndex, setSelectedIndex } = useSelectedTabIndex()
+  const { selectedTab, setSelectedTab } = useMainContentTabs()
 
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
-        <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
+        <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
           <TopNavBar />
           <Tab.Panels className="flex w-full items-center justify-center">
             <Tab.Panel className="w-full sm:max-w-[600px]">
