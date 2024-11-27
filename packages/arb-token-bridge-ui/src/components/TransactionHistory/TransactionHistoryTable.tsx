@@ -28,6 +28,7 @@ import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { TABLE_HEADER_HEIGHT, TABLE_ROW_HEIGHT } from './constants'
 
 export const BatchTransferNativeTokenTooltip = ({
   children,
@@ -65,7 +66,7 @@ export const ContentWrapper = forwardRef<
 
 ContentWrapper.displayName = 'ContentWrapper'
 
-const TableHeader = ({
+export const TableHeader = ({
   children,
   className
 }: PropsWithChildren<{ className?: string }>) => (
@@ -148,8 +149,6 @@ export const TransactionHistoryTable = (
     oldestTxTimeAgoString
   } = props
 
-  const TABLE_HEADER_HEIGHT = 52
-  const TABLE_ROW_HEIGHT = 60
   const isTxHistoryEmpty = transactions.length === 0
   const isPendingTab = selectedTabIndex === 0
 

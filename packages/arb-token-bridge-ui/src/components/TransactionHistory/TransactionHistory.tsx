@@ -2,7 +2,8 @@ import { create } from 'zustand'
 
 import { MergedTransaction } from '../../state/app/state'
 import { TransactionHistorySearchBar } from './TransactionHistorySearchBar'
-import { TransactionHistorySearchResults } from './TransactionHistorySearchResults'
+import { TransactionHistoryAddressSearchResults } from './TransactionHistoryAddressSearchResults'
+import { TransactionHistoryTxHashSearchResult } from './TransactionHistoryTxHashSearch/TransactionHistoryTxHashSearchResult'
 
 type TxDetailsStore = {
   tx: MergedTransaction | null
@@ -35,7 +36,9 @@ export const TransactionHistory = () => {
     <div className="m-auto w-full max-w-[100vw] border-y border-white/30 bg-[#191919] py-4 pl-4 md:max-w-[1000px] md:rounded md:border-x md:pr-4">
       <TransactionHistorySearchBar />
 
-      <TransactionHistorySearchResults />
+      <TransactionHistoryTxHashSearchResult />
+
+      <TransactionHistoryAddressSearchResults />
     </div>
   )
 }

@@ -7,7 +7,7 @@ import {
   ContentWrapper,
   TransactionHistoryTable
 } from './TransactionHistoryTable'
-import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
+import { TransactionStatusInfo } from './TransactionStatusInfo'
 import {
   isTxClaimable,
   isTxCompleted,
@@ -47,7 +47,7 @@ function useTransactionHistoryUpdater() {
 const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
 
-export function TransactionHistorySearchResults() {
+export function TransactionHistoryAddressSearchResults() {
   const props = useTransactionHistoryUpdater()
   const { transactions } = props
   const { searchError } = useTransactionHistoryAddressStore()
