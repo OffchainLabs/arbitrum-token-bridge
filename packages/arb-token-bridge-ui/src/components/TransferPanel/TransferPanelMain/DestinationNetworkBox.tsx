@@ -26,6 +26,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
 import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 
 function BalanceRow({
   parentErc20Address,
@@ -109,11 +110,7 @@ function BalanceRow({
   )
 }
 
-function BalancesContainer({
-  showUsdcSpecificInfo
-}: {
-  showUsdcSpecificInfo: boolean
-}) {
+function BalancesContainer() {
   const {
     app: { selectedToken }
   } = useAppState()
@@ -122,6 +119,7 @@ function BalancesContainer({
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const { isArbitrumOne } = isNetwork(childChain.id)
+  const isCctpTransfer = useIsCctpTransfer()
 
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()
@@ -143,7 +141,7 @@ function BalancesContainer({
       className="rounded px-3 text-white [&>*+*]:border-t [&>*+*]:border-gray-600"
       style={{ backgroundColor: '#00000050' }}
     >
-      {showUsdcSpecificInfo && isDepositMode && (
+      {isCctpTransfer && isDepositMode && (
         <BalanceRow
           parentErc20Address={
             isArbitrumOne
@@ -173,7 +171,7 @@ function BalancesContainer({
               })
             : undefined
         }
-        symbolOverride={showUsdcSpecificInfo ? 'USDC.e' : undefined}
+        symbolOverride={isCctpTransfer ? 'USDC.e' : undefined}
       />
       {isBatchTransferSupported && isAmount2InputVisible && (
         <BalanceRow
@@ -190,11 +188,7 @@ function BalancesContainer({
   )
 }
 
-export function DestinationNetworkBox({
-  showUsdcSpecificInfo
-}: {
-  showUsdcSpecificInfo: boolean
-}) {
+export function DestinationNetworkBox() {
   const [networks] = useNetworks()
   const [{ destinationAddress }] = useArbQueryParams()
   const [
@@ -225,7 +219,7 @@ export function DestinationNetworkBox({
             />
           </div>
         </div>
-        <BalancesContainer showUsdcSpecificInfo={showUsdcSpecificInfo} />
+        <BalancesContainer />
         <EstimatedGas chainType="destination" />
       </NetworkContainer>
       <NetworkSelectionContainer
