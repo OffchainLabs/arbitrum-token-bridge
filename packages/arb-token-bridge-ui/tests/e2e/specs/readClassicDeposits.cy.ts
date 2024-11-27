@@ -22,7 +22,7 @@ function mockClassicDepositTransaction(
     childChainId: 42161,
     status: 'success',
     isClassic: true,
-    assetName: 'ETH',
+    assetName: Cypress.env('NATIVE_TOKEN_SYMBOL'),
     assetType: AssetType.ETH,
     sender: Cypress.env('ADDRESS'),
     l1NetworkID: '1',
@@ -44,8 +44,8 @@ describe('Read classic deposit messages', () => {
     window.localStorage.clear()
   })
 
-  context('User has classic ETH deposit transaction', () => {
-    it('can read successful ETH deposit', () => {
+  context('User has classic native token deposit transaction', () => {
+    it('can read successful native token deposit', () => {
       // log in to metamask
       cy.login({
         networkType: 'parentChain',

@@ -1,0 +1,104 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Validation Functions > tokenBridgeSchema > should throw for invalid tokenBridge objects 1`] = `
+"[
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"parentCustomGateway\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"parentErc20Gateway\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"parentWeth\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"parentWethGateway\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"childCustomGateway\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"childErc20Gateway\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"childWeth\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"string\\",
+    \\"received\\": \\"undefined\\",
+    \\"path\\": [
+      \\"childWethGateway\\"
+    ],
+    \\"message\\": \\"Required\\"
+  },
+  {
+    \\"code\\": \\"custom\\",
+    \\"message\\": \\"Invalid Ethereum address\\",
+    \\"path\\": [
+      \\"childGatewayRouter\\"
+    ]
+  }
+]"
+`;
+
+exports[`Validation Functions > tokenBridgeSchema > should validate correct tokenBridge objects 1`] = `
+{
+  "childCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "childWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+  "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+}
+`;

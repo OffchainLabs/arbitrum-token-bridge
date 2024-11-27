@@ -3,7 +3,6 @@ import { constants } from 'ethers'
 import Image from 'next/image'
 
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useDestinationAddressStore } from '../AdvancedSettings'
 import { NetworkContainer } from '../TransferPanelMain'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useAppState } from '../../../state'
@@ -26,6 +25,7 @@ import { useTokensFromLists, useTokensFromUser } from '../TokenSearchUtils'
 import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
 import { useAmount2InputVisibility } from './SourceNetworkBox'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 function BalanceRow({
   parentErc20Address,
@@ -196,7 +196,7 @@ export function DestinationNetworkBox({
   showUsdcSpecificInfo: boolean
 }) {
   const [networks] = useNetworks()
-  const { destinationAddress } = useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
   const [
     destinationNetworkSelectionDialogProps,
     openDestinationNetworkSelectionDialog

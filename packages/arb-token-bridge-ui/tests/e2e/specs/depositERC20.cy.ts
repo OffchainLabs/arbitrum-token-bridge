@@ -6,7 +6,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getL1NetworkConfig,
-  zeroToLessThanOneETH,
+  getZeroToLessThanOneToken,
   moreThanZeroBalance,
   getL1NetworkName,
   getL2NetworkName,
@@ -33,6 +33,10 @@ describe('Deposit Token', () => {
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
+  const zeroToLessThanOneNativeToken =
+    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   // Happy Path
   Object.keys(depositTestCases).forEach(tokenType => {
@@ -50,11 +54,11 @@ describe('Deposit Token', () => {
         }).then(val => (l1ERC20bal = formatAmount(val)))
       })
 
-      it('should show L1 and L2 chains, and ETH correctly', () => {
+      it('should show L1 and L2 chains, and native token correctly', () => {
         cy.login({ networkType: 'parentChain' })
         cy.findSourceChainButton(getL1NetworkName())
         cy.findDestinationChainButton(getL2NetworkName())
-        cy.findSelectTokenButton('ETH')
+        cy.findSelectTokenButton(nativeTokenSymbol)
       })
 
       it(`should deposit ${tokenType} successfully to the same address`, () => {
@@ -76,14 +80,16 @@ describe('Deposit Token', () => {
 
         context('should show gas estimations', () => {
           cy.typeAmount(ERC20AmountToSend)
-          cy.findGasFeeSummary(zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+          cy.findGasFeeSummary(zeroToLessThanOneEth)
+          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
+          cy.findGasFeeForChain(
+            getL2NetworkName(),
+            zeroToLessThanOneNativeToken
+          )
         })
 
         context('should deposit successfully', () => {
-          cy.findMoveFundsButton().click()
-          cy.confirmMetamaskTransaction()
+          cy.startTransfer()
           cy.findTransactionInTransactionHistory({
             duration: depositTime,
             amount: ERC20AmountToSend,
@@ -111,9 +117,12 @@ describe('Deposit Token', () => {
 
         context('should show summary', () => {
           cy.typeAmount(ERC20AmountToSend)
-          cy.findGasFeeSummary(zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneETH)
-          cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneETH)
+          cy.findGasFeeSummary(zeroToLessThanOneEth)
+          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
+          cy.findGasFeeForChain(
+            getL2NetworkName(),
+            zeroToLessThanOneNativeToken
+          )
         })
 
         context('should fill custom destination address successfully', () => {
@@ -121,8 +130,7 @@ describe('Deposit Token', () => {
         })
 
         context('should deposit successfully', () => {
-          cy.findMoveFundsButton().click()
-          cy.confirmMetamaskTransaction()
+          cy.startTransfer()
           const txData = {
             amount: ERC20AmountToSend,
             symbol: testCase.symbol

@@ -2,7 +2,7 @@
  * When user wants to bridge USDC through CCTP from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import { getZeroToLessThanOneToken } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 
 // common function for this cctp deposit
@@ -64,6 +64,7 @@ const confirmAndApproveCctpDeposit = () => {
 describe('Deposit USDC through CCTP', () => {
   // Happy Path
   const USDCAmountToSend = 0.0001
+  const zeroToLessThanOneETH = getZeroToLessThanOneToken('ETH')
 
   beforeEach(() => {
     cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
@@ -104,6 +105,16 @@ describe('Deposit USDC through CCTP', () => {
     //     timeout: 60_000
     //   }
     // })
+
+    // We have setup deposit transactions before running tests
+    cy.wait(40_000)
+    cy.rejectMetamaskTransaction()
+  })
+
+  it('should claim deposit', () => {
+    cy.claimCctp(0.00014, { accept: false })
+    cy.closeTransactionHistoryPanel()
+    cy.claimCctp(0.00015, { accept: false })
   })
 
   /**

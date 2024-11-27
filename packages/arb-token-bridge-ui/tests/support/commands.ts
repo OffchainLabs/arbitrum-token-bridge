@@ -8,6 +8,7 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { SelectorMatcherOptions } from '@testing-library/cypress'
 import {
   NetworkType,
   NetworkName,
@@ -16,6 +17,7 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
+import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -125,7 +127,7 @@ export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
         .should('be.visible'),
     {
       errorMsg: 'Failed to fetch transactions.',
-      timeout: 30_000,
+      timeout: 120_000,
       interval: 500
     }
   )
@@ -138,8 +140,8 @@ export const searchAndSelectToken = ({
   tokenName: string
   tokenAddress: string
 }) => {
-  // Click on the ETH dropdown (Select token button)
-  cy.findSelectTokenButton('ETH').click()
+  // Click on the native token dropdown (Select token button)
+  cy.findSelectTokenButton(Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
@@ -245,6 +247,13 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
+export function startTransfer() {
+  cy.wait(5_000)
+  cy.findMoveFundsButton().click()
+  cy.wait(15_000)
+  cy.confirmMetamaskTransaction()
+}
+
 export function findSelectTokenButton(
   text: string
 ): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -267,7 +276,7 @@ export function openTransactionDetails({
   amount: number
   amount2?: number
   symbol: string
-  symbol2: string
+  symbol2?: string
 }): Cypress.Chainable<JQuery<HTMLElement>> {
   cy.findTransactionInTransactionHistory({
     amount,
@@ -329,8 +338,13 @@ export function findTransactionInTransactionHistory({
 }
 
 export function findClaimButton(
-  amountToClaim: string
+  amountToClaim: string,
+  options?: SelectorMatcherOptions
 ): Cypress.Chainable<JQuery<HTMLElement>> {
+  if (options) {
+    return cy.findByLabelText(`Claim ${amountToClaim}`, options)
+  }
+
   return cy.findByLabelText(`Claim ${amountToClaim}`)
 }
 
@@ -354,6 +368,25 @@ export function confirmSpending(
   })
 }
 
+export function claimCctp(amount: number, options: { accept: boolean }) {
+  const formattedAmount = formatAmount(amount, {
+    symbol: 'USDC'
+  })
+  cy.openTransactionsPanel('pending')
+  cy.findTransactionInTransactionHistory({
+    amount,
+    symbol: 'USDC'
+  })
+  cy.findClaimButton(formattedAmount, { timeout: 120_000 }).click()
+  if (options.accept) {
+    cy.confirmMetamaskTransaction(undefined)
+    cy.findByLabelText('show settled transactions').should('be.visible').click()
+    cy.findByText(formattedAmount).should('be.visible')
+  } else {
+    cy.rejectMetamaskTransaction()
+  }
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -371,6 +404,7 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
+  startTransfer,
   findSelectTokenButton,
   closeTransactionHistoryPanel,
   openTransactionDetails,
@@ -378,5 +412,6 @@ Cypress.Commands.addAll({
   findTransactionInTransactionHistory,
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
-  confirmSpending
+  confirmSpending,
+  claimCctp
 })

@@ -5,8 +5,7 @@ import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 
 import { useAppState } from '../../state'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
-import { useDestinationAddressStore } from './AdvancedSettings'
+import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -26,6 +25,7 @@ import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -185,10 +185,9 @@ export function NetworkContainer({
 
 export function TransferPanelMain() {
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isTeleportMode } =
+  const { childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const {
@@ -197,8 +196,7 @@ export function TransferPanelMain() {
 
   const { address: walletAddress } = useAccount()
 
-  const { destinationAddress, setDestinationAddress } =
-    useDestinationAddressStore()
+  const [{ destinationAddress }] = useArbQueryParams()
 
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
@@ -247,27 +245,15 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
-  const showUSDCSpecificInfo =
-    !isTeleportMode &&
-    ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-      (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia))
-
-  useEffect(() => {
-    // Different destination address only allowed for tokens
-    if (!selectedToken) {
-      setDestinationAddress(undefined)
-    }
-  }, [selectedToken, setDestinationAddress])
-
   useUpdateUSDCTokenData()
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <SourceNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <SourceNetworkBox />
 
       <SwitchNetworksButton />
 
-      <DestinationNetworkBox showUsdcSpecificInfo={showUSDCSpecificInfo} />
+      <DestinationNetworkBox />
 
       <TransferDisabledDialog />
     </div>
