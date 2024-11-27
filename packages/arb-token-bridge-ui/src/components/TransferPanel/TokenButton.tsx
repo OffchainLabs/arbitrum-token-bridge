@@ -16,7 +16,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { SafeImage } from '../common/SafeImage'
-import { TokenLogoFallback } from './TokenInfo'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 export type TokenButtonOptions = {
