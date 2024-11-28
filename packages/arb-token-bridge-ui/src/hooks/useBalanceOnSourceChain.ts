@@ -10,22 +10,28 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../util/TokenUtils'
+import { NativeCurrencyEther, isNativeCurrencyEther } from './useNativeCurrency'
 
 /**
  * Balance of the child chain's native currency or ERC20 token
  */
 export function useBalanceOnSourceChain(
-  token: ERC20BridgeToken | null
+  token: ERC20BridgeToken | NativeCurrencyEther | null
 ): BigNumber | null {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
 
   const {
+    eth: [ethBalanceSourceChain],
     erc20: [erc20SourceChainBalances]
   } = useBalance({ chainId: networks.sourceChain.id, walletAddress })
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
+
+  if (isNativeCurrencyEther(token)) {
+    return ethBalanceSourceChain
+  }
 
   // user selected source chain native currency or
   // user bridging the destination chain's native currency
