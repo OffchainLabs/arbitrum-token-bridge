@@ -19,6 +19,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
+import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -172,6 +173,11 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
+  const [
+    customDestinationAddressConfirmationDialogProps,
+    openCustomDestinationAddressConfirmationDialog
+  ] = useDialog()
+
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
   const {
@@ -216,6 +222,13 @@ export function TransferPanel() {
 
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
+
+  const areSenderAndDestinationAddressesEqual = useMemo(() => {
+    return (
+      destinationAddress?.trim()?.toLowerCase() ===
+      walletAddress?.trim().toLowerCase()
+    )
+  }, [destinationAddress, walletAddress])
 
   async function depositToken() {
     if (!selectedToken) {
@@ -333,6 +346,12 @@ export function TransferPanel() {
       setTransferring(false)
       setShowSmartContractWalletTooltip(true)
     }, 3000)
+
+  const confirmCustomDestinationAddressForSCWallets = async () => {
+    const waitForInput = openCustomDestinationAddressConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
 
   const transferCctp = async () => {
     if (!selectedToken) {
@@ -559,12 +578,11 @@ export function TransferPanel() {
         destinationChainErc20Address
       })
 
-      const { isNativeCurrencyTransfer, isWithdrawal } =
-        getBridgeTransferProperties({
-          sourceChainId,
-          sourceChainErc20Address,
-          destinationChainId
-        })
+      const { isWithdrawal } = getBridgeTransferProperties({
+        sourceChainId,
+        sourceChainErc20Address,
+        destinationChainId
+      })
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
@@ -698,6 +716,10 @@ export function TransferPanel() {
 
       // show a delay in case of SCW because tx is executed in an external app
       if (isSmartContractWallet) {
+        if (isDepositMode && areSenderAndDestinationAddressesEqual) {
+          await confirmCustomDestinationAddressForSCWallets()
+        }
+
         showDelayInSmartContractTransaction()
 
         trackEvent(
@@ -968,6 +990,10 @@ export function TransferPanel() {
       <USDCDepositConfirmationDialog
         {...usdcDepositConfirmationDialogProps}
         amount={amount}
+      />
+
+      <CustomDestinationAddressConfirmationDialog
+        {...customDestinationAddressConfirmationDialogProps}
       />
 
       <div
