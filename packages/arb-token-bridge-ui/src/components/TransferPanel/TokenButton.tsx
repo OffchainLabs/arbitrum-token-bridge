@@ -19,6 +19,8 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { Loader } from '../common/atoms/Loader'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useTokenLists } from '../../hooks/useTokenLists'
+import { useIsSelectedTokenEther } from '../../hooks/useIsSelectedTokenEther'
+import { ether } from '../../constants'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -39,6 +41,7 @@ export function TokenButton({
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const isSelectedTokenEther = useIsSelectedTokenEther()
 
   const tokenSymbol = useMemo(() => {
     if (typeof options?.symbol !== 'undefined') {
@@ -46,14 +49,20 @@ export function TokenButton({
     }
 
     if (!selectedToken) {
-      return nativeCurrency.symbol
+      return isSelectedTokenEther ? ether.symbol : nativeCurrency.symbol
     }
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
       chainId: networks.sourceChain.id
     })
-  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
+  }, [
+    selectedToken,
+    networks.sourceChain.id,
+    nativeCurrency.symbol,
+    isSelectedTokenEther,
+    options
+  ])
 
   const isLoadingToken = useMemo(() => {
     // don't show loader if native currency is selected

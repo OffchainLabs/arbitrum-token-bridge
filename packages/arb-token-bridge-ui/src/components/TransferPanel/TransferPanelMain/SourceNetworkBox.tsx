@@ -1,5 +1,5 @@
 import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
-import { utils } from 'ethers'
+import { utils, formatEther } from 'ethers'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'
 
@@ -34,6 +34,8 @@ import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelect
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useIsSelectedTokenEther } from '../../../hooks/useIsSelectedTokenEther'
+import { useBalances } from '../../../hooks/useBalances'
 
 function Amount2ToggleButton({
   onClick
@@ -90,9 +92,11 @@ export function SourceNetworkBox() {
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
+  const { ethParentBalance } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
+  const isSelectedTokenEther = useIsSelectedTokenEther()
 
   const isCctpTransfer = useIsCctpTransfer()
 
@@ -178,6 +182,12 @@ export function SourceNetworkBox() {
             maxAmount={maxAmount}
             isMaxAmount={isMaxAmount}
             decimals={decimals}
+            options={{
+              balance:
+                isSelectedTokenEther && isDepositMode && ethParentBalance
+                  ? Number(formatEther(ethParentBalance))
+                  : undefined
+            }}
           />
 
           {isBatchTransferSupported && !isAmount2InputVisible && (

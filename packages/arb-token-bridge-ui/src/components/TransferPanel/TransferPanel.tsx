@@ -77,6 +77,7 @@ import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -250,6 +251,13 @@ export function TransferPanel() {
   ])
 
   const importDialogTokenAddress = useMemo(() => {
+    if (
+      isExperimentalFeatureEnabled('eth-custom-orbit') &&
+      tokenFromSearchParams === 'eth'
+    ) {
+      return undefined
+    }
+
     if (
       typeof isTokenAlreadyImported === 'undefined' ||
       isTokenAlreadyImported
@@ -608,12 +616,11 @@ export function TransferPanel() {
         destinationChainErc20Address
       })
 
-      const { isNativeCurrencyTransfer, isWithdrawal } =
-        getBridgeTransferProperties({
-          sourceChainId,
-          sourceChainErc20Address,
-          destinationChainId
-        })
+      const { isWithdrawal } = getBridgeTransferProperties({
+        sourceChainId,
+        sourceChainErc20Address,
+        destinationChainId
+      })
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
