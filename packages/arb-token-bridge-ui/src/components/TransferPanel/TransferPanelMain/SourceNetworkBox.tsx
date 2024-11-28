@@ -1,5 +1,5 @@
 import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
-import { utils, formatEther } from 'ethers'
+import { utils } from 'ethers'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'
 
@@ -185,7 +185,7 @@ export function SourceNetworkBox() {
             options={{
               balance:
                 isSelectedTokenEther && isDepositMode && ethParentBalance
-                  ? Number(formatEther(ethParentBalance))
+                  ? Number(utils.formatEther(ethParentBalance))
                   : undefined
             }}
           />
