@@ -38,7 +38,7 @@ export const TransactionHistory = () => {
 
       <TransactionHistoryTxHashSearchResult />
 
-      <TransactionHistoryAddressSearchResults />
+      {/* <TransactionHistoryAddressSearchResults /> */}
     </div>
   )
 }

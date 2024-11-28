@@ -5,8 +5,11 @@ import {
   ChildToParentMessageReader,
   ChildToParentMessageStatus,
   ChildTransactionReceipt,
+  EthDepositMessage,
   getArbitrumNetwork,
-  getArbitrumNetworks
+  getArbitrumNetworks,
+  ParentToChildMessageReader,
+  ParentToChildMessageReaderClassic
 } from '@arbitrum/sdk'
 
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
@@ -29,6 +32,26 @@ export enum ReceiptState {
   NO_L1_L2_MESSAGES,
   MESSAGES_FOUND,
   NO_L2_L1_MESSAGES
+}
+
+export interface ParentToChildMessageReaderWithNetwork
+  extends ParentToChildMessageReader {
+  childNetwork: ArbitrumNetwork
+}
+
+export interface ParentToChildMessageReaderClassicWithNetwork
+  extends ParentToChildMessageReaderClassic {
+  childNetwork: ArbitrumNetwork
+}
+
+export interface EthDepositMessageWithNetwork extends EthDepositMessage {
+  childNetwork: ArbitrumNetwork
+}
+
+export interface ParentToChildMessagesAndDepositMessages {
+  retryables: ParentToChildMessageReaderWithNetwork[]
+  retryablesClassic: ParentToChildMessageReaderClassicWithNetwork[]
+  deposits: EthDepositMessageWithNetwork[]
 }
 
 export interface ChildToParentMessageData {

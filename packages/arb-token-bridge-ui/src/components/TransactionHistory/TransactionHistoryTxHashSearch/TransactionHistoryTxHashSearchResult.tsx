@@ -1,18 +1,33 @@
 import { Column, Table } from 'react-virtualized'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { ParentTransactionReceipt } from '@arbitrum/sdk'
+import useSWR from 'swr'
 
 import { ContentWrapper, TableHeader } from '../TransactionHistoryTable'
 import { TransactionsTableRow } from '../TransactionsTableRow'
 import { getParentTxReceipt } from '../helpers'
-import { getChildToParentMessages, ReceiptState } from './helpers'
+import {
+  ChildToParentMessageData,
+  ChildTxStatus,
+  getChildToParentMessages,
+  ParentToChildMessagesAndDepositMessages,
+  ReceiptState
+} from './helpers'
+import { getParentToChildMessagesAndDepositMessages } from './getParentToChildMessagesAndDepositMessages'
+import { useTransactionHistoryAddressStore } from '../TransactionHistorySearchBar'
 
-async function getData(txHash: string) {
-  const parentTxReceipt = await getParentTxReceipt(txHash)
+async function getData(txHash: string | undefined) {
+  console.log('in getData: ', txHash)
+  if (!txHash) {
+    return
+  }
+
+  const getParentTxReceiptResult = await getParentTxReceipt(txHash)
+  const parentTxReceipt = getParentTxReceiptResult
   const defaultReturn: {
-    allMessages: L1ToL2MessagesAndDepositMessages
-    l2ToL1MessagesToShow: L2ToL1MessageData[]
+    allMessages: ParentToChildMessagesAndDepositMessages
+    l2ToL1MessagesToShow: ChildToParentMessageData[]
     parentTxReceipt: ParentTransactionReceipt | undefined
   } = {
     allMessages: {
@@ -21,30 +36,30 @@ async function getData(txHash: string) {
       deposits: []
     },
     l2ToL1MessagesToShow: [],
-    parentTxReceipt
+    parentTxReceipt: getParentTxReceiptResult?.parentTxReceipt
   }
 
-  if (parentTxReceipt === undefined) {
+  if (getParentTxReceiptResult === undefined) {
     const res = await getChildToParentMessages(txHash)
-    const { ChildTxStatus, l2ToL1Messages } = res
+    const { childTxStatus, childToParentMessages } = res
 
     // TODO: handle terminal states
-    if (l2ToL1Messages.length > 0) {
+    if (childToParentMessages.length > 0) {
       return {
         ...defaultReturn,
         parentTxReceipt,
         txHashState: ReceiptState.MESSAGES_FOUND,
-        l2ToL1MessagesToShow: l2ToL1Messages
+        l2ToL1MessagesToShow: childToParentMessages
       }
     }
-    if (ChildTxStatus === ChildTxStatus.SUCCESS) {
+    if (childTxStatus === ChildTxStatus.SUCCESS) {
       return {
         ...defaultReturn,
         parentTxReceipt,
         txHashState: ReceiptState.NO_L2_L1_MESSAGES
       }
     }
-    if (ChildTxStatus === ChildTxStatus.FAILURE) {
+    if (childTxStatus === ChildTxStatus.FAILURE) {
       return {
         ...defaultReturn,
         parentTxReceipt,
@@ -59,18 +74,22 @@ async function getData(txHash: string) {
     }
   }
 
-  const { l1TxnReceipt: _l1TxnReceipt, l1Network } = receiptRes
-  if (_l1TxnReceipt.status === 0) {
+  const { parentTxReceipt: _parentTxReceipt, parentChainId } =
+    getParentTxReceiptResult
+  if (
+    _parentTxReceipt?.status === 0 ||
+    typeof _parentTxReceipt === 'undefined'
+  ) {
     return {
       ...defaultReturn,
-      l1TxnReceipt,
+      parentTxReceipt,
       txHashState: ReceiptState.L1_FAILED
     }
   }
 
-  const allMessages = await getL1ToL2MessagesAndDepositMessages(
-    _l1TxnReceipt,
-    l1Network
+  const allMessages = await getParentToChildMessagesAndDepositMessages(
+    _parentTxReceipt,
+    parentChainId
   )
   const l1ToL2Messages = allMessages.retryables
   const l1ToL2MessagesClassic = allMessages.retryablesClassic
@@ -82,7 +101,7 @@ async function getData(txHash: string) {
   ) {
     return {
       ...defaultReturn,
-      l1TxnReceipt,
+      parentTxReceipt,
       txHashState: ReceiptState.NO_L1_L2_MESSAGES
     }
   }
@@ -90,8 +109,7 @@ async function getData(txHash: string) {
   return {
     ...defaultReturn,
     allMessages,
-    l1TxnReceipt,
-    receiptRes,
+    parentTxReceipt,
     txHashState: ReceiptState.MESSAGES_FOUND
   }
 }
@@ -99,13 +117,32 @@ async function getData(txHash: string) {
 export function TransactionHistoryTxHashSearchResult() {
   const contentWrapperRef = useRef<HTMLDivElement | null>(null)
   const tableRef = useRef<Table | null>(null)
+  const { sanitizedTxHash } = useTransactionHistoryAddressStore()
+  const queryKey = useMemo(() => {
+    if (!sanitizedTxHash) {
+      return null
+    }
+    return [sanitizedTxHash, 'TransactionHistoryTxHashSearchResult'] as const
+  }, [sanitizedTxHash])
+  const {
+    data: getTxDataResult,
+    isLoading,
+    error
+  } = useSWR(queryKey, ([_txHash]) => getData(_txHash), {
+    refreshInterval: 30_000,
+    shouldRetryOnError: true
+  })
+
+  console.log('getTxDataResult: ', getTxDataResult)
 
   const TABLE_HEADER_HEIGHT = 52
   const TABLE_ROW_HEIGHT = 60
 
   const tableHeight = useMemo(() => {
+    const transactionLength = 1
+
     if (window.innerWidth < 768) {
-      return TABLE_ROW_HEIGHT * (transactions.length + 1) + TABLE_HEADER_HEIGHT
+      return TABLE_ROW_HEIGHT * (transactionLength + 1) + TABLE_HEADER_HEIGHT
     }
     const SIDE_PANEL_HEADER_HEIGHT = 125
     const viewportHeight = window.innerHeight
@@ -115,7 +152,23 @@ export function TransactionHistoryTxHashSearchResult() {
       viewportHeight - contentWrapperOffsetTop - SIDE_PANEL_HEADER_HEIGHT,
       0
     )
-  }, [contentWrapperRef.current?.offsetTop, transactions.length])
+  }, [contentWrapperRef.current?.offsetTop])
+
+  if (!getTxDataResult) {
+    return null
+  }
+  const {
+    txHashState,
+    parentTxReceipt,
+    l2ToL1MessagesToShow: _l2ToL1MessagesToShow,
+    allMessages
+  } = getTxDataResult
+
+  if (typeof parentTxReceipt === 'undefined') {
+    return null
+  }
+
+  const transactions = [{ ...parentTxReceipt, allMessages }]
 
   return (
     <ContentWrapper
@@ -140,18 +193,24 @@ export function TransactionHistoryTxHashSearchResult() {
           const tx = transactions[index]
 
           if (!tx) {
-            return null
+            return
+          }
+
+          if (typeof tx.parentTxReceipt === 'undefined') {
+            return
           }
 
           const isLastRow = index + 1 === transactions.length
-          const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+          const key = `${tx.parentChainId}-xxx-${tx.parentTxReceipt.transactionHash}`
+
+          console.log('tx: ', tx)
 
           return (
             <div key={key} style={style}>
-              <TransactionsTableRow
+              {/* <TransactionsTableRow
                 tx={tx}
                 className={twMerge(isLastRow && 'border-b-0')}
-              />
+              /> */}
             </div>
           )
         }}
