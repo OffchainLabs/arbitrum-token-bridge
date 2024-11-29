@@ -48,6 +48,7 @@ const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
 
 export function TransactionHistoryAddressSearchResults() {
+  const { sanitizedTxHash } = useTransactionHistoryAddressStore()
   const props = useTransactionHistoryUpdater()
   const { transactions } = props
   const { searchError } = useTransactionHistoryAddressStore()
@@ -91,6 +92,11 @@ export function TransactionHistoryAddressSearchResults() {
   ]
 
   const settledTransactions = groupedTransactions.settled
+
+  if (typeof sanitizedTxHash !== 'undefined') {
+    // show search by tx id results instead
+    return null
+  }
 
   if (searchError) {
     return (
