@@ -19,7 +19,7 @@ type TransactionHistoryAddressStore = {
   searchError: TransactionHistorySearchError | undefined
   setAddressOrTxHash: (addressOrTxHash: string) => void
   setSanitizedAddress: (address: string) => void
-  setSanitizedTxHash: (txHash: string) => void
+  setSanitizedTxHash: (txHash: string | undefined) => void
   setSearchError: (error: TransactionHistorySearchError | undefined) => void
 }
 
