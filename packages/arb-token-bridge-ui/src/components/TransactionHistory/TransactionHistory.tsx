@@ -2,7 +2,6 @@ import { create } from 'zustand'
 
 import { MergedTransaction } from '../../state/app/state'
 import { TransactionHistorySearchBar } from './TransactionHistorySearchBar'
-import { TransactionHistoryAddressSearchResults } from './TransactionHistoryAddressSearchResults'
 import { TransactionHistoryTxHashSearchResult } from './TransactionHistoryTxHashSearch/TransactionHistoryTxHashSearchResult'
 
 type TxDetailsStore = {
