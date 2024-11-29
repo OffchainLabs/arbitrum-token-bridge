@@ -52,6 +52,7 @@ export interface ParentToChildMessagesAndDepositMessages {
   retryables: ParentToChildMessageReaderWithNetwork[]
   retryablesClassic: ParentToChildMessageReaderClassicWithNetwork[]
   deposits: EthDepositMessageWithNetwork[]
+  childChainId: number | null
 }
 
 export interface ChildToParentMessageData {

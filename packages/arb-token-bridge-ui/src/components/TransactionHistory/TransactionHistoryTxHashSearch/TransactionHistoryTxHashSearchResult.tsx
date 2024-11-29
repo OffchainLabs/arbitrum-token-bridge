@@ -1,11 +1,9 @@
 import { Column, Table } from 'react-virtualized'
 import { useEffect, useMemo, useRef } from 'react'
-import { twMerge } from 'tailwind-merge'
 import { ParentTransactionReceipt } from '@arbitrum/sdk'
 import useSWR from 'swr'
 
 import { ContentWrapper, TableHeader } from '../TransactionHistoryTable'
-import { TransactionsTableRow } from '../TransactionsTableRow'
 import { getParentTxReceipt } from '../helpers'
 import {
   ChildToParentMessageData,
@@ -16,30 +14,37 @@ import {
 } from './helpers'
 import { getParentToChildMessagesAndDepositMessages } from './getParentToChildMessagesAndDepositMessages'
 import { useTransactionHistoryAddressStore } from '../TransactionHistorySearchBar'
+import { TransactionsTableRow } from '../TransactionsTableRow'
+import { twMerge } from 'tailwind-merge'
+import { MergedTransaction } from '../../../state/app/state'
+import { AssetType } from '../../../hooks/arbTokenBridge.types'
+import { formatAmount } from '../../../util/NumberUtils'
 
 async function getData(txHash: string | undefined) {
-  console.log('in getData: ', txHash)
   if (!txHash) {
     return
   }
 
   const getParentTxReceiptResult = await getParentTxReceipt(txHash)
-  const parentTxReceipt = getParentTxReceiptResult
+  const parentTxReceiptAndChainId = getParentTxReceiptResult
   const defaultReturn: {
     allMessages: ParentToChildMessagesAndDepositMessages
     l2ToL1MessagesToShow: ChildToParentMessageData[]
     parentTxReceipt: ParentTransactionReceipt | undefined
+    parentChainId: number | undefined
   } = {
     allMessages: {
       retryables: [],
       retryablesClassic: [],
-      deposits: []
+      deposits: [],
+      childChainId: null
     },
     l2ToL1MessagesToShow: [],
-    parentTxReceipt: getParentTxReceiptResult?.parentTxReceipt
+    parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
+    parentChainId: parentTxReceiptAndChainId?.parentChainId
   }
 
-  if (getParentTxReceiptResult === undefined) {
+  if (typeof getParentTxReceiptResult === 'undefined') {
     const res = await getChildToParentMessages(txHash)
     const { childTxStatus, childToParentMessages } = res
 
@@ -47,7 +52,8 @@ async function getData(txHash: string | undefined) {
     if (childToParentMessages.length > 0) {
       return {
         ...defaultReturn,
-        parentTxReceipt,
+        parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
+        parentChainId: parentTxReceiptAndChainId?.parentChainId,
         txHashState: ReceiptState.MESSAGES_FOUND,
         l2ToL1MessagesToShow: childToParentMessages
       }
@@ -55,21 +61,24 @@ async function getData(txHash: string | undefined) {
     if (childTxStatus === ChildTxStatus.SUCCESS) {
       return {
         ...defaultReturn,
-        parentTxReceipt,
+        parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
+        parentChainId: parentTxReceiptAndChainId?.parentChainId,
         txHashState: ReceiptState.NO_L2_L1_MESSAGES
       }
     }
     if (childTxStatus === ChildTxStatus.FAILURE) {
       return {
         ...defaultReturn,
-        parentTxReceipt,
+        parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
+        parentChainId: parentTxReceiptAndChainId?.parentChainId,
         txHashState: ReceiptState.L2_FAILED
       }
     }
 
     return {
       ...defaultReturn,
-      parentTxReceipt,
+      parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
+      parentChainId: parentTxReceiptAndChainId?.parentChainId,
       txHashState: ReceiptState.NOT_FOUND
     }
   }
@@ -82,15 +91,18 @@ async function getData(txHash: string | undefined) {
   ) {
     return {
       ...defaultReturn,
-      parentTxReceipt,
+      parentTxReceipt: _parentTxReceipt,
       txHashState: ReceiptState.L1_FAILED
     }
   }
+  console.log('getParentTxReceiptResult? ', getParentTxReceiptResult)
+  console.log('_parentTxReceipt? ', _parentTxReceipt)
 
   const allMessages = await getParentToChildMessagesAndDepositMessages(
     _parentTxReceipt,
     parentChainId
   )
+  console.log('allMessages? ', allMessages)
   const l1ToL2Messages = allMessages.retryables
   const l1ToL2MessagesClassic = allMessages.retryablesClassic
   const depositMessages = allMessages.deposits
@@ -101,7 +113,8 @@ async function getData(txHash: string | undefined) {
   ) {
     return {
       ...defaultReturn,
-      parentTxReceipt,
+      parentTxReceipt: _parentTxReceipt,
+      parentChainId,
       txHashState: ReceiptState.NO_L1_L2_MESSAGES
     }
   }
@@ -109,7 +122,8 @@ async function getData(txHash: string | undefined) {
   return {
     ...defaultReturn,
     allMessages,
-    parentTxReceipt,
+    parentTxReceipt: _parentTxReceipt,
+    parentChainId,
     txHashState: ReceiptState.MESSAGES_FOUND
   }
 }
@@ -128,12 +142,7 @@ export function TransactionHistoryTxHashSearchResult() {
     data: getTxDataResult,
     isLoading,
     error
-  } = useSWR(queryKey, ([_txHash]) => getData(_txHash), {
-    refreshInterval: 30_000,
-    shouldRetryOnError: true
-  })
-
-  console.log('getTxDataResult: ', getTxDataResult)
+  } = useSWR(queryKey, ([txHash]) => getData(txHash))
 
   const TABLE_HEADER_HEIGHT = 52
   const TABLE_ROW_HEIGHT = 60
@@ -160,6 +169,7 @@ export function TransactionHistoryTxHashSearchResult() {
   const {
     txHashState,
     parentTxReceipt,
+    parentChainId,
     l2ToL1MessagesToShow: _l2ToL1MessagesToShow,
     allMessages
   } = getTxDataResult
@@ -168,7 +178,35 @@ export function TransactionHistoryTxHashSearchResult() {
     return null
   }
 
-  const transactions = [{ ...parentTxReceipt, allMessages }]
+  if (!parentChainId) {
+    return null
+  }
+
+  const tx: MergedTransaction = {
+    sender: parentTxReceipt.from,
+    direction: 'deposit',
+    status: txHashState.toString(), // need mapping
+    blockNum: parentTxReceipt.blockNumber,
+    parentChainId,
+    sourceChainId: parentChainId,
+    isWithdrawal: false,
+    destination: parentTxReceipt.to,
+    value: formatAmount(allMessages.deposits[0]?.value) ?? null,
+    txId: parentTxReceipt.transactionHash,
+    createdAt: null,
+    resolvedAt: null,
+    asset: allMessages.deposits[0] ? 'ETH' : 'Some ERC20',
+    assetType: allMessages.deposits[0] ? AssetType.ETH : AssetType.ERC20,
+    uniqueId: null,
+    tokenAddress:
+      typeof allMessages.deposits[0] === 'undefined' ? '0xtoken' : null,
+    childChainId: allMessages.childChainId ?? 0,
+    destinationChainId: allMessages.childChainId ?? 0
+
+    // parentTxReceipt, allMessages
+  }
+
+  const transactions = [tx]
 
   return (
     <ContentWrapper
@@ -196,21 +234,17 @@ export function TransactionHistoryTxHashSearchResult() {
             return
           }
 
-          if (typeof tx.parentTxReceipt === 'undefined') {
-            return
-          }
-
           const isLastRow = index + 1 === transactions.length
-          const key = `${tx.parentChainId}-xxx-${tx.parentTxReceipt.transactionHash}`
+          const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 
           console.log('tx: ', tx)
 
           return (
             <div key={key} style={style}>
-              {/* <TransactionsTableRow
+              <TransactionsTableRow
                 tx={tx}
                 className={twMerge(isLastRow && 'border-b-0')}
-              /> */}
+              />
             </div>
           )
         }}

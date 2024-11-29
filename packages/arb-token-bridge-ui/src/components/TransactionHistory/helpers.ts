@@ -625,7 +625,6 @@ export type GetParentTxReceiptResult = {
 export async function getParentTxReceipt(
   txHash: string
 ): Promise<GetParentTxReceiptResult | undefined> {
-  console.log('supportedParentChains? ', supportedParentChains)
   const promises = supportedParentChains.map(async chainId => {
     try {
       const l1Provider = getProviderForChainId(Number(chainId))
