@@ -1,10 +1,11 @@
 import dayjs from 'dayjs'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Tab } from '@headlessui/react'
 import { create } from 'zustand'
+import { useAccount } from 'wagmi'
 
-import { UseTransactionHistoryResult } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
+import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import {
   isTxClaimable,
   isTxCompleted,
@@ -15,7 +16,31 @@ import {
 import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { Address } from '../../util/AddressUtils'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+
+function useTransactionHistoryUpdater() {
+  const { address } = useAccount()
+
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
+
+  const { transactions, updatePendingTransaction } = transactionHistoryProps
+
+  const pendingTransactions = useMemo(() => {
+    return transactions.filter(isTxPending)
+  }, [transactions])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      pendingTransactions.forEach(updatePendingTransaction)
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [pendingTransactions, updatePendingTransaction])
+
+  return transactionHistoryProps
+}
 
 const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
@@ -46,12 +71,10 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
   reset: () => set({ tx: null })
 }))
 
-export const TransactionHistory = ({
-  props
-}: {
-  props: UseTransactionHistoryResult & { address: Address | undefined }
-}) => {
-  const { transactions, address } = props
+export const TransactionHistory = () => {
+  const { address } = useAccount()
+  const props = useTransactionHistoryUpdater()
+  const { transactions } = props
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -94,25 +117,33 @@ export const TransactionHistory = ({
   const settledTransactions = groupedTransactions.settled
 
   return (
-    <>
-      <Tab.Group key={address} as="div" className="h-full overflow-hidden">
+    <div className="m-auto w-full max-w-[100vw] border-y border-white/30 bg-[#191919] py-4 pl-4 md:max-w-[1000px] md:rounded md:border-x md:pr-4">
+      <div className="pr-4 md:pr-0">
+        <TransactionStatusInfo />
+      </div>
+
+      <Tab.Group
+        key={address}
+        as="div"
+        className="h-full overflow-hidden rounded pr-4 md:pr-0"
+      >
         <Tab.List className="mb-4 flex border-b border-white/30">
           <TabButton
             aria-label="show pending transactions"
             className={tabClasses}
           >
-            <span className="text-xs md:text-base">Pending transactions</span>
+            <span className="text-sm md:text-base">Pending transactions</span>
           </TabButton>
           <TabButton
             aria-label="show settled transactions"
             className={tabClasses}
           >
-            <span className="text-xs md:text-base">Settled transactions</span>
+            <span className="text-sm md:text-base">Settled transactions</span>
           </TabButton>
         </Tab.List>
 
-        <Tab.Panels className="h-full overflow-hidden">
-          <Tab.Panel className="h-full">
+        <Tab.Panels className="h-full w-full overflow-hidden">
+          <Tab.Panel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
               address={address}
@@ -121,7 +152,7 @@ export const TransactionHistory = ({
               oldestTxTimeAgoString={oldestTxTimeAgoString}
             />
           </Tab.Panel>
-          <Tab.Panel className="h-full">
+          <Tab.Panel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
               address={address}
@@ -133,6 +164,6 @@ export const TransactionHistory = ({
         </Tab.Panels>
       </Tab.Group>
       <TransactionsTableDetails address={address} />
-    </>
+    </div>
   )
 }

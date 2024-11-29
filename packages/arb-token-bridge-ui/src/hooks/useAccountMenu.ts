@@ -11,9 +11,7 @@ import {
   useEnsAvatar
 } from 'wagmi'
 import { useArbQueryParams } from './useArbQueryParams'
-import { trackEvent } from '../util/AnalyticsUtils'
 import { shortenAddress } from '../util/CommonUtils'
-import { useAppContextActions } from '../components/App/AppContext'
 import { onDisconnectHandler } from '../util/walletConnectUtils'
 
 type UDInfo = { name: string | null }
@@ -53,7 +51,6 @@ export const useAccountMenu = () => {
   })
   const { chain } = useNetwork()
 
-  const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()
 
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
@@ -101,17 +98,11 @@ export const useAccountMenu = () => {
     resolveUdName()
   }, [address, l1Provider])
 
-  function openTransactionHistory() {
-    openTransactionHistoryPanel()
-    trackEvent('Open Transaction History Click', { pageElement: 'Header' })
-  }
-
   return {
     address,
     accountShort,
     ensName,
     ensAvatar,
-    openTransactionHistory,
     disconnect,
     udInfo,
     chain,
