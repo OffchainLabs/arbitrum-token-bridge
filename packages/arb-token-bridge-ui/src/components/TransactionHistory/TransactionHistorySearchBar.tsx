@@ -34,10 +34,16 @@ export const useTransactionHistoryAddressStore =
       }
     },
     sanitizedTxHash: undefined,
-    setSanitizedTxHash: (txHash: string) => {
+    setSanitizedTxHash: (txHash: string | undefined) => {
       if (isValidTxHash(txHash)) {
         set({
           sanitizedTxHash: txHash
+        })
+      }
+
+      if (typeof txHash === 'undefined') {
+        set({
+          sanitizedTxHash: undefined
         })
       }
     },
@@ -59,6 +65,7 @@ export function TransactionHistorySearchBar() {
   useEffect(() => {
     if (addressOrTxHash === '' && connectedAddress) {
       setSanitizedAddress(connectedAddress)
+      setSanitizedTxHash(undefined)
       setSearchError(undefined)
     }
   }, [addressOrTxHash, connectedAddress, setSanitizedAddress, setSearchError])
