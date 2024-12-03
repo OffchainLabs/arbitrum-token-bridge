@@ -1285,6 +1285,53 @@
           "logoUrl": "/images/UsdcLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 888991,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0xA1AF96d8315DCa65F2ff6f8170Fa3e5dB0A6aD3C",
+        "inbox": "0xCA323c4C0A04109F303e3bfd879AEd5F49c9f0C4",
+        "outbox": "0x54a8712d8d5f8D3cD29737d06734eE493758B7cb",
+        "rollup": "0xB2Ff332B564DA65EDd2FDcbf298458837c732997",
+        "sequencerInbox": "0x0b172ba2776C08F6c3147ed2471A32EC4592812B"
+      },
+      "nativeToken": "0xf7a942db06a0cd6945ba4635c46e31c54ed175a4",
+      "explorerUrl": "https://unite-testnet.explorer.alchemy.com/",
+      "rpcUrl": "https://unite-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "unite-testnet",
+      "slug": "unite-testnet",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0xb7B03E20ca71c6036F8F841cCc213e7CaC3e9868",
+        "parentErc20Gateway": "0x98614745322365Ae378Db2A6319F873A4775398C",
+        "parentGatewayRouter": "0xA8f3C0d5eC3E9ACd3422cBf5f25c6C4e608c2499",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x01a902C5b160F0c786aDfc702799D25218d8A9B4",
+        "childErc20Gateway": "0xaABa25Ba10B9aFEf17D403B4038886e7FD743E83",
+        "childGatewayRouter": "0xdbAEDA962D2D201F65c06C81Dd5A0FC948FB3A20",
+        "childMultiCall": "0x7df4290268655542E0B39465820a39C4b091D77e",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#b1fb00",
+        "network": {
+          "name": "unite-testnet",
+          "logo": "/images/unite-testnet_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Unite",
+          "symbol": "UNITE",
+          "logoUrl": "/images/unite-testnet_Logo.png"
+        }
+      }
     }
   ]
 }
