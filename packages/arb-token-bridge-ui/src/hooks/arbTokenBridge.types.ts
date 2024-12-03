@@ -165,13 +165,8 @@ export interface TransactionActions {
   ) => void
 }
 
-export type ArbTokenBridgeTransactions = {
-  transactions: Transaction[]
-} & Pick<TransactionActions, 'addTransaction' | 'updateTransaction'>
-
 export interface ArbTokenBridge {
   bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
-  transactions: ArbTokenBridgeTransactions
 }
