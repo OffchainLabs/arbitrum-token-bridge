@@ -901,7 +901,7 @@
       "bridgeUiConfig": {
         "color": "#b1fb00",
         "network": {
-          "name": "unite-mainnet",
+          "name": "Unite Mainnet",
           "logo": "/images/unite-mainnet_Logo.png"
         },
         "nativeTokenData": {
@@ -1416,7 +1416,7 @@
       "bridgeUiConfig": {
         "color": "#b1fb00",
         "network": {
-          "name": "unite-testnet",
+          "name": "Unite Testnet",
           "logo": "/images/unite-testnet_Logo.png"
         },
         "nativeTokenData": {
