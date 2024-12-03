@@ -910,6 +910,52 @@
           "logoUrl": "/images/unite-mainnet_Logo.png"
         }
       }
+    },
+    {
+      "chainId": 149,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xa2ed3b6B4069295F5C89F60B61a196dE09741fb6",
+        "inbox": "0xBC0862181F93f2fef61Cd5Edd4C7D8C5cCDb76AE",
+        "outbox": "0x51229C00f364F40dF07C4e71de02e6D16Ffb1aEa",
+        "rollup": "0x1210118afD15EF90CA4f83cF65dc659876299e7A",
+        "sequencerInbox": "0xf80Ce375724AF270D23526B93c37E9B17A64bD8a"
+      },
+      "nativeToken": "0x7777778E9199FBC424b7494D55D26579c011E8c6",
+      "explorerUrl": "https://socialnetwork-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://socialnetwork-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "social-mainnet",
+      "slug": "social-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0xE32125cE1A8fFf30B5c0bB164B7E81816CA626F6",
+        "parentErc20Gateway": "0xB2e209Af16f087D2c985fFcee64EcabEF10A149F",
+        "parentGatewayRouter": "0x7eAc61b1477906a94e35F5efFAC24305C1654A19",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xE00D3DBD78aE6D674bE410Eb4828611897579746",
+        "childErc20Gateway": "0x33888CC3084689e2929277488D6D4f20a90B83BB",
+        "childGatewayRouter": "0x5cCcde8552d6eb4f27313766fe4D590b4677fbF8",
+        "childMultiCall": "0x7Cab274d056ec9CdB4231B30a36D36FD789DF9C3",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#12266B",
+        "network": {
+          "name": "social-mainnet",
+          "logo": "/images/social-mainnet_Logo.webp"
+        },
+        "nativeTokenData": {
+          "name": "Earth",
+          "symbol": "Earth"
+        }
+      }
     }
   ],
   "testnet": [
