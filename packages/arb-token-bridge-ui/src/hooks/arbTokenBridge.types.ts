@@ -1,6 +1,5 @@
 import { Signer } from '@ethersproject/abstract-signer'
-import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { BigNumber, ContractReceipt, ethers } from 'ethers'
+import { BigNumber, ContractReceipt } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import {
   EventArgs,
@@ -15,12 +14,6 @@ import {
 } from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-
-import {
-  NewTransaction,
-  Transaction,
-  ParentToChildMessageData
-} from './useTransactions'
 
 export { OutgoingMessageState }
 
@@ -154,15 +147,6 @@ export interface ArbTokenBridgeToken {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
-}
-
-export interface TransactionActions {
-  addTransaction: (transaction: NewTransaction) => void
-  updateTransaction: (
-    txReceipt: TransactionReceipt,
-    tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: ParentToChildMessageData
-  ) => void
 }
 
 export interface ArbTokenBridge {
