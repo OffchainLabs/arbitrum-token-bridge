@@ -217,6 +217,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0x83e817E1574e2201a005EC0f7e700ED5606F555E',
       l2Address: '0x87ABaD012da6DcD0438e36967FcaD54C9d64F86C'
+    },
+    {
+      symbol: 'cbBTC',
+      l2CustomAddr: '',
+      l1Address: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
+      l2Address: '0x4A605F93288e95db40cE72934b888641D9689a48'
     }
   ],
   [ChainId.ArbitrumNova]: []
