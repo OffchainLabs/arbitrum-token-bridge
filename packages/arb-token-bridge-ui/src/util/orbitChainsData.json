@@ -879,7 +879,7 @@
       "rpcUrl": "https://unite-mainnet.g.alchemy.com/public",
       "isCustom": true,
       "isTestnet": false,
-      "name": "unite-mainnet",
+      "name": "Unite Mainnet",
       "slug": "unite-mainnet",
       "parentChainId": 8453,
       "tokenBridge": {
@@ -901,7 +901,7 @@
       "bridgeUiConfig": {
         "color": "#b1fb00",
         "network": {
-          "name": "unite-mainnet",
+          "name": "Unite Mainnet",
           "logo": "/images/unite-mainnet_Logo.png"
         },
         "nativeTokenData": {
@@ -1394,7 +1394,7 @@
       "rpcUrl": "https://unite-testnet.g.alchemy.com/public",
       "isCustom": true,
       "isTestnet": true,
-      "name": "unite-testnet",
+      "name": "Unite Testnet",
       "slug": "unite-testnet",
       "parentChainId": 84532,
       "tokenBridge": {
@@ -1416,7 +1416,7 @@
       "bridgeUiConfig": {
         "color": "#b1fb00",
         "network": {
-          "name": "unite-testnet",
+          "name": "Unite Testnet",
           "logo": "/images/unite-testnet_Logo.png"
         },
         "nativeTokenData": {
