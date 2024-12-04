@@ -9,7 +9,6 @@ import {
 import { TokenBalance } from './TokenBalance'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { NetworkType } from './utils'
-import { useAppState } from '../../../state'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
@@ -17,6 +16,7 @@ import { isNetwork } from '../../../util/networks'
 import { EstimatedGas } from '../EstimatedGas'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useDialog } from '../../common/Dialog'
 import {
   NetworkButton,
@@ -75,13 +75,11 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
 }
 
 function DestinationNetworkBalance() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
+  const [selectedToken] = useSelectedToken()
 
   const { erc20ChildBalances } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()

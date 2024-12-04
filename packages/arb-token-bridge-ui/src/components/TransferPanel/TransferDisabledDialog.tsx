@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { useEffect, useState } from 'react'
 
-import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -10,6 +9,7 @@ import { ChainId, getNetworkName } from '../../util/networks'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 
 type TransferDisabledDialogStore = {
@@ -28,11 +28,7 @@ export const useTransferDisabledDialogStore =
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
   const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
-  const { app } = useAppState()
-  const { selectedToken } = app
-  const {
-    app: { setSelectedToken }
-  } = useActions()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
   const {
