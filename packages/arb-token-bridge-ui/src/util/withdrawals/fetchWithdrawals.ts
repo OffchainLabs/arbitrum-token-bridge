@@ -3,7 +3,6 @@ import {
   Provider,
   StaticJsonRpcProvider
 } from '@ethersproject/providers'
-import { backOff } from 'exponential-backoff'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
@@ -61,12 +60,13 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
   await wait(2000)
 
   const network = await getArbitrumNetwork(provider)
-  const senderNonce = await backOff(() =>
-    getNonce(address, { provider: provider })
-  )
+  const senderNonce = await getNonce(address, { provider: provider })
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
   const standardGateway = network.tokenBridge?.childErc20Gateway!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
   const customGateway = network.tokenBridge?.childCustomGateway!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
   const wethGateway = network.tokenBridge?.childWethGateway!
 
   let prio = 1
@@ -151,7 +151,7 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
     queries.length - 1
   ]!
 
-  let result: Result = []
+  const result: Result = []
   let currentPriority = 1
 
   while (currentPriority <= maxPriority) {
@@ -161,7 +161,7 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
 
     const results = await Promise.all(
       filteredQueries.map(query =>
-        backOff(() => fetchTokenWithdrawalsFromEventLogs(query.params))
+        fetchTokenWithdrawalsFromEventLogs(query.params)
       )
     )
 
