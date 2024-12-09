@@ -37,7 +37,7 @@ describe('Deposit native token', () => {
       amount: ETHAmountToDeposit,
       symbol: nativeTokenSymbol
     })
-    cy.closeTransactionHistoryPanel()
+    cy.switchToTransferPanelTab()
     cy.findAmountInput().should('have.value', '')
     cy.findMoveFundsButton().should('be.disabled')
   })
@@ -75,7 +75,7 @@ describe('Deposit native token', () => {
     )
 
     cy.closeTransactionDetails()
-    cy.closeTransactionHistoryPanel()
+    cy.switchToTransferPanelTab()
     cy.findAmountInput().should('have.value', '')
     cy.findMoveFundsButton().should('be.disabled')
   })
