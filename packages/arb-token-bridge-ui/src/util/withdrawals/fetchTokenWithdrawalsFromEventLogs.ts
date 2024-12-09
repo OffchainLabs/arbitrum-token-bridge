@@ -20,7 +20,7 @@ function dedupeEvents(
  * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
- * @param query.l2Provider Provider for the L2 network
+ * @param query.provider Provider for the child network
  * @param query.l2GatewayAddresses L2 gateway addresses to use
  */
 export async function fetchTokenWithdrawalsFromEventLogs({
@@ -28,27 +28,27 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   receiver,
   fromBlock,
   toBlock,
-  l2Provider,
+  provider,
   l2GatewayAddresses = []
 }: {
   sender?: string
   receiver?: string
   fromBlock: BlockTag
   toBlock: BlockTag
-  l2Provider: Provider
+  provider: Provider
   l2GatewayAddresses?: string[]
 }) {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await Erc20Bridger.fromProvider(provider)
   const promises: ReturnType<Erc20Bridger['getWithdrawalEvents']>[] = []
 
-  const senderNonce = await getNonce(sender, { provider: l2Provider })
+  const senderNonce = await getNonce(sender, { provider: provider })
 
   l2GatewayAddresses.forEach(gatewayAddress => {
     // funds sent by this address
     if (sender && senderNonce > 0) {
       promises.push(
         erc20Bridger.getWithdrawalEvents(
-          l2Provider,
+          provider,
           gatewayAddress,
           { fromBlock, toBlock },
           undefined,
@@ -62,7 +62,7 @@ export async function fetchTokenWithdrawalsFromEventLogs({
     if (receiver) {
       promises.push(
         erc20Bridger.getWithdrawalEvents(
-          l2Provider,
+          provider,
           gatewayAddress,
           { fromBlock, toBlock },
           undefined,
