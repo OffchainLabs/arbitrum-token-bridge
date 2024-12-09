@@ -1,3 +1,5 @@
+import { Provider } from '@ethersproject/providers'
+
 import { getAPIBaseUrl } from '.'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 
@@ -28,4 +30,15 @@ export async function addressIsDenylisted(address: string) {
     console.error(error)
     return false
   }
+}
+
+export function getNonce(
+  address: string | undefined,
+  { provider }: { provider: Provider }
+): Promise<number> {
+  if (typeof address === 'undefined') {
+    return 0 as unknown as Promise<number>
+  }
+
+  return provider.getTransactionCount(address)
 }
