@@ -40,8 +40,8 @@ type WithdrawalQuery = {
     receiver?: string
     fromBlock: BlockTag
     toBlock: BlockTag
-    provider: Provider
-    gateways?: string[]
+    l2Provider: Provider
+    l2GatewayAddresses?: string[]
   }
   priority: number
 }
@@ -76,8 +76,8 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
         sender: address,
         fromBlock,
         toBlock: 'latest',
-        provider,
-        gateways: [standardGateway]
+        l2Provider: provider,
+        l2GatewayAddresses: [standardGateway]
       },
       priority: prio
     })
@@ -88,8 +88,8 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
           sender: address,
           fromBlock,
           toBlock: 'latest',
-          provider,
-          gateways: [wethGateway]
+          l2Provider: provider,
+          l2GatewayAddresses: [wethGateway]
         },
         priority: prio
       })
@@ -100,8 +100,8 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
         sender: address,
         fromBlock,
         toBlock: 'latest',
-        provider,
-        gateways: [customGateway]
+        l2Provider: provider,
+        l2GatewayAddresses: [customGateway]
       },
       priority: prio
     })
@@ -113,8 +113,8 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
       receiver: address,
       fromBlock,
       toBlock: 'latest',
-      provider,
-      gateways: [standardGateway]
+      l2Provider: provider,
+      l2GatewayAddresses: [standardGateway]
     },
     priority: prio
   })
@@ -125,8 +125,8 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
         receiver: address,
         fromBlock,
         toBlock: 'latest',
-        provider,
-        gateways: [wethGateway]
+        l2Provider: provider,
+        l2GatewayAddresses: [wethGateway]
       },
       priority: prio
     })
@@ -137,8 +137,8 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
       receiver: address,
       fromBlock,
       toBlock: 'latest',
-      provider,
-      gateways: [customGateway]
+      l2Provider: provider,
+      l2GatewayAddresses: [customGateway]
     },
     priority: prio
   })

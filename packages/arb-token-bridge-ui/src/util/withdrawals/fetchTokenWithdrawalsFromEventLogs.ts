@@ -1,7 +1,6 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger, EventArgs } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-import { backOff } from 'exponential-backoff'
 
 import { getNonce } from '../AddressUtils'
 
@@ -13,10 +12,6 @@ function dedupeEvents(
   return [...new Map(events.map(item => [item.txHash, item])).values()]
 }
 
-function wait(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 /**
  * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].
  *
@@ -25,44 +20,40 @@ function wait(ms: number) {
  * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
- * @param query.provider Provider for the child network
- * @param query.gateways L2 gateway addresses to use
+ * @param query.l2Provider Provider for the L2 network
+ * @param query.l2GatewayAddresses L2 gateway addresses to use
  */
 export async function fetchTokenWithdrawalsFromEventLogs({
   sender,
   receiver,
   fromBlock,
   toBlock,
-  provider,
-  gateways = []
+  l2Provider,
+  l2GatewayAddresses = []
 }: {
   sender?: string
   receiver?: string
   fromBlock: BlockTag
   toBlock: BlockTag
-  provider: Provider
-  gateways?: string[]
+  l2Provider: Provider
+  l2GatewayAddresses?: string[]
 }) {
-  const erc20Bridger = await Erc20Bridger.fromProvider(provider)
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   const promises: ReturnType<Erc20Bridger['getWithdrawalEvents']>[] = []
 
-  const senderNonce = await getNonce(sender, { provider: provider })
+  const senderNonce = await getNonce(sender, { provider: l2Provider })
 
-  await wait(1000)
-
-  gateways.forEach(gatewayAddress => {
+  l2GatewayAddresses.forEach(gatewayAddress => {
     // funds sent by this address
     if (sender && senderNonce > 0) {
       promises.push(
-        backOff(() =>
-          erc20Bridger.getWithdrawalEvents(
-            provider,
-            gatewayAddress,
-            { fromBlock, toBlock },
-            undefined,
-            sender,
-            undefined
-          )
+        erc20Bridger.getWithdrawalEvents(
+          l2Provider,
+          gatewayAddress,
+          { fromBlock, toBlock },
+          undefined,
+          sender,
+          undefined
         )
       )
     }
@@ -70,16 +61,13 @@ export async function fetchTokenWithdrawalsFromEventLogs({
     // funds received by this address
     if (receiver) {
       promises.push(
-        backOff(
-          () =>
-            erc20Bridger.getWithdrawalEvents(
-              provider,
-              gatewayAddress,
-              { fromBlock, toBlock },
-              undefined,
-              undefined,
-              receiver
-            ) as any
+        erc20Bridger.getWithdrawalEvents(
+          l2Provider,
+          gatewayAddress,
+          { fromBlock, toBlock },
+          undefined,
+          undefined,
+          receiver
         )
       )
     }
