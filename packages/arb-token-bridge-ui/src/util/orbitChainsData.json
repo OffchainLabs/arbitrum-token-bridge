@@ -926,8 +926,8 @@
       "rpcUrl": "https://socialnetwork-mainnet.g.alchemy.com/public",
       "isCustom": true,
       "isTestnet": false,
-      "name": "Social Mainnet",
-      "slug": "social-mainnet",
+      "name": "Social Network",
+      "slug": "social-network",
       "parentChainId": 1,
       "tokenBridge": {
         "parentCustomGateway": "0xE32125cE1A8fFf30B5c0bB164B7E81816CA626F6",
@@ -948,7 +948,7 @@
       "bridgeUiConfig": {
         "color": "#12266B",
         "network": {
-          "name": "Social Mainnet",
+          "name": "Social Network",
           "logo": "/images/SocialMainnet_Logo.webp"
         },
         "nativeTokenData": {
