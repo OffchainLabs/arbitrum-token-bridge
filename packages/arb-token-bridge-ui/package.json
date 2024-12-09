@@ -50,7 +50,7 @@
     "zustand": "^4.3.9"
   },
   "scripts": {
-    "predev": "yarn generateDenylist",
+    "predev": "yarn generateDenylist && yarn generateOpenGraphImages",
     "dev": "next dev",
     "prebuild": "yarn generateDenylist && yarn generateOpenGraphImages",
     "postinstall": "patch-package",
