@@ -12,7 +12,7 @@ import {
   TeleporterMergedTransaction
 } from '../state/app/state'
 import { normalizeTimestamp } from '../state/app/utils'
-import { isTeleportTx } from '../hooks/useTransactions'
+import { isTeleportTx } from '../types/Transactions'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string

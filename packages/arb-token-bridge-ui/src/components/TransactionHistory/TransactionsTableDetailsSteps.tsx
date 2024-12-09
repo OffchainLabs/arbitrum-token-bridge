@@ -21,7 +21,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { TransferCountdown } from '../common/TransferCountdown'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
-import { isTeleportTx } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../types/Transactions'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem

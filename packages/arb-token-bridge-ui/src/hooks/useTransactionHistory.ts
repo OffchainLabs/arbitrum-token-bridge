@@ -17,7 +17,7 @@ import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
-import { isTeleportTx, Transaction } from './useTransactions'
+import { isTeleportTx, Transaction } from '../types/Transactions'
 import { MergedTransaction } from '../state/app/state'
 import {
   isCustomDestinationAddressTx,

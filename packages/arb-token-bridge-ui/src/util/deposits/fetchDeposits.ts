@@ -6,7 +6,7 @@ import {
   FetchDepositsFromSubgraphResult
 } from './fetchDepositsFromSubgraph'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../hooks/useTransactions'
+import { Transaction } from '../../types/Transactions'
 import { defaultErc20Decimals } from '../../defaults'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
