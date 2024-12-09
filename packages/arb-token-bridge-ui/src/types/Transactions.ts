@@ -1,6 +1,7 @@
-import { AssetType } from './arbTokenBridge.types'
 import { BigNumber } from 'ethers'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
+
+import { AssetType } from '../hooks/arbTokenBridge.types'
 import {
   MergedTransaction,
   TeleporterMergedTransaction
@@ -23,22 +24,6 @@ export type TxnType =
   | 'deposit-l2-auto-redeem' // unused; keeping for cache backwrads compatability
   | 'deposit-l2-ticket-created' // unused; keeping for cache backwrads compatability
   | 'approve-l2'
-
-export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
-  switch (txnType) {
-    case 'deposit':
-    case 'deposit-l1':
-    case 'outbox':
-    case 'approve':
-      return 1
-    case 'deposit-l2':
-    case 'withdraw':
-    case 'deposit-l2-auto-redeem':
-    case 'deposit-l2-ticket-created':
-    case 'approve-l2':
-      return 2
-  }
-}
 
 export interface ParentToChildMessageData {
   status: ParentToChildMessageStatus
@@ -91,20 +76,6 @@ export interface Transaction extends TransactionBase {
 
 export interface TeleporterTransaction extends Transaction {
   l2ToL3MsgData: L2ToL3MessageData
-}
-
-export interface NewTransaction extends TransactionBase {
-  status: 'pending'
-}
-
-export interface FailedTransaction extends TransactionBase {
-  status: 'failure'
-}
-
-// TODO: enforce this type restriction
-export interface DepositTransaction extends Transaction {
-  parentToChildMsgData: ParentToChildMessageData
-  type: 'deposit' | 'deposit-l1'
 }
 
 export function isTeleportTx(
