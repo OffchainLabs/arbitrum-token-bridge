@@ -12,6 +12,7 @@ import {
   getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
+import { ConnectionInfo } from 'ethers/lib/utils.js'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -104,9 +105,32 @@ const getProviderForChainCache: {
   // start with empty cache
 }
 
+const THROTTLE_LIMIT = 10
+
+const connection: Omit<ConnectionInfo, 'url'> = {
+  timeout: 300000,
+  allowGzip: true,
+  skipFetchSetup: true,
+  throttleLimit: THROTTLE_LIMIT,
+  throttleSlotInterval: 3000,
+  throttleCallback: async (attempt: number) => {
+    // Always retry until we hit the THROTTLE_LIMIT
+    // Otherwise, it only throttles for specific response codes
+    // Return true to continue retrying, false to stop
+    return attempt <= THROTTLE_LIMIT
+  },
+  headers: {
+    Accept: '*/*',
+    'Accept-Encoding': 'gzip, deflate, br'
+  }
+}
+
 function createProviderWithCache(chainId: ChainId) {
   const rpcUrl = rpcURLs[chainId]
-  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
+  const provider = new StaticJsonRpcProvider(
+    { ...connection, url: rpcUrl! },
+    chainId
+  )
   getProviderForChainCache[chainId] = provider
   return provider
 }
