@@ -1,4 +1,8 @@
-import { Provider } from '@ethersproject/providers'
+import {
+  BlockTag,
+  Provider,
+  StaticJsonRpcProvider
+} from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
@@ -12,6 +16,9 @@ import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
+import { ethers } from 'ethers'
+import { getNonce } from '../AddressUtils'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -23,6 +30,148 @@ export type FetchWithdrawalsParams = {
   pageNumber?: number
   pageSize?: number
   searchString?: string
+}
+
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
+
+type WithdrawalQuery = {
+  params: {
+    sender?: string
+    receiver?: string
+    fromBlock: BlockTag
+    toBlock: BlockTag
+    provider: Provider
+    gateways?: string[]
+  }
+  priority: number
+}
+
+type Result = UnwrapPromise<ReturnType<Erc20Bridger['getWithdrawalEvents']>>
+
+function wait(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function fetchTokenWithdrawalsFromEventLogsSequentially(
+  address: string,
+  provider: Provider,
+  fromBlock: BlockTag
+): Promise<Result> {
+  await wait(2000)
+
+  const network = await getArbitrumNetwork(provider)
+  const senderNonce = await getNonce(address, { provider: provider })
+
+  const standardGateway = network.tokenBridge?.childErc20Gateway!
+  const customGateway = network.tokenBridge?.childCustomGateway!
+  const wethGateway = network.tokenBridge?.childWethGateway!
+
+  let prio = 1
+
+  const queries: WithdrawalQuery[] = []
+
+  if (senderNonce > 0) {
+    queries.push({
+      params: {
+        sender: address,
+        fromBlock,
+        toBlock: 'latest',
+        provider,
+        gateways: [standardGateway]
+      },
+      priority: prio
+    })
+    prio++
+    if (wethGateway !== ethers.constants.AddressZero) {
+      queries.push({
+        params: {
+          sender: address,
+          fromBlock,
+          toBlock: 'latest',
+          provider,
+          gateways: [wethGateway]
+        },
+        priority: prio
+      })
+      prio++
+    }
+    queries.push({
+      params: {
+        sender: address,
+        fromBlock,
+        toBlock: 'latest',
+        provider,
+        gateways: [customGateway]
+      },
+      priority: prio
+    })
+    prio++
+  }
+
+  queries.push({
+    params: {
+      receiver: address,
+      fromBlock,
+      toBlock: 'latest',
+      provider,
+      gateways: [standardGateway]
+    },
+    priority: prio
+  })
+  prio++
+  if (wethGateway !== ethers.constants.AddressZero) {
+    queries.push({
+      params: {
+        receiver: address,
+        fromBlock,
+        toBlock: 'latest',
+        provider,
+        gateways: [wethGateway]
+      },
+      priority: prio
+    })
+    prio++
+  }
+  queries.push({
+    params: {
+      receiver: address,
+      fromBlock,
+      toBlock: 'latest',
+      provider,
+      gateways: [customGateway]
+    },
+    priority: prio
+  })
+  prio++
+
+  const maxPriority = queries.map(query => query.priority).sort()[
+    queries.length - 1
+  ]!
+
+  let result: Result = []
+  let currentPriority = 1
+
+  while (currentPriority <= maxPriority) {
+    const filteredQueries = queries.filter(
+      query => query.priority === currentPriority
+    )
+
+    const results = await Promise.all(
+      filteredQueries.map(query =>
+        fetchTokenWithdrawalsFromEventLogs(query.params)
+      )
+    )
+
+    results.forEach(r => {
+      result.push(...r)
+    })
+
+    await wait(2000)
+
+    currentPriority += 1
+  }
+
+  return result
 }
 
 export async function fetchWithdrawals({
@@ -93,14 +242,11 @@ export async function fetchWithdrawals({
         toBlock: 'latest',
         l2Provider: l2Provider
       }),
-      fetchTokenWithdrawalsFromEventLogs({
-        sender,
-        receiver,
-        fromBlock: toBlock + 1,
-        toBlock: 'latest',
-        l2Provider: l2Provider,
-        l2GatewayAddresses
-      })
+      fetchTokenWithdrawalsFromEventLogsSequentially(
+        sender!,
+        l2Provider,
+        toBlock + 1
+      )
     ])
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =

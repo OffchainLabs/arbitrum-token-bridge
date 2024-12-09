@@ -25,6 +25,7 @@
     "cheerio": "^1.0.0-rc.12",
     "dayjs": "^1.11.8",
     "ethers": "^5.6.0",
+    "exponential-backoff": "^3.1.1",
     "graphql": "^16.8.1",
     "lodash-es": "^4.17.21",
     "next": "^14.2.12",
@@ -49,7 +50,7 @@
     "zustand": "^4.3.9"
   },
   "scripts": {
-    "predev": "yarn generateDenylist && yarn generateOpenGraphImages",
+    "predev": "yarn generateDenylist",
     "dev": "next dev",
     "prebuild": "yarn generateDenylist && yarn generateOpenGraphImages",
     "postinstall": "patch-package",
