@@ -1,3 +1,4 @@
+import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 
@@ -9,7 +10,6 @@ import {
   l2UsdcGatewayAddresses,
   l2wstETHGatewayAddresses
 } from '../util/networks'
-import { constants } from 'ethers'
 
 /**
  * Fetch L2 gateways for a given L2 network using its provider. Useful for specifying which gateways to use when fetching withdrawals.
