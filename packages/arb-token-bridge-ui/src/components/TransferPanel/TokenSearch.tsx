@@ -5,11 +5,10 @@ import { useAccount } from 'wagmi'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { twMerge } from 'tailwind-merge'
 
-import { useActions, useAppState } from '../../state'
+import { useActions } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  addBridgeTokenListToBridge,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
 import {
@@ -44,6 +43,8 @@ import { Switch } from '../common/atoms/Switch'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import { useBridgeTokensStore } from '../../hooks/useBridgeTokensStore'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -65,19 +66,19 @@ export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
 
 function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
   const {
-    app: { arbTokenBridge }
-  } = useAppState()
-  const { bridgeTokens, token } = arbTokenBridge
+    token: { removeTokensFromList, addBridgeTokenListToBridge }
+  } = useArbTokenBridge()
+  const { bridgeTokens } = useBridgeTokensStore()
 
   const toggleTokenList = useCallback(
     (bridgeTokenList: BridgeTokenList, isActive: boolean) => {
       if (isActive) {
-        token.removeTokensFromList(bridgeTokenList.id)
+        removeTokensFromList(bridgeTokenList.id)
       } else {
-        addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+        addBridgeTokenListToBridge(bridgeTokenList)
       }
     },
-    [arbTokenBridge, token]
+    [addBridgeTokenListToBridge, removeTokensFromList]
   )
 
   const isActive = Object.keys(bridgeTokens ?? []).some(address => {
@@ -172,11 +173,10 @@ function TokensPanel({
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
+  const { bridgeTokens } = useBridgeTokensStore()
   const {
-    app: {
-      arbTokenBridge: { token, bridgeTokens }
-    }
-  } = useAppState()
+    token: { addL2NativeToken, add: addToken }
+  } = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
@@ -386,7 +386,7 @@ function TokensPanel({
 
     try {
       // Try to add the token as an L2-native token
-      token.addL2NativeToken(newToken)
+      addL2NativeToken(newToken)
       isSuccessful = true
     } catch (error) {
       //
@@ -394,7 +394,7 @@ function TokensPanel({
 
     try {
       // Try to add the token as a regular bridged token
-      await token.add(newToken)
+      await addToken(newToken)
       isSuccessful = true
     } catch (ex: any) {
       if (ex.name === 'TokenDisabledError') {
@@ -522,11 +522,11 @@ export function TokenSearch({
 }) {
   const { address: walletAddress } = useAccount()
   const { setAmount2 } = useSetInputAmount()
+
+  const { bridgeTokens } = useBridgeTokensStore()
   const {
-    app: {
-      arbTokenBridge: { token, bridgeTokens }
-    }
-  } = useAppState()
+    token: { updateTokenData }
+  } = useArbTokenBridge()
   const {
     app: { setSelectedToken }
   } = useActions()
@@ -624,7 +624,7 @@ export function TokenSearch({
       })
 
       if (data) {
-        token.updateTokenData(_token.address)
+        updateTokenData(_token.address)
         setSelectedToken({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address

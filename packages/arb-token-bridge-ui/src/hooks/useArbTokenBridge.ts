@@ -1,8 +1,7 @@
 import { useCallback, useMemo } from 'react'
-import { Chain, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { BigNumber } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import {
@@ -36,6 +35,9 @@ import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useArbQueryParams } from './useArbQueryParams'
 import { useBridgeTokensStore } from './useBridgeTokensStore'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
+import { BridgeTokenList, fetchTokenListFromURL } from '../util/TokenListUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -80,15 +82,11 @@ class TokenDisabledError extends Error {
   }
 }
 
-export interface TokenBridgeParams {
-  l1: { provider: JsonRpcProvider; network: Chain }
-  l2: { provider: JsonRpcProvider; network: Chain }
-}
+export const useArbTokenBridge = (): ArbTokenBridge => {
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
 
-export const useArbTokenBridge = (
-  params: TokenBridgeParams
-): ArbTokenBridge => {
-  const { l1, l2 } = params
   const { address: walletAddress } = useAccount()
   const { bridgeTokens, setBridgeTokens } = useBridgeTokensStore()
 
@@ -97,25 +95,25 @@ export const useArbTokenBridge = (
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    chainId: l1.network.id,
+    chainId: parentChain.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    chainId: l2.network.id,
+    chainId: childChain.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L1CustomDestinationBalance]
   } = useBalance({
-    chainId: l1.network.id,
+    chainId: parentChain.id,
     walletAddress: destinationAddress
   })
   const {
     erc20: [, updateErc20CustomDestinationL2Balance]
   } = useBalance({
-    chainId: l2.network.id,
+    chainId: childChain.id,
     walletAddress: destinationAddress
   })
 
@@ -132,8 +130,6 @@ export const useArbTokenBridge = (
       React.Dispatch<ExecutedMessagesCache>,
       React.Dispatch<void>
     ]
-
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
 
   const removeTokensFromList = useCallback(
     function removeTokensFromList(listID: number) {
@@ -157,8 +153,8 @@ export const useArbTokenBridge = (
 
   const addTokensFromList = useCallback(
     function (arbTokenList: TokenList, listId: number) {
-      const l1ChainID = l1.network.id
-      const l2ChainID = l2.network.id
+      const l1ChainID = parentChain.id
+      const l2ChainID = childChain.id
 
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -211,7 +207,8 @@ export const useArbTokenBridge = (
         })()
 
         if (bridgeInfo) {
-          const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+          const l1Address =
+            bridgeInfo[parentChain.id.toString()]?.tokenAddress.toLowerCase()
 
           if (!l1Address) {
             return
@@ -302,9 +299,8 @@ export const useArbTokenBridge = (
       })
     },
     [
-      l1.network.id,
-      l1NetworkID,
-      l2.network.id,
+      parentChain.id,
+      childChain.id,
       setBridgeTokens,
       updateErc20L1Balance,
       updateErc20L2Balance
@@ -323,7 +319,7 @@ export const useArbTokenBridge = (
       const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
       const maybeL1Address = await getL1ERC20Address({
         erc20L2Address: lowercasedErc20L1orL2Address,
-        l2Provider: l2.provider
+        l2Provider: childChainProvider
       })
 
       if (maybeL1Address) {
@@ -338,28 +334,28 @@ export const useArbTokenBridge = (
         // else, derive the L2 address from L1 address OR L3 address from L2 address
         if (
           isValidTeleportChainPair({
-            sourceChainId: l1.network.id,
-            destinationChainId: l2.network.id
+            sourceChainId: parentChain.id,
+            destinationChainId: childChain.id
           })
         ) {
           // this can be a bit hard to follow, but it will resolve when we have code-wide better naming for variables
-          // here `l2Address` actually means `childChainAddress`, and `l2.provider` is actually being used as a child-chain-provider, which in this case will be L3
+          // here `l2Address` actually means `childChainAddress`, and `childChainProvider` is actually being used as a child-chain-provider, which in this case will be L3
           l2Address = await getL3ERC20Address({
             erc20L1Address: l1Address,
-            l1Provider: l1.provider,
-            l3Provider: l2.provider // in case of teleport transfer, the l2.provider being used here is actually the l3 provider
+            l1Provider: parentChainProvider,
+            l3Provider: childChainProvider // in case of teleport transfer, the `childChainProvider` being used here is actually the l3 provider
           })
         } else {
           l2Address = await getL2ERC20Address({
             erc20L1Address: l1Address,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
           })
         }
       }
 
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-      const erc20Params = { address: l1Address, provider: l1.provider }
+      const erc20Params = { address: l1Address, provider: parentChainProvider }
 
       if (!(await isValidErc20(erc20Params))) {
         throw new Error(`${l1Address} is not a valid ERC-20 token`)
@@ -369,8 +365,8 @@ export const useArbTokenBridge = (
 
       const isDisabled = await l1TokenIsDisabled({
         erc20L1Address: l1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
+        l1Provider: parentChainProvider,
+        l2Provider: childChainProvider
       })
 
       if (isDisabled) {
@@ -398,10 +394,10 @@ export const useArbTokenBridge = (
       }
     },
     [
-      l1.network.id,
-      l1.provider,
-      l2.network.id,
-      l2.provider,
+      childChain.id,
+      childChainProvider,
+      parentChain.id,
+      parentChainProvider,
       setBridgeTokens,
       updateErc20L1Balance,
       updateErc20L2Balance,
@@ -448,6 +444,19 @@ export const useArbTokenBridge = (
     ]
   )
 
+  const addBridgeTokenListToBridge = useCallback(
+    function addBridgeTokenListToBridge(bridgeTokenList: BridgeTokenList) {
+      fetchTokenListFromURL(bridgeTokenList.url).then(
+        ({ isValid, data: tokenList }) => {
+          if (!isValid) return
+
+          addTokensFromList(tokenList!, bridgeTokenList.id)
+        }
+      )
+    },
+    [addTokensFromList]
+  )
+
   const addToExecutedMessagesCache = useCallback(
     function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
       const added: { [cacheKey: string]: boolean } = {}
@@ -455,7 +464,7 @@ export const useArbTokenBridge = (
       events.forEach((event: L2ToL1EventResult) => {
         const cacheKey = getExecutedMessagesCacheKey({
           event,
-          l2ChainId: l2.network.id
+          l2ChainId: childChain.id
         })
 
         added[cacheKey] = true
@@ -463,7 +472,7 @@ export const useArbTokenBridge = (
 
       setExecutedMessagesCache({ ...executedMessagesCache, ...added })
     },
-    [executedMessagesCache, l2.network.id, setExecutedMessagesCache]
+    [executedMessagesCache, childChain.id, setExecutedMessagesCache]
   )
 
   const triggerOutboxToken = useCallback(
@@ -506,7 +515,7 @@ export const useArbTokenBridge = (
 
   const addL2NativeToken = useCallback(
     function addL2NativeToken(erc20L2Address: string) {
-      const token = getL2NativeToken(erc20L2Address, l2.network.id)
+      const token = getL2NativeToken(erc20L2Address, childChain.id)
 
       setBridgeTokens(oldBridgeTokens => {
         return {
@@ -525,7 +534,7 @@ export const useArbTokenBridge = (
         }
       })
     },
-    [l2.network.id, setBridgeTokens]
+    [childChain.id, setBridgeTokens]
   )
 
   const triggerOutboxEth = useCallback(
@@ -579,15 +588,17 @@ export const useArbTokenBridge = (
         addTokensFromList,
         removeTokensFromList,
         updateTokenData,
-        triggerOutbox: triggerOutboxToken
+        triggerOutbox: triggerOutboxToken,
+        addBridgeTokenListToBridge
       }
     }),
     [
+      addBridgeTokenListToBridge,
+      addL2NativeToken,
+      addToken,
+      addTokensFromList,
       bridgeTokens,
       triggerOutboxEth,
-      addToken,
-      addL2NativeToken,
-      addTokensFromList,
       removeTokensFromList,
       updateTokenData,
       triggerOutboxToken
