@@ -12,7 +12,6 @@ import {
 } from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
-import useTransactions from './useTransactions'
 import {
   ArbTokenBridge,
   ContractStorage,
@@ -136,9 +135,6 @@ export const useArbTokenBridge = (
     ]
 
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
-
-  const [transactions, { addTransaction, updateTransaction }] =
-    useTransactions()
 
   const removeTokensFromList = (listID: number) => {
     setBridgeTokens(prevBridgeTokens => {
@@ -537,11 +533,6 @@ export const useArbTokenBridge = (
       removeTokensFromList,
       updateTokenData,
       triggerOutbox: triggerOutboxToken
-    },
-    transactions: {
-      transactions,
-      updateTransaction,
-      addTransaction
     }
   }
 }
