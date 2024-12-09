@@ -217,6 +217,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0x83e817E1574e2201a005EC0f7e700ED5606F555E',
       l2Address: '0x87ABaD012da6DcD0438e36967FcaD54C9d64F86C'
+    },
+    {
+      symbol: 'Pepe',
+      l2CustomAddr: '',
+      l1Address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
+      l2Address: '0x35E6A59F786d9266c7961eA28c7b768B33959cbB'
     }
   ],
   [ChainId.ArbitrumNova]: []
