@@ -9,6 +9,7 @@ import {
   l2UsdcGatewayAddresses,
   l2wstETHGatewayAddresses
 } from '../util/networks'
+import { constants } from 'ethers'
 
 /**
  * Fetch L2 gateways for a given L2 network using its provider. Useful for specifying which gateways to use when fetching withdrawals.
@@ -25,11 +26,8 @@ export async function fetchL2Gateways(l2Provider: Provider) {
   /* configure gateway addresses for fetching withdrawals */
   const { childErc20Gateway, childCustomGateway, childWethGateway } =
     l2Network.tokenBridge
-  const gatewaysToUse = [
-    childErc20Gateway,
-    childCustomGateway,
-    childWethGateway
-  ]
+
+  const gatewaysToUse = [childErc20Gateway, childCustomGateway]
   const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainId]
   const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainId]
   const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainId]
@@ -37,6 +35,10 @@ export async function fetchL2Gateways(l2Provider: Provider) {
   const l2MoonGateway = l2MoonGatewayAddresses[l2Network.chainId]
   const l2UsdcGateway = l2UsdcGatewayAddresses[l2Network.chainId]
 
+  // custom gas token chains will have weth gateway set to address zero
+  if (childWethGateway !== constants.AddressZero) {
+    gatewaysToUse.push(childWethGateway)
+  }
   if (l2ArbReverseGateway) {
     gatewaysToUse.push(l2ArbReverseGateway)
   }
