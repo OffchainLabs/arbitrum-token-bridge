@@ -3,6 +3,7 @@ import {
   Provider,
   StaticJsonRpcProvider
 } from '@ethersproject/providers'
+import { backOff } from 'exponential-backoff'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
@@ -60,7 +61,9 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
   await wait(2000)
 
   const network = await getArbitrumNetwork(provider)
-  const senderNonce = await getNonce(address, { provider: provider })
+  const senderNonce = await backOff(() =>
+    getNonce(address, { provider: provider })
+  )
 
   const standardGateway = network.tokenBridge?.childErc20Gateway!
   const customGateway = network.tokenBridge?.childCustomGateway!
@@ -158,7 +161,7 @@ async function fetchTokenWithdrawalsFromEventLogsSequentially(
 
     const results = await Promise.all(
       filteredQueries.map(query =>
-        fetchTokenWithdrawalsFromEventLogs(query.params)
+        backOff(() => fetchTokenWithdrawalsFromEventLogs(query.params))
       )
     )
 
