@@ -70,8 +70,11 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
       return
     }
 
-    queries.push({ params, priority })
-    priority++
+    queries.push({
+      params: { ...params, l2GatewayAddresses: gatewaysSanitized },
+      // todo: check
+      priority: priority++
+    })
   }
 
   const network = await getArbitrumNetwork(provider)
