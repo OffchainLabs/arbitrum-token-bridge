@@ -8,7 +8,6 @@ import {
 } from './fetchWithdrawalsFromSubgraph'
 import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 
-import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
@@ -43,9 +42,6 @@ export async function fetchWithdrawals({
 
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
-
-  // todo: use
-  const l2GatewayAddresses = await fetchL2Gateways(l2Provider)
 
   if (!fromBlock) {
     fromBlock = 0

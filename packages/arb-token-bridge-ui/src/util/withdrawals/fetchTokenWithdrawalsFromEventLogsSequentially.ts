@@ -7,6 +7,7 @@ import {
   FetchTokenWithdrawalsFromEventLogsParams
 } from './fetchTokenWithdrawalsFromEventLogs'
 import { getNonce } from '../AddressUtils'
+import { fetchL2Gateways } from '../fetchL2Gateways'
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -36,8 +37,6 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   fromBlock = 0,
   toBlock = 'latest'
 }: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<Result> {
-  await wait(2000)
-
   const network = await getArbitrumNetwork(provider)
   const senderNonce = await getNonce(sender, { provider })
 
@@ -47,6 +46,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   const customGateway = network.tokenBridge?.childCustomGateway!
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
   const wethGateway = network.tokenBridge?.childWethGateway!
+  const customCustomGateways = await fetchL2Gateways(provider)
 
   let prio = 1
 
@@ -88,6 +88,17 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
       priority: prio
     })
     prio++
+    queries.push({
+      params: {
+        sender,
+        fromBlock,
+        toBlock: 'latest',
+        l2Provider: provider,
+        l2GatewayAddresses: customCustomGateways
+      },
+      priority: prio
+    })
+    prio++
   }
 
   queries.push({
@@ -121,6 +132,17 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
       toBlock: 'latest',
       l2Provider: provider,
       l2GatewayAddresses: [customGateway]
+    },
+    priority: prio
+  })
+  prio++
+  queries.push({
+    params: {
+      receiver,
+      fromBlock,
+      toBlock: 'latest',
+      l2Provider: provider,
+      l2GatewayAddresses: customCustomGateways
     },
     priority: prio
   })
