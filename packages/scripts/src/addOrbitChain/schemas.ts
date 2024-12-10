@@ -38,7 +38,7 @@ export const getParentChainInfo = (parentChainId: number) => {
       };
     case 42170: // Arbitrum Nova
       return {
-        rpcUrl: "https://nova.arbiscan.io",
+        rpcUrl: "https://nova.arbitrum.io/rpc",
         blockExplorer: "https://nova.arbiscan.io",
         chainId: 42170,
         name: "Arbitrum Nova",
