@@ -7,3 +7,7 @@ const backoffOptions: BackoffOptions = {
 export function backOff<T>(request: () => Promise<T>): Promise<T> {
   return _backOff(request, backoffOptions)
 }
+
+export function wait(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
