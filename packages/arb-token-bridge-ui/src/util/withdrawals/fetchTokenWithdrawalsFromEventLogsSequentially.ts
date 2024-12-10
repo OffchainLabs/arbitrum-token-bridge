@@ -34,14 +34,12 @@ async function getGateways(provider: Provider): Promise<{
   }
 }
 
-type WithdrawalQuery = {
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
+
+type TokenWithdrawalQuery = {
   params: FetchTokenWithdrawalsFromEventLogsParams
   priority: number
 }
-
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
-
-type Result = UnwrapPromise<ReturnType<Erc20Bridger['getWithdrawalEvents']>>
 
 export type FetchTokenWithdrawalsFromEventLogsSequentiallyParams = {
   sender?: string
@@ -49,21 +47,29 @@ export type FetchTokenWithdrawalsFromEventLogsSequentiallyParams = {
   provider: Provider
   fromBlock?: BlockTag
   toBlock?: BlockTag
+  /**
+   * How long to delay in-between queries of different priority.
+   */
+  delayMs?: number
 }
+
+export type FetchTokenWithdrawalsFromEventLogsSequentiallyResult =
+  UnwrapPromise<ReturnType<Erc20Bridger['getWithdrawalEvents']>>
 
 export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   sender,
   receiver,
   provider,
   fromBlock = 0,
-  toBlock = 'latest'
-}: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<Result> {
-  // keep track of priority, and increment as new stuff is added
-  let priority = 1
+  toBlock = 'latest',
+  delayMs = 1_000
+}: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<FetchTokenWithdrawalsFromEventLogsSequentiallyResult> {
+  // keep track of priority; increment as queries are added
+  let priority = 0
   // keep track of queries
-  const queries: WithdrawalQuery[] = []
+  const queries: TokenWithdrawalQuery[] = []
 
-  // function here so we can reuse common params
+  // helper function to reuse common params
   function buildQueryParams({
     sender,
     receiver,
@@ -72,7 +78,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
     sender?: string
     receiver?: string
     gateways?: string[]
-  }): WithdrawalQuery['params'] {
+  }): TokenWithdrawalQuery['params'] {
     return {
       sender,
       receiver,
@@ -83,7 +89,8 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
     }
   }
 
-  function addQuery(params: WithdrawalQuery['params']) {
+  // for sanitizing, adding queries and incrementing priority
+  function addQuery(params: TokenWithdrawalQuery['params']) {
     const gateways = params.l2GatewayAddresses ?? []
     const gatewaysSanitized = gateways.filter(g => g !== constants.AddressZero)
 
@@ -93,8 +100,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
 
     queries.push({
       params: { ...params, l2GatewayAddresses: gatewaysSanitized },
-      // todo: check
-      priority: priority++
+      priority: ++priority
     })
   }
 
@@ -115,31 +121,30 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   addQuery(buildQueryParams({ receiver, gateways: [gateways.customGateway] }))
   addQuery(buildQueryParams({ receiver, gateways: gateways.otherGateways }))
 
-  const maxPriority = queries.map(query => query.priority).sort()[
-    queries.length - 1
-  ]!
-
-  const result: Result = []
+  // for iterating through all priorities in the while loop below
   let currentPriority = 1
 
-  while (currentPriority <= maxPriority) {
-    const filteredQueries = queries.filter(
+  // final result
+  const result: FetchTokenWithdrawalsFromEventLogsSequentiallyResult = []
+
+  while (currentPriority <= priority) {
+    const currentPriorityQueries = queries.filter(
       query => query.priority === currentPriority
     )
 
-    const results = await Promise.all(
-      filteredQueries.map(query =>
+    const currentPriorityResults = await Promise.all(
+      currentPriorityQueries.map(query =>
         fetchTokenWithdrawalsFromEventLogs(query.params)
       )
     )
 
-    results.forEach(r => {
+    currentPriorityResults.forEach(r => {
       result.push(...r)
     })
 
-    await wait(2000)
+    await wait(delayMs)
 
-    currentPriority += 1
+    currentPriority++
   }
 
   return result
