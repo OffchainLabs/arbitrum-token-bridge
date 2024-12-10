@@ -7,12 +7,12 @@ import {
 } from './fetchDepositsFromSubgraph'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
-import { defaultErc20Decimals } from '../../defaults'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   fetchEthDepositsToCustomDestinationFromSubgraph,
   FetchEthDepositsToCustomDestinationFromSubgraphResult
 } from './fetchEthDepositsToCustomDestinationFromSubgraph'
+import { mapDepositsFromSubgraph } from './mapDepositsFromSubgraph'
 
 export type FetchDepositParams = {
   sender?: string
@@ -84,55 +84,12 @@ export const fetchDeposits = async ({
     )
   }
 
-  const mappedDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(
-    (tx: FetchDepositsFromSubgraphResult) => {
-      const isEthDeposit = tx.type === 'EthDeposit'
-
-      const assetDetails = {
-        assetName: nativeCurrency.symbol,
-        assetType: AssetType.ETH,
-        tokenAddress: ''
-      }
-
-      if (!isEthDeposit) {
-        // update some values for token deposit
-        const symbol = tx.l1Token?.symbol || ''
-
-        assetDetails.assetName = symbol
-        assetDetails.assetType = AssetType.ERC20
-        assetDetails.tokenAddress = tx?.l1Token?.id || ''
-      }
-
-      const amount = isEthDeposit ? tx.ethValue : tx.tokenAmount
-
-      const tokenDecimals = tx?.l1Token?.decimals ?? defaultErc20Decimals
-      const decimals = isEthDeposit ? nativeCurrency.decimals : tokenDecimals
-
-      return {
-        type: 'deposit-l1',
-        status: 'pending',
-        direction: 'deposit',
-        source: 'subgraph',
-        value: utils.formatUnits(amount || 0, decimals),
-        txID: tx.transactionHash,
-        tokenAddress: assetDetails.tokenAddress,
-        sender: tx.sender,
-        destination: tx.receiver,
-
-        assetName: assetDetails.assetName,
-        assetType: assetDetails.assetType,
-
-        l1NetworkID: String(l1ChainId),
-        l2NetworkID: String(l2ChainId),
-        blockNumber: Number(tx.blockCreatedAt),
-        timestampCreated: tx.timestamp,
-        isClassic: tx.isClassic,
-
-        childChainId: l2ChainId,
-        parentChainId: l1ChainId
-      }
-    }
-  )
+  const mappedDepositsFromSubgraph: Transaction[] = mapDepositsFromSubgraph({
+    depositsFromSubgraph,
+    nativeCurrency,
+    l1ChainId,
+    l2ChainId
+  })
 
   const mappedEthDepositsToCustomDestinationFromSubgraph: Transaction[] =
     ethDepositsToCustomDestinationFromSubgraph.map(
