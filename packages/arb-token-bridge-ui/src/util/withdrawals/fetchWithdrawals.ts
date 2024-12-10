@@ -12,6 +12,7 @@ import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
 import { fetchTokenWithdrawalsFromEventLogsSequentially } from './fetchTokenWithdrawalsFromEventLogsSequentially'
+import { wait } from '../ExponentialBackoffUtils'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -83,22 +84,23 @@ export async function fetchWithdrawals({
     console.log('Error fetching withdrawals from subgraph', error)
   }
 
-  const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
-    await Promise.all([
-      fetchETHWithdrawalsFromEventLogs({
-        receiver,
-        fromBlock: toBlock + 1,
-        toBlock: 'latest',
-        l2Provider: l2Provider
-      }),
-      fetchTokenWithdrawalsFromEventLogsSequentially({
-        sender,
-        receiver,
-        fromBlock: toBlock + 1,
-        toBlock: 'latest',
-        provider: l2Provider
-      })
-    ])
+  const ethWithdrawalsFromEventLogs = await fetchETHWithdrawalsFromEventLogs({
+    receiver,
+    fromBlock: toBlock + 1,
+    toBlock: 'latest',
+    l2Provider: l2Provider
+  })
+
+  await wait(2_000)
+
+  const tokenWithdrawalsFromEventLogs =
+    await fetchTokenWithdrawalsFromEventLogsSequentially({
+      sender,
+      receiver,
+      fromBlock: toBlock + 1,
+      toBlock: 'latest',
+      provider: l2Provider
+    })
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
     ethWithdrawalsFromEventLogs.map(tx => {
