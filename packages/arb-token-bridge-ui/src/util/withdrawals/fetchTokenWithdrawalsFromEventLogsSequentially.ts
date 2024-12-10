@@ -1,7 +1,6 @@
 import { constants } from 'ethers'
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
-import { backOff as _backOff, BackoffOptions } from 'exponential-backoff'
 
 import {
   fetchTokenWithdrawalsFromEventLogs,
@@ -9,14 +8,7 @@ import {
 } from './fetchTokenWithdrawalsFromEventLogs'
 import { getNonce } from '../AddressUtils'
 import { fetchL2Gateways } from '../fetchL2Gateways'
-
-const backoffOptions: BackoffOptions = {
-  startingDelay: 500
-}
-
-function backOff<T>(request: () => Promise<T>): Promise<T> {
-  return _backOff(request, backoffOptions)
-}
+import { backOff } from '../ExponentialBackoffUtils'
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
