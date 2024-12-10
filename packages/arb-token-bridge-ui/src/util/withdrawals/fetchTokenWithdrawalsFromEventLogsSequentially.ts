@@ -62,7 +62,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   provider,
   fromBlock = 0,
   toBlock = 'latest',
-  delayMs = 1_000
+  delayMs = 2_000
 }: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<FetchTokenWithdrawalsFromEventLogsSequentiallyResult> {
   // keep track of priority; increment as queries are added
   let priority = 0
