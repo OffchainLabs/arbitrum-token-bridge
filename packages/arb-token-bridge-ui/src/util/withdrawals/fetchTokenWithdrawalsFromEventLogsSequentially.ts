@@ -37,21 +37,23 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   fromBlock = 0,
   toBlock = 'latest'
 }: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<Result> {
+  // function here so we can reuse common params
   function buildQueryParams({
     sender,
     receiver,
-    l2GatewayAddresses
-  }: Pick<
-    FetchTokenWithdrawalsFromEventLogsParams,
-    'sender' | 'receiver' | 'l2GatewayAddresses'
-  >) {
+    gateways = []
+  }: {
+    sender?: string
+    receiver?: string
+    gateways?: string[]
+  }) {
     return {
       sender,
       receiver,
       fromBlock,
       toBlock,
       l2Provider: provider,
-      l2GatewayAddresses
+      l2GatewayAddresses: gateways
     }
   }
 
@@ -70,73 +72,50 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
 
   const queries: WithdrawalQuery[] = []
 
+  // only add queries for sender if account has activity
   if (senderNonce > 0) {
     queries.push({
-      params: buildQueryParams({
-        sender,
-        l2GatewayAddresses: [standardGateway]
-      }),
+      params: buildQueryParams({ sender, gateways: [standardGateway] }),
       priority: prio
     })
     prio++
     if (wethGateway !== constants.AddressZero) {
       queries.push({
-        params: buildQueryParams({
-          sender,
-          l2GatewayAddresses: [wethGateway]
-        }),
+        params: buildQueryParams({ sender, gateways: [wethGateway] }),
         priority: prio
       })
       prio++
     }
     queries.push({
-      params: buildQueryParams({
-        sender,
-        l2GatewayAddresses: [customGateway]
-      }),
+      params: buildQueryParams({ sender, gateways: [customGateway] }),
       priority: prio
     })
     prio++
     queries.push({
-      params: buildQueryParams({
-        sender,
-        l2GatewayAddresses: customCustomGateways
-      }),
+      params: buildQueryParams({ sender, gateways: customCustomGateways }),
       priority: prio
     })
     prio++
   }
   queries.push({
-    params: buildQueryParams({
-      receiver,
-      l2GatewayAddresses: [standardGateway]
-    }),
+    params: buildQueryParams({ receiver, gateways: [standardGateway] }),
     priority: prio
   })
   prio++
   if (wethGateway !== constants.AddressZero) {
     queries.push({
-      params: buildQueryParams({
-        receiver,
-        l2GatewayAddresses: [wethGateway]
-      }),
+      params: buildQueryParams({ receiver, gateways: [wethGateway] }),
       priority: prio
     })
     prio++
   }
   queries.push({
-    params: buildQueryParams({
-      receiver,
-      l2GatewayAddresses: [customGateway]
-    }),
+    params: buildQueryParams({ receiver, gateways: [customGateway] }),
     priority: prio
   })
   prio++
   queries.push({
-    params: buildQueryParams({
-      receiver,
-      l2GatewayAddresses: customCustomGateways
-    }),
+    params: buildQueryParams({ receiver, gateways: customCustomGateways }),
     priority: prio
   })
   prio++
