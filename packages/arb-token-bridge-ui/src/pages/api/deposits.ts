@@ -54,7 +54,7 @@ export default async function handler(
     // validate the request parameters
     const errorMessage = []
     if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
-    if (search.length === 0 && !sender && !receiver)
+    if (!sender && !receiver)
       errorMessage.push('<sender> or <receiver> is required')
 
     if (errorMessage.length) {

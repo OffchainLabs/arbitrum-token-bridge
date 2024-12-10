@@ -1,31 +1,40 @@
 import { Column, Table } from 'react-virtualized'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 import useSWR from 'swr'
 
 import { ContentWrapper, TableHeader } from '../TransactionHistoryTable'
 import { useTransactionHistoryAddressStore } from '../TransactionHistorySearchBar'
 import { TransactionsTableRow } from '../TransactionsTableRow'
-import { twMerge } from 'tailwind-merge'
 import { MergedTransaction } from '../../../state/app/state'
-import { AssetType } from '../../../hooks/arbTokenBridge.types'
-import { formatAmount } from '../../../util/NumberUtils'
 import { fetchDepositTxFromSubgraph } from '../../../util/deposits/fetchDepositTxFromSubgraph'
+import { useTransactionHistory } from '../../../hooks/useTransactionHistory'
+import { getUpdatedEthDeposit, isTxPending } from '../helpers'
 
 export function TransactionHistoryTxHashSearchResult() {
   const contentWrapperRef = useRef<HTMLDivElement | null>(null)
   const tableRef = useRef<Table | null>(null)
-  const { sanitizedTxHash } = useTransactionHistoryAddressStore()
+  const { sanitizedAddress, sanitizedTxHash } =
+    useTransactionHistoryAddressStore()
+  const [tx, setTx] = useState<MergedTransaction>()
+
   const queryKey = useMemo(() => {
-    if (!sanitizedTxHash) {
+    if (!sanitizedTxHash || !sanitizedAddress) {
       return null
     }
-    return [sanitizedTxHash, 'TransactionHistoryTxHashSearchResult'] as const
-  }, [sanitizedTxHash])
+    return [
+      sanitizedTxHash,
+      sanitizedAddress,
+      'TransactionHistoryTxHashSearchResult'
+    ] as const
+  }, [sanitizedTxHash, sanitizedAddress])
   const {
     data: transactions,
     isLoading,
     error
-  } = useSWR(queryKey, ([txHash]) => fetchDepositTxFromSubgraph(txHash))
+  } = useSWR(queryKey, ([txHash, connectedAddress]) =>
+    fetchDepositTxFromSubgraph(txHash, connectedAddress)
+  )
 
   const TABLE_HEADER_HEIGHT = 52
   const TABLE_ROW_HEIGHT = 60
@@ -45,6 +54,29 @@ export function TransactionHistoryTxHashSearchResult() {
       0
     )
   }, [contentWrapperRef.current?.offsetTop])
+
+  const txFromHash =
+    typeof transactions === 'undefined'
+      ? null
+      : (transactions[0] as unknown as MergedTransaction)
+
+  console.log('txFromHash: ', txFromHash)
+
+  useEffect(() => {
+    async function updateTx() {
+      if (!txFromHash) {
+        return
+      }
+      const updatedTx = await getUpdatedEthDeposit(txFromHash)
+      if (updatedTx) {
+        setTx(updatedTx)
+
+        console.log('updatedTx: ', updatedTx)
+      }
+    }
+
+    updateTx()
+  }, [tx])
 
   if (!transactions) {
     return null
@@ -70,21 +102,19 @@ export function TransactionHistoryTxHashSearchResult() {
         className="table-auto last:border-b-0"
         rowGetter={({ index }) => transactions[index]}
         rowRenderer={({ index, style }) => {
-          const tx = transactions[index]
-
-          console.log('tx????', tx)
-
           if (!tx) {
             return null
           }
 
+          console.log('tx here!', tx)
+
           const isLastRow = index + 1 === transactions.length
-          const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txID}`
+          const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 
           return (
             <div key={key} style={style}>
               <TransactionsTableRow
-                tx={tx as unknown as MergedTransaction}
+                tx={tx}
                 className={twMerge(isLastRow && 'border-b-0')}
               />
             </div>
