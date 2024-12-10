@@ -13,6 +13,27 @@ function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+async function getGateways(provider: Provider): Promise<{
+  standardGateway: string
+  wethGateway: string
+  customGateway: string
+  otherGateways: string[]
+}> {
+  const network = await getArbitrumNetwork(provider)
+
+  const standardGateway = network.tokenBridge?.childErc20Gateway
+  const customGateway = network.tokenBridge?.childCustomGateway
+  const wethGateway = network.tokenBridge?.childWethGateway
+  const otherGateways = await fetchL2Gateways(provider)
+
+  return {
+    standardGateway: standardGateway ?? constants.AddressZero,
+    wethGateway: wethGateway ?? constants.AddressZero,
+    customGateway: customGateway ?? constants.AddressZero,
+    otherGateways
+  }
+}
+
 type WithdrawalQuery = {
   params: FetchTokenWithdrawalsFromEventLogsParams
   priority: number
@@ -77,30 +98,22 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
     })
   }
 
-  const network = await getArbitrumNetwork(provider)
+  const gateways = await getGateways(provider)
   const senderNonce = await getNonce(sender, { provider })
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-  const standardGateway = network.tokenBridge?.childErc20Gateway!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-  const customGateway = network.tokenBridge?.childCustomGateway!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-  const wethGateway = network.tokenBridge?.childWethGateway!
-  const customCustomGateways = await fetchL2Gateways(provider)
 
   // sender queries; only add if nonce > 0
   if (senderNonce > 0) {
-    addQuery(buildQueryParams({ sender, gateways: [standardGateway] }))
-    addQuery(buildQueryParams({ sender, gateways: [wethGateway] }))
-    addQuery(buildQueryParams({ sender, gateways: [customGateway] }))
-    addQuery(buildQueryParams({ sender, gateways: customCustomGateways }))
+    addQuery(buildQueryParams({ sender, gateways: [gateways.standardGateway] }))
+    addQuery(buildQueryParams({ sender, gateways: [gateways.wethGateway] }))
+    addQuery(buildQueryParams({ sender, gateways: [gateways.customGateway] }))
+    addQuery(buildQueryParams({ sender, gateways: gateways.otherGateways }))
   }
 
   // receiver queries
-  addQuery(buildQueryParams({ receiver, gateways: [standardGateway] }))
-  addQuery(buildQueryParams({ receiver, gateways: [wethGateway] }))
-  addQuery(buildQueryParams({ receiver, gateways: [customGateway] }))
-  addQuery(buildQueryParams({ receiver, gateways: customCustomGateways }))
+  addQuery(buildQueryParams({ receiver, gateways: [gateways.standardGateway] }))
+  addQuery(buildQueryParams({ receiver, gateways: [gateways.wethGateway] }))
+  addQuery(buildQueryParams({ receiver, gateways: [gateways.customGateway] }))
+  addQuery(buildQueryParams({ receiver, gateways: gateways.otherGateways }))
 
   const maxPriority = queries.map(query => query.priority).sort()[
     queries.length - 1
