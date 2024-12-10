@@ -1,6 +1,7 @@
 import { constants } from 'ethers'
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
+import { backOff as _backOff, BackoffOptions } from 'exponential-backoff'
 
 import {
   fetchTokenWithdrawalsFromEventLogs,
@@ -8,6 +9,14 @@ import {
 } from './fetchTokenWithdrawalsFromEventLogs'
 import { getNonce } from '../AddressUtils'
 import { fetchL2Gateways } from '../fetchL2Gateways'
+
+const backoffOptions: BackoffOptions = {
+  startingDelay: 500
+}
+
+function backOff<T>(request: () => Promise<T>): Promise<T> {
+  return _backOff(request, backoffOptions)
+}
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -104,7 +113,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   }
 
   const gateways = await getGateways(provider)
-  const senderNonce = await getNonce(sender, { provider })
+  const senderNonce = await backOff(() => getNonce(sender, { provider }))
 
   // sender queries; only add if nonce > 0
   if (senderNonce > 0) {
@@ -133,7 +142,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
 
     const currentPriorityResults = await Promise.all(
       currentPriorityQueries.map(query =>
-        fetchTokenWithdrawalsFromEventLogs(query.params)
+        backOff(() => fetchTokenWithdrawalsFromEventLogs(query.params))
       )
     )
 
