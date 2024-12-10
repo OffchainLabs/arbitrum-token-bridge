@@ -18,7 +18,7 @@ import {
   Transaction,
   TxnStatus,
   TeleporterTransaction
-} from '../../hooks/useTransactions'
+} from '../../types/Transactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   getL2ConfigForTeleport,
