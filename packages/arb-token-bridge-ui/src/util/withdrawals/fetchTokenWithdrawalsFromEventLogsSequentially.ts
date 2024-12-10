@@ -8,10 +8,7 @@ import {
 } from './fetchTokenWithdrawalsFromEventLogs'
 import { getNonce } from '../AddressUtils'
 import { fetchL2Gateways } from '../fetchL2Gateways'
-
-function wait(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+import { wait } from '../ExponentialBackoffUtils'
 
 async function getGateways(provider: Provider): Promise<{
   standardGateway: string
