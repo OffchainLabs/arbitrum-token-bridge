@@ -926,8 +926,8 @@
       "rpcUrl": "https://socialnetwork-mainnet.g.alchemy.com/public",
       "isCustom": true,
       "isTestnet": false,
-      "name": "Social Mainnet",
-      "slug": "social-mainnet",
+      "name": "Social Network",
+      "slug": "social-network",
       "parentChainId": 1,
       "tokenBridge": {
         "parentCustomGateway": "0xE32125cE1A8fFf30B5c0bB164B7E81816CA626F6",
@@ -948,12 +948,60 @@
       "bridgeUiConfig": {
         "color": "#12266B",
         "network": {
-          "name": "Social Mainnet",
+          "name": "Social Network",
           "logo": "/images/SocialMainnet_Logo.webp"
         },
         "nativeTokenData": {
           "name": "Earth",
           "symbol": "Earth"
+        }
+      }
+    },
+    {
+      "chainId": 140,
+      "confirmPeriodBlocks": 1081,
+      "ethBridge": {
+        "bridge": "0x77778b624B03D5D41FeC06641629BB3C98D94892",
+        "inbox": "0x1CB71Be210c6a0BE2b95B6FBD09b1a43Ae679f97",
+        "outbox": "0xf32E5481acde9E41cdD0EFAc6cDe3C7876cf65b3",
+        "rollup": "0xeD6F7916Da27b1A4680EB0C63aA3C768bCc10EDA",
+        "sequencerInbox": "0x7F17f54174c07F9213dc0EF9009c082542549A9C"
+      },
+      "nativeToken": "0x6e6C39CAC539Ab057d357d16d69Fd04d2b0fc38f",
+      "explorerUrl": "https://explorer.data-lake.co/",
+      "rpcUrl": "https://rpc.data-lake.co/",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Data Lake Mainnet",
+      "slug": "data-lake-mainnet",
+      "parentChainId": 42170,
+      "tokenBridge": {
+        "parentCustomGateway": "0xB6725767227Aa858b112a4E563a7D357eddbECEa",
+        "parentErc20Gateway": "0x1fbdB03f9fe57Cf0049e0F238984C7a9cf4D8ca1",
+        "parentGatewayRouter": "0x63a9cd1aF4d8E254470E32F9D11FA516fdCc4a14",
+        "parentMultiCall": "0x23d1171380e3cbAA161F6EB31e3A3c6B548A467a",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x0E13f3E7828925F31D3FE3e8Aa7343Cb95a78525",
+        "childErc20Gateway": "0x3b0825034A4F5b725990df6621EbE09C1ecb24dB",
+        "childGatewayRouter": "0x71e8d7eC6311Bbf7654E54115FD2c23d8C10Ff5f",
+        "childMultiCall": "0x8c4a651c207c63fd388574FeEcE51AAFD23f69a7",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#876D9C",
+        "network": {
+          "name": "Data Lake Mainnet",
+          "logo": "/images/DataLakeMainnet_Logo.png",
+          "description": "The Data Lake Chain is a pioneering Layer 3 blockchain designed to empower decentralized science (DeSci) and healthcare research. Built on Arbitrum Orbit, the Data Lake Chain is tailored for secure and compliant management of consents."
+        },
+        "nativeTokenData": {
+          "name": "Data Lake Token",
+          "symbol": "LAKE",
+          "logoUrl": "/images/DataLakeMainnet_NativeTokenLogo.png"
         }
       }
     }
@@ -1423,6 +1471,48 @@
           "name": "Unite",
           "symbol": "UNITE",
           "logoUrl": "/images/unite-testnet_Logo.png"
+        }
+      }
+    },
+    {
+      "chainId": 98864,
+      "confirmPeriodBlocks": 60,
+      "ethBridge": {
+        "bridge": "0xF3BE11Ead404740017e4839712Af28e3c0b5C202",
+        "inbox": "0xDe66d6a8BabE07f6838ea712e708BBD47837de52",
+        "outbox": "0xE8806C827217b9C1D9610b5334254Da4d143dF3D",
+        "rollup": "0x7404f23fc2189e090E2342FaaF7f20efa7bD366a",
+        "sequencerInbox": "0xDcAb173C5D846d686856A2D3300B8a64ba12130D"
+      },
+      "explorerUrl": "https://test-explorer.plumenetwork.xyz/",
+      "rpcUrl": "https://test-rpc.plumenetwork.xyz/",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Plume Devnet",
+      "slug": "plume-devnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0xa8168b76Aa023228CaA8Ef5110477cD6d02F1508",
+        "parentErc20Gateway": "0xD7A43a671c177Ed55D2B4bCaFc597Bb669Ce4B99",
+        "parentGatewayRouter": "0x0a4671a34D411868852be59cCa137D5f251dEe52",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+        "parentWethGateway": "0x8a3f580894fF2C51E202Da7712f5550533a956B1",
+        "childCustomGateway": "0xA7E44Ce807F488791c6Bc8877c9CA7b36c68B9C0",
+        "childErc20Gateway": "0xc9F79584303fDcb2cf5d147D7Dc79c38EA3BEC11",
+        "childGatewayRouter": "0x52a0A8a9A65F90E160940972A0de15491172db87",
+        "childMultiCall": "0xA569f0e5e284A45F6155cbc4C904ad3cae0a82b0",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x1738E5247c85f96c9D35FE55800557C5479b7063",
+        "childWethGateway": "0xc260574cD5F7469d9a840f85A6648F74b7Bd4097"
+      },
+      "bridgeUiConfig": {
+        "color": "#F43B3A",
+        "network": {
+          "name": "Plume Devnet",
+          "logo": "/images/PlumeDevnet_Logo.png",
+          "description": "Bringing the real world onchain. Optimized for real world assets."
         }
       }
     }
