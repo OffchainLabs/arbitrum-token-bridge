@@ -37,6 +37,24 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   fromBlock = 0,
   toBlock = 'latest'
 }: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<Result> {
+  function buildQueryParams({
+    sender,
+    receiver,
+    l2GatewayAddresses
+  }: Pick<
+    FetchTokenWithdrawalsFromEventLogsParams,
+    'sender' | 'receiver' | 'l2GatewayAddresses'
+  >) {
+    return {
+      sender,
+      receiver,
+      fromBlock,
+      toBlock,
+      l2Provider: provider,
+      l2GatewayAddresses
+    }
+  }
+
   const network = await getArbitrumNetwork(provider)
   const senderNonce = await getNonce(sender, { provider })
 
@@ -54,96 +72,71 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
 
   if (senderNonce > 0) {
     queries.push({
-      params: {
+      params: buildQueryParams({
         sender,
-        fromBlock,
-        toBlock,
-        l2Provider: provider,
         l2GatewayAddresses: [standardGateway]
-      },
+      }),
       priority: prio
     })
     prio++
     if (wethGateway !== constants.AddressZero) {
       queries.push({
-        params: {
+        params: buildQueryParams({
           sender,
-          fromBlock,
-          toBlock: 'latest',
-          l2Provider: provider,
           l2GatewayAddresses: [wethGateway]
-        },
+        }),
         priority: prio
       })
       prio++
     }
     queries.push({
-      params: {
+      params: buildQueryParams({
         sender,
-        fromBlock,
-        toBlock: 'latest',
-        l2Provider: provider,
         l2GatewayAddresses: [customGateway]
-      },
+      }),
       priority: prio
     })
     prio++
     queries.push({
-      params: {
+      params: buildQueryParams({
         sender,
-        fromBlock,
-        toBlock: 'latest',
-        l2Provider: provider,
         l2GatewayAddresses: customCustomGateways
-      },
+      }),
       priority: prio
     })
     prio++
   }
-
   queries.push({
-    params: {
+    params: buildQueryParams({
       receiver,
-      fromBlock,
-      toBlock: 'latest',
-      l2Provider: provider,
       l2GatewayAddresses: [standardGateway]
-    },
+    }),
     priority: prio
   })
   prio++
   if (wethGateway !== constants.AddressZero) {
     queries.push({
-      params: {
+      params: buildQueryParams({
         receiver,
-        fromBlock,
-        toBlock: 'latest',
-        l2Provider: provider,
         l2GatewayAddresses: [wethGateway]
-      },
+      }),
       priority: prio
     })
     prio++
   }
   queries.push({
-    params: {
+    params: buildQueryParams({
       receiver,
-      fromBlock,
-      toBlock: 'latest',
-      l2Provider: provider,
       l2GatewayAddresses: [customGateway]
-    },
+    }),
     priority: prio
   })
   prio++
   queries.push({
-    params: {
+    params: buildQueryParams({
       receiver,
-      fromBlock,
-      toBlock: 'latest',
-      l2Provider: provider,
       l2GatewayAddresses: customCustomGateways
-    },
+    }),
     priority: prio
   })
   prio++
