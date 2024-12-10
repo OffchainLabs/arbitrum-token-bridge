@@ -956,6 +956,54 @@
           "symbol": "Earth"
         }
       }
+    },
+    {
+      "chainId": 140,
+      "confirmPeriodBlocks": 1081,
+      "ethBridge": {
+        "bridge": "0x77778b624B03D5D41FeC06641629BB3C98D94892",
+        "inbox": "0x1CB71Be210c6a0BE2b95B6FBD09b1a43Ae679f97",
+        "outbox": "0xf32E5481acde9E41cdD0EFAc6cDe3C7876cf65b3",
+        "rollup": "0xeD6F7916Da27b1A4680EB0C63aA3C768bCc10EDA",
+        "sequencerInbox": "0x7F17f54174c07F9213dc0EF9009c082542549A9C"
+      },
+      "nativeToken": "0x6e6C39CAC539Ab057d357d16d69Fd04d2b0fc38f",
+      "explorerUrl": "https://explorer.data-lake.co/",
+      "rpcUrl": "https://rpc.data-lake.co/",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Data Lake Mainnet",
+      "slug": "data-lake-mainnet",
+      "parentChainId": 42170,
+      "tokenBridge": {
+        "parentCustomGateway": "0xB6725767227Aa858b112a4E563a7D357eddbECEa",
+        "parentErc20Gateway": "0x1fbdB03f9fe57Cf0049e0F238984C7a9cf4D8ca1",
+        "parentGatewayRouter": "0x63a9cd1aF4d8E254470E32F9D11FA516fdCc4a14",
+        "parentMultiCall": "0x23d1171380e3cbAA161F6EB31e3A3c6B548A467a",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x0E13f3E7828925F31D3FE3e8Aa7343Cb95a78525",
+        "childErc20Gateway": "0x3b0825034A4F5b725990df6621EbE09C1ecb24dB",
+        "childGatewayRouter": "0x71e8d7eC6311Bbf7654E54115FD2c23d8C10Ff5f",
+        "childMultiCall": "0x8c4a651c207c63fd388574FeEcE51AAFD23f69a7",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#876D9C",
+        "network": {
+          "name": "Data Lake Mainnet",
+          "logo": "/images/DataLakeMainnet_Logo.png",
+          "description": "The Data Lake Chain is a pioneering Layer 3 blockchain designed to empower decentralized science (DeSci) and healthcare research. Built on [Arbitrum Orbit](https://arbitrum.io/orbit), the Data Lake Chain is tailored for secure and compliant management of consents."
+        },
+        "nativeTokenData": {
+          "name": "Data Lake Token",
+          "symbol": "LAKE",
+          "logoUrl": "/images/DataLakeMainnet_NativeTokenLogo.png"
+        }
+      }
     }
   ],
   "testnet": [
