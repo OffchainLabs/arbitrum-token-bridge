@@ -22,7 +22,7 @@ export function fetchETHWithdrawalsFromEventLogs({
   l2Provider: Provider
 }) {
   if (typeof receiver === 'undefined') {
-    return []
+    return Promise.resolve([])
   }
 
   // funds received by this address
