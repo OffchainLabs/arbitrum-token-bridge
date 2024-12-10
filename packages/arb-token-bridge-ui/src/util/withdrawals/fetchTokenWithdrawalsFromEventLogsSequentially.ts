@@ -34,8 +34,6 @@ async function getGateways(provider: Provider): Promise<{
   }
 }
 
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
-
 type TokenWithdrawalQuery = {
   params: FetchTokenWithdrawalsFromEventLogsParams
   priority: number
@@ -53,8 +51,9 @@ export type FetchTokenWithdrawalsFromEventLogsSequentiallyParams = {
   delayMs?: number
 }
 
-export type FetchTokenWithdrawalsFromEventLogsSequentiallyResult =
-  UnwrapPromise<ReturnType<Erc20Bridger['getWithdrawalEvents']>>
+export type FetchTokenWithdrawalsFromEventLogsSequentiallyResult = Awaited<
+  ReturnType<Erc20Bridger['getWithdrawalEvents']>
+>
 
 export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   sender,
