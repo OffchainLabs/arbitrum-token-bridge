@@ -1,8 +1,4 @@
-import {
-  BlockTag,
-  Provider,
-  StaticJsonRpcProvider
-} from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
@@ -11,14 +7,12 @@ import {
   fetchWithdrawalsFromSubgraph
 } from './fetchWithdrawalsFromSubgraph'
 import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
-import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
+
 import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
-import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
-import { ethers } from 'ethers'
-import { getNonce } from '../AddressUtils'
+import { fetchTokenWithdrawalsFromEventLogsSequentially } from './fetchTokenWithdrawalsFromEventLogsSequentially'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -30,151 +24,6 @@ export type FetchWithdrawalsParams = {
   pageNumber?: number
   pageSize?: number
   searchString?: string
-}
-
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
-
-type WithdrawalQuery = {
-  params: {
-    sender?: string
-    receiver?: string
-    fromBlock: BlockTag
-    toBlock: BlockTag
-    l2Provider: Provider
-    l2GatewayAddresses?: string[]
-  }
-  priority: number
-}
-
-type Result = UnwrapPromise<ReturnType<Erc20Bridger['getWithdrawalEvents']>>
-
-function wait(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-async function fetchTokenWithdrawalsFromEventLogsSequentially(
-  address: string,
-  provider: Provider,
-  fromBlock: BlockTag
-): Promise<Result> {
-  await wait(2000)
-
-  const network = await getArbitrumNetwork(provider)
-  const senderNonce = await getNonce(address, { provider: provider })
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-  const standardGateway = network.tokenBridge?.childErc20Gateway!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-  const customGateway = network.tokenBridge?.childCustomGateway!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-  const wethGateway = network.tokenBridge?.childWethGateway!
-
-  let prio = 1
-
-  const queries: WithdrawalQuery[] = []
-
-  if (senderNonce > 0) {
-    queries.push({
-      params: {
-        sender: address,
-        fromBlock,
-        toBlock: 'latest',
-        l2Provider: provider,
-        l2GatewayAddresses: [standardGateway]
-      },
-      priority: prio
-    })
-    prio++
-    if (wethGateway !== ethers.constants.AddressZero) {
-      queries.push({
-        params: {
-          sender: address,
-          fromBlock,
-          toBlock: 'latest',
-          l2Provider: provider,
-          l2GatewayAddresses: [wethGateway]
-        },
-        priority: prio
-      })
-      prio++
-    }
-    queries.push({
-      params: {
-        sender: address,
-        fromBlock,
-        toBlock: 'latest',
-        l2Provider: provider,
-        l2GatewayAddresses: [customGateway]
-      },
-      priority: prio
-    })
-    prio++
-  }
-
-  queries.push({
-    params: {
-      receiver: address,
-      fromBlock,
-      toBlock: 'latest',
-      l2Provider: provider,
-      l2GatewayAddresses: [standardGateway]
-    },
-    priority: prio
-  })
-  prio++
-  if (wethGateway !== ethers.constants.AddressZero) {
-    queries.push({
-      params: {
-        receiver: address,
-        fromBlock,
-        toBlock: 'latest',
-        l2Provider: provider,
-        l2GatewayAddresses: [wethGateway]
-      },
-      priority: prio
-    })
-    prio++
-  }
-  queries.push({
-    params: {
-      receiver: address,
-      fromBlock,
-      toBlock: 'latest',
-      l2Provider: provider,
-      l2GatewayAddresses: [customGateway]
-    },
-    priority: prio
-  })
-  prio++
-
-  const maxPriority = queries.map(query => query.priority).sort()[
-    queries.length - 1
-  ]!
-
-  const result: Result = []
-  let currentPriority = 1
-
-  while (currentPriority <= maxPriority) {
-    const filteredQueries = queries.filter(
-      query => query.priority === currentPriority
-    )
-
-    const results = await Promise.all(
-      filteredQueries.map(query =>
-        fetchTokenWithdrawalsFromEventLogs(query.params)
-      )
-    )
-
-    results.forEach(r => {
-      result.push(...r)
-    })
-
-    await wait(2000)
-
-    currentPriority += 1
-  }
-
-  return result
 }
 
 export async function fetchWithdrawals({
@@ -195,6 +44,7 @@ export async function fetchWithdrawals({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
+  // todo: use
   const l2GatewayAddresses = await fetchL2Gateways(l2Provider)
 
   if (!fromBlock) {
@@ -245,11 +95,13 @@ export async function fetchWithdrawals({
         toBlock: 'latest',
         l2Provider: l2Provider
       }),
-      fetchTokenWithdrawalsFromEventLogsSequentially(
-        sender!,
-        l2Provider,
-        toBlock + 1
-      )
+      fetchTokenWithdrawalsFromEventLogsSequentially({
+        sender,
+        receiver,
+        fromBlock: toBlock + 1,
+        toBlock: 'latest',
+        provider: l2Provider
+      })
     ])
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
