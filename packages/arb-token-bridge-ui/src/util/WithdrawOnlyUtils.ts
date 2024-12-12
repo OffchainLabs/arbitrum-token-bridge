@@ -229,6 +229,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
       l2Address: '0x4A605F93288e95db40cE72934b888641D9689a48'
+    },
+    {
+      symbol: 'NST',
+      l2CustomAddr: '',
+      l1Address: '0x70Bef3bB2f001dA2fDDb207dAe696cD9FAFf3f5d',
+      l2Address: '0xd5A1a674F0DA33A4147a8Cd96143E598e738c7FF'
     }
   ],
   [ChainId.ArbitrumNova]: []
