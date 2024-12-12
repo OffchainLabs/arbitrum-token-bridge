@@ -38,3 +38,14 @@ export async function addressIsDenylisted(address: string) {
     return false
   }
 }
+
+export function getNonce(
+  address: string | undefined,
+  { provider }: { provider: Provider }
+): Promise<number> {
+  if (typeof address === 'undefined') {
+    return 0 as unknown as Promise<number>
+  }
+
+  return provider.getTransactionCount(address)
+}

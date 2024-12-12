@@ -10,6 +10,15 @@ function dedupeEvents(
   return [...new Map(events.map(item => [item.txHash, item])).values()]
 }
 
+export type FetchTokenWithdrawalsFromEventLogsParams = {
+  sender?: string
+  receiver?: string
+  fromBlock: BlockTag
+  toBlock: BlockTag
+  l2Provider: Provider
+  l2GatewayAddresses?: string[]
+}
+
 /**
  * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].
  *
@@ -28,14 +37,7 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   toBlock,
   l2Provider,
   l2GatewayAddresses = []
-}: {
-  sender?: string
-  receiver?: string
-  fromBlock: BlockTag
-  toBlock: BlockTag
-  l2Provider: Provider
-  l2GatewayAddresses?: string[]
-}) {
+}: FetchTokenWithdrawalsFromEventLogsParams) {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   const promises: ReturnType<Erc20Bridger['getWithdrawalEvents']>[] = []
 

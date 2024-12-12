@@ -7,11 +7,12 @@ import {
   fetchWithdrawalsFromSubgraph
 } from './fetchWithdrawalsFromSubgraph'
 import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
-import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
-import { fetchL2Gateways } from '../fetchL2Gateways'
+
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
+import { fetchTokenWithdrawalsFromEventLogsSequentially } from './fetchTokenWithdrawalsFromEventLogsSequentially'
+import { backOff, wait } from '../ExponentialBackoffUtils'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -42,8 +43,6 @@ export async function fetchWithdrawals({
 
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
-
-  const l2GatewayAddresses = await fetchL2Gateways(l2Provider)
 
   if (!fromBlock) {
     fromBlock = 0
@@ -85,23 +84,27 @@ export async function fetchWithdrawals({
     console.log('Error fetching withdrawals from subgraph', error)
   }
 
-  const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
-    await Promise.all([
-      fetchETHWithdrawalsFromEventLogs({
-        receiver,
-        fromBlock: toBlock + 1,
-        toBlock: 'latest',
-        l2Provider: l2Provider
-      }),
-      fetchTokenWithdrawalsFromEventLogs({
-        sender,
-        receiver,
-        fromBlock: toBlock + 1,
-        toBlock: 'latest',
-        l2Provider: l2Provider,
-        l2GatewayAddresses
-      })
-    ])
+  const ethWithdrawalsFromEventLogs = await backOff(() =>
+    fetchETHWithdrawalsFromEventLogs({
+      receiver,
+      // not sure why eslint is treating "toBlock" as "number | undefined" here
+      // even though typescript recognizes it as "number"
+      fromBlock: toBlock ?? 0 + 1,
+      toBlock: 'latest',
+      l2Provider: l2Provider
+    })
+  )
+
+  await wait(2_000)
+
+  const tokenWithdrawalsFromEventLogs =
+    await fetchTokenWithdrawalsFromEventLogsSequentially({
+      sender,
+      receiver,
+      fromBlock: toBlock + 1,
+      toBlock: 'latest',
+      provider: l2Provider
+    })
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
     ethWithdrawalsFromEventLogs.map(tx => {

@@ -97,7 +97,6 @@ describe('Withdraw USDC through CCTP', () => {
   it('should claim deposit', () => {
     cy.changeMetamaskNetwork('sepolia')
     cy.claimCctp(0.00012, { accept: true })
-    cy.closeTransactionHistoryPanel()
     cy.claimCctp(0.00013, { accept: true })
   })
 

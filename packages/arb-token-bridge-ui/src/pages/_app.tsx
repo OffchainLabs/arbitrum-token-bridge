@@ -149,9 +149,18 @@ export default function App({ Component, pageProps, router }: AppProps) {
   const destinationChainSlug = (router.query.destinationChain?.toString() ??
     'arbitrum-one') as ChainKeyQueryParam
 
-  const sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
-  const destinationChainInfo =
-    getChainForChainKeyQueryParam(destinationChainSlug)
+  let sourceChainInfo
+  let destinationChainInfo
+
+  try {
+    sourceChainInfo = getChainForChainKeyQueryParam(sourceChainSlug)
+    destinationChainInfo = getChainForChainKeyQueryParam(destinationChainSlug)
+  } catch (error) {
+    // 1. slug misspelling can enter this flow
+    // 2. when user selects a custom orbit chain, it will also go to this flow (they are only available in local storage and not on the server)
+    sourceChainInfo = getChainForChainKeyQueryParam('ethereum')
+    destinationChainInfo = getChainForChainKeyQueryParam('arbitrum-one')
+  }
 
   const siteTitle = `Bridge to ${destinationChainInfo.name}`
 
