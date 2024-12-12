@@ -101,6 +101,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
   }
 }
 
+let localStoragePromise = Promise.resolve()
+
 export async function getOutgoingMessageState(
   event: L2ToL1EventResult,
   l1Provider: Provider,
@@ -127,13 +129,20 @@ export async function getOutgoingMessageState(
     const status = await messageReader.status(l2Provider)
 
     if (status === OutgoingMessageState.EXECUTED) {
-      localStorage.setItem(
-        localStorageKey,
-        JSON.stringify({
-          ...executedMessagesCache,
-          [cacheKey]: true
-        })
-      )
+      // Ensures all parallel methods save to local storage sequentially
+      localStoragePromise = localStoragePromise.then(() => {
+        const latestExecutedMessagesCache = JSON.parse(
+          localStorage.getItem(localStorageKey) || '{}'
+        )
+
+        localStorage.setItem(
+          localStorageKey,
+          JSON.stringify({
+            ...latestExecutedMessagesCache,
+            [cacheKey]: true
+          })
+        )
+      })
     }
 
     return status
