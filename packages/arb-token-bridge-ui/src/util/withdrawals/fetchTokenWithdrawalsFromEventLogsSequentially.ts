@@ -8,7 +8,7 @@ import {
 } from './fetchTokenWithdrawalsFromEventLogs'
 import { getNonce } from '../AddressUtils'
 import { fetchL2Gateways } from '../fetchL2Gateways'
-import { wait } from '../ExponentialBackoffUtils'
+import { backOff, wait } from '../ExponentialBackoffUtils'
 
 async function getGateways(provider: Provider): Promise<{
   standardGateway: string
@@ -101,7 +101,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   }
 
   const gateways = await getGateways(provider)
-  const senderNonce = await getNonce(sender, { provider })
+  const senderNonce = await backOff(() => getNonce(sender, { provider }))
 
   // sender queries; only add if nonce > 0
   if (senderNonce > 0) {
@@ -130,7 +130,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
 
     const currentPriorityResults = await Promise.all(
       currentPriorityQueries.map(query =>
-        fetchTokenWithdrawalsFromEventLogs(query.params)
+        backOff(() => fetchTokenWithdrawalsFromEventLogs(query.params))
       )
     )
 
