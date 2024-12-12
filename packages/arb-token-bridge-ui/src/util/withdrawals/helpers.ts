@@ -107,7 +107,7 @@ export async function getOutgoingMessageState(
   l2Provider: Provider,
   l2ChainID: number
 ) {
-  const executedMessagesCacheKey = 'arbitrum:bridge:executed-messages'
+  const localStorageKey = 'arbitrum:bridge:executed-messages'
 
   const cacheKey = getExecutedMessagesCacheKey({
     event,
@@ -115,7 +115,7 @@ export async function getOutgoingMessageState(
   })
 
   const executedMessagesCache = JSON.parse(
-    localStorage.getItem(executedMessagesCacheKey) || '{}'
+    localStorage.getItem(localStorageKey) || '{}'
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
@@ -128,7 +128,7 @@ export async function getOutgoingMessageState(
 
     if (status === OutgoingMessageState.EXECUTED) {
       localStorage.setItem(
-        executedMessagesCacheKey,
+        localStorageKey,
         JSON.stringify({
           ...executedMessagesCache,
           [cacheKey]: true
