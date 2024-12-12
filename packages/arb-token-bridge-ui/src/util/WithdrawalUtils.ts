@@ -150,8 +150,9 @@ export function getConfirmationTime(chainId: number) {
   if (fastWithdrawalActive) {
     confirmationTimeInSeconds = fastWithdrawalTime / 1000
   } else {
-    // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
-    // and similarly, the confirm period blocks is always the number of blocks on the base chain
+    // Calculate confirmation period using block time from root chain:
+    // - Ethereum mainnet for Arbitrum chains
+    // - Parent chain for Base chains
     const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId(
       { chainId }
     )
