@@ -87,7 +87,7 @@ export async function fetchWithdrawals({
   const ethWithdrawalsFromEventLogs = await backOff(() =>
     fetchETHWithdrawalsFromEventLogs({
       receiver,
-      fromBlock: toBlock! + 1,
+      fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     })
