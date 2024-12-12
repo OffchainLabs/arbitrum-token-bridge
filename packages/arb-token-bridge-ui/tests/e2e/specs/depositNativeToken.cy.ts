@@ -9,7 +9,7 @@ import {
 } from '../../support/common'
 
 describe('Deposit native token', () => {
-  const ETHAmountToDeposit = 0.0001
+  const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
   const zeroToLessThanOneNativeToken =
@@ -31,14 +31,51 @@ describe('Deposit native token', () => {
     cy.findGasFeeSummary(zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
-    cy.findMoveFundsButton().click()
-    cy.confirmMetamaskTransaction()
+    cy.startTransfer()
     cy.findTransactionInTransactionHistory({
       duration: depositTime,
       amount: ETHAmountToDeposit,
       symbol: nativeTokenSymbol
     })
-    cy.closeTransactionHistoryPanel()
+    cy.switchToTransferPanelTab()
+    cy.findAmountInput().should('have.value', '')
+    cy.findMoveFundsButton().should('be.disabled')
+  })
+
+  it('should deposit to custom destination address successfully', () => {
+    const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
+
+    cy.login({ networkType: 'parentChain' })
+
+    cy.typeAmount(ETHAmountToDeposit)
+    cy.fillCustomDestinationAddress()
+
+    cy.findGasFeeSummary(zeroToLessThanOneEth)
+    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
+    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
+    cy.startTransfer()
+
+    const txData = {
+      amount: ETHAmountToDeposit,
+      symbol: nativeTokenSymbol
+    }
+
+    cy.findTransactionInTransactionHistory({
+      duration: depositTime,
+      ...txData
+    })
+
+    cy.findTransactionInTransactionHistory({
+      duration: depositTime,
+      ...txData
+    })
+    cy.openTransactionDetails(txData)
+    cy.findTransactionDetailsCustomDestinationAddress(
+      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+    )
+
+    cy.closeTransactionDetails()
+    cy.switchToTransferPanelTab()
     cy.findAmountInput().should('have.value', '')
     cy.findMoveFundsButton().should('be.disabled')
   })

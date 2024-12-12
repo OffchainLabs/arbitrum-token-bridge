@@ -121,11 +121,9 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
 
 export function TransactionsTableRow({
   tx,
-  address,
   className = ''
 }: {
   tx: MergedTransaction
-  address: Address | undefined
   className?: string
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
@@ -189,7 +187,7 @@ export function TransactionsTableRow({
     <div
       data-testid={testId}
       className={twMerge(
-        'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_170px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
+        'relative grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_170px_140px] items-center justify-between border-b border-white/30 text-xs text-white md:mx-4',
         className
       )}
     >
@@ -259,7 +257,6 @@ export function TransactionsTableRow({
           tx={tx}
           isError={isError}
           type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
-          address={address}
         />
       </div>
       <div className="pl-2 align-middle">

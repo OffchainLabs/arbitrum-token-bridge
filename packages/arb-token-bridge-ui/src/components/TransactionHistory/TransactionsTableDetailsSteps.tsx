@@ -21,7 +21,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { TransferCountdown } from '../common/TransferCountdown'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
-import { isTeleportTx } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../types/Transactions'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
@@ -31,6 +31,7 @@ import {
   minutesToHumanReadableTime,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
   return tx.isCctp || tx.isWithdrawal
@@ -136,14 +137,7 @@ const LastStepEndItem = ({
     (!isTeleport && isDepositReadyToRedeem(tx)) ||
     (isTeleport && secondRetryableLegForTeleportRequiresRedeem(tx))
   ) {
-    return (
-      <TransactionsTableRowAction
-        type="deposits"
-        isError={true}
-        tx={tx}
-        address={address}
-      />
-    )
+    return <TransactionsTableRowAction type="deposits" isError={true} tx={tx} />
   }
 
   return null
@@ -162,13 +156,12 @@ export const TransactionFailedOnNetwork = ({
 )
 
 export const TransactionsTableDetailsSteps = ({
-  tx,
-  address
+  tx
 }: {
   tx: MergedTransaction
-  address: Address | undefined
 }) => {
   const { approximateDurationInMinutes } = useTransferDuration(tx)
+  const { sanitizedAddress } = useTransactionHistoryAddressStore()
 
   const { sourceChainId } = tx
 
@@ -240,9 +233,7 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
-      {isTeleportTx(tx) && (
-        <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
-      )}
+      {isTeleportTx(tx) && <TransactionsTableDetailsTeleporterSteps tx={tx} />}
 
       {/* If claiming is required we show this step */}
       {needsToClaimTransfer(tx) && (
@@ -256,7 +247,6 @@ export const TransactionsTableDetailsSteps = ({
                 type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
                 isError={false}
                 tx={tx}
-                address={address}
               />
             )
           }
@@ -268,7 +258,7 @@ export const TransactionsTableDetailsSteps = ({
         done={isTxCompleted(tx)}
         failure={isTxExpired(tx) || isDestinationChainFailure}
         text={destinationChainTxText}
-        endItem={<LastStepEndItem tx={tx} address={address} />}
+        endItem={<LastStepEndItem tx={tx} address={sanitizedAddress} />}
       />
     </div>
   )

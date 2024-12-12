@@ -2,38 +2,31 @@
 
 exports[`Transforms > extractRawChainData > should extract raw chain data from the issue 1`] = `
 {
-  "bridge": "0x0000000000000000000000000000000000000002",
   "chainId": "42161",
-  "chainLogo": "https://example.com/logo.png",
+  "chainLogo": "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   "childCustomGateway": "0x000000000000000000000000000000000000000E",
   "childErc20Gateway": "0x000000000000000000000000000000000000000F",
   "childGatewayRouter": "0x0000000000000000000000000000000000000010",
   "childMultiCall": "0x0000000000000000000000000000000000000011",
-  "childProxyAdmin": "0x0000000000000000000000000000000000000012",
   "childWeth": "0x0000000000000000000000000000000000000013",
   "childWethGateway": "0x0000000000000000000000000000000000000014",
   "color": "#FF0000",
-  "confirmPeriodBlocks": "100",
   "description": "A test chain.",
   "explorerUrl": "https://explorer.example.com",
-  "inbox": "0x0000000000000000000000000000000000000003",
   "name": "Test Chain",
   "nativeTokenAddress": "0x0000000000000000000000000000000000000001",
-  "nativeTokenLogo": "https://example.com/token-logo.png",
+  "nativeTokenLogo": "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
   "nativeTokenName": "Test Token",
   "nativeTokenSymbol": "TST",
-  "outbox": "0x0000000000000000000000000000000000000004",
   "parentChainId": "1",
   "parentCustomGateway": "0x0000000000000000000000000000000000000007",
   "parentErc20Gateway": "0x0000000000000000000000000000000000000008",
   "parentGatewayRouter": "0x0000000000000000000000000000000000000009",
   "parentMultiCall": "0x000000000000000000000000000000000000000A",
-  "parentProxyAdmin": "0x000000000000000000000000000000000000000B",
   "parentWeth": "0x000000000000000000000000000000000000000C",
   "parentWethGateway": "0x000000000000000000000000000000000000000D",
   "rollup": "0x0000000000000000000000000000000000000005",
   "rpcUrl": "https://rpc.example.com",
-  "sequencerInbox": "0x0000000000000000000000000000000000000006",
 }
 `;
 
@@ -41,8 +34,8 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
 {
   "bridgeUiConfig": {
     "color": "#FF0000",
+    "fastWithdrawalTime": 900000,
     "nativeTokenData": {
-      "decimals": 18,
       "logoUrl": "/images/mockChain_NativeTokenLogo.png",
       "name": "Test Token",
       "symbol": "TEST",
@@ -63,7 +56,6 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
     "sequencerInbox": "0x529a2061A1973be80D315770bA9469F3Da40D938",
   },
   "explorerUrl": "https://testexplorer.com",
-  "isArbitrum": true,
   "isCustom": true,
   "isTestnet": true,
   "name": "Test Chain",
@@ -76,14 +68,14 @@ exports[`Transforms > transformIncomingDataToOrbitChain > should transform incom
     "childErc20Gateway": "0x0000000000000000000000000000000000000015",
     "childGatewayRouter": "0x0000000000000000000000000000000000000016",
     "childMultiCall": "0x0000000000000000000000000000000000000017",
-    "childProxyAdmin": "0x0000000000000000000000000000000000000018",
+    "childProxyAdmin": "0x0000000000000000000000000000000000000000",
     "childWeth": "0x0000000000000000000000000000000000000019",
     "childWethGateway": "0x0000000000000000000000000000000000000020",
     "parentCustomGateway": "0x0000000000000000000000000000000000000007",
     "parentErc20Gateway": "0x0000000000000000000000000000000000000008",
     "parentGatewayRouter": "0x0000000000000000000000000000000000000009",
     "parentMultiCall": "0x0000000000000000000000000000000000000010",
-    "parentProxyAdmin": "0x0000000000000000000000000000000000000011",
+    "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
     "parentWeth": "0x0000000000000000000000000000000000000012",
     "parentWethGateway": "0x0000000000000000000000000000000000000013",
   },
@@ -124,7 +116,6 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
       \\"nativeToken\\": \\"0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66\\",
       \\"explorerUrl\\": \\"https://explorer.xai-chain.net\\",
       \\"rpcUrl\\": \\"https://xai-chain.net/rpc\\",
-      \\"isArbitrum\\": true,
       \\"isCustom\\": true,
       \\"isTestnet\\": true,
       \\"name\\": \\"Xai\\",
@@ -141,8 +132,8 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
         \\"childWethGateway\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentWeth\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"childWeth\\": \\"0x0000000000000000000000000000000000000000\\",
-        \\"parentProxyAdmin\\": \\"0x041f85dd87c46b941dc9b15c6628b19ee5358485\\",
-        \\"childProxyAdmin\\": \\"0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E\\",
+        \\"parentProxyAdmin\\": \\"0x0000000000000000000000000000000000000000\\",
+        \\"childProxyAdmin\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentMultiCall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
         \\"childMultiCall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
       },
@@ -156,9 +147,9 @@ exports[`Transforms > updateOrbitChainsFile > should add a new testnet chain whi
         \\"nativeTokenData\\": {
           \\"name\\": \\"Xai\\",
           \\"symbol\\": \\"XAI\\",
-          \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
-        }
+        },
+        \\"fastWithdrawalTime\\": 900000
       }
     }
   ]
@@ -181,7 +172,6 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
       \\"nativeToken\\": \\"0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66\\",
       \\"explorerUrl\\": \\"https://explorer.xai-chain.net\\",
       \\"rpcUrl\\": \\"https://xai-chain.net/rpc\\",
-      \\"isArbitrum\\": true,
       \\"isCustom\\": true,
       \\"isTestnet\\": false,
       \\"name\\": \\"Updated Chain\\",
@@ -198,8 +188,8 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
         \\"childWethGateway\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentWeth\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"childWeth\\": \\"0x0000000000000000000000000000000000000000\\",
-        \\"parentProxyAdmin\\": \\"0x041f85dd87c46b941dc9b15c6628b19ee5358485\\",
-        \\"childProxyAdmin\\": \\"0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E\\",
+        \\"parentProxyAdmin\\": \\"0x0000000000000000000000000000000000000000\\",
+        \\"childProxyAdmin\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentMultiCall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
         \\"childMultiCall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
       },
@@ -213,9 +203,9 @@ exports[`Transforms > updateOrbitChainsFile > should handle updating an existing
         \\"nativeTokenData\\": {
           \\"name\\": \\"Xai\\",
           \\"symbol\\": \\"XAI\\",
-          \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
-        }
+        },
+        \\"fastWithdrawalTime\\": 900000
       }
     },
     {
@@ -264,7 +254,6 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
       \\"nativeToken\\": \\"0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66\\",
       \\"explorerUrl\\": \\"https://explorer.xai-chain.net\\",
       \\"rpcUrl\\": \\"https://xai-chain.net/rpc\\",
-      \\"isArbitrum\\": true,
       \\"isCustom\\": true,
       \\"isTestnet\\": false,
       \\"name\\": \\"Xai\\",
@@ -281,8 +270,8 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
         \\"childWethGateway\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentWeth\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"childWeth\\": \\"0x0000000000000000000000000000000000000000\\",
-        \\"parentProxyAdmin\\": \\"0x041f85dd87c46b941dc9b15c6628b19ee5358485\\",
-        \\"childProxyAdmin\\": \\"0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E\\",
+        \\"parentProxyAdmin\\": \\"0x0000000000000000000000000000000000000000\\",
+        \\"childProxyAdmin\\": \\"0x0000000000000000000000000000000000000000\\",
         \\"parentMultiCall\\": \\"0x90B02D9F861017844F30dFbdF725b6aa84E63822\\",
         \\"childMultiCall\\": \\"0xEEC168551A85911Ec3A905e0561b656979f3ea67\\"
       },
@@ -296,9 +285,9 @@ exports[`Transforms > updateOrbitChainsFile > should update the orbit chains fil
         \\"nativeTokenData\\": {
           \\"name\\": \\"Xai\\",
           \\"symbol\\": \\"XAI\\",
-          \\"decimals\\": 18,
           \\"logoUrl\\": \\"/images/XaiLogo.svg\\"
-        }
+        },
+        \\"fastWithdrawalTime\\": 900000
       }
     }
   ],

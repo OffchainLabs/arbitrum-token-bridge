@@ -16,6 +16,7 @@ describe('Login Account', () => {
   let l2ETHbal
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const nativeTokenDecimals = Cypress.env('NATIVE_TOKEN_DECIMALS')
   const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
 
   before(() => {
@@ -25,7 +26,9 @@ describe('Login Account', () => {
         multiCallerAddress: getL1NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ETH_RPC_URL')
-      }).then(val => (l1ETHbal = formatAmount(val)))
+      }).then(
+        val => (l1ETHbal = formatAmount(val, { decimals: nativeTokenDecimals }))
+      )
     } else {
       getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
         val => (l1ETHbal = formatAmount(val))

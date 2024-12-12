@@ -6,6 +6,7 @@ import { useLatest } from 'react-use'
 import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
+import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -27,10 +28,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import {
-  AdvancedSettings,
-  useDestinationAddressStore
-} from './AdvancedSettings'
+import { AdvancedSettings } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
@@ -72,11 +70,12 @@ import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
-import { isExperimentalFeatureEnabled } from '../../util'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
+import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useMainContentTabs } from '../MainContent/MainContent'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -131,6 +130,8 @@ export function TransferPanel() {
     }
   } = useLatest(useNetworksRelationship(latestNetworks.current))
   const isBatchTransferSupported = useIsBatchTransferSupported()
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -140,8 +141,8 @@ export function TransferPanel() {
     chainId: networks.sourceChain.id
   })
 
-  const { openTransactionHistoryPanel, setTransferring } =
-    useAppContextActions()
+  const { setTransferring } = useAppContextActions()
+  const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const isCctpTransfer = useIsCctpTransfer()
@@ -150,9 +151,11 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2 }] = useArbQueryParams()
+  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
+
+  const latestDestinationAddress = useLatest(destinationAddress)
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -170,9 +173,7 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
-  const { destinationAddress } = useDestinationAddressStore()
-
-  const isCustomDestinationTransfer = !!destinationAddress
+  const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
   const {
     updateEthParentBalance,
@@ -345,6 +346,8 @@ export function TransferPanel() {
       throw new Error(transferNotAllowedError)
     }
 
+    const destinationAddress = latestDestinationAddress.current
+
     setTransferring(true)
 
     try {
@@ -495,7 +498,7 @@ export function TransferPanel() {
       }
 
       addPendingTransaction(newTransfer)
-      openTransactionHistoryPanel()
+      switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
     } catch (e) {
@@ -515,16 +518,6 @@ export function TransferPanel() {
 
     if (!signer) {
       throw new Error(signerUndefinedError)
-    }
-
-    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (
-      isSmartContractWallet &&
-      !selectedToken &&
-      !isExperimentalFeatureEnabled('eth-custom-dest')
-    ) {
-      console.error("ETH transfers aren't enabled for smart contract wallets.")
-      return
     }
 
     // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -588,22 +581,12 @@ export function TransferPanel() {
         )
       }
 
-      // SCW transfers are not enabled for ETH transfers yet
-      if (
-        isNativeCurrencyTransfer &&
-        isSmartContractWallet &&
-        !isExperimentalFeatureEnabled('eth-custom-dest')
-      ) {
-        console.error(
-          "ETH transfers aren't enabled for smart contract wallets."
-        )
-        return
-      }
-
       if (destinationAddressError) {
         console.error(destinationAddressError)
         return
       }
+
+      const destinationAddress = latestDestinationAddress.current
 
       const isCustomNativeTokenAmount2 =
         nativeCurrency.isCustom &&
@@ -614,9 +597,10 @@ export function TransferPanel() {
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
           amount: amountBigNumber,
+          destinationAddress,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
               : undefined
           }
         })
@@ -629,9 +613,10 @@ export function TransferPanel() {
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
           amount: amountBigNumber,
+          destinationAddress,
           options: {
             approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrency.decimals)
+              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
               : undefined
           }
         })
@@ -735,7 +720,8 @@ export function TransferPanel() {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer
+          signer,
+          destinationAddress
         })) as DepositGasEstimates
 
         if (!gasEstimates.estimatedChildChainSubmissionCost) {
@@ -744,6 +730,7 @@ export function TransferPanel() {
         }
 
         overrides.maxSubmissionCost = utils
+          // we are not scaling these to native decimals because arbitrum-sdk does it for us
           .parseEther(amount2)
           .add(gasEstimates.estimatedChildChainSubmissionCost)
         overrides.excessFeeRefundAddress = destinationAddress
@@ -778,6 +765,8 @@ export function TransferPanel() {
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
+    const destinationAddress = latestDestinationAddress.current
+
     if (!isSmartContractWallet) {
       trackEvent(
         isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
@@ -798,6 +787,20 @@ export function TransferPanel() {
 
     const timestampCreated = String(normalizeTimestamp(Date.now()))
 
+    const { isOrbitChain: isSourceOrbitChain } = isNetwork(
+      latestNetworks.current.sourceChain.id
+    )
+
+    // only scale for native tokens, and
+    // only scale if sent from Orbit, because it's always 18 decimals there but the UI needs scaled amount
+    const scaledAmount = scaleFrom18DecimalsToNativeTokenDecimals({
+      amount: amountBigNumber,
+      decimals: nativeCurrency.decimals
+    })
+
+    const isNativeTokenWithdrawalFromOrbit =
+      !selectedToken && isSourceOrbitChain
+
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
       parentChainId: parentChain.id,
@@ -806,7 +809,7 @@ export function TransferPanel() {
       walletAddress,
       destinationAddress,
       nativeCurrency,
-      amount: amountBigNumber,
+      amount: isNativeTokenWithdrawalFromOrbit ? scaledAmount : amountBigNumber,
       amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
       timestampCreated
     })
@@ -825,14 +828,16 @@ export function TransferPanel() {
           walletAddress,
           destinationAddress,
           nativeCurrency,
-          amount: amountBigNumber,
+          amount: isNativeTokenWithdrawalFromOrbit
+            ? scaledAmount
+            : amountBigNumber,
           amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
           timestampCreated
         })
       )
     }
 
-    openTransactionHistoryPanel()
+    switchToTransactionHistoryTab()
     setTransferring(false)
     clearAmountInput()
 

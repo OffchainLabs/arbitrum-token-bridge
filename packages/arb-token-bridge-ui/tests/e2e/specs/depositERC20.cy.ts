@@ -89,8 +89,7 @@ describe('Deposit Token', () => {
         })
 
         context('should deposit successfully', () => {
-          cy.findMoveFundsButton().click()
-          cy.confirmMetamaskTransaction()
+          cy.startTransfer()
           cy.findTransactionInTransactionHistory({
             duration: depositTime,
             amount: ERC20AmountToSend,
@@ -99,7 +98,7 @@ describe('Deposit Token', () => {
         })
 
         context('transfer panel amount should be reset', () => {
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
           cy.findAmountInput().should('have.value', '')
           cy.findMoveFundsButton().should('be.disabled')
         })
@@ -131,8 +130,7 @@ describe('Deposit Token', () => {
         })
 
         context('should deposit successfully', () => {
-          cy.findMoveFundsButton().click()
-          cy.confirmMetamaskTransaction()
+          cy.startTransfer()
           const txData = {
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
@@ -184,7 +182,7 @@ describe('Deposit Token', () => {
 
         context('funds should reach destination account successfully', () => {
           // close transaction history
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
 
           // the custom destination address should now have some balance greater than zero
           cy.findByLabelText(`${testCase.symbol} balance amount on childChain`)

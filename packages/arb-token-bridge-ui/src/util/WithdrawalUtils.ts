@@ -9,6 +9,8 @@ import { BigNumber } from 'ethers'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
+import { getBridgeUiConfigForChain } from './bridgeUiConfig'
+import { isNetwork } from './networks'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -103,5 +105,62 @@ export async function withdrawInitTxEstimateGas({
         ? BigNumber.from(1_400_000)
         : BigNumber.from(800_000)
     }
+  }
+}
+
+const SECONDS_IN_MINUTE = 60
+const SECONDS_IN_HOUR = 3600
+const SECONDS_IN_DAY = 86400
+const DEFAULT_CONFIRMATION_TIME = 7 * SECONDS_IN_DAY
+const DEFAULT_TESTNET_CONFIRMATION_TIME = SECONDS_IN_HOUR
+
+function formatDuration(seconds: number, short = false): string {
+  if (seconds < SECONDS_IN_MINUTE) {
+    return `${seconds} ${short ? 'secs' : 'seconds'}`
+  }
+  if (seconds < SECONDS_IN_HOUR) {
+    return `${Math.round(seconds / SECONDS_IN_MINUTE)} ${
+      short ? 'mins' : 'minutes'
+    }`
+  }
+  if (seconds < SECONDS_IN_DAY) {
+    return `${Math.round(seconds / SECONDS_IN_HOUR)} hours`
+  }
+  return `${Math.round(seconds / SECONDS_IN_DAY)} days`
+}
+
+/**
+ * Calculate confirmation time for bridge transactions.
+ * @param {number} chainId - The ID of the parent chain.
+ */
+export function getConfirmationTime(chainId: number) {
+  const { fastWithdrawalTime } = getBridgeUiConfigForChain(chainId)
+  const isTestnet = isNetwork(chainId).isTestnet
+
+  const fastWithdrawalActive = typeof fastWithdrawalTime !== 'undefined'
+
+  let confirmationTimeInSeconds: number
+
+  if (fastWithdrawalActive) {
+    confirmationTimeInSeconds = fastWithdrawalTime / 1000
+  } else {
+    confirmationTimeInSeconds = isTestnet
+      ? DEFAULT_TESTNET_CONFIRMATION_TIME
+      : DEFAULT_CONFIRMATION_TIME
+  }
+
+  const confirmationTimeInReadableFormat = formatDuration(
+    confirmationTimeInSeconds
+  )
+  const confirmationTimeInReadableFormatShort = formatDuration(
+    confirmationTimeInSeconds,
+    true
+  )
+
+  return {
+    fastWithdrawalActive,
+    confirmationTimeInSeconds,
+    confirmationTimeInReadableFormat,
+    confirmationTimeInReadableFormatShort
   }
 }
