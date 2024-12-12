@@ -87,7 +87,9 @@ export async function fetchWithdrawals({
   const ethWithdrawalsFromEventLogs = await backOff(() =>
     fetchETHWithdrawalsFromEventLogs({
       receiver,
-      fromBlock: toBlock + 1,
+      // not sure why eslint is treating "toBlock" as "number | undefined" here
+      // even though typescript recognizes it as "number"
+      fromBlock: toBlock ?? 0 + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     })
