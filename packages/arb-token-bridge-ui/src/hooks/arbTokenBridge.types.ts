@@ -134,7 +134,7 @@ export interface ArbTokenBridgeEth {
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
-  }) => Promise<void | ContractReceipt>
+  }) => Promise<ContractReceipt>
 }
 
 export interface ArbTokenBridgeToken {
@@ -146,7 +146,7 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
-  }) => Promise<void | ContractReceipt>
+  }) => Promise<ContractReceipt>
 }
 
 export interface ArbTokenBridge {

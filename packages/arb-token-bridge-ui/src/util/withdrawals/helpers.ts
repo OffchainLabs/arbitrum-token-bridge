@@ -17,7 +17,7 @@ import {
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
-import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { checkExecutedMessagesCache } from '../../hooks/useExecutedMessagesCache'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 
 /**
@@ -107,15 +107,7 @@ export async function getOutgoingMessageState(
   l2Provider: Provider,
   l2ChainID: number
 ) {
-  const cacheKey = getExecutedMessagesCacheKey({
-    event,
-    l2ChainId: l2ChainID
-  })
-
-  const executedMessagesCache = JSON.parse(
-    localStorage.getItem('arbitrum:bridge:executed-messages') || '{}'
-  )
-  if (executedMessagesCache[cacheKey]) {
+  if (checkExecutedMessagesCache({ event, childChainId: l2ChainID })) {
     return OutgoingMessageState.EXECUTED
   }
 

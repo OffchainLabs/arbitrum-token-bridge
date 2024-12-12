@@ -3,14 +3,8 @@ import { Chain, useAccount } from 'wagmi'
 import { BigNumber } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import {
-  EventArgs,
-  ChildToParentMessage,
-  ChildToParentTransactionEvent
-} from '@arbitrum/sdk'
-import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+import { ChildToParentMessage } from '@arbitrum/sdk'
 
 import {
   ArbTokenBridge,
@@ -38,24 +32,6 @@ import { useArbQueryParams } from './useArbQueryParams'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
-}
-
-function isClassicL2ToL1TransactionEvent(
-  event: ChildToParentTransactionEvent
-): event is EventArgs<ClassicL2ToL1TransactionEvent> {
-  return typeof (event as any).batchNumber !== 'undefined'
-}
-
-export function getExecutedMessagesCacheKey({
-  event,
-  l2ChainId
-}: {
-  event: L2ToL1EventResult
-  l2ChainId: number
-}) {
-  return isClassicL2ToL1TransactionEvent(event)
-    ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
-    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
 
 export function getUniqueIdOrHashFromEvent(
@@ -119,20 +95,6 @@ export const useArbTokenBridge = (
     chainId: l2.network.id,
     walletAddress: destinationAddress
   })
-
-  interface ExecutedMessagesCache {
-    [id: string]: boolean
-  }
-
-  const [executedMessagesCache, setExecutedMessagesCache] =
-    useLocalStorage<ExecutedMessagesCache>(
-      'arbitrum:bridge:executed-messages',
-      {}
-    ) as [
-      ExecutedMessagesCache,
-      React.Dispatch<ExecutedMessagesCache>,
-      React.Dispatch<void>
-    ]
 
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
 
@@ -427,7 +389,7 @@ export const useArbTokenBridge = (
     }
 
     if (!walletAddress) {
-      return
+      throw new Error('Wallet address not found')
     }
 
     const parentChainProvider = getProviderForChainId(event.parentChainId)
@@ -439,12 +401,7 @@ export const useArbTokenBridge = (
       parentChainProvider
     )
     const res = await messageWriter.execute(childChainProvider)
-
     const rec = await res.wait()
-
-    if (rec.status === 1) {
-      addToExecutedMessagesCache([event])
-    }
 
     return rec
   }
@@ -483,7 +440,7 @@ export const useArbTokenBridge = (
     }
 
     if (!walletAddress) {
-      return
+      throw new Error('Wallet address not found')
     }
 
     const parentChainProvider = getProviderForChainId(event.parentChainId)
@@ -496,29 +453,9 @@ export const useArbTokenBridge = (
     )
 
     const res = await messageWriter.execute(childChainProvider)
-
     const rec = await res.wait()
 
-    if (rec.status === 1) {
-      addToExecutedMessagesCache([event])
-    }
-
     return rec
-  }
-
-  function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
-    const added: { [cacheKey: string]: boolean } = {}
-
-    events.forEach((event: L2ToL1EventResult) => {
-      const cacheKey = getExecutedMessagesCacheKey({
-        event,
-        l2ChainId: l2.network.id
-      })
-
-      added[cacheKey] = true
-    })
-
-    setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
   return {
