@@ -83,19 +83,19 @@ describe('isDepositMode', () => {
 
     expect(result2).toBe(false)
   })
-  it('should return false for L1 source chain and L3 destination chain', () => {
+  it('should return true for L1 source chain and L3 destination chain', () => {
     const result1 = isDepositMode({
       sourceChainId: ChainId.Ethereum,
       destinationChainId: 1380012617 // RARI mainnet
     })
-    expect(result1).toBe(false)
+    expect(result1).toBe(true)
 
     const result2 = isDepositMode({
       sourceChainId: ChainId.Ethereum,
       destinationChainId: 660279 // Xai
     })
 
-    expect(result2).toBe(false)
+    expect(result2).toBe(true)
   })
   it('should return false for L3 source chain and L1 destination chain', () => {
     const result1 = isDepositMode({
@@ -111,11 +111,19 @@ describe('isDepositMode', () => {
 
     expect(result2).toBe(false)
   })
-  it('should return false for L2 source chain and L2 destination chain', () => {
-    const result1 = isDepositMode({
-      sourceChainId: ChainId.ArbitrumOne,
-      destinationChainId: ChainId.ArbitrumNova
-    })
-    expect(result1).toBe(false)
+  it('should throw error for L2 source chain and L2 destination chain', () => {
+    expect(() =>
+      isDepositMode({
+        sourceChainId: ChainId.ArbitrumOne,
+        destinationChainId: ChainId.ArbitrumNova
+      })
+    ).toThrow(new Error('Arbitrum One to Arbitrum Nova is not supported.'))
+
+    expect(() =>
+      isDepositMode({
+        sourceChainId: ChainId.ArbitrumNova,
+        destinationChainId: ChainId.ArbitrumOne
+      })
+    ).toThrow(new Error('Arbitrum Nova to Arbitrum One is not supported.'))
   })
 })
