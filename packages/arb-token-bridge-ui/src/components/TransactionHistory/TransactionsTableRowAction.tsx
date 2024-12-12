@@ -1,4 +1,6 @@
 import { useCallback } from 'react'
+import { useAccount, useNetwork } from 'wagmi'
+
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { useClaimCctp } from '../../state/cctpState'
@@ -13,7 +15,6 @@ import { getNetworkName } from '../../util/networks'
 import { errorToast } from '../common/atoms/Toast'
 import { Button } from '../common/Button'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useNetwork } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { TransferCountdown } from '../common/TransferCountdown'
@@ -23,6 +24,7 @@ import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
+import { Tooltip } from '../common/Tooltip'
 
 export function TransactionsTableRowAction({
   tx,
@@ -33,10 +35,16 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
+  const { address: connectedAddress } = useAccount()
   const { chain } = useNetwork()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
+
+  const viewingAnotherAddress =
+    connectedAddress &&
+    sanitizedAddress &&
+    connectedAddress.toLowerCase() !== sanitizedAddress?.toLowerCase()
 
   const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
     erc20L1Address: tx.tokenAddress,
@@ -162,16 +170,25 @@ export function TransactionsTableRowAction({
     return isClaiming || isClaimingCctp ? (
       <span className="my-2 animate-pulse text-xs">Claiming...</span>
     ) : (
-      <Button
-        aria-label={`Claim ${formatAmount(Number(tx.value), {
-          symbol: tokenSymbol
-        })}`}
-        variant="primary"
-        className="w-14 rounded bg-green-400 p-2 text-xs text-black"
-        onClick={handleClaim}
+      <Tooltip
+        content={
+          <span>{`Funds will arrive at ${sanitizedAddress} on ${getNetworkName(
+            tx.destinationChainId
+          )} once the claim transaction succeeds.`}</span>
+        }
+        show={typeof sanitizedAddress === 'undefined'}
       >
-        Claim
-      </Button>
+        <Button
+          aria-label={`Claim ${formatAmount(Number(tx.value), {
+            symbol: tokenSymbol
+          })}`}
+          variant="primary"
+          className="w-14 rounded bg-green-400 p-2 text-xs text-black"
+          onClick={handleClaim}
+        >
+          Claim
+        </Button>
+      </Tooltip>
     )
   }
 
