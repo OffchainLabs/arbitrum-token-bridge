@@ -176,7 +176,11 @@ export function TransactionsTableRowAction({
             tx.destinationChainId
           )} once the claim transaction succeeds.`}</span>
         }
-        show={typeof sanitizedAddress === 'undefined'}
+        show={
+          sanitizedAddress &&
+          connectedAddress &&
+          sanitizedAddress.toLowerCase() !== connectedAddress.toLowerCase()
+        }
       >
         <Button
           aria-label={`Claim ${formatAmount(Number(tx.value), {
