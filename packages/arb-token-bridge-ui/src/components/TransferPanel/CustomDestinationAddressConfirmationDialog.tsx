@@ -38,8 +38,10 @@ export function CustomDestinationAddressConfirmationDialog(
         <p className="pb-2">
           You are attempting to deposit funds to a destination address (
           {shortenAddress(destinationAddress)}), which is the same as your
-          sender (wallet) address. This is an uncommon action. If this was a
-          mistake, please update your destination address.
+          connected wallet address.
+          <br />
+          This is an uncommon action. If this was a mistake, please update your
+          destination address.
         </p>
       </div>
 
