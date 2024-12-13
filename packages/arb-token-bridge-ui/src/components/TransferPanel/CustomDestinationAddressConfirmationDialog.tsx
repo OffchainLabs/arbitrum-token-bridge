@@ -36,12 +36,12 @@ export function CustomDestinationAddressConfirmationDialog(
     >
       <div className="mb-4">
         <p className="pb-2">
-          You are attempting to deposit funds to a destination address (
-          {shortenAddress(destinationAddress)}), which is the same as your
-          connected wallet address.
-          <br />
-          This is an uncommon action. If this was a mistake, please update your
-          destination address.
+          You are attempting to deposit funds to the same address{' '}
+          {shortenAddress(destinationAddress)} on {networkName}.
+        </p>
+        <p className="pb-2">
+          This is an uncommon action because your smart contract wallet is only
+          deployed on the currently connected chain.
         </p>
       </div>
 
