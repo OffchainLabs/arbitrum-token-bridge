@@ -313,7 +313,7 @@ export function findTransactionInTransactionHistory({
     }`
   )
 
-  cy.findByTestId(rowId).as('row')
+  cy.findByTestId(rowId, { timeout: 120_000 }).as('row')
   if (duration) {
     cy.get('@row').findAllByText(duration).first().should('be.visible')
   }
