@@ -108,31 +108,6 @@ export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
     .and('equal', 'selected')
 }
 
-export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
-  cy.log(`opening transactions panel on ${tab}`)
-  cy.findByRole('button', { name: /account header button/i })
-    .should('be.visible')
-    .click()
-  cy.findByRole('button', { name: /transactions/i })
-    .should('be.visible')
-    .click()
-
-  cy.selectTransactionsPanelTab(tab)
-
-  // Waiting for transactions to be fetched
-  return cy.waitUntil(
-    () =>
-      cy
-        .findByText(/Showing \d+ \w+ transactions made in/)
-        .should('be.visible'),
-    {
-      errorMsg: 'Failed to fetch transactions.',
-      timeout: 120_000,
-      interval: 500
-    }
-  )
-}
-
 export const searchAndSelectToken = ({
   tokenName,
   tokenAddress
@@ -263,8 +238,20 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
-export function closeTransactionHistoryPanel() {
-  cy.findByLabelText('Close side panel').click()
+export function switchToTransferPanelTab() {
+  return cy.findByLabelText('Switch to Bridge Tab').click()
+}
+
+export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
+  cy.log(`opening transactions panel on ${tab}`)
+
+  cy.findByLabelText('Switch to Transaction History Tab').click()
+
+  cy.selectTransactionsPanelTab(tab)
+
+  cy.findByText(/Showing \d+ \w+ transactions made in/, {
+    timeout: 120_000
+  }).should('be.visible')
 }
 
 export function openTransactionDetails({
@@ -372,7 +359,7 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   const formattedAmount = formatAmount(amount, {
     symbol: 'USDC'
   })
-  cy.openTransactionsPanel('pending')
+  cy.switchToTransactionHistoryTab('pending')
   cy.findTransactionInTransactionHistory({
     amount,
     symbol: 'USDC'
@@ -391,7 +378,6 @@ Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
-  openTransactionsPanel,
   selectTransactionsPanelTab,
   searchAndSelectToken,
   fillCustomDestinationAddress,
@@ -406,7 +392,8 @@ Cypress.Commands.addAll({
   findMoveFundsButton,
   startTransfer,
   findSelectTokenButton,
-  closeTransactionHistoryPanel,
+  switchToTransferPanelTab,
+  switchToTransactionHistoryTab,
   openTransactionDetails,
   closeTransactionDetails,
   findTransactionInTransactionHistory,

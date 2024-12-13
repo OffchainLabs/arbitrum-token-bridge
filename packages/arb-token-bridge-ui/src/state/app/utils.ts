@@ -17,7 +17,7 @@ import {
   isTeleportTx,
   TeleporterTransaction,
   Transaction
-} from '../../hooks/useTransactions'
+} from '../../types/Transactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import {
   firstRetryableLegRequiresRedeem,

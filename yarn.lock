@@ -78,17 +78,6 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.npmjs.org/@arbitrum/sdk/-/sdk-4.0.1.tgz"
-  integrity sha512-uW0Pe/oICbmlHpIpYOaHHWsNQRG+3UbCa3s0SJsp2O1Kt9b0M0CX/fEdFOFLyAi3OxHonNEfzhfvQrALy9C3Yw==
-  dependencies:
-    "@ethersproject/address" "^5.0.8"
-    "@ethersproject/bignumber" "^5.1.1"
-    "@ethersproject/bytes" "^5.0.8"
-    async-mutex "^0.4.0"
-    ethers "^5.1.0"
-
 "@arbitrum/sdk@^4.0.2":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.2.tgz#23555858f49e2b237b94a65bd486c65edb7b1690"
@@ -7556,6 +7545,11 @@ expect@^29.0.0, expect@^29.5.0:
     jest-message-util "^29.5.0"
     jest-util "^29.5.0"
 
+exponential-backoff@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/exponential-backoff/-/exponential-backoff-3.1.1.tgz#64ac7526fe341ab18a39016cd22c787d01e00bf6"
+  integrity sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==
+
 express@^4.17.3:
   version "4.21.0"
   resolved "https://registry.yarnpkg.com/express/-/express-4.21.0.tgz#d57cb706d49623d4ac27833f1cbc466b668eb915"
@@ -10755,15 +10749,10 @@ nano-css@^5.3.1:
     stacktrace-js "^2.0.2"
     stylis "^4.0.6"
 
-nanoid@^3.3.6:
-  version "3.3.6"
-  resolved "https://registry.npmjs.org/nanoid/-/nanoid-3.3.6.tgz"
-  integrity sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==
-
-nanoid@^3.3.7:
-  version "3.3.7"
-  resolved "https://registry.npmjs.org/nanoid/-/nanoid-3.3.7.tgz"
-  integrity sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==
+nanoid@^3.3.6, nanoid@^3.3.7:
+  version "3.3.8"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.8.tgz#b1be3030bee36aaff18bacb375e5cce521684baf"
+  integrity sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==
 
 napi-build-utils@^1.0.1:
   version "1.0.2"

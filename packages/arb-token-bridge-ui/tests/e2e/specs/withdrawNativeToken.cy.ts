@@ -96,7 +96,7 @@ describe('Withdraw native token', () => {
           })
 
           context('transfer panel amount should be reset', () => {
-            cy.closeTransactionHistoryPanel()
+            cy.switchToTransferPanelTab()
             cy.findAmountInput().should('have.value', '')
             cy.findMoveFundsButton().should('be.disabled')
           })
@@ -106,9 +106,7 @@ describe('Withdraw native token', () => {
           // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
           cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
 
-          cy.findByLabelText('Open Transaction History')
-            .should('be.visible')
-            .click()
+          cy.switchToTransactionHistoryTab('pending')
 
           cy.findClaimButton(
             formatAmount(ETHToWithdraw, {
@@ -128,7 +126,7 @@ describe('Withdraw native token', () => {
             })}`
           ).should('be.visible')
 
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
 
           // the balance on the destination chain should not be the same as before
           cy.findByLabelText(
@@ -194,7 +192,7 @@ describe('Withdraw native token', () => {
       cy.closeTransactionDetails()
 
       context('transfer panel amount should be reset', () => {
-        cy.closeTransactionHistoryPanel()
+        cy.switchToTransferPanelTab()
         cy.findAmountInput().should('have.value', '')
         cy.findMoveFundsButton().should('be.disabled')
       })
