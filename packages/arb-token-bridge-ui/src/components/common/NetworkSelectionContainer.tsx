@@ -122,7 +122,10 @@ export function NetworkButton({
 
   const hasOneOrLessChain = chains.length <= 1
 
-  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+  const disabled =
+    hasOneOrLessChain ||
+    (isSmartContractWallet && type === 'source') ||
+    isLoading
 
   const buttonStyle = {
     backgroundColor: getBridgeUiConfigForChain(selectedChainId).color

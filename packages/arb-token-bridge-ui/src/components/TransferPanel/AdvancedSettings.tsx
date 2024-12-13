@@ -83,7 +83,11 @@ export const AdvancedSettings = () => {
     isDepositMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const {
+    isEOA,
+    isSmartContractWallet,
+    isLoading: isLoadingAccountType
+  } = useAccountType()
 
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
@@ -165,7 +169,7 @@ export const AdvancedSettings = () => {
     })
   }, [debouncedDestinationAddress, setQueryParams])
 
-  if (!isEOA && !isSmartContractWallet) {
+  if (!isEOA && !isSmartContractWallet && !isLoadingAccountType) {
     return null
   }
 
