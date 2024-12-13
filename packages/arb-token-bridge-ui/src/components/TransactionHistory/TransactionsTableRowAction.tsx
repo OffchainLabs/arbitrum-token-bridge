@@ -39,12 +39,13 @@ export function TransactionsTableRowAction({
   const { chain } = useNetwork()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const { sanitizedAddress: searchedAddress } =
+    useTransactionHistoryAddressStore()
 
   const viewingAnotherAddress =
     connectedAddress &&
-    sanitizedAddress &&
-    connectedAddress.toLowerCase() !== sanitizedAddress?.toLowerCase()
+    searchedAddress &&
+    connectedAddress.toLowerCase() !== searchedAddress.toLowerCase()
 
   const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
     erc20L1Address: tx.tokenAddress,
@@ -55,10 +56,10 @@ export function TransactionsTableRowAction({
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { redeem, isRedeeming: isRetryableRedeeming } = useRedeemRetryable(
     tx,
-    sanitizedAddress
+    searchedAddress
   )
   const { redeem: teleporterRedeem, isRedeeming: isTeleporterRedeeming } =
-    useRedeemTeleporter(tx, sanitizedAddress)
+    useRedeemTeleporter(tx, searchedAddress)
 
   const isRedeeming = isRetryableRedeeming || isTeleporterRedeeming
 
@@ -172,15 +173,11 @@ export function TransactionsTableRowAction({
     ) : (
       <Tooltip
         content={
-          <span>{`Funds will arrive at ${sanitizedAddress} on ${getNetworkName(
+          <span>{`Funds will arrive at ${searchedAddress} on ${getNetworkName(
             tx.destinationChainId
           )} once the claim transaction succeeds.`}</span>
         }
-        show={
-          sanitizedAddress &&
-          connectedAddress &&
-          sanitizedAddress.toLowerCase() !== connectedAddress.toLowerCase()
-        }
+        show={viewingAnotherAddress}
       >
         <Button
           aria-label={`Claim ${formatAmount(Number(tx.value), {
