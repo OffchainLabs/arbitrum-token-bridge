@@ -142,7 +142,7 @@ export const TransactionHistoryTable = (
     transactions,
     senderData,
     receiverData,
-    failedChainPairs,
+    rawDataErroredChains,
     resume,
     selectedTabIndex,
     oldestTxTimeAgoString
@@ -219,7 +219,7 @@ export const TransactionHistoryTable = (
       >
         {senderData.loadingForSender ? (
           <div className="flex h-[28px] items-center space-x-2">
-            <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+            <FailedChainPairsTooltip failedChainPairs={rawDataErroredChains} />
             <HistoryLoader />
           </div>
         ) : (
@@ -237,7 +237,9 @@ export const TransactionHistoryTable = (
                   <Loader size="small" color="white" />
                 </Tooltip>
               )}
-              <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+              <FailedChainPairsTooltip
+                failedChainPairs={rawDataErroredChains}
+              />
               <span className="text-xs">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}

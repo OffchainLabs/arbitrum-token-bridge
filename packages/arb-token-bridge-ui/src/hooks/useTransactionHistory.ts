@@ -79,7 +79,7 @@ export type UseTransactionHistoryResult = {
     completedForReceiver: boolean
     errorForReceiver: unknown
   }
-  failedChainPairs: ChainPair[]
+  rawDataErroredChains: ChainPair[]
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
@@ -267,86 +267,7 @@ const useRawTransactionHistory = ({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  // // Check what type of CCTP (deposit, withdrawal or all) to fetch
-  // // We need this because of Smart Contract Wallets
-  // const cctpTypeToFetch = useCallback(
-  //   (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-  //     if (isLoadingAccountType || !chain) {
-  //       return undefined
-  //     }
-  //     if (isSmartContractWallet) {
-  //       // fetch based on the connected network
-  //       if (chain.id === chainPair.parentChainId) {
-  //         return 'deposits'
-  //       }
-  //       if (chain.id === chainPair.childChainId) {
-  //         return 'withdrawals'
-  //       }
-  //       return undefined
-  //     }
-  //     // EOA
-  //     return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
-  //       ? 'all'
-  //       : undefined
-  //   },
-  //   [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
-  // )
-
-  // const cctpTransfersMainnet = useCctpFetching({
-  //   walletAddress: address,
-  //   l1ChainId: ChainId.Ethereum,
-  //   l2ChainId: ChainId.ArbitrumOne,
-  //   pageNumber: 0,
-  //   pageSize: cctpTypeToFetch({
-  //     parentChainId: ChainId.Ethereum,
-  //     childChainId: ChainId.ArbitrumOne
-  //   })
-  //     ? 1000
-  //     : 0,
-  //   type:
-  //     cctpTypeToFetch({
-  //       parentChainId: ChainId.Ethereum,
-  //       childChainId: ChainId.ArbitrumOne
-  //     }) ?? 'all'
-  // })
-
-  // const cctpTransfersTestnet = useCctpFetching({
-  //   walletAddress: address,
-  //   l1ChainId: ChainId.Sepolia,
-  //   l2ChainId: ChainId.ArbitrumSepolia,
-  //   pageNumber: 0,
-  //   pageSize: cctpTypeToFetch({
-  //     parentChainId: ChainId.Sepolia,
-  //     childChainId: ChainId.ArbitrumSepolia
-  //   })
-  //     ? 1000
-  //     : 0,
-  //   type:
-  //     cctpTypeToFetch({
-  //       parentChainId: ChainId.Sepolia,
-  //       childChainId: ChainId.ArbitrumSepolia
-  //     }) ?? 'all'
-  // })
-
-  // // TODO: Clean up this logic when introducing testnet/mainnet split
-  // const combinedCctpTransfers = [
-  //   ...(cctpTransfersMainnet.deposits?.completed || []),
-  //   ...(cctpTransfersMainnet.withdrawals?.completed || []),
-  //   ...(cctpTransfersTestnet.deposits?.completed || []),
-  //   ...(cctpTransfersTestnet.withdrawals?.completed || []),
-  //   ...(cctpTransfersMainnet.deposits?.pending || []),
-  //   ...(cctpTransfersMainnet.withdrawals?.pending || []),
-  //   ...(cctpTransfersTestnet.deposits?.pending || []),
-  //   ...(cctpTransfersTestnet.withdrawals?.pending || [])
-  // ]
-
-  // const cctpLoading =
-  //   cctpTransfersMainnet.isLoadingDeposits ||
-  //   cctpTransfersMainnet.isLoadingWithdrawals ||
-  //   cctpTransfersTestnet.isLoadingDeposits ||
-  //   cctpTransfersTestnet.isLoadingWithdrawals
-
-  const { data: erroredChains, mutate: addFailedChainPair } = useSWRImmutable<
+  const { data: erroredChains, mutate: addErroredChain } = useSWRImmutable<
     ChainPair[]
   >(address ? ['errored_chains', address] : null)
 
@@ -361,8 +282,6 @@ const useRawTransactionHistory = ({
       if (!chain) {
         return []
       }
-
-      const fetchForSender = fetchFor === 'sender'
 
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
@@ -381,6 +300,28 @@ const useRawTransactionHistory = ({
             )
           })
           .map(async chainPair => {
+            // SCW address is tied to a specific network
+            // that's why we need to limit shown txs either to sent or received funds
+            // otherwise we'd display funds for a different network, which could be someone else's account
+            const isConnectedToParentChain =
+              chainPair.parentChainId === chain.id
+
+            const includeSentTxs = shouldIncludeSentTxs({
+              type,
+              isSmartContractWallet,
+              isConnectedToParentChain
+            })
+
+            const includeReceivedTxs = shouldIncludeReceivedTxs({
+              type,
+              isSmartContractWallet,
+              isConnectedToParentChain
+            })
+
+            const fetchForSender = fetchFor === 'sender' && includeSentTxs
+            const fetchForReceiver =
+              fetchFor === 'receiver' && includeReceivedTxs
+
             try {
               // early check for fetching teleport
               if (
@@ -394,7 +335,7 @@ const useRawTransactionHistory = ({
 
                 return await fetchTeleports({
                   sender: fetchForSender ? address : undefined,
-                  receiver: fetchForSender ? undefined : address,
+                  receiver: fetchForReceiver ? address : undefined,
                   parentChainProvider: getProviderForChainId(
                     chainPair.parentChainId
                   ),
@@ -409,29 +350,29 @@ const useRawTransactionHistory = ({
               // else, fetch deposits or withdrawals
               return await fetcherFn({
                 sender: fetchForSender ? address : undefined,
-                receiver: fetchForSender ? undefined : address,
+                receiver: fetchForReceiver ? address : undefined,
                 l1Provider: getProviderForChainId(chainPair.parentChainId),
                 l2Provider: getProviderForChainId(chainPair.childChainId),
                 pageNumber: 0,
                 pageSize: 1000
               })
             } catch {
-              addFailedChainPair(prevFailedChainPairs => {
-                if (!prevFailedChainPairs) {
+              addErroredChain(prevErroredChains => {
+                if (!prevErroredChains) {
                   return [chainPair]
                 }
                 if (
-                  typeof prevFailedChainPairs.find(
-                    prevPair =>
-                      prevPair.parentChainId === chainPair.parentChainId &&
-                      prevPair.childChainId === chainPair.childChainId
+                  typeof prevErroredChains.find(
+                    prev =>
+                      prev.parentChainId === chainPair.parentChainId &&
+                      prev.childChainId === chainPair.childChainId
                   ) !== 'undefined'
                 ) {
                   // already added
-                  return prevFailedChainPairs
+                  return prevErroredChains
                 }
 
-                return [...prevFailedChainPairs, chainPair]
+                return [...prevErroredChains, chainPair]
               })
 
               return []
@@ -439,7 +380,7 @@ const useRawTransactionHistory = ({
           })
       )
     },
-    [addFailedChainPair, address, chain, isSmartContractWallet, isTestnetMode]
+    [addErroredChain, address, chain, isSmartContractWallet, isTestnetMode]
   )
 
   const shouldFetch = fetchStarted && address && chain && !isLoadingAccountType
@@ -484,6 +425,94 @@ const useRawTransactionHistory = ({
     rawDataError: depositsError ?? withdrawalsError,
     rawDataErroredChains: erroredChains || []
   }
+}
+
+const useCctpTransactions = ({ address }: { address: Address | undefined }) => {
+  const { chain } = useNetwork()
+  const [isTestnetMode] = useIsTestnetMode()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+
+  // Check what type of CCTP (deposit, withdrawal or all) to fetch
+  // We need this because of Smart Contract Wallets
+  const cctpTypeToFetch = useCallback(
+    (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
+      if (isLoadingAccountType || !chain) {
+        return undefined
+      }
+      if (isSmartContractWallet) {
+        // fetch based on the connected network
+        if (chain.id === chainPair.parentChainId) {
+          return 'deposits'
+        }
+        if (chain.id === chainPair.childChainId) {
+          return 'withdrawals'
+        }
+        return undefined
+      }
+      // EOA
+      return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+        ? 'all'
+        : undefined
+    },
+    [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
+  )
+
+  const cctpTransfersMainnet = useCctpFetching({
+    walletAddress: address,
+    l1ChainId: ChainId.Ethereum,
+    l2ChainId: ChainId.ArbitrumOne,
+    pageNumber: 0,
+    pageSize: cctpTypeToFetch({
+      parentChainId: ChainId.Ethereum,
+      childChainId: ChainId.ArbitrumOne
+    })
+      ? 1000
+      : 0,
+    type:
+      cctpTypeToFetch({
+        parentChainId: ChainId.Ethereum,
+        childChainId: ChainId.ArbitrumOne
+      }) ?? 'all'
+  })
+
+  const cctpTransfersTestnet = useCctpFetching({
+    walletAddress: address,
+    l1ChainId: ChainId.Sepolia,
+    l2ChainId: ChainId.ArbitrumSepolia,
+    pageNumber: 0,
+    pageSize: cctpTypeToFetch({
+      parentChainId: ChainId.Sepolia,
+      childChainId: ChainId.ArbitrumSepolia
+    })
+      ? 1000
+      : 0,
+    type:
+      cctpTypeToFetch({
+        parentChainId: ChainId.Sepolia,
+        childChainId: ChainId.ArbitrumSepolia
+      }) ?? 'all'
+  })
+
+  // TODO: Clean up this logic when introducing testnet/mainnet split
+  const combinedCctpTransfers = [
+    ...(cctpTransfersMainnet.deposits?.completed || []),
+    ...(cctpTransfersMainnet.withdrawals?.completed || []),
+    ...(cctpTransfersTestnet.deposits?.completed || []),
+    ...(cctpTransfersTestnet.withdrawals?.completed || []),
+    ...(cctpTransfersMainnet.deposits?.pending || []),
+    ...(cctpTransfersMainnet.withdrawals?.pending || []),
+    ...(cctpTransfersTestnet.deposits?.pending || []),
+    ...(cctpTransfersTestnet.withdrawals?.pending || [])
+  ]
+
+  const cctpLoading =
+    cctpTransfersMainnet.isLoadingDeposits ||
+    cctpTransfersMainnet.isLoadingWithdrawals ||
+    cctpTransfersTestnet.isLoadingDeposits ||
+    cctpTransfersTestnet.isLoadingWithdrawals
+
+  return { cctpTransactions: combinedCctpTransfers, cctpLoading }
 }
 
 /**
@@ -966,6 +995,7 @@ const useMappedTransactionHistory = ({
       isLoadingSenderFirstPage ||
       isLoadingMore ||
       isLoadingReceiverTransactions,
+    rawDataErroredChains,
     pause,
     resume,
     addPendingTransaction,
@@ -983,6 +1013,7 @@ export const useTransactionHistory = (
     loading: loadingForSender,
     completed: completedForSender,
     error: errorForSender,
+    rawDataErroredChains: rawDataErroredChainsForSender,
     pause,
     resume,
     addPendingTransaction,
@@ -998,7 +1029,8 @@ export const useTransactionHistory = (
     transactions: receiverTransactions,
     loading: loadingForReceiver,
     completed: completedForReceiver,
-    error: errorForReceiver
+    error: errorForReceiver,
+    rawDataErroredChains: rawDataErroredChainsForReceiver
   } = useMappedTransactionHistory({
     address,
     fetchFor: 'receiver',
@@ -1006,13 +1038,17 @@ export const useTransactionHistory = (
     runFetcher
   })
 
+  const { cctpTransactions, cctpLoading } = useCctpTransactions({ address })
+
   return {
-    transactions: [...senderTransactions, ...receiverTransactions].sort(
-      sortByTimestampDescending
-    ),
+    transactions: [
+      ...senderTransactions,
+      ...receiverTransactions,
+      ...cctpTransactions
+    ].sort(sortByTimestampDescending),
     senderData: {
       senderTransactions,
-      loadingForSender,
+      loadingForSender: loadingForSender || cctpLoading,
       completedForSender,
       errorForSender
     },
@@ -1022,7 +1058,8 @@ export const useTransactionHistory = (
       completedForReceiver,
       errorForReceiver
     },
-    failedChainPairs: [],
+    rawDataErroredChains:
+      rawDataErroredChainsForSender || rawDataErroredChainsForReceiver,
     pause,
     resume,
     addPendingTransaction,
