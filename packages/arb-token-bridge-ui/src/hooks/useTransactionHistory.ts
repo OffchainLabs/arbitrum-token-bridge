@@ -929,7 +929,7 @@ const useMappedReceiverTransactionHistory = ({
 }): UseMappedTransactionHistoryResult => {
   const { isLoading: isLoadingAccountType } = useAccountType()
 
-  const { rawData, rawDataLoading, rawDataErroredChains } =
+  const { rawData, rawDataLoading, rawDataErroredChains, rawDataError } =
     useRawTransactionHistory({
       address,
       fetchFor: 'receiver',
@@ -1013,6 +1013,24 @@ const useMappedReceiverTransactionHistory = ({
     },
     [updateTransactionInSwrCache]
   )
+
+  useEffect(() => {
+    if (typeof rawDataError !== 'undefined') {
+      console.warn(rawDataError)
+      captureSentryErrorWithExtraData({
+        error: rawDataError,
+        originFunction: 'useRawTransactionHistory'
+      })
+    }
+
+    if (typeof receiverTransactionsError !== 'undefined') {
+      console.warn(receiverTransactionsError)
+      captureSentryErrorWithExtraData({
+        error: receiverTransactionsError,
+        originFunction: 'useMappedReceiverTransactionHistory'
+      })
+    }
+  }, [rawDataError, receiverTransactionsError])
 
   return {
     transactions: receiverTransactions || [],
