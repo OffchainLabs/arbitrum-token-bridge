@@ -1,4 +1,4 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -11,6 +11,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import {
+  fetchErc20Allowance,
   fetchErc20L2GatewayAddress,
   getL1ERC20Address
 } from '../util/TokenUtils'
@@ -86,6 +87,15 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     // no-op
   }
 
+  /**
+   * Most tokens inherently allows the token gateway to burn whichever amount
+   * on the child chain for withdrawal because they inherited the
+   * IArbToken interface that allows the gateway to burn without allowance approval
+   *
+   * if the token does not have the bridgeBurn method, approval is required
+   * https://github.com/OffchainLabs/token-bridge-contracts/blob/d54877598e80a00d264d2b4353968faafd6f534d/contracts/tokenbridge/arbitrum/IArbToken.sol
+   *
+   */
   public requiresTokenApproval = async ({
     amount,
     signer
@@ -105,27 +115,44 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       this.destinationChainProvider
     )
 
-    // check first if token is even eligible for allowance check on l2
+    const gatewayAddress = await this.getSourceChainGatewayAddress()
+
+    const sourceChainTokenBridge = getArbitrumNetwork(sourceChainId).tokenBridge
+
+    // tokens that use the standard gateways do not require approval on child chain
+    const standardGateways = [
+      sourceChainTokenBridge?.childErc20Gateway.toLowerCase(),
+      sourceChainTokenBridge?.childWethGateway.toLowerCase()
+    ]
+
+    if (standardGateways.includes(gatewayAddress.toLowerCase())) {
+      return false
+    }
+
+    // the below checks are only run for tokens using custom gateway / custom custom gateway
+
+    // check if token is known to require withdrawal approval on child chain
+    // return true without checking if there is an existing allowance
+    // users might have already approved enough allowance, but it's rare
+    // so we can skip the check to save some calls
     if (
-      (await tokenRequiresApprovalOnL2({
+      await tokenRequiresApprovalOnL2({
         tokenAddressOnParentChain: destinationChainErc20Address,
         parentChainId: destinationChainId,
         childChainId: sourceChainId
-      })) &&
-      this.sourceChainErc20Address
+      })
     ) {
-      const token = ERC20__factory.connect(
-        this.sourceChainErc20Address,
-        this.sourceChainProvider
-      )
-
-      const gatewayAddress = await this.getSourceChainGatewayAddress()
-      const allowance = await token.allowance(address, gatewayAddress)
-
-      return allowance.lt(amount)
+      return true
     }
 
-    return false
+    // a catch-all check for tokens not on the hardcoded list
+    const allowanceForSourceChainGateway = await fetchErc20Allowance({
+      address: this.sourceChainErc20Address,
+      provider: this.sourceChainProvider,
+      owner: address,
+      spender: gatewayAddress
+    })
+    return allowanceForSourceChainGateway.lt(amount)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
