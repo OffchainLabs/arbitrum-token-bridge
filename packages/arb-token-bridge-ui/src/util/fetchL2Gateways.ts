@@ -1,4 +1,3 @@
-import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 
@@ -19,15 +18,7 @@ import {
 export async function fetchL2Gateways(l2Provider: Provider) {
   const l2Network = await getArbitrumNetwork(l2Provider)
 
-  if (!l2Network.tokenBridge) {
-    return []
-  }
-
-  /* configure gateway addresses for fetching withdrawals */
-  const { childErc20Gateway, childCustomGateway, childWethGateway } =
-    l2Network.tokenBridge
-
-  const gatewaysToUse = [childErc20Gateway, childCustomGateway]
+  const gatewaysToUse = []
   const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainId]
   const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainId]
   const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainId]
@@ -35,10 +26,6 @@ export async function fetchL2Gateways(l2Provider: Provider) {
   const l2MoonGateway = l2MoonGatewayAddresses[l2Network.chainId]
   const l2UsdcGateway = l2UsdcGatewayAddresses[l2Network.chainId]
 
-  // custom gas token chains will have weth gateway set to address zero
-  if (childWethGateway !== constants.AddressZero) {
-    gatewaysToUse.push(childWethGateway)
-  }
   if (l2ArbReverseGateway) {
     gatewaysToUse.push(l2ArbReverseGateway)
   }
