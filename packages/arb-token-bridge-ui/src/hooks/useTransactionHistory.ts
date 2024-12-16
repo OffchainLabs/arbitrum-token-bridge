@@ -1079,17 +1079,13 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      if (
-        tx.destination &&
-        tx.sender &&
-        tx.destination.toLowerCase() !== tx.sender.toLowerCase()
-      ) {
+      if (address?.toLowerCase() !== tx.sender?.toLowerCase()) {
         return updatePendingReceiverTransaction(tx)
       }
 
       updatePendingSenderTransaction(tx)
     },
-    [updatePendingReceiverTransaction, updatePendingSenderTransaction]
+    [address, updatePendingReceiverTransaction, updatePendingSenderTransaction]
   )
 
   return {
