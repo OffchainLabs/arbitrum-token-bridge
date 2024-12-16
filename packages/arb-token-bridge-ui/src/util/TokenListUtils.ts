@@ -10,8 +10,6 @@ import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from './networks'
 import orbitChainsData from './orbitChainsData.json'
-import { mainnet, sepolia } from 'wagmi'
-import { holesky } from './wagmi/wagmiAdditionalNetworks'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID =
   'SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID'
@@ -128,8 +126,8 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   ...orbitChainsData.mainnet
     .concat(orbitChainsData.testnet)
     .reduce((acc, chain) => {
-      // Only include arbified native token list for L3
-      if (![mainnet.id, sepolia.id, holesky.id].includes(chain.parentChainId)) {
+      // Only include arbified native token list for L3 settling to ArbOne
+      if (chain.parentChainId === ChainId.ArbitrumOne) {
         acc.push({
           id: `${chain.chainId}_native`,
           originChainID: chain.chainId,
