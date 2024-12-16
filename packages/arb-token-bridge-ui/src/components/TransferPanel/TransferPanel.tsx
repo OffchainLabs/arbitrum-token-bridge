@@ -390,6 +390,16 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return
       }
 
+      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
+      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      if (
+        isSmartContractWallet &&
+        isDepositMode &&
+        areSenderAndCustomDestinationAddressesEqual
+      ) {
+        await confirmCustomDestinationAddressForSCWallets()
+      }
+
       const cctpTransferStarter = new CctpTransferStarter({
         sourceChainProvider,
         destinationChainProvider
