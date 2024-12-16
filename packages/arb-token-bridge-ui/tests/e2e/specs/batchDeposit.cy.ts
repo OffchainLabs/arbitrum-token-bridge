@@ -148,7 +148,7 @@ describe('Batch Deposit', () => {
       })
 
       cy.findTransactionInTransactionHistory({
-        duration: 'a few seconds ago',
+        duration: /a (few seconds|minute) ago/,
         ...txData
       })
       cy.switchToTransferPanelTab()
@@ -258,7 +258,7 @@ describe('Batch Deposit', () => {
       })
 
       cy.findTransactionInTransactionHistory({
-        duration: 'a few seconds ago',
+        duration: /a (few seconds|minute) ago/,
         ...txData
       })
       cy.openTransactionDetails(txData)

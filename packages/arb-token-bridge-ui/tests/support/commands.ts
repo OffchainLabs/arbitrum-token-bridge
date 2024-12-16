@@ -302,7 +302,7 @@ export function findTransactionInTransactionHistory({
   symbol2?: string
   amount: number
   amount2?: number
-  duration?: string
+  duration?: string | RegExp
 }) {
   // Replace . with \.
   const parsedAmount = amount.toString().replace(/\./g, '\\.')

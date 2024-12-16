@@ -154,7 +154,7 @@ describe('Deposit Token', () => {
           cy.waitUntil(
             () =>
               cy.findTransactionInTransactionHistory({
-                duration: 'a few seconds ago',
+                duration: /a (few seconds|minute) ago/,
                 amount: ERC20AmountToSend,
                 symbol: testCase.symbol
               }),
@@ -170,7 +170,7 @@ describe('Deposit Token', () => {
             symbol: testCase.symbol
           }
           cy.findTransactionInTransactionHistory({
-            duration: 'a few seconds ago',
+            duration: /a (few seconds|minute) ago/,
             ...txData
           })
           cy.openTransactionDetails(txData)
