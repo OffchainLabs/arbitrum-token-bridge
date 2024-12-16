@@ -224,7 +224,7 @@ export function TransferPanel() {
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
 
-  const areSenderAndDestinationAddressesEqual = useMemo(() => {
+  const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
     return (
       destinationAddress?.trim()?.toLowerCase() ===
       walletAddress?.trim().toLowerCase()
@@ -606,6 +606,16 @@ export function TransferPanel() {
 
       const destinationAddress = latestDestinationAddress.current
 
+      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
+      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      if (
+        isSmartContractWallet &&
+        isDepositMode &&
+        areSenderAndCustomDestinationAddressesEqual
+      ) {
+        await confirmCustomDestinationAddressForSCWallets()
+      }
+
       const isCustomNativeTokenAmount2 =
         nativeCurrency.isCustom &&
         isBatchTransferSupported &&
@@ -717,10 +727,6 @@ export function TransferPanel() {
 
       // show a delay in case of SCW because tx is executed in an external app
       if (isSmartContractWallet) {
-        if (isDepositMode && areSenderAndDestinationAddressesEqual) {
-          await confirmCustomDestinationAddressForSCWallets()
-        }
-
         showDelayInSmartContractTransaction()
 
         trackEvent(
