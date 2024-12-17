@@ -107,6 +107,16 @@ const FailedChainPairsTooltip = ({
   }
 
   return (
+    <div>
+      {failedChainPairs.map(c => (
+        <span key={c.childChainId}>
+          {getNetworkName(c.parentChainId)}-{getNetworkName(c.childChainId)} |{' '}
+        </span>
+      ))}
+    </div>
+  )
+
+  return (
     <Tooltip
       content={
         <div className="flex flex-col space-y-1 text-xs">
