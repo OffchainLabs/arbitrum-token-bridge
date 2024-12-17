@@ -36,6 +36,12 @@ type TokenWithdrawalQuery = {
   priority: number
 }
 
+export type BuildQueryParamsParams = {
+  sender?: string
+  receiver?: string
+  gateways?: string[]
+}
+
 export type FetchTokenWithdrawalsFromEventLogsSequentiallyParams = {
   sender?: string
   receiver?: string
@@ -46,6 +52,7 @@ export type FetchTokenWithdrawalsFromEventLogsSequentiallyParams = {
    * How long to delay in-between queries of different priority.
    */
   delayMs?: number
+  queries: BuildQueryParamsParams[]
 }
 
 export type FetchTokenWithdrawalsFromEventLogsSequentiallyResult = Awaited<
@@ -53,15 +60,15 @@ export type FetchTokenWithdrawalsFromEventLogsSequentiallyResult = Awaited<
 >
 
 export async function fetchTokenWithdrawalsFromEventLogsSequentially({
-  sender,
-  receiver,
   provider,
   fromBlock = 0,
   toBlock = 'latest',
-  delayMs = 2_000
+  delayMs = 2_000,
+  queries: queriesProp
 }: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<FetchTokenWithdrawalsFromEventLogsSequentiallyResult> {
   // keep track of priority; increment as queries are added
   let priority = 0
+
   // keep track of queries
   const queries: TokenWithdrawalQuery[] = []
 
@@ -70,11 +77,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
     sender,
     receiver,
     gateways = []
-  }: {
-    sender?: string
-    receiver?: string
-    gateways?: string[]
-  }): TokenWithdrawalQuery['params'] {
+  }: BuildQueryParamsParams): TokenWithdrawalQuery['params'] {
     return {
       sender,
       receiver,
@@ -100,22 +103,9 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
     })
   }
 
-  const gateways = await getGateways(provider)
-  const senderNonce = await backOff(() => getNonce(sender, { provider }))
-
-  // sender queries; only add if nonce > 0
-  if (senderNonce > 0) {
-    addQuery(buildQueryParams({ sender, gateways: [gateways.standardGateway] }))
-    addQuery(buildQueryParams({ sender, gateways: [gateways.wethGateway] }))
-    addQuery(buildQueryParams({ sender, gateways: [gateways.customGateway] }))
-    addQuery(buildQueryParams({ sender, gateways: gateways.otherGateways }))
-  }
-
-  // receiver queries
-  addQuery(buildQueryParams({ receiver, gateways: [gateways.standardGateway] }))
-  addQuery(buildQueryParams({ receiver, gateways: [gateways.wethGateway] }))
-  addQuery(buildQueryParams({ receiver, gateways: [gateways.customGateway] }))
-  addQuery(buildQueryParams({ receiver, gateways: gateways.otherGateways }))
+  queriesProp.forEach(query => {
+    addQuery(buildQueryParams(query))
+  })
 
   // for iterating through all priorities in the while loop below
   let currentPriority = 1

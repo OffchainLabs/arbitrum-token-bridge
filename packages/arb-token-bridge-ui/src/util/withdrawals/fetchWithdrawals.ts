@@ -11,8 +11,37 @@ import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
-import { fetchTokenWithdrawalsFromEventLogsSequentially } from './fetchTokenWithdrawalsFromEventLogsSequentially'
+import {
+  BuildQueryParamsParams,
+  fetchTokenWithdrawalsFromEventLogsSequentially
+} from './fetchTokenWithdrawalsFromEventLogsSequentially'
 import { backOff, wait } from '../ExponentialBackoffUtils'
+import { isAlchemyChain } from '../networks'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
+import { fetchL2Gateways } from '../fetchL2Gateways'
+import { constants } from 'ethers'
+import { getNonce } from '../AddressUtils'
+
+async function getGateways(provider: Provider): Promise<{
+  standardGateway: string
+  wethGateway: string
+  customGateway: string
+  otherGateways: string[]
+}> {
+  const network = await getArbitrumNetwork(provider)
+
+  const standardGateway = network.tokenBridge?.childErc20Gateway
+  const customGateway = network.tokenBridge?.childCustomGateway
+  const wethGateway = network.tokenBridge?.childWethGateway
+  const otherGateways = await fetchL2Gateways(provider)
+
+  return {
+    standardGateway: standardGateway ?? constants.AddressZero,
+    wethGateway: wethGateway ?? constants.AddressZero,
+    customGateway: customGateway ?? constants.AddressZero,
+    otherGateways
+  }
+}
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -84,6 +113,47 @@ export async function fetchWithdrawals({
     console.log('Error fetching withdrawals from subgraph', error)
   }
 
+  const gateways = await getGateways(l2Provider)
+  const senderNonce = await getNonce(sender, { provider: l2Provider })
+
+  const queries: BuildQueryParamsParams[] = []
+
+  // alchemy has a global rate limit across all their chains, so we have to fetch sequentially and wait in-between requests
+  const isAlchemy = await isAlchemyChain(l2Provider)
+  const delayMs = isAlchemy ? 2_000 : 0
+
+  const allGateways = [
+    gateways.standardGateway,
+    gateways.wethGateway,
+    gateways.customGateway,
+    ...gateways.otherGateways
+  ]
+
+  // sender queries; only add if nonce > 0
+  if (senderNonce > 0) {
+    if (isAlchemy) {
+      // for alchemy, fetch sequentially
+      queries.push({ sender, gateways: [gateways.standardGateway] })
+      queries.push({ sender, gateways: [gateways.wethGateway] })
+      queries.push({ sender, gateways: [gateways.customGateway] })
+      queries.push({ sender, gateways: gateways.otherGateways })
+    } else {
+      // for other chains, fetch in parallel
+      queries.push({ sender, gateways: allGateways })
+    }
+  }
+
+  if (isAlchemy) {
+    // for alchemy, fetch sequentially
+    queries.push({ receiver, gateways: [gateways.standardGateway] })
+    queries.push({ receiver, gateways: [gateways.wethGateway] })
+    queries.push({ receiver, gateways: [gateways.customGateway] })
+    queries.push({ receiver, gateways: gateways.otherGateways })
+  } else {
+    // for other chains, fetch in parallel
+    queries.push({ receiver, gateways: allGateways })
+  }
+
   const ethWithdrawalsFromEventLogs = await backOff(() =>
     fetchETHWithdrawalsFromEventLogs({
       receiver,
@@ -95,7 +165,7 @@ export async function fetchWithdrawals({
     })
   )
 
-  await wait(2_000)
+  await wait(delayMs)
 
   const tokenWithdrawalsFromEventLogs =
     await fetchTokenWithdrawalsFromEventLogsSequentially({
@@ -103,7 +173,8 @@ export async function fetchWithdrawals({
       receiver,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
-      provider: l2Provider
+      provider: l2Provider,
+      queries: []
     })
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
