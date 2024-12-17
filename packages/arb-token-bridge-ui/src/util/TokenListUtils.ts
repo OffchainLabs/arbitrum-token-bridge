@@ -15,6 +15,7 @@ export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID =
   'SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID'
 
 export interface BridgeTokenList {
+  // string is required here to avoid duplicates when mapping orbit chains to tokenlists
   id: string
   originChainID: number
   url: string
@@ -132,7 +133,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
           id: `${chain.chainId}_native`,
           originChainID: chain.chainId,
           url: `https://tokenlist.arbitrum.io/ArbTokenLists/${chain.chainId}_arbed_native_list.json`,
-          name: `${chain.name} Arbed L2 native list`,
+          name: `${chain.name} Default List`,
           isDefault: true,
           logoURI: ArbitrumLogo
         })
