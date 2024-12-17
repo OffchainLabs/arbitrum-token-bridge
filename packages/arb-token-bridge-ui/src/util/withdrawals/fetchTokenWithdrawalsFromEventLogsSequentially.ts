@@ -9,12 +9,12 @@ import {
 
 import { backOff, wait } from '../ExponentialBackoffUtils'
 
-type TokenWithdrawalQuery = {
+type FetchTokenWithdrawalsFromEventLogsQuery = {
   params: FetchTokenWithdrawalsFromEventLogsParams
   priority: number
 }
 
-export type BuildQueryParamsParams = {
+export type Query = {
   sender?: string
   receiver?: string
   gateways?: string[]
@@ -27,10 +27,10 @@ export type FetchTokenWithdrawalsFromEventLogsSequentiallyParams = {
   fromBlock?: BlockTag
   toBlock?: BlockTag
   /**
-   * How long to delay in-between queries of different priority.
+   * How long to delay in-between queries of different priority. Defaults to 0.
    */
   delayMs?: number
-  queries: BuildQueryParamsParams[]
+  queries: Query[]
 }
 
 export type FetchTokenWithdrawalsFromEventLogsSequentiallyResult = Awaited<
@@ -41,21 +41,21 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   provider,
   fromBlock = 0,
   toBlock = 'latest',
-  delayMs = 2_000,
+  delayMs = 0,
   queries: queriesProp
 }: FetchTokenWithdrawalsFromEventLogsSequentiallyParams): Promise<FetchTokenWithdrawalsFromEventLogsSequentiallyResult> {
   // keep track of priority; increment as queries are added
   let priority = 0
 
   // keep track of queries
-  const queries: TokenWithdrawalQuery[] = []
+  const queries: FetchTokenWithdrawalsFromEventLogsQuery[] = []
 
   // helper function to reuse common params
   function buildQueryParams({
     sender,
     receiver,
     gateways = []
-  }: BuildQueryParamsParams): TokenWithdrawalQuery['params'] {
+  }: Query): FetchTokenWithdrawalsFromEventLogsQuery['params'] {
     return {
       sender,
       receiver,
@@ -67,7 +67,7 @@ export async function fetchTokenWithdrawalsFromEventLogsSequentially({
   }
 
   // for sanitizing, adding queries and incrementing priority
-  function addQuery(params: TokenWithdrawalQuery['params']) {
+  function addQuery(params: FetchTokenWithdrawalsFromEventLogsQuery['params']) {
     const gateways = params.l2GatewayAddresses ?? []
     const gatewaysSanitized = gateways.filter(g => g !== constants.AddressZero)
 

@@ -12,7 +12,7 @@ import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
 import {
-  BuildQueryParamsParams,
+  Query,
   fetchTokenWithdrawalsFromEventLogsSequentially
 } from './fetchTokenWithdrawalsFromEventLogsSequentially'
 import { backOff, wait } from '../ExponentialBackoffUtils'
@@ -116,7 +116,7 @@ export async function fetchWithdrawals({
   const gateways = await getGateways(l2Provider)
   const senderNonce = await getNonce(sender, { provider: l2Provider })
 
-  const queries: BuildQueryParamsParams[] = []
+  const queries: Query[] = []
 
   // alchemy has a global rate limit across all their chains, so we have to fetch sequentially and wait in-between requests
   const isAlchemy = await isAlchemyChain(l2Provider)
