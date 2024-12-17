@@ -978,7 +978,8 @@ const useMappedReceiverTransactionHistory = ({
         return tx._from.toLowerCase() !== tx._to.toLowerCase()
       }
 
-      return tx.caller.toLowerCase() !== tx.destination.toLowerCase()
+      // Native token withdrawals always fetch by receiver. We need to fetch for the sender here too.
+      return true
     })
 
     const results = []
