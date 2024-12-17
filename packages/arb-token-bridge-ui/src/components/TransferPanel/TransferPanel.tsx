@@ -397,7 +397,8 @@ export function TransferPanel() {
         isDepositMode &&
         areSenderAndCustomDestinationAddressesEqual
       ) {
-        await confirmCustomDestinationAddressForSCWallets()
+        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        if (!confirmation) return false
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -623,7 +624,8 @@ export function TransferPanel() {
         isDepositMode &&
         areSenderAndCustomDestinationAddressesEqual
       ) {
-        await confirmCustomDestinationAddressForSCWallets()
+        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        if (!confirmation) return false
       }
 
       const isCustomNativeTokenAmount2 =

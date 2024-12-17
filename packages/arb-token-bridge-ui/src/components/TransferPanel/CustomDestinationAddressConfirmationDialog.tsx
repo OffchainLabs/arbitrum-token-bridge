@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
-import { getNetworkName } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { Checkbox } from '../common/Checkbox'
@@ -37,7 +37,15 @@ export function CustomDestinationAddressConfirmationDialog(
       <div className="mb-4">
         <p className="pb-2">
           You are attempting to deposit funds to the same address{' '}
-          {shortenAddress(destinationAddress)} on {networkName}.
+          <ExternalLink
+            className="arb-hover underline"
+            href={`${getExplorerUrl(
+              networks.destinationChain.id
+            )}/address/${destinationAddress}`}
+          >
+            {shortenAddress(destinationAddress)}
+          </ExternalLink>
+          on {networkName}.
         </p>
         <p className="pb-2">
           This is an uncommon action because your smart contract wallet is only
