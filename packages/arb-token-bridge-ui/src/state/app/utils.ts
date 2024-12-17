@@ -9,7 +9,7 @@ import {
 } from './state'
 import {
   AssetType,
-  L2ToL1EventResultPlus,
+  ChildToParentEventResultPlus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
@@ -179,7 +179,7 @@ export const transformDeposit = (
 }
 
 export const transformWithdrawal = (
-  tx: L2ToL1EventResultPlus
+  tx: ChildToParentEventResultPlus
 ): MergedTransaction => {
   const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
 
