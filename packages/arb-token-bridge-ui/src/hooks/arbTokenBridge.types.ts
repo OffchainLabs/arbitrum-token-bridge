@@ -90,7 +90,7 @@ export interface BridgeToken {
   address: string
   l2Address?: string
   logoURI?: string
-  listIds: Set<number> // no listID indicates added by user
+  listIds: Set<string> // no listID indicates added by user
   isL2Native?: boolean
 }
 
@@ -140,8 +140,8 @@ export interface ArbTokenBridgeEth {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
-  addTokensFromList: (tokenList: TokenList, listID: number) => void
-  removeTokensFromList: (listID: number) => void
+  addTokensFromList: (tokenList: TokenList, listID: string) => void
+  removeTokensFromList: (listID: string) => void
   updateTokenData: (l1Address: string) => Promise<void>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
