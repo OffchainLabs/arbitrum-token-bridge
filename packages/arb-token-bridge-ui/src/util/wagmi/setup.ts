@@ -44,15 +44,10 @@ const defaultChains = [
 
 const chainList = isTestingEnvironment
   ? [
-      ...defaultChains,
-      // Orbit chains
-      ...wagmiOrbitChains,
-      // add local environments during testing
+      // only include local environments during testing
       local,
       arbitrumLocal,
-      l3Local,
-      // user-added custom chains
-      ...customChains
+      l3Local
     ]
   : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
