@@ -174,7 +174,7 @@ export async function fetchWithdrawals({
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       provider: l2Provider,
-      queries: []
+      queries
     })
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
