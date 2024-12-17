@@ -44,7 +44,7 @@ export function CustomDestinationAddressConfirmationDialog(
             )}/address/${destinationAddress}`}
           >
             {shortenAddress(destinationAddress)}
-          </ExternalLink>
+          </ExternalLink>{' '}
           on {networkName}.
         </p>
         <p className="pb-2">
