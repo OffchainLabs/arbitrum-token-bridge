@@ -1,35 +1,13 @@
 import { constants } from 'ethers'
 import { Provider, BlockTag } from '@ethersproject/providers'
-import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
+import { Erc20Bridger } from '@arbitrum/sdk'
 
 import {
   fetchTokenWithdrawalsFromEventLogs,
   FetchTokenWithdrawalsFromEventLogsParams
 } from './fetchTokenWithdrawalsFromEventLogs'
-import { getNonce } from '../AddressUtils'
-import { fetchL2Gateways } from '../fetchL2Gateways'
+
 import { backOff, wait } from '../ExponentialBackoffUtils'
-
-async function getGateways(provider: Provider): Promise<{
-  standardGateway: string
-  wethGateway: string
-  customGateway: string
-  otherGateways: string[]
-}> {
-  const network = await getArbitrumNetwork(provider)
-
-  const standardGateway = network.tokenBridge?.childErc20Gateway
-  const customGateway = network.tokenBridge?.childCustomGateway
-  const wethGateway = network.tokenBridge?.childWethGateway
-  const otherGateways = await fetchL2Gateways(provider)
-
-  return {
-    standardGateway: standardGateway ?? constants.AddressZero,
-    wethGateway: wethGateway ?? constants.AddressZero,
-    customGateway: customGateway ?? constants.AddressZero,
-    otherGateways
-  }
-}
 
 type TokenWithdrawalQuery = {
   params: FetchTokenWithdrawalsFromEventLogsParams
