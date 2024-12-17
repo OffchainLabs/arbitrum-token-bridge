@@ -1036,7 +1036,7 @@ const useMappedReceiverTransactionHistory = ({
     transactions: receiverTransactions || [],
     error: receiverTransactionsError,
     completed: !isLoadingReceiverTransactions,
-    loading: isLoadingReceiverTransactions,
+    loading: isLoadingReceiverTransactions || rawDataLoading,
     rawDataErroredChains,
     updatePendingTransaction
   }
@@ -1072,7 +1072,7 @@ export const useTransactionHistory = (
     updatePendingTransaction: updatePendingReceiverTransaction
   } = useMappedReceiverTransactionHistory({
     address,
-    shouldStartToFetch: senderTransactions.length > 0 && !loadingForSender
+    shouldStartToFetch: firstPageLoadedForSender
   })
 
   const { cctpTransactions, cctpLoading } = useCctpTransactions({ address })
