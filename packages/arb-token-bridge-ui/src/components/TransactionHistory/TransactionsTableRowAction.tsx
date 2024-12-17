@@ -42,7 +42,7 @@ export function TransactionsTableRowAction({
   const { sanitizedAddress: searchedAddress } =
     useTransactionHistoryAddressStore()
 
-  const viewingAnotherAddress =
+  const isViewingAnotherAddress =
     connectedAddress &&
     searchedAddress &&
     connectedAddress.toLowerCase() !== searchedAddress.toLowerCase()
@@ -177,7 +177,7 @@ export function TransactionsTableRowAction({
             tx.destinationChainId
           )} once the claim transaction succeeds.`}</span>
         }
-        show={viewingAnotherAddress}
+        show={isViewingAnotherAddress}
       >
         <Button
           aria-label={`Claim ${formatAmount(Number(tx.value), {
