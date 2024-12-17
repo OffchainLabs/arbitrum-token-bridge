@@ -118,7 +118,7 @@ export async function fetchWithdrawals({
 
   const queries: Query[] = []
 
-  // alchemy has a global rate limit across all their chains, so we have to fetch sequentially and wait in-between requests
+  // alchemy as a raas has a global rate limit across their chains, so we have to fetch sequentially and wait in-between requests to work around this
   const isAlchemy = await isAlchemyChain(l2Provider)
   const delayMs = isAlchemy ? 2_000 : 0
 

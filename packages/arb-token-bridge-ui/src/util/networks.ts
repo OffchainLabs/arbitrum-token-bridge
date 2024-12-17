@@ -592,7 +592,7 @@ export async function isAlchemyChain(provider: Provider) {
     return false
   }
 
-  return chain.rpcUrl.includes('alchemy.com')
+  return chain.rpcUrl.toLowerCase().includes('alchemy.com')
 }
 
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
