@@ -1,10 +1,6 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { ChildToParentMessageReader } from '@arbitrum/sdk'
 
-export type FetchETHWithdrawalsFromEventLogsResult = Awaited<
-  ReturnType<typeof ChildToParentMessageReader.getChildToParentEvents>
->
-
 /**
  * Fetches initiated ETH withdrawals from event logs in range of [fromBlock, toBlock].
  *
@@ -24,7 +20,7 @@ export function fetchETHWithdrawalsFromEventLogs({
   fromBlock: BlockTag
   toBlock: BlockTag
   l2Provider: Provider
-}): Promise<FetchETHWithdrawalsFromEventLogsResult> {
+}) {
   if (typeof receiver === 'undefined') {
     return Promise.resolve([])
   }
