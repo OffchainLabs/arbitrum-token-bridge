@@ -47,7 +47,9 @@ const chainList = isTestingEnvironment
       // only include local environments during testing
       local,
       arbitrumLocal,
-      l3Local
+      l3Local,
+      sepolia,
+      arbitrumSepolia
     ]
   : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
