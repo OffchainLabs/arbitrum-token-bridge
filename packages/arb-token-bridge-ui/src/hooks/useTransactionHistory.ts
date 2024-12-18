@@ -831,10 +831,22 @@ const useMappedSenderTransactionHistory = ({
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
+      if (!senderTxPages) {
+        return
+      }
+
+      const foundInSwrCache = senderTxPages
+        .flat()
+        .find(t => tx.txId === t.txId && tx.childChainId === t.childChainId)
+
+      if (!foundInSwrCache) {
+        return
+      }
+
       const updatedPendingTransaction = await getUpdatedPendingTransaction(tx)
       updateTransactionInSwrCache(updatedPendingTransaction)
     },
-    [updateTransactionInSwrCache]
+    [senderTxPages, updateTransactionInSwrCache]
   )
 
   // based on an example from SWR
@@ -1009,10 +1021,22 @@ const useMappedReceiverTransactionHistory = ({
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
+      if (!receiverTransactions) {
+        return
+      }
+
+      const foundInSwrCache = receiverTransactions
+        .flat()
+        .find(t => tx.txId === t.txId && tx.childChainId === t.childChainId)
+
+      if (!foundInSwrCache) {
+        return
+      }
+
       const updatedPendingTransaction = await getUpdatedPendingTransaction(tx)
       updateTransactionInSwrCache(updatedPendingTransaction)
     },
-    [updateTransactionInSwrCache]
+    [receiverTransactions, updateTransactionInSwrCache]
   )
 
   useEffect(() => {
@@ -1079,14 +1103,11 @@ export const useTransactionHistory = (
   const { cctpTransactions, cctpLoading } = useCctpTransactions({ address })
 
   const updatePendingTransaction = useCallback(
-    (tx: MergedTransaction) => {
-      if (address?.toLowerCase() !== tx.sender?.toLowerCase()) {
-        return updatePendingReceiverTransaction(tx)
-      }
-
-      return updatePendingSenderTransaction(tx)
+    async (tx: MergedTransaction) => {
+      await updatePendingSenderTransaction(tx)
+      await updatePendingReceiverTransaction(tx)
     },
-    [address, updatePendingReceiverTransaction, updatePendingSenderTransaction]
+    [updatePendingReceiverTransaction, updatePendingSenderTransaction]
   )
 
   return {
