@@ -831,13 +831,9 @@ const useMappedSenderTransactionHistory = ({
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      if (!senderTxPages) {
-        return
-      }
-
-      const foundInSwrCache = senderTxPages
-        .flat()
-        .find(t => tx.txId === t.txId && tx.childChainId === t.childChainId)
+      const foundInSwrCache = senderTransactionsWithNewTransactions.find(
+        t => tx.txId === t.txId && tx.childChainId === t.childChainId
+      )
 
       if (!foundInSwrCache) {
         return
@@ -846,7 +842,7 @@ const useMappedSenderTransactionHistory = ({
       const updatedPendingTransaction = await getUpdatedPendingTransaction(tx)
       updateTransactionInSwrCache(updatedPendingTransaction)
     },
-    [senderTxPages, updateTransactionInSwrCache]
+    [senderTransactionsWithNewTransactions, updateTransactionInSwrCache]
   )
 
   // based on an example from SWR
