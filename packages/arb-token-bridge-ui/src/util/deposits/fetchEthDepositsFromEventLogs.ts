@@ -1,4 +1,6 @@
 import { BlockTag, Provider } from '@ethersproject/providers'
+import { getParentToChildMessagesAndDepositMessages } from '../../components/TransactionHistory/TransactionHistoryTxHashSearch/getParentToChildMessagesAndDepositMessages'
+import { ReceiptState } from '../../components/TransactionHistory/TransactionHistoryTxHashSearch/helpers'
 
 export async function fetchEthDepositsFromEventLogs({
   sender,
@@ -37,42 +39,7 @@ export async function fetchEthDepositsFromEventLogs({
   }
 
   if (typeof getParentTxReceiptResult === 'undefined') {
-    const res = await getChildToParentMessages(txHash)
-    const { childTxStatus, childToParentMessages } = res
-
-    // TODO: handle terminal states
-    if (childToParentMessages.length > 0) {
-      return {
-        ...defaultReturn,
-        parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
-        parentChainId: parentTxReceiptAndChainId?.parentChainId,
-        txHashState: ReceiptState.MESSAGES_FOUND,
-        l2ToL1MessagesToShow: childToParentMessages
-      }
-    }
-    if (childTxStatus === ChildTxStatus.SUCCESS) {
-      return {
-        ...defaultReturn,
-        parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
-        parentChainId: parentTxReceiptAndChainId?.parentChainId,
-        txHashState: ReceiptState.NO_L2_L1_MESSAGES
-      }
-    }
-    if (childTxStatus === ChildTxStatus.FAILURE) {
-      return {
-        ...defaultReturn,
-        parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
-        parentChainId: parentTxReceiptAndChainId?.parentChainId,
-        txHashState: ReceiptState.L2_FAILED
-      }
-    }
-
-    return {
-      ...defaultReturn,
-      parentTxReceipt: parentTxReceiptAndChainId?.parentTxReceipt,
-      parentChainId: parentTxReceiptAndChainId?.parentChainId,
-      txHashState: ReceiptState.NOT_FOUND
-    }
+    return undefined
   }
 
   const { parentTxReceipt: _parentTxReceipt, parentChainId } =

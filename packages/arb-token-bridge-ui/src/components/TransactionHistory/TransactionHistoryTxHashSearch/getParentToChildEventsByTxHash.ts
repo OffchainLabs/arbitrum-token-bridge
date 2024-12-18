@@ -1,7 +1,30 @@
 import { BigNumber } from 'ethers'
 import { BlockTag } from '@ethersproject/providers'
+import { EthDepositMessage, getArbitrumNetworks } from '@arbitrum/sdk'
 
 import { getParentTxReceipt } from '../helpers'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { normalizeTimestamp } from '../../../state/app/utils'
+
+export type FetchDepositTxFromEventLogResult = {
+  receiver: string
+  sender: string
+  timestamp: string
+  transactionHash: string
+  type: 'EthDeposit' | 'TokenDeposit'
+  isClassic: boolean
+  id: string
+  ethValue: string
+  tokenAmount?: string
+  blockCreatedAt: string
+  l1Token?: {
+    symbol: string
+    decimals: number
+    id: string
+    name: string
+    registeredAtBlock: string
+  }
+}
 
 /**
  * Get event logs for ParentToChild transactions.
@@ -19,97 +42,66 @@ import { getParentTxReceipt } from '../helpers'
  * @returns Any classic and nitro events that match the provided filters.
  */
 export async function getParentToChildEventsByTxHash(
-  childChainId: number,
+  parentChainId: number,
   filter: { fromBlock: BlockTag; toBlock: BlockTag },
   position?: BigNumber,
   destination?: string,
   txHash?: string,
   indexInBatch?: BigNumber
-): Promise<(ParentToChildTransactionEvent & { transactionHash: string })[]> {
+): Promise<FetchDepositTxFromEventLogResult[]> {
   if (!txHash) {
     return []
   }
-  const getParentTxReceiptResult = await getParentTxReceipt(
-    txHash,
-    childChainId
+  const parentTxReceipt = await getParentTxReceipt(txHash, parentChainId)
+
+  const parentProvider = getProviderForChainId(parentChainId)
+
+  if (!parentTxReceipt) {
+    return []
+  }
+
+  // to test for child chain, filter chains that has this parent chain id as parent
+  // and then loop through it.............
+  const childChains = getArbitrumNetworks()
+        .filter(childChain => childChain.parentChainId === parentChainId)
+        .map(network => network.chainId)
+
+  parentTxReceipt.
+
+  const parentToChildMessages = isClassic
+    ? await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
+    : await parentTxReceipt.getParentToChildMessages(childProvider)
+
+  const parentToChildMessageReader = parentToChildMessages[0]
+
+  if (!parentToChildMessageReader) {
+    return []
+  }
+
+  const ethDeposits = await parentTxReceipt.getEthDeposits(childProvider)
+
+  const timestamp = normalizeTimestamp(
+    (await parentProvider.getBlock(parentTxReceipt.blockNumber)).timestamp
   )
 
-  const childChain = await getArbitrumNetwork(childProvider)
-  const childNitroGenesisBlock = getNitroGenesisBlock(childChain)
+  const ethTransactions: FetchDepositTxFromEventLogResult[] = ethDeposits.map(
+    async depositMessage => {
+      const childProvider = getProviderForChainId(depositMessage.childChainId)
 
-  const inClassicRange = (blockTag: BlockTag, nitroGenBlock: number) => {
-    if (typeof blockTag === 'string') {
-      // taking classic of "earliest", "latest", "earliest" and the nitro gen block
-      // yields 0, nitro gen, nitro gen since the classic range is always between 0 and nitro gen
+      const isClassic = await parentTxReceipt.isClassic(childProvider)
 
-      switch (blockTag) {
-        case 'earliest':
-          return 0
-        case 'latest':
-          return nitroGenBlock
-        case 'pending':
-          return nitroGenBlock
-        default:
-          throw new Error(`Unrecognised block tag. ${blockTag}`)
+      return {
+        receiver: depositMessage.to,
+        sender: depositMessage.from,
+        timestamp,
+        transactionHash: depositMessage.
+        type: 'EthDeposit',
+        isClassic,
+        ethValue: depositMessage.value.toString(),
+        blockCreatedAt: parentTxReceipt.blockNumber.toString()
       }
     }
-    return Math.min(blockTag, nitroGenBlock)
-  }
+  )
 
-  const inNitroRange = (blockTag: BlockTag, nitroGenBlock: number) => {
-    // taking nitro range of "earliest", "latest", "earliest" and the nitro gen block
-    // yields nitro gen, latest, pending since the nitro range is always between nitro gen and latest/pending
-
-    if (typeof blockTag === 'string') {
-      switch (blockTag) {
-        case 'earliest':
-          return nitroGenBlock
-        case 'latest':
-          return 'latest'
-        case 'pending':
-          return 'pending'
-        default:
-          throw new Error(`Unrecognised block tag. ${blockTag}`)
-      }
-    }
-
-    return Math.max(blockTag, nitroGenBlock)
-  }
-
-  // only fetch nitro events after the genesis block
-  const classicFilter = {
-    fromBlock: inClassicRange(filter.fromBlock, childNitroGenesisBlock),
-    toBlock: inClassicRange(filter.toBlock, childNitroGenesisBlock)
-  }
-  const logQueries = []
-  if (classicFilter.fromBlock !== classicFilter.toBlock) {
-    logQueries.push(
-      classic.ChildToParentMessageClassic.getChildToParentEvents(
-        childProvider,
-        classicFilter,
-        position,
-        destination,
-        hash,
-        indexInBatch
-      )
-    )
-  }
-
-  const nitroFilter = {
-    fromBlock: inNitroRange(filter.fromBlock, childNitroGenesisBlock),
-    toBlock: inNitroRange(filter.toBlock, childNitroGenesisBlock)
-  }
-  if (nitroFilter.fromBlock !== nitroFilter.toBlock) {
-    logQueries.push(
-      nitro.ChildToParentMessageNitro.getChildToParentEvents(
-        childProvider,
-        nitroFilter,
-        position,
-        destination,
-        hash
-      )
-    )
-  }
-
-  return (await Promise.all(logQueries)).flat(1)
+  return transaction
 }

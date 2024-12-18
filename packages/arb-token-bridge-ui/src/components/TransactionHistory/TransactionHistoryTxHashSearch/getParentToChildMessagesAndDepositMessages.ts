@@ -15,7 +15,9 @@ export const getParentToChildMessagesAndDepositMessages = async (
   parentChainId: number
 ): Promise<ParentToChildMessagesAndDepositMessages> => {
   try {
-    const childNetworks = getArbitrumNetworks().map(network => network.chainId)
+    const childNetworks = getArbitrumNetworks()
+      .filter(childChain => childChain.parentChainId === parentChainId)
+      .map(network => network.chainId)
     const messagesPromises = childNetworks.map(async childChainId => {
       // TODO: error handle
       const childNetwork = await getArbitrumNetwork(childChainId)
