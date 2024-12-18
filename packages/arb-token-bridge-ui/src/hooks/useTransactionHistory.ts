@@ -67,13 +67,31 @@ import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
-  loading: boolean
-  completed: boolean
-  error: unknown
-  failedChainPairs: ChainPair[]
+  senderData: {
+    senderTransactions: MergedTransaction[]
+    loadingForSender: boolean
+    completedForSender: boolean
+    errorForSender: unknown
+  }
+  receiverData: {
+    receiverTransactions: MergedTransaction[]
+    loadingForReceiver: boolean
+    completedForReceiver: boolean
+    errorForReceiver: unknown
+  }
+  rawDataErroredChains: ChainPair[]
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
+  updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
+}
+
+type UseMappedTransactionHistoryResult = {
+  transactions: MergedTransaction[]
+  error: unknown
+  completed: boolean
+  loading: boolean
+  rawDataErroredChains: ChainPair[]
   updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
 }
 
@@ -241,10 +259,211 @@ function dedupeTransactions(txs: Transfer[]) {
   )
 }
 
+async function getUpdatedPendingTransaction(tx: MergedTransaction) {
+  if (!isTxPending(tx)) {
+    // if not pending we don't need to check for status, we accept whatever status is passed in
+    return tx
+  }
+
+  if (isTeleportTx(tx)) {
+    return getUpdatedTeleportTransfer(tx)
+  }
+
+  if (tx.isCctp) {
+    return getUpdatedCctpTransfer(tx)
+  }
+
+  // ETH or token withdrawal
+  if (tx.isWithdrawal) {
+    return getUpdatedWithdrawal(tx)
+  }
+
+  const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
+
+  // ETH deposit to the same address
+  if (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) {
+    return getUpdatedEthDeposit(tx)
+  }
+
+  // Token deposit or ETH deposit to a different destination address
+  return getUpdatedRetryableDeposit(tx)
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
+const useRawTransactionHistory = ({
+  address,
+  fetchFor,
+  shouldStartToFetch
+}: {
+  address: Address | undefined
+  fetchFor: 'sender' | 'receiver'
+  shouldStartToFetch: boolean
+}) => {
+  const { chain } = useNetwork()
+  const [isTestnetMode] = useIsTestnetMode()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+
+  const { data: erroredChains, mutate: addErroredChain } = useSWRImmutable<
+    ChainPair[]
+  >(address ? ['errored_chains', address] : null)
+
+  const fetcher = useCallback(
+    ({
+      type,
+      fetchFor
+    }: {
+      type: 'deposits' | 'withdrawals'
+      fetchFor: 'sender' | 'receiver'
+    }) => {
+      if (!chain) {
+        return []
+      }
+
+      const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
+
+      return Promise.all(
+        getMultiChainFetchList()
+          .filter(chainPair => {
+            if (isSmartContractWallet) {
+              // only fetch txs from the connected network
+              return [chainPair.parentChainId, chainPair.childChainId].includes(
+                chain.id
+              )
+            }
+
+            return (
+              isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+            )
+          })
+          .map(async chainPair => {
+            // SCW address is tied to a specific network
+            // that's why we need to limit shown txs either to sent or received funds
+            // otherwise we'd display funds for a different network, which could be someone else's account
+            const isConnectedToParentChain =
+              chainPair.parentChainId === chain.id
+
+            const includeSentTxs = shouldIncludeSentTxs({
+              type,
+              isSmartContractWallet,
+              isConnectedToParentChain
+            })
+
+            const includeReceivedTxs = shouldIncludeReceivedTxs({
+              type,
+              isSmartContractWallet,
+              isConnectedToParentChain
+            })
+
+            const fetchForSender = fetchFor === 'sender' && includeSentTxs
+            const fetchForReceiver =
+              fetchFor === 'receiver' && includeReceivedTxs
+
+            try {
+              // early check for fetching teleport
+              if (
+                isValidTeleportChainPair({
+                  sourceChainId: chainPair.parentChainId,
+                  destinationChainId: chainPair.childChainId
+                })
+              ) {
+                // teleporter does not support withdrawals
+                if (type === 'withdrawals') return []
+
+                return await fetchTeleports({
+                  sender: fetchForSender ? address : undefined,
+                  receiver: fetchForReceiver ? address : undefined,
+                  parentChainProvider: getProviderForChainId(
+                    chainPair.parentChainId
+                  ),
+                  childChainProvider: getProviderForChainId(
+                    chainPair.childChainId
+                  ),
+                  pageNumber: 0,
+                  pageSize: 1000
+                })
+              }
+
+              // else, fetch deposits or withdrawals
+              return await fetcherFn({
+                sender: fetchForSender ? address : undefined,
+                receiver: fetchForReceiver ? address : undefined,
+                l1Provider: getProviderForChainId(chainPair.parentChainId),
+                l2Provider: getProviderForChainId(chainPair.childChainId),
+                pageNumber: 0,
+                pageSize: 1000
+              })
+            } catch {
+              addErroredChain(prevErroredChains => {
+                if (!prevErroredChains) {
+                  return [chainPair]
+                }
+                if (
+                  typeof prevErroredChains.find(
+                    prev =>
+                      prev.parentChainId === chainPair.parentChainId &&
+                      prev.childChainId === chainPair.childChainId
+                  ) !== 'undefined'
+                ) {
+                  // already added
+                  return prevErroredChains
+                }
+
+                return [...prevErroredChains, chainPair]
+              })
+
+              return []
+            }
+          })
+      )
+    },
+    [addErroredChain, address, chain, isSmartContractWallet, isTestnetMode]
+  )
+
+  const shouldFetch =
+    shouldStartToFetch && address && chain && !isLoadingAccountType
+
+  const {
+    data: depositsData,
+    error: depositsError,
+    isLoading: depositsLoading
+  } = useSWRImmutable(
+    shouldFetch
+      ? ['tx_list', 'deposits', address, isTestnetMode, fetchFor]
+      : null,
+    () => fetcher({ type: 'deposits', fetchFor })
+  )
+
+  const {
+    data: withdrawalsData,
+    error: withdrawalsError,
+    isLoading: withdrawalsLoading
+  } = useSWRImmutable(
+    shouldFetch
+      ? ['tx_list', 'withdrawals', address, isTestnetMode, fetchFor]
+      : null,
+    () => fetcher({ type: 'withdrawals', fetchFor })
+  )
+
+  const deposits = (depositsData || []).flat()
+  const withdrawals = (withdrawalsData || []).flat()
+
+  // merge deposits and withdrawals and sort them by date
+  const transactions = [...deposits, ...withdrawals].sort(
+    sortByTimestampDescending
+  )
+
+  return {
+    rawData: transactions,
+    rawDataLoading: depositsLoading || withdrawalsLoading,
+    rawDataError: depositsError ?? withdrawalsError,
+    rawDataErroredChains: erroredChains || []
+  }
+}
+
+const useCctpTransactions = ({ address }: { address: Address | undefined }) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -329,181 +548,54 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
 
-  const { data: failedChainPairs, mutate: addFailedChainPair } =
-    useSWRImmutable<ChainPair[]>(
-      address ? ['failed_chain_pairs', address] : null
-    )
-
-  const fetcher = useCallback(
-    (type: 'deposits' | 'withdrawals') => {
-      if (!chain) {
-        return []
-      }
-
-      const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
-
-      return Promise.all(
-        getMultiChainFetchList()
-          .filter(chainPair => {
-            if (isSmartContractWallet) {
-              // only fetch txs from the connected network
-              return [chainPair.parentChainId, chainPair.childChainId].includes(
-                chain.id
-              )
-            }
-
-            return (
-              isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
-            )
-          })
-          .map(async chainPair => {
-            // SCW address is tied to a specific network
-            // that's why we need to limit shown txs either to sent or received funds
-            // otherwise we'd display funds for a different network, which could be someone else's account
-            const isConnectedToParentChain =
-              chainPair.parentChainId === chain.id
-
-            const includeSentTxs = shouldIncludeSentTxs({
-              type,
-              isSmartContractWallet,
-              isConnectedToParentChain
-            })
-
-            const includeReceivedTxs = shouldIncludeReceivedTxs({
-              type,
-              isSmartContractWallet,
-              isConnectedToParentChain
-            })
-            try {
-              // early check for fetching teleport
-              if (
-                isValidTeleportChainPair({
-                  sourceChainId: chainPair.parentChainId,
-                  destinationChainId: chainPair.childChainId
-                })
-              ) {
-                // teleporter does not support withdrawals
-                if (type === 'withdrawals') return []
-
-                return await fetchTeleports({
-                  sender: includeSentTxs ? address : undefined,
-                  receiver: includeReceivedTxs ? address : undefined,
-                  parentChainProvider: getProviderForChainId(
-                    chainPair.parentChainId
-                  ),
-                  childChainProvider: getProviderForChainId(
-                    chainPair.childChainId
-                  ),
-                  pageNumber: 0,
-                  pageSize: 1000
-                })
-              }
-
-              // else, fetch deposits or withdrawals
-              return await fetcherFn({
-                sender: includeSentTxs ? address : undefined,
-                receiver: includeReceivedTxs ? address : undefined,
-                l1Provider: getProviderForChainId(chainPair.parentChainId),
-                l2Provider: getProviderForChainId(chainPair.childChainId),
-                pageNumber: 0,
-                pageSize: 1000
-              })
-            } catch {
-              addFailedChainPair(prevFailedChainPairs => {
-                if (!prevFailedChainPairs) {
-                  return [chainPair]
-                }
-                if (
-                  typeof prevFailedChainPairs.find(
-                    prevPair =>
-                      prevPair.parentChainId === chainPair.parentChainId &&
-                      prevPair.childChainId === chainPair.childChainId
-                  ) !== 'undefined'
-                ) {
-                  // already added
-                  return prevFailedChainPairs
-                }
-
-                return [...prevFailedChainPairs, chainPair]
-              })
-
-              return []
-            }
-          })
-      )
-    },
-    [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
-  )
-
-  const shouldFetch = address && chain && !isLoadingAccountType
-
-  const {
-    data: depositsData,
-    error: depositsError,
-    isLoading: depositsLoading
-  } = useSWRImmutable(
-    shouldFetch ? ['tx_list', 'deposits', address, isTestnetMode] : null,
-    () => fetcher('deposits')
-  )
-
-  const {
-    data: withdrawalsData,
-    error: withdrawalsError,
-    isLoading: withdrawalsLoading
-  } = useSWRImmutable(
-    shouldFetch ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
-    () => fetcher('withdrawals')
-  )
-
-  const deposits = (depositsData || []).flat()
-
-  const withdrawals = (withdrawalsData || []).flat()
-
-  // merge deposits and withdrawals and sort them by date
-  const transactions = [
-    ...deposits,
-    ...withdrawals,
-    ...combinedCctpTransfers
-  ].flat()
-
-  return {
-    data: transactions,
-    loading: depositsLoading || withdrawalsLoading || cctpLoading,
-    error: depositsError ?? withdrawalsError,
-    failedChainPairs: failedChainPairs || []
-  }
+  return { cctpTransactions: combinedCctpTransfers, cctpLoading }
 }
 
-/**
- * Maps additional info to previously fetches transaction history, starting with the earliest data.
- * This is done in small batches to safely meet RPC limits.
- */
-export const useTransactionHistory = (
-  address: Address | undefined,
-  // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
-  { runFetcher = false } = {}
-): UseTransactionHistoryResult => {
-  const [isTestnetMode] = useIsTestnetMode()
-  const { chain } = useNetwork()
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
-  const { connector } = useAccount()
+const useMappedSenderTransactionHistory = ({
+  address,
+  runFetcher = false
+}: {
+  address: Address | undefined
+  // TODO: refactor runFetcher, make the method run without it
+  // https://linear.app/offchain-labs/issue/FS-1063/remove-runfetcher-in-usetransactionhistory
+  runFetcher?: boolean
+}): UseMappedTransactionHistoryResult & {
+  firstPageLoaded: boolean
+  pause: () => void
+  resume: () => void
+  addPendingTransaction: (tx: MergedTransaction) => void
+} => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
   // Pause fetching after specified number of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 
+  const { chain } = useNetwork()
+  const [isTestnetMode] = useIsTestnetMode()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+  const { connector } = useAccount()
+
   const [fetching, setFetching] = useState(true)
   const [pauseCount, setPauseCount] = useState(0)
 
-  const {
-    data,
-    loading: isLoadingTxsWithoutStatus,
-    error,
-    failedChainPairs
-  } = useTransactionHistoryWithoutStatuses(address)
+  const { rawData, rawDataLoading, rawDataError, rawDataErroredChains } =
+    useRawTransactionHistory({
+      address,
+      fetchFor: 'sender',
+      shouldStartToFetch: true
+    })
 
-  const getCacheKey = useCallback(
+  function pause() {
+    setFetching(false)
+  }
+
+  function resume() {
+    setFetching(true)
+    setPage(prevPage => prevPage + 1)
+  }
+
+  const getSwrCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
       if (prevPageTxs) {
         if (prevPageTxs.length === 0) {
@@ -512,11 +604,16 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
-        ? (['complete_tx_list', address, pageNumber, data] as const)
+      return address && !rawDataLoading && !isLoadingAccountType
+        ? ([
+            'mapped_transaction_history_for_sender',
+            address,
+            pageNumber,
+            rawData
+          ] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
+    [address, rawDataLoading, isLoadingAccountType, rawData]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -555,15 +652,15 @@ export const useTransactionHistory = (
   ])
 
   const {
-    data: txPages,
-    error: txPagesError,
+    data: senderTxPages,
+    error: senderTxPagesError,
     size: page,
     setSize: setPage,
-    mutate: mutateTxPages,
-    isValidating,
-    isLoading: isLoadingFirstPage
+    mutate: mutateSenderTxPages,
+    isValidating: isValidatingSenderTxPages,
+    isLoading: isLoadingSenderFirstPage
   } = useSWRInfinite(
-    getCacheKey,
+    getSwrCacheKey,
     ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
@@ -597,17 +694,37 @@ export const useTransactionHistory = (
     }
   )
 
-  // based on an example from SWR
-  // https://swr.vercel.app/examples/infinite-loading
-  const isLoadingMore =
-    page > 0 &&
-    typeof txPages !== 'undefined' &&
-    typeof txPages[page - 1] === 'undefined'
+  useEffect(() => {
+    if (!runFetcher || !connector) {
+      return
+    }
+    connector.on('change', e => {
+      // reset state on account change
+      if (e.account) {
+        setPage(1)
+        setPauseCount(0)
+        setFetching(true)
+      }
+    })
+  }, [connector, runFetcher, setPage])
 
-  const completed =
-    !isLoadingFirstPage &&
-    typeof txPages !== 'undefined' &&
-    data.length === txPages.flat().length
+  useEffect(() => {
+    if (typeof rawDataError !== 'undefined') {
+      console.warn(rawDataError)
+      captureSentryErrorWithExtraData({
+        error: rawDataError,
+        originFunction: 'useRawTransactionHistory'
+      })
+    }
+
+    if (typeof senderTxPagesError !== 'undefined') {
+      console.warn(senderTxPagesError)
+      captureSentryErrorWithExtraData({
+        error: senderTxPagesError,
+        originFunction: 'useMappedSenderTransactionHistory'
+      })
+    }
+  }, [rawDataError, senderTxPagesError])
 
   // transfers initiated by the user during the current session
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
@@ -616,34 +733,21 @@ export const useTransactionHistory = (
       address ? ['new_tx_list', address] : null
     )
 
-  const transactions: MergedTransaction[] = useMemo(() => {
-    const txs = [...(newTransactionsData || []), ...(txPages || [])].flat()
-    // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
-    return txs.filter(tx =>
-      [tx.sender?.toLowerCase(), tx.destination?.toLowerCase()].includes(
-        address?.toLowerCase()
+  const senderTransactionsWithNewTransactions: MergedTransaction[] =
+    useMemo(() => {
+      const txs = [
+        ...(newTransactionsData || []),
+        ...(senderTxPages || [])
+      ].flat()
+      // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
+      return txs.filter(tx =>
+        [tx.sender?.toLowerCase(), tx.destination?.toLowerCase()].includes(
+          address?.toLowerCase()
+        )
       )
-    )
-  }, [newTransactionsData, txPages, address])
+    }, [newTransactionsData, senderTxPages, address])
 
-  const addPendingTransaction = useCallback(
-    (tx: MergedTransaction) => {
-      if (!isTxPending(tx)) {
-        return
-      }
-
-      mutateNewTransactionsData(currentNewTransactions => {
-        if (!currentNewTransactions) {
-          return [tx]
-        }
-
-        return [tx, ...currentNewTransactions]
-      })
-    },
-    [mutateNewTransactionsData]
-  )
-
-  const updateCachedTransaction = useCallback(
+  const updateTransactionInSwrCache = useCallback(
     (newTx: MergedTransaction) => {
       // check if tx is a new transaction initiated by the user, and update it
       const foundInNewTransactions =
@@ -663,7 +767,7 @@ export const useTransactionHistory = (
 
       // tx not found in the new user initiated transaction list
       // look in the paginated historical data
-      mutateTxPages(prevTxPages => {
+      mutateSenderTxPages(prevTxPages => {
         if (!prevTxPages) {
           return
         }
@@ -705,73 +809,66 @@ export const useTransactionHistory = (
         return newTxPages
       }, false)
     },
-    [mutateNewTransactionsData, mutateTxPages, newTransactionsData]
+    [mutateNewTransactionsData, mutateSenderTxPages, newTransactionsData]
+  )
+
+  const addPendingTransaction = useCallback(
+    (tx: MergedTransaction) => {
+      if (!isTxPending(tx)) {
+        return
+      }
+
+      mutateNewTransactionsData(currentNewTransactions => {
+        if (!currentNewTransactions) {
+          return [tx]
+        }
+
+        return [tx, ...currentNewTransactions]
+      })
+    },
+    [mutateNewTransactionsData]
   )
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      if (!isTxPending(tx)) {
-        // if not pending we don't need to check for status, we accept whatever status is passed in
-        updateCachedTransaction(tx)
+      const foundInSwrCache = senderTransactionsWithNewTransactions.find(
+        t => tx.txId === t.txId && tx.childChainId === t.childChainId
+      )
+
+      if (!foundInSwrCache) {
         return
       }
 
-      if (isTeleportTx(tx)) {
-        const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
-        updateCachedTransaction(updatedTeleportTransfer)
-        return
-      }
-
-      if (tx.isCctp) {
-        const updatedCctpTransfer = await getUpdatedCctpTransfer(tx)
-        updateCachedTransaction(updatedCctpTransfer)
-        return
-      }
-
-      // ETH or token withdrawal
-      if (tx.isWithdrawal) {
-        const updatedWithdrawal = await getUpdatedWithdrawal(tx)
-        updateCachedTransaction(updatedWithdrawal)
-        return
-      }
-
-      const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
-
-      // ETH deposit to the same address
-      if (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) {
-        const updatedEthDeposit = await getUpdatedEthDeposit(tx)
-        updateCachedTransaction(updatedEthDeposit)
-        return
-      }
-
-      // Token deposit or ETH deposit to a different destination address
-      const updatedRetryableDeposit = await getUpdatedRetryableDeposit(tx)
-      updateCachedTransaction(updatedRetryableDeposit)
+      const updatedPendingTransaction = await getUpdatedPendingTransaction(tx)
+      updateTransactionInSwrCache(updatedPendingTransaction)
     },
-    [updateCachedTransaction]
+    [senderTransactionsWithNewTransactions, updateTransactionInSwrCache]
   )
 
-  useEffect(() => {
-    if (!runFetcher || !connector) {
-      return
-    }
-    connector.on('change', e => {
-      // reset state on account change
-      if (e.account) {
-        setPage(1)
-        setPauseCount(0)
-        setFetching(true)
-      }
-    })
-  }, [connector, runFetcher, setPage])
+  // based on an example from SWR
+  // https://swr.vercel.app/examples/infinite-loading
+  const isLoadingMore =
+    page > 0 &&
+    typeof senderTxPages !== 'undefined' &&
+    typeof senderTxPages[page - 1] === 'undefined'
+
+  const senderCompleted =
+    !isLoadingSenderFirstPage &&
+    typeof senderTxPages !== 'undefined' &&
+    rawData.length === senderTxPages.flat().length
 
   useEffect(() => {
-    if (!txPages || !fetching || !runFetcher || isValidating) {
+    if (
+      !senderTxPages ||
+      !fetching ||
+      !runFetcher ||
+      isValidatingSenderTxPages
+    ) {
       return
     }
 
-    const firstPage = txPages[0]
-    const lastPage = txPages[txPages.length - 1]
+    const firstPage = senderTxPages[0]
+    const lastPage = senderTxPages[senderTxPages.length - 1]
 
     if (!firstPage || !lastPage) {
       return
@@ -804,58 +901,231 @@ export const useTransactionHistory = (
     }
 
     // make sure we don't over-fetch
-    if (page === txPages.length) {
+    if (page === senderTxPages.length) {
       setPage(prevPage => prevPage + 1)
     }
-  }, [txPages, setPage, page, pauseCount, fetching, runFetcher, isValidating])
-
-  useEffect(() => {
-    if (typeof error !== 'undefined') {
-      console.warn(error)
-      captureSentryErrorWithExtraData({
-        error,
-        originFunction: 'useTransactionHistoryWithoutStatuses'
-      })
-    }
-
-    if (typeof txPagesError !== 'undefined') {
-      console.warn(txPagesError)
-      captureSentryErrorWithExtraData({
-        error: txPagesError,
-        originFunction: 'useTransactionHistory'
-      })
-    }
-  }, [error, txPagesError])
-
-  function pause() {
-    setFetching(false)
-  }
-
-  function resume() {
-    setFetching(true)
-    setPage(prevPage => prevPage + 1)
-  }
-
-  if (isLoadingTxsWithoutStatus || error) {
-    return {
-      transactions: [],
-      loading: isLoadingTxsWithoutStatus,
-      error,
-      failedChainPairs: [],
-      completed: true,
-      pause,
-      resume,
-      addPendingTransaction,
-      updatePendingTransaction
-    }
-  }
+  }, [
+    senderTxPages,
+    setPage,
+    page,
+    pauseCount,
+    fetching,
+    runFetcher,
+    isValidatingSenderTxPages
+  ])
 
   return {
-    transactions,
-    loading: isLoadingFirstPage || isLoadingMore,
-    completed,
-    error: txPagesError ?? error,
-    failedChainPairs,
+    transactions: senderTransactionsWithNewTransactions || [],
+    error: senderTxPagesError,
+    completed: senderCompleted,
+    loading: rawDataLoading || isLoadingSenderFirstPage || isLoadingMore,
+    firstPageLoaded: !isLoadingSenderFirstPage,
+    rawDataErroredChains,
+    pause,
+    resume,
+    addPendingTransaction,
+    updatePendingTransaction
+  }
+}
+
+const useMappedReceiverTransactionHistory = ({
+  address,
+  shouldStartToFetch
+}: {
+  address: Address | undefined
+  shouldStartToFetch: boolean
+}): UseMappedTransactionHistoryResult => {
+  const { isLoading: isLoadingAccountType } = useAccountType()
+
+  const { rawData, rawDataLoading, rawDataErroredChains, rawDataError } =
+    useRawTransactionHistory({
+      address,
+      fetchFor: 'receiver',
+      shouldStartToFetch
+    })
+
+  const getSwrCacheKey = useCallback(() => {
+    if (!shouldStartToFetch) {
+      return null
+    }
+
+    return address && !rawDataLoading && !isLoadingAccountType
+      ? (['mapped_transaction_history_for_receiver', address, rawData] as const)
+      : null
+  }, [
+    address,
+    shouldStartToFetch,
+    isLoadingAccountType,
+    rawData,
+    rawDataLoading
+  ])
+
+  const {
+    data: receiverTransactions,
+    error: receiverTransactionsError,
+    isLoading: isLoadingReceiverTransactions,
+    mutate: mutateReceiverTransactions
+  } = useSWRImmutable(getSwrCacheKey, async ([, _address, _data]) => {
+    const _receiverTransactions = _data.filter(tx => {
+      if (isTransferTeleportFromSubgraph(tx)) {
+        return tx.sender.toLowerCase() !== _address?.toLowerCase()
+      }
+
+      if (isDeposit(tx)) {
+        return (
+          tx.destination &&
+          tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+        )
+      }
+
+      if (isWithdrawalFromSubgraph(tx)) {
+        return tx.sender.toLowerCase() !== tx.receiver.toLowerCase()
+      }
+
+      if (isTokenWithdrawal(tx)) {
+        return tx._from.toLowerCase() !== tx._to.toLowerCase()
+      }
+
+      // Native token withdrawals always fetch by receiver. We need to fetch for the sender here too.
+      return true
+    })
+
+    const results = []
+    for (const tx of _receiverTransactions) {
+      const transformedTx = await transformTransaction(tx)
+      results.push(transformedTx)
+    }
+    return results
+  })
+
+  const updateTransactionInSwrCache = useCallback(
+    (newTx: MergedTransaction) => {
+      mutateReceiverTransactions(prevReceiverTransactions => {
+        return prevReceiverTransactions?.map(tx => {
+          if (
+            tx.childChainId === newTx.childChainId &&
+            tx.txId === newTx.txId
+          ) {
+            return newTx
+          }
+          return tx
+        })
+      })
+    },
+    [mutateReceiverTransactions]
+  )
+
+  const updatePendingTransaction = useCallback(
+    async (tx: MergedTransaction) => {
+      if (!receiverTransactions) {
+        return
+      }
+
+      const foundInSwrCache = receiverTransactions
+        .flat()
+        .find(t => tx.txId === t.txId && tx.childChainId === t.childChainId)
+
+      if (!foundInSwrCache) {
+        return
+      }
+
+      const updatedPendingTransaction = await getUpdatedPendingTransaction(tx)
+      updateTransactionInSwrCache(updatedPendingTransaction)
+    },
+    [receiverTransactions, updateTransactionInSwrCache]
+  )
+
+  useEffect(() => {
+    if (typeof rawDataError !== 'undefined') {
+      console.warn(rawDataError)
+      captureSentryErrorWithExtraData({
+        error: rawDataError,
+        originFunction: 'useRawTransactionHistory'
+      })
+    }
+
+    if (typeof receiverTransactionsError !== 'undefined') {
+      console.warn(receiverTransactionsError)
+      captureSentryErrorWithExtraData({
+        error: receiverTransactionsError,
+        originFunction: 'useMappedReceiverTransactionHistory'
+      })
+    }
+  }, [rawDataError, receiverTransactionsError])
+
+  return {
+    transactions: receiverTransactions || [],
+    error: receiverTransactionsError,
+    completed: !isLoadingReceiverTransactions,
+    loading: isLoadingReceiverTransactions || rawDataLoading,
+    rawDataErroredChains,
+    updatePendingTransaction
+  }
+}
+
+export const useTransactionHistory = (
+  address: Address | undefined,
+  // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
+  { runFetcher = false } = {}
+): UseTransactionHistoryResult => {
+  const {
+    transactions: senderTransactions,
+    loading: loadingForSender,
+    completed: completedForSender,
+    error: errorForSender,
+    rawDataErroredChains: rawDataErroredChainsForSender,
+    firstPageLoaded: firstPageLoadedForSender,
+    pause,
+    resume,
+    addPendingTransaction,
+    updatePendingTransaction: updatePendingSenderTransaction
+  } = useMappedSenderTransactionHistory({
+    address,
+    runFetcher
+  })
+
+  const {
+    transactions: receiverTransactions,
+    loading: loadingForReceiver,
+    completed: completedForReceiver,
+    error: errorForReceiver,
+    rawDataErroredChains: rawDataErroredChainsForReceiver,
+    updatePendingTransaction: updatePendingReceiverTransaction
+  } = useMappedReceiverTransactionHistory({
+    address,
+    shouldStartToFetch: firstPageLoadedForSender
+  })
+
+  const { cctpTransactions, cctpLoading } = useCctpTransactions({ address })
+
+  const updatePendingTransaction = useCallback(
+    async (tx: MergedTransaction) => {
+      await updatePendingSenderTransaction(tx)
+      await updatePendingReceiverTransaction(tx)
+    },
+    [updatePendingReceiverTransaction, updatePendingSenderTransaction]
+  )
+
+  return {
+    transactions: [
+      ...senderTransactions,
+      ...receiverTransactions,
+      ...cctpTransactions
+    ].sort(sortByTimestampDescending),
+    senderData: {
+      senderTransactions,
+      loadingForSender: loadingForSender || cctpLoading,
+      completedForSender,
+      errorForSender
+    },
+    receiverData: {
+      receiverTransactions,
+      loadingForReceiver,
+      completedForReceiver,
+      errorForReceiver
+    },
+    rawDataErroredChains:
+      rawDataErroredChainsForSender || rawDataErroredChainsForReceiver,
     pause,
     resume,
     addPendingTransaction,

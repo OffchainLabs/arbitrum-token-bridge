@@ -28,6 +28,7 @@ import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { Loader } from '../common/atoms/Loader'
 
 export const BatchTransferNativeTokenTooltip = ({
   children,
@@ -139,10 +140,9 @@ export const TransactionHistoryTable = (
 ) => {
   const {
     transactions,
-    loading,
-    completed,
-    error,
-    failedChainPairs,
+    senderData,
+    receiverData,
+    rawDataErroredChains,
     resume,
     selectedTabIndex,
     oldestTxTimeAgoString
@@ -153,7 +153,7 @@ export const TransactionHistoryTable = (
   const isTxHistoryEmpty = transactions.length === 0
   const isPendingTab = selectedTabIndex === 0
 
-  const paused = !loading && !completed
+  const paused = !senderData.loadingForSender && !senderData.completedForSender
 
   const contentWrapperRef = useRef<HTMLDivElement | null>(null)
   const tableRef = useRef<Table | null>(null)
@@ -194,8 +194,11 @@ export const TransactionHistoryTable = (
   if (isTxHistoryEmpty) {
     return (
       <EmptyTransactionHistory
-        loading={loading}
-        isError={typeof error !== 'undefined'}
+        loading={senderData.loadingForSender || receiverData.loadingForReceiver}
+        isError={
+          typeof senderData.errorForSender !== 'undefined' ||
+          typeof receiverData.errorForReceiver !== 'undefined'
+        }
         paused={paused}
         resume={resume}
         tabType={isPendingTab ? 'pending' : 'settled'}
@@ -214,15 +217,29 @@ export const TransactionHistoryTable = (
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
       >
-        {loading ? (
+        {senderData.loadingForSender ? (
           <div className="flex h-[28px] items-center space-x-2">
-            <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+            <FailedChainPairsTooltip failedChainPairs={rawDataErroredChains} />
             <HistoryLoader />
           </div>
         ) : (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center justify-start space-x-1">
-              <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+              {receiverData.loadingForReceiver && (
+                <Tooltip
+                  content={
+                    <b className="text-xs">
+                      Inbound transactions received from another address are
+                      still being fetched...
+                    </b>
+                  }
+                >
+                  <Loader size="small" color="white" />
+                </Tooltip>
+              )}
+              <FailedChainPairsTooltip
+                failedChainPairs={rawDataErroredChains}
+              />
               <span className="text-xs">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
@@ -230,7 +247,9 @@ export const TransactionHistoryTable = (
               </span>
             </div>
 
-            {!completed && <LoadMoreButton onClick={resume} />}
+            {!senderData.completedForSender && (
+              <LoadMoreButton onClick={resume} />
+            )}
           </div>
         )}
         <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
