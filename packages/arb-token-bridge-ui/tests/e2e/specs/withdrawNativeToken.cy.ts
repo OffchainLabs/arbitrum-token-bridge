@@ -108,6 +108,8 @@ describe('Withdraw native token', () => {
 
           cy.switchToTransactionHistoryTab('pending')
 
+          cy.wait(5_000)
+
           cy.findClaimButton(
             formatAmount(ETHToWithdraw, {
               symbol: nativeTokenSymbol

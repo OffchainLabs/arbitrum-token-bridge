@@ -1079,12 +1079,12 @@ export const useTransactionHistory = (
   const { cctpTransactions, cctpLoading } = useCctpTransactions({ address })
 
   const updatePendingTransaction = useCallback(
-    async (tx: MergedTransaction) => {
+    (tx: MergedTransaction) => {
       if (address?.toLowerCase() !== tx.sender?.toLowerCase()) {
         return updatePendingReceiverTransaction(tx)
       }
 
-      updatePendingSenderTransaction(tx)
+      return updatePendingSenderTransaction(tx)
     },
     [address, updatePendingReceiverTransaction, updatePendingSenderTransaction]
   )
