@@ -435,7 +435,8 @@
           "name": "SX Network",
           "symbol": "SX",
           "logoUrl": "/images/sxTokenLogo.png"
-        }
+        },
+        "fastWithdrawalTime": 21600000
       }
     },
     {
