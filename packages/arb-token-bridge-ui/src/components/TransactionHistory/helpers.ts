@@ -617,31 +617,20 @@ export const supportedParentChains = [
   ...supportedCustomOrbitParentChains
 ]
 
-export type GetParentTxReceiptResult = {
-  parentTxReceipt: ParentTransactionReceipt | undefined
-  parentChainId: number
-}
-
 export async function getParentTxReceipt(
-  txHash: string
-): Promise<GetParentTxReceiptResult | undefined> {
-  const promises = supportedParentChains.map(async chainId => {
-    try {
-      const l1Provider = getProviderForChainId(Number(chainId))
+  txHash: string,
+  parentChainId: number
+): Promise<ParentTransactionReceipt | undefined> {
+  try {
+    const parentProvider = getProviderForChainId(Number(parentChainId))
 
-      const receipt = await l1Provider.getTransactionReceipt(txHash)
-      if (receipt) {
-        return {
-          parentTxReceipt: new ParentTransactionReceipt(receipt),
-          parentChainId: Number(chainId)
-        }
-      }
-    } catch (e) {
-      console.warn(`Cannot get tx receipt from parent chain ${chainId}`)
+    const receipt = await parentProvider.getTransactionReceipt(txHash)
+    if (receipt) {
+      return new ParentTransactionReceipt(receipt)
     }
-  })
-  const results = await Promise.all(promises)
-  return results.find(r => r)
+  } catch (e) {
+    console.warn(`Cannot get tx receipt from parent chain ${parentChainId}`)
+  }
 }
 
 export function isValidTxHash(txHash: string | undefined): txHash is string {
