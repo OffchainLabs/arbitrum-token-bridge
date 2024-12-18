@@ -20,7 +20,6 @@ import {
   getChainIdFromProvider,
   percentIncrease
 } from './utils'
-import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
@@ -104,16 +103,9 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const destinationChainErc20Address =
-      await this.getDestinationChainErc20Address()
-
     const address = await getAddressFromSigner(signer)
 
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-
-    const destinationChainId = await getChainIdFromProvider(
-      this.destinationChainProvider
-    )
 
     const gatewayAddress = await this.getSourceChainGatewayAddress()
 
@@ -130,28 +122,25 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     }
 
     // the below checks are only run for tokens using custom gateway / custom custom gateway
+    //
+    // check if token withdrawal gas estimation fails
+    // if it fails, the token gateway is not allowed to burn the token without additional approval
+    const transferEstimateGasResult = await this.transferEstimateGas({
+      amount,
+      signer
+    })
 
-    // check if token is known to require withdrawal approval on child chain
-    // return true without checking if there is an existing allowance
-    // users might have already approved enough allowance, but it's rare
-    // so we can skip the check to save some calls
-    if (
-      await tokenRequiresApprovalOnL2({
-        tokenAddressOnParentChain: destinationChainErc20Address,
-        parentChainId: destinationChainId,
-        childChainId: sourceChainId
-      })
-    ) {
-      return true
+    if (!transferEstimateGasResult.isError) {
+      return false
     }
 
-    // a catch-all check for tokens not on the hardcoded list
     const allowanceForSourceChainGateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
       owner: address,
       spender: gatewayAddress
     })
+
     return allowanceForSourceChainGateway.lt(amount)
   }
 
