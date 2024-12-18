@@ -155,6 +155,8 @@ describe('Withdraw ERC20 Token', () => {
 
         cy.switchToTransactionHistoryTab('pending')
 
+        cy.wait(5_000)
+
         cy.findClaimButton(
           formatAmount(ERC20AmountToSend, {
             symbol: testCase.symbol
