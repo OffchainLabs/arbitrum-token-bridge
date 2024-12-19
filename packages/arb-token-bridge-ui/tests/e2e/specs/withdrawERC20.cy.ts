@@ -103,7 +103,7 @@ describe('Withdraw ERC20 Token', () => {
         })
 
         context('should show clickable withdraw button', () => {
-          cy.startTransfer()
+          cy.startTransfer({ confirmMetamaskTransaction: false })
         })
 
         context('should withdraw successfully', () => {
@@ -218,7 +218,7 @@ describe('Withdraw ERC20 Token', () => {
         })
 
         context('should show clickable withdraw button', () => {
-          cy.startTransfer()
+          cy.startTransfer({ confirmMetamaskTransaction: false })
         })
 
         context('should initiate withdrawal successfully', () => {

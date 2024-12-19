@@ -222,11 +222,17 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
-export function startTransfer() {
+export function startTransfer({
+  confirmMetamaskTransaction = true
+}: {
+  confirmMetamaskTransaction?: boolean
+}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
-  cy.confirmMetamaskTransaction()
+  if (confirmMetamaskTransaction) {
+    cy.confirmMetamaskTransaction()
+  }
 }
 
 export function findSelectTokenButton(

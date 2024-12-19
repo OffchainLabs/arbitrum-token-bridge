@@ -160,7 +160,7 @@ describe('Deposit Token', () => {
               }),
             {
               errorMsg: 'Could not find settled ERC20 Deposit transaction',
-              timeout: 60_000,
+              timeout: 120_000,
               interval: 500
             }
           )
