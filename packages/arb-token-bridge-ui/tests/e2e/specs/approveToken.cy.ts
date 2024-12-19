@@ -50,7 +50,7 @@ describe('Approve token for deposit', () => {
        * If confirm spending fails, test is still considered to be passing by Cypress
        * We add another check to make sure the test fails if needed
        */
-      cy.wait(10_000)
+      cy.wait(25_000)
       cy.rejectMetamaskTransaction()
     })
   })
