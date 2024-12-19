@@ -6,7 +6,8 @@ import {
   ParentToChildMessageStatus,
   ParentToChildMessageReader,
   ChildTransactionReceipt,
-  ChildToParentTransactionEvent
+  ChildToParentTransactionEvent,
+  ParentTransactionReceipt
 } from '@arbitrum/sdk'
 
 import {
@@ -15,7 +16,12 @@ import {
   TeleporterMergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { ChainId, getL1BlockTime, isNetwork } from '../../util/networks'
+import {
+  ChainId,
+  getL1BlockTime,
+  isNetwork,
+  supportedCustomOrbitParentChains
+} from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import {
   getParentToChildMessageDataFromParentTxHash,
@@ -601,4 +607,35 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
   return tx.isWithdrawal
     ? tx.childToParentMsgData?.uniqueId.toString()
     : tx.parentToChildMsgData?.childTxId
+}
+
+export const supportedParentChains = [
+  ChainId.Ethereum,
+  ChainId.ArbitrumOne,
+  ChainId.ArbitrumNova,
+  ChainId.Base,
+  ...supportedCustomOrbitParentChains
+]
+
+export async function getParentTxReceipt(
+  txHash: string,
+  parentChainId: number
+): Promise<ParentTransactionReceipt | undefined> {
+  try {
+    const parentProvider = getProviderForChainId(Number(parentChainId))
+
+    const receipt = await parentProvider.getTransactionReceipt(txHash)
+    if (receipt) {
+      return new ParentTransactionReceipt(receipt)
+    }
+  } catch (e) {
+    console.warn(`Cannot get tx receipt from parent chain ${parentChainId}`)
+  }
+}
+
+export function isValidTxHash(txHash: string | undefined): txHash is string {
+  if (!txHash) {
+    return false
+  }
+  return /^0x([A-Fa-f0-9]{64})$/.test(txHash)
 }
