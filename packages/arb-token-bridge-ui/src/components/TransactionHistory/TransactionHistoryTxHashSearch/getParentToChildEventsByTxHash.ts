@@ -5,6 +5,7 @@ import { EthDepositMessage, getArbitrumNetworks } from '@arbitrum/sdk'
 import { getParentTxReceipt } from '../helpers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { normalizeTimestamp } from '../../../state/app/utils'
+import { ParentToChildMessagesAndDepositMessages } from './helpers'
 
 export type FetchDepositTxFromEventLogResult = {
   receiver: string
@@ -60,48 +61,78 @@ export async function getParentToChildEventsByTxHash(
     return []
   }
 
-  // to test for child chain, filter chains that has this parent chain id as parent
-  // and then loop through it.............
-  const childChains = getArbitrumNetworks()
-        .filter(childChain => childChain.parentChainId === parentChainId)
-        .map(network => network.chainId)
+  const childChainMessages = getArbitrumNetworks()
+    .filter(childChain => childChain.parentChainId === parentChainId)
+    .map(async childChain => {
+      const childChainId = childChain.chainId
+      const childProvider = getProviderForChainId(childChainId)
 
-  parentTxReceipt.
+      // Check if any parentToChild msg is sent to the inbox of this child chain
+      const logFromChildChainInbox = parentTxReceipt.logs.filter(
+        log =>
+          log.address.toLowerCase() === childChain.ethBridge.inbox.toLowerCase()
+      )
 
-  const parentToChildMessages = isClassic
-    ? await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
-    : await parentTxReceipt.getParentToChildMessages(childProvider)
-
-  const parentToChildMessageReader = parentToChildMessages[0]
-
-  if (!parentToChildMessageReader) {
-    return []
-  }
-
-  const ethDeposits = await parentTxReceipt.getEthDeposits(childProvider)
-
-  const timestamp = normalizeTimestamp(
-    (await parentProvider.getBlock(parentTxReceipt.blockNumber)).timestamp
-  )
-
-  const ethTransactions: FetchDepositTxFromEventLogResult[] = ethDeposits.map(
-    async depositMessage => {
-      const childProvider = getProviderForChainId(depositMessage.childChainId)
+      if (logFromChildChainInbox.length === 0) {
+        return
+      }
 
       const isClassic = await parentTxReceipt.isClassic(childProvider)
 
+      const parentToChildMessages = isClassic
+        ? await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
+        : await parentTxReceipt.getParentToChildMessages(childProvider)
+
+      const ethDeposits = await parentTxReceipt.getEthDeposits(childProvider)
+
+      const parentToChildMessageReader = parentToChildMessages[0]
+
+      return {
+        ethDeposits
+      }
+    })
+
+  const messages = await Promise.all(childChainMessages)
+
+  const allMessages = messages.reduce(
+    (acc, value) => {
+      if (!value) {
+        return acc
+      }
+      return {
+        // retryables: acc.retryables.concat(value.allL1ToL2Messages),
+        // retryablesClassic: acc.retryablesClassic.concat(
+        //   value.allL1ToL2MessagesClassic
+        // ),
+        ethDeposits: acc.deposits.concat(value.ethDeposits)
+      }
+    },
+    {
+      retryables: [],
+      retryablesClassic: [],
+      deposits: []
+    } as ParentToChildMessagesAndDepositMessages
+  )
+
+  const ethTransactions: FetchDepositTxFromEventLogResult[] =
+    allMessages?.ethDeposits.map(async depositMessage => {
+      const timestamp = normalizeTimestamp(
+        (await parentProvider.getBlock(parentTxReceipt.blockNumber)).timestamp
+      )
       return {
         receiver: depositMessage.to,
         sender: depositMessage.from,
-        timestamp,
-        transactionHash: depositMessage.
+        timestamp: timestamp.toString(),
+        transactionHash: depositMessage.childTxHash,
         type: 'EthDeposit',
-        isClassic,
+        isClassic: false,
+        id: depositMessage.childTxHash,
         ethValue: depositMessage.value.toString(),
         blockCreatedAt: parentTxReceipt.blockNumber.toString()
-      }
-    }
-  )
+      } as FetchDepositTxFromEventLogResult
+    })
 
-  return transaction
+  return {
+    ethTransactions
+  }
 }
