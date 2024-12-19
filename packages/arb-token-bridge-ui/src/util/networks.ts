@@ -582,7 +582,7 @@ export function getSupportedChainIds({
     })
 }
 
-export async function isAlchemyChain(chainId: number) {
+export function isAlchemyChain(chainId: number) {
   const chain = orbitChains[chainId]
 
   if (typeof chain === 'undefined') {
