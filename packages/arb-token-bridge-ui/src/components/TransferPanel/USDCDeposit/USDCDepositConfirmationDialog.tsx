@@ -10,7 +10,6 @@ import {
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
-import { useAppState } from '../../../state'
 import {
   getExplorerUrl,
   getNetworkName,
@@ -29,6 +28,7 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { SecurityGuaranteed, SecurityNotGuaranteed } from '../SecurityLabels'
 import { getUSDCAddresses } from '../../../state/cctpState'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 type Props = UseDialogProps & {
   amount: string
@@ -43,9 +43,7 @@ enum SelectedTabName {
 const defaultSelectedTabName: SelectedTabName = SelectedTabName.Cctp
 
 export function USDCDepositConfirmationDialog(props: Props) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { isArbitrumSepolia } = isNetwork(childChain.id)

@@ -11,6 +11,7 @@ import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useAppState } from '../../state'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
@@ -27,9 +28,7 @@ function MaxButton({
   className = '',
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
 
@@ -81,9 +80,7 @@ function SourceChainTokenBalance({
   balanceOverride?: AmountInputOptions['balance']
   symbolOverride?: AmountInputOptions['symbol']
 }) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isDepositMode, childChainProvider } =
     useNetworksRelationship(networks)

@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
+import { utils } from 'ethers'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
-import { useAppState } from '../../state'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -15,6 +15,10 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { Loader } from '../common/atoms/Loader'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useTokenLists } from '../../hooks/useTokenLists'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -26,13 +30,13 @@ export function TokenButton({
 }: {
   options?: TokenButtonOptions
 }): JSX.Element {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const disabled = options?.disabled ?? false
 
   const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -50,6 +54,17 @@ export function TokenButton({
       chainId: networks.sourceChain.id
     })
   }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
+
+  const isLoadingToken = useMemo(() => {
+    // don't show loader if native currency is selected
+    if (!tokenFromSearchParams) {
+      return false
+    }
+    if (!utils.isAddress(tokenFromSearchParams)) {
+      return false
+    }
+    return isLoadingTokenLists
+  }, [tokenFromSearchParams, isLoadingTokenLists])
 
   return (
     <>
@@ -75,8 +90,14 @@ export function TokenButton({
                     className="h-5 w-5 sm:h-7 sm:w-7"
                   />
                 )} */}
-                <span className="text-xl font-light">{tokenSymbol}</span>
-                {!disabled && (
+                <span className="text-xl font-light">
+                  {isLoadingToken ? (
+                    <Loader size="medium" color="white" />
+                  ) : (
+                    tokenSymbol
+                  )}
+                </span>
+                {!disabled && !isLoadingToken && (
                   <ChevronDownIcon
                     className={twMerge(
                       'h-3 w-3 text-gray-6 transition-transform duration-200',

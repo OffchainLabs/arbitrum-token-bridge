@@ -1,6 +1,5 @@
 import { BigNumber, constants } from 'ethers'
 import { useMemo } from 'react'
-import { useAppState } from '../../state'
 import { useNetworks } from '../useNetworks'
 import {
   isTokenArbitrumOneNativeUSDC,
@@ -8,6 +7,7 @@ import {
 } from '../../util/TokenUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
+import { useSelectedToken } from '../useSelectedToken'
 import { useBalances } from '../useBalances'
 
 export type Balances = {
@@ -16,8 +16,7 @@ export type Balances = {
 }
 
 export function useSelectedTokenBalances(): Balances {
-  const { app } = useAppState()
-  const { selectedToken } = app
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
 
   const {

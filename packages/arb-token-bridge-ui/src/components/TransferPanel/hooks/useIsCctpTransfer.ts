@@ -1,6 +1,6 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useAppState } from '../../../state'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { isNetwork } from '../../../util/networks'
 import {
   isTokenArbitrumOneNativeUSDC,
@@ -10,9 +10,7 @@ import {
 } from '../../../util/TokenUtils'
 
 export const useIsCctpTransfer = function () {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChain, isDepositMode, isTeleportMode } =
     useNetworksRelationship(networks)
