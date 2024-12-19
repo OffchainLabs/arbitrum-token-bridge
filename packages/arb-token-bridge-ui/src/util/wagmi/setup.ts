@@ -148,14 +148,13 @@ export function getProps(targetChainKey: string | null) {
     chains
   })
 
+  wallets[0]?.wallets.push(okxWallet({ chains, projectId }))
+
   const connectors = connectorsForWallets([
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        okxWallet({ chains, projectId })
-      ]
+      wallets: [trustWallet({ chains, projectId })]
     }
   ])
 
