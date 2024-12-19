@@ -11,7 +11,7 @@ import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
 import { fetchErc20Data } from './TokenUtils'
-import orbitChainsData from './orbitChainsData.json'
+import { orbitChains } from './orbitChainsList'
 
 export enum ChainId {
   // L1
@@ -582,11 +582,8 @@ export function getSupportedChainIds({
     })
 }
 
-export async function isAlchemyChain(provider: Provider) {
-  const { chainId } = await getArbitrumNetwork(provider)
-
-  const chains = [...orbitChainsData.mainnet, ...orbitChainsData.testnet]
-  const chain = chains.find(chain => chain.chainId === chainId)
+export async function isAlchemyChain(chainId: number) {
+  const chain = orbitChains[chainId]
 
   if (typeof chain === 'undefined') {
     return false
