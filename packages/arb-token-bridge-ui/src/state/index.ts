@@ -1,9 +1,5 @@
 import { IContext } from 'overmind'
-import {
-  createActionsHook,
-  createStateHook,
-  createEffectsHook
-} from 'overmind-react'
+import { createActionsHook, createStateHook } from 'overmind-react'
 import { namespaced } from 'overmind/config'
 
 import * as app from './app'
@@ -20,4 +16,3 @@ export type Context = IContext<{
 
 export const useAppState = createStateHook<Context>()
 export const useActions = createActionsHook<Context>()
-export const useEffects = createEffectsHook<Context>()
