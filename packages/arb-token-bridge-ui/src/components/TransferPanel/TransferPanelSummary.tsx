@@ -286,7 +286,7 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
   return (
     <>
       <span className="whitespace-nowrap">Confirmation time:</span>
-      <span className="flex items-center font-medium">
+      <span className="flex flex-col items-start font-medium sm:flex-row sm:items-center">
         <span className="hidden sm:inline">
           {confirmationTimeInReadableFormat}
         </span>
@@ -300,7 +300,7 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
                 'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
               }
             >
-              <InformationCircleIcon className="ml-1 h-3 w-3" />
+              <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
             </Tooltip>
             <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
               <Image src={LightningIcon} alt="Lightning Icon" />
