@@ -1,5 +1,6 @@
 import {
   Erc20Bridger,
+  getArbitrumNetwork,
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
 import { BigNumber, constants, utils } from 'ethers'
@@ -20,8 +21,13 @@ import {
   fetchErc20Allowance,
   fetchErc20ParentChainGatewayAddress
 } from '../util/TokenUtils'
-import { getAddressFromSigner, percentIncrease } from './utils'
+import {
+  getAddressFromSigner,
+  percentIncrease,
+  validateSignerChainId
+} from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
 export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
@@ -297,6 +303,14 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
     const erc20Bridger = await this.getBridger()
+    const destinationChainId = (
+      await this.destinationChainProvider.getNetwork()
+    ).chainId
+
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
 
     const depositRequest = await erc20Bridger.getDepositRequest({
       parentProvider: this.sourceChainProvider,
@@ -312,6 +326,25 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       },
       ...overrides
     })
+
+    const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(depositToAddress, this.sourceChainProvider)) {
+      throw new Error(
+        `Parent chain token gateway router address provided is not a smart contract address.`
+      )
+    }
+
+    const parentGatewayRouterAddressForChain =
+      getArbitrumNetwork(
+        destinationChainId
+      ).tokenBridge?.parentGatewayRouter.toLowerCase()
+
+    if (depositToAddress !== parentGatewayRouterAddressForChain) {
+      throw new Error(
+        `Wrong token gateway router address on parent chain. Expected ${parentGatewayRouterAddressForChain}, got ${depositToAddress} instead.`
+      )
+    }
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest
