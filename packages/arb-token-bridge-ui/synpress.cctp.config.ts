@@ -43,7 +43,8 @@ export async function fundUsdc({
   await tx.wait()
 }
 
-const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+// const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+const shouldRecordVideo = true
 
 const tests =
   process.env.TEST_FILE &&

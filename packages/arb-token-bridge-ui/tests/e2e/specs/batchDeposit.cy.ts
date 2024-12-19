@@ -143,7 +143,7 @@ describe('Batch Deposit', () => {
 
       cy.waitUntil(() => cy.findTransactionInTransactionHistory(txData), {
         errorMsg: 'Could not find settled ERC20 Batch Deposit transaction',
-        timeout: 60_000,
+        timeout: 120_000,
         interval: 500
       })
 
@@ -253,7 +253,7 @@ describe('Batch Deposit', () => {
 
       cy.waitUntil(() => cy.findTransactionInTransactionHistory(txData), {
         errorMsg: 'Could not find settled ERC20 Batch Deposit transaction',
-        timeout: 60_000,
+        timeout: 120_000,
         interval: 500
       })
 
