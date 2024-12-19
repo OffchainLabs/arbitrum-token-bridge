@@ -1,4 +1,4 @@
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
   getChildrenForNetwork,
@@ -11,6 +11,7 @@ import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
 import { fetchErc20Data } from './TokenUtils'
+import { orbitChains } from './orbitChainsList'
 
 export enum ChainId {
   // L1
@@ -579,6 +580,16 @@ export function getSupportedChainIds({
       }
       return true
     })
+}
+
+export function isAlchemyChain(chainId: number) {
+  const chain = orbitChains[chainId]
+
+  if (typeof chain === 'undefined') {
+    return false
+  }
+
+  return chain.rpcUrl.toLowerCase().includes('alchemy.com')
 }
 
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
