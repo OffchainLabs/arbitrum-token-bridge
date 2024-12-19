@@ -1,6 +1,5 @@
 import { Signer } from '@ethersproject/abstract-signer'
-import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { BigNumber, ContractReceipt, ethers } from 'ethers'
+import { BigNumber, ContractReceipt } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import {
   EventArgs,
@@ -15,12 +14,6 @@ import {
 } from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-
-import {
-  NewTransaction,
-  Transaction,
-  ParentToChildMessageData
-} from './useTransactions'
 
 export { OutgoingMessageState }
 
@@ -97,7 +90,7 @@ export interface BridgeToken {
   address: string
   l2Address?: string
   logoURI?: string
-  listIds: Set<number> // no listID indicates added by user
+  listIds: Set<string> // no listID indicates added by user
   isL2Native?: boolean
 }
 
@@ -147,8 +140,8 @@ export interface ArbTokenBridgeEth {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
-  addTokensFromList: (tokenList: TokenList, listID: number) => void
-  removeTokensFromList: (listID: number) => void
+  addTokensFromList: (tokenList: TokenList, listID: string) => void
+  removeTokensFromList: (listID: string) => void
   updateTokenData: (l1Address: string) => Promise<void>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
@@ -156,22 +149,8 @@ export interface ArbTokenBridgeToken {
   }) => Promise<void | ContractReceipt>
 }
 
-export interface TransactionActions {
-  addTransaction: (transaction: NewTransaction) => void
-  updateTransaction: (
-    txReceipt: TransactionReceipt,
-    tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: ParentToChildMessageData
-  ) => void
-}
-
-export type ArbTokenBridgeTransactions = {
-  transactions: Transaction[]
-} & Pick<TransactionActions, 'addTransaction' | 'updateTransaction'>
-
 export interface ArbTokenBridge {
   bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
-  transactions: ArbTokenBridgeTransactions
 }

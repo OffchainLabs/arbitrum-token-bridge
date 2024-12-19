@@ -18,18 +18,7 @@ import {
 export async function fetchL2Gateways(l2Provider: Provider) {
   const l2Network = await getArbitrumNetwork(l2Provider)
 
-  if (!l2Network.tokenBridge) {
-    return []
-  }
-
-  /* configure gateway addresses for fetching withdrawals */
-  const { childErc20Gateway, childCustomGateway, childWethGateway } =
-    l2Network.tokenBridge
-  const gatewaysToUse = [
-    childErc20Gateway,
-    childCustomGateway,
-    childWethGateway
-  ]
+  const gatewaysToUse = []
   const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainId]
   const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainId]
   const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainId]

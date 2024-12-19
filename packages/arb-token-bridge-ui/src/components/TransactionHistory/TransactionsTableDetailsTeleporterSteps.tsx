@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Address } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
@@ -72,11 +71,9 @@ const TeleportMiddleStepFailureExplanationNote = ({
 }
 
 export const TransactionsTableDetailsTeleporterSteps = ({
-  tx,
-  address
+  tx
 }: {
   tx: TeleporterMergedTransaction
-  address: Address | undefined
 }) => {
   const l2TxID = tx.parentToChildMsgData?.childTxId
   const isFirstRetryableLegSucceeded =
@@ -96,15 +93,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     typeof tx.l2ToL3MsgData?.l3TxID !== 'undefined'
 
   const firstRetryableRedeemButton = useMemo(
-    () => (
-      <TransactionsTableRowAction
-        type="deposits"
-        isError={true}
-        tx={tx}
-        address={address}
-      />
-    ),
-    [tx, address]
+    () => <TransactionsTableRowAction type="deposits" isError={true} tx={tx} />,
+    [tx]
   )
 
   const firstTransactionExternalLink = useMemo(
