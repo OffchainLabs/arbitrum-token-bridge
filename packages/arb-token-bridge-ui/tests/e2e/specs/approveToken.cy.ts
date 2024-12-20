@@ -39,7 +39,7 @@ describe('Approve token for deposit', () => {
         timeout: 50000,
         interval: 500
       })
-      cy.findMoveFundsButton().click()
+      cy.startTransfer({ shouldConfirmInMetamask: false })
       cy.findByText(/pay a one-time approval fee/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
