@@ -141,11 +141,7 @@ describe('Batch Deposit', () => {
     context('deposit should complete successfully', () => {
       cy.selectTransactionsPanelTab('settled')
 
-      cy.waitUntil(() => cy.findTransactionInTransactionHistory(txData), {
-        errorMsg: 'Could not find settled ERC20 Batch Deposit transaction',
-        timeout: 60_000,
-        interval: 500
-      })
+      cy.findTransactionInTransactionHistory(txData)
 
       cy.findTransactionInTransactionHistory({
         duration: 'a few seconds ago',
@@ -156,23 +152,29 @@ describe('Batch Deposit', () => {
 
     context('funds should reach destination account successfully', () => {
       // should have more funds on destination chain
-      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on childChain`)
-        .invoke('text')
-        .then(parseFloat)
-        .should('be.gt', Number(parentErc20Balance))
-      cy.findByLabelText(`${nativeTokenSymbol} balance amount on childChain`)
-        .invoke('text')
-        .then(parseFloat)
-        .should(
-          'be.gt',
+      cy.findByLabelText(
+        `${ERC20TokenSymbol} balance amount on childChain`
+      ).should($el => {
+        const currentBalance = parseFloat($el.text())
+        expect(currentBalance).to.be.gt(Number(parentErc20Balance))
+      })
+
+      cy.findByLabelText(
+        `${nativeTokenSymbol} balance amount on childChain`
+      ).should($el => {
+        const currentBalance = parseFloat($el.text())
+        expect(currentBalance).to.be.gt(
           Number(parentNativeTokenBalance) + nativeCurrencyAmountToSend
         )
+      })
 
       // the balance on the source chain should not be the same as before
-      cy.findByLabelText(`${ERC20TokenSymbol} balance amount on parentChain`)
-        .invoke('text')
-        .then(parseFloat)
-        .should('be.lt', Number(parentErc20Balance))
+      cy.findByLabelText(
+        `${ERC20TokenSymbol} balance amount on parentChain`
+      ).should($el => {
+        const currentBalance = parseFloat($el.text())
+        expect(currentBalance).to.be.lt(Number(parentErc20Balance))
+      })
     })
 
     context('transfer panel amount should be reset', () => {
@@ -251,11 +253,7 @@ describe('Batch Deposit', () => {
     context('deposit should complete successfully', () => {
       cy.selectTransactionsPanelTab('settled')
 
-      cy.waitUntil(() => cy.findTransactionInTransactionHistory(txData), {
-        errorMsg: 'Could not find settled ERC20 Batch Deposit transaction',
-        timeout: 60_000,
-        interval: 500
-      })
+      cy.findTransactionInTransactionHistory(txData)
 
       cy.findTransactionInTransactionHistory({
         duration: 'a few seconds ago',

@@ -150,20 +150,11 @@ describe('Deposit Token', () => {
           // switch to settled transactions
           cy.selectTransactionsPanelTab('settled')
 
-          //wait for some time for tx to go through and find the new amount in settled transactions
-          cy.waitUntil(
-            () =>
-              cy.findTransactionInTransactionHistory({
-                duration: 'a few seconds ago',
-                amount: ERC20AmountToSend,
-                symbol: testCase.symbol
-              }),
-            {
-              errorMsg: 'Could not find settled ERC20 Deposit transaction',
-              timeout: 60_000,
-              interval: 500
-            }
-          )
+          cy.findTransactionInTransactionHistory({
+            duration: 'a few seconds ago',
+            amount: ERC20AmountToSend,
+            symbol: testCase.symbol
+          })
           // open the tx details popup
           const txData = {
             amount: ERC20AmountToSend,
