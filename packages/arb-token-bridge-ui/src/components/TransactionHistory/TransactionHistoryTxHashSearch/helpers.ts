@@ -34,25 +34,10 @@ export enum ReceiptState {
   NO_L2_L1_MESSAGES
 }
 
-export interface ParentToChildMessageReaderWithNetwork
-  extends ParentToChildMessageReader {
-  childNetwork: ArbitrumNetwork
-}
-
-export interface ParentToChildMessageReaderClassicWithNetwork
-  extends ParentToChildMessageReaderClassic {
-  childNetwork: ArbitrumNetwork
-}
-
-export interface EthDepositMessageWithNetwork extends EthDepositMessage {
-  childNetwork: ArbitrumNetwork
-}
-
 export interface ParentToChildMessagesAndDepositMessages {
-  retryables: ParentToChildMessageReaderWithNetwork[]
-  retryablesClassic: ParentToChildMessageReaderClassicWithNetwork[]
-  deposits: EthDepositMessageWithNetwork[]
-  childChainId: number | null
+  tokenDepositRetryables: ParentToChildMessageReader[]
+  tokenDepositRetryablesClassic: ParentToChildMessageReaderClassic[]
+  ethDeposits: EthDepositMessage[]
 }
 
 export interface ChildToParentMessageData {

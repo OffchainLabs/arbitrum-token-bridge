@@ -13,6 +13,8 @@ import {
   FetchEthDepositsToCustomDestinationFromSubgraphResult
 } from './fetchEthDepositsToCustomDestinationFromSubgraph'
 import { mapDepositsFromSubgraph } from './mapDepositsFromSubgraph'
+import { getParentToChildEventsByTxHash } from '../../components/TransactionHistory/TransactionHistoryTxHashSearch/getParentToChildEventsByTxHash'
+import { DepositInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L1ERC20Gateway'
 
 export type FetchDepositParams = {
   sender?: string
@@ -119,7 +121,18 @@ export const fetchDeposits = async ({
       }
     )
 
+  const {
+    ethDeposits: ethDepositsFromEventLogs,
+    tokenDepositRetryables: tokenDepositsFromEventLogs
+  } = await getParentToChildEventsByTxHash({
+    parentChainId: l1ChainId,
+    txHash: searchString,
+    filter: { fromBlock, toBlock: toBlock ?? 'latest' }
+  })
+
   return [
+    ...ethDepositsFromEventLogs,
+    ...tokenDepositsFromEventLogs,
     ...mappedDepositsFromSubgraph,
     ...mappedEthDepositsToCustomDestinationFromSubgraph
   ].sort((a, b) => Number(b.timestampCreated) - Number(a.timestampCreated))

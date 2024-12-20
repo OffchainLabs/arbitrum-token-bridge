@@ -76,7 +76,7 @@ export function TransactionHistoryTxHashSearchResult() {
     }
 
     updateTx()
-  }, [tx])
+  }, [tx, txFromHash])
 
   if (!transactions) {
     return null

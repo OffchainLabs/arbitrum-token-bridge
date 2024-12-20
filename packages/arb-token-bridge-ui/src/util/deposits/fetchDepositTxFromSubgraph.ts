@@ -1,10 +1,10 @@
-import { getArbitrumNetworks } from '@arbitrum/sdk'
+import { getArbitrumNetwork, getArbitrumNetworks } from '@arbitrum/sdk'
 import { Address } from 'wagmi'
 
 import { FetchDepositsFromSubgraphResult } from './fetchDepositsFromSubgraph'
 import { getAPIBaseUrl, sanitizeQueryParams } from '..'
 import { hasL1Subgraph } from '../SubgraphUtils'
-import { getNetworkName } from '../networks'
+import { ChainId, getNetworkName } from '../networks'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import { mapDepositsFromSubgraph } from './mapDepositsFromSubgraph'
 import { Transaction } from '../../types/Transactions'
@@ -20,7 +20,8 @@ export async function fetchDepositTxFromSubgraph(
   txHash: string,
   connectedAddress: Address
 ): Promise<Transaction[] | undefined> {
-  const supportedChildChains = getArbitrumNetworks()
+  // TODO: test with Arbitrum Sepolia
+  const supportedChildChains = [getArbitrumNetwork(ChainId.ArbitrumSepolia)]
 
   const fetcherList = supportedChildChains.map(childChain => {
     const childChainId = childChain.chainId
