@@ -223,14 +223,14 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
 }
 
 export function startTransfer({
-  confirmMetamaskTransaction = true
+  shouldConfirmInMetamask = true
 }: {
-  confirmMetamaskTransaction?: boolean
+  shouldConfirmInMetamask?: boolean
 }) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
-  if (confirmMetamaskTransaction) {
+  if (shouldConfirmInMetamask) {
     cy.confirmMetamaskTransaction()
   }
 }
