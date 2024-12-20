@@ -59,7 +59,7 @@ export function getOrbitChains(
     testnet: boolean
   } = { mainnet: true, testnet: true }
 ): OrbitChainConfig[] {
-  if (process.env.E2E === 'E2E') {
+  if (process.env.E2E === 'true') {
     // During E2E tests, only return local chains
     return Object.values(orbitChains).filter(
       chain => chain.chainId === ChainId.L3Local
