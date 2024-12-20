@@ -32,7 +32,9 @@ export function useUpdateUSDCBalances({
     const { isEthereumMainnet, isSepolia, isArbitrumOne, isArbitrumSepolia } =
       isNetwork(parentChain.id)
 
-    let parentChainUsdcAddress, childChainUsdcAddress: string | undefined
+    let parentChainUsdcAddress,
+      childChainUsdcAddress,
+      childChainUsdceAddress: string | undefined
 
     if (isEthereumMainnet || isSepolia) {
       parentChainUsdcAddress = isEthereumMainnet
@@ -42,6 +44,10 @@ export function useUpdateUSDCBalances({
       childChainUsdcAddress = isEthereumMainnet
         ? CommonAddress.ArbitrumOne.USDC
         : CommonAddress.ArbitrumSepolia.USDC
+
+      childChainUsdceAddress = isEthereumMainnet
+        ? CommonAddress.ArbitrumOne['USDC.e']
+        : CommonAddress.ArbitrumSepolia['USDC.e']
     }
 
     if (isArbitrumOne || isArbitrumSepolia) {
@@ -75,6 +81,10 @@ export function useUpdateUSDCBalances({
 
     if (childChainUsdcAddress) {
       updateErc20ChildBalance([childChainUsdcAddress])
+    }
+
+    if (childChainUsdceAddress) {
+      updateErc20ChildBalance([childChainUsdceAddress])
     }
   }, [
     childChainProvider,

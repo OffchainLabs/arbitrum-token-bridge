@@ -23,7 +23,7 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import { isGatewayRegistered } from '../../util/TokenUtils'
+import { isGatewayRegistered, isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -42,8 +42,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
-  getWarningTokenDescription,
-  useTokenFromSearchParams
+  getWarningTokenDescription
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
@@ -63,9 +62,12 @@ import {
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useTokenLists } from '../../hooks/useTokenLists'
 import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
@@ -93,9 +95,7 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const { tokenFromSearchParams, setTokenQueryParam } =
-    useTokenFromSearchParams()
-
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
@@ -106,11 +106,11 @@ export function TransferPanel() {
   const {
     app: {
       connectionState,
-      selectedToken,
       arbTokenBridge: { token },
       warningTokens
     }
   } = useAppState()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -119,6 +119,8 @@ export function TransferPanel() {
   const latestChain = useLatest(useNetwork())
   const [networks] = useNetworks()
   const latestNetworks = useLatest(networks)
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
   const {
     current: {
       childChain,
@@ -129,6 +131,7 @@ export function TransferPanel() {
       isTeleportMode
     }
   } = useLatest(useNetworksRelationship(latestNetworks.current))
+  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
@@ -195,7 +198,7 @@ export function TransferPanel() {
   }, [childChain.id, parentChain.id])
 
   function closeWithResetTokenImportDialog() {
-    setTokenQueryParam(undefined)
+    setSelectedToken(null)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
     tokenImportDialogProps.onClose(false)
   }
@@ -210,6 +213,52 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
+
+  const isTokenAlreadyImported = useMemo(() => {
+    const tokenLowercased = tokenFromSearchParams?.toLowerCase()
+
+    if (!tokenLowercased) {
+      return true
+    }
+
+    if (isTokenNativeUSDC(tokenLowercased)) {
+      return true
+    }
+
+    if (isLoadingTokenLists) {
+      return undefined
+    }
+
+    // only show import token dialog if the token is not part of the list
+    // otherwise we show a loader in the TokenButton
+    if (!tokensFromLists) {
+      return undefined
+    }
+
+    if (!tokensFromUser) {
+      return undefined
+    }
+
+    return (
+      typeof tokensFromLists[tokenLowercased] !== 'undefined' ||
+      typeof tokensFromUser[tokenLowercased] !== 'undefined'
+    )
+  }, [
+    isLoadingTokenLists,
+    tokenFromSearchParams,
+    tokensFromLists,
+    tokensFromUser
+  ])
+
+  const importDialogTokenAddress = useMemo(() => {
+    if (
+      typeof isTokenAlreadyImported === 'undefined' ||
+      isTokenAlreadyImported
+    ) {
+      return undefined
+    }
+    return tokenFromSearchParams
+  }, [isTokenAlreadyImported, tokenFromSearchParams])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -985,11 +1034,11 @@ export function TransferPanel() {
         />
         <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
-        {typeof tokenFromSearchParams !== 'undefined' && (
+        {importDialogTokenAddress && (
           <TokenImportDialog
             {...tokenImportDialogProps}
             onClose={closeWithResetTokenImportDialog}
-            tokenAddress={tokenFromSearchParams}
+            tokenAddress={importDialogTokenAddress}
           />
         )}
 
