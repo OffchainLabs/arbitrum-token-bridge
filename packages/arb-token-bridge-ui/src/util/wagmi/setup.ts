@@ -16,11 +16,11 @@ import {
   base,
   baseSepolia
 } from './wagmiAdditionalNetworks'
-import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
+import { isE2eEnvironment } from '../envUtils'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -42,17 +42,14 @@ const defaultChains = [
   holesky
 ]
 
-const chainList = isTestingEnvironment
+const chainList = isE2eEnvironment
   ? [
-      ...defaultChains,
-      // Orbit chains
-      ...wagmiOrbitChains,
-      // add local environments during testing
+      // only include local + sepolia testnet during E2E's
       local,
       arbitrumLocal,
       l3Local,
-      // user-added custom chains
-      ...customChains
+      sepolia,
+      arbitrumSepolia
     ]
   : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
