@@ -226,7 +226,7 @@ export function startTransfer({
   shouldConfirmInMetamask = true
 }: {
   shouldConfirmInMetamask?: boolean
-}) {
+} = {}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
