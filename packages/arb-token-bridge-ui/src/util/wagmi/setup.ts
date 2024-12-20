@@ -16,7 +16,6 @@ import {
   base,
   baseSepolia
 } from './wagmiAdditionalNetworks'
-import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
@@ -42,16 +41,17 @@ const defaultChains = [
   holesky
 ]
 
-const chainList = isTestingEnvironment
-  ? [
-      // only include local environments during testing
-      local,
-      arbitrumLocal,
-      l3Local,
-      sepolia,
-      arbitrumSepolia
-    ]
-  : [...defaultChains, ...wagmiOrbitChains, ...customChains]
+const chainList =
+  process.env.E2E === 'true'
+    ? [
+        // only include local environments during testing
+        local,
+        arbitrumLocal,
+        l3Local,
+        sepolia,
+        arbitrumSepolia
+      ]
+    : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 

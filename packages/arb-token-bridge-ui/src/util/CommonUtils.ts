@@ -16,8 +16,5 @@ export function shortenTxHash(txHash: string) {
   )}`
 }
 
-export const isTestingEnvironment = !!(
-  typeof window !== 'undefined' &&
-  window &&
-  window.Cypress
-)
+export const isTestingEnvironment =
+  !!window.Cypress || process.env.NODE_ENV !== 'production'
