@@ -28,6 +28,7 @@ import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { EnableNotificationsBanner } from './EnableNotificationsBanner'
 
 export const BatchTransferNativeTokenTooltip = ({
   children,
@@ -234,6 +235,7 @@ export const TransactionHistoryTable = (
           </div>
         )}
         <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
+        <EnableNotificationsBanner />
       </div>
 
       <Table
