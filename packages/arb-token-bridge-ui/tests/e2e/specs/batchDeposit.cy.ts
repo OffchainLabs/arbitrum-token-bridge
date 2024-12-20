@@ -141,11 +141,7 @@ describe('Batch Deposit', () => {
     context('deposit should complete successfully', () => {
       cy.selectTransactionsPanelTab('settled')
 
-      cy.waitUntil(() => cy.findTransactionInTransactionHistory(txData), {
-        errorMsg: 'Could not find settled ERC20 Batch Deposit transaction',
-        timeout: 120_000,
-        interval: 500
-      })
+      cy.findTransactionInTransactionHistory(txData)
 
       cy.findTransactionInTransactionHistory({
         duration: 'a few seconds ago',
@@ -251,11 +247,7 @@ describe('Batch Deposit', () => {
     context('deposit should complete successfully', () => {
       cy.selectTransactionsPanelTab('settled')
 
-      cy.waitUntil(() => cy.findTransactionInTransactionHistory(txData), {
-        errorMsg: 'Could not find settled ERC20 Batch Deposit transaction',
-        timeout: 120_000,
-        interval: 500
-      })
+      cy.findTransactionInTransactionHistory(txData)
 
       cy.findTransactionInTransactionHistory({
         duration: 'a few seconds ago',
