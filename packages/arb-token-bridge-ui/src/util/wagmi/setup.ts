@@ -20,6 +20,7 @@ import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
+import { isE2eEnvironment } from '../envUtils'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -41,17 +42,16 @@ const defaultChains = [
   holesky
 ]
 
-const chainList =
-  process.env.E2E === 'true'
-    ? [
-        // only include local environments during testing
-        local,
-        arbitrumLocal,
-        l3Local,
-        sepolia,
-        arbitrumSepolia
-      ]
-    : [...defaultChains, ...wagmiOrbitChains, ...customChains]
+const chainList = isE2eEnvironment
+  ? [
+      // only include local + sepolia testnet during E2E's
+      local,
+      arbitrumLocal,
+      l3Local,
+      sepolia,
+      arbitrumSepolia
+    ]
+  : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
