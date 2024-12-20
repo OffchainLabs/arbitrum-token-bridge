@@ -13,13 +13,6 @@ export const sanitizeImageSrc = (url: string): string => {
   return url
 }
 
-export function preloadImages(imageSources: string[]) {
-  imageSources.forEach(imageSrc => {
-    const image = new Image()
-    image.src = imageSrc
-  })
-}
-
 export const loadEnvironmentVariableWithFallback = ({
   env,
   fallback
