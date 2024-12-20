@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
@@ -16,9 +17,14 @@ import {
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 
-export function TokenLogoFallback() {
+export function TokenLogoFallback({ className }: { className?: string }) {
   return (
-    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
+    <div
+      className={twMerge(
+        'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium',
+        className
+      )}
+    >
       ?
     </div>
   )
