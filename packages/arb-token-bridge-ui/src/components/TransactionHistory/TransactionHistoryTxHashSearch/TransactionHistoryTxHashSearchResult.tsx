@@ -1,22 +1,20 @@
 import { Column, Table } from 'react-virtualized'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 import useSWR from 'swr'
 
 import { ContentWrapper, TableHeader } from '../TransactionHistoryTable'
 import { useTransactionHistoryAddressStore } from '../TransactionHistorySearchBar'
 import { TransactionsTableRow } from '../TransactionsTableRow'
-import { MergedTransaction } from '../../../state/app/state'
-import { fetchDepositTxFromSubgraph } from '../../../util/deposits/fetchDepositTxFromSubgraph'
+import { fetchDepositByTxHash } from '../../../util/deposits/fetchDepositTxFromSubgraph'
 import { useTransactionHistory } from '../../../hooks/useTransactionHistory'
-import { getUpdatedEthDeposit, isTxPending } from '../helpers'
 
 export function TransactionHistoryTxHashSearchResult() {
   const contentWrapperRef = useRef<HTMLDivElement | null>(null)
   const tableRef = useRef<Table | null>(null)
   const { sanitizedAddress, sanitizedTxHash } =
     useTransactionHistoryAddressStore()
-  const [tx, setTx] = useState<MergedTransaction>()
+  const { updatePendingTransaction } = useTransactionHistory(sanitizedAddress)
 
   const queryKey = useMemo(() => {
     if (!sanitizedTxHash || !sanitizedAddress) {
@@ -33,8 +31,18 @@ export function TransactionHistoryTxHashSearchResult() {
     isLoading,
     error
   } = useSWR(queryKey, ([txHash, connectedAddress]) =>
-    fetchDepositTxFromSubgraph(txHash, connectedAddress)
+    fetchDepositByTxHash(txHash, connectedAddress)
   )
+
+  useEffect(() => {
+    if (isLoading || !transactions || transactions.length === 0) {
+      console.log('still loading')
+      return
+    }
+    console.log('error? ', error)
+    console.log('transactions: ', transactions)
+    transactions.forEach(updatePendingTransaction)
+  }, [transactions, isLoading, error, updatePendingTransaction])
 
   const TABLE_HEADER_HEIGHT = 52
   const TABLE_ROW_HEIGHT = 60
@@ -55,31 +63,8 @@ export function TransactionHistoryTxHashSearchResult() {
     )
   }, [contentWrapperRef.current?.offsetTop])
 
-  const txFromHash =
-    typeof transactions === 'undefined'
-      ? null
-      : (transactions[0] as unknown as MergedTransaction)
-
-  console.log('txFromHash: ', txFromHash)
-
-  useEffect(() => {
-    async function updateTx() {
-      if (!txFromHash) {
-        return
-      }
-      const updatedTx = await getUpdatedEthDeposit(txFromHash)
-      if (updatedTx) {
-        setTx(updatedTx)
-
-        console.log('updatedTx: ', updatedTx)
-      }
-    }
-
-    updateTx()
-  }, [tx, txFromHash])
-
   if (!transactions) {
-    return null
+    return <>Loading...</>
   }
 
   return (
@@ -102,11 +87,11 @@ export function TransactionHistoryTxHashSearchResult() {
         className="table-auto last:border-b-0"
         rowGetter={({ index }) => transactions[index]}
         rowRenderer={({ index, style }) => {
+          const tx = transactions[index]
+
           if (!tx) {
             return null
           }
-
-          console.log('tx here!', tx)
 
           const isLastRow = index + 1 === transactions.length
           const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`

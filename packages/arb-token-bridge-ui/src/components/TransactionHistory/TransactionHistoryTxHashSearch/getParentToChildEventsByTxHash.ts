@@ -12,6 +12,8 @@ import {
   EventFetcher,
   getArbitrumNetwork,
   getArbitrumNetworks,
+  ParentToChildMessageReader,
+  ParentToChildMessageReaderClassic,
   ParentTransactionReceipt
 } from '@arbitrum/sdk'
 
@@ -20,7 +22,6 @@ import {
   getChainIdFromProvider,
   getProviderForChainId
 } from '@/token-bridge-sdk/utils'
-import { normalizeTimestamp } from '../../../state/app/utils'
 import { ParentToChildMessagesAndDepositMessages } from './helpers'
 import { Transaction } from '../../../types/Transactions'
 import { updateAdditionalDepositData } from '../../../util/deposits/helpers'
@@ -120,12 +121,15 @@ async function getChildChainMessages(
     return
   }
 
-  const parentToChildMessagesClassic =
-    await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
+  const isClassic = await parentTxReceipt.isClassic(childProvider)
 
-  const parentToChildMessages = await parentTxReceipt.getParentToChildMessages(
-    childProvider
-  )
+  const parentToChildMessagesClassic = isClassic
+    ? await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
+    : ([] as ParentToChildMessageReaderClassic[])
+
+  const parentToChildMessages = isClassic
+    ? ([] as ParentToChildMessageReader[])
+    : await parentTxReceipt.getParentToChildMessages(childProvider)
 
   const ethDeposits = await parentTxReceipt.getEthDeposits(childProvider)
 
@@ -314,11 +318,11 @@ export async function getParentToChildEventsByTxHash({
 
         const depositTx: Transaction = {
           destination: receiver,
-          sender: tokenDepositMessage.sender,
+          sender: parentTxReceipt.from,
           timestampCreated: event?.timestamp.toString(),
           type: 'deposit',
           isClassic: false,
-          txID: retryableReceipt.transactionHash,
+          txID: parentTxReceipt.transactionHash,
           value:
             typeof tokenDepositData !== 'undefined' &&
             typeof tokenDepositData.tokenAmount !== 'undefined'
@@ -333,8 +337,9 @@ export async function getParentToChildEventsByTxHash({
           assetType: AssetType.ERC20,
           assetName: tokenDepositData?.l1Token.name ?? '',
           parentChainId,
+          childChainId,
           l1NetworkID: parentChainId.toString(),
-          childChainId
+          l2NetworkID: childChainId.toString()
         }
 
         const childProvider = getProviderForChainId(childChainId)
@@ -353,19 +358,19 @@ export async function getParentToChildEventsByTxHash({
 
   const ethDeposits: Transaction[] = await Promise.all(
     allMessages.ethDeposits.map(async depositMessage => {
-      const timestamp = normalizeTimestamp(
-        (await parentProvider.getBlock(parentTxReceipt.blockNumber)).timestamp
-      )
+      const timestamp = (
+        await parentProvider.getBlock(parentTxReceipt.blockNumber)
+      ).timestamp
       const childProvider = getProviderForChainId(depositMessage.childChainId)
       const nativeCurrency = await fetchNativeCurrency({
         provider: childProvider
       })
       const depositTx: Transaction = {
-        destination: depositMessage.to,
-        sender: depositMessage.from,
+        destination: depositMessage.to.toLowerCase(),
+        sender: parentTxReceipt.from.toLowerCase(),
         timestampCreated: timestamp.toString(),
-        txID: depositMessage.childTxHash,
-        type: 'deposit',
+        txID: parentTxReceipt.transactionHash,
+        type: 'deposit-l1',
         isClassic: false,
         value: utils.formatUnits(
           depositMessage.value.toString(),
@@ -375,10 +380,11 @@ export async function getParentToChildEventsByTxHash({
         direction: 'deposit',
         source: 'event_logs',
         parentChainId,
-        l1NetworkID: parentChainId.toString(),
         childChainId: depositMessage.childChainId,
+        l1NetworkID: parentChainId.toString(),
+        l2NetworkID: depositMessage.childChainId.toString(),
         assetType: AssetType.ETH,
-        assetName: nativeCurrency.name
+        assetName: nativeCurrency.symbol
       }
       return await updateAdditionalDepositData({
         depositTx,

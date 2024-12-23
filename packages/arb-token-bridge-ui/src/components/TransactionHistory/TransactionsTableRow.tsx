@@ -264,7 +264,10 @@ export function TransactionsTableRow({
           aria-label="Transaction details button"
           variant="primary"
           className="rounded border border-white p-2 text-xs text-white"
-          onClick={() => openTxDetails(tx)}
+          onClick={() => {
+            console.log('clicked See Details: ', tx)
+            openTxDetails(tx)
+          }}
         >
           See Details
         </Button>

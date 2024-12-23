@@ -14,7 +14,7 @@ import {
 } from './fetchEthDepositsToCustomDestinationFromSubgraph'
 import { mapDepositsFromSubgraph } from './mapDepositsFromSubgraph'
 import { getParentToChildEventsByTxHash } from '../../components/TransactionHistory/TransactionHistoryTxHashSearch/getParentToChildEventsByTxHash'
-import { DepositInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L1ERC20Gateway'
+import { dedupeTransactions } from '../../hooks/useTransactionHistory'
 
 export type FetchDepositParams = {
   sender?: string
@@ -42,9 +42,13 @@ export const fetchDeposits = async ({
   pageNumber = 0,
   searchString = ''
 }: FetchDepositParams): Promise<Transaction[]> => {
-  if (typeof sender === 'undefined' && typeof receiver === 'undefined')
-    return []
-  if (!l1Provider || !l2Provider) return []
+  if (!searchString) {
+    if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
+      return []
+    }
+
+    if (!l1Provider || !l2Provider) return []
+  }
 
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
@@ -130,10 +134,12 @@ export const fetchDeposits = async ({
     filter: { fromBlock, toBlock: toBlock ?? 'latest' }
   })
 
-  return [
-    ...ethDepositsFromEventLogs,
-    ...tokenDepositsFromEventLogs,
-    ...mappedDepositsFromSubgraph,
-    ...mappedEthDepositsToCustomDestinationFromSubgraph
-  ].sort((a, b) => Number(b.timestampCreated) - Number(a.timestampCreated))
+  return (
+    dedupeTransactions([
+      ...ethDepositsFromEventLogs,
+      ...tokenDepositsFromEventLogs,
+      ...mappedDepositsFromSubgraph,
+      ...mappedEthDepositsToCustomDestinationFromSubgraph
+    ]) as Transaction[]
+  ).sort((a, b) => Number(b.timestampCreated) - Number(a.timestampCreated))
 }

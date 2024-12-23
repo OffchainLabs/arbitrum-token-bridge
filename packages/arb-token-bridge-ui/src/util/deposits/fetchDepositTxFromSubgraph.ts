@@ -1,119 +1,48 @@
-import { getArbitrumNetwork, getArbitrumNetworks } from '@arbitrum/sdk'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
 import { Address } from 'wagmi'
 
-import { FetchDepositsFromSubgraphResult } from './fetchDepositsFromSubgraph'
-import { getAPIBaseUrl, sanitizeQueryParams } from '..'
-import { hasL1Subgraph } from '../SubgraphUtils'
-import { ChainId, getNetworkName } from '../networks'
-import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
-import { mapDepositsFromSubgraph } from './mapDepositsFromSubgraph'
-import { Transaction } from '../../types/Transactions'
+import { ChainId } from '../networks'
 
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { fetchDeposits } from './fetchDeposits'
+import { transformTransaction } from '../../hooks/useTransactionHistory'
+import { MergedTransaction } from '../../state/app/state'
 
 /**
  * Fetches initiated ETH deposit from event logs using transaction id
  *
  * @param txHash transaction id on parent chain
  */
-export async function fetchDepositTxFromSubgraph(
+export async function fetchDepositByTxHash(
   txHash: string,
   connectedAddress: Address
-): Promise<Transaction[] | undefined> {
-  // TODO: test with Arbitrum Sepolia
-  const supportedChildChains = [getArbitrumNetwork(ChainId.ArbitrumSepolia)]
+): Promise<MergedTransaction[]> {
+  // TODO: accept child chain id as an arg of the function
+  const childChainId = ChainId.ArbitrumSepolia
+  const childChain = getArbitrumNetwork(childChainId)
 
-  const fetcherList = supportedChildChains.map(childChain => {
-    const childChainId = childChain.chainId
-
-    if (!hasL1Subgraph(Number(childChainId))) {
-      console.error(
-        `Parent chain subgraph not available for network: ${getNetworkName(
-          childChainId
-        )} (${childChainId})`
-      )
-      return undefined
-    }
-
-    const urlParams = new URLSearchParams(
-      sanitizeQueryParams({
-        search: txHash,
-        l2ChainId: childChainId,
-        sender: connectedAddress
-      })
-    )
-
-    return {
-      fetcher: fetch(`${getAPIBaseUrl()}/api/deposits?${urlParams}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      }),
-      parentChainId: childChain.parentChainId,
-      childChainId
-    }
-  })
+  const parentProvider = getProviderForChainId(childChain.parentChainId)
+  const childProvider = getProviderForChainId(childChainId)
 
   try {
-    const responses = await Promise.all(fetcherList.map(item => item?.fetcher))
+    const deposits = await fetchDeposits({
+      sender: connectedAddress,
+      l1Provider: parentProvider,
+      l2Provider: childProvider,
+      searchString: txHash
+    })
+    console.log('deposits: ', deposits)
 
-    // there is always only one response because this tx only lives on one chain and no collision is possible
-    const results = responses
-      .map((response, index) => {
-        const fetcherItem = fetcherList[index]
-        if (typeof fetcherItem === 'undefined') {
-          return undefined
-        }
-        return {
-          response,
-          parentChainId: fetcherItem.parentChainId,
-          childChainId: fetcherItem.childChainId
-        }
-      })
-      .filter(Boolean) as {
-      response: Response
-      parentChainId: number
-      childChainId: number
-    }[]
-
-    type DepositFromSubgraph = {
-      data: FetchDepositsFromSubgraphResult[]
-      parentChainId: number
-      childChainId: number
-    }
-
-    const depositsFromSubgraph: DepositFromSubgraph[] = (
-      await Promise.all(results.map(result => result.response.json()))
+    const transformedDeposits = await Promise.all(
+      deposits.map(transformTransaction)
     )
-      .map((result, index) => ({
-        data: result.data,
-        parentChainId: results[index]?.parentChainId,
-        childChainId: results[index]?.childChainId
-      }))
-      .filter(
-        (result): result is DepositFromSubgraph =>
-          result.data.length > 0 &&
-          typeof result.parentChainId !== 'undefined' &&
-          typeof result.childChainId !== 'undefined'
-      )
-    console.log('depositsFromSubgraph? ', depositsFromSubgraph)
 
-    if (typeof depositsFromSubgraph[0] === 'undefined') {
-      return
-    }
+    console.log('transformedDeposits: ', transformedDeposits)
 
-    const nativeCurrency = await fetchNativeCurrency({
-      provider: getProviderForChainId(depositsFromSubgraph[0].childChainId)
-    })
-
-    const mappedDepositsFromSubgraph: Transaction[] = mapDepositsFromSubgraph({
-      depositsFromSubgraph: depositsFromSubgraph[0].data,
-      nativeCurrency,
-      l1ChainId: depositsFromSubgraph[0].parentChainId,
-      l2ChainId: depositsFromSubgraph[0].childChainId
-    })
-
-    return mappedDepositsFromSubgraph
+    return transformedDeposits
   } catch (error) {
-    return undefined
+    console.error('Error fetching deposits by tx hash: ', error)
   }
+
+  return []
 }
