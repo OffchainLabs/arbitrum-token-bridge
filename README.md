@@ -24,7 +24,7 @@ Interested in contributing to this repo? We welcome your contribution.
 - Install [VS Code](https://code.visualstudio.com/download) for your platform
 - Install [Yarn (version 1)](https://classic.yarnpkg.com) - Package manager
 
-- Within VS Code, we use a some tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For the optimal development experience, install the following tools:
+- Within VS Code, we use some tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For an optimal development experience, install the following tools:
 
   - [Prettier](https://prettier.io) - Automatic code formatting
     - Find Prettier integration for your code editor [here](https://prettier.io/docs/en/editors.html)
