@@ -222,7 +222,7 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
-export function startTransfer({
+export function clickMoveFundsButton({
   shouldConfirmInMetamask = true
 }: {
   shouldConfirmInMetamask?: boolean
@@ -401,7 +401,7 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  startTransfer,
+  clickMoveFundsButton,
   findSelectTokenButton,
   switchToTransferPanelTab,
   switchToTransactionHistoryTab,
