@@ -32,7 +32,7 @@ const commonUSDC = {
   type: TokenType.ERC20,
   symbol: 'USDC',
   decimals: 6,
-  listIds: new Set<number>()
+  listIds: new Set<string>()
 }
 
 export const useSelectedToken = () => {
