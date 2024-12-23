@@ -900,7 +900,7 @@
         "childWethGateway": "0x0000000000000000000000000000000000000000"
       },
       "bridgeUiConfig": {
-        "color": "#b1fb00",
+        "color": "#7aad00",
         "network": {
           "name": "Unite Mainnet",
           "logo": "/images/unite-mainnet_Logo.png"
@@ -1463,7 +1463,7 @@
         "childWethGateway": "0x0000000000000000000000000000000000000000"
       },
       "bridgeUiConfig": {
-        "color": "#b1fb00",
+        "color": "#7aad00",
         "network": {
           "name": "Unite Testnet",
           "logo": "/images/unite-testnet_Logo.png"
