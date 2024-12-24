@@ -240,6 +240,10 @@ export async function getParentToChildEventsByTxHash({
           await tokenDepositMessage.childProvider.getTransaction(
             retryableTicketId
           )
+        const childChainTxReceipt =
+          await tokenDepositMessage.childProvider.getTransactionReceipt(
+            retryableTicketId
+          )
         const childChainId = await getChainIdFromProvider(
           tokenDepositMessage.childProvider
         )
@@ -307,7 +311,8 @@ export async function getParentToChildEventsByTxHash({
           }
         }
 
-        const receiver = childChainTx.to
+        // TODO: this address is wrong, whyyyyy
+        const receiver = tokenDepositMessage.messageData.destAddress
 
         const timestamp = (
           await parentProvider.getBlock(parentTxReceipt.blockNumber)
@@ -333,6 +338,7 @@ export async function getParentToChildEventsByTxHash({
           source: 'event_logs',
           assetType: AssetType.ERC20,
           assetName: tokenDepositData?.l1Token.symbol ?? '',
+          tokenAddress: parentChainErc20Address,
           parentChainId,
           childChainId,
           l1NetworkID: parentChainId.toString(),
