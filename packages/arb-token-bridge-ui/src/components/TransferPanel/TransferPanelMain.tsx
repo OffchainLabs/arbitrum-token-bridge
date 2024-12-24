@@ -16,7 +16,7 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -236,7 +236,7 @@ export function TransferPanelMain() {
 
   const { updateErc20ParentBalances, updateErc20ChildBalances } = useBalances()
 
-  const { updateUSDCBalances } = useUpdateUSDCBalances({
+  const { updateUsdcBalances } = useUpdateUsdcBalances({
     walletAddress: destinationAddressOrWalletAddress
   })
 
@@ -262,7 +262,7 @@ export function TransferPanelMain() {
         isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
         isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
     ) {
-      updateUSDCBalances()
+      updateUsdcBalances()
       return
     }
 
@@ -275,7 +275,7 @@ export function TransferPanelMain() {
     updateErc20ParentBalances,
     updateErc20ChildBalances,
     destinationAddressOrWalletAddress,
-    updateUSDCBalances,
+    updateUsdcBalances,
     isTeleportMode
   ])
 

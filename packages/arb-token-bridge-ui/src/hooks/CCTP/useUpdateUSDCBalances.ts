@@ -1,5 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
+import { Address } from 'wagmi'
+import useSWRImmutable from 'swr/immutable'
 
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { getL2ERC20Address } from '../../util/TokenUtils'
@@ -7,16 +9,15 @@ import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { isNetwork } from '../../util/networks'
 import { useBalances } from '../useBalances'
-import { Address } from 'wagmi'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-export function useUpdateUSDCBalances({
+export function useUpdateUsdcBalances({
   walletAddress
 }: {
   walletAddress: string | undefined
 }) {
   const [networks] = useNetworks()
-  const { parentChainProvider, parentChain, childChainProvider } =
-    useNetworksRelationship(networks)
+  const { parentChain, childChain } = useNetworksRelationship(networks)
 
   const _walletAddress: Address | undefined =
     walletAddress && isAddress(walletAddress) ? walletAddress : undefined
@@ -28,61 +29,94 @@ export function useUpdateUSDCBalances({
     childWalletAddress: _walletAddress
   })
 
-  const updateUSDCBalances = useCallback(async () => {
-    const { isEthereumMainnet, isSepolia, isArbitrumOne, isArbitrumSepolia } =
-      isNetwork(parentChain.id)
+  const {
+    isEthereumMainnet: isParentEthereumMainnet,
+    isSepolia: isParentSepolia,
+    isArbitrumOne: isParentArbitrumOne,
+    isArbitrumSepolia: isParentArbitrumSepolia
+  } = isNetwork(parentChain.id)
 
-    let parentChainUsdcAddress, childChainUsdcAddress: string | undefined
-
-    if (isEthereumMainnet || isSepolia) {
-      parentChainUsdcAddress = isEthereumMainnet
-        ? CommonAddress.Ethereum.USDC
-        : CommonAddress.Sepolia.USDC
-
-      childChainUsdcAddress = isEthereumMainnet
-        ? CommonAddress.ArbitrumOne.USDC
-        : CommonAddress.ArbitrumSepolia.USDC
+  const parentChainUsdcAddress = useMemo(() => {
+    if (isParentEthereumMainnet || isParentSepolia) {
+      return CommonAddress.Ethereum.USDC
     }
 
-    if (isArbitrumOne || isArbitrumSepolia) {
-      parentChainUsdcAddress = isArbitrumOne
-        ? CommonAddress.ArbitrumOne.USDC
-        : CommonAddress.ArbitrumSepolia.USDC
+    if (isParentSepolia) {
+      return CommonAddress.Sepolia.USDC
     }
 
+    if (isParentArbitrumOne) {
+      return CommonAddress.ArbitrumOne.USDC
+    }
+
+    if (isParentArbitrumSepolia) {
+      return CommonAddress.ArbitrumSepolia.USDC
+    }
+  }, [
+    isParentArbitrumOne,
+    isParentArbitrumSepolia,
+    isParentEthereumMainnet,
+    isParentSepolia
+  ])
+
+  // we don't have native USDC addresses for Orbit chains, we need to fetch it
+  const {
+    data: childChainUsdcAddress,
+    error, // can be unbridged to Orbit chain so no address to be found
+    isLoading
+  } = useSWRImmutable(
+    typeof parentChainUsdcAddress !== 'undefined'
+      ? [
+          parentChainUsdcAddress,
+          parentChain.id,
+          childChain.id,
+          'fetchChildChainUsdcAddress'
+        ]
+      : null,
+    ([_parentChainUsdcAddress, parentChainId, childChainId]) => {
+      if (isParentEthereumMainnet) {
+        return CommonAddress.ArbitrumOne.USDC
+      }
+
+      if (isParentSepolia) {
+        return CommonAddress.ArbitrumSepolia.USDC
+      }
+
+      const _parentChainProvider = getProviderForChainId(parentChainId)
+      const _childChainProvider = getProviderForChainId(childChainId)
+
+      return getL2ERC20Address({
+        erc20L1Address: _parentChainUsdcAddress,
+        l1Provider: _parentChainProvider,
+        l2Provider: _childChainProvider
+      })
+    }
+  )
+
+  const updateUsdcBalances = useCallback(() => {
     // USDC is not native for the selected networks, do nothing
     if (!parentChainUsdcAddress) {
       return
     }
 
-    updateErc20ParentBalance([parentChainUsdcAddress])
-
-    // we don't have native USDC addresses for Orbit chains, we need to fetch it
-    if (!childChainUsdcAddress) {
-      try {
-        childChainUsdcAddress = (
-          await getL2ERC20Address({
-            erc20L1Address: parentChainUsdcAddress,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
-          })
-        ).toLowerCase()
-      } catch {
-        // could be never bridged before
-        return
-      }
+    if (isLoading) {
+      return
     }
+
+    updateErc20ParentBalance([parentChainUsdcAddress.toLowerCase()])
 
     if (childChainUsdcAddress) {
-      updateErc20ChildBalance([childChainUsdcAddress])
+      updateErc20ChildBalance([childChainUsdcAddress.toLowerCase()])
     }
   }, [
-    childChainProvider,
-    parentChain.id,
-    parentChainProvider,
-    updateErc20ParentBalance,
-    updateErc20ChildBalance
+    isLoading,
+    childChainUsdcAddress,
+    parentChainUsdcAddress,
+    updateErc20ChildBalance,
+    updateErc20ParentBalance
   ])
 
-  return { updateUSDCBalances }
+  return {
+    updateUsdcBalances
+  }
 }
