@@ -1,4 +1,4 @@
-import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+import { isValidTeleportChainPair } from '../token-bridge-sdk/teleport'
 import { getDestinationChainIds, isNetwork } from './networks'
 
 /**
