@@ -1,7 +1,7 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
-import { ChainId, isNetwork, rpcURLs } from '../util/networks'
+import { ChainId, rpcURLs } from '../util/networks'
 import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 import { isValidTeleportChainPair } from './teleport'
 import {
@@ -11,7 +11,7 @@ import {
   EthL1L3Bridger,
   getArbitrumNetwork
 } from '@arbitrum/sdk'
-import { isDepositMode } from '../util/isDepositMode'
+import { getTransferMode } from '../util/getTransferMode'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -29,28 +29,11 @@ export const getBridgeTransferProperties = (
   const sourceChainId = props.sourceChainId
   const destinationChainId = props.destinationChainId
 
-  const isDestinationChainEthereumMainnetOrTestnet =
-    isNetwork(destinationChainId).isEthereumMainnetOrTestnet
-
-  const isSourceChainArbitrum = isNetwork(sourceChainId).isArbitrum
-  const isDestinationChainArbitrum = isNetwork(destinationChainId).isArbitrum
-
-  const isSourceChainOrbit = isNetwork(sourceChainId).isOrbitChain
-
-  const { isBase: isDestinationChainBase } = isNetwork(destinationChainId)
-
-  const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
-
-  const isWithdrawal =
-    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) || //  l2 arbitrum chains to l1
-    (isSourceChainOrbit && isDestinationChainEthereumMainnetOrTestnet) || // l2 orbit chains to l1
-    (isSourceChainOrbit && isDestinationChainArbitrum) || // l3 orbit chains to l1
-    (isSourceChainOrbit && isDestinationChainBase) // l3 orbit chain to Base l2
-
-  const isTeleport = isValidTeleportChainPair({
-    sourceChainId,
-    destinationChainId
-  })
+  const {
+    isDepositMode: isDeposit,
+    isWithdrawalMode: isWithdrawal,
+    isTeleportMode: isTeleport
+  } = getTransferMode({ sourceChainId, destinationChainId })
 
   const isNativeCurrencyTransfer =
     typeof props.sourceChainErc20Address === 'undefined'

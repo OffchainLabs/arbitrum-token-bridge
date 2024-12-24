@@ -41,7 +41,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
-import { isDepositMode } from '../../util/isDepositMode'
+import { getTransferMode } from '../../util/getTransferMode'
 
 declare global {
   interface Window {
@@ -105,15 +105,20 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       l2NetworkChainId: childChain.id
     })
 
-    if (
-      isDepositMode({
+    const { isDepositMode, isWithdrawalMode, isTeleportMode } = getTransferMode(
+      {
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id
-      })
-    ) {
+      }
+    )
+
+    if (isDepositMode) {
       console.info('Deposit mode detected:')
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
+    } else if (isTeleportMode) {
+      console.info('Teleport mode detected:')
+      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+    } else if (isWithdrawalMode) {
       console.info('Withdrawal mode detected:')
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
@@ -130,6 +135,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     })
   }, [
     networks.sourceChain.id,
+    networks.destinationChain.id,
     parentChain.id,
     childChain.id,
     parentChain,
