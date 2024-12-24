@@ -838,7 +838,7 @@ export const useTransactionHistory = (
 
   if (isLoadingTxsWithoutStatus || error) {
     return {
-      transactions: [],
+      transactions: newTransactionsData || [],
       loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],

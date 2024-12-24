@@ -31,7 +31,7 @@ describe('Deposit native token', () => {
     cy.findGasFeeSummary(zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
-    cy.startTransfer()
+    cy.clickMoveFundsButton()
     cy.findTransactionInTransactionHistory({
       duration: depositTime,
       amount: ETHAmountToDeposit,
@@ -53,7 +53,7 @@ describe('Deposit native token', () => {
     cy.findGasFeeSummary(zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
-    cy.startTransfer()
+    cy.clickMoveFundsButton()
 
     const txData = {
       amount: ETHAmountToDeposit,
