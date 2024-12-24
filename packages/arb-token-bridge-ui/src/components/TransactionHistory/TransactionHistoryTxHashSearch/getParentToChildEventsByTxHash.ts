@@ -235,22 +235,14 @@ export async function getParentToChildEventsByTxHash({
   const tokenDepositRetryables: Transaction[] = await Promise.all(
     allMessages.tokenDepositRetryables
       .map(async tokenDepositMessage => {
-        const retryableReceipt =
-          await tokenDepositMessage.getRetryableCreationReceipt()
-        if (!retryableReceipt) {
-          return Promise.resolve([])
-        }
+        const retryableTicketId = tokenDepositMessage.retryableCreationId
+        const childChainTx =
+          await tokenDepositMessage.childProvider.getTransaction(
+            retryableTicketId
+          )
         const childChainId = await getChainIdFromProvider(
           tokenDepositMessage.childProvider
         )
-        const childChain = getArbitrumNetwork(childChainId)
-
-        const childChainTxReceipt = new ChildTransactionReceipt(
-          retryableReceipt
-        )
-        const [event] = childChainTxReceipt.getChildToParentEvents()
-
-        const receiver = await tokenDepositMessage.getBeneficiary()
 
         let parentChainErc20Address: string | undefined,
           tokenAmount: string | undefined,
@@ -267,23 +259,22 @@ export async function getParentToChildEventsByTxHash({
             | undefined
 
         try {
-          if (!event) {
-            return Promise.resolve([])
-          }
-          const retryableMessageData = event.data
+          const childChain = getArbitrumNetwork(childChainId)
+          const retryableMessageData = childChainTx.data
+          // 	submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)
+          // https://www.4byte.directory/signatures/?bytes4_signature=0xc9f95d32
           const retryableBody = retryableMessageData.split('0xc9f95d32')[1]
           const requestId = '0x' + retryableBody?.slice(0, 64)
-          const depositsInitiatedLogs = parentTxReceipt.logs.filter(
-            log =>
-              log.address.toLowerCase() ===
-              childChain.ethBridge.inbox.toLowerCase()
-          )
+          const depositsInitiatedLogs = await getDepositInitiatedLogs({
+            fromBlock: parentTxReceipt.blockNumber,
+            toBlock: parentTxReceipt.blockNumber,
+            parentChainProvider: parentProvider,
+            childChain
+          })
           const depositsInitiatedEvent = depositsInitiatedLogs.find(
             log => log.topics[3] === requestId
           )
-          // @ts-ignore
           parentChainErc20Address = depositsInitiatedEvent?.event[0]
-          // @ts-ignore
           tokenAmount = depositsInitiatedEvent?.event[4]?.toString()
         } catch (e) {
           console.log(e)
@@ -316,10 +307,16 @@ export async function getParentToChildEventsByTxHash({
           }
         }
 
+        const receiver = childChainTx.to
+
+        const timestamp = (
+          await parentProvider.getBlock(parentTxReceipt.blockNumber)
+        ).timestamp
+
         const depositTx: Transaction = {
           destination: receiver,
           sender: parentTxReceipt.from,
-          timestampCreated: event?.timestamp.toString(),
+          timestampCreated: timestamp.toString(),
           type: 'deposit',
           isClassic: false,
           txID: parentTxReceipt.transactionHash,
@@ -335,7 +332,7 @@ export async function getParentToChildEventsByTxHash({
           direction: 'deposit',
           source: 'event_logs',
           assetType: AssetType.ERC20,
-          assetName: tokenDepositData?.l1Token.name ?? '',
+          assetName: tokenDepositData?.l1Token.symbol ?? '',
           parentChainId,
           childChainId,
           l1NetworkID: parentChainId.toString(),

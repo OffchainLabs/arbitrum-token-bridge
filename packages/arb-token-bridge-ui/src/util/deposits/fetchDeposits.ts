@@ -134,6 +134,8 @@ export const fetchDeposits = async ({
     filter: { fromBlock, toBlock: toBlock ?? 'latest' }
   })
 
+  console.log('tokenDepositsFromEventLogs? ', tokenDepositsFromEventLogs)
+
   return (
     dedupeTransactions([
       ...ethDepositsFromEventLogs,
