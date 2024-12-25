@@ -49,7 +49,8 @@ const chainList = isE2eEnvironment
       arbitrumLocal,
       l3Local,
       sepolia,
-      arbitrumSepolia
+      arbitrumSepolia,
+      mainnet
     ]
   : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
