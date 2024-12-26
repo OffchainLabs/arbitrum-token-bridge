@@ -20,7 +20,6 @@ import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
-import { isE2eEnvironment } from '../envUtils'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -42,7 +41,7 @@ const defaultChains = [
   holesky
 ]
 
-const chainList = isE2eEnvironment
+const chainList = process.env.NEXT_PUBLIC_IS_E2E_TEST
   ? [
       // include only required networks in E2E tests
       local,
