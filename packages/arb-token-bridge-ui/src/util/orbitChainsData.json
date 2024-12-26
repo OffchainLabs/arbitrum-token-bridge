@@ -436,7 +436,7 @@
           "symbol": "SX",
           "logoUrl": "/images/sxTokenLogo.png"
         },
-        "fastWithdrawalTime": 21600000
+        "fastWithdrawalTime": 43200000
       }
     },
     {
