@@ -17,6 +17,6 @@ export function shortenTxHash(txHash: string) {
 }
 
 export const isTestingEnvironment =
+  process.env.NODE_ENV !== 'production' || // `NODE_ENV` defaults to `production` in prod / vercel-preview mode
   (typeof window !== 'undefined' && !!window.Cypress) ||
-  process.env.NODE_ENV !== 'production' ||
   process.env.NEXT_PUBLIC_IS_E2E_TEST

@@ -47,9 +47,9 @@ const chainList = process.env.NEXT_PUBLIC_IS_E2E_TEST
       local,
       arbitrumLocal,
       l3Local,
-      sepolia,
-      arbitrumSepolia,
-      mainnet
+      sepolia, // required for cctp
+      arbitrumSepolia, // required for cctp
+      mainnet // required for import token test
     ]
   : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
