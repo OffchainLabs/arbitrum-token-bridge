@@ -44,7 +44,7 @@ const defaultChains = [
 
 const chainList = isE2eEnvironment
   ? [
-      // only include local + sepolia testnet during E2E's
+      // include only required networks in E2E tests
       local,
       arbitrumLocal,
       l3Local,
