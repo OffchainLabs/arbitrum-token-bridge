@@ -16,6 +16,7 @@ import {
   base,
   baseSepolia
 } from './wagmiAdditionalNetworks'
+import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
@@ -41,9 +42,8 @@ const defaultChains = [
   holesky
 ]
 
-const chainList = process.env.NEXT_PUBLIC_IS_E2E_TEST
+const chainList = isTestingEnvironment
   ? [
-      // include only required networks in E2E tests
       local,
       arbitrumLocal,
       l3Local,
