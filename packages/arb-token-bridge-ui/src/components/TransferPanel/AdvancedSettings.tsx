@@ -117,6 +117,7 @@ export const AdvancedSettings = () => {
     )
   }, [
     initialDestinationAddressFromQueryParams,
+    isLoadingAccountType,
     isEOA,
     setAdvancedSettingsCollapsed
   ])
@@ -169,7 +170,7 @@ export const AdvancedSettings = () => {
     })
   }, [debouncedDestinationAddress, setQueryParams])
 
-  if (!isEOA && !isSmartContractWallet && !isLoadingAccountType) {
+  if (!isEOA && !isSmartContractWallet) {
     return null
   }
 

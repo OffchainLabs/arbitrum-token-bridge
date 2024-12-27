@@ -407,6 +407,7 @@ export const NetworkSelectionContainer = (
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [, setQueryParams] = useArbQueryParams()
   const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
+  const { isSmartContractWallet } = useAccountType()
 
   const isSource = props.type === 'source'
 
@@ -444,7 +445,10 @@ export const NetworkSelectionContainer = (
 
       actions.app.setSelectedToken(null)
       setQueryParams({ destinationAddress: undefined })
-      setAdvancedSettingsCollapsed(true)
+
+      if (!isSmartContractWallet) {
+        setAdvancedSettingsCollapsed(true)
+      }
     },
     [
       isSource,
@@ -453,7 +457,8 @@ export const NetworkSelectionContainer = (
       actions.app,
       setQueryParams,
       setAdvancedSettingsCollapsed,
-      openOneNovaTransferDialog
+      openOneNovaTransferDialog,
+      isSmartContractWallet
     ]
   )
 
