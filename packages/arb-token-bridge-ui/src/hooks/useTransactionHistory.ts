@@ -147,7 +147,9 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
 }
 
-async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
+export async function transformTransaction(
+  tx: Transfer
+): Promise<MergedTransaction> {
   // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
   if (isTransferTeleportFromSubgraph(tx)) {
     return await transformTeleportFromSubgraph(tx)
@@ -235,7 +237,7 @@ function getCacheKeyFromTransaction(
 }
 
 // remove the duplicates from the transactions passed
-function dedupeTransactions(txs: Transfer[]) {
+export function dedupeTransactions(txs: Transfer[]) {
   return Array.from(
     new Map(txs.map(tx => [getCacheKeyFromTransaction(tx), tx])).values()
   )
