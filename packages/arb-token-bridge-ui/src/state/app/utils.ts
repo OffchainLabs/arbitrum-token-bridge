@@ -289,14 +289,6 @@ export function isCustomDestinationAddressTx(
   return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
 }
 
-export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
-  return (
-    isWithdrawal(tx) &&
-    isPending(tx) &&
-    tx.status === outgoingStateToString[OutgoingMessageState.CONFIRMED]
-  )
-}
-
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   if (isTeleportTx(tx)) {
     return (
