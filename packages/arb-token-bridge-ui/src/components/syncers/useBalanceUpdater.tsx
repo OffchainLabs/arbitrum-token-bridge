@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi'
 
 import { useAppState } from '../../state'
 import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
 // Updates all balances periodically
 export function useBalanceUpdater() {
@@ -17,9 +18,12 @@ export function useBalanceUpdater() {
   })
 
   useInterval(() => {
-    updateUsdcBalances()
-
     if (selectedToken) {
+      if (isTokenNativeUSDC(selectedToken.address)) {
+        updateUsdcBalances()
+        return
+      }
+
       latestTokenBridge?.current?.token?.updateTokenData(selectedToken.address)
     }
   }, 10000)
