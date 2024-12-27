@@ -12,8 +12,6 @@ export const DOCS_DOMAIN = 'https://docs.arbitrum.io'
 
 export const USDC_LEARN_MORE_LINK = `${DOCS_DOMAIN}/bridge-tokens/concepts/usdc-concept`
 
-export const FAST_BRIDGE_ARTICLE_LINK = `${SUPPORT_LINK_BASE}/hc/en-us/articles/18213771832987`
-
 export const TOKEN_APPROVAL_ARTICLE_LINK = `${SUPPORT_LINK_BASE}/hc/en-us/articles/18213893952923`
 
 export const ETH_BALANCE_ARTICLE_LINK = `${SUPPORT_LINK_BASE}/hc/en-us/articles/18213854684699`

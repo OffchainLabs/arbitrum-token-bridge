@@ -3,16 +3,9 @@ import { BigNumber, ContractReceipt } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import {
   EventArgs,
-  ParentEthDepositTransaction,
-  ParentEthDepositTransactionReceipt,
-  ParentContractCallTransaction,
-  ParentContractCallTransactionReceipt,
-  ChildContractTransaction,
-  ChildTransactionReceipt,
   ChildToParentMessageStatus as OutgoingMessageState,
   ChildToParentTransactionEvent
 } from '@arbitrum/sdk'
-import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
 export { OutgoingMessageState }
@@ -31,21 +24,6 @@ export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
   onTxConfirm: (txReceipt: TxReceipt) => void
   onTxError: (error: any) => void
 }>
-
-export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
-  ParentEthDepositTransaction,
-  ParentEthDepositTransactionReceipt
->
-
-export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
-  ParentContractCallTransaction,
-  ParentContractCallTransactionReceipt
->
-
-export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
-  ChildContractTransaction,
-  ChildTransactionReceipt
->
 
 export enum NodeBlockDeadlineStatusTypes {
   NODE_NOT_CREATED,
@@ -99,26 +77,8 @@ export interface ERC20BridgeToken extends BridgeToken {
   decimals: number
 }
 
-export interface L2TokenData {
-  balance: BigNumber
-  contract: StandardArbERC20
-}
-
 export interface ContractStorage<T> {
   [contractAddress: string]: T | undefined
-}
-export interface BridgeBalance {
-  balance: BigNumber | null
-
-  arbChainBalance: BigNumber | null
-}
-
-// removing 'tokens' / 'balance' could result in one interface
-export interface AddressToSymbol {
-  [tokenAddress: string]: string
-}
-export interface AddressToDecimals {
-  [tokenAddress: string]: number
 }
 
 export type GasEstimates = {
