@@ -941,6 +941,7 @@ export function TransferPanel() {
     return transfer()
   }
 
+  console.log({ xxxxx: process.env.NODE_ENV })
   return (
     <>
       <TokenApprovalDialog
