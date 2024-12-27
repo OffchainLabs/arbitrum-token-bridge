@@ -1,16 +1,9 @@
 import { BigNumber, providers, utils } from 'ethers'
-import { BlockTag, Provider } from '@ethersproject/providers'
-import {
-  DepositInitiatedEvent,
-  L1ERC20Gateway
-} from '@arbitrum/sdk/dist/lib/abi/L1ERC20Gateway'
+import { BlockTag } from '@ethersproject/providers'
 import { L1ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L1ERC20Gateway__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ArbitrumNetwork,
-  ChildTransactionReceipt,
-  EventFetcher,
-  getArbitrumNetwork,
   getArbitrumNetworks,
   ParentToChildMessageReader,
   ParentToChildMessageReaderClassic,
@@ -27,6 +20,7 @@ import { Transaction } from '../../../types/Transactions'
 import { updateAdditionalDepositData } from '../../../util/deposits/helpers'
 import { AssetType } from '../../../hooks/arbTokenBridge.types'
 import { fetchNativeCurrency } from '../../../hooks/useNativeCurrency'
+import { parseTypedLogs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 
 export type FetchDepositTxFromEventLogResult = {
   receiver: string
@@ -48,60 +42,8 @@ export type FetchDepositTxFromEventLogResult = {
   }
 }
 
-const getDepositInitiatedLogs = async ({
-  fromBlock,
-  toBlock,
-  parentChainProvider,
-  childChain
-}: {
-  fromBlock: number
-  toBlock: number
-  parentChainProvider: Provider
-  childChain: ArbitrumNetwork
-}) => {
-  const [
-    depositsInitiatedLogsL1Erc20Gateway,
-    depositsInitiatedLogsL1CustomGateway,
-    depositsInitiatedLogsL1WethGateway
-  ] = await Promise.all(
-    [
-      childChain.tokenBridge!.parentErc20Gateway,
-      childChain.tokenBridge!.parentCustomGateway,
-      childChain.tokenBridge!.parentWethGateway
-    ].map(gatewayAddress => {
-      return getDepositInitiatedEventData(
-        gatewayAddress,
-        { fromBlock, toBlock },
-        parentChainProvider
-      )
-    })
-  )
-
-  return [
-    ...(depositsInitiatedLogsL1Erc20Gateway || []),
-    ...(depositsInitiatedLogsL1CustomGateway || []),
-    ...(depositsInitiatedLogsL1WethGateway || [])
-  ]
-}
-
-const getDepositInitiatedEventData = async (
-  parentChainGatewayAddress: string,
-  filter: {
-    fromBlock: providers.BlockTag
-    toBlock: providers.BlockTag
-  },
-  parentChainProvider: providers.Provider
-) => {
-  const eventFetcher = new EventFetcher(parentChainProvider)
-  const logs = await eventFetcher.getEvents<
-    L1ERC20Gateway,
-    DepositInitiatedEvent
-  >(L1ERC20Gateway__factory, (g: any) => g.filters.DepositInitiated(), {
-    ...filter,
-    address: parentChainGatewayAddress
-  })
-
-  return logs
+const getDepositInitiatedLogs = (logs: providers.Log[]) => {
+  return parseTypedLogs(L1ERC20Gateway__factory, logs, 'DepositInitiated')
 }
 
 async function getChildChainMessages(
@@ -152,7 +94,6 @@ async function getChildChainMessages(
  * @param hash The uniqueId indexed field was removed in nitro and a hash indexed field was added.
  * For pre-nitro events the value passed in here will be used to find events with the same uniqueId.
  * For post nitro events it will be used to find events with the same hash.
- * @param indexInBatch The index in the batch, only valid for pre-nitro events. This parameter is ignored post-nitro
  * @returns Any classic and nitro events that match the provided filters.
  */
 export async function getParentToChildEventsByTxHash({
@@ -160,15 +101,13 @@ export async function getParentToChildEventsByTxHash({
   filter,
   position,
   destination,
-  txHash,
-  indexInBatch
+  txHash
 }: {
   parentChainId: number
   filter?: { fromBlock: BlockTag; toBlock: BlockTag }
   position?: BigNumber
   destination?: string
   txHash?: string
-  indexInBatch?: BigNumber
 }): Promise<{
   ethDeposits: Transaction[]
   tokenDepositRetryables: Transaction[]
@@ -200,7 +139,7 @@ export async function getParentToChildEventsByTxHash({
     return { ethDeposits: [], tokenDepositRetryables: [] }
   }
 
-  const allMessages: ParentToChildMessagesAndDepositMessages = messages
+  const allMessages = messages
     .filter(message => typeof message !== 'undefined')
     .reduce(
       (acc, value) => {
@@ -229,97 +168,78 @@ export async function getParentToChildEventsByTxHash({
         tokenDepositRetryables: [],
         tokenDepositRetryablesClassic: [],
         ethDeposits: []
-      } as ParentToChildMessagesAndDepositMessages
-    )
+      }
+      // eslint complains that it can be undefined if not cast here
+    ) as ParentToChildMessagesAndDepositMessages
 
   const tokenDepositRetryables: Transaction[] = await Promise.all(
     allMessages.tokenDepositRetryables
       .map(async tokenDepositMessage => {
-        const retryableTicketId = tokenDepositMessage.retryableCreationId
-        const childChainTx =
-          await tokenDepositMessage.childProvider.getTransaction(
-            retryableTicketId
-          )
-        const childChainTxReceipt =
-          await tokenDepositMessage.childProvider.getTransactionReceipt(
-            retryableTicketId
-          )
         const childChainId = await getChainIdFromProvider(
           tokenDepositMessage.childProvider
         )
 
-        let parentChainErc20Address: string | undefined,
-          tokenAmount: string | undefined,
-          tokenDepositData:
-            | {
-                tokenAmount: string | undefined
-                l1Token: {
-                  symbol: string
-                  decimals: number
-                  id: string
-                  name: string
-                }
-              }
-            | undefined
+        const depositsInitiatedLogs = getDepositInitiatedLogs(
+          parentTxReceipt.logs
+        )
 
-        try {
-          const childChain = getArbitrumNetwork(childChainId)
-          const retryableMessageData = childChainTx.data
-          // 	submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)
-          // https://www.4byte.directory/signatures/?bytes4_signature=0xc9f95d32
-          const retryableBody = retryableMessageData.split('0xc9f95d32')[1]
-          const requestId = '0x' + retryableBody?.slice(0, 64)
-          const depositsInitiatedLogs = await getDepositInitiatedLogs({
-            fromBlock: parentTxReceipt.blockNumber,
-            toBlock: parentTxReceipt.blockNumber,
-            parentChainProvider: parentProvider,
-            childChain
-          })
-          const depositsInitiatedEvent = depositsInitiatedLogs.find(
-            log => log.topics[3] === requestId
-          )
-          parentChainErc20Address = depositsInitiatedEvent?.event[0]
-          tokenAmount = depositsInitiatedEvent?.event[4]?.toString()
-        } catch (e) {
-          console.log(e)
+        if (typeof depositsInitiatedLogs === 'undefined') {
+          return
         }
+
+        const firstDepositInitiatedLog = depositsInitiatedLogs[0]
+        if (typeof firstDepositInitiatedLog === 'undefined') {
+          return
+        }
+
+        const parentChainErc20Address = firstDepositInitiatedLog.l1Token
+        const tokenAmount = firstDepositInitiatedLog._amount.toString()
+
+        let tokenDepositData:
+          | {
+              tokenAmount: string | undefined
+              l1Token: {
+                symbol: string
+                decimals: number
+                id: string
+                name: string
+              }
+            }
+          | undefined
 
         const parentChainProvider = getProviderForChainId(parentChainId)
 
-        if (parentChainErc20Address) {
-          try {
-            const erc20 = ERC20__factory.connect(
-              parentChainErc20Address,
-              parentChainProvider
-            )
-            const [name, symbol, decimals] = await Promise.all([
-              erc20.name(),
-              erc20.symbol(),
-              erc20.decimals()
-            ])
-            tokenDepositData = {
-              tokenAmount,
-              l1Token: {
-                symbol,
-                decimals,
-                id: parentChainErc20Address,
-                name
-              }
+        try {
+          const erc20 = ERC20__factory.connect(
+            parentChainErc20Address,
+            parentChainProvider
+          )
+          const [name, symbol, decimals] = await Promise.all([
+            erc20.name(),
+            erc20.symbol(),
+            erc20.decimals()
+          ])
+          tokenDepositData = {
+            tokenAmount,
+            l1Token: {
+              symbol,
+              decimals,
+              id: parentChainErc20Address,
+              name
             }
-          } catch (e) {
-            console.log('failed to fetch token data', e)
           }
+        } catch (e) {
+          console.log('failed to fetch token data', e)
         }
 
-        // TODO: this address is wrong, whyyyyy
-        const receiver = tokenDepositMessage.messageData.destAddress
+        const receiverFromLog = firstDepositInitiatedLog._to
 
         const timestamp = (
           await parentProvider.getBlock(parentTxReceipt.blockNumber)
         ).timestamp
 
         const depositTx: Transaction = {
-          destination: receiver,
+          destination: receiverFromLog,
           sender: parentTxReceipt.from,
           timestampCreated: timestamp.toString(),
           type: 'deposit',

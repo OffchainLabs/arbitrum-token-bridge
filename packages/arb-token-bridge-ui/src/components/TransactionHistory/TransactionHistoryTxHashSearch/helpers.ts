@@ -34,6 +34,14 @@ export enum ReceiptState {
   NO_L2_L1_MESSAGES
 }
 
+export type TokenDepositEvent = {
+  l1Token: string
+  _from: string
+  _to: string
+  _sequenceNumber: BigNumber
+  _amount: BigNumber
+}
+
 export interface ParentToChildMessagesAndDepositMessages {
   tokenDepositRetryables: ParentToChildMessageReader[]
   tokenDepositRetryablesClassic: ParentToChildMessageReaderClassic[]

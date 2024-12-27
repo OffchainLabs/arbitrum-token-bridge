@@ -3,7 +3,7 @@ import { defaultErc20Decimals } from '../../defaults'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { NativeCurrency } from '../../hooks/useNativeCurrency'
 import { FetchDepositsFromSubgraphResult } from './fetchDepositsFromSubgraph'
-import { Transaction } from '../../hooks/useTransactions'
+import { Transaction } from '../../types/Transactions'
 
 export function mapDepositsFromSubgraph({
   depositsFromSubgraph,
