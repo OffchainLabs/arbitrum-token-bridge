@@ -20,6 +20,7 @@ import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
+import { isE2eTestingEnvironment } from '../CommonUtils'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -41,17 +42,16 @@ const defaultChains = [
   holesky
 ]
 
-const chainList =
-  typeof window !== 'undefined' && !!window.Cypress
-    ? [
-        local,
-        arbitrumLocal,
-        l3Local,
-        sepolia, // required for testing cctp
-        arbitrumSepolia, // required for testing cctp
-        mainnet // required for import token test
-      ]
-    : [...defaultChains, ...wagmiOrbitChains, ...customChains]
+const chainList = isE2eTestingEnvironment
+  ? [
+      local,
+      arbitrumLocal,
+      l3Local,
+      sepolia, // required for testing cctp
+      arbitrumSepolia, // required for testing cctp
+      mainnet // required for import token test
+    ]
+  : [...defaultChains, ...wagmiOrbitChains, ...customChains]
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 

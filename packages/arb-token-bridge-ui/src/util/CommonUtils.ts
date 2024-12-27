@@ -16,6 +16,8 @@ export function shortenTxHash(txHash: string) {
   )}`
 }
 
+export const isE2eTestingEnvironment =
+  typeof window !== 'undefined' && !!window.Cypress
+
 export const isTestingEnvironment =
-  process.env.NODE_ENV !== 'production' ||
-  (typeof window !== 'undefined' && !!window.Cypress)
+  process.env.NODE_ENV !== 'production' || isE2eTestingEnvironment
