@@ -2,7 +2,7 @@ import { useInterval, useLatest } from 'react-use'
 import { useAccount } from 'wagmi'
 
 import { useAppState } from '../../state'
-import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
+import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalancesx'
 
 // Updates all balances periodically
 export function useBalanceUpdater() {
