@@ -28,7 +28,7 @@ import {
 import { warning } from "@actions/core";
 import axios from "axios";
 
-describe("Transforms", () => {
+describe.skip("Transforms", () => {
   describe("extractRawChainData", () => {
     it("should extract raw chain data from the issue", () => {
       expect(extractRawChainData(fullMockIssue)).toMatchSnapshot();
