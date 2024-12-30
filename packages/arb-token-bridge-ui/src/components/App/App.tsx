@@ -40,7 +40,6 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
-import { isDepositMode } from '../../util/isDepositMode'
 
 declare global {
   interface Window {
@@ -63,8 +62,14 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
@@ -104,13 +109,11 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       l2NetworkChainId: childChain.id
     })
 
-    if (
-      isDepositMode({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      })
-    ) {
+    if (isDepositMode) {
       console.info('Deposit mode detected:')
+      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+    } else if (isTeleportMode) {
+      console.info('Teleport mode detected:')
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
     } else {
       console.info('Withdrawal mode detected:')
@@ -134,7 +137,9 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     parentChain,
     childChain,
     parentChainProvider,
-    childChainProvider
+    childChainProvider,
+    isDepositMode,
+    isTeleportMode
   ])
 
   useEffect(() => {

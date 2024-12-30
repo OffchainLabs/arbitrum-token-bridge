@@ -129,6 +129,7 @@ export function TransferPanel() {
       isTeleportMode
     }
   } = useLatest(useNetworksRelationship(latestNetworks.current))
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
@@ -215,8 +216,8 @@ export function TransferPanel() {
     const isUnbridgedToken =
       selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
 
-    return isDepositMode && isUnbridgedToken
-  }, [isDepositMode, selectedToken])
+    return isDepositOrTeleportMode && isUnbridgedToken
+  }, [isDepositOrTeleportMode, selectedToken])
 
   async function depositToken() {
     if (!selectedToken) {

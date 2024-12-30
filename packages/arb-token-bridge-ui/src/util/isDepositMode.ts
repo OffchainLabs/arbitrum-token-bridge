@@ -1,4 +1,4 @@
-import { isNetwork } from '../util/networks'
+import { getDestinationChainIds, isNetwork } from '../util/networks'
 
 export function isDepositMode({
   sourceChainId,
@@ -8,15 +8,21 @@ export function isDepositMode({
   destinationChainId: number
 }) {
   const {
-    isEthereumMainnetOrTestnet: isSourceChainEthereum,
+    isEthereumMainnetOrTestnet: isSourceChainEthereumMainnetOrTestnet,
     isArbitrum: isSourceChainArbitrum,
     isBase: isSourceChainBase
   } = isNetwork(sourceChainId)
   const { isOrbitChain: isDestinationChainOrbit } =
     isNetwork(destinationChainId)
 
+  const validDestinationChains = getDestinationChainIds(sourceChainId)
+
+  if (!validDestinationChains.includes(destinationChainId)) {
+    throw new Error('Unsupported source and destination chain pair.')
+  }
+
   const isDepositMode =
-    isSourceChainEthereum ||
+    (isSourceChainEthereumMainnetOrTestnet && !isDestinationChainOrbit) ||
     isSourceChainBase ||
     (isSourceChainArbitrum && isDestinationChainOrbit)
 

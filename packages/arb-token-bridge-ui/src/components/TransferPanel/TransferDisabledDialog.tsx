@@ -48,6 +48,8 @@ export function TransferDisabledDialog() {
     number | undefined
   >()
 
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
+
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {
       if (!isTeleportMode) {
@@ -64,7 +66,7 @@ export function TransferDisabledDialog() {
   useEffect(() => {
     // do not allow import of withdraw-only tokens at deposit mode
     if (
-      isDepositMode &&
+      isDepositOrTeleportMode &&
       isSelectedTokenWithdrawOnly &&
       !isSelectedTokenWithdrawOnlyLoading
     ) {
@@ -72,7 +74,7 @@ export function TransferDisabledDialog() {
     }
   }, [
     isSelectedTokenWithdrawOnly,
-    isDepositMode,
+    isDepositOrTeleportMode,
     openTransferDisabledDialog,
     isSelectedTokenWithdrawOnlyLoading
   ])

@@ -19,7 +19,7 @@ export function useBalanceOnSourceChain(
 ): BigNumber | null {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
 
   const {
     erc20: [erc20SourceChainBalances]
@@ -39,7 +39,7 @@ export function useBalanceOnSourceChain(
     return constants.Zero
   }
 
-  if (isDepositMode) {
+  if (isDepositMode || isTeleportMode) {
     return erc20SourceChainBalances[tokenAddressLowercased] ?? constants.Zero
   }
 

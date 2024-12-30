@@ -178,8 +178,14 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    isDepositMode,
+    isTeleportMode,
+    isWithdrawalMode
+  } = useNetworksRelationship(networks)
   const {
     ethParentBalance,
     erc20ParentBalances,
@@ -206,19 +212,21 @@ function TokensPanel({
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
+
   const getBalance = useCallback(
     (address: string) => {
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
         if (nativeCurrency.isCustom) {
-          return isDepositMode
+          return isDepositOrTeleportMode
             ? erc20ParentBalances?.[nativeCurrency.address]
             : ethChildBalance
         }
 
-        return isDepositMode ? ethParentBalance : ethChildBalance
+        return isDepositOrTeleportMode ? ethParentBalance : ethChildBalance
       }
 
-      if (isDepositMode) {
+      if (isDepositOrTeleportMode) {
         return erc20ParentBalances?.[address.toLowerCase()]
       }
 
@@ -243,7 +251,7 @@ function TokensPanel({
       erc20ChildBalances,
       ethParentBalance,
       ethChildBalance,
-      isDepositMode
+      isDepositOrTeleportMode
     ]
   )
 
@@ -253,7 +261,7 @@ function TokensPanel({
       ...Object.keys(tokensFromUser),
       ...Object.keys(tokensFromLists)
     ]
-    if (!isDepositMode) {
+    if (isWithdrawalMode) {
       // L2 to L1 withdrawals
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
@@ -367,6 +375,7 @@ function TokensPanel({
     tokensFromUser,
     tokensFromLists,
     isDepositMode,
+    isWithdrawalMode,
     isArbitrumOne,
     isArbitrumSepolia,
     isOrbitChain,

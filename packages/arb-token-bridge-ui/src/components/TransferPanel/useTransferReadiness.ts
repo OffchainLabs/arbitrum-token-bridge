@@ -134,6 +134,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
@@ -218,17 +219,17 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       gasSummary,
       {
         isSmartContractWallet,
-        isDepositMode
+        isDepositMode: isDepositOrTeleportMode
       }
     )
 
-    const ethBalanceFloat = isDepositMode
+    const ethBalanceFloat = isDepositOrTeleportMode
       ? ethL1BalanceFloat
       : ethL2BalanceFloat
-    const selectedTokenBalanceFloat = isDepositMode
+    const selectedTokenBalanceFloat = isDepositOrTeleportMode
       ? selectedTokenL1BalanceFloat
       : selectedTokenL2BalanceFloat
-    const customFeeTokenBalanceFloat = isDepositMode
+    const customFeeTokenBalanceFloat = isDepositOrTeleportMode
       ? customFeeTokenL1BalanceFloat
       : ethL2BalanceFloat
 
@@ -292,7 +293,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           ))
 
       if (
-        isDepositMode &&
+        isDepositOrTeleportMode &&
         isSelectedTokenWithdrawOnly &&
         !isSelectedTokenWithdrawOnlyLoading
       ) {
@@ -404,7 +405,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       case 'success': {
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
-          if (nativeCurrency.isCustom && isDepositMode) {
+          if (nativeCurrency.isCustom && isDepositOrTeleportMode) {
             // Still loading custom fee token balance
             if (customFeeTokenL1BalanceFloat === null) {
               return notReady()
@@ -498,7 +499,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           return ready()
         }
 
-        if (nativeCurrency.isCustom && isDepositMode) {
+        if (nativeCurrency.isCustom && isDepositOrTeleportMode) {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
           if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
@@ -546,7 +547,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     destinationAddressError,
     isSmartContractWallet,
     selectedToken,
-    isDepositMode,
+    isDepositOrTeleportMode,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,

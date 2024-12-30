@@ -142,9 +142,9 @@ interface TokenRowProps {
 
 function useTokenInfo(token: ERC20BridgeToken | null) {
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
+  const { childChainProvider, isDepositMode, isTeleportMode } =
     useNetworksRelationship(networks)
-  const chainId = isDepositMode ? parentChain.id : childChain.id
+  const chainId = networks.sourceChain.id
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const name = useMemo(() => {
@@ -207,12 +207,12 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
       return false
     }
 
-    if (isDepositMode) {
+    if (isDepositMode || isTeleportMode) {
       return true
     }
 
     return typeof token?.l2Address !== 'undefined'
-  }, [isDepositMode, token])
+  }, [isDepositMode, isTeleportMode, token])
 
   return {
     name,
@@ -301,14 +301,21 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
 
 function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
+
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
-  if (isCustomFeeTokenRow && isDepositMode) {
+  if (isCustomFeeTokenRow && isDepositOrTeleportMode) {
     return (
       <BlockExplorerTokenLink
         chain={parentChain}
@@ -321,7 +328,7 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
     return null
   }
 
-  if (isDepositMode) {
+  if (isDepositOrTeleportMode) {
     return token?.isL2Native ? (
       <BlockExplorerTokenLink chain={childChain} address={token.address} />
     ) : (

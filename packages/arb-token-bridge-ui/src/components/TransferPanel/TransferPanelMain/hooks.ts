@@ -28,7 +28,7 @@ export function useUpdateUSDCTokenData() {
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const { isWithdrawalMode } = useNetworksRelationship(networks)
   const {
     isArbitrumOne: isDestinationChainArbitrumOne,
     isArbitrumSepolia: isDestinationChainArbitrumSepolia
@@ -42,7 +42,7 @@ export function useUpdateUSDCTokenData() {
 
     // If user select native USDC on L2, when switching to deposit mode,
     // we need to default to set the corresponding USDC on L1
-    if (!isDepositMode) {
+    if (isWithdrawalMode) {
       return
     }
 
@@ -65,7 +65,7 @@ export function useUpdateUSDCTokenData() {
     }
   }, [
     actions.app,
-    isDepositMode,
+    isWithdrawalMode,
     isDestinationChainArbitrumOne,
     isDestinationChainArbitrumSepolia,
     selectedToken,

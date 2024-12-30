@@ -50,11 +50,11 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     parentChain,
     parentChainProvider,
     isDepositMode,
+    isWithdrawalMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
-  const provider = isDepositMode ? parentChainProvider : childChainProvider
-  const gasPrice = useGasPrice({ provider })
+  const gasPrice = useGasPrice({ provider: sourceChainProvider })
   const chainId = useChainId()
   const { data: signer } = useSigner({
     chainId
@@ -109,13 +109,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
           {
             sourceChainId: sourceChain.id,
-            sourceChainErc20Address: isDepositMode
-              ? token.address
-              : token.l2Address,
-            destinationChainId: destinationChain.id,
-            destinationChainErc20Address: isDepositMode
+            sourceChainErc20Address: isWithdrawalMode
               ? token.l2Address
-              : token.address
+              : token.address,
+            destinationChainId: destinationChain.id,
+            destinationChainErc20Address: isWithdrawalMode
+              ? token.address
+              : token.l2Address
           }
         )
 
@@ -133,7 +133,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }, [
     isCctp,
     isOpen,
-    isDepositMode,
+    isWithdrawalMode,
     isTestnet,
     signer,
     walletAddress,
@@ -253,7 +253,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         <div className="flex flex-col">
           <NoteBox>
             After approval, you&apos;ll see a second prompt in your wallet for
-            the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
+            the {isWithdrawalMode ? 'withdrawal' : 'deposit'} transaction.
             <ExternalLink
               href={TOKEN_APPROVAL_ARTICLE_LINK}
               className="arb-hover ml-1 underline"

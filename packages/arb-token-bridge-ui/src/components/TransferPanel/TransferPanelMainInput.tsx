@@ -31,7 +31,8 @@ function MaxButton({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -39,7 +40,7 @@ function MaxButton({
   const maxButtonVisible = useMemo(() => {
     const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
 
-    const tokenBalance = isDepositMode
+    const tokenBalance = isDepositOrTeleportMode
       ? selectedTokenBalances.parentBalance
       : selectedTokenBalances.childBalance
 
@@ -50,7 +51,7 @@ function MaxButton({
     return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
     nativeCurrencyBalances.sourceBalance,
-    isDepositMode,
+    isDepositOrTeleportMode,
     selectedTokenBalances.parentBalance,
     selectedTokenBalances.childBalance,
     selectedToken
@@ -85,8 +86,9 @@ function SourceChainTokenBalance({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode, childChainProvider } =
+  const { isDepositMode, isTeleportMode, childChainProvider } =
     useNetworksRelationship(networks)
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
   const selectedTokenDecimals = useSelectedTokenDecimals()
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -94,7 +96,7 @@ function SourceChainTokenBalance({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenBalance = isDepositMode
+  const tokenBalance = isDepositOrTeleportMode
     ? selectedTokenBalances.parentBalance
     : selectedTokenBalances.childBalance
 
@@ -119,7 +121,7 @@ function SourceChainTokenBalance({
         <span
           className="whitespace-nowrap text-sm text-white"
           aria-label={`${symbol} balance amount on ${
-            isDepositMode ? 'parentChain' : 'childChain'
+            isDepositOrTeleportMode ? 'parentChain' : 'childChain'
           }`}
         >
           {formattedBalance}

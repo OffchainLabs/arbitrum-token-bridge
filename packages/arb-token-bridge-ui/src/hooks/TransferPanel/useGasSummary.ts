@@ -37,8 +37,13 @@ export function useGasSummary(): UseGasSummaryResult {
     app: { selectedToken: token }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChainProvider,
+    parentChainProvider,
+    isDepositMode,
+    isWithdrawalMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
@@ -60,16 +65,18 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const balance = useBalanceOnSourceChain(token)
 
+  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
+
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
       amount: amountBigNumber,
-      sourceChainErc20Address: isDepositMode
+      sourceChainErc20Address: isDepositOrTeleportMode
         ? token?.address
         : isTokenArbitrumOneNativeUSDC(token?.address) ||
           isTokenArbitrumSepoliaNativeUSDC(token?.address)
         ? token?.address
         : token?.l2Address,
-      destinationChainErc20Address: isDepositMode
+      destinationChainErc20Address: isDepositOrTeleportMode
         ? token?.l2Address
         : token?.address
     })
@@ -90,7 +97,7 @@ export function useGasSummary(): UseGasSummaryResult {
       return
     }
     if (
-      isDepositMode &&
+      isDepositOrTeleportMode &&
       'estimatedChildChainSubmissionCost' in estimateGasResult
     ) {
       return parseFloat(
@@ -114,11 +121,11 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedChildChainGas.mul(childChainGasPrice)
       )
     )
-  }, [childChainGasPrice, estimateGasResult, isDepositMode])
+  }, [childChainGasPrice, estimateGasResult, isDepositOrTeleportMode])
 
   const gasSummary: UseGasSummaryResult = useMemo(() => {
     if (
-      !isDepositMode &&
+      isWithdrawalMode &&
       (isTokenArbitrumOneNativeUSDC(token?.address) ||
         isTokenArbitrumSepoliaNativeUSDC(token?.address))
     ) {
@@ -159,7 +166,7 @@ export function useGasSummary(): UseGasSummaryResult {
       estimatedChildChainGasFees
     }
   }, [
-    isDepositMode,
+    isWithdrawalMode,
     token?.address,
     balance,
     amountBigNumber,

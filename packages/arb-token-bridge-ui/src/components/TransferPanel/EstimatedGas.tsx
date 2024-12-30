@@ -62,7 +62,7 @@ export function EstimatedGas({
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isWithdrawalMode
   } = useNetworksRelationship(networks)
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -93,11 +93,11 @@ export function EstimatedGas({
     networks.destinationChain.id
   ).isArbitrumSepolia
 
-  const isWithdrawalParentChain = !isDepositMode && isParentChain
+  const isWithdrawalParentChain = isWithdrawalMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
     if (
-      !isDepositMode &&
+      isWithdrawalMode &&
       !isParentChain &&
       typeof estimatedParentChainGasFees !== 'undefined' &&
       typeof estimatedChildChainGasFees !== 'undefined'
@@ -110,7 +110,7 @@ export function EstimatedGas({
   }, [
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
-    isDepositMode,
+    isWithdrawalMode,
     isParentChain
   ])
 
