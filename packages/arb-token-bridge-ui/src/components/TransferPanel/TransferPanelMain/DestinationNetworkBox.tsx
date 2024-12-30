@@ -27,6 +27,7 @@ import { Loader } from '../../common/atoms/Loader'
 import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
+import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
 function BalanceRow({
   parentErc20Address,
@@ -171,7 +172,14 @@ function BalancesContainer() {
               })
             : undefined
         }
-        symbolOverride={isCctpTransfer ? 'USDC.e' : undefined}
+        symbolOverride={
+          selectedToken
+            ? sanitizeTokenSymbol(selectedToken.symbol, {
+                chainId: networks.destinationChain.id,
+                erc20L1Address: selectedToken?.address
+              })
+            : undefined
+        }
       />
       {isBatchTransferSupported && isAmount2InputVisible && (
         <BalanceRow
