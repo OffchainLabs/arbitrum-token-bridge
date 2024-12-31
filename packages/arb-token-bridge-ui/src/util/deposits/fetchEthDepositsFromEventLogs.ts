@@ -1,28 +1,25 @@
-import { Provider, BlockTag } from '@ethersproject/providers'
-import {
-  ChildToParentMessageReader,
-  EventArgs,
-  EventFetcher,
-  getArbitrumNetwork
-} from '@arbitrum/sdk'
+import { BlockTag } from '@ethersproject/providers'
+import { EventFetcher, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber } from 'ethers'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 type ParentToChildTxEvent = {
   messageNum: BigNumber
   data: string
 }
 
+// Only for ETH
 async function getParentToChildEvents(
-  parentProvider: Provider,
   childChainId: number,
   filter: { fromBlock: BlockTag; toBlock: BlockTag },
   position?: BigNumber,
   destination?: string,
   hash?: BigNumber
 ): Promise<(ParentToChildTxEvent & { transactionHash: string })[]> {
-  const eventFetcher = new EventFetcher(parentProvider)
   const childChain = getArbitrumNetwork(childChainId)
+  const parentProvider = getProviderForChainId(childChain.parentChainId)
+  const eventFetcher = new EventFetcher(parentProvider)
 
   return (
     await eventFetcher.getEvents(
@@ -40,31 +37,16 @@ async function getParentToChildEvents(
  * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
- * @param query.parentProvider Provider for the parent network
  */
-export function fetchETHDepositsFromEventLogs({
-  receiver,
+export function fetchEthDepositsFromEventLogs({
   fromBlock,
   toBlock,
-  parentProvider,
   childChainId
 }: {
-  receiver?: string
   fromBlock: BlockTag
   toBlock: BlockTag
-  parentProvider: Provider
   childChainId: number
 }) {
-  if (typeof receiver === 'undefined') {
-    return Promise.resolve([])
-  }
-
   // funds received by this address
-  return getParentToChildEvents(
-    parentProvider,
-    childChainId,
-    { fromBlock, toBlock },
-    undefined,
-    receiver
-  )
+  return getParentToChildEvents(childChainId, { fromBlock, toBlock })
 }
