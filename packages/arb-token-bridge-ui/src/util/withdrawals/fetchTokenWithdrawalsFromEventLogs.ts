@@ -1,14 +1,7 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
-import { Erc20Bridger, EventArgs } from '@arbitrum/sdk'
+import { Erc20Bridger } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-
-function dedupeEvents(
-  events: (EventArgs<WithdrawalInitiatedEvent> & {
-    txHash: string
-  })[]
-) {
-  return [...new Map(events.map(item => [item.txHash, item])).values()]
-}
+import { dedupeEvents } from '../deposits/helpers'
 
 export type FetchTokenWithdrawalsFromEventLogsParams = {
   sender?: string
@@ -72,5 +65,7 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   })
 
   // when getting funds received by this address we will also get duplicate txs returned in 'funds sent by this address'
-  return dedupeEvents((await Promise.all(promises)).flat())
+  return dedupeEvents<WithdrawalInitiatedEvent>(
+    (await Promise.all(promises)).flat()
+  )
 }

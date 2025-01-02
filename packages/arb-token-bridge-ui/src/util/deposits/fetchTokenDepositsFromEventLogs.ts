@@ -4,6 +4,7 @@ import { DepositInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L1ERC20Gateway
 import { BlockTag } from '@ethersproject/providers'
 
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { dedupeEvents } from './helpers'
 
 /**
  * Get the parent network events created by a deposit
@@ -46,14 +47,6 @@ export async function getDepositEvents(
           parentTokenAddress.toLocaleLowerCase()
       )
     : events
-}
-
-function dedupeEvents(
-  events: (EventArgs<DepositInitiatedEvent> & {
-    txHash: string
-  })[]
-) {
-  return [...new Map(events.map(item => [item.txHash, item])).values()]
 }
 
 export type FetchTokenDepositsFromEventLogsParams = {
@@ -117,5 +110,7 @@ export async function fetchTokenDepositsFromEventLogs({
   })
 
   // when getting funds received by this address we will also get duplicate txs returned in 'funds sent by this address'
-  return dedupeEvents((await Promise.all(promises)).flat())
+  return dedupeEvents<DepositInitiatedEvent>(
+    (await Promise.all(promises)).flat()
+  )
 }
