@@ -12,10 +12,7 @@ type ParentToChildTxEvent = {
 // Only for ETH
 async function getParentToChildEvents(
   childChainId: number,
-  filter: { fromBlock: BlockTag; toBlock: BlockTag },
-  position?: BigNumber,
-  destination?: string,
-  hash?: BigNumber
+  filter: { fromBlock: BlockTag; toBlock: BlockTag }
 ): Promise<(ParentToChildTxEvent & { transactionHash: string })[]> {
   const childChain = getArbitrumNetwork(childChainId)
   const parentProvider = getProviderForChainId(childChain.parentChainId)
@@ -34,7 +31,6 @@ async function getParentToChildEvents(
  * Fetches initiated ETH deposits from event logs in range of [fromBlock, toBlock].
  *
  * @param query Query params
- * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  */
@@ -47,6 +43,5 @@ export function fetchEthDepositsFromEventLogs({
   toBlock: BlockTag
   childChainId: number
 }) {
-  // funds received by this address
   return getParentToChildEvents(childChainId, { fromBlock, toBlock })
 }

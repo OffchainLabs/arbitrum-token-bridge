@@ -1,11 +1,10 @@
-import { BigNumber, providers, utils } from 'ethers'
-import { BlockTag } from '@ethersproject/providers'
+import { providers, utils } from 'ethers'
 import { L1ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L1ERC20Gateway__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ArbitrumNetwork,
   EthDepositMessage,
-  getArbitrumNetworks,
+  getArbitrumNetwork,
   ParentToChildMessageReader,
   ParentToChildMessageReaderClassic,
   ParentTransactionReceipt
@@ -106,29 +105,18 @@ async function getChildChainMessages(
 /**
  * Get event logs for ParentToChild transactions.
  * Only support by tx hash for now.
- * @param childProvider
- * @param filter Block range filter
- * @param position The batchnumber indexed field was removed in nitro and a position indexed field was added.
- * For pre-nitro events the value passed in here will be used to find events with the same batchnumber.
- * For post nitro events it will be used to find events with the same position.
- * @param destination The parent destination of the ChildToParent message
- * @param hash The uniqueId indexed field was removed in nitro and a hash indexed field was added.
+ * @param childChainId
+ * @param txHash The uniqueId indexed field was removed in nitro and a hash indexed field was added.
  * For pre-nitro events the value passed in here will be used to find events with the same uniqueId.
  * For post nitro events it will be used to find events with the same hash.
  * @returns Any classic and nitro events that match the provided filters.
  */
 export async function getParentToChildEventsByTxHash({
-  parentChainId,
-  filter,
-  position,
-  destination,
+  childChainId,
   txHash
 }: {
-  parentChainId: number
-  filter?: { fromBlock: BlockTag; toBlock: BlockTag }
-  position?: BigNumber
-  destination?: string
-  txHash?: string
+  childChainId: number
+  txHash: string
 }): Promise<{
   ethDeposits: Transaction[]
   tokenDepositRetryables: Transaction[]
@@ -139,9 +127,11 @@ export async function getParentToChildEventsByTxHash({
       tokenDepositRetryables: []
     }
   }
-  const parentTxReceipt = await getParentTxReceipt(txHash, parentChainId)
-
+  const childChain = getArbitrumNetwork(childChainId)
+  const parentChainId = childChain.parentChainId
   const parentProvider = getProviderForChainId(parentChainId)
+
+  const parentTxReceipt = await getParentTxReceipt(txHash, parentChainId)
 
   if (!parentTxReceipt) {
     return {
@@ -150,51 +140,14 @@ export async function getParentToChildEventsByTxHash({
     }
   }
 
-  const childChainMessages = getArbitrumNetworks()
-    .filter(childChain => childChain.parentChainId === parentChainId)
-    .map(childChain => getChildChainMessages(childChain, parentTxReceipt))
-
-  const messages = await Promise.all(childChainMessages)
+  const messages = await getChildChainMessages(childChain, parentTxReceipt)
 
   if (typeof messages === 'undefined') {
     return { ethDeposits: [], tokenDepositRetryables: [] }
   }
 
-  const allMessages = messages
-    .filter(message => typeof message !== 'undefined')
-    .reduce(
-      (acc, value) => {
-        if (typeof acc === 'undefined') {
-          return {
-            tokenDepositRetryables: [],
-            tokenDepositRetryablesClassic: [],
-            ethDeposits: []
-          }
-        }
-        if (typeof value === 'undefined') {
-          return acc
-        }
-        return {
-          tokenDepositRetryables: acc.tokenDepositRetryables.concat(
-            value.tokenDepositRetryables
-          ),
-          tokenDepositRetryablesClassic:
-            acc.tokenDepositRetryablesClassic.concat(
-              value.tokenDepositRetryablesClassic
-            ),
-          ethDeposits: acc.ethDeposits.concat(value.ethDeposits)
-        }
-      },
-      {
-        tokenDepositRetryables: [],
-        tokenDepositRetryablesClassic: [],
-        ethDeposits: []
-      }
-      // eslint complains that it can be undefined if not cast here
-    ) as ParentToChildMessagesAndDepositMessages
-
   const tokenDepositRetryables: Transaction[] = await Promise.all(
-    allMessages.tokenDepositRetryables
+    messages.tokenDepositRetryables
       .map(async tokenDepositMessage => {
         const childChainId = await getChainIdFromProvider(
           tokenDepositMessage.childProvider
@@ -301,7 +254,7 @@ export async function getParentToChildEventsByTxHash({
   )
 
   const ethDeposits: Transaction[] = await Promise.all(
-    allMessages.ethDeposits.map(async depositMessage => {
+    messages.ethDeposits.map(async depositMessage => {
       const timestamp = (
         await parentProvider.getBlock(parentTxReceipt.blockNumber)
       ).timestamp
