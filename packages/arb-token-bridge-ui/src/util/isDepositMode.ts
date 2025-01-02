@@ -1,5 +1,5 @@
 import { getDestinationChainIds, isNetwork } from '../util/networks'
-import { isValidTeleportChainPair } from '../token-bridge-sdk/teleport'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
 
 export function isDepositMode({
   sourceChainId,
@@ -14,6 +14,7 @@ export function isDepositMode({
     isBase: isSourceChainBase
   } = isNetwork(sourceChainId)
   const {
+    isEthereumMainnetOrTestnet: isDestinationChainEthereumMainnetOrTestnet,
     isArbitrum: isDestinationChainArbitrum,
     isOrbitChain: isDestinationChainOrbit
   } = isNetwork(destinationChainId)
@@ -24,10 +25,11 @@ export function isDepositMode({
     throw new Error('Unsupported source and destination chain pair.')
   }
 
-  const isTeleportMode = isValidTeleportChainPair({
-    sourceChainId,
-    destinationChainId
-  })
+  if (isDestinationChainEthereumMainnetOrTestnet) {
+    return false
+  }
+
+  const destinationChain = getArbitrumNetwork(destinationChainId)
 
   if (isSourceChainEthereumMainnetOrTestnet && isDestinationChainArbitrum) {
     return true
@@ -36,7 +38,7 @@ export function isDepositMode({
   if (
     isSourceChainEthereumMainnetOrTestnet &&
     isDestinationChainOrbit &&
-    !isTeleportMode
+    destinationChain.parentChainId === sourceChainId
   ) {
     return true
   }
