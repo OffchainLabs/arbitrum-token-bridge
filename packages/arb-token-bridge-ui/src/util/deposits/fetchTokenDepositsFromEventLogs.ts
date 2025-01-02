@@ -66,7 +66,7 @@ export type FetchTokenDepositsFromEventLogsParams = {
 }
 
 /**
- * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].
+ * Fetches initiated token deposits from event logs in range of [fromBlock, toBlock].
  *
  * @param query Query params
  * @param query.sender Address that initiated the withdrawal

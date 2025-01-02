@@ -5,19 +5,26 @@ import {
 } from './fetchDepositsTestHelpers'
 import { fetchDepositsFromSubgraph } from '../fetchDepositsFromSubgraph'
 
+const defaults = {
+  sender: '0x5d64a0fd6af0d76a7ed189d4061ffa6823fbf97e',
+  pageSize: 100
+}
+
 describe('fetchDepositsFromSubgraph', () => {
   it('fetches no deposits from subgraph pre-nitro', async () => {
-    const result = await fetchDepositsFromSubgraph(
-      getQueryCoveringClassicOnlyWithoutResults()
-    )
+    const result = await fetchDepositsFromSubgraph({
+      ...defaults,
+      ...getQueryCoveringClassicOnlyWithoutResults()
+    })
 
     expect(result).toHaveLength(0)
   })
 
   it('fetches some deposits from subgraph pre-nitro', async () => {
-    const result = await fetchDepositsFromSubgraph(
-      getQueryCoveringClassicOnlyWithResults()
-    )
+    const result = await fetchDepositsFromSubgraph({
+      ...defaults,
+      ...getQueryCoveringClassicOnlyWithResults()
+    })
 
     expect(result).toHaveLength(3)
     expect(result).toEqual(
@@ -39,9 +46,10 @@ describe('fetchDepositsFromSubgraph', () => {
   })
 
   it('fetches some deposits from subgraph pre-nitro and post-nitro', async () => {
-    const result = await fetchDepositsFromSubgraph(
-      getQueryCoveringClassicAndNitroWithResults()
-    )
+    const result = await fetchDepositsFromSubgraph({
+      ...defaults,
+      ...getQueryCoveringClassicAndNitroWithResults()
+    })
 
     expect(result).toHaveLength(4)
     expect(result).toEqual(
