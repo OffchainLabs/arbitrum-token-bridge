@@ -31,8 +31,6 @@ export function useNetworksRelationship({
       destinationChainId: destinationChain.id
     })
 
-    const isWithdrawalMode = !(_isDepositMode || isTeleportMode)
-
     if (_isDepositMode || isTeleportMode) {
       return {
         childChain: destinationChain,
@@ -40,7 +38,7 @@ export function useNetworksRelationship({
         parentChain: sourceChain,
         parentChainProvider: sourceChainProvider,
         isDepositMode: _isDepositMode,
-        isWithdrawalMode,
+        isWithdrawalMode: false,
         isTeleportMode
       }
     }
@@ -51,7 +49,7 @@ export function useNetworksRelationship({
       parentChain: destinationChain,
       parentChainProvider: destinationChainProvider,
       isDepositMode: _isDepositMode,
-      isWithdrawalMode,
+      isWithdrawalMode: true,
       isTeleportMode
     }
   }, [

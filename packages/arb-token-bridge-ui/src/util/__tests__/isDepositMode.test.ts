@@ -52,12 +52,12 @@ describe('isDepositMode', () => {
     expect(result1).toEqual(true)
   })
 
-  it('should return false for L1 source chain and L2 Orbit destination chain', () => {
+  it('should return true for L1 source chain and L2 Orbit destination chain', () => {
     const result1 = isDepositMode({
       sourceChainId: ChainId.Ethereum,
       destinationChainId: 4162 // SX
     })
-    expect(result1).toEqual(false)
+    expect(result1).toEqual(true)
   })
 
   it('should return false for L2 source chain and L1 destination chain', () => {
