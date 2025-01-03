@@ -11,6 +11,64 @@ import { isNetwork } from '../../util/networks'
 import { useBalances } from '../useBalances'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
+export async function childChainUsdcAddressFetcher([
+  _parentChainUsdcAddress,
+  parentChainId,
+  childChainId
+]: [Address, number, number]) {
+  const {
+    isEthereumMainnet: isParentEthereumMainnet,
+    isSepolia: isParentSepolia
+  } = isNetwork(parentChainId)
+
+  if (isParentEthereumMainnet) {
+    return CommonAddress.ArbitrumOne.USDC
+  }
+
+  if (isParentSepolia) {
+    return CommonAddress.ArbitrumSepolia.USDC
+  }
+
+  const _parentChainProvider = getProviderForChainId(parentChainId)
+  const _childChainProvider = getProviderForChainId(childChainId)
+
+  return getL2ERC20Address({
+    erc20L1Address: _parentChainUsdcAddress,
+    l1Provider: _parentChainProvider,
+    l2Provider: _childChainProvider
+  })
+}
+
+export function useParentChainUsdcAddress() {
+  const [networks] = useNetworks()
+  const { parentChain } = useNetworksRelationship(networks)
+
+  return useMemo(() => {
+    const {
+      isEthereumMainnet: isParentEthereumMainnet,
+      isSepolia: isParentSepolia,
+      isArbitrumOne: isParentArbitrumOne,
+      isArbitrumSepolia: isParentArbitrumSepolia
+    } = isNetwork(parentChain.id)
+
+    if (isParentEthereumMainnet) {
+      return CommonAddress.Ethereum.USDC
+    }
+
+    if (isParentSepolia) {
+      return CommonAddress.Sepolia.USDC
+    }
+
+    if (isParentArbitrumOne) {
+      return CommonAddress.ArbitrumOne.USDC
+    }
+
+    if (isParentArbitrumSepolia) {
+      return CommonAddress.ArbitrumSepolia.USDC
+    }
+  }, [parentChain.id])
+}
+
 export function useUpdateUsdcBalances({
   walletAddress
 }: {
@@ -29,35 +87,7 @@ export function useUpdateUsdcBalances({
     childWalletAddress: _walletAddress
   })
 
-  const {
-    isEthereumMainnet: isParentEthereumMainnet,
-    isSepolia: isParentSepolia,
-    isArbitrumOne: isParentArbitrumOne,
-    isArbitrumSepolia: isParentArbitrumSepolia
-  } = isNetwork(parentChain.id)
-
-  const parentChainUsdcAddress = useMemo(() => {
-    if (isParentEthereumMainnet || isParentSepolia) {
-      return CommonAddress.Ethereum.USDC
-    }
-
-    if (isParentSepolia) {
-      return CommonAddress.Sepolia.USDC
-    }
-
-    if (isParentArbitrumOne) {
-      return CommonAddress.ArbitrumOne.USDC
-    }
-
-    if (isParentArbitrumSepolia) {
-      return CommonAddress.ArbitrumSepolia.USDC
-    }
-  }, [
-    isParentArbitrumOne,
-    isParentArbitrumSepolia,
-    isParentEthereumMainnet,
-    isParentSepolia
-  ])
+  const parentChainUsdcAddress = useParentChainUsdcAddress()
 
   // we don't have native USDC addresses for Orbit chains, we need to fetch it
   const {
@@ -73,24 +103,7 @@ export function useUpdateUsdcBalances({
           'fetchChildChainUsdcAddress'
         ]
       : null,
-    ([_parentChainUsdcAddress, parentChainId, childChainId]) => {
-      if (isParentEthereumMainnet) {
-        return CommonAddress.ArbitrumOne.USDC
-      }
-
-      if (isParentSepolia) {
-        return CommonAddress.ArbitrumSepolia.USDC
-      }
-
-      const _parentChainProvider = getProviderForChainId(parentChainId)
-      const _childChainProvider = getProviderForChainId(childChainId)
-
-      return getL2ERC20Address({
-        erc20L1Address: _parentChainUsdcAddress,
-        l1Provider: _parentChainProvider,
-        l2Provider: _childChainProvider
-      })
-    }
+    childChainUsdcAddressFetcher
   )
 
   const updateUsdcBalances = useCallback(() => {
