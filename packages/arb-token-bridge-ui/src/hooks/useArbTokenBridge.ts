@@ -11,7 +11,6 @@ import {
 } from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
-import useTransactions from './useTransactions'
 import {
   ArbTokenBridge,
   ContractStorage,
@@ -136,10 +135,7 @@ export const useArbTokenBridge = (
       React.Dispatch<void>
     ]
 
-  const [transactions, { addTransaction, updateTransaction }] =
-    useTransactions()
-
-  const removeTokensFromList = (listID: number) => {
+  const removeTokensFromList = (listID: string) => {
     setBridgeTokens(prevBridgeTokens => {
       const newBridgeTokens = { ...prevBridgeTokens }
       for (const address in bridgeTokens) {
@@ -157,7 +153,7 @@ export const useArbTokenBridge = (
   }
 
   const addTokensFromList = async ({
-    arbTokenList,
+    tokenList,
     listId,
     parentChainId,
     childChainId
@@ -168,7 +164,7 @@ export const useArbTokenBridge = (
 
     const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
 
-    for (const tokenData of arbTokenList.tokens) {
+    for (const tokenData of tokenList.tokens) {
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
         tokenData
 
@@ -229,12 +225,12 @@ export const useArbTokenBridge = (
           l2Address: childChainAddress,
           decimals,
           logoURI,
-          listIds: new Set([listId])
+          listIds: new Set([String(listId)])
         }
       }
       // save potentially unbridged L1 tokens:
       // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
-      else if (arbTokenList.tokens.length < 1000) {
+      else if (tokenList.tokens.length < 1000) {
         candidateUnbridgedTokensToAdd.push({
           name,
           type: TokenType.ERC20,
@@ -242,7 +238,7 @@ export const useArbTokenBridge = (
           address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: new Set([listId])
+          listIds: new Set([String(listId)])
         })
       }
     }
@@ -292,7 +288,7 @@ export const useArbTokenBridge = (
         // Set the result to token added to `bridgeTokens` : `tokenToAdd.listIds`
         const oldListIds =
           oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set()
-        tokenToAdd.listIds = new Set([...oldListIds, listId])
+        tokenToAdd.listIds = new Set([...oldListIds, String(listId)])
       }
 
       updateErc20L1Balance(l1Addresses)
@@ -549,11 +545,6 @@ export const useArbTokenBridge = (
       removeTokensFromList,
       updateTokenData,
       triggerOutbox: triggerOutboxToken
-    },
-    transactions: {
-      transactions,
-      updateTransaction,
-      addTransaction
     }
   }
 }

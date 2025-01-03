@@ -47,7 +47,7 @@ import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
-  listIds: new Set<number>(),
+  listIds: new Set<string>(),
   type: TokenType.ERC20,
   // the address field is for L1 address but native USDC does not have an L1 address
   // the L2 address is used instead to avoid errors
@@ -57,7 +57,7 @@ export const ARB_ONE_NATIVE_USDC_TOKEN = {
 
 export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
-  listIds: new Set<number>(),
+  listIds: new Set<string>(),
   type: TokenType.ERC20,
   address: CommonAddress.ArbitrumSepolia.USDC,
   l2Address: CommonAddress.ArbitrumSepolia.USDC

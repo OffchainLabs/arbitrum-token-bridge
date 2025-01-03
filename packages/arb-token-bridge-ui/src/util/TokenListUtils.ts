@@ -10,14 +10,17 @@ import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
 import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from './networks'
+import orbitChainsData from './orbitChainsData.json'
 
-export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
+export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID =
+  'SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID'
 
 export const isArbitrumTokenList = (listId: number) =>
   listId === SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 
 export interface BridgeTokenList {
-  id: number
+  // string is required here to avoid duplicates when mapping orbit chains to tokenlists
+  id: string
   originChainID: number
   url: string
   name: string
@@ -38,7 +41,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isArbitrumTokenTokenList: true
   },
   {
-    id: 1,
+    id: '1',
     originChainID: ChainId.ArbitrumOne,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json',
     name: 'Arbitrum Whitelist Era',
@@ -46,7 +49,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: ArbitrumLogo
   },
   {
-    id: 2,
+    id: '2',
     originChainID: ChainId.ArbitrumOne,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_uniswap_labs_default.json',
     name: 'Arbed Uniswap List',
@@ -54,7 +57,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: UniswapLogo
   },
   {
-    id: 4,
+    id: '4',
     originChainID: ChainId.ArbitrumOne,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
@@ -62,7 +65,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: CoinGeckoLogo
   },
   {
-    id: 5,
+    id: '5',
     originChainID: ChainId.ArbitrumOne,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
     name: 'Arbed CMC List',
@@ -70,7 +73,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: CMCLogo
   },
   {
-    id: 6,
+    id: '6',
     originChainID: ChainId.ArbitrumNova,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_uniswap_labs_default.json',
     name: 'Arbed Uniswap List',
@@ -82,7 +85,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   // TODO: remove list for chain ID 412346 after fix:
   // https://github.com/OffchainLabs/arb-token-bridge/issues/564
   {
-    id: 9,
+    id: '9',
     // Local node
     originChainID: ChainId.ArbitrumLocal,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
@@ -91,7 +94,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: CMCLogo
   },
   {
-    id: 10,
+    id: '10',
     originChainID: ChainId.ArbitrumSepolia,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_uniswap_labs.json',
     name: 'Arbed Uniswap List',
@@ -100,7 +103,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   // CoinGecko
   {
-    id: 11,
+    id: '11',
     originChainID: ChainId.ArbitrumNova,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
@@ -108,25 +111,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: CoinGeckoLogo
   },
   {
-    id: 13,
+    id: '13',
     originChainID: ChainId.ArbitrumSepolia,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
     isDefault: true,
     logoURI: CoinGeckoLogo
   },
-  // Orbit
   {
-    id: 14,
-    // Xai
-    originChainID: 660279,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/660279_arbed_uniswap_labs.json',
-    name: 'Arbed Uniswap List',
-    isDefault: true,
-    logoURI: UniswapLogo
-  },
-  {
-    id: 660279,
+    id: '660279',
     // Xai
     originChainID: 660279,
     url: 'tokenLists/660279_default.json',
@@ -134,42 +127,33 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI: '/images/XaiLogo.svg'
   },
-  {
-    id: 15,
-    // Rari
-    originChainID: 1380012617,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/1380012617_arbed_uniswap_labs.json',
-    name: 'Arbed Uniswap List',
-    isDefault: true,
-    logoURI: UniswapLogo
-  },
-  {
-    id: 16,
-    // Muster
-    originChainID: 4078,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/4078_arbed_uniswap_labs.json',
-    name: 'Arbed Uniswap List',
-    isDefault: true,
-    logoURI: UniswapLogo
-  },
-  {
-    id: 17,
-    // Proof of Play Apex
-    originChainID: 70700,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/70700_arbed_uniswap_labs.json',
-    name: 'Arbed Uniswap List',
-    isDefault: true,
-    logoURI: UniswapLogo
-  },
-  {
-    id: 19,
-    // SX Network
-    originChainID: 4162,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/4162_arbed_uniswap_labs.json',
-    name: 'Arbed Uniswap List',
-    isDefault: true,
-    logoURI: UniswapLogo
-  }
+  // For all orbit chains,
+  ...orbitChainsData.mainnet
+    .concat(orbitChainsData.testnet)
+    .reduce((acc, chain) => {
+      // Only include arbified native token list for L3 settling to ArbOne
+      if (chain.parentChainId === ChainId.ArbitrumOne) {
+        acc.push({
+          id: `${chain.chainId}_native`,
+          originChainID: chain.chainId,
+          url: `https://tokenlist.arbitrum.io/ArbTokenLists/${chain.chainId}_arbed_native_list.json`,
+          name: `${chain.name} Default List`,
+          isDefault: true,
+          logoURI: ArbitrumLogo
+        })
+      }
+
+      acc.push({
+        id: `${chain.chainId}_uniswap`,
+        originChainID: chain.chainId,
+        url: `https://tokenlist.arbitrum.io/ArbTokenLists/${chain.chainId}_arbed_uniswap_labs.json`,
+        name: `${chain.name} Arbed Uniswap List`,
+        isDefault: true,
+        logoURI: UniswapLogo
+      })
+
+      return acc
+    }, [] as BridgeTokenList[])
 ]
 
 export const listIdsToNames: { [key: string]: string } = {}
@@ -180,7 +164,7 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
 
 export interface TokenListWithId extends TokenList {
   l2ChainId: string
-  bridgeTokenListId: number
+  bridgeTokenListId: string
   isValid?: boolean
 }
 

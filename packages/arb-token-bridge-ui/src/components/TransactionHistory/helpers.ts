@@ -31,19 +31,11 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import { isTeleportTx } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../types/Transactions'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
 const DEPOSITS_LOCAL_STORAGE_KEY = 'arbitrum:bridge:deposits'
-
-export enum StatusLabel {
-  PENDING = 'Pending',
-  CLAIMABLE = 'Claimable',
-  SUCCESS = 'Success',
-  EXPIRED = 'Expired',
-  FAILURE = 'Failure'
-}
 
 function isDeposit(tx: MergedTransaction): boolean {
   return !tx.isWithdrawal

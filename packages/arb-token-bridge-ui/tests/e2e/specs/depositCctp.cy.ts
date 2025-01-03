@@ -86,7 +86,7 @@ describe('Deposit USDC through CCTP', () => {
   })
 
   it('should initiate depositing USDC to the same address through CCTP successfully', () => {
-    cy.findMoveFundsButton().click()
+    cy.clickMoveFundsButton().click()
 
     confirmAndApproveCctpDeposit()
     cy.confirmSpending(USDCAmountToSend.toString())
@@ -113,7 +113,6 @@ describe('Deposit USDC through CCTP', () => {
 
   it('should claim deposit', () => {
     cy.claimCctp(0.00014, { accept: false })
-    cy.closeTransactionHistoryPanel()
     cy.claimCctp(0.00015, { accept: false })
   })
 
@@ -123,7 +122,7 @@ describe('Deposit USDC through CCTP', () => {
    */
   it.skip('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
     cy.fillCustomDestinationAddress()
-    cy.findMoveFundsButton().click()
+    cy.clickMoveFundsButton().click()
     confirmAndApproveCctpDeposit()
 
     cy.confirmSpending(USDCAmountToSend.toString())
