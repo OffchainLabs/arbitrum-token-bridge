@@ -1,13 +1,15 @@
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 
+const arbSepoliaTokenBridge = getArbitrumNetwork(42161).tokenBridge!
+
 const baseQuery = {
   l2ChainId: 42161,
   childChainId: 42161,
   parentChainId: 1,
   parentGatewayAddresses: [
-    getArbitrumNetwork(42161).tokenBridge!.parentErc20Gateway,
-    getArbitrumNetwork(42161).tokenBridge!.parentCustomGateway,
-    getArbitrumNetwork(42161).tokenBridge!.parentWethGateway
+    arbSepoliaTokenBridge.parentErc20Gateway,
+    arbSepoliaTokenBridge.parentCustomGateway,
+    arbSepoliaTokenBridge.parentWethGateway
   ]
 }
 

@@ -4,7 +4,7 @@ import { DepositInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L1ERC20Gateway
 import { BlockTag } from '@ethersproject/providers'
 
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { dedupeEvents } from './helpers'
+import { dedupeEvents } from '../../components/TransactionHistory/helpers'
 
 /**
  * Get the parent network events created by a deposit

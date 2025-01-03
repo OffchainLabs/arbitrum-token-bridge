@@ -6,7 +6,8 @@ import {
   ParentToChildMessageStatus,
   ParentToChildMessageReader,
   ChildTransactionReceipt,
-  ChildToParentTransactionEvent
+  ChildToParentTransactionEvent,
+  EventArgs
 } from '@arbitrum/sdk'
 
 import {
@@ -593,4 +594,12 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
   return tx.isWithdrawal
     ? tx.childToParentMsgData?.uniqueId.toString()
     : tx.parentToChildMsgData?.childTxId
+}
+
+export function dedupeEvents<T>(
+  events: (EventArgs<T> & {
+    txHash: string
+  })[]
+) {
+  return [...new Map(events.map(item => [item.txHash, item])).values()]
 }

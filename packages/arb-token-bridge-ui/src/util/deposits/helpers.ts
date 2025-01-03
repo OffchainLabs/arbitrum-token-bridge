@@ -6,8 +6,7 @@ import {
   ParentToChildMessageReader,
   ParentToChildMessageReaderClassic,
   EthL1L3DepositStatus,
-  Erc20L1L3DepositStatus,
-  EventArgs
+  Erc20L1L3DepositStatus
 } from '@arbitrum/sdk'
 import { utils } from 'ethers'
 
@@ -675,12 +674,4 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
 
   // post-nitro deposit - both eth + token
   return getNitroDepositMessage()
-}
-
-export function dedupeEvents<T>(
-  events: (EventArgs<T> & {
-    txHash: string
-  })[]
-) {
-  return [...new Map(events.map(item => [item.txHash, item])).values()]
 }
