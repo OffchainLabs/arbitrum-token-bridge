@@ -225,7 +225,7 @@ export const useArbTokenBridge = (
           l2Address: childChainAddress,
           decimals,
           logoURI,
-          listIds: new Set([String(listId)])
+          listIds: new Set([listId])
         }
       }
       // save potentially unbridged L1 tokens:
@@ -238,7 +238,7 @@ export const useArbTokenBridge = (
           address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: new Set([String(listId)])
+          listIds: new Set([listId])
         })
       }
     }
@@ -288,7 +288,7 @@ export const useArbTokenBridge = (
         // Set the result to token added to `bridgeTokens` : `tokenToAdd.listIds`
         const oldListIds =
           oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set()
-        tokenToAdd.listIds = new Set([...oldListIds, String(listId)])
+        tokenToAdd.listIds = new Set([...oldListIds, listId])
       }
 
       updateErc20L1Balance(l1Addresses)

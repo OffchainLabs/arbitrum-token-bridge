@@ -14,7 +14,7 @@ export { OutgoingMessageState }
 
 export type AddTokensFromListArgs = {
   tokenList: TokenList
-  listId: number
+  listId: string
   parentChainId: ChainId
   childChainId: ChainId
 }
@@ -115,7 +115,7 @@ export interface ArbTokenBridgeToken {
     parentChainId,
     childChainId
   }: AddTokensFromListArgs) => void
-  removeTokensFromList: (listID: number) => void
+  removeTokensFromList: (listID: string) => void
   updateTokenData: (l1Address: string) => Promise<void>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus

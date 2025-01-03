@@ -15,7 +15,7 @@ import orbitChainsData from './orbitChainsData.json'
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID =
   'SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID'
 
-export const isArbitrumTokenList = (listId: number) =>
+export const isArbitrumTokenList = (listId: string) =>
   listId === SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 
 export interface BridgeTokenList {
