@@ -1,10 +1,5 @@
 import { createContext, useContext, useReducer, Dispatch } from 'react'
 
-export enum TransactionHistoryTab {
-  DEPOSITS = 0,
-  WITHDRAWALS = 1,
-  CCTP = 2
-}
 type AppContextState = {
   layout: {
     isTransferPanelVisible: boolean
