@@ -161,13 +161,7 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   }
 
   if (isDeposit(tx)) {
-    return transformDeposit(
-      await updateAdditionalDepositData({
-        depositTx: tx,
-        parentProvider,
-        childProvider
-      })
-    )
+    return transformDeposit(await updateAdditionalDepositData(tx))
   }
 
   let withdrawal: L2ToL1EventResultPlus | undefined
