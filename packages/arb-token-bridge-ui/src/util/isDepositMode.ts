@@ -9,14 +9,7 @@ export function isDepositMode({
   destinationChainId: number
 }) {
   const {
-    isEthereumMainnetOrTestnet: isSourceChainEthereumMainnetOrTestnet,
-    isArbitrum: isSourceChainArbitrum,
-    isBase: isSourceChainBase
-  } = isNetwork(sourceChainId)
-  const {
-    isEthereumMainnetOrTestnet: isDestinationChainEthereumMainnetOrTestnet,
-    isArbitrum: isDestinationChainArbitrum,
-    isOrbitChain: isDestinationChainOrbit
+    isEthereumMainnetOrTestnet: isDestinationChainEthereumMainnetOrTestnet
   } = isNetwork(destinationChainId)
 
   const validDestinationChains = getDestinationChainIds(sourceChainId)
@@ -30,26 +23,5 @@ export function isDepositMode({
   }
 
   const destinationChain = getArbitrumNetwork(destinationChainId)
-
-  if (isSourceChainEthereumMainnetOrTestnet && isDestinationChainArbitrum) {
-    return true
-  }
-
-  if (
-    isSourceChainEthereumMainnetOrTestnet &&
-    isDestinationChainOrbit &&
-    destinationChain.parentChainId === sourceChainId
-  ) {
-    return true
-  }
-
-  if (isSourceChainBase) {
-    return true
-  }
-
-  if (isSourceChainArbitrum && isDestinationChainOrbit) {
-    return true
-  }
-
-  return false
+  return destinationChain.parentChainId === sourceChainId
 }
