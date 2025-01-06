@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
+import { isAddress } from 'ethers/lib/utils.js'
 
 import { useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
@@ -237,7 +238,11 @@ export function TransferPanelMain() {
   const { updateErc20ParentBalances, updateErc20ChildBalances } = useBalances()
 
   const { updateUsdcBalances } = useUpdateUsdcBalances({
-    walletAddress: destinationAddressOrWalletAddress
+    walletAddress:
+      destinationAddressOrWalletAddress &&
+      isAddress(destinationAddressOrWalletAddress)
+        ? destinationAddressOrWalletAddress
+        : undefined
   })
 
   useEffect(() => {

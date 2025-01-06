@@ -1,5 +1,4 @@
-import { useCallback, useMemo } from 'react'
-import { isAddress } from 'ethers/lib/utils.js'
+import { useCallback } from 'react'
 import { Address } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
@@ -11,11 +10,13 @@ import { isNetwork } from '../../util/networks'
 import { useBalances } from '../useBalances'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-export async function getChildUsdcAddress([
-  _parentUsdcAddress,
+export async function getChildUsdcAddress({
   parentChainId,
   childChainId
-]: [Address, number, number]) {
+}: {
+  parentChainId: number
+  childChainId: number
+}) {
   const {
     isEthereumMainnet: isParentEthereumMainnet,
     isSepolia: isParentSepolia
@@ -29,84 +30,75 @@ export async function getChildUsdcAddress([
     return CommonAddress.ArbitrumSepolia.USDC
   }
 
-  const _parentProvider = getProviderForChainId(parentChainId)
-  const _childProvider = getProviderForChainId(childChainId)
+  const parentUsdcAddress = getParentUsdcAddress(parentChainId)
+  const parentProvider = getProviderForChainId(parentChainId)
+  const childProvider = getProviderForChainId(childChainId)
+
+  if (!parentUsdcAddress) {
+    return
+  }
 
   return getL2ERC20Address({
-    erc20L1Address: _parentUsdcAddress,
-    l1Provider: _parentProvider,
-    l2Provider: _childProvider
+    erc20L1Address: parentUsdcAddress,
+    l1Provider: parentProvider,
+    l2Provider: childProvider
   })
 }
 
-export function useParentUsdcAddress() {
-  const [networks] = useNetworks()
-  const { parentChain } = useNetworksRelationship(networks)
+export function getParentUsdcAddress(parentChainId: number) {
+  const {
+    isEthereumMainnet: isParentEthereumMainnet,
+    isSepolia: isParentSepolia,
+    isArbitrumOne: isParentArbitrumOne,
+    isArbitrumSepolia: isParentArbitrumSepolia
+  } = isNetwork(parentChainId)
 
-  return useMemo(() => {
-    const {
-      isEthereumMainnet: isParentEthereumMainnet,
-      isSepolia: isParentSepolia,
-      isArbitrumOne: isParentArbitrumOne,
-      isArbitrumSepolia: isParentArbitrumSepolia
-    } = isNetwork(parentChain.id)
+  if (isParentEthereumMainnet) {
+    return CommonAddress.Ethereum.USDC
+  }
 
-    if (isParentEthereumMainnet) {
-      return CommonAddress.Ethereum.USDC
-    }
+  if (isParentSepolia) {
+    return CommonAddress.Sepolia.USDC
+  }
 
-    if (isParentSepolia) {
-      return CommonAddress.Sepolia.USDC
-    }
+  if (isParentArbitrumOne) {
+    return CommonAddress.ArbitrumOne.USDC
+  }
 
-    if (isParentArbitrumOne) {
-      return CommonAddress.ArbitrumOne.USDC
-    }
-
-    if (isParentArbitrumSepolia) {
-      return CommonAddress.ArbitrumSepolia.USDC
-    }
-  }, [parentChain.id])
+  if (isParentArbitrumSepolia) {
+    return CommonAddress.ArbitrumSepolia.USDC
+  }
 }
 
 export function useUpdateUsdcBalances({
   walletAddress
 }: {
-  walletAddress: string | undefined
+  walletAddress: Address | undefined
 }) {
   const [networks] = useNetworks()
   const { parentChain, childChain } = useNetworksRelationship(networks)
 
-  const _walletAddress: Address | undefined =
-    walletAddress && isAddress(walletAddress) ? walletAddress : undefined
   const {
     updateErc20ParentBalances: updateErc20ParentBalance,
     updateErc20ChildBalances: updateErc20ChildBalance
   } = useBalances({
-    parentWalletAddress: _walletAddress,
-    childWalletAddress: _walletAddress
+    parentWalletAddress: walletAddress,
+    childWalletAddress: walletAddress
   })
 
-  const parentUsdcAddress = useParentUsdcAddress()
-
   // we don't have native USDC addresses for Orbit chains, we need to fetch it
-  const {
-    data: childUsdcAddress,
-    error, // can be unbridged to Orbit chain so no address to be found
-    isLoading
-  } = useSWRImmutable(
-    typeof parentUsdcAddress !== 'undefined'
-      ? [
-          parentUsdcAddress,
-          parentChain.id,
-          childChain.id,
-          'getChildUsdcAddress'
-        ]
-      : null,
-    getChildUsdcAddress
+  const { data: childUsdcAddress, isLoading } = useSWRImmutable(
+    [parentChain.id, childChain.id, 'getChildUsdcAddress'],
+    ([parentChainId, childChainId]) =>
+      getChildUsdcAddress({
+        parentChainId,
+        childChainId
+      })
   )
 
   const updateUsdcBalances = useCallback(() => {
+    const parentUsdcAddress = getParentUsdcAddress(parentChain.id)
+
     // USDC is not native for the selected networks, do nothing
     if (!parentUsdcAddress) {
       return
@@ -124,7 +116,7 @@ export function useUpdateUsdcBalances({
   }, [
     isLoading,
     childUsdcAddress,
-    parentUsdcAddress,
+    parentChain.id,
     updateErc20ChildBalance,
     updateErc20ParentBalance
   ])
