@@ -7,8 +7,8 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import {
-  childChainUsdcAddressFetcher,
-  useParentChainUsdcAddress
+  getChildUsdcAddress,
+  useParentUsdcAddress
 } from '../CCTP/useUpdateUsdcBalances'
 import { useNetworks } from '../useNetworks'
 import { orbitMainnets, orbitTestnets } from '../../util/orbitChainsList'
@@ -26,7 +26,7 @@ const xaiTestnetChainId = 37714555429
 const polterTestnetChainId = 631571
 const geistMainnetChainId = 63157
 
-describe('useParentChainUsdcAddress', () => {
+describe('useParentUsdcAddress', () => {
   const mockedUseNetworks = jest.mocked(useNetworks)
 
   beforeAll(() => {
@@ -66,7 +66,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(CommonAddress.Ethereum.USDC)
   })
 
@@ -81,7 +81,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(CommonAddress.Ethereum.USDC)
   })
 
@@ -96,7 +96,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(CommonAddress.Sepolia.USDC)
   })
 
@@ -111,7 +111,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(CommonAddress.Sepolia.USDC)
   })
 
@@ -128,7 +128,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(CommonAddress.ArbitrumSepolia.USDC)
   })
 
@@ -145,7 +145,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(CommonAddress.ArbitrumSepolia.USDC)
   })
 
@@ -162,7 +162,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(undefined)
   })
 
@@ -179,7 +179,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(undefined)
   })
 
@@ -196,7 +196,7 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(undefined)
   })
 
@@ -213,14 +213,14 @@ describe('useParentChainUsdcAddress', () => {
       jest.fn()
     ])
 
-    const { result } = renderHook(useParentChainUsdcAddress)
+    const { result } = renderHook(useParentUsdcAddress)
     expect(result.current).toEqual(undefined)
   })
 })
 
-describe('childChainUsdcAddressFetcher', () => {
+describe('getChildUsdcAddress', () => {
   it('should return native USDC address on Arbitrum One when parent USDC address is native USDC on Ethereum, parent chain is Ethereum, and child chain is Arbitrum One', async () => {
-    const result = await childChainUsdcAddressFetcher([
+    const result = await getChildUsdcAddress([
       CommonAddress.Ethereum.USDC,
       ChainId.Ethereum,
       ChainId.ArbitrumOne
@@ -231,7 +231,7 @@ describe('childChainUsdcAddressFetcher', () => {
   })
 
   it('should return native USDC address on Arbitrum Sepolia when parent USDC address is native USDC on Sepolia, parent chain is Sepolia, and child chain is Arbitrum Sepolia', async () => {
-    const result = await childChainUsdcAddressFetcher([
+    const result = await getChildUsdcAddress([
       CommonAddress.Sepolia.USDC,
       ChainId.Sepolia,
       ChainId.ArbitrumSepolia
@@ -246,7 +246,7 @@ describe('childChainUsdcAddressFetcher', () => {
       .mocked(getL2ERC20Address)
       .mockResolvedValueOnce('0xBd8C9bFBB225bFF89C7884060338150dAA626Edb')
 
-    const result = await childChainUsdcAddressFetcher([
+    const result = await getChildUsdcAddress([
       CommonAddress.ArbitrumSepolia.USDC,
       ChainId.ArbitrumSepolia,
       xaiTestnetChainId

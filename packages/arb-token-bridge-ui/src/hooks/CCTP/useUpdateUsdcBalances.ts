@@ -11,8 +11,8 @@ import { isNetwork } from '../../util/networks'
 import { useBalances } from '../useBalances'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-export async function childChainUsdcAddressFetcher([
-  _parentChainUsdcAddress,
+export async function getChildUsdcAddress([
+  _parentUsdcAddress,
   parentChainId,
   childChainId
 ]: [Address, number, number]) {
@@ -29,17 +29,17 @@ export async function childChainUsdcAddressFetcher([
     return CommonAddress.ArbitrumSepolia.USDC
   }
 
-  const _parentChainProvider = getProviderForChainId(parentChainId)
-  const _childChainProvider = getProviderForChainId(childChainId)
+  const _parentProvider = getProviderForChainId(parentChainId)
+  const _childProvider = getProviderForChainId(childChainId)
 
   return getL2ERC20Address({
-    erc20L1Address: _parentChainUsdcAddress,
-    l1Provider: _parentChainProvider,
-    l2Provider: _childChainProvider
+    erc20L1Address: _parentUsdcAddress,
+    l1Provider: _parentProvider,
+    l2Provider: _childProvider
   })
 }
 
-export function useParentChainUsdcAddress() {
+export function useParentUsdcAddress() {
   const [networks] = useNetworks()
   const { parentChain } = useNetworksRelationship(networks)
 
@@ -87,28 +87,28 @@ export function useUpdateUsdcBalances({
     childWalletAddress: _walletAddress
   })
 
-  const parentChainUsdcAddress = useParentChainUsdcAddress()
+  const parentUsdcAddress = useParentUsdcAddress()
 
   // we don't have native USDC addresses for Orbit chains, we need to fetch it
   const {
-    data: childChainUsdcAddress,
+    data: childUsdcAddress,
     error, // can be unbridged to Orbit chain so no address to be found
     isLoading
   } = useSWRImmutable(
-    typeof parentChainUsdcAddress !== 'undefined'
+    typeof parentUsdcAddress !== 'undefined'
       ? [
-          parentChainUsdcAddress,
+          parentUsdcAddress,
           parentChain.id,
           childChain.id,
-          'fetchChildChainUsdcAddress'
+          'getChildUsdcAddress'
         ]
       : null,
-    childChainUsdcAddressFetcher
+    getChildUsdcAddress
   )
 
   const updateUsdcBalances = useCallback(() => {
     // USDC is not native for the selected networks, do nothing
-    if (!parentChainUsdcAddress) {
+    if (!parentUsdcAddress) {
       return
     }
 
@@ -116,15 +116,15 @@ export function useUpdateUsdcBalances({
       return
     }
 
-    updateErc20ParentBalance([parentChainUsdcAddress.toLowerCase()])
+    updateErc20ParentBalance([parentUsdcAddress.toLowerCase()])
 
-    if (childChainUsdcAddress) {
-      updateErc20ChildBalance([childChainUsdcAddress.toLowerCase()])
+    if (childUsdcAddress) {
+      updateErc20ChildBalance([childUsdcAddress.toLowerCase()])
     }
   }, [
     isLoading,
-    childChainUsdcAddress,
-    parentChainUsdcAddress,
+    childUsdcAddress,
+    parentUsdcAddress,
     updateErc20ChildBalance,
     updateErc20ParentBalance
   ])
