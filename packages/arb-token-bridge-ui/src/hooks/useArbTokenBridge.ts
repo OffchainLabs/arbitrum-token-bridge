@@ -213,6 +213,8 @@ export const useArbTokenBridge = (
           symbol,
           address: l1Address,
           l2Address: address.toLowerCase(),
+          parentBridgeAddress: bridgeInfo[l1NetworkID]?.originBridgeAddress,
+          childBridgeAddress: bridgeInfo[l1NetworkID]?.destBridgeAddress,
           decimals,
           logoURI,
           listIds: new Set([listId])
