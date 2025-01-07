@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
-import { isAddress } from 'ethers/lib/utils.js'
+import { isAddress } from 'ethers/lib/utils'
 
 import { useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
