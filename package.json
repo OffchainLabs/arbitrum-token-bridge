@@ -33,5 +33,8 @@
   ],
   "devDependencies": {
     "audit-ci": "^6.3.0"
+  },
+  "dependencies": {
+    "swr": "^2.3.0"
   }
 }
