@@ -183,7 +183,7 @@ function TokensPanel({
     childChainProvider,
     parentChain,
     isDepositMode,
-    isTeleportMode,
+    isDepositOrTeleportMode,
     isWithdrawalMode
   } = useNetworksRelationship(networks)
   const {
@@ -211,8 +211,6 @@ function TokensPanel({
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const getBalance = useCallback(
     (address: string) => {

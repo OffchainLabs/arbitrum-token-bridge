@@ -27,7 +27,8 @@ export const useTransferDisabledDialogStore =
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
-  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
+  const { isDepositOrTeleportMode, isTeleportMode } =
+    useNetworksRelationship(networks)
   const { app } = useAppState()
   const { selectedToken } = app
   const {
@@ -47,8 +48,6 @@ export function TransferDisabledDialog() {
   const [l2ChainIdForTeleport, setL2ChainIdForTeleport] = useState<
     number | undefined
   >()
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {

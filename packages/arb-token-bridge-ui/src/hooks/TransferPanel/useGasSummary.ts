@@ -40,9 +40,8 @@ export function useGasSummary(): UseGasSummaryResult {
   const {
     childChainProvider,
     parentChainProvider,
-    isDepositMode,
     isWithdrawalMode,
-    isTeleportMode
+    isDepositOrTeleportMode
   } = useNetworksRelationship(networks)
 
   const [{ amount }] = useArbQueryParams()
@@ -64,8 +63,6 @@ export function useGasSummary(): UseGasSummaryResult {
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
 
   const balance = useBalanceOnSourceChain(token)
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({

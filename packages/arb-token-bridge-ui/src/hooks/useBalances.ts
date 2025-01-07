@@ -14,13 +14,11 @@ export function useBalances({
   childWalletAddress?: Address
 } = {}) {
   const [networks] = useNetworks()
-  const { childChain, parentChain, isDepositMode, isTeleportMode } =
+  const { childChain, parentChain, isDepositOrTeleportMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const [{ destinationAddress }] = useArbQueryParams()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const _parentWalletAddress =
     parentWalletAddress ??

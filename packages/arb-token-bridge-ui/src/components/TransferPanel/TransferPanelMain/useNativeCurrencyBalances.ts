@@ -11,14 +11,12 @@ export function useNativeCurrencyBalances(): {
   destinationBalance: BigNumber | null
 } {
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode, isTeleportMode } =
+  const { childChainProvider, isDepositOrTeleportMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const { ethParentBalance, erc20ParentBalances, ethChildBalance } =
     useBalances()
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   return useMemo(() => {
     if (!nativeCurrency.isCustom) {

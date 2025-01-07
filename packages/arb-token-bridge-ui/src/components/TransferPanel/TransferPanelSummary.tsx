@@ -54,8 +54,12 @@ function TotalGasFees() {
   } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isWithdrawalMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChainProvider,
+    parentChainProvider,
+    isWithdrawalMode,
+    isDepositOrTeleportMode
+  } = useNetworksRelationship(networks)
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -126,7 +130,7 @@ function TotalGasFees() {
    */
   return (
     <>
-      {!isWithdrawalMode && (
+      {isDepositOrTeleportMode && (
         <span className="tabular-nums">
           {formatAmount(estimatedParentChainGasFees, {
             symbol: parentChainNativeCurrency.symbol

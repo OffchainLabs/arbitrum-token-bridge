@@ -11,8 +11,9 @@ type UseNetworksRelationshipState = {
   parentChain: Chain
   parentChainProvider: StaticJsonRpcProvider
   isDepositMode: boolean
-  isWithdrawalMode: boolean
   isTeleportMode: boolean
+  isWithdrawalMode: boolean
+  isDepositOrTeleportMode: boolean
 }
 export function useNetworksRelationship({
   sourceChain,
@@ -38,8 +39,9 @@ export function useNetworksRelationship({
         parentChain: sourceChain,
         parentChainProvider: sourceChainProvider,
         isDepositMode: _isDepositMode,
+        isTeleportMode,
         isWithdrawalMode: false,
-        isTeleportMode
+        isDepositOrTeleportMode: true
       }
     }
 
@@ -49,8 +51,9 @@ export function useNetworksRelationship({
       parentChain: destinationChain,
       parentChainProvider: destinationChainProvider,
       isDepositMode: _isDepositMode,
+      isTeleportMode,
       isWithdrawalMode: true,
-      isTeleportMode
+      isDepositOrTeleportMode: false
     }
   }, [
     sourceChain,

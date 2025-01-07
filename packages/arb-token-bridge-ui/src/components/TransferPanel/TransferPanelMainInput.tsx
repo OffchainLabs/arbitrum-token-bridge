@@ -31,8 +31,7 @@ function MaxButton({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
+  const { isDepositOrTeleportMode } = useNetworksRelationship(networks)
 
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -86,9 +85,8 @@ function SourceChainTokenBalance({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode, isTeleportMode, childChainProvider } =
+  const { isDepositOrTeleportMode, childChainProvider } =
     useNetworksRelationship(networks)
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
   const selectedTokenDecimals = useSelectedTokenDecimals()
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()

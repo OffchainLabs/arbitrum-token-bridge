@@ -17,12 +17,8 @@ export function useMaxAmount() {
   } = useAppState()
   const selectedTokenBalances = useSelectedTokenBalances()
   const [networks] = useNetworks()
-  const {
-    childChainProvider,
-    isDepositMode,
-    isTeleportMode,
-    isWithdrawalMode
-  } = useNetworksRelationship(networks)
+  const { childChainProvider, isWithdrawalMode, isDepositOrTeleportMode } =
+    useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
@@ -31,8 +27,6 @@ export function useMaxAmount() {
     useGasSummary()
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const nativeCurrencyMaxAmount = useMemo(() => {
     const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance

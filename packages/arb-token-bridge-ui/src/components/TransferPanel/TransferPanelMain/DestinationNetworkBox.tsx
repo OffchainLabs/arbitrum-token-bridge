@@ -37,9 +37,8 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrency = useNativeCurrency({
     provider: networks.destinationChainProvider
   })
-  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
+  const { isDepositMode, isDepositOrTeleportMode } =
+    useNetworksRelationship(networks)
 
   if (nativeCurrency.isCustom) {
     return (
@@ -85,8 +84,12 @@ function DestinationNetworkBalance() {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode, isTeleportMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    isDepositMode,
+    isDepositOrTeleportMode
+  } = useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
 
   const { erc20ChildBalances } = useBalances()
@@ -96,8 +99,6 @@ function DestinationNetworkBalance() {
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const isCctpTransfer = useIsCctpTransfer()
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   if (selectedToken) {
     return (

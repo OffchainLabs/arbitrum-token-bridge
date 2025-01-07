@@ -305,13 +305,10 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
     childChain,
     childChainProvider,
     parentChain,
-    isDepositMode,
-    isTeleportMode
+    isDepositOrTeleportMode
   } = useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 

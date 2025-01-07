@@ -126,10 +126,10 @@ export function TransferPanel() {
       parentChain,
       parentChainProvider,
       isDepositMode,
+      isDepositOrTeleportMode,
       isTeleportMode
     }
   } = useLatest(useNetworksRelationship(latestNetworks.current))
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()

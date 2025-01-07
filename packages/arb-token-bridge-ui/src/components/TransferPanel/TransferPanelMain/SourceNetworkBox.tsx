@@ -78,7 +78,7 @@ export function SourceNetworkBox() {
     useAmount2InputVisibility()
 
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode, isTeleportMode } =
+  const { childChain, childChainProvider, isDepositOrTeleportMode } =
     useNetworksRelationship(networks)
   const {
     app: { selectedToken }
@@ -97,8 +97,6 @@ export function SourceNetworkBox() {
     useSourceChainNativeCurrencyDecimals()
 
   const isCctpTransfer = useIsCctpTransfer()
-
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX

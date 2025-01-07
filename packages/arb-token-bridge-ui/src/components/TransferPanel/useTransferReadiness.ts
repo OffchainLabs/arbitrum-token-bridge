@@ -131,10 +131,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childChain,
     childChainProvider,
     parentChain,
-    isDepositMode,
-    isTeleportMode
+    isTeleportMode,
+    isDepositOrTeleportMode
   } = useNetworksRelationship(networks)
-  const isDepositOrTeleportMode = isDepositMode || isTeleportMode
 
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
