@@ -95,11 +95,7 @@ function DestinationNetworkBalance() {
     return (
       <>
         <TokenBalance
-          balance={
-            isDepositMode
-              ? selectedTokenBalances.childBalance
-              : selectedTokenBalances.parentBalance
-          }
+          balance={selectedTokenBalances.destinationBalance}
           on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
           forToken={selectedToken}
           tokenSymbolOverride={
