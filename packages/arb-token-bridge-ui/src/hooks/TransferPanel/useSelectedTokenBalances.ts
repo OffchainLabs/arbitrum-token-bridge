@@ -98,14 +98,16 @@ export function useSelectedTokenBalances(): Balances {
     }
 
     if (isDepositMode) {
-      result.sourceBalance = parentBalance
-      result.destinationBalance = childBalance
-    } else {
-      result.sourceBalance = childBalance
-      result.destinationBalance = parentBalance
+      return {
+        sourceBalance: parentBalance,
+        destinationBalance: childBalance
+      }
     }
 
-    return result
+    return {
+      sourceBalance: childBalance,
+      destinationBalance: parentBalance
+    }
   }, [
     erc20ParentBalances,
     erc20ChildBalances,
