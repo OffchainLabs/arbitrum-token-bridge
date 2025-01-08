@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { isAddress } from 'ethers/lib/utils.js'
+import { Address, isAddress } from 'viem'
 
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { getL2ERC20Address } from '../../util/TokenUtils'
@@ -7,7 +7,6 @@ import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { isNetwork } from '../../util/networks'
 import { useBalances } from '../useBalances'
-import { Address } from 'wagmi'
 
 export function useUpdateUSDCBalances({
   walletAddress

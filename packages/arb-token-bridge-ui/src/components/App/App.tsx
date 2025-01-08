@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-
-import { useAccount, useNetwork, WagmiConfig, useDisconnect } from 'wagmi'
+import { useAccount, useDisconnect, WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -56,6 +56,8 @@ const rainbowkitTheme = merge(darkTheme(), {
     body: 'Roboto, sans-serif'
   }
 } as Theme)
+
+const queryClient = new QueryClient()
 
 const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
@@ -231,7 +233,7 @@ function AppContent() {
 const searchParams = new URLSearchParams(window.location.search)
 const targetChainKey = searchParams.get('sourceChain')
 
-const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
+const { wagmiConfig, rainbowKitProviderProps } = getProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.
 //
@@ -247,16 +249,17 @@ Object.keys(localStorage).forEach(key => {
 })
 
 function ConnectedChainSyncer() {
-  const { address } = useAccount()
+  const { address, chain } = useAccount()
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
   const { disconnect } = useDisconnect({
-    onSettled: onDisconnectHandler
+    mutation: {
+      onSettled: onDisconnectHandler
+    }
   })
 
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
-  const { chain } = useNetwork()
 
   const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {
@@ -343,17 +346,19 @@ export default function App() {
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
-            <ConnectedChainSyncer />
-            <AppContextProvider>
-              <AppContent />
-            </AppContextProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider
+              theme={rainbowkitTheme}
+              {...rainbowKitProviderProps}
+            >
+              <ConnectedChainSyncer />
+              <AppContextProvider>
+                <AppContent />
+              </AppContextProvider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
       </ArbQueryParamProvider>
     </Provider>
   )

@@ -6,7 +6,7 @@ import {
   useRef,
   useState
 } from 'react'
-import { Chain } from 'wagmi'
+import { Chain } from 'wagmi/chains'
 import { useDebounce } from '@uidotdev/usehooks'
 import {
   ChevronDownIcon,

@@ -1,5 +1,4 @@
-import { Chain } from 'wagmi'
-import { mainnet, arbitrum } from 'wagmi/chains'
+import { mainnet, arbitrum, Chain } from 'wagmi/chains'
 
 import {
   chainToWagmiChain,

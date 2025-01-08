@@ -1,8 +1,10 @@
-import { createClient, configureChains } from 'wagmi'
-import { mainnet, arbitrum } from '@wagmi/core/chains'
-import { publicProvider } from 'wagmi/providers/public'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
+import { mainnet, arbitrum } from 'wagmi/chains'
+import { Chain } from '@rainbow-me/rainbowkit'
+import {
+  connectorsForWallets,
+  getDefaultConfig,
+  getDefaultWallets
+} from '@rainbow-me/rainbowkit'
 import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import {
@@ -21,6 +23,8 @@ import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
+import { createConfig } from 'wagmi'
+import { _chains } from '@rainbow-me/rainbowkit/dist/config/getDefaultConfig'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -42,7 +46,7 @@ const defaultChains = [
   holesky
 ]
 
-const chainList = isTestingEnvironment
+const chainList: Chain[] = isTestingEnvironment
   ? [
       ...defaultChains,
       // Orbit chains
@@ -126,42 +130,46 @@ function getChains(targetChainKey: TargetChainKey) {
   return [...target, ...others]
 }
 
+// [
+//   customInfuraProvider(),
+//   publicProvider(),
+//   jsonRpcProvider({
+//     rpc: chain => ({
+//       http: rpcURLs[chain.id]!
+//     })
+//   })
+// ]
+
 export function getProps(targetChainKey: string | null) {
-  const { chains, provider } = configureChains(
+  const config = getDefaultConfig({
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-    getChains(sanitizeTargetChainKey(targetChainKey)),
-    [
-      customInfuraProvider(),
-      publicProvider(),
-      jsonRpcProvider({
-        rpc: chain => ({
-          http: rpcURLs[chain.id]!
-        })
-      })
-    ]
-  )
-
-  const { wallets } = getDefaultWallets({
     ...appInfo,
-    chains
+    chains: getChains(
+      sanitizeTargetChainKey(targetChainKey)
+    ) as unknown as _chains
   })
 
-  wallets[0]?.wallets.push(okxWallet({ chains, projectId }))
+  const { wallets } = getDefaultWallets()
 
-  const connectors = connectorsForWallets([
-    ...wallets,
-    {
-      groupName: 'More',
-      wallets: [trustWallet({ chains, projectId })]
-    }
-  ])
+  wallets[0]?.wallets.push(okxWallet)
 
-  const client = createClient({
-    autoConnect: true,
+  const connectors = connectorsForWallets(
+    [
+      ...wallets,
+      {
+        groupName: 'More',
+        wallets: [trustWallet]
+      }
+    ],
+    appInfo
+  )
+
+  const wagmiConfig = createConfig({
+    chains,
     connectors,
-    provider
+    ...config
   })
 
   return {
@@ -169,8 +177,6 @@ export function getProps(targetChainKey: string | null) {
       appInfo,
       chains
     },
-    wagmiConfigProps: {
-      client
-    }
+    wagmiConfig
   }
 }

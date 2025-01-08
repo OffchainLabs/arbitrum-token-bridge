@@ -1,4 +1,4 @@
-import { Chain } from 'wagmi'
+import { Chain } from 'wagmi/chains'
 import * as chains from 'wagmi/chains'
 import {
   ChainId,
