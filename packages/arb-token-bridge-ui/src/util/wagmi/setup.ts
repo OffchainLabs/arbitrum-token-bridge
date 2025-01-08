@@ -6,8 +6,7 @@ import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import {
   trustWallet,
   okxWallet,
-  rabbyWallet,
-  injectedWallet
+  rabbyWallet
 } from '@rainbow-me/rainbowkit/wallets'
 
 import {
@@ -159,11 +158,7 @@ export function getProps(targetChainKey: string | null) {
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        rabbyWallet({ chains }),
-        injectedWallet({ chains })
-      ]
+      wallets: [trustWallet({ chains, projectId }), rabbyWallet({ chains })]
     }
   ])
 
