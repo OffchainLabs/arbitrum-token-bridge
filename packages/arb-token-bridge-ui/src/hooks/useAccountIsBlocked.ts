@@ -66,7 +66,7 @@ export function useAccountIsBlocked() {
       return null
     }
 
-    return [address.toLowerCase(), 'useAccountIsBlocked']
+    return [address.toLowerCase(), 'useAccountIsBlocked'] as const
   }, [address])
 
   const { data: isBlocked } = useSWRImmutable<boolean>(
