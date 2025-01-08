@@ -200,7 +200,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isCctp,
     isDepositMode,
     parentChainProvider,
-    token,
+    token?.address,
+    token?.parentBridgeAddress,
+    token?.childBridgeAddress,
     sourceChain.id,
     destinationChain.id,
     isTeleportMode
