@@ -117,7 +117,6 @@ export const AdvancedSettings = () => {
     )
   }, [
     initialDestinationAddressFromQueryParams,
-    isLoadingAccountType,
     isEOA,
     setAdvancedSettingsCollapsed
   ])
