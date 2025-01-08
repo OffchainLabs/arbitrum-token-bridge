@@ -7,10 +7,6 @@ import {
 } from '../CCTP/useUpdateUsdcBalances'
 import { getL2ERC20Address } from '../../util/TokenUtils'
 
-jest.mock('../useNetworks', () => ({
-  useNetworks: jest.fn()
-}))
-
 jest.mock('../../util/TokenUtils', () => ({
   getL2ERC20Address: jest.fn()
 }))
