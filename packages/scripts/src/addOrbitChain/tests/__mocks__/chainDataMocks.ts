@@ -41,9 +41,6 @@ https://explorer.example.com
 ### Parent chain ID
 1
 
-### confirmPeriodBlocks
-100
-
 ### Native token address on Parent Chain
 0x0000000000000000000000000000000000000001
 
@@ -56,20 +53,8 @@ TST
 ### Native token logo
 ![token-logo](https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5)
 
-### bridge
-0x0000000000000000000000000000000000000002
-
-### inbox
-0x0000000000000000000000000000000000000003
-
-### outbox
-0x0000000000000000000000000000000000000004
-
 ### rollup
 0x0000000000000000000000000000000000000005
-
-### sequencerInbox
-0x0000000000000000000000000000000000000006
 
 ### Parent Custom Gateway
 0x0000000000000000000000000000000000000007
@@ -98,7 +83,7 @@ TST
 ### Child Gateway Router
 0x0000000000000000000000000000000000000010
 
-### Child Multicall
+### Child MultiCall
 0x0000000000000000000000000000000000000011
 
 ### Child WETH
@@ -121,17 +106,12 @@ export const mockRawData = {
   rpcUrl: "https://rpc.example.com",
   explorerUrl: "https://explorer.example.com",
   parentChainId: "1",
-  confirmPeriodBlocks: "100",
   nativeTokenAddress: "0x0000000000000000000000000000000000000001",
   nativeTokenName: "Test Token",
   nativeTokenSymbol: "TST",
   nativeTokenLogo:
     "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
-  bridge: "0x0000000000000000000000000000000000000002",
-  inbox: "0x0000000000000000000000000000000000000003",
-  outbox: "0x0000000000000000000000000000000000000004",
   rollup: "0x0000000000000000000000000000000000000005",
-  sequencerInbox: "0x0000000000000000000000000000000000000006",
   parentCustomGateway: "0x0000000000000000000000000000000000000007",
   parentErc20Gateway: "0x0000000000000000000000000000000000000008",
   parentGatewayRouter: "0x0000000000000000000000000000000000000009",
@@ -176,17 +156,12 @@ export const mockIncomingChainData: IncomingChainData = {
   rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc",
   explorerUrl: "https://testexplorer.com",
   parentChainId: "421614",
-  confirmPeriodBlocks: "150",
   nativeTokenAddress: "0x0000000000000000000000000000000000000006",
   nativeTokenName: "Test Token",
   nativeTokenSymbol: "TEST",
   nativeTokenLogo:
     "https://github.com/user-attachments/assets/bb30cba1-242f-49a3-95bd-57e5bdee61e5",
-  bridge: "0x0000000000000000000000000000000000000001",
-  inbox: "0x0000000000000000000000000000000000000002",
-  outbox: "0x0000000000000000000000000000000000000003",
   rollup: "0xeedE9367Df91913ab149e828BDd6bE336df2c892",
-  sequencerInbox: "0x0000000000000000000000000000000000000005",
   parentGatewayRouter: "0x0000000000000000000000000000000000000009",
   childGatewayRouter: "0x0000000000000000000000000000000000000016",
   parentErc20Gateway: "0x0000000000000000000000000000000000000008",
@@ -199,6 +174,8 @@ export const mockIncomingChainData: IncomingChainData = {
   childWeth: "0x0000000000000000000000000000000000000019",
   parentMultiCall: "0x0000000000000000000000000000000000000010",
   childMultiCall: "0x0000000000000000000000000000000000000017",
+  fastWithdrawalMinutes: "15",
+  fastWithdrawalActive: true,
 };
 
 export const mockOrbitChain: OrbitChain = {
@@ -245,9 +222,9 @@ export const mockOrbitChain: OrbitChain = {
     nativeTokenData: {
       name: "Xai",
       symbol: "XAI",
-      decimals: 18,
       logoUrl: "/images/XaiLogo.svg",
     },
+    fastWithdrawalTime: 900000,
   },
 };
 

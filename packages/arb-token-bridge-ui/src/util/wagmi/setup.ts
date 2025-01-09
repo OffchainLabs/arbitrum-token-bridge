@@ -1,6 +1,7 @@
 import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
+import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
 
@@ -16,7 +17,7 @@ import {
   baseSepolia
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
+import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
@@ -131,7 +132,15 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [customInfuraProvider(), publicProvider()]
+    [
+      customInfuraProvider(),
+      publicProvider(),
+      jsonRpcProvider({
+        rpc: chain => ({
+          http: rpcURLs[chain.id]!
+        })
+      })
+    ]
   )
 
   const { wallets } = getDefaultWallets({
@@ -139,14 +148,13 @@ export function getProps(targetChainKey: string | null) {
     chains
   })
 
+  wallets[0]?.wallets.push(okxWallet({ chains, projectId }))
+
   const connectors = connectorsForWallets([
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        okxWallet({ chains, projectId })
-      ]
+      wallets: [trustWallet({ chains, projectId })]
     }
   ])
 

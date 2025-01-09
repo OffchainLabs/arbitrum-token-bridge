@@ -4,10 +4,10 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  forwardRef
 } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { AutoSizer, Column, Table } from 'react-virtualized'
+import { Column, Table } from 'react-virtualized'
 import {
   ExclamationCircleIcon,
   PlusCircleIcon
@@ -15,11 +15,7 @@ import {
 import dayjs from 'dayjs'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import {
-  getStandardizedDate,
-  getStandardizedTime,
-  isTokenDeposit
-} from '../../state/app/utils'
+import { isTokenDeposit } from '../../state/app/utils'
 import {
   ChainPair,
   UseTransactionHistoryResult
@@ -30,7 +26,6 @@ import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
-import { Address } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
@@ -50,21 +45,25 @@ export const BatchTransferNativeTokenTooltip = ({
   )
 }
 
-export const ContentWrapper = ({
-  children,
-  className = ''
-}: PropsWithChildren<{ className?: string }>) => {
+export const ContentWrapper = forwardRef<
+  HTMLDivElement,
+  PropsWithChildren<{ className?: string }>
+>(({ children, className = '', ...props }, ref) => {
   return (
     <div
+      ref={ref}
       className={twMerge(
-        'w-full flex-col items-center rounded bg-[#191919] p-4 text-center text-xs text-white',
+        'w-full flex-col items-center rounded px-3 py-2 text-center text-sm text-white lg:text-left',
         className
       )}
+      {...props}
     >
       {children}
     </div>
   )
-}
+})
+
+ContentWrapper.displayName = 'ContentWrapper'
 
 const TableHeader = ({
   children,
@@ -131,7 +130,6 @@ const FailedChainPairsTooltip = ({
 }
 
 type TransactionHistoryTableProps = UseTransactionHistoryResult & {
-  address: Address | undefined
   selectedTabIndex: number
   oldestTxTimeAgoString: string
 }
@@ -141,7 +139,6 @@ export const TransactionHistoryTable = (
 ) => {
   const {
     transactions,
-    address,
     loading,
     completed,
     error,
@@ -151,14 +148,29 @@ export const TransactionHistoryTable = (
     oldestTxTimeAgoString
   } = props
 
-  const contentAboveTable = useRef<HTMLDivElement>(null)
-
+  const TABLE_HEADER_HEIGHT = 52
+  const TABLE_ROW_HEIGHT = 60
   const isTxHistoryEmpty = transactions.length === 0
   const isPendingTab = selectedTabIndex === 0
 
   const paused = !loading && !completed
 
-  const [tableHeight, setTableHeight] = useState(0)
+  const contentWrapperRef = useRef<HTMLDivElement | null>(null)
+  const tableRef = useRef<Table | null>(null)
+
+  const tableHeight = useMemo(() => {
+    if (window.innerWidth < 768) {
+      return TABLE_ROW_HEIGHT * (transactions.length + 1) + TABLE_HEADER_HEIGHT
+    }
+    const SIDE_PANEL_HEADER_HEIGHT = 125
+    const viewportHeight = window.innerHeight
+    const contentWrapperOffsetTop = contentWrapperRef.current?.offsetTop ?? 0
+    return Math.max(
+      // we subtract a little padding at the end so that the table doesn't end at the edge of the screen
+      viewportHeight - contentWrapperOffsetTop - SIDE_PANEL_HEADER_HEIGHT,
+      0
+    )
+  }, [contentWrapperRef.current?.offsetTop, transactions.length])
 
   const pendingTokenDepositsCount = useMemo(() => {
     return transactions.filter(tx => isTokenDeposit(tx) && isTxPending(tx))
@@ -169,36 +181,15 @@ export const TransactionHistoryTable = (
     return transactions.filter(isTxPending)[0]?.txId
   }, [transactions])
 
-  // TODO: look into https://www.npmjs.com/package/react-intersection-observer that could simplify this
+  // recalculate table height when tx number changes, or when user selects different tab
   useEffect(() => {
-    // Calculate table height to be passed to the React Virtualized Table
-    const currentRef = contentAboveTable.current
-    const SIDE_PANEL_HEADER_HEIGHT = 125
-
-    // Adjust the table size whenever the content above it is resized
-    const observer = new ResizeObserver(entries => {
-      if (entries[0]) {
-        const aboveHeight = entries[0].contentRect.height
-        const viewportHeight = window.innerHeight
-        const newTableHeight = Math.max(
-          // we subtract a little padding at the end so that the table doesn't end at the edge of the screen
-          viewportHeight - aboveHeight - SIDE_PANEL_HEADER_HEIGHT - 20,
-          0
-        )
-        setTableHeight(newTableHeight)
-      }
-    })
-
-    if (currentRef) {
-      observer.observe(currentRef)
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef)
-      }
-    }
-  }, [transactions.length])
+    tableRef.current?.recomputeRowHeights()
+  }, [
+    transactions.length,
+    selectedTabIndex,
+    isTxHistoryEmpty,
+    contentWrapperRef.current?.offsetTop
+  ])
 
   if (isTxHistoryEmpty) {
     return (
@@ -213,13 +204,15 @@ export const TransactionHistoryTable = (
   }
 
   return (
-    <ContentWrapper className="h-full overflow-x-auto p-0 text-left">
+    <ContentWrapper
+      ref={contentWrapperRef}
+      className="relative block h-full min-h-[1px] w-full overflow-y-auto rounded p-0 text-left md:overflow-x-hidden md:border md:border-white"
+    >
       <div
         className={twMerge(
-          'w-[960px] rounded-tr-lg px-4 pt-4',
+          'sticky left-0 w-full rounded-tr-lg pr-4 md:px-4 md:pt-4',
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
-        ref={contentAboveTable}
       >
         {loading ? (
           <div className="flex h-[28px] items-center space-x-2">
@@ -227,7 +220,7 @@ export const TransactionHistoryTable = (
             <HistoryLoader />
           </div>
         ) : (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center justify-start space-x-1">
               <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
               <span className="text-xs">
@@ -243,85 +236,81 @@ export const TransactionHistoryTable = (
         <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
       </div>
 
-      <AutoSizer disableHeight>
-        {() => (
-          <Table
-            width={960}
-            height={tableHeight}
-            rowHeight={60}
-            rowCount={transactions.length}
-            headerHeight={52}
-            headerRowRenderer={props => (
-              <div className="mx-4 flex w-[920px] border-b border-white/30 text-white">
-                {props.columns}
-              </div>
-            )}
-            className="table-auto last:border-b-0"
-            rowGetter={({ index }) => transactions[index]}
-            rowRenderer={({ index, style }) => {
-              const tx = transactions[index]
-
-              if (!tx) {
-                return null
-              }
-
-              const isLastRow = index + 1 === transactions.length
-              const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
-              const secondsPassed = dayjs().diff(dayjs(tx.createdAt), 'second')
-
-              // only blink the topmost tx, in case many txs are queued in a short amount of time
-              const isTopmostPendingTx =
-                topmostPendingTxId && topmostPendingTxId === tx.txId
-
-              return (
-                <div key={key} style={style}>
-                  <TransactionsTableRow
-                    tx={tx}
-                    className={twMerge(
-                      isLastRow && 'border-b-0',
-                      isTopmostPendingTx &&
-                        secondsPassed <= 30 &&
-                        'animate-blink bg-highlight'
-                    )}
-                    address={address}
-                  />
-                </div>
-              )
-            }}
-          >
-            <Column
-              label="time"
-              dataKey="time"
-              width={139}
-              headerRenderer={() => <TableHeader>TIME</TableHeader>}
-            />
-            <Column
-              label="token"
-              dataKey="token"
-              width={141}
-              headerRenderer={() => <TableHeader>TOKEN</TableHeader>}
-            />
-            <Column
-              label="from"
-              dataKey="from"
-              width={142}
-              headerRenderer={() => <TableHeader>FROM</TableHeader>}
-            />
-            <Column
-              label="to"
-              dataKey="to"
-              width={137}
-              headerRenderer={() => <TableHeader>TO</TableHeader>}
-            />
-            <Column
-              label="status"
-              dataKey="status"
-              width={100}
-              headerRenderer={() => <TableHeader>STATUS</TableHeader>}
-            />
-          </Table>
+      <Table
+        ref={tableRef}
+        width={960}
+        height={tableHeight}
+        rowHeight={TABLE_ROW_HEIGHT}
+        rowCount={transactions.length}
+        headerHeight={TABLE_HEADER_HEIGHT}
+        headerRowRenderer={props => (
+          <div className="flex w-[960px] border-b border-white/30 text-white md:mx-4">
+            {props.columns}
+          </div>
         )}
-      </AutoSizer>
+        className="table-auto last:border-b-0"
+        rowGetter={({ index }) => transactions[index]}
+        rowRenderer={({ index, style }) => {
+          const tx = transactions[index]
+
+          if (!tx) {
+            return null
+          }
+
+          const isLastRow = index + 1 === transactions.length
+          const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+          const secondsPassed = dayjs().diff(dayjs(tx.createdAt), 'second')
+
+          // only blink the topmost tx, in case many txs are queued in a short amount of time
+          const isTopmostPendingTx =
+            topmostPendingTxId && topmostPendingTxId === tx.txId
+
+          return (
+            <div key={key} style={style}>
+              <TransactionsTableRow
+                tx={tx}
+                className={twMerge(
+                  isLastRow && 'border-b-0',
+                  isTopmostPendingTx &&
+                    secondsPassed <= 30 &&
+                    'animate-blink bg-highlight'
+                )}
+              />
+            </div>
+          )
+        }}
+      >
+        <Column
+          label="time"
+          dataKey="time"
+          width={139}
+          headerRenderer={() => <TableHeader>TIME</TableHeader>}
+        />
+        <Column
+          label="token"
+          dataKey="token"
+          width={141}
+          headerRenderer={() => <TableHeader>TOKEN</TableHeader>}
+        />
+        <Column
+          label="from"
+          dataKey="from"
+          width={142}
+          headerRenderer={() => <TableHeader>FROM</TableHeader>}
+        />
+        <Column
+          label="to"
+          dataKey="to"
+          width={137}
+          headerRenderer={() => <TableHeader>TO</TableHeader>}
+        />
+        <Column
+          label="status"
+          dataKey="status"
+          width={100}
+          headerRenderer={() => <TableHeader>STATUS</TableHeader>}
+        />
+      </Table>
     </ContentWrapper>
   )
 }

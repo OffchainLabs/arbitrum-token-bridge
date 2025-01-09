@@ -78,8 +78,8 @@ jobs:
 
       - name: Commit changes
         run: |
-          git add packages/arb-token-bridge-ui/src/**/*
-          git add packages/arb-token-bridge-ui/public/**/*
+          git add "packages/arb-token-bridge-ui/src/**/*"
+          git add "packages/arb-token-bridge-ui/public/**/*" ":!public/images/__auto-generated/**"
           git status
           git commit -m "feat: add ${{ steps.issue.outputs.result }}"
           git push origin ${{ steps.branch.outputs.name }}

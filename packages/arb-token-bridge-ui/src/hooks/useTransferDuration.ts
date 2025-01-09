@@ -3,12 +3,8 @@ import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 
 import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
-import {
-  getBlockNumberReferenceChainIdByChainId,
-  getConfirmPeriodBlocks,
-  getL1BlockTime,
-  isNetwork
-} from '../util/networks'
+import { isNetwork } from '../util/networks'
+import { getConfirmationTime } from '../util/WithdrawalUtils'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,
@@ -29,13 +25,6 @@ const DEPOSIT_TIME_MINUTES_ORBIT = {
   mainnet: 5,
   testnet: 1
 }
-
-/**
- * Buffer for after a node is confirmable but isn't yet confirmed.
- * A rollup block (RBlock) typically gets asserted every 30-60 minutes.
- */
-const CONFIRMATION_BUFFER_MINUTES = 60
-const SECONDS_IN_MIN = 60
 
 type UseTransferDurationResult = {
   approximateDurationInMinutes: number
@@ -121,16 +110,10 @@ export function getWithdrawalConfirmationDate({
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
 
-  const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId({
-    chainId: withdrawalFromChainId
-  })
-  // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
-  // and similarly, the confirm period blocks is always the number of blocks on the base chain
-  const confirmationSeconds =
-    getL1BlockTime(blockNumberReferenceChainId) *
-      getConfirmPeriodBlocks(withdrawalFromChainId) +
-    CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MIN
-  return createdAtDate.add(confirmationSeconds, 'second')
+  const { confirmationTimeInSeconds } = getConfirmationTime(
+    withdrawalFromChainId
+  )
+  return createdAtDate.add(confirmationTimeInSeconds, 'second')
 }
 
 function getWithdrawalDuration(tx: MergedTransaction) {

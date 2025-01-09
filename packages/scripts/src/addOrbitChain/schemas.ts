@@ -36,6 +36,13 @@ export const getParentChainInfo = (parentChainId: number) => {
         chainId: 42161,
         name: "Arbitrum One",
       };
+    case 42170: // Arbitrum Nova
+      return {
+        rpcUrl: "https://nova.arbitrum.io/rpc",
+        blockExplorer: "https://nova.arbiscan.io",
+        chainId: 42170,
+        name: "Arbitrum Nova",
+      };
     case 11155111: // Sepolia
       return {
         rpcUrl: INFURA_KEY
@@ -148,10 +155,10 @@ export const bridgeUiConfigSchema = z.object({
     .object({
       name: z.string().min(1),
       symbol: z.string().min(1),
-      decimals: z.number().int().positive(),
       logoUrl: z.string().optional(),
     })
     .optional(),
+  fastWithdrawalTime: z.number().int().positive().optional(),
 });
 
 export const chainSchema = z
@@ -271,16 +278,11 @@ export const incomingChainDataSchema = z.object({
   rpcUrl: z.string().url(),
   explorerUrl: z.string().url(),
   parentChainId: z.string().regex(/^\d+$/),
-  confirmPeriodBlocks: z.string().regex(/^\d+$/),
   nativeTokenAddress: addressSchema.optional(),
   nativeTokenName: z.string().optional(),
   nativeTokenSymbol: z.string().optional(),
   nativeTokenLogo: urlSchema.optional(),
-  bridge: addressSchema,
-  inbox: addressSchema,
-  outbox: addressSchema,
   rollup: addressSchema,
-  sequencerInbox: addressSchema,
   parentGatewayRouter: addressSchema,
   childGatewayRouter: addressSchema,
   parentErc20Gateway: addressSchema,
@@ -293,6 +295,8 @@ export const incomingChainDataSchema = z.object({
   childWeth: addressSchema,
   parentMultiCall: addressSchema,
   childMultiCall: addressSchema,
+  fastWithdrawalActive: z.boolean(),
+  fastWithdrawalMinutes: z.string().regex(/^\d+$/).optional(),
 });
 
 // Schema for the final OrbitChain structure
@@ -349,16 +353,11 @@ export const chainDataLabelToKey: Record<string, string> = {
   "RPC URL": "rpcUrl",
   "Explorer URL": "explorerUrl",
   "Parent chain ID": "parentChainId",
-  confirmPeriodBlocks: "confirmPeriodBlocks",
   "Native token address on Parent Chain": "nativeTokenAddress",
   "Native token name": "nativeTokenName",
   "Native token symbol": "nativeTokenSymbol",
   "Native token logo": "nativeTokenLogo",
-  bridge: "bridge",
-  inbox: "inbox",
-  outbox: "outbox",
   rollup: "rollup",
-  sequencerInbox: "sequencerInbox",
   "Parent Gateway Router": "parentGatewayRouter",
   "Child Gateway Router": "childGatewayRouter",
   "Parent ERC20 Gateway": "parentErc20Gateway",
@@ -369,8 +368,10 @@ export const chainDataLabelToKey: Record<string, string> = {
   "Child WETH Gateway": "childWethGateway",
   "Child WETH": "childWeth",
   "Parent MultiCall": "parentMultiCall",
-  "Child Multicall": "childMultiCall",
+  "Child MultiCall": "childMultiCall",
   "Parent WETH": "parentWeth",
+  "Fast Withdrawals active": "fastWithdrawalActive",
+  "Fast Withdrawals time in minutes": "fastWithdrawalMinutes",
 };
 
 export interface Issue {

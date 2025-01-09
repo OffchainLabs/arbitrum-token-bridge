@@ -5,17 +5,18 @@ import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
 import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
+import { useDebounce } from '@uidotdev/usehooks'
 
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
-import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -27,19 +28,6 @@ export enum DestinationAddressErrors {
 enum DestinationAddressWarnings {
   CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is the right address.'
 }
-
-type DestinationAddressStore = {
-  destinationAddress: string | undefined
-  setDestinationAddress: (destinationAddress: string | undefined) => void
-}
-
-export const useDestinationAddressStore = create<DestinationAddressStore>(
-  set => ({
-    destinationAddress: undefined,
-    setDestinationAddress: destinationAddress =>
-      set(() => ({ destinationAddress }))
-  })
-)
 
 type AdvancedSettingsStore = {
   advancedSettingsCollapsed: boolean
@@ -100,16 +88,34 @@ export const AdvancedSettings = () => {
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  const { destinationAddress, setDestinationAddress } =
-    useDestinationAddressStore()
+  const [
+    { destinationAddress: destinationAddressFromQueryParams },
+    setQueryParams
+  ] = useArbQueryParams()
+  const [destinationAddress, setDestinationAddress] = useState(
+    destinationAddressFromQueryParams
+  )
+  const debouncedDestinationAddress = useDebounce(destinationAddress, 100)
   const { destinationAddressError: error } = useDestinationAddressError()
 
+  const [initialDestinationAddressFromQueryParams] = useState(
+    destinationAddressFromQueryParams
+  )
+
   useEffect(() => {
-    // Initially hide for EOA
-    setAdvancedSettingsCollapsed(isEOA)
-    // Initially lock for EOA
-    setInputLocked(isEOA)
-  }, [isEOA])
+    // Initially hide for EOA and if destination address query param is empty
+    setAdvancedSettingsCollapsed(
+      isEOA && typeof initialDestinationAddressFromQueryParams === 'undefined'
+    )
+    // Initially lock for EOA and if destination address query param is empty
+    setInputLocked(
+      isEOA && typeof initialDestinationAddressFromQueryParams === 'undefined'
+    )
+  }, [
+    initialDestinationAddressFromQueryParams,
+    isEOA,
+    setAdvancedSettingsCollapsed
+  ])
 
   useEffect(() => {
     // isSubscribed makes sure that only the latest state is written
@@ -145,8 +151,19 @@ export const AdvancedSettings = () => {
     // cannot collapse if:
     // - SCW because the destination address is mandatory
     // - destination address is not empty
-    return isEOA && !destinationAddress
-  }, [destinationAddress, isEOA])
+    return isEOA && !destinationAddressFromQueryParams
+  }, [destinationAddressFromQueryParams, isEOA])
+
+  useEffect(() => {
+    if (!debouncedDestinationAddress) {
+      setQueryParams({ destinationAddress: undefined })
+      return
+    }
+
+    setQueryParams({
+      destinationAddress: debouncedDestinationAddress
+    })
+  }, [debouncedDestinationAddress, setQueryParams])
 
   if (!isEOA && !isSmartContractWallet) {
     return null
@@ -158,6 +175,8 @@ export const AdvancedSettings = () => {
       return
     }
     setAdvancedSettingsCollapsed(!advancedSettingsCollapsed)
+    setDestinationAddress(undefined)
+    setQueryParams({ destinationAddress: undefined })
   }
 
   return (

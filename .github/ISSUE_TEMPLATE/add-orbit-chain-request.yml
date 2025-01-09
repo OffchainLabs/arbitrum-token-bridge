@@ -65,11 +65,12 @@ body:
   - type: dropdown
     id: parent-chain-id
     attributes:
-      label: Parent Chain ID
+      label: Parent chain ID
       description: Select the parent chain for your Orbit chain.
       options:
         - "1"
         - "42161"
+        - "42170"
         - "421614"
         - "11155111"
         - "17000"
@@ -211,7 +212,7 @@ body:
   - type: input
     id: child-multicall
     attributes:
-      label: Child Multicall
+      label: Child MultiCall
     validations:
       required: true
   - type: input
@@ -226,6 +227,24 @@ body:
       label: Child WETH Gateway
     validations:
       required: true
+
+  - type: dropdown
+    id: fast-withdrawal
+    attributes:
+      label: Fast Withdrawals active
+      description: Only select Yes if your chain has Fast Withdrawals enabled. We will show information in our UI that your chain has Fast Withdrawals implemented and that withdrawals will take less time than usual.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+  - type: input
+    id: fast-withdrawal-time
+    attributes:
+      label: Fast Withdrawals time in minutes
+      description: Only fill this if your chain has Fast Withdrawals enabled.
+      placeholder: ex. 1440
+    validations:
+      required: false
 
   - type: input
     id: launch-date

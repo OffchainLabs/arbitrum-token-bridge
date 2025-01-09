@@ -34,9 +34,9 @@ import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 
-function tokenListIdsToNames(ids: number[]): string {
+function tokenListIdsToNames(ids: string[]): string {
   return ids
-    .map((tokenListId: number) => listIdsToNames[tokenListId])
+    .map((tokenListId: string) => listIdsToNames[tokenListId])
     .join(', ')
 }
 
@@ -90,7 +90,7 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
       return 'Native USDC on Arbitrum Sepolia'
     }
 
-    const listIds: Set<number> = token.listIds
+    const listIds: Set<string> = token.listIds
     const listIdsSize = listIds.size
     if (listIdsSize === 0) {
       return 'Added by User'

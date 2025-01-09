@@ -1,4 +1,4 @@
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
   getChildrenForNetwork,
@@ -11,6 +11,7 @@ import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
 import { fetchErc20Data } from './TokenUtils'
+import { orbitChains } from './orbitChainsList'
 
 export enum ChainId {
   // L1
@@ -193,6 +194,7 @@ export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
   }
 
   const newCustomChains = [...getCustomChainsFromLocalStorage(), newCustomChain]
+
   localStorage.setItem(
     customChainLocalStorageKey,
     JSON.stringify(newCustomChains)
@@ -203,6 +205,7 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
   const newCustomChains = getCustomChainsFromLocalStorage().filter(
     chain => chain.chainId !== chainId
   )
+
   localStorage.setItem(
     customChainLocalStorageKey,
     JSON.stringify(newCustomChains)
@@ -311,6 +314,11 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
 
 export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
+}
+
+export const l2UsdcGatewayAddresses: { [chainId: number]: string } = {
+  // PoP Apex
+  70700: '0x97e2b88b44946cd932fb85675412699723200987'
 }
 
 const defaultL1Network: BlockNumberReferenceNetwork = {
@@ -574,6 +582,16 @@ export function getSupportedChainIds({
     })
 }
 
+export function isAlchemyChain(chainId: number) {
+  const chain = orbitChains[chainId]
+
+  if (typeof chain === 'undefined') {
+    return false
+  }
+
+  return chain.rpcUrl.toLowerCase().includes('alchemy.com')
+}
+
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   // custom chain details need to be added to various objects to make it work with the UI
   //
@@ -599,7 +617,7 @@ function isBlockNumberReferenceNetwork(chain: {
 }
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
-  [ChainId.Ethereum]: [1380012617, 70700, 70701], // Rari, PopApex and PopBoss
+  [ChainId.Ethereum]: [1380012617, 70700, 70701, 55244], // Rari, PopApex, PopBoss, Superposition
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 

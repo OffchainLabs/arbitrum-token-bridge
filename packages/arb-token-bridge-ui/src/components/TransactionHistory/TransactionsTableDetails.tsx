@@ -22,12 +22,12 @@ import { GET_HELP_LINK, ether } from '../../constants'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
 import { isTxCompleted } from './helpers'
-import { Address } from '../../util/AddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 const DetailsBox = ({
   children,
@@ -43,14 +43,11 @@ const DetailsBox = ({
   )
 }
 
-export const TransactionsTableDetails = ({
-  address
-}: {
-  address: Address | undefined
-}) => {
+export const TransactionsTableDetails = () => {
+  const { sanitizedAddress } = useTransactionHistoryAddressStore()
   const { tx: txFromStore, isOpen, close, reset } = useTxDetailsStore()
   const { ethToUSD } = useETHPrice()
-  const { transactions } = useTransactionHistory(address)
+  const { transactions } = useTransactionHistory(sanitizedAddress)
 
   const tx = useMemo(() => {
     if (!txFromStore) {
@@ -69,7 +66,7 @@ export const TransactionsTableDetails = ({
   const childProvider = getProviderForChainId(tx?.childChainId ?? 0)
   const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
-  if (!tx || !address || !nativeCurrency) {
+  if (!tx || !sanitizedAddress || !nativeCurrency) {
     return null
   }
 
@@ -82,9 +79,9 @@ export const TransactionsTableDetails = ({
     !isNetwork(tx.parentChainId).isTestnet && tx.asset === ether.symbol
 
   const isDifferentSourceAddress =
-    address.toLowerCase() !== tx.sender?.toLowerCase()
+    sanitizedAddress.toLowerCase() !== tx.sender?.toLowerCase()
   const isDifferentDestinationAddress = isCustomDestinationAddressTx({
-    sender: address,
+    sender: sanitizedAddress,
     destination: tx.destination
   })
 
@@ -269,7 +266,7 @@ export const TransactionsTableDetails = ({
                 )}
 
                 <DetailsBox>
-                  <TransactionsTableDetailsSteps tx={tx} address={address} />
+                  <TransactionsTableDetailsSteps tx={tx} />
                 </DetailsBox>
 
                 {!isTxCompleted(tx) && (
