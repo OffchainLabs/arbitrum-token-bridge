@@ -19,6 +19,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+import { addToLocalStorageObjectSequentially } from '../CommonUtils'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -101,8 +102,6 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
   }
 }
 
-let localStoragePromise = Promise.resolve()
-
 export async function getOutgoingMessageState(
   event: L2ToL1EventResult,
   l1Provider: Provider,
@@ -129,19 +128,9 @@ export async function getOutgoingMessageState(
     const status = await messageReader.status(l2Provider)
 
     if (status === OutgoingMessageState.EXECUTED) {
-      // Ensures all parallel methods save to local storage sequentially
-      localStoragePromise = localStoragePromise.then(() => {
-        const latestExecutedMessagesCache = JSON.parse(
-          localStorage.getItem(localStorageKey) || '{}'
-        )
-
-        localStorage.setItem(
-          localStorageKey,
-          JSON.stringify({
-            ...latestExecutedMessagesCache,
-            [cacheKey]: true
-          })
-        )
+      addToLocalStorageObjectSequentially({
+        localStorageKey,
+        localStorageValue: { [cacheKey]: true }
       })
     }
 
