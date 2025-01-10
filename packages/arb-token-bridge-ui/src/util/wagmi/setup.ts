@@ -16,7 +16,10 @@ import {
   base,
   baseSepolia
 } from './wagmiAdditionalNetworks'
-import { isTestingEnvironment, isE2eTestingEnvironment } from '../CommonUtils'
+import {
+  isDevelopmentEnvironment,
+  isE2eTestingEnvironment
+} from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
@@ -56,7 +59,7 @@ const getChainList = () => {
   }
 
   // for local env, have all local + default + user added chains
-  if (isTestingEnvironment) {
+  if (isDevelopmentEnvironment) {
     return [
       ...defaultChains,
       // Orbit chains
