@@ -1,3 +1,4 @@
+import { loadEnvironmentVariableWithFallback } from '..'
 import { ChainId } from '../networks'
 import { ProductionChainId } from './getRpcUrl'
 
@@ -7,33 +8,58 @@ export type InfuraSupportedChainId = Exclude<
   ChainId.ArbitrumNova
 >
 
-export function getInfuraKey(chainId: InfuraSupportedChainId) {
+export function getInfuraKey(chainId: InfuraSupportedChainId): string {
   const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 
   switch (chainId) {
+    // L1 Mainnet
     case ChainId.Ethereum:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM || defaultInfuraKey
-    case ChainId.Sepolia:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA || defaultInfuraKey
-    case ChainId.ArbitrumOne:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE || defaultInfuraKey
-    case ChainId.Base:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_BASE || defaultInfuraKey
-    case ChainId.ArbitrumSepolia:
-      return (
-        process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA || defaultInfuraKey
-      )
-    case ChainId.BaseSepolia:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA || defaultInfuraKey
+      return loadEnvironmentVariableWithFallback({
+        env: process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM,
+        fallback: defaultInfuraKey
+      })
 
-    default:
-      return defaultInfuraKey
+    // L1 Testnet
+    case ChainId.Sepolia:
+      return loadEnvironmentVariableWithFallback({
+        env: process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA,
+        fallback: defaultInfuraKey
+      })
+    case ChainId.Holesky:
+      return loadEnvironmentVariableWithFallback({
+        env: process.env.NEXT_PUBLIC_INFURA_KEY_HOLESKY,
+        fallback: defaultInfuraKey
+      })
+
+    // L2 Mainnet
+    case ChainId.ArbitrumOne:
+      return loadEnvironmentVariableWithFallback({
+        env: process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE,
+        fallback: defaultInfuraKey
+      })
+    case ChainId.Base:
+      return loadEnvironmentVariableWithFallback({
+        env: process.env.NEXT_PUBLIC_INFURA_KEY_BASE,
+        fallback: defaultInfuraKey
+      })
+
+    // L2 Testnet
+    case ChainId.ArbitrumSepolia:
+      return loadEnvironmentVariableWithFallback({
+        env: process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA,
+        fallback: defaultInfuraKey
+      })
+    case ChainId.BaseSepolia:
+      return loadEnvironmentVariableWithFallback({
+        env: process.env.NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA,
+        fallback: defaultInfuraKey
+      })
   }
 }
 
 export function getInfuraRpcUrl(
   chainId: InfuraSupportedChainId,
-  infuraKey: string = getInfuraKey(chainId)!
+  infuraKey: string = getInfuraKey(chainId)
 ): string {
   switch (chainId) {
     // L1 Mainnet
