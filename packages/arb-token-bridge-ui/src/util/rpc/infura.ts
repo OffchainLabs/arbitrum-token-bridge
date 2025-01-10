@@ -31,23 +31,27 @@ export function getInfuraRpcUrl(chainId: ChainId): string | null {
     // L1 Mainnet
     case ChainId.Ethereum:
       return `https://mainnet.infura.io/v3/${infuraKey}`
+
     // L1 Testnet
     case ChainId.Sepolia:
       return `https://sepolia.infura.io/v3/${infuraKey}`
     case ChainId.Holesky:
       return null
+
     // L2 Mainnet
-    case ChainId.ArbitrumNova:
-      return null
     case ChainId.ArbitrumOne:
       return `https://arbitrum-mainnet.infura.io/v3/${infuraKey}`
+    case ChainId.ArbitrumNova:
+      return null
     case ChainId.Base:
-      // L2 Testnet
       return `https://base-mainnet.infura.io/v3/${infuraKey}`
+
+    // L2 Testnet
     case ChainId.ArbitrumSepolia:
       return `https://arbitrum-sepolia.infura.io/v3/${infuraKey}`
     case ChainId.BaseSepolia:
       return `https://base-sepolia.infura.io/v3/${infuraKey}`
+
     // Local
     case ChainId.Local:
     case ChainId.ArbitrumLocal:
