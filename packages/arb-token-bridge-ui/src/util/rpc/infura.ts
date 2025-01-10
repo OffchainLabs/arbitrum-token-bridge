@@ -31,9 +31,10 @@ export function getInfuraKey(chainId: InfuraSupportedChainId) {
   }
 }
 
-export function getInfuraRpcUrl(chainId: InfuraSupportedChainId): string {
-  const infuraKey = getInfuraKey(chainId)
-
+export function getInfuraRpcUrl(
+  chainId: InfuraSupportedChainId,
+  infuraKey: string = getInfuraKey(chainId)!
+): string {
   switch (chainId) {
     // L1 Mainnet
     case ChainId.Ethereum:
