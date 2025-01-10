@@ -1,9 +1,12 @@
+import { loadEnvironmentVariableWithFallback } from '..'
 import { ChainId } from '../networks'
 import { ProductionChainId } from './getRpcUrl'
 
 export function getAlchemyRpcUrl(
   chainId: ProductionChainId,
-  alchemyKey: string = process.env.NEXT_PUBLIC_ALCHEMY_KEY!
+  alchemyKey: string = loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_ALCHEMY_KEY
+  })
 ): string {
   switch (chainId) {
     // L1 Mainnet
