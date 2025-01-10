@@ -1,5 +1,20 @@
 import { ChainId } from '../networks'
 
+export type InfuraSupportedChainId = Extract<
+  ChainId,
+  // L1 Mainnet
+  | ChainId.Ethereum
+  // L1 Testnet
+  | ChainId.Sepolia
+  | ChainId.Holesky
+  // L2 Mainnet
+  | ChainId.ArbitrumOne
+  | ChainId.Base
+  // L2 Testnet
+  | ChainId.ArbitrumSepolia
+  | ChainId.BaseSepolia
+>
+
 export function getInfuraKey(chainId: ChainId) {
   const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -24,7 +39,7 @@ export function getInfuraKey(chainId: ChainId) {
   }
 }
 
-export function getInfuraRpcUrl(chainId: ChainId): string | null {
+export function getInfuraRpcUrl(chainId: InfuraSupportedChainId): string {
   const infuraKey = getInfuraKey(chainId)
 
   switch (chainId) {
@@ -36,13 +51,11 @@ export function getInfuraRpcUrl(chainId: ChainId): string | null {
     case ChainId.Sepolia:
       return `https://sepolia.infura.io/v3/${infuraKey}`
     case ChainId.Holesky:
-      return null
+      return `https://holesky.infura.io/v3/${infuraKey}`
 
     // L2 Mainnet
     case ChainId.ArbitrumOne:
       return `https://arbitrum-mainnet.infura.io/v3/${infuraKey}`
-    case ChainId.ArbitrumNova:
-      return null
     case ChainId.Base:
       return `https://base-mainnet.infura.io/v3/${infuraKey}`
 
@@ -51,11 +64,5 @@ export function getInfuraRpcUrl(chainId: ChainId): string | null {
       return `https://arbitrum-sepolia.infura.io/v3/${infuraKey}`
     case ChainId.BaseSepolia:
       return `https://base-sepolia.infura.io/v3/${infuraKey}`
-
-    // Local
-    case ChainId.Local:
-    case ChainId.ArbitrumLocal:
-    case ChainId.L3Local:
-      return null
   }
 }
