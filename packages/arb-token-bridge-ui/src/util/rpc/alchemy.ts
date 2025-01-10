@@ -1,6 +1,7 @@
 import { ChainId } from '../networks'
+import { ProductionChainId } from './getRpcUrl'
 
-export function getAlchemyRpcUrl(chainId: ChainId): string | null {
+export function getAlchemyRpcUrl(chainId: ProductionChainId): string {
   const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY!
 
   switch (chainId) {
@@ -18,7 +19,7 @@ export function getAlchemyRpcUrl(chainId: ChainId): string | null {
     case ChainId.ArbitrumOne:
       return `https://arb-mainnet.g.alchemy.com/v2/${alchemyKey}`
     case ChainId.ArbitrumNova:
-      return null
+      return `https://arbnova-mainnet.g.alchemy.com/v2/${alchemyKey}`
     case ChainId.Base:
       return `https://base-mainnet.g.alchemy.com/v2/${alchemyKey}`
 
@@ -27,11 +28,5 @@ export function getAlchemyRpcUrl(chainId: ChainId): string | null {
       return `https://arb-sepolia.g.alchemy.com/v2/${alchemyKey}`
     case ChainId.BaseSepolia:
       return `https://base-sepolia.g.alchemy.com/v2/${alchemyKey}`
-
-    // Local
-    case ChainId.Local:
-    case ChainId.ArbitrumLocal:
-    case ChainId.L3Local:
-      return null
   }
 }
