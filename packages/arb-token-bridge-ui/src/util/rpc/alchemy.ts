@@ -1,9 +1,10 @@
 import { ChainId } from '../networks'
 import { ProductionChainId } from './getRpcUrl'
 
-export function getAlchemyRpcUrl(chainId: ProductionChainId): string {
-  const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY!
-
+export function getAlchemyRpcUrl(
+  chainId: ProductionChainId,
+  alchemyKey: string = process.env.NEXT_PUBLIC_ALCHEMY_KEY!
+): string {
   switch (chainId) {
     // L1 Mainnet
     case ChainId.Ethereum:
