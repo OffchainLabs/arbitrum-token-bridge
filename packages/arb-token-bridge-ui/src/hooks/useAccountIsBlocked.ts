@@ -69,10 +69,10 @@ export function useAccountIsBlocked() {
     return [address.toLowerCase(), 'useAccountIsBlocked'] as const
   }, [address])
 
-  const { data: isBlocked } = useSWRImmutable<boolean>(
+  const { data: isBlocked } = useSWRImmutable(
     queryKey,
     // Extracts the first element of the query key as the fetcher param
-    ([_address]: [Address]) => fetcher(_address)
+    ([_address]) => fetcher(_address as Address)
   )
 
   return { isBlocked }
