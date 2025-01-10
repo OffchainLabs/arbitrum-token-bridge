@@ -19,5 +19,4 @@ export function shortenTxHash(txHash: string) {
 export const isE2eTestingEnvironment =
   typeof window !== 'undefined' && !!window.Cypress
 
-export const isDevelopmentEnvironment =
-  isE2eTestingEnvironment || process.env.NODE_ENV !== 'production' // Test env = E2E or any development (non-preview/prod environment)
+export const isDevelopmentEnvironment = process.env.NODE_ENV === 'development'
