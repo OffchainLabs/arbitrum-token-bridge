@@ -1,21 +1,13 @@
 import { ChainId } from '../networks'
+import { ProductionChainId } from './getRpcUrl'
 
-export type InfuraSupportedChainId = Extract<
-  ChainId,
-  // L1 Mainnet
-  | ChainId.Ethereum
-  // L1 Testnet
-  | ChainId.Sepolia
-  | ChainId.Holesky
-  // L2 Mainnet
-  | ChainId.ArbitrumOne
-  | ChainId.Base
-  // L2 Testnet
-  | ChainId.ArbitrumSepolia
-  | ChainId.BaseSepolia
+export type InfuraSupportedChainId = Exclude<
+  ProductionChainId,
+  // only arbitrum nova is currently not supported on infura
+  ChainId.ArbitrumNova
 >
 
-export function getInfuraKey(chainId: ChainId) {
+export function getInfuraKey(chainId: InfuraSupportedChainId) {
   const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 
   switch (chainId) {
