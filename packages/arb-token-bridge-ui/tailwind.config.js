@@ -32,6 +32,11 @@ module.exports = {
         'orange-dark': '#60461F',
         'lime-dark': '#31572A',
 
+        // TRANSACTION STATUS COLORS
+        claim: '#6AD28A',
+        retry: '#CD0000',
+        pending: '#CCB069',
+
         // NEUTRAL (GRAYS)
         'gray-1': '#191919',
         'gray-2': '#E5E5E5',

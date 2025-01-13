@@ -17,7 +17,8 @@ import {
   baseSepolia
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
+import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
@@ -148,14 +149,13 @@ export function getProps(targetChainKey: string | null) {
     chains
   })
 
+  wallets[0]?.wallets.push(okxWallet({ chains, projectId }))
+
   const connectors = connectorsForWallets([
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        okxWallet({ chains, projectId })
-      ]
+      wallets: [trustWallet({ chains, projectId })]
     }
   ])
 

@@ -6,13 +6,21 @@ export const getProvider = (chainInfo: {
   name: string;
   chainId: number;
 }) => {
+  const THROTTLE_LIMIT = 10;
+
   const connection: ConnectionInfo = {
     url: chainInfo.rpcUrl,
-    timeout: 30000,
+    timeout: 300000,
     allowGzip: true,
     skipFetchSetup: true,
-    throttleLimit: 3,
-    throttleSlotInterval: 1000,
+    throttleLimit: THROTTLE_LIMIT,
+    throttleSlotInterval: 3000,
+    throttleCallback: async (attempt: number) => {
+      // Always retry until we hit the THROTTLE_LIMIT
+      // Otherwise, it only throttles for specific response codes
+      // Return true to continue retrying, false to stop
+      return attempt <= THROTTLE_LIMIT;
+    },
     headers: {
       Accept: "*/*",
       "Accept-Encoding": "gzip, deflate, br",
