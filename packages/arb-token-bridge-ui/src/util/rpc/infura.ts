@@ -8,6 +8,20 @@ export type InfuraSupportedChainId = Exclude<
   ChainId.ArbitrumNova
 >
 
+export function isInfuraSupportedChainId(
+  chainId: number
+): chainId is InfuraSupportedChainId {
+  return [
+    ChainId.Ethereum,
+    ChainId.Sepolia,
+    ChainId.Holesky,
+    ChainId.ArbitrumOne,
+    ChainId.Base,
+    ChainId.ArbitrumSepolia,
+    ChainId.BaseSepolia
+  ].includes(chainId)
+}
+
 export function getInfuraKeyFromEnv(chainId: InfuraSupportedChainId): string {
   const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 

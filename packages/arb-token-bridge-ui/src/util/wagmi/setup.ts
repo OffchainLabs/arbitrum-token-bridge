@@ -25,7 +25,7 @@ import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
 import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
-import { customInfuraProvider } from '../infura'
+import { customInfuraProvider } from './customInfuraProvider'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
