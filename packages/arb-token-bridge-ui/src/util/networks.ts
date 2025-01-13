@@ -214,29 +214,29 @@ export const rpcURLs: { [chainId: number]: string } = {
     fallback: getRpcUrl(ChainId.Sepolia)
   }),
   [ChainId.Holesky]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_HOLESKY_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_HOLESKY,
     fallback: getRpcUrl(ChainId.Holesky)
   }),
   // L2 Mainnet
   [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_ARBITRUM_ONE_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_ONE,
     fallback: getRpcUrl(ChainId.ArbitrumOne)
   }),
   [ChainId.ArbitrumNova]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_ARBITRUM_NOVA_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_NOVA,
     fallback: getRpcUrl(ChainId.ArbitrumNova)
   }),
   [ChainId.Base]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_BASE_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_BASE,
     fallback: getRpcUrl(ChainId.Base)
   }),
   // L2 Testnet
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_SEPOLIA,
     fallback: getRpcUrl(ChainId.ArbitrumSepolia)
   }),
   [ChainId.BaseSepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_BASE_SEPOLIA,
     fallback: getRpcUrl(ChainId.BaseSepolia)
   })
 }
