@@ -1,4 +1,4 @@
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
   getChildrenForNetwork,

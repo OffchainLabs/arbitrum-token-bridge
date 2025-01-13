@@ -1,11 +1,10 @@
-import { ChainId } from '../../util/networks'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-
 import {
   getChildUsdcAddress,
   getParentUsdcAddress
 } from '../CCTP/useUpdateUsdcBalances'
 import { getL2ERC20Address } from '../../util/TokenUtils'
+import { ChainId } from '../../types/ChainId'
 
 jest.mock('../../util/TokenUtils', () => ({
   getL2ERC20Address: jest.fn()
