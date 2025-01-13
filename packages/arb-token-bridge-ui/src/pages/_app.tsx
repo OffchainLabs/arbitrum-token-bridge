@@ -64,11 +64,7 @@ Sentry.init({
     }
 
     if (code && message) {
-      Sentry.getCurrentScope().setFingerprint([
-        '{{ default }}',
-        code.toString(),
-        message
-      ])
+      event.fingerprint = ['{{ default }}', code.toString(), message]
     }
 
     return event
