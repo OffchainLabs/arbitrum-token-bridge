@@ -4,7 +4,8 @@
 import { ethers } from 'ethers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import { ChainId, isNetwork } from '../util/networks'
+import { isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
