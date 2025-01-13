@@ -1,6 +1,7 @@
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
+import { ChainId } from '../types/ChainId'
 import { isE2eTestingEnvironment } from './CommonUtils'
-import { ChainWithRpcUrl, ChainId } from './networks'
+import { ChainWithRpcUrl } from './networks'
 import orbitChainsData from './orbitChainsData.json'
 
 export type NetworkType =
