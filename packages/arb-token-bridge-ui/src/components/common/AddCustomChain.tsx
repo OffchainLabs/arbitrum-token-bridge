@@ -11,7 +11,6 @@ import SyntaxHighlighter from 'react-syntax-highlighter'
 import { stackoverflowDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 import {
-  ChainId,
   ChainWithRpcUrl,
   getCustomChainsFromLocalStorage,
   getCustomChainFromLocalStorageById,
@@ -22,6 +21,7 @@ import {
   rpcURLs,
   isNetwork
 } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
