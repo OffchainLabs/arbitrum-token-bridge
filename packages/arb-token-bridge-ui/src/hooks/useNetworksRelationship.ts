@@ -2,8 +2,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useMemo } from 'react'
 import { Chain } from 'wagmi'
 import { UseNetworksState } from './useNetworks'
-import { isDepositMode } from '../util/isDepositMode'
-import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+import { getTransferMode } from '../util/getTransferMode'
 
 type UseNetworksRelationshipState = {
   childChain: Chain
@@ -22,25 +21,24 @@ export function useNetworksRelationship({
   destinationChainProvider
 }: UseNetworksState): UseNetworksRelationshipState {
   return useMemo(() => {
-    const _isDepositMode = isDepositMode({
+    const transferMode = getTransferMode({
       sourceChainId: sourceChain.id,
       destinationChainId: destinationChain.id
     })
 
-    const isTeleportMode = isValidTeleportChainPair({
-      sourceChainId: sourceChain.id,
-      destinationChainId: destinationChain.id
-    })
+    const isDepositMode = transferMode === 'deposit'
+    const isTeleportMode = transferMode === 'teleport'
+    const isWithdrawalMode = transferMode === 'withdrawal'
 
-    if (_isDepositMode || isTeleportMode) {
+    if (isDepositMode || transferMode === 'teleport') {
       return {
         childChain: destinationChain,
         childChainProvider: destinationChainProvider,
         parentChain: sourceChain,
         parentChainProvider: sourceChainProvider,
-        isDepositMode: _isDepositMode,
+        isDepositMode,
         isTeleportMode,
-        isWithdrawalMode: false,
+        isWithdrawalMode,
         isDepositOrTeleportMode: true
       }
     }
@@ -50,9 +48,9 @@ export function useNetworksRelationship({
       childChainProvider: sourceChainProvider,
       parentChain: destinationChain,
       parentChainProvider: destinationChainProvider,
-      isDepositMode: _isDepositMode,
-      isTeleportMode,
-      isWithdrawalMode: true,
+      isDepositMode: false,
+      isTeleportMode: false,
+      isWithdrawalMode,
       isDepositOrTeleportMode: false
     }
   }, [
