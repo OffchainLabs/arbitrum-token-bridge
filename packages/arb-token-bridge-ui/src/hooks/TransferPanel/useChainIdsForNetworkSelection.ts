@@ -1,8 +1,8 @@
 import {
-  ChainId,
   getDestinationChainIds,
   getSupportedChainIds
 } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../useIsTestnetMode'
 import { useNetworks } from '../useNetworks'
 
