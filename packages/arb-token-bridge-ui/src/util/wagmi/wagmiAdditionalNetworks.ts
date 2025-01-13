@@ -1,7 +1,8 @@
 import { Chain, sepolia as sepoliaDefault } from 'wagmi'
 
 import { ether } from '../../constants'
-import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 import { NativeCurrencyBase } from '../../hooks/useNativeCurrency'
 
