@@ -1,4 +1,4 @@
-import { ChainId } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getInfuraRpcUrl, InfuraSupportedChainId } from './infura'
 
 it('successfully returns the correct url for the provided chain and key', () => {
