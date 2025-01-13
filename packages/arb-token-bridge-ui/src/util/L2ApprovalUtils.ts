@@ -1,4 +1,4 @@
-import { ChainId } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { xErc20RequiresApprovalOnChildChain } from './xErc20Utils'
 
 export type RequireL2ApproveToken = {

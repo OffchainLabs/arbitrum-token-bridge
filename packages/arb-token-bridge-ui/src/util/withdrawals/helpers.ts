@@ -33,20 +33,6 @@ export type EthWithdrawal = L2ToL1EventResult & {
   childChainId: number
 }
 
-export const updateAdditionalWithdrawalData = async (
-  withdrawalTx: L2ToL1EventResultPlus,
-  l1Provider: Provider,
-  l2Provider: Provider
-) => {
-  const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
-    withdrawalTx as L2ToL1EventResultPlus,
-    l1Provider,
-    l2Provider
-  )
-
-  return l2toL1TxWithDeadline
-}
-
 export async function attachTimestampToTokenWithdrawal({
   withdrawal,
   l2Provider
@@ -125,55 +111,6 @@ export async function getOutgoingMessageState(
     return await messageReader.status(l2Provider)
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
-  }
-}
-
-export async function attachNodeBlockDeadlineToEvent(
-  event: L2ToL1EventResultPlus,
-  l1Provider: Provider,
-  l2Provider: Provider
-) {
-  if (
-    event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
-    event.outgoingMessageState === OutgoingMessageState.CONFIRMED
-  ) {
-    return event
-  }
-
-  const messageReader = ChildToParentMessageReader.fromEvent(l1Provider, event)
-
-  try {
-    const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-      l2Provider
-    )
-
-    return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
-  } catch (e) {
-    const expectedError = "batch doesn't exist"
-    const expectedError2 = 'CALL_EXCEPTION'
-
-    const err = e as Error & { error: Error }
-    const errorMessage = err && (err.message || err.error?.message)
-
-    if (errorMessage.includes(expectedError)) {
-      const nodeBlockDeadline: NodeBlockDeadlineStatus =
-        NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
-      return {
-        ...event,
-        nodeBlockDeadline
-      }
-    } else if (errorMessage.includes(expectedError2)) {
-      // in classic we simulate `executeTransaction` in `hasExecuted`
-      // which might revert if the L2 to L1 call fail
-      const nodeBlockDeadline: NodeBlockDeadlineStatus =
-        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
-      return {
-        ...event,
-        nodeBlockDeadline
-      }
-    } else {
-      throw e
-    }
   }
 }
 
