@@ -1,4 +1,4 @@
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
   getChildrenForNetwork,
@@ -11,25 +11,8 @@ import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
 import { fetchErc20Data } from './TokenUtils'
-
-export enum ChainId {
-  // L1
-  Ethereum = 1,
-  // L1 Testnets
-  Local = 1337,
-  Sepolia = 11155111,
-  Holesky = 17000,
-  // L2
-  ArbitrumOne = 42161,
-  ArbitrumNova = 42170,
-  Base = 8453,
-  // L2 Testnets
-  ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346,
-  BaseSepolia = 84532,
-  // L3 Testnets
-  L3Local = 333333
-}
+import { orbitChains } from './orbitChainsList'
+import { ChainId } from '../types/ChainId'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -579,6 +562,16 @@ export function getSupportedChainIds({
       }
       return true
     })
+}
+
+export function isAlchemyChain(chainId: number) {
+  const chain = orbitChains[chainId]
+
+  if (typeof chain === 'undefined') {
+    return false
+  }
+
+  return chain.rpcUrl.toLowerCase().includes('alchemy.com')
 }
 
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {

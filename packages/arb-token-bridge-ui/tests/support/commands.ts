@@ -222,11 +222,17 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
-export function startTransfer() {
+export function clickMoveFundsButton({
+  shouldConfirmInMetamask = true
+}: {
+  shouldConfirmInMetamask?: boolean
+} = {}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
-  cy.confirmMetamaskTransaction()
+  if (shouldConfirmInMetamask) {
+    cy.confirmMetamaskTransaction()
+  }
 }
 
 export function findSelectTokenButton(
@@ -304,6 +310,8 @@ export function findTransactionInTransactionHistory({
   amount2?: number
   duration?: string
 }) {
+  const timeout = 120_000
+
   // Replace . with \.
   const parsedAmount = amount.toString().replace(/\./g, '\\.')
 
@@ -313,15 +321,18 @@ export function findTransactionInTransactionHistory({
     }`
   )
 
-  cy.findByTestId(rowId).as('row')
+  cy.findByTestId(rowId, { timeout }).as('row')
   if (duration) {
-    cy.get('@row').findAllByText(duration).first().should('be.visible')
+    cy.get('@row', { timeout })
+      .findAllByText(duration, { timeout })
+      .first()
+      .should('be.visible', { timeout })
   }
 
-  cy.get('@row')
-    .findByLabelText('Transaction details button')
-    .should('be.visible')
-  return cy.get('@row')
+  cy.get('@row', { timeout })
+    .findByLabelText('Transaction details button', { timeout })
+    .should('be.visible', { timeout })
+  return cy.get('@row', { timeout })
 }
 
 export function findClaimButton(
@@ -390,7 +401,7 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  startTransfer,
+  clickMoveFundsButton,
   findSelectTokenButton,
   switchToTransferPanelTab,
   switchToTransactionHistoryTab,

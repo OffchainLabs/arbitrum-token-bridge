@@ -15,7 +15,8 @@ import {
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
-import { ChainId, isNetwork, getNetworkName } from '../../util/networks'
+import { isNetwork, getNetworkName } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
