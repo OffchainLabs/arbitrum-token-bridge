@@ -12,25 +12,7 @@ import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
 import { fetchErc20Data } from './TokenUtils'
 import { orbitChains } from './orbitChainsList'
-
-export enum ChainId {
-  // L1
-  Ethereum = 1,
-  // L1 Testnets
-  Local = 1337,
-  Sepolia = 11155111,
-  Holesky = 17000,
-  // L2
-  ArbitrumOne = 42161,
-  ArbitrumNova = 42170,
-  Base = 8453,
-  // L2 Testnets
-  ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346,
-  BaseSepolia = 84532,
-  // L3 Testnets
-  L3Local = 333333
-}
+import { ChainId } from '../types/ChainId'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -432,15 +414,15 @@ export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
 }
 
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
   fallback: 'http://127.0.0.1:8545'
 })
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
   fallback: 'http://127.0.0.1:8547'
 })
 export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
   fallback: 'http://127.0.0.1:3347'
 })
 
