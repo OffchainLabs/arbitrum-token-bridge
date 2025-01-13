@@ -93,7 +93,7 @@ export default defineConfig({
       }
       if (!sepoliaRpcUrl) {
         throw new Error(
-          'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
+          'process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA variable missing.'
         )
       }
 
@@ -264,7 +264,7 @@ const ethRpcUrl = (() => {
 const arbRpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2
 const l3RpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3
 const sepoliaRpcUrl =
-  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+  process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const parentProvider = new StaticJsonRpcProvider(

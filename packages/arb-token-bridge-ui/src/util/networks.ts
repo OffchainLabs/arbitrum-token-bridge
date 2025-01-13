@@ -205,12 +205,12 @@ export const supportedCustomOrbitParentChains = [
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
     fallback: chainIdToInfuraUrl(ChainId.Ethereum)
   }),
   // L1 Testnets
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
     fallback: chainIdToInfuraUrl(ChainId.Sepolia)
   }),
   [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
