@@ -77,13 +77,19 @@ export default defineConfig({
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       if (!ethRpcUrl && !isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_NITRO_TESTNODE_L1_RPC_URL variable missing.'
+        )
       }
       if (!arbRpcUrl) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_NITRO_TESTNODE_L2_RPC_URL variable missing.'
+        )
       }
       if (!l3RpcUrl && isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_L3_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_NITRO_TESTNODE_L3_RPC_URL variable missing.'
+        )
       }
       if (!sepoliaRpcUrl) {
         throw new Error(
@@ -245,17 +251,17 @@ const ethRpcUrl = (() => {
   // For consistency purpose, we would be using 'custom-localhost'
   // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
   // so we have to add a / to the end of the rpc url
-  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+  if (!process.env.NEXT_PUBLIC_NITRO_TESTNODE_L1_RPC_URL) {
     return MAINNET_INFURA_RPC_URL
   }
-  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
-    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  if (process.env.NEXT_PUBLIC_NITRO_TESTNODE_L1_RPC_URL.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_NITRO_TESTNODE_L1_RPC_URL
   }
-  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
+  return process.env.NEXT_PUBLIC_NITRO_TESTNODE_L1_RPC_URL + '/'
 })()
 
-const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const l3RpcUrl = process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL
+const arbRpcUrl = process.env.NEXT_PUBLIC_NITRO_TESTNODE_L2_RPC_URL
+const l3RpcUrl = process.env.NEXT_PUBLIC_NITRO_TESTNODE_L3_RPC_URL
 const sepoliaRpcUrl =
   process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
