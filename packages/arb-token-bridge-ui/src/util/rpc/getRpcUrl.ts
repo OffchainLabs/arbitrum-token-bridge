@@ -19,7 +19,7 @@ export function getRpcUrl(
   chainId: ProductionChainId,
   rpcProvider: RpcProvider = getRpcProvider(),
   rpcProviderKey?: string
-): string | undefined {
+): string {
   switch (rpcProvider) {
     case 'infura': {
       // only arbitrum nova is currently not supported on infura
