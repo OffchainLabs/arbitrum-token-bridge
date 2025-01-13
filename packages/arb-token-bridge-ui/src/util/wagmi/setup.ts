@@ -17,10 +17,11 @@ import {
   baseSepolia
 } from './wagmiAdditionalNetworks'
 import {
-  isDevelopmentEnvironment,
-  isE2eTestingEnvironment
+  isE2eTestingEnvironment,
+  isDevelopmentEnvironment
 } from '../CommonUtils'
-import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
+import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'

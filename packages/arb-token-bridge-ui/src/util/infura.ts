@@ -1,7 +1,7 @@
 import { providers } from 'ethers'
 import { Chain, ChainProviderFn } from 'wagmi'
 
-import { ChainId } from './networks'
+import { ChainId } from '../types/ChainId'
 
 // custom implementation based on https://github.com/wevm/wagmi/blob/wagmi%400.12.13/packages/core/src/providers/infura.ts
 // with multiple infura keys support
