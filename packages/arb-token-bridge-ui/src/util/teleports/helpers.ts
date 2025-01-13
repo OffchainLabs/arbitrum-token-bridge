@@ -70,14 +70,7 @@ export async function transformTeleportFromSubgraph(
       childChainId: Number(tx.childChainId)
     } as Transaction
 
-    const childProvider = getProviderForChainId(Number(tx.childChainId))
-    return transformDeposit(
-      await updateAdditionalDepositData({
-        depositTx,
-        parentProvider,
-        childProvider
-      })
-    )
+    return transformDeposit(await updateAdditionalDepositData(depositTx))
   }
 
   // Erc20 transfers
@@ -112,12 +105,5 @@ export async function transformTeleportFromSubgraph(
     childChainId: l3ChainId
   } as Transaction
 
-  const childProvider = getProviderForChainId(l3ChainId)
-  return transformDeposit(
-    await updateAdditionalDepositData({
-      depositTx,
-      parentProvider,
-      childProvider
-    })
-  )
+  return transformDeposit(await updateAdditionalDepositData(depositTx))
 }

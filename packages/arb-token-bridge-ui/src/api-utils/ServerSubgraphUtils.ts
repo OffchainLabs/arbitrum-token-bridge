@@ -5,7 +5,7 @@ import {
   NormalizedCacheObject
 } from '@apollo/client'
 
-import { ChainId } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 
 /**
  * The API key to be used for calls to The Graph Network.

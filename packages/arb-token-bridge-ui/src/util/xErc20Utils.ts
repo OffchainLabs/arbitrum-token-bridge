@@ -1,6 +1,6 @@
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { fetchErc20L2GatewayAddress } from './TokenUtils'
-import { ChainId } from './networks'
+import { ChainId } from '../types/ChainId'
 import { TokenWithdrawalApprovalParams } from './L2ApprovalUtils'
 
 export const xErc20Gateways: {
