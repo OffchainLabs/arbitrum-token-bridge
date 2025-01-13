@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { useEffect } from 'react'
+import { usePostHog } from 'posthog-js/react'
 
 import { MergedTransaction } from '../../state/app/state'
 import { TransactionHistorySearchBar } from './TransactionHistorySearchBar'
@@ -31,6 +33,15 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
 }))
 
 export const TransactionHistory = () => {
+  const posthog = usePostHog()
+
+  useEffect(() => {
+    posthog?.capture('$pageview', {
+      $current_url: window.location.href,
+      page_name: 'Transaction History'
+    })
+  }, [posthog])
+
   return (
     <div className="m-auto w-full max-w-[100vw] border-y border-white/30 bg-[#191919] py-4 pl-4 md:max-w-[1000px] md:rounded md:border-x md:pr-4">
       <TransactionHistorySearchBar />
