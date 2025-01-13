@@ -15,9 +15,11 @@ function getRpcProvider(): RpcProvider {
   return (rpcProviderFromEnv?.toLowerCase() as RpcProvider) || 'infura' // the || is intentional to handle empty strings
 }
 
-export function getRpcUrl(chainId: ProductionChainId): string | undefined {
-  const rpcProvider = getRpcProvider()
-
+export function getRpcUrl(
+  chainId: ProductionChainId,
+  rpcProvider: string = getRpcProvider(),
+  rpcProviderKey?: string
+): string | undefined {
   switch (rpcProvider) {
     case 'infura': {
       // only arbitrum nova is currently not supported on infura
@@ -25,10 +27,10 @@ export function getRpcUrl(chainId: ProductionChainId): string | undefined {
         return 'https://nova.arbitrum.io/rpc'
       }
 
-      return getInfuraRpcUrl(chainId)
+      return getInfuraRpcUrl(chainId, rpcProviderKey)
     }
 
     case 'alchemy':
-      return getAlchemyRpcUrl(chainId)
+      return getAlchemyRpcUrl(chainId, rpcProviderKey)
   }
 }
