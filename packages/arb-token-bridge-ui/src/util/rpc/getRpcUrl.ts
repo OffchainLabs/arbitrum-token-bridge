@@ -12,7 +12,20 @@ export type ProductionChainId = Exclude<
 
 function getRpcProvider(): RpcProvider {
   const rpcProviderFromEnv = process.env.NEXT_PUBLIC_RPC_PROVIDER
-  return (rpcProviderFromEnv?.toLowerCase() as RpcProvider) || 'infura' // the || is intentional to handle empty strings
+
+  if (typeof rpcProviderFromEnv === 'undefined' || rpcProviderFromEnv === '') {
+    console.warn(`[getRpcProvider] no provider specified`)
+    console.warn(`[getRpcProvider] defaulting to infura`)
+    return 'infura'
+  }
+
+  if (rpcProviderFromEnv !== 'infura' && rpcProviderFromEnv !== 'alchemy') {
+    console.warn(`[getRpcProvider] unknown provider "${rpcProviderFromEnv}"`)
+    console.warn(`[getRpcProvider] defaulting to infura`)
+    return 'infura'
+  }
+
+  return rpcProviderFromEnv
 }
 
 export function getRpcUrl(
