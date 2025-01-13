@@ -4,12 +4,8 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import {
-  ChainId,
-  getChains,
-  getChildChainIds,
-  isNetwork
-} from '../util/networks'
+import { getChains, getChildChainIds, isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {

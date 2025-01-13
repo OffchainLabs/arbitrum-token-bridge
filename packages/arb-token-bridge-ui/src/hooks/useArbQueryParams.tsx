@@ -32,7 +32,7 @@ import {
   getChainQueryParamForChain,
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
-import { ChainId } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'
