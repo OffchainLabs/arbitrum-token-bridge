@@ -1,5 +1,5 @@
 import { loadEnvironmentVariableWithFallback } from '..'
-import { ChainId } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { ProductionChainId } from './getRpcUrl'
 
 export function getAlchemyRpcUrl(

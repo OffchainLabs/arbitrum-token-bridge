@@ -1,4 +1,4 @@
-import { ChainId } from '../networks'
+import { ChainId } from '../../types/ChainId'
 
 import { getInfuraRpcUrl } from './infura'
 import { getAlchemyRpcUrl } from './alchemy'
@@ -17,7 +17,7 @@ function getRpcProvider(): RpcProvider {
 
 export function getRpcUrl(
   chainId: ProductionChainId,
-  rpcProvider: string = getRpcProvider(),
+  rpcProvider: RpcProvider = getRpcProvider(),
   rpcProviderKey?: string
 ): string | undefined {
   switch (rpcProvider) {

@@ -1,5 +1,5 @@
 import { loadEnvironmentVariableWithFallback } from '..'
-import { ChainId } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { ProductionChainId } from './getRpcUrl'
 
 export type InfuraSupportedChainId = Exclude<
@@ -8,7 +8,7 @@ export type InfuraSupportedChainId = Exclude<
   ChainId.ArbitrumNova
 >
 
-export function getInfuraKey(chainId: InfuraSupportedChainId): string {
+export function getInfuraKeyFromEnv(chainId: InfuraSupportedChainId): string {
   const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 
   switch (chainId) {
@@ -59,7 +59,7 @@ export function getInfuraKey(chainId: InfuraSupportedChainId): string {
 
 export function getInfuraRpcUrl(
   chainId: InfuraSupportedChainId,
-  infuraKey: string = getInfuraKey(chainId)
+  infuraKey: string = getInfuraKeyFromEnv(chainId)
 ): string {
   switch (chainId) {
     // L1 Mainnet
