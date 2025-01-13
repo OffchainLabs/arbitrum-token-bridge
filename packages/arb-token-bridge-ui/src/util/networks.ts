@@ -414,15 +414,15 @@ export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
 }
 
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
   fallback: 'http://127.0.0.1:8545'
 })
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
   fallback: 'http://127.0.0.1:8547'
 })
 export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
   fallback: 'http://127.0.0.1:3347'
 })
 
