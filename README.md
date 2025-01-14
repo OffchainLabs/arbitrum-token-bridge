@@ -73,9 +73,9 @@ Interested in contributing to this repo? We welcome your contribution.
 
    4. For custom urls, set optional vars:
 
-   - `NEXT_PUBLIC_ETHEREUM_RPC_URL=my-eth-node`
-   - `NEXT_PUBLIC_SEPOLIA_RPC_URL=my-sepolia-node`
-     (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
+   - `NEXT_PUBLIC_RPC_URL_ETHEREUM=my-eth-node`
+   - `NEXT_PUBLIC_RPC_URL_SEPOLIA=my-sepolia-node`
+     (see [.env.local.sample](./packages/arb-token-bridge-ui/.env.local.sample))
      If no custom URL is provided, Infura will be used by default.
 
 5. Build the project and internal packages
