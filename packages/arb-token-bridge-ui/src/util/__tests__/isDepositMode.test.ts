@@ -1,8 +1,8 @@
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 
-import { ChainId } from '../networks'
 import { orbitMainnets } from '../orbitChainsList'
 import { isDepositMode } from '../isDepositMode'
+import { ChainId } from '../../types/ChainId'
 
 beforeAll(() => {
   // L2 Orbit, custom gas token: SX

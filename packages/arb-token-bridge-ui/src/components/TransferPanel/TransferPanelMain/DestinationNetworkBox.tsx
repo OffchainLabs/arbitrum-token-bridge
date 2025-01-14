@@ -30,6 +30,7 @@ import { Loader } from '../../common/atoms/Loader'
 import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { getTransferMode } from '../../../util/getTransferMode'
 
 function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -37,8 +38,10 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrency = useNativeCurrency({
     provider: networks.destinationChainProvider
   })
-  const { isDepositMode, isDepositOrTeleportMode } =
-    useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   if (nativeCurrency.isCustom) {
     return (
@@ -46,7 +49,7 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
         forToken={nativeCurrency}
         balance={nativeCurrencyBalances.destinationBalance}
         on={
-          isDepositOrTeleportMode
+          transferMode === 'deposit' || transferMode === 'teleport'
             ? NetworkType.childChain
             : NetworkType.parentChain
         }
@@ -68,7 +71,9 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
       <span className="font-light">{prefix}</span>
       <span
         aria-label={`ETH balance amount on ${
-          isDepositMode ? NetworkType.childChain : NetworkType.parentChain
+          transferMode === 'deposit'
+            ? NetworkType.childChain
+            : NetworkType.parentChain
         }`}
       >
         {formatAmount(nativeCurrencyBalances.destinationBalance, {
@@ -84,12 +89,11 @@ function DestinationNetworkBalance() {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    isDepositMode,
-    isDepositOrTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const { isArbitrumOne } = isNetwork(childChain.id)
 
   const { erc20ChildBalances } = useBalances()
@@ -105,12 +109,12 @@ function DestinationNetworkBalance() {
       <>
         <TokenBalance
           balance={
-            isDepositOrTeleportMode
+            transferMode === 'deposit' || transferMode === 'teleport'
               ? selectedTokenBalances.childBalance
               : selectedTokenBalances.parentBalance
           }
           on={
-            isDepositOrTeleportMode
+            transferMode === 'deposit' || transferMode === 'teleport'
               ? NetworkType.childChain
               : NetworkType.parentChain
           }
@@ -128,7 +132,7 @@ function DestinationNetworkBalance() {
         />
         {/* In deposit mode, when user selected USDC on mainnet,
         the UI shows the Arb One balance of both USDC.e and native USDC */}
-        {isCctpTransfer && isDepositMode && (
+        {isCctpTransfer && transferMode === 'deposit' && (
           <TokenBalance
             balance={
               (isArbitrumOne
@@ -151,7 +155,7 @@ function DestinationNetworkBalance() {
     return (
       <TokenBalance
         on={
-          isDepositOrTeleportMode
+          transferMode === 'deposit' || transferMode === 'teleport'
             ? NetworkType.childChain
             : NetworkType.parentChain
         }

@@ -16,11 +16,10 @@ export function MoveFundsButton({
   const { isTransferring } = layout
 
   const [networks] = useNetworks()
-  const isWithdrawalMode =
-    getTransferMode({
-      sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id
-    }) === 'withdrawal'
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
   )
@@ -32,7 +31,9 @@ export function MoveFundsButton({
       variant="primary"
       loading={isTransferring}
       disabled={
-        isWithdrawalMode ? !transferReady.withdrawal : !transferReady.deposit
+        transferMode === 'withdrawal'
+          ? !transferReady.withdrawal
+          : !transferReady.deposit
       }
       onClick={onClick}
       style={{

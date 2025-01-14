@@ -5,20 +5,24 @@ import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../../util/WithdrawOnlyUtils'
+import { getTransferMode } from '../../../util/getTransferMode'
 
 export function useSelectedTokenIsWithdrawOnly() {
   const {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isWithdrawalMode, parentChain, childChain } =
-    useNetworksRelationship(networks)
+  const { parentChain, childChain } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const queryKey = useMemo(() => {
     if (!selectedToken) {
       return null
     }
-    if (isWithdrawalMode) {
+    if (transferMode === 'withdrawal') {
       return null
     }
     return [
@@ -26,7 +30,7 @@ export function useSelectedTokenIsWithdrawOnly() {
       parentChain.id,
       childChain.id
     ] as const
-  }, [selectedToken, isWithdrawalMode, parentChain.id, childChain.id])
+  }, [selectedToken, transferMode, parentChain.id, childChain.id])
 
   const { data: isSelectedTokenWithdrawOnly, isLoading } = useSWRImmutable(
     queryKey,

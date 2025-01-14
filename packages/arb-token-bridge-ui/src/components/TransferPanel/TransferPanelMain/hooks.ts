@@ -6,10 +6,10 @@ import {
 } from '../../../util/TokenUtils'
 import { useActions, useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { TokenType } from '../../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
+import { getTransferMode } from '../../../util/getTransferMode'
 
 const commonUSDC = {
   name: 'USD Coin',
@@ -28,7 +28,10 @@ export function useUpdateUSDCTokenData() {
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isWithdrawalMode } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const {
     isArbitrumOne: isDestinationChainArbitrumOne,
     isArbitrumSepolia: isDestinationChainArbitrumSepolia
@@ -42,7 +45,7 @@ export function useUpdateUSDCTokenData() {
 
     // If user select native USDC on L2, when switching to deposit mode,
     // we need to default to set the corresponding USDC on L1
-    if (isWithdrawalMode) {
+    if (transferMode === 'withdrawal') {
       return
     }
 
@@ -65,7 +68,7 @@ export function useUpdateUSDCTokenData() {
     }
   }, [
     actions.app,
-    isWithdrawalMode,
+    transferMode,
     isDestinationChainArbitrumOne,
     isDestinationChainArbitrumSepolia,
     selectedToken,

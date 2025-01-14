@@ -2,7 +2,6 @@ import { useAccount } from 'wagmi'
 import { BigNumber, constants } from 'ethers'
 
 import { useBalance } from './useBalance'
-import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
 import { ERC20BridgeToken } from './arbTokenBridge.types'
 import { useNativeCurrencyBalances } from '../components/TransferPanel/TransferPanelMain/useNativeCurrencyBalances'
@@ -10,6 +9,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../util/TokenUtils'
+import { getTransferMode } from '../util/getTransferMode'
 
 /**
  * Balance of the child chain's native currency or ERC20 token
@@ -18,12 +18,20 @@ export function useBalanceOnSourceChain(
   token: ERC20BridgeToken | null
 ): BigNumber | null {
   const { address: walletAddress } = useAccount()
-  const [networks] = useNetworks()
-  const { isDepositOrTeleportMode } = useNetworksRelationship(networks)
+  const [
+    {
+      sourceChain: { id: sourceChainId },
+      destinationChain: { id: destinationChainId }
+    }
+  ] = useNetworks()
+  const transferMode = getTransferMode({
+    sourceChainId,
+    destinationChainId
+  })
 
   const {
     erc20: [erc20SourceChainBalances]
-  } = useBalance({ chainId: networks.sourceChain.id, walletAddress })
+  } = useBalance({ chainId: sourceChainId, walletAddress })
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
 
@@ -39,7 +47,7 @@ export function useBalanceOnSourceChain(
     return constants.Zero
   }
 
-  if (isDepositOrTeleportMode) {
+  if (transferMode === 'deposit' || transferMode === 'teleport') {
     return erc20SourceChainBalances[tokenAddressLowercased] ?? constants.Zero
   }
 

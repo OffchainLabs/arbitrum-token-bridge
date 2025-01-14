@@ -31,6 +31,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { getTransferMode } from '../../util/getTransferMode'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -127,13 +128,12 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     layout: { isTransferring }
   } = useAppContextState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    isTeleportMode,
-    isDepositOrTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain } =
+    useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
@@ -218,19 +218,22 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       gasSummary,
       {
         isSmartContractWallet,
-        isDepositMode: isDepositOrTeleportMode
+        isDepositMode: transferMode === 'deposit' || transferMode === 'teleport'
       }
     )
 
-    const ethBalanceFloat = isDepositOrTeleportMode
-      ? ethL1BalanceFloat
-      : ethL2BalanceFloat
-    const selectedTokenBalanceFloat = isDepositOrTeleportMode
-      ? selectedTokenL1BalanceFloat
-      : selectedTokenL2BalanceFloat
-    const customFeeTokenBalanceFloat = isDepositOrTeleportMode
-      ? customFeeTokenL1BalanceFloat
-      : ethL2BalanceFloat
+    const ethBalanceFloat =
+      transferMode === 'deposit' || transferMode === 'teleport'
+        ? ethL1BalanceFloat
+        : ethL2BalanceFloat
+    const selectedTokenBalanceFloat =
+      transferMode === 'deposit' || transferMode === 'teleport'
+        ? selectedTokenL1BalanceFloat
+        : selectedTokenL2BalanceFloat
+    const customFeeTokenBalanceFloat =
+      transferMode === 'deposit' || transferMode === 'teleport'
+        ? customFeeTokenL1BalanceFloat
+        : ethL2BalanceFloat
 
     // No error while loading balance
     if (ethBalanceFloat === null) {
@@ -266,7 +269,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     }
 
     // teleport transfers using SC wallets not enabled yet
-    if (isSmartContractWallet && isTeleportMode) {
+    if (isSmartContractWallet && transferMode === 'teleport') {
       return notReady({
         errorMessages: {
           inputAmount1:
@@ -284,7 +287,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     if (selectedToken) {
       const selectedTokenIsDisabled =
         isTransferDisabledToken(selectedToken.address, childChain.id) ||
-        (isTeleportMode &&
+        (transferMode === 'teleport' &&
           !isTeleportEnabledToken(
             selectedToken.address,
             parentChain.id,
@@ -292,7 +295,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           ))
 
       if (
-        isDepositOrTeleportMode &&
+        (transferMode === 'deposit' || transferMode === 'teleport') &&
         isSelectedTokenWithdrawOnly &&
         !isSelectedTokenWithdrawOnlyLoading
       ) {
@@ -404,7 +407,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       case 'success': {
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
-          if (nativeCurrency.isCustom && isDepositOrTeleportMode) {
+          if (
+            nativeCurrency.isCustom &&
+            (transferMode === 'deposit' || transferMode === 'teleport')
+          ) {
             // Still loading custom fee token balance
             if (customFeeTokenL1BalanceFloat === null) {
               return notReady()
@@ -498,7 +504,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           return ready()
         }
 
-        if (nativeCurrency.isCustom && isDepositOrTeleportMode) {
+        if (
+          nativeCurrency.isCustom &&
+          (transferMode === 'deposit' || transferMode === 'teleport')
+        ) {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
           if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
@@ -546,7 +555,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     destinationAddressError,
     isSmartContractWallet,
     selectedToken,
-    isDepositOrTeleportMode,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
@@ -558,7 +566,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childChain.id,
     parentChain.id,
     networks.sourceChain.name,
-    isTeleportMode,
+    transferMode,
     isSelectedTokenWithdrawOnly,
     isSelectedTokenWithdrawOnlyLoading
   ])

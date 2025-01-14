@@ -34,6 +34,7 @@ import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelect
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { getTransferMode } from '../../../util/getTransferMode'
 
 function Amount2ToggleButton({
   onClick
@@ -78,8 +79,11 @@ export function SourceNetworkBox() {
     useAmount2InputVisibility()
 
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositOrTeleportMode } =
-    useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const {
     app: { selectedToken }
   } = useAppState()
@@ -221,21 +225,22 @@ export function SourceNetworkBox() {
             </p>
           )}
 
-          {isDepositOrTeleportMode && selectedToken && (
-            <p className="mt-1 text-xs font-light text-white">
-              Make sure you have {nativeCurrency.symbol} in your{' '}
-              {getNetworkName(childChain.id)} account, as you’ll need it to
-              power transactions.
-              <br />
-              <ExternalLink
-                href={ETH_BALANCE_ARTICLE_LINK}
-                className="arb-hover underline"
-              >
-                Learn more
-              </ExternalLink>
-              .
-            </p>
-          )}
+          {(transferMode === 'deposit' || transferMode === 'teleport') &&
+            selectedToken && (
+              <p className="mt-1 text-xs font-light text-white">
+                Make sure you have {nativeCurrency.symbol} in your{' '}
+                {getNetworkName(childChain.id)} account, as you’ll need it to
+                power transactions.
+                <br />
+                <ExternalLink
+                  href={ETH_BALANCE_ARTICLE_LINK}
+                  className="arb-hover underline"
+                >
+                  Learn more
+                </ExternalLink>
+                .
+              </p>
+            )}
         </div>
         <EstimatedGas chainType="source" />
       </NetworkContainer>

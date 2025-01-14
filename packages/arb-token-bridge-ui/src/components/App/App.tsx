@@ -109,15 +109,19 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       destinationChainId: networks.destinationChain.id
     })
 
-    if (transferMode === 'deposit') {
-      console.info('Deposit mode detected:')
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else if (transferMode === 'teleport') {
-      console.info('Teleport mode detected:')
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else if (transferMode === 'withdrawal') {
-      console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
+    switch (transferMode) {
+      case 'deposit':
+        console.info('Deposit mode detected:')
+        actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+        break
+      case 'teleport':
+        console.info('Teleport mode detected:')
+        actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+        break
+      case 'withdrawal':
+        console.info('Withdrawal mode detected:')
+        actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
+        break
     }
 
     setTokenBridgeParams({

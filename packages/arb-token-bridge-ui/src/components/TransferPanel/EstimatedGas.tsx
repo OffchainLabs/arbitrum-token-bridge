@@ -82,11 +82,10 @@ export function EstimatedGas({
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
   )
-  const isWithdrawalMode =
-    getTransferMode({
-      sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id
-    }) === 'withdrawal'
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const isDestinationArbOne = isNetwork(
     networks.destinationChain.id
@@ -95,11 +94,11 @@ export function EstimatedGas({
     networks.destinationChain.id
   ).isArbitrumSepolia
 
-  const isWithdrawalParentChain = isWithdrawalMode && isParentChain
+  const isWithdrawalParentChain = transferMode === 'withdrawal' && isParentChain
 
   const estimatedGasFee = useMemo(() => {
     if (
-      isWithdrawalMode &&
+      transferMode === 'withdrawal' &&
       !isParentChain &&
       typeof estimatedParentChainGasFees !== 'undefined' &&
       typeof estimatedChildChainGasFees !== 'undefined'
@@ -112,7 +111,7 @@ export function EstimatedGas({
   }, [
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
-    isWithdrawalMode,
+    transferMode,
     isParentChain
   ])
 

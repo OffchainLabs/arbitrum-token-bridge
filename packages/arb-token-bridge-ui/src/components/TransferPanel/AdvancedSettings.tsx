@@ -102,8 +102,6 @@ export const AdvancedSettings = () => {
     sourceChainId: networks.sourceChain.id,
     destinationChainId: networks.destinationChain.id
   })
-  const isDepositOrTeleportMode =
-    transferMode === 'deposit' || transferMode === 'teleport'
 
   useEffect(() => {
     // Initially hide for EOA and if destination address query param is empty
@@ -262,7 +260,9 @@ export const AdvancedSettings = () => {
           <ExternalLink
             className="arb-hover mt-2 flex w-fit items-center text-xs font-medium text-white/50"
             href={`${getExplorerUrl(
-              isDepositOrTeleportMode ? childChain.id : parentChain.id
+              transferMode === 'deposit' || transferMode === 'teleport'
+                ? childChain.id
+                : parentChain.id
             )}/address/${destinationAddress}`}
           >
             <ArrowDownTrayIcon

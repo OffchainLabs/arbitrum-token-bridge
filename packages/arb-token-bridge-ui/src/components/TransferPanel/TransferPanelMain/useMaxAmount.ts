@@ -10,6 +10,7 @@ import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { getTransferMode } from '../../../util/getTransferMode'
 
 export function useMaxAmount() {
   const {
@@ -17,8 +18,11 @@ export function useMaxAmount() {
   } = useAppState()
   const selectedTokenBalances = useSelectedTokenBalances()
   const [networks] = useNetworks()
-  const { childChainProvider, isWithdrawalMode, isDepositOrTeleportMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
@@ -36,7 +40,10 @@ export function useMaxAmount() {
     }
 
     // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
-    if (nativeCurrency.isCustom && isDepositOrTeleportMode) {
+    if (
+      nativeCurrency.isCustom &&
+      (transferMode === 'deposit' || transferMode === 'teleport')
+    ) {
       return utils.formatUnits(
         nativeCurrencySourceBalance,
         nativeCurrencyDecimalsOnSourceChain
@@ -72,7 +79,7 @@ export function useMaxAmount() {
   }, [
     estimatedChildChainGasFees,
     estimatedParentChainGasFees,
-    isDepositOrTeleportMode,
+    transferMode,
     nativeCurrency.isCustom,
     nativeCurrencyBalances.sourceBalance,
     nativeCurrencyDecimalsOnSourceChain
@@ -80,9 +87,10 @@ export function useMaxAmount() {
 
   const maxAmount = useMemo(() => {
     if (selectedToken) {
-      const tokenBalance = isDepositOrTeleportMode
-        ? selectedTokenBalances.parentBalance
-        : selectedTokenBalances.childBalance
+      const tokenBalance =
+        transferMode === 'deposit' || transferMode === 'teleport'
+          ? selectedTokenBalances.parentBalance
+          : selectedTokenBalances.childBalance
 
       if (!tokenBalance) {
         return undefined
@@ -98,14 +106,14 @@ export function useMaxAmount() {
     return nativeCurrencyMaxAmount
   }, [
     selectedToken,
-    isDepositOrTeleportMode,
+    transferMode,
     nativeCurrencyMaxAmount,
     selectedTokenBalances.parentBalance,
     selectedTokenBalances.childBalance
   ])
 
   const maxAmount2 = useMemo(() => {
-    if (isWithdrawalMode) {
+    if (transferMode === 'withdrawal') {
       return undefined
     }
     if (typeof estimatedChildChainGasFees === 'undefined') {
@@ -123,7 +131,7 @@ export function useMaxAmount() {
 
     return nativeCurrencyMaxAmount
   }, [
-    isWithdrawalMode,
+    transferMode,
     estimatedChildChainGasFees,
     nativeCurrencyMaxAmount,
     nativeCurrency.isCustom

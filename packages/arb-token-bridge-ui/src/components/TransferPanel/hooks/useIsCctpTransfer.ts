@@ -1,6 +1,7 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useAppState } from '../../../state'
+import { getTransferMode } from '../../../util/getTransferMode'
 import { isNetwork } from '../../../util/networks'
 import {
   isTokenArbitrumOneNativeUSDC,
@@ -14,19 +15,22 @@ export const useIsCctpTransfer = function () {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, isDepositMode, isTeleportMode } =
-    useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
   if (!selectedToken) {
     return false
   }
 
-  if (isTeleportMode) {
+  if (transferMode === 'teleport') {
     return false
   }
 
-  if (isDepositMode) {
+  if (transferMode === 'deposit') {
     if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
       return true
     }

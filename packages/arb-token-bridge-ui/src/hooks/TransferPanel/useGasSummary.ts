@@ -18,6 +18,7 @@ import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
+import { getTransferMode } from '../../util/getTransferMode'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -37,12 +38,12 @@ export function useGasSummary(): UseGasSummaryResult {
     app: { selectedToken: token }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChainProvider,
-    parentChainProvider,
-    isWithdrawalMode,
-    isDepositOrTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChainProvider, parentChainProvider } =
+    useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
@@ -67,15 +68,17 @@ export function useGasSummary(): UseGasSummaryResult {
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
       amount: amountBigNumber,
-      sourceChainErc20Address: isDepositOrTeleportMode
-        ? token?.address
-        : isTokenArbitrumOneNativeUSDC(token?.address) ||
-          isTokenArbitrumSepoliaNativeUSDC(token?.address)
-        ? token?.address
-        : token?.l2Address,
-      destinationChainErc20Address: isDepositOrTeleportMode
-        ? token?.l2Address
-        : token?.address
+      sourceChainErc20Address:
+        transferMode === 'deposit' || transferMode === 'teleport'
+          ? token?.address
+          : isTokenArbitrumOneNativeUSDC(token?.address) ||
+            isTokenArbitrumSepoliaNativeUSDC(token?.address)
+          ? token?.address
+          : token?.l2Address,
+      destinationChainErc20Address:
+        transferMode === 'deposit' || transferMode === 'teleport'
+          ? token?.l2Address
+          : token?.address
     })
 
   const estimatedParentChainGasFees = useMemo(() => {
@@ -94,7 +97,7 @@ export function useGasSummary(): UseGasSummaryResult {
       return
     }
     if (
-      isDepositOrTeleportMode &&
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
       'estimatedChildChainSubmissionCost' in estimateGasResult
     ) {
       return parseFloat(
@@ -118,11 +121,11 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedChildChainGas.mul(childChainGasPrice)
       )
     )
-  }, [childChainGasPrice, estimateGasResult, isDepositOrTeleportMode])
+  }, [childChainGasPrice, estimateGasResult, transferMode])
 
   const gasSummary: UseGasSummaryResult = useMemo(() => {
     if (
-      isWithdrawalMode &&
+      transferMode === 'withdrawal' &&
       (isTokenArbitrumOneNativeUSDC(token?.address) ||
         isTokenArbitrumSepoliaNativeUSDC(token?.address))
     ) {
@@ -163,7 +166,7 @@ export function useGasSummary(): UseGasSummaryResult {
       estimatedChildChainGasFees
     }
   }, [
-    isWithdrawalMode,
+    transferMode,
     token?.address,
     balance,
     amountBigNumber,

@@ -33,6 +33,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
+import { getTransferMode } from '../../util/getTransferMode'
 
 function tokenListIdsToNames(ids: string[]): string {
   return ids
@@ -142,10 +143,13 @@ interface TokenRowProps {
 
 function useTokenInfo(token: ERC20BridgeToken | null) {
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode, isTeleportMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
   const chainId = networks.sourceChain.id
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const name = useMemo(() => {
     if (token) {
@@ -207,12 +211,12 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
       return false
     }
 
-    if (isDepositMode || isTeleportMode) {
+    if (transferMode === 'deposit' || transferMode === 'teleport') {
       return true
     }
 
     return typeof token?.l2Address !== 'undefined'
-  }, [isDepositMode, isTeleportMode, token])
+  }, [transferMode, token])
 
   return {
     name,
@@ -301,18 +305,21 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
 
 function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    isDepositOrTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain } =
+    useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
-  if (isCustomFeeTokenRow && isDepositOrTeleportMode) {
+  if (
+    isCustomFeeTokenRow &&
+    (transferMode === 'deposit' || transferMode === 'teleport')
+  ) {
     return (
       <BlockExplorerTokenLink
         chain={parentChain}
@@ -325,7 +332,7 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
     return null
   }
 
-  if (isDepositOrTeleportMode) {
+  if (transferMode === 'deposit' || transferMode === 'teleport') {
     return token?.isL2Native ? (
       <BlockExplorerTokenLink chain={childChain} address={token.address} />
     ) : (

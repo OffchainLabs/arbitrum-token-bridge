@@ -22,6 +22,7 @@ import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { getTransferMode } from '../../util/getTransferMode'
 
 function MaxButton({
   className = '',
@@ -31,7 +32,10 @@ function MaxButton({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositOrTeleportMode } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -39,9 +43,10 @@ function MaxButton({
   const maxButtonVisible = useMemo(() => {
     const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
 
-    const tokenBalance = isDepositOrTeleportMode
-      ? selectedTokenBalances.parentBalance
-      : selectedTokenBalances.childBalance
+    const tokenBalance =
+      transferMode === 'deposit' || transferMode === 'teleport'
+        ? selectedTokenBalances.parentBalance
+        : selectedTokenBalances.childBalance
 
     if (selectedToken) {
       return tokenBalance && !tokenBalance.isZero()
@@ -50,7 +55,7 @@ function MaxButton({
     return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
     nativeCurrencyBalances.sourceBalance,
-    isDepositOrTeleportMode,
+    transferMode,
     selectedTokenBalances.parentBalance,
     selectedTokenBalances.childBalance,
     selectedToken
@@ -85,8 +90,11 @@ function SourceChainTokenBalance({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositOrTeleportMode, childChainProvider } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const selectedTokenDecimals = useSelectedTokenDecimals()
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -94,9 +102,10 @@ function SourceChainTokenBalance({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenBalance = isDepositOrTeleportMode
-    ? selectedTokenBalances.parentBalance
-    : selectedTokenBalances.childBalance
+  const tokenBalance =
+    transferMode === 'deposit' || transferMode === 'teleport'
+      ? selectedTokenBalances.parentBalance
+      : selectedTokenBalances.childBalance
 
   const balance =
     balanceOverride ??
@@ -119,7 +128,9 @@ function SourceChainTokenBalance({
         <span
           className="whitespace-nowrap text-sm text-white"
           aria-label={`${symbol} balance amount on ${
-            isDepositOrTeleportMode ? 'parentChain' : 'childChain'
+            transferMode === 'deposit' || transferMode === 'teleport'
+              ? 'parentChain'
+              : 'childChain'
           }`}
         >
           {formattedBalance}
