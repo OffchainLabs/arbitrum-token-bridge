@@ -28,7 +28,7 @@ async function getParentTxReceipt(
   parentChainId: number
 ): Promise<ParentTransactionReceipt | undefined> {
   try {
-    const parentProvider = getProviderForChainId(Number(parentChainId))
+    const parentProvider = getProviderForChainId(parentChainId)
 
     const receipt = await parentProvider.getTransactionReceipt(txHash)
     if (receipt) {
@@ -82,13 +82,18 @@ async function getChildChainMessages(
 
   const isClassic = await parentTxReceipt.isClassic(childProvider)
 
-  const parentToChildMessagesClassic = isClassic
-    ? await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
-    : ([] as ParentToChildMessageReaderClassic[])
+  const parentToChildMessagesPromises = isClassic
+    ? [
+        parentTxReceipt.getParentToChildMessagesClassic(childProvider),
+        [] as ParentToChildMessageReader[]
+      ]
+    : [
+        [] as ParentToChildMessageReaderClassic[],
+        parentTxReceipt.getParentToChildMessages(childProvider)
+      ]
 
-  const parentToChildMessages = isClassic
-    ? ([] as ParentToChildMessageReader[])
-    : await parentTxReceipt.getParentToChildMessages(childProvider)
+  const [parentToChildMessagesClassic, parentToChildMessages] =
+    await Promise.all(parentToChildMessagesPromises)
 
   const ethDeposits = await parentTxReceipt.getEthDeposits(childProvider)
 
