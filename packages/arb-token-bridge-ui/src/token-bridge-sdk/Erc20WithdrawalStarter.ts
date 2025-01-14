@@ -87,8 +87,8 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   }
 
   /**
-   * Most tokens inherently allows the token gateway to burn whichever amount
-   * on the child chain for withdrawal because they inherited the
+   * Most tokens inherently allow the token gateway to burn the withdrawal amount
+   * on the child chain because they inherit the
    * IArbToken interface that allows the gateway to burn without allowance approval
    *
    * if the token does not have the bridgeBurn method, approval is required
