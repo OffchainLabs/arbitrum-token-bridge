@@ -1054,6 +1054,54 @@
         },
         "fastWithdrawalTime": 3600000
       }
+    },
+    {
+      "chainId": 668668,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x9be649C1C1D073536D55db83abA093E8558A962E",
+        "inbox": "0x1BEdFe383749b07A73370496E035c31Fd336509C",
+        "outbox": "0x09E2EF7161c89aAC723f817695629BEBd9914f41",
+        "rollup": "0x65DC757cd6A72332e37FD49382396b9aCee35462",
+        "sequencerInbox": "0xF759d5DD167072D470D08BF65Aef1aD3F8Efc947"
+      },
+      "nativeToken": "0xb8D4554538991977E49E4C5490B92CFE58EF5281",
+      "explorerUrl": "https://conwai.calderaexplorer.xyz/",
+      "rpcUrl": "https://conwai.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Conwai",
+      "slug": "conwai",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0xa69A708032931b5f9A79Ce0e7b976F759327a7bD",
+        "parentErc20Gateway": "0x86495D9c9E8Bd8E0b8F52bED8A90d43601d46C07",
+        "parentGatewayRouter": "0xe0a4b93C0f34b04358c8788e54A097D6769fD0eD",
+        "parentMultiCall": "0x411f8A148e448bBe75382d4FFABee0796484f3c6",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x39537559ADD8396CDed00849f611D0feE7A42122",
+        "childErc20Gateway": "0xc4BC8400fF5825a0DD0B5737fa1041Ae77CB5ff6",
+        "childGatewayRouter": "0xe0eFA3089D69ac76737712D925ED0D21e6EbD544",
+        "childMultiCall": "0xfCa388141231b858A8426f298ca77f771e9E3c3A",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#000000",
+        "network": {
+          "name": "Conwai",
+          "logo": "/images/Conwai_Logo.svg",
+          "description": "Layer 3 for the full AI lifecycle."
+        },
+        "nativeTokenData": {
+          "name": "Conwai",
+          "symbol": "CNW",
+          "logoUrl": "/images/Conwai_NativeTokenLogo.svg"
+        }
+      }
     }
   ],
   "testnet": [
