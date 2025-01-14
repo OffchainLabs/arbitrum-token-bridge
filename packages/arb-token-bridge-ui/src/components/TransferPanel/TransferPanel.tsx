@@ -485,7 +485,7 @@ export function TransferPanel() {
         assetType: AssetType.ERC20,
         blockNum: null,
         createdAt: dayjs().valueOf(),
-        direction: transferMode,
+        direction: transferMode === 'deposit' ? 'deposit' : 'withdraw',
         isWithdrawal: transferMode === 'withdrawal',
         resolvedAt: null,
         status: 'pending',
