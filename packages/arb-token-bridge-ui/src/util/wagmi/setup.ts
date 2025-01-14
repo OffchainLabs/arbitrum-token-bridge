@@ -3,7 +3,11 @@ import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
+import {
+  trustWallet,
+  okxWallet,
+  rabbyWallet
+} from '@rainbow-me/rainbowkit/wallets'
 
 import {
   sepolia,
@@ -17,7 +21,8 @@ import {
   baseSepolia
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
+import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
@@ -154,7 +159,7 @@ export function getProps(targetChainKey: string | null) {
     ...wallets,
     {
       groupName: 'More',
-      wallets: [trustWallet({ chains, projectId })]
+      wallets: [trustWallet({ chains, projectId }), rabbyWallet({ chains })]
     }
   ])
 

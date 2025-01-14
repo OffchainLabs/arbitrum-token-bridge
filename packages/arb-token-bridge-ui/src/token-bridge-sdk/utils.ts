@@ -1,7 +1,8 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
-import { ChainId, isNetwork, rpcURLs } from '../util/networks'
+import { isNetwork, rpcURLs } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 import { isValidTeleportChainPair } from './teleport'
 import {
