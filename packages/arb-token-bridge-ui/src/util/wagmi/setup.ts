@@ -1,11 +1,14 @@
 import { mainnet, arbitrum } from 'wagmi/chains'
-import { Chain } from '@rainbow-me/rainbowkit'
 import {
   connectorsForWallets,
   getDefaultConfig,
   getDefaultWallets
 } from '@rainbow-me/rainbowkit'
-import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
+import {
+  trustWallet,
+  okxWallet,
+  rabbyWallet
+} from '@rainbow-me/rainbowkit/wallets'
 
 import {
   sepolia,
@@ -18,11 +21,14 @@ import {
   base,
   baseSepolia
 } from './wagmiAdditionalNetworks'
-import { isTestingEnvironment } from '../CommonUtils'
-import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
+import {
+  isE2eTestingEnvironment,
+  isDevelopmentEnvironment
+} from '../CommonUtils'
+import { getCustomChainsFromLocalStorage } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
-import { customInfuraProvider } from '../infura'
 import { createConfig } from 'wagmi'
 import { _chains } from '@rainbow-me/rainbowkit/dist/config/getDefaultConfig'
 
@@ -46,8 +52,22 @@ const defaultChains = [
   holesky
 ]
 
-const chainList: Chain[] = isTestingEnvironment
-  ? [
+const getChainList = () => {
+  // for E2E tests, only have local + minimal required chains
+  if (isE2eTestingEnvironment) {
+    return [
+      local,
+      arbitrumLocal,
+      l3Local,
+      sepolia, // required for testing cctp
+      arbitrumSepolia, // required for testing cctp
+      mainnet // required for import token test
+    ]
+  }
+
+  // for local env, have all local + default + user added chains
+  if (isDevelopmentEnvironment) {
+    return [
       ...defaultChains,
       // Orbit chains
       ...wagmiOrbitChains,
@@ -58,7 +78,13 @@ const chainList: Chain[] = isTestingEnvironment
       // user-added custom chains
       ...customChains
     ]
-  : [...defaultChains, ...wagmiOrbitChains, ...customChains]
+  }
+
+  // for preview + production env, return all non-local chains
+  return [...defaultChains, ...wagmiOrbitChains, ...customChains]
+}
+
+const chainList = getChainList()
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
@@ -160,7 +186,7 @@ export function getProps(targetChainKey: string | null) {
       ...wallets,
       {
         groupName: 'More',
-        wallets: [trustWallet]
+        wallets: [trustWallet, rabbyWallet]
       }
     ],
     appInfo

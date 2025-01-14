@@ -15,7 +15,8 @@ import {
   TeleporterMergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { ChainId, getL1BlockTime, isNetwork } from '../../util/networks'
+import { getL1BlockTime, isNetwork } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import {
   getParentToChildMessageDataFromParentTxHash,
