@@ -14,6 +14,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { getTransferMode } from '../../util/getTransferMode'
 
 function getGasFeeTooltip(chainId: ChainId) {
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
@@ -58,13 +59,8 @@ export function EstimatedGas({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isWithdrawalMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
   })
@@ -86,6 +82,11 @@ export function EstimatedGas({
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
   )
+  const isWithdrawalMode =
+    getTransferMode({
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    }) === 'withdrawal'
 
   const isDestinationArbOne = isNetwork(
     networks.destinationChain.id

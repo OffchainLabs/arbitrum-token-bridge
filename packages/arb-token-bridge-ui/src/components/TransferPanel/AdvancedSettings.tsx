@@ -17,6 +17,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { getTransferMode } from '../../util/getTransferMode'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -75,13 +76,8 @@ export const AdvancedSettings = () => {
   const { advancedSettingsCollapsed, setAdvancedSettingsCollapsed } =
     useAdvancedSettingsStore()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositOrTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 
@@ -101,6 +97,13 @@ export const AdvancedSettings = () => {
   const [initialDestinationAddressFromQueryParams] = useState(
     destinationAddressFromQueryParams
   )
+
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
+  const isDepositOrTeleportMode =
+    transferMode === 'deposit' || transferMode === 'teleport'
 
   useEffect(() => {
     // Initially hide for EOA and if destination address query param is empty
@@ -138,7 +141,6 @@ export const AdvancedSettings = () => {
     }
   }, [
     destinationAddress,
-    isDepositOrTeleportMode,
     isEOA,
     childChainProvider,
     parentChainProvider,

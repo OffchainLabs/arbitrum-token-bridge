@@ -40,6 +40,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
+import { getTransferMode } from '../../util/getTransferMode'
 
 declare global {
   interface Window {
@@ -62,14 +63,8 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
@@ -109,13 +104,18 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       l2NetworkChainId: childChain.id
     })
 
-    if (isDepositMode) {
+    const transferMode = getTransferMode({
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    })
+
+    if (transferMode === 'deposit') {
       console.info('Deposit mode detected:')
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else if (isTeleportMode) {
+    } else if (transferMode === 'teleport') {
       console.info('Teleport mode detected:')
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
+    } else if (transferMode === 'withdrawal') {
       console.info('Withdrawal mode detected:')
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
@@ -132,14 +132,13 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     })
   }, [
     networks.sourceChain.id,
+    networks.destinationChain.id,
     parentChain.id,
     childChain.id,
     parentChain,
     childChain,
     parentChainProvider,
-    childChainProvider,
-    isDepositMode,
-    isTeleportMode
+    childChainProvider
   ])
 
   useEffect(() => {

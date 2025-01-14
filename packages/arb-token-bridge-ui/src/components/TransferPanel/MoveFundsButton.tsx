@@ -6,8 +6,8 @@ import { useAppContextState } from '../App/AppContext'
 import { Button } from '../common/Button'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getNetworkName } from '../../util/networks'
+import { getTransferMode } from '../../util/getTransferMode'
 
 export function MoveFundsButton({
   onClick
@@ -16,7 +16,11 @@ export function MoveFundsButton({
   const { isTransferring } = layout
 
   const [networks] = useNetworks()
-  const { isWithdrawalMode } = useNetworksRelationship(networks)
+  const isWithdrawalMode =
+    getTransferMode({
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    }) === 'withdrawal'
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
   )
