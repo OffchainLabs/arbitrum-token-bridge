@@ -50,8 +50,21 @@ Sentry.init({
     /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i
   ],
   beforeSend: (event, hint) => {
+    if (!hint.originalException) {
+      return event
+    }
+
     if (isUserRejectedError(hint.originalException)) {
       return null
+    }
+
+    const { code, message } = hint.originalException as {
+      code?: number
+      message?: string
+    }
+
+    if (code && message) {
+      event.fingerprint = ['{{ default }}', code.toString(), message]
     }
 
     return event
