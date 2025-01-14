@@ -91,17 +91,16 @@ async function getChildChainMessages(
         [] as ParentToChildMessageReaderClassic[],
         parentTxReceipt.getParentToChildMessages(childProvider)
       ]
+  const ethDepositsPromise = parentTxReceipt.getEthDeposits(childProvider)
 
-  const [parentToChildMessagesClassic, parentToChildMessages] =
-    await Promise.all(parentToChildMessagesPromises)
-
-  const ethDeposits = await parentTxReceipt.getEthDeposits(childProvider)
+  const [parentToChildMessagesClassic, parentToChildMessages, ethDeposits] =
+    await Promise.all([...parentToChildMessagesPromises, ethDepositsPromise])
 
   return {
     tokenDepositRetryables: parentToChildMessages,
     tokenDepositRetryablesClassic: parentToChildMessagesClassic,
-    ethDeposits
-  }
+    ethDeposits: ethDeposits
+  } as ParentToChildMessagesAndDepositMessages
 }
 
 /**
@@ -233,11 +232,7 @@ export async function fetchDepositsByParentTxHashFromEventLog({
           l2NetworkID: childChainId.toString()
         }
 
-        return await updateAdditionalDepositData({
-          depositTx,
-          parentProvider,
-          childProvider: tokenDepositMessage.childProvider
-        })
+        return await updateAdditionalDepositData(depositTx)
       })
       .filter(
         (eventLogResult): eventLogResult is Promise<Transaction> =>
@@ -276,11 +271,7 @@ export async function fetchDepositsByParentTxHashFromEventLog({
         assetName: nativeCurrency.symbol
       }
 
-      return await updateAdditionalDepositData({
-        depositTx,
-        parentProvider,
-        childProvider
-      })
+      return await updateAdditionalDepositData(depositTx)
     })
   )
 

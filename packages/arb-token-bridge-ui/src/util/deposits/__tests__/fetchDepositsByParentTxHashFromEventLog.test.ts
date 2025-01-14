@@ -1,4 +1,4 @@
-import { ChainId } from '../../networks'
+import { ChainId } from '../../../types/ChainId'
 import { fetchDepositsByParentTxHashFromEventLog } from '../fetchDepositsByParentTxHashFromEventLog'
 
 describe('fetchDepositsByParentTxHashFromEventLog', () => {
