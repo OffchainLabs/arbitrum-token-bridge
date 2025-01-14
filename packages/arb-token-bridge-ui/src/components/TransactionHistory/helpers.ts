@@ -15,7 +15,8 @@ import {
   TeleporterMergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { ChainId, getL1BlockTime, isNetwork } from '../../util/networks'
+import { getL1BlockTime, isNetwork } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import {
   getParentToChildMessageDataFromParentTxHash,
@@ -36,14 +37,6 @@ import { isTeleportTx } from '../../types/Transactions'
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
 const DEPOSITS_LOCAL_STORAGE_KEY = 'arbitrum:bridge:deposits'
-
-export enum StatusLabel {
-  PENDING = 'Pending',
-  CLAIMABLE = 'Claimable',
-  SUCCESS = 'Success',
-  EXPIRED = 'Expired',
-  FAILURE = 'Failure'
-}
 
 function isDeposit(tx: MergedTransaction): boolean {
   return !tx.isWithdrawal
