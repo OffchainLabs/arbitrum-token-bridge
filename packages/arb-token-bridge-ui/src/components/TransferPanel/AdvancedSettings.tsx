@@ -17,7 +17,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { getTransferMode } from '../../util/getTransferMode'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -97,11 +96,6 @@ export const AdvancedSettings = () => {
   const [initialDestinationAddressFromQueryParams] = useState(
     destinationAddressFromQueryParams
   )
-
-  const transferMode = getTransferMode({
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
-  })
 
   useEffect(() => {
     // Initially hide for EOA and if destination address query param is empty
@@ -260,9 +254,7 @@ export const AdvancedSettings = () => {
           <ExternalLink
             className="arb-hover mt-2 flex w-fit items-center text-xs font-medium text-white/50"
             href={`${getExplorerUrl(
-              transferMode === 'deposit' || transferMode === 'teleport'
-                ? childChain.id
-                : parentChain.id
+              networks.destinationChain.id
             )}/address/${destinationAddress}`}
           >
             <ArrowDownTrayIcon

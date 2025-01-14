@@ -15,13 +15,13 @@ export function MoveFundsButton({
   const { layout } = useAppContextState()
   const { isTransferring } = layout
 
-  const [networks] = useNetworks()
+  const [{ sourceChain, destinationChain }] = useNetworks()
   const transferMode = getTransferMode({
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
+    sourceChainId: sourceChain.id,
+    destinationChainId: destinationChain.id
   })
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
-    networks.destinationChain.id
+    destinationChain.id
   )
   const { isSmartContractWallet } = useAccountType()
   const { transferReady } = useTransferReadiness()
@@ -48,7 +48,7 @@ export function MoveFundsButton({
     >
       {isSmartContractWallet && isTransferring
         ? 'Sending request...'
-        : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
+        : `Move funds to ${getNetworkName(destinationChain.id)}`}
     </Button>
   )
 }
