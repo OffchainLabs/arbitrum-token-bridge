@@ -1005,6 +1005,55 @@
           "logoUrl": "/images/DataLakeMainnet_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 51828,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0xd46AB997110a91C4CB6f4576ffE6769a3033622A",
+        "inbox": "0xF649EF414d5674851614615b3e3861E90a812379",
+        "outbox": "0x48a5c0942046753B8026b1dc074Dd22297A31340",
+        "rollup": "0xAa400A624190FFbD09F292d09C2Ed01704609C67",
+        "sequencerInbox": "0x6CBf221c8cc7E2B9De4bce3a5c75378591Bdf8Ea"
+      },
+      "nativeToken": "0x6a9896837021EA3eD83F623F655C119c54abE02c",
+      "explorerUrl": "https://scan.chainbounty.io/",
+      "rpcUrl": "https://rpc.chainbounty.io",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "ChainBounty",
+      "slug": "chainbounty",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x5113CD511cB1bBf6d5A2BbA7c6dBe1D37D5Bd55a",
+        "parentErc20Gateway": "0x81d8Bb220060Ba83653925c2a5D5c7060fD7729B",
+        "parentGatewayRouter": "0xa55090a934B9863Ae6E7a011a320693bEFd703BA",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x73b8CcD46942A25Ca18ad8f1a12Cf23D1887BbCC",
+        "childErc20Gateway": "0xda420F3473Fb58D50fc080F3C5221A4cb0dFD4DD",
+        "childGatewayRouter": "0xbDA34ce7668707d2f3fDecf7f346d3B9dE45a246",
+        "childMultiCall": "0x56B3516DbD7066FA2252B4C792A8aD3CD75f690c",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFBA68",
+        "network": {
+          "name": "ChainBounty",
+          "logo": "/images/ChainBounty_Logo.svg",
+          "description": "ChainBounty is a decentralized platform that helps solve security challenges in the crypto space. With collective intelligence and a fair reward system, anyone can join the fight against cybercrime."
+        },
+        "nativeTokenData": {
+          "name": "ChainBounty",
+          "symbol": "BOUNTY",
+          "logoUrl": "/images/ChainBounty_NativeTokenLogo.svg"
+        },
+        "fastWithdrawalTime": 3600000
+      }
     }
   ],
   "testnet": [
