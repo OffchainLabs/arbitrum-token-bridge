@@ -41,7 +41,7 @@ export function getFastBridges({
   from,
   to,
   tokenSymbol,
-  tokenAddress,
+  tokenAddress = '',
   amount
 }: {
   from: ChainId
