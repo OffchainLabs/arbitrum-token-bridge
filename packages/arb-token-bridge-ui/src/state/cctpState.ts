@@ -1,8 +1,9 @@
-import { BigNumber } from 'ethers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import { useInterval } from 'react-use'
+import { useAccount, useChainId, useSigner } from 'wagmi'
+import dayjs from 'dayjs'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 import { getL1BlockTime, getNetworkName, isNetwork } from '../util/networks'
@@ -10,8 +11,6 @@ import { ChainId } from '../types/ChainId'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'
-import { useAccount, useSigner } from 'wagmi'
-import dayjs from 'dayjs'
 import {
   ChainDomain,
   CompletedCCTPTransfer,
@@ -169,6 +168,7 @@ type fetchCctpParams = {
   pageSize: number
   enabled: boolean
 }
+
 export const useCCTPDeposits = ({
   walletAddress,
   l1ChainId,
@@ -176,6 +176,10 @@ export const useCCTPDeposits = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
+  const { isSmartContractWallet } = useAccountType()
+  const chainId = useChainId()
+  const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
+
   return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
@@ -190,7 +194,9 @@ export const useCCTPDeposits = ({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
-        pageSize: _pageSize
+        pageSize: _pageSize,
+        connectedToEthereum: isEthereumMainnetOrTestnet,
+        isSmartContractWallet
       })
         .then(deposits => parseSWRResponse(deposits, _l1ChainId))
         .then(deposits => {
@@ -214,6 +220,10 @@ export const useCCTPWithdrawals = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
+  const { isSmartContractWallet } = useAccountType()
+  const chainId = useChainId()
+  const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
+
   return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
@@ -234,7 +244,9 @@ export const useCCTPWithdrawals = ({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
-        pageSize: _pageSize
+        pageSize: _pageSize,
+        connectedToEthereum: isEthereumMainnetOrTestnet,
+        isSmartContractWallet
       })
         .then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
         .then(withdrawals => {
