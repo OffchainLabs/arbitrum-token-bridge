@@ -64,17 +64,16 @@ const allowTxReceiptCaching = (
   chainId: number,
   txReceipt: TransactionReceipt
 ) => {
-  // failed transaction
+  // don't cache failed transactions
   if (typeof txReceipt.status !== 'undefined' && txReceipt.status === 0) {
     return false
   }
 
-  // ethereum transaction finality
+  // Finality checks, to avoid caching re-org'ed transactions
+  // source https://developers.circle.com/stablecoins/required-block-confirmations
   if (chainId === ChainId.Ethereum && txReceipt.confirmations < 65) {
     return false
   }
-
-  // sepolia transaction finality
   if (chainId === ChainId.ArbitrumSepolia && txReceipt.confirmations < 5) {
     return false
   }
