@@ -1,10 +1,10 @@
-import { useSwitchNetwork } from 'wagmi'
 import { SwitchNetworkArgs } from '@wagmi/core'
 
 import { getNetworkName, isNetwork } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { warningToast } from '../components/common/atoms/Toast'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { useSwitchChain } from 'wagmi'
 
 type SwitchNetworkConfig = {
   isSwitchingNetworkBeforeTx?: boolean
@@ -78,5 +78,5 @@ export function useSwitchNetworkWithConfig({
     onError: handleSwitchNetworkError
   }
 
-  return useSwitchNetwork(config)
+  return useSwitchChain(config)
 }
