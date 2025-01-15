@@ -175,21 +175,23 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       }
 
       if (isDepositMode) {
-        setContractAddress(
-          await fetchErc20ParentChainGatewayAddress({
+        const parentGatewayAddress =
+          token.parentBridgeAddress ??
+          (await fetchErc20ParentChainGatewayAddress({
             erc20ParentChainAddress: token.address,
             parentChainProvider,
             childChainProvider
-          })
-        )
+          }))
+        setContractAddress(parentGatewayAddress)
         return
       }
-      setContractAddress(
-        await fetchErc20L2GatewayAddress({
+      const childGatewayAddress =
+        token.childBridgeAddress ??
+        (await fetchErc20L2GatewayAddress({
           erc20L1Address: token.address,
           l2Provider: childChainProvider
-        })
-      )
+        }))
+      setContractAddress(childGatewayAddress)
     }
     getContractAddress()
   }, [
@@ -199,6 +201,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isDepositMode,
     parentChainProvider,
     token?.address,
+    token?.parentBridgeAddress,
+    token?.childBridgeAddress,
     sourceChain.id,
     destinationChain.id,
     isTeleportMode
