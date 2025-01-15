@@ -1,9 +1,16 @@
-const sender = '0x5d64a0fd6af0d76a7ed189d4061ffa6823fbf97e'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
+
+const arbSepoliaTokenBridge = getArbitrumNetwork(42161).tokenBridge!
 
 const baseQuery = {
-  sender,
   l2ChainId: 42161,
-  pageSize: 100
+  childChainId: 42161,
+  parentChainId: 1,
+  parentGatewayAddresses: [
+    arbSepoliaTokenBridge.parentErc20Gateway,
+    arbSepoliaTokenBridge.parentCustomGateway,
+    arbSepoliaTokenBridge.parentWethGateway
+  ]
 }
 
 export function getQueryCoveringClassicOnlyWithoutResults() {
