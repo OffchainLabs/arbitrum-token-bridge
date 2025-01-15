@@ -75,7 +75,6 @@ export function CustomDestinationAddressConfirmationDialog(
           className="arb-hover underline"
           href="https://discord.gg/ZpZuw7p"
           target="_blank"
-          rel="noopener noreferrer"
         >
           <span className="font-medium">support channel</span>
         </ExternalLink>{' '}

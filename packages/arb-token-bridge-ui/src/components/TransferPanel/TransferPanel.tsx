@@ -226,7 +226,7 @@ export function TransferPanel() {
 
   const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
     return (
-      destinationAddress?.trim()?.toLowerCase() ===
+      destinationAddress?.trim().toLowerCase() ===
       walletAddress?.trim().toLowerCase()
     )
   }, [destinationAddress, walletAddress])
@@ -394,7 +394,6 @@ export function TransferPanel() {
       // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
       if (
         isSmartContractWallet &&
-        isDepositMode &&
         areSenderAndCustomDestinationAddressesEqual
       ) {
         const confirmation = await confirmCustomDestinationAddressForSCWallets()
@@ -621,7 +620,6 @@ export function TransferPanel() {
       // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
       if (
         isSmartContractWallet &&
-        isDepositMode &&
         areSenderAndCustomDestinationAddressesEqual
       ) {
         const confirmation = await confirmCustomDestinationAddressForSCWallets()
