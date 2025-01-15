@@ -43,43 +43,37 @@ export const useSelectedToken = () => {
   const tokensFromUser = useTokensFromUser()
   const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
 
-  const queryKey = !isLoadingTokenLists
-    ? ([
-        parentChain.id,
-        childChain.id,
-        tokenFromSearchParams,
-        Object.keys(tokensFromUser),
-        'useSelectedToken'
-      ] as const)
-    : null
+  const queryKey =
+    !isLoadingTokenLists &&
+    tokenFromSearchParams &&
+    tokensFromLists &&
+    tokensFromUser
+      ? ([
+          parentChain.id,
+          childChain.id,
+          tokenFromSearchParams,
+          Object.keys(tokensFromUser),
+          'useSelectedToken'
+        ] as const)
+      : null
 
   const { data } = useSWRImmutable(
     queryKey,
-    async ([parentChainId, childChainId, _tokenFromSearchParams, _keys]) => {
-      const tokenAddressLowercased = _tokenFromSearchParams?.toLowerCase()
-
+    async ([parentChainId, childChainId, _tokenFromSearchParams]) => {
       const parentProvider = getProviderForChainId(parentChainId)
       const childProvider = getProviderForChainId(childChainId)
 
-      if (!tokenAddressLowercased) {
-        return null
-      }
-
-      if (isTokenNativeUSDC(tokenAddressLowercased)) {
+      if (isTokenNativeUSDC(_tokenFromSearchParams)) {
         return getUsdcToken({
-          tokenAddress: tokenAddressLowercased,
+          tokenAddress: _tokenFromSearchParams,
           parentProvider,
           childProvider
         })
       }
 
-      if (!tokensFromLists || !tokensFromUser) {
-        return null
-      }
-
       return (
-        tokensFromLists[tokenAddressLowercased] ||
-        tokensFromUser[tokenAddressLowercased] ||
+        tokensFromLists[_tokenFromSearchParams] ||
+        tokensFromUser[_tokenFromSearchParams] ||
         null
       )
     }
@@ -141,8 +135,11 @@ async function getUsdcToken({
     }
   }
 
-  // Arbitrum One USDC when Ethereum is the par
-  if (isTokenArbitrumOneNativeUSDC(tokenAddress) && !isParentChainArbitrumOne) {
+  // Arbitrum One USDC when Ethereum is the parent chain
+  if (
+    isTokenArbitrumOneNativeUSDC(tokenAddress) &&
+    isParentChainEthereumMainnet
+  ) {
     return {
       ...commonUSDC,
       address: CommonAddress.ArbitrumOne.USDC,
@@ -153,7 +150,7 @@ async function getUsdcToken({
   // Arbitrum Sepolia USDC when Ethereum is the parent chain
   if (
     isTokenArbitrumSepoliaNativeUSDC(tokenAddress) &&
-    !isParentChainArbitrumOne
+    isParentChainEthereumMainnet
   ) {
     return {
       ...commonUSDC,
