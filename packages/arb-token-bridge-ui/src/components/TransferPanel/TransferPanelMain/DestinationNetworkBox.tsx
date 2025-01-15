@@ -176,7 +176,7 @@ function BalancesContainer() {
           selectedToken
             ? sanitizeTokenSymbol(selectedToken.symbol, {
                 chainId: networks.destinationChain.id,
-                erc20L1Address: selectedToken?.address
+                erc20L1Address: selectedToken.address
               })
             : undefined
         }
