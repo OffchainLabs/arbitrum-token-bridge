@@ -16,7 +16,7 @@ const cacheKey = `arbitrum:bridge:tx-receipts-cache`
  when BigNumbers are stored in localStorage, they get flattened to normal Objects and lose their `BigNumber` properties
  these are utility functions to encode and decode BigNumber data types, to and from `localStorage`
  */
-const encodeBigNumbersInCachedReceipts = (cachedReceipts: CachedReceipts) => {
+const encodeBigNumbers = (cachedReceipts: CachedReceipts) => {
   const newObj: Record<string, any> = {}
   Object.keys(cachedReceipts).forEach((chainId: string) => {
     newObj[chainId] = {}
@@ -40,7 +40,7 @@ const encodeBigNumbersInCachedReceipts = (cachedReceipts: CachedReceipts) => {
   return newObj
 }
 
-const decodeBigNumbersInCachedReceipts = (cacheFromLocalStorage: any) => {
+const decodeBigNumbers = (cacheFromLocalStorage: any) => {
   const newObj: Record<string, any> = {}
   Object.keys(cacheFromLocalStorage).forEach((chainId: string) => {
     newObj[chainId] = {}
@@ -90,7 +90,7 @@ function getTxReceiptFromCache(
   const cachedReceipts = localStorage.getItem(cacheKey)
 
   const allReceipts = cachedReceipts
-    ? decodeBigNumbersInCachedReceipts(JSON.parse(cachedReceipts))
+    ? decodeBigNumbers(JSON.parse(cachedReceipts))
     : {}
 
   return allReceipts[chainId]
@@ -104,13 +104,13 @@ function addTxReceiptToCache(chainId: number, txReceipt: TransactionReceipt) {
   const cachedReceipts = localStorage.getItem(cacheKey)
 
   const allReceipts = cachedReceipts
-    ? decodeBigNumbersInCachedReceipts(JSON.parse(cachedReceipts))
+    ? decodeBigNumbers(JSON.parse(cachedReceipts))
     : {}
 
   localStorage.setItem(
     cacheKey,
     JSON.stringify(
-      encodeBigNumbersInCachedReceipts({
+      encodeBigNumbers({
         ...allReceipts,
         [chainId]: {
           ...(allReceipts[chainId] ?? {}),
