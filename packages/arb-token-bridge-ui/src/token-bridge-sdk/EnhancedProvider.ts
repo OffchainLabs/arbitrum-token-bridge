@@ -41,10 +41,12 @@ const encodeBigNumbers = (cachedReceipts: CachedReceipts) => {
   return newObj
 }
 
-const decodeBigNumbers = (cacheFromLocalStorage: any) => {
-  const newObj: Record<string, any> = {}
+const decodeBigNumbers = (cacheFromLocalStorage: Record<string, any>) => {
+  const newObj = {} as CachedReceipts
+
   Object.keys(cacheFromLocalStorage).forEach((chainId: string) => {
-    newObj[chainId] = {}
+    newObj[chainId] = {} as CachedReceiptsPerChain
+
     Object.keys(cacheFromLocalStorage[chainId]).forEach((txHash: string) => {
       const receipt = cacheFromLocalStorage[chainId][txHash]
       const decodedReceipt = { ...receipt }
@@ -55,10 +57,12 @@ const decodeBigNumbers = (cacheFromLocalStorage: any) => {
         }
       })
 
+      // @ts-ignore - newObj is defined, but TS infers it to be undefined
       newObj[chainId][txHash] = decodedReceipt
     })
   })
-  return newObj as CachedReceipts
+
+  return newObj
 }
 
 const allowTxReceiptCaching = (
@@ -77,17 +81,14 @@ const allowTxReceiptCaching = (
   if (chainId === ChainId.Ethereum && txReceipt.confirmations < 65) {
     return false
   }
-  if (chainId === ChainId.ArbitrumSepolia && txReceipt.confirmations < 5) {
+  if (chainId === ChainId.Sepolia && txReceipt.confirmations < 5) {
     return false
   }
 
   return true
 }
 
-function getTxReceiptFromCache(
-  chainId: number,
-  txHash: string
-): TransactionReceipt | undefined {
+function getTxReceiptFromCache(chainId: number, txHash: string) {
   if (!enableCaching) return undefined
 
   if (typeof localStorage === 'undefined') return undefined
@@ -98,8 +99,8 @@ function getTxReceiptFromCache(
     ? decodeBigNumbers(JSON.parse(cachedReceipts))
     : {}
 
-  return allReceipts[chainId]
-    ? (allReceipts[chainId][txHash] as TransactionReceipt)
+  return allReceipts[chainId]?.[txHash]
+    ? allReceipts[chainId][txHash]
     : undefined
 }
 
