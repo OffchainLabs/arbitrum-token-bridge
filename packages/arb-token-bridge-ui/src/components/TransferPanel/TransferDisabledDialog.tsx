@@ -9,9 +9,9 @@ import { ExternalLink } from '../common/ExternalLink'
 import { getNetworkName } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
+import { getTransferMode } from '../../util/getTransferMode'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -28,7 +28,10 @@ export const useTransferDisabledDialogStore =
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
-  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const { app } = useAppState()
   const { selectedToken } = app
   const {
@@ -51,7 +54,7 @@ export function TransferDisabledDialog() {
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {
-      if (!isTeleportMode) {
+      if (transferMode !== 'teleport') {
         return
       }
       const { l2ChainId } = await getL2ConfigForTeleport({
@@ -60,12 +63,12 @@ export function TransferDisabledDialog() {
       setL2ChainIdForTeleport(l2ChainId)
     }
     updateL2ChainIdForTeleport()
-  }, [isTeleportMode, networks.destinationChainProvider])
+  }, [transferMode, networks.destinationChainProvider])
 
   useEffect(() => {
     // do not allow import of withdraw-only tokens at deposit mode
     if (
-      isDepositMode &&
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
       isSelectedTokenWithdrawOnly &&
       !isSelectedTokenWithdrawOnlyLoading
     ) {
@@ -73,7 +76,7 @@ export function TransferDisabledDialog() {
     }
   }, [
     isSelectedTokenWithdrawOnly,
-    isDepositMode,
+    transferMode,
     openTransferDisabledDialog,
     isSelectedTokenWithdrawOnlyLoading
   ])
@@ -107,7 +110,7 @@ export function TransferDisabledDialog() {
     >
       <div className="flex flex-col space-y-4 py-4">
         {/* teleport transfer disabled content if token is not in the allowlist */}
-        {isTeleportMode ? (
+        {transferMode === 'teleport' ? (
           <>
             <p>
               Unfortunately,{' '}

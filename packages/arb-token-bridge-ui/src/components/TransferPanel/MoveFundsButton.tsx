@@ -6,8 +6,8 @@ import { useAppContextState } from '../App/AppContext'
 import { Button } from '../common/Button'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getNetworkName } from '../../util/networks'
+import { getTransferMode } from '../../util/getTransferMode'
 
 export function MoveFundsButton({
   onClick
@@ -15,10 +15,13 @@ export function MoveFundsButton({
   const { layout } = useAppContextState()
   const { isTransferring } = layout
 
-  const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const [{ sourceChain, destinationChain }] = useNetworks()
+  const transferMode = getTransferMode({
+    sourceChainId: sourceChain.id,
+    destinationChainId: destinationChain.id
+  })
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
-    networks.destinationChain.id
+    destinationChain.id
   )
   const { isSmartContractWallet } = useAccountType()
   const { transferReady } = useTransferReadiness()
@@ -28,7 +31,9 @@ export function MoveFundsButton({
       variant="primary"
       loading={isTransferring}
       disabled={
-        isDepositMode ? !transferReady.deposit : !transferReady.withdrawal
+        transferMode === 'withdrawal'
+          ? !transferReady.withdrawal
+          : !transferReady.deposit
       }
       onClick={onClick}
       style={{
@@ -43,7 +48,7 @@ export function MoveFundsButton({
     >
       {isSmartContractWallet && isTransferring
         ? 'Sending request...'
-        : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
+        : `Move funds to ${getNetworkName(destinationChain.id)}`}
     </Button>
   )
 }

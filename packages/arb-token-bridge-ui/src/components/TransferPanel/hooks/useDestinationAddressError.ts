@@ -6,8 +6,8 @@ import { DestinationAddressErrors } from '../AdvancedSettings'
 import { addressIsDenylisted } from '../../../util/AddressUtils'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { getTransferMode } from '../../../util/getTransferMode'
 
 export async function getDestinationAddressError({
   destinationAddress,
@@ -41,8 +41,11 @@ export async function getDestinationAddressError({
 
 export function useDestinationAddressError() {
   const [{ destinationAddress }] = useArbQueryParams()
-  const [networks] = useNetworks()
-  const { isTeleportMode } = useNetworksRelationship(networks)
+  const [{ sourceChain, destinationChain }] = useNetworks()
+  const transferMode = getTransferMode({
+    sourceChainId: sourceChain.id,
+    destinationChainId: destinationChain.id
+  })
   const { isSmartContractWallet: isSenderSmartContractWallet } =
     useAccountType()
 
@@ -55,10 +58,10 @@ export function useDestinationAddressError() {
     return [
       destinationAddress.toLowerCase(),
       isSenderSmartContractWallet,
-      isTeleportMode,
+      transferMode === 'teleport',
       'useDestinationAddressError'
     ] as const
-  }, [destinationAddress, isSenderSmartContractWallet, isTeleportMode])
+  }, [destinationAddress, isSenderSmartContractWallet, transferMode])
 
   const { data: destinationAddressError } = useSWRImmutable(
     queryKey,
