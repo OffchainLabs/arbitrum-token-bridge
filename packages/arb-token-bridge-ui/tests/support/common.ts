@@ -10,8 +10,12 @@ import {
   defaultL2Network,
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
-} from '../../src/util/networks'
-import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
+} from '../../src/util/networksNitroTestnode'
+
+export const getChainIdFromProvider = async (provider: Provider) => {
+  const network = await provider.getNetwork()
+  return network.chainId
+}
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
