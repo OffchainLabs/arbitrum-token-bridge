@@ -48,8 +48,9 @@ export function CustomDestinationAddressConfirmationDialog(
           on {networkName}.
         </p>
         <p className="pb-2">
-          This is an uncommon action because your smart contract wallet is only
-          deployed on the currently connected chain.
+          This is an uncommon action since it&apos;s not guaranteed that you
+          have a smart contract wallet at the same address on the destination
+          chain.
         </p>
       </div>
 
