@@ -102,10 +102,10 @@ function DestinationNetworkBalance() {
           forToken={selectedToken}
           tokenSymbolOverride={
             // we need to send the proper, sanitized token-name to the component
-            selectedToken.symbol
-              ? sanitizeTokenSymbol(selectedToken.symbol, {
+            selectedToken?.symbol
+              ? sanitizeTokenSymbol(selectedToken?.symbol, {
                   chainId: networks.destinationChain.id,
-                  erc20L1Address: selectedToken.address
+                  erc20L1Address: selectedToken?.address
                 })
               : undefined
           }
