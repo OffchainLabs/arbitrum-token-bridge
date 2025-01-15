@@ -4,7 +4,8 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
+import { getCustomChainsFromLocalStorage } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import {
   sepolia,
   holesky,
