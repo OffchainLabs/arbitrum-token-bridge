@@ -11,6 +11,7 @@ type CachedReceipts = {
 }
 
 const cacheKey = `arbitrum:bridge:tx-receipts-cache`
+const enableCaching = true // switch to turn off tx caching altogether (in case of emergency/hotfix)
 
 /*
  when BigNumbers are stored in localStorage, they get flattened to normal Objects and lose their `BigNumber` properties
@@ -64,6 +65,8 @@ const allowTxReceiptCaching = (
   chainId: number,
   txReceipt: TransactionReceipt
 ) => {
+  if (!enableCaching) return false
+
   // don't cache failed transactions
   if (typeof txReceipt.status !== 'undefined' && txReceipt.status === 0) {
     return false
@@ -85,6 +88,8 @@ function getTxReceiptFromCache(
   chainId: number,
   txHash: string
 ): TransactionReceipt | undefined {
+  if (!enableCaching) return undefined
+
   if (typeof localStorage === 'undefined') return undefined
 
   const cachedReceipts = localStorage.getItem(cacheKey)
@@ -128,15 +133,14 @@ class EnhancedProvider extends StaticJsonRpcProvider {
     const hash = await transactionHash
     const chainId = this.network.chainId
 
-    // Retrieve the cached receipts for the specific
+    // Retrieve the cached receipts for the hash and return if it exists
     const cachedReceipt = getTxReceiptFromCache(chainId, hash)
-    // Check if the receipt is already cached
     if (cachedReceipt) return cachedReceipt
 
-    // Call the original method to fetch the receipt
+    // Else, call the original method to fetch the receipt
     const receipt = await super.getTransactionReceipt(hash)
 
-    // Cache the receipt if it exists and if it's a achieved finality
+    // Cache the receipt if depending on some checks
     if (receipt && allowTxReceiptCaching(chainId, receipt)) {
       addTxReceiptToCache(this.network.chainId, receipt)
     }
