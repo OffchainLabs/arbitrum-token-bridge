@@ -3,6 +3,8 @@ import { twMerge } from 'tailwind-merge'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 import { Switch } from './atoms/Switch'
+import { useCallback } from 'react'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export const TestnetToggle = ({
   className,
@@ -19,6 +21,12 @@ export const TestnetToggle = ({
   includeToggleStateOnLabel?: boolean
 }) => {
   const [isTestnetMode, toggleTestnetMode] = useIsTestnetMode()
+  const [, setSelectedToken] = useSelectedToken()
+
+  const handleTestnetToggle = useCallback(() => {
+    toggleTestnetMode()
+    setSelectedToken(null)
+  }, [setSelectedToken, toggleTestnetMode])
 
   const labelText = includeToggleStateOnLabel
     ? `${label} ${isTestnetMode ? 'ON' : 'OFF'}`
@@ -31,7 +39,7 @@ export const TestnetToggle = ({
         label={labelText}
         description={description}
         checked={isTestnetMode}
-        onChange={toggleTestnetMode}
+        onChange={handleTestnetToggle}
       />
     </label>
   )

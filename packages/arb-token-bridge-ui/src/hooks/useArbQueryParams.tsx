@@ -51,7 +51,7 @@ export const useArbQueryParams = () => {
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     amount2: withDefault(AmountQueryParam, ''), // extra eth to send together with erc20
     destinationAddress: withDefault(StringParam, undefined),
-    token: StringParam, // import a new token using a Dialog Box
+    token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false)
   })
 }
@@ -106,6 +106,16 @@ export const AmountQueryParam = {
     // toString() casts the potential string array into a string
     const amountStr = amount?.toString() ?? ''
     return sanitizeAmountQueryParam(amountStr)
+  }
+}
+
+const TokenQueryParam = {
+  encode: (token: string | undefined) => {
+    return token?.toLowerCase()
+  },
+  decode: (token: string | (string | null)[] | null | undefined) => {
+    const tokenStr = token?.toString()
+    return tokenStr?.toLowerCase()
   }
 }
 
