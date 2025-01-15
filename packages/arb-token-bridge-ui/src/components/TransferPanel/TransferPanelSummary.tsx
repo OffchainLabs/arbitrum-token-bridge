@@ -54,8 +54,12 @@ function TotalGasFees() {
   } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChainProvider,
+    parentChainProvider,
+    isWithdrawalMode,
+    isDepositOrTeleportMode
+  } = useNetworksRelationship(networks)
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -126,7 +130,7 @@ function TotalGasFees() {
    */
   return (
     <>
-      {isDepositMode && (
+      {isDepositOrTeleportMode && (
         <span className="tabular-nums">
           {formatAmount(estimatedParentChainGasFees, {
             symbol: parentChainNativeCurrency.symbol
@@ -138,7 +142,7 @@ function TotalGasFees() {
           {selectedToken && ' and '}
         </span>
       )}
-      {(selectedToken || !isDepositMode) &&
+      {(selectedToken || isWithdrawalMode) &&
         formatAmount(estimatedChildChainGasFees, {
           symbol: childChainNativeCurrency.symbol
         })}
@@ -178,7 +182,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const { status: gasSummaryStatus } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode } =
+  const { childChainProvider, isDepositMode, isWithdrawalMode } =
     useNetworksRelationship(networks)
 
   const childChainNativeCurrency = useNativeCurrency({
@@ -249,7 +253,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           ) : (
             <TokenSymbolWithExplorerLink
               token={token}
-              isParentChain={!isDepositMode}
+              isParentChain={isWithdrawalMode}
             />
           )}
           {isBridgingEth && (
@@ -264,7 +268,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode && (
+      {isWithdrawalMode && (
         <div
           className={twMerge(
             'grid grid-cols-[260px_auto] items-center text-sm font-light'

@@ -80,7 +80,7 @@ export const AdvancedSettings = () => {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositOrTeleportMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
@@ -138,7 +138,7 @@ export const AdvancedSettings = () => {
     }
   }, [
     destinationAddress,
-    isDepositMode,
+    isDepositOrTeleportMode,
     isEOA,
     childChainProvider,
     parentChainProvider,
@@ -260,7 +260,7 @@ export const AdvancedSettings = () => {
           <ExternalLink
             className="arb-hover mt-2 flex w-fit items-center text-xs font-medium text-white/50"
             href={`${getExplorerUrl(
-              isDepositMode ? childChain.id : parentChain.id
+              isDepositOrTeleportMode ? childChain.id : parentChain.id
             )}/address/${destinationAddress}`}
           >
             <ArrowDownTrayIcon

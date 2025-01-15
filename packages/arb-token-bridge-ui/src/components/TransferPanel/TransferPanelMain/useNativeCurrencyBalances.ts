@@ -11,7 +11,7 @@ export function useNativeCurrencyBalances(): {
   destinationBalance: BigNumber | null
 } {
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode } =
+  const { childChainProvider, isDepositOrTeleportMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -21,8 +21,12 @@ export function useNativeCurrencyBalances(): {
   return useMemo(() => {
     if (!nativeCurrency.isCustom) {
       return {
-        sourceBalance: isDepositMode ? ethParentBalance : ethChildBalance,
-        destinationBalance: isDepositMode ? ethChildBalance : ethParentBalance
+        sourceBalance: isDepositOrTeleportMode
+          ? ethParentBalance
+          : ethChildBalance,
+        destinationBalance: isDepositOrTeleportMode
+          ? ethChildBalance
+          : ethParentBalance
       }
     }
 
@@ -31,10 +35,10 @@ export function useNativeCurrencyBalances(): {
     const customFeeTokenChildBalance = ethChildBalance
 
     return {
-      sourceBalance: isDepositMode
+      sourceBalance: isDepositOrTeleportMode
         ? customFeeTokenParentBalance
         : customFeeTokenChildBalance,
-      destinationBalance: isDepositMode
+      destinationBalance: isDepositOrTeleportMode
         ? customFeeTokenChildBalance
         : customFeeTokenParentBalance
     }
@@ -42,7 +46,7 @@ export function useNativeCurrencyBalances(): {
     nativeCurrency,
     erc20ParentBalances,
     ethChildBalance,
-    isDepositMode,
+    isDepositOrTeleportMode,
     ethParentBalance
   ])
 }

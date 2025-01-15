@@ -31,7 +31,7 @@ function MaxButton({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const { isDepositOrTeleportMode } = useNetworksRelationship(networks)
 
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -39,7 +39,7 @@ function MaxButton({
   const maxButtonVisible = useMemo(() => {
     const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
 
-    const tokenBalance = isDepositMode
+    const tokenBalance = isDepositOrTeleportMode
       ? selectedTokenBalances.parentBalance
       : selectedTokenBalances.childBalance
 
@@ -50,7 +50,7 @@ function MaxButton({
     return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
     nativeCurrencyBalances.sourceBalance,
-    isDepositMode,
+    isDepositOrTeleportMode,
     selectedTokenBalances.parentBalance,
     selectedTokenBalances.childBalance,
     selectedToken
@@ -85,7 +85,7 @@ function SourceChainTokenBalance({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isDepositMode, childChainProvider } =
+  const { isDepositOrTeleportMode, childChainProvider } =
     useNetworksRelationship(networks)
   const selectedTokenDecimals = useSelectedTokenDecimals()
 
@@ -94,7 +94,7 @@ function SourceChainTokenBalance({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenBalance = isDepositMode
+  const tokenBalance = isDepositOrTeleportMode
     ? selectedTokenBalances.parentBalance
     : selectedTokenBalances.childBalance
 
@@ -119,7 +119,7 @@ function SourceChainTokenBalance({
         <span
           className="whitespace-nowrap text-sm text-white"
           aria-label={`${symbol} balance amount on ${
-            isDepositMode ? 'parentChain' : 'childChain'
+            isDepositOrTeleportMode ? 'parentChain' : 'childChain'
           }`}
         >
           {formattedBalance}

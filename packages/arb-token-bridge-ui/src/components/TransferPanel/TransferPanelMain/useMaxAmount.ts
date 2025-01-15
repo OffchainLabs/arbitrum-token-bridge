@@ -17,7 +17,7 @@ export function useMaxAmount() {
   } = useAppState()
   const selectedTokenBalances = useSelectedTokenBalances()
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode } =
+  const { childChainProvider, isWithdrawalMode, isDepositOrTeleportMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const nativeCurrencyDecimalsOnSourceChain =
@@ -36,7 +36,7 @@ export function useMaxAmount() {
     }
 
     // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
-    if (nativeCurrency.isCustom && isDepositMode) {
+    if (nativeCurrency.isCustom && isDepositOrTeleportMode) {
       return utils.formatUnits(
         nativeCurrencySourceBalance,
         nativeCurrencyDecimalsOnSourceChain
@@ -72,7 +72,7 @@ export function useMaxAmount() {
   }, [
     estimatedChildChainGasFees,
     estimatedParentChainGasFees,
-    isDepositMode,
+    isDepositOrTeleportMode,
     nativeCurrency.isCustom,
     nativeCurrencyBalances.sourceBalance,
     nativeCurrencyDecimalsOnSourceChain
@@ -80,7 +80,7 @@ export function useMaxAmount() {
 
   const maxAmount = useMemo(() => {
     if (selectedToken) {
-      const tokenBalance = isDepositMode
+      const tokenBalance = isDepositOrTeleportMode
         ? selectedTokenBalances.parentBalance
         : selectedTokenBalances.childBalance
 
@@ -98,14 +98,14 @@ export function useMaxAmount() {
     return nativeCurrencyMaxAmount
   }, [
     selectedToken,
-    isDepositMode,
+    isDepositOrTeleportMode,
     nativeCurrencyMaxAmount,
     selectedTokenBalances.parentBalance,
     selectedTokenBalances.childBalance
   ])
 
   const maxAmount2 = useMemo(() => {
-    if (!isDepositMode) {
+    if (isWithdrawalMode) {
       return undefined
     }
     if (typeof estimatedChildChainGasFees === 'undefined') {
@@ -123,7 +123,7 @@ export function useMaxAmount() {
 
     return nativeCurrencyMaxAmount
   }, [
-    isDepositMode,
+    isWithdrawalMode,
     estimatedChildChainGasFees,
     nativeCurrencyMaxAmount,
     nativeCurrency.isCustom

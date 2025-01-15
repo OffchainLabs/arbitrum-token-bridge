@@ -28,7 +28,8 @@ export const useTransferDisabledDialogStore =
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
-  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
+  const { isDepositOrTeleportMode, isTeleportMode } =
+    useNetworksRelationship(networks)
   const { app } = useAppState()
   const { selectedToken } = app
   const {
@@ -65,7 +66,7 @@ export function TransferDisabledDialog() {
   useEffect(() => {
     // do not allow import of withdraw-only tokens at deposit mode
     if (
-      isDepositMode &&
+      isDepositOrTeleportMode &&
       isSelectedTokenWithdrawOnly &&
       !isSelectedTokenWithdrawOnlyLoading
     ) {
@@ -73,7 +74,7 @@ export function TransferDisabledDialog() {
     }
   }, [
     isSelectedTokenWithdrawOnly,
-    isDepositMode,
+    isDepositOrTeleportMode,
     openTransferDisabledDialog,
     isSelectedTokenWithdrawOnlyLoading
   ])

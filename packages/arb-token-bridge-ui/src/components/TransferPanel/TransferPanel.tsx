@@ -126,6 +126,7 @@ export function TransferPanel() {
       parentChain,
       parentChainProvider,
       isDepositMode,
+      isDepositOrTeleportMode,
       isTeleportMode
     }
   } = useLatest(useNetworksRelationship(latestNetworks.current))
@@ -215,8 +216,8 @@ export function TransferPanel() {
     const isUnbridgedToken =
       selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
 
-    return isDepositMode && isUnbridgedToken
-  }, [isDepositMode, selectedToken])
+    return isDepositOrTeleportMode && isUnbridgedToken
+  }, [isDepositOrTeleportMode, selectedToken])
 
   async function depositToken() {
     if (!selectedToken) {

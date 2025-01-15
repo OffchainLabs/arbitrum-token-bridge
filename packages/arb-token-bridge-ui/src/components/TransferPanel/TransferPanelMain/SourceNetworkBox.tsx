@@ -78,7 +78,7 @@ export function SourceNetworkBox() {
     useAmount2InputVisibility()
 
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode } =
+  const { childChain, childChainProvider, isDepositOrTeleportMode } =
     useNetworksRelationship(networks)
   const {
     app: { selectedToken }
@@ -221,7 +221,7 @@ export function SourceNetworkBox() {
             </p>
           )}
 
-          {isDepositMode && selectedToken && (
+          {isDepositOrTeleportMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have {nativeCurrency.symbol} in your{' '}
               {getNetworkName(childChain.id)} account, as you’ll need it to

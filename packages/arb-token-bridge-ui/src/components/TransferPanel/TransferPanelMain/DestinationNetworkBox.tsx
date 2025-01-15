@@ -37,14 +37,19 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
   const nativeCurrency = useNativeCurrency({
     provider: networks.destinationChainProvider
   })
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const { isDepositMode, isDepositOrTeleportMode } =
+    useNetworksRelationship(networks)
 
   if (nativeCurrency.isCustom) {
     return (
       <TokenBalance
         forToken={nativeCurrency}
         balance={nativeCurrencyBalances.destinationBalance}
-        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+        on={
+          isDepositOrTeleportMode
+            ? NetworkType.childChain
+            : NetworkType.parentChain
+        }
         prefix={prefix}
       />
     )
@@ -79,8 +84,12 @@ function DestinationNetworkBalance() {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    isDepositMode,
+    isDepositOrTeleportMode
+  } = useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
 
   const { erc20ChildBalances } = useBalances()
@@ -96,11 +105,15 @@ function DestinationNetworkBalance() {
       <>
         <TokenBalance
           balance={
-            isDepositMode
+            isDepositOrTeleportMode
               ? selectedTokenBalances.childBalance
               : selectedTokenBalances.parentBalance
           }
-          on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+          on={
+            isDepositOrTeleportMode
+              ? NetworkType.childChain
+              : NetworkType.parentChain
+          }
           forToken={selectedToken}
           tokenSymbolOverride={
             // we need to send the proper, sanitized token-name to the component
@@ -137,7 +150,11 @@ function DestinationNetworkBalance() {
   if (nativeCurrency.isCustom) {
     return (
       <TokenBalance
-        on={isDepositMode ? NetworkType.childChain : NetworkType.parentChain}
+        on={
+          isDepositOrTeleportMode
+            ? NetworkType.childChain
+            : NetworkType.parentChain
+        }
         balance={nativeCurrencyBalances.destinationBalance}
         forToken={nativeCurrency}
         prefix="Balance: "

@@ -16,7 +16,7 @@ export function MoveFundsButton({
   const { isTransferring } = layout
 
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const { isWithdrawalMode } = useNetworksRelationship(networks)
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
   )
@@ -28,7 +28,7 @@ export function MoveFundsButton({
       variant="primary"
       loading={isTransferring}
       disabled={
-        isDepositMode ? !transferReady.deposit : !transferReady.withdrawal
+        isWithdrawalMode ? !transferReady.withdrawal : !transferReady.deposit
       }
       onClick={onClick}
       style={{
