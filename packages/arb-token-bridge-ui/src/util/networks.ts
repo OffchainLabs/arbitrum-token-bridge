@@ -1,4 +1,4 @@
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
   getChildrenForNetwork,
@@ -11,25 +11,8 @@ import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { chainIdToInfuraUrl } from './infura'
 import { fetchErc20Data } from './TokenUtils'
-
-export enum ChainId {
-  // L1
-  Ethereum = 1,
-  // L1 Testnets
-  Local = 1337,
-  Sepolia = 11155111,
-  Holesky = 17000,
-  // L2
-  ArbitrumOne = 42161,
-  ArbitrumNova = 42170,
-  Base = 8453,
-  // L2 Testnets
-  ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346,
-  BaseSepolia = 84532,
-  // L3 Testnets
-  L3Local = 333333
-}
+import { orbitChains } from './orbitChainsList'
+import { ChainId } from '../types/ChainId'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -222,12 +205,12 @@ export const supportedCustomOrbitParentChains = [
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
     fallback: chainIdToInfuraUrl(ChainId.Ethereum)
   }),
   // L1 Testnets
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
+    env: process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
     fallback: chainIdToInfuraUrl(ChainId.Sepolia)
   }),
   [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
@@ -431,15 +414,15 @@ export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
 }
 
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
   fallback: 'http://127.0.0.1:8545'
 })
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
   fallback: 'http://127.0.0.1:8547'
 })
 export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
   fallback: 'http://127.0.0.1:3347'
 })
 
@@ -579,6 +562,16 @@ export function getSupportedChainIds({
       }
       return true
     })
+}
+
+export function isAlchemyChain(chainId: number) {
+  const chain = orbitChains[chainId]
+
+  if (typeof chain === 'undefined') {
+    return false
+  }
+
+  return chain.rpcUrl.toLowerCase().includes('alchemy.com')
 }
 
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {

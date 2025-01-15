@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { ChainId } from '../../../util/networks'
+import { ChainId } from '../../../types/ChainId'
 import { Address } from '../../../util/AddressUtils'
 
 import {

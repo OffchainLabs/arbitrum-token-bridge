@@ -10,7 +10,7 @@ import Wormhole from '@/images/bridge/wormhole.svg'
 // import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
 
-import { ChainId } from './networks'
+import { ChainId } from '../types/ChainId'
 import { USDC_LEARN_MORE_LINK } from '../constants'
 
 export enum FastBridgeNames {
