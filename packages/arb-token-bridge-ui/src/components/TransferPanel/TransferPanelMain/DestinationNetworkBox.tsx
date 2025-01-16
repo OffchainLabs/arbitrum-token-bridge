@@ -166,9 +166,7 @@ function BalancesContainer() {
         balance={
           selectedTokenOrNativeCurrencyBalance
             ? formatAmount(selectedTokenOrNativeCurrencyBalance, {
-                decimals: selectedToken
-                  ? selectedToken.decimals
-                  : nativeCurrency.decimals
+                decimals: selectedToken ? selectedToken.decimals : 18
               })
             : undefined
         }
@@ -185,9 +183,7 @@ function BalancesContainer() {
         <BalanceRow
           balance={
             nativeCurrencyBalances.destinationBalance
-              ? formatAmount(nativeCurrencyBalances.destinationBalance, {
-                  decimals: nativeCurrency.decimals
-                })
+              ? formatAmount(nativeCurrencyBalances.destinationBalance)
               : undefined
           }
         />
