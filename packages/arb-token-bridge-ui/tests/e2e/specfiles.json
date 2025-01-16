@@ -58,5 +58,10 @@
     "name": "Switch network",
     "file": "tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"
+  },
+  {
+    "name": "URL query params",
+    "file": "tests/e2e/specs/**/urlQueryParams.cy.{js,jsx,ts,tsx}",
+    "recordVideo": false
   }
 ]
