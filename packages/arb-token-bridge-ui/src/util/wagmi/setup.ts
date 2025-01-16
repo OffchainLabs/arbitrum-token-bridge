@@ -28,7 +28,6 @@ import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
 import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
-import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -161,7 +160,6 @@ export function getProps(targetChainKey: string | null) {
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
     [
-      customInfuraProvider(),
       publicProvider(),
       jsonRpcProvider({
         rpc: chain => ({
