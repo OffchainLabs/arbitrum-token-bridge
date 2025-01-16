@@ -12,11 +12,6 @@ import {
   defaultL3CustomGasTokenNetwork
 } from '../../src/util/networksNitroTestnode'
 
-export const getChainIdFromProvider = async (provider: Provider) => {
-  const network = await provider.getNetwork()
-  return network.chainId
-}
-
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
   | 'custom-localhost'
@@ -280,7 +275,7 @@ export async function checkForAssertions({
 
   const rollupContract = new ethers.Contract(rollupAddress, abi, parentProvider)
 
-  const parentChainId = await getChainIdFromProvider(parentProvider)
+  const parentChainId = (await parentProvider.getNetwork()).chainId
 
   try {
     while (true) {
