@@ -29,12 +29,12 @@ import {
   getNativeTokenDecimals
 } from './tests/support/common'
 
+import { registerLocalNetwork } from './src/util/networks'
 import {
   defaultL2Network,
   defaultL3Network,
-  defaultL3CustomGasTokenNetwork,
-  registerLocalNetwork
-} from './src/util/networks'
+  defaultL3CustomGasTokenNetwork
+} from './src/util/networksNitroTestnode'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 
 const tests = process.env.TEST_FILE
