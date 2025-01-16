@@ -11,21 +11,22 @@ type CachedReceipts = Record<string, CachedReceiptsPerChain>
 const cacheKey = `arbitrum:bridge:tx-receipts-cache`
 const enableCaching = true // switch to turn off tx caching altogether (in case of emergency/hotfix)
 
-/*
- when BigNumbers are stored in localStorage, they get flattened to normal Objects and lose their `BigNumber` properties
- these are utility functions to encode and decode BigNumber data types, to and from `localStorage`
+/**
+ * Encodes BigNumber properties in cached receipts for localStorage.
+ * @param cachedReceipts - The receipts to encode.
+ * @returns The encoded receipts.
  */
 const encodeBigNumbers = (cachedReceipts: CachedReceipts) => {
-  const newObj: Record<string, any> = {}
+  const encodedCachedReceipts: Record<string, any> = {}
   Object.keys(cachedReceipts).forEach((chainId: string) => {
-    newObj[chainId] = {}
+    encodedCachedReceipts[chainId] = {}
     const receipts = cachedReceipts[chainId] as CachedReceiptsPerChain
     Object.keys(receipts).forEach((txHash: string) => {
       const receipt = receipts[txHash]
       const encodedReceipt: Record<string, any> = { ...receipt }
 
       Object.keys(encodedReceipt).forEach(key => {
-        if (encodedReceipt[key] && encodedReceipt[key]._isBigNumber) {
+        if (encodedReceipt[key]?._isBigNumber) {
           encodedReceipt[key] = {
             _type: 'BigNumber',
             _data: encodedReceipt[key].toString()
@@ -33,17 +34,17 @@ const encodeBigNumbers = (cachedReceipts: CachedReceipts) => {
         }
       })
 
-      newObj[chainId][txHash] = encodedReceipt
+      encodedCachedReceipts[chainId][txHash] = encodedReceipt
     })
   })
-  return newObj
+  return encodedCachedReceipts
 }
 
 const decodeBigNumbers = (cacheFromLocalStorage: Record<string, any>) => {
-  let newObj = {} as CachedReceipts
+  let decodedCachedReceipts = {} as CachedReceipts
 
   Object.keys(cacheFromLocalStorage).forEach((chainId: string) => {
-    newObj[chainId] = {} as CachedReceiptsPerChain
+    decodedCachedReceipts[chainId] = {} as CachedReceiptsPerChain
 
     Object.keys(cacheFromLocalStorage[chainId]).forEach((txHash: string) => {
       const receipt = cacheFromLocalStorage[chainId][txHash]
@@ -55,33 +56,41 @@ const decodeBigNumbers = (cacheFromLocalStorage: Record<string, any>) => {
         }
       })
 
-      newObj = {
-        ...newObj,
-        [chainId]: { ...newObj[chainId], [txHash]: decodedReceipt }
+      decodedCachedReceipts = {
+        ...decodedCachedReceipts,
+        [chainId]: {
+          ...decodedCachedReceipts[chainId],
+          [txHash]: decodedReceipt
+        }
       }
     })
   })
 
-  return newObj
+  return decodedCachedReceipts
 }
 
-const allowTxReceiptCaching = (
+/**
+ * Checks if a transaction receipt can be cached based on its status and confirmations.
+ * @param chainId - The ID of the chain.
+ * @param txReceipt - The transaction receipt to check.
+ * @returns True if the receipt can be cached, false otherwise.
+ */
+const shouldCacheTxReceipt = (
   chainId: number,
   txReceipt: TransactionReceipt
-) => {
+): boolean => {
   if (!enableCaching) return false
 
-  // don't cache failed transactions
+  // Don't cache failed transactions
   if (typeof txReceipt.status !== 'undefined' && txReceipt.status === 0) {
     return false
   }
 
-  // Finality checks, to avoid caching re-org'ed transactions
-  // source https://developers.circle.com/stablecoins/required-block-confirmations
-  if (chainId === ChainId.Ethereum && txReceipt.confirmations < 65) {
-    return false
-  }
-  if (chainId === ChainId.Sepolia && txReceipt.confirmations < 5) {
+  // Finality checks to avoid caching re-org'ed transactions
+  if (
+    (chainId === ChainId.Ethereum && txReceipt.confirmations < 65) ||
+    (chainId === ChainId.Sepolia && txReceipt.confirmations < 5)
+  ) {
     return false
   }
 
@@ -136,16 +145,16 @@ class EnhancedProvider extends StaticJsonRpcProvider {
     const hash = await transactionHash
     const chainId = this.network.chainId
 
-    // Retrieve the cached receipts for the hash and return if it exists
+    // Retrieve the cached receipt for the hash, if it exists
     const cachedReceipt = getTxReceiptFromCache(chainId, hash)
     if (cachedReceipt) return cachedReceipt
 
-    // Else, call the original method to fetch the receipt
+    // Fetch the receipt using the original method
     const receipt = await super.getTransactionReceipt(hash)
 
-    // Cache the receipt if depending on some checks
-    if (receipt && allowTxReceiptCaching(chainId, receipt)) {
-      addTxReceiptToCache(this.network.chainId, receipt)
+    // Cache the receipt if it meets the criteria
+    if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
+      addTxReceiptToCache(chainId, receipt)
     }
 
     return receipt
