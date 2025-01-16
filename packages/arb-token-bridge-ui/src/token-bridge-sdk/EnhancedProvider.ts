@@ -5,10 +5,8 @@ import {
 import { BigNumber } from 'ethers'
 import { ChainId } from '../types/ChainId'
 
-type CachedReceiptsPerChain = { [txHash: string]: TransactionReceipt }
-type CachedReceipts = {
-  [chainId: string]: CachedReceiptsPerChain
-}
+type CachedReceiptsPerChain = Record<string, TransactionReceipt>
+type CachedReceipts = Record<string, CachedReceiptsPerChain>
 
 const cacheKey = `arbitrum:bridge:tx-receipts-cache`
 const enableCaching = true // switch to turn off tx caching altogether (in case of emergency/hotfix)
@@ -42,7 +40,7 @@ const encodeBigNumbers = (cachedReceipts: CachedReceipts) => {
 }
 
 const decodeBigNumbers = (cacheFromLocalStorage: Record<string, any>) => {
-  const newObj = {} as CachedReceipts
+  let newObj = {} as CachedReceipts
 
   Object.keys(cacheFromLocalStorage).forEach((chainId: string) => {
     newObj[chainId] = {} as CachedReceiptsPerChain
@@ -57,8 +55,10 @@ const decodeBigNumbers = (cacheFromLocalStorage: Record<string, any>) => {
         }
       })
 
-      // @ts-ignore - newObj is defined, but TS infers it to be undefined
-      newObj[chainId][txHash] = decodedReceipt
+      newObj = {
+        ...newObj,
+        [chainId]: { ...newObj[chainId], [txHash]: decodedReceipt }
+      }
     })
   })
 
@@ -99,8 +99,10 @@ function getTxReceiptFromCache(chainId: number, txHash: string) {
     ? decodeBigNumbers(JSON.parse(cachedReceipts))
     : {}
 
-  return allReceipts[chainId]?.[txHash]
-    ? allReceipts[chainId][txHash]
+  const cachedReceiptsPerChain = allReceipts[chainId]
+
+  return cachedReceiptsPerChain?.[txHash]
+    ? cachedReceiptsPerChain[txHash]
     : undefined
 }
 
