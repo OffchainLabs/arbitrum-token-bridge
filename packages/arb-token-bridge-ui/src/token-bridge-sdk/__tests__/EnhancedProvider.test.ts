@@ -25,17 +25,18 @@ const localStorageMock: LocalStorageMock = {
     this.store = {}
   }
 }
+// Set up localStorage mock before tests
+Object.defineProperty(global, 'localStorage', { value: localStorageMock })
 
+// a type-safe test transaction receipt which can be extended as per our test cases
 const testTxReceipt: TransactionReceipt = {
-  to: '0xaAe29B0366299461418F5324a79Afc425BE5ae21',
-  from: '0x2cd28Cda6825C4967372478E87D004637B73F996',
+  to: '0x99E2d366BA678522F3793d2c2E758Ac29a59678E',
+  from: '0x5Be7Babe02224e944582493613b00A4Caf4d56df',
   contractAddress: '',
   transactionIndex: 27,
   gasUsed: BigNumber.from(1000000000),
-  logsBloom:
-    '0x00000000000000000000000120000000000000000000000000001000400000002000000000000000000000001000000000800000020000000000000000000080000000000000000000000000000000000000000080000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000020000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000004000000000000000000000000000000000000000000000000004200',
-  blockHash:
-    '0xc7b6876c652e043ef36e28df48f5a7632670c6c6a779b4074ab01a744ad90c5e',
+  logsBloom: '',
+  blockHash: '',
   transactionHash:
     '0x40c993848fc927ced60283b2188734b50e736d305d462289cbe231876c6570a8',
   logs: [],
@@ -48,49 +49,44 @@ const testTxReceipt: TransactionReceipt = {
   byzantium: true
 }
 
-// Set up localStorage mock before tests
-Object.defineProperty(global, 'localStorage', { value: localStorageMock })
-
 describe('EnhancedProvider', () => {
   beforeEach(() => {
     localStorageMock.clear()
     jest.restoreAllMocks()
   })
 
-  describe('Real provider tests', () => {
-    it('should fetch real transaction and use cache for subsequent requests', async () => {
-      const provider = new EnhancedProvider(rpcURLs[ChainId.Sepolia])
-      // Wait for network to be initialized
-      await provider.ready
+  it('should fetch real transaction and use cache for subsequent requests', async () => {
+    const provider = new EnhancedProvider(rpcURLs[ChainId.Sepolia])
+    // Wait for network to be initialized
+    await provider.ready
 
-      const txHash =
-        '0x019ae29f37f27399fc2ac3f640b05e7e3700c75759026a4b4d51d7e572480e4c'
+    const txHash =
+      '0x019ae29f37f27399fc2ac3f640b05e7e3700c75759026a4b4d51d7e572480e4c'
 
-      // Mock super.getTransactionReceipt to return a successful receipt
-      const mockReceipt = { ...testTxReceipt, transactionHash: txHash }
+    // Mock super.getTransactionReceipt to return a successful receipt
+    const mockReceipt = { ...testTxReceipt, transactionHash: txHash }
 
-      // Spy on the parent's getTransactionReceipt
-      const superGetReceipt = jest
-        .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
-        .mockResolvedValue(mockReceipt)
+    // Spy on the parent class's getTransactionReceipt that fires the RPC call
+    const superGetReceipt = jest
+      .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
+      .mockResolvedValue(mockReceipt)
 
-      // First request - should hit the network
-      const firstReceipt = await provider.getTransactionReceipt(txHash)
-      expect(firstReceipt).toBeTruthy()
-      expect(superGetReceipt).toHaveBeenCalledTimes(1)
+    // First request - should hit the network
+    const firstReceipt = await provider.getTransactionReceipt(txHash)
+    expect(firstReceipt).toBeTruthy()
+    expect(superGetReceipt).toHaveBeenCalledTimes(1)
 
-      // Check if cache was populated
-      const cache = localStorage.getItem('arbitrum:bridge:tx-receipts-cache')
-      expect(cache).toBeTruthy()
+    // Check if cache was populated
+    const cache = localStorage.getItem('arbitrum:bridge:tx-receipts-cache')
+    expect(cache).toBeTruthy()
 
-      // Second request - should use cache
-      const secondReceipt = await provider.getTransactionReceipt(txHash)
-      expect(secondReceipt).toEqual(firstReceipt)
-      expect(superGetReceipt).toHaveBeenCalledTimes(1) // No additional RPC calls
-    })
+    // Second request - should use cache
+    const secondReceipt = await provider.getTransactionReceipt(txHash)
+    expect(secondReceipt).toEqual(firstReceipt)
+    expect(superGetReceipt).toHaveBeenCalledTimes(1) // No additional RPC calls
   })
 
-  describe('Mock provider tests', () => {
+  describe('Caching condition tests', () => {
     let provider: EnhancedProvider
 
     beforeEach(async () => {
@@ -110,7 +106,7 @@ describe('EnhancedProvider', () => {
         confirmations: 4 // Below Sepolia threshold of 5
       }
 
-      // Mock the parent's getTransactionReceipt
+      // Mock the parent class's getTransactionReceipt
       jest
         .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
         .mockResolvedValue(mockReceipt)
@@ -130,7 +126,7 @@ describe('EnhancedProvider', () => {
         confirmations: 10 // Above Sepolia threshold of 5
       }
 
-      // Mock the parent's getTransactionReceipt
+      // Mock the parent class's getTransactionReceipt
       jest
         .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
         .mockResolvedValue(mockReceipt)
@@ -148,7 +144,7 @@ describe('EnhancedProvider', () => {
         status: 0 // Failed transaction
       }
 
-      // Mock the parent's getTransactionReceipt
+      // Mock the parent class's getTransactionReceipt
       jest
         .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
         .mockResolvedValue(mockReceipt)
