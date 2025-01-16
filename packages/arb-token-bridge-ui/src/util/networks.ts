@@ -9,10 +9,10 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { chainIdToInfuraUrl } from './infura'
 import { fetchErc20Data } from './TokenUtils'
 import { orbitChains } from './orbitChainsList'
 import { ChainId } from '../types/ChainId'
+import { getRpcUrl } from './rpc/getRpcUrl'
 import {
   defaultL2Network,
   defaultL3Network,
@@ -208,35 +208,41 @@ export const supportedCustomOrbitParentChains = [
 ]
 
 export const rpcURLs: { [chainId: number]: string } = {
-  // L1
+  // L1 Mainnet
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
-    fallback: chainIdToInfuraUrl(ChainId.Ethereum)
+    fallback: getRpcUrl(ChainId.Ethereum)
   }),
-  // L1 Testnets
+  // L1 Testnet
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
-    fallback: chainIdToInfuraUrl(ChainId.Sepolia)
+    fallback: getRpcUrl(ChainId.Sepolia)
   }),
-  [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
-  // L2
+  [ChainId.Holesky]: loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_RPC_URL_HOLESKY,
+    fallback: getRpcUrl(ChainId.Holesky)
+  }),
+  // L2 Mainnet
   [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.ArbitrumOne),
-    fallback: 'https://arb1.arbitrum.io/rpc'
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_ONE,
+    fallback: getRpcUrl(ChainId.ArbitrumOne)
   }),
-  [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
+  [ChainId.ArbitrumNova]: loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_NOVA,
+    fallback: getRpcUrl(ChainId.ArbitrumNova)
+  }),
   [ChainId.Base]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.Base),
-    fallback: 'https://mainnet.base.org'
+    env: process.env.NEXT_PUBLIC_RPC_URL_BASE,
+    fallback: getRpcUrl(ChainId.Base)
   }),
-  // L2 Testnets
+  // L2 Testnet
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
-    fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_SEPOLIA,
+    fallback: getRpcUrl(ChainId.ArbitrumSepolia)
   }),
   [ChainId.BaseSepolia]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.BaseSepolia),
-    fallback: 'https://sepolia.base.org'
+    env: process.env.NEXT_PUBLIC_RPC_URL_BASE_SEPOLIA,
+    fallback: getRpcUrl(ChainId.BaseSepolia)
   })
 }
 
