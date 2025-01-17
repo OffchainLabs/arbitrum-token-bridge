@@ -102,35 +102,31 @@ describe('getTransferMode', () => {
     expect(result2).toEqual('teleport')
   })
 
-  it('should return correctly for L3 source chain and L1 destination chain', () => {
-    expect(() =>
-      getTransferMode({
-        sourceChainId: 1380012617, // RARI mainnet
-        destinationChainId: ChainId.Ethereum
-      })
-    ).toThrow(new Error('Unsupported source and destination chain pair.'))
+  it('should return unsupported for L3 source chain and L1 destination chain', () => {
+    const result1 = getTransferMode({
+      sourceChainId: 1380012617, // RARI mainnet
+      destinationChainId: ChainId.Ethereum
+    })
+    expect(result1).toEqual('unsupported')
 
-    expect(() =>
-      getTransferMode({
-        sourceChainId: 70700, // PopApex
-        destinationChainId: ChainId.Ethereum
-      })
-    ).toThrow(new Error('Unsupported source and destination chain pair.'))
+    const result2 = getTransferMode({
+      sourceChainId: 70700, // PopApex
+      destinationChainId: ChainId.Ethereum
+    })
+    expect(result2).toEqual('unsupported')
   })
 
-  it('should throw error for L2 source chain and L2 destination chain', () => {
-    expect(() =>
-      getTransferMode({
-        sourceChainId: ChainId.ArbitrumOne,
-        destinationChainId: ChainId.ArbitrumNova
-      })
-    ).toThrow(new Error('Unsupported source and destination chain pair.'))
+  it('should return unsupported for L2 source chain and L2 destination chain', () => {
+    const result1 = getTransferMode({
+      sourceChainId: ChainId.ArbitrumOne,
+      destinationChainId: ChainId.ArbitrumNova
+    })
+    expect(result1).toEqual('unsupported')
 
-    expect(() =>
-      getTransferMode({
-        sourceChainId: ChainId.ArbitrumNova,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    ).toThrow(new Error('Unsupported source and destination chain pair.'))
+    const result2 = getTransferMode({
+      sourceChainId: ChainId.ArbitrumNova,
+      destinationChainId: ChainId.ArbitrumOne
+    })
+    expect(result2).toEqual('unsupported')
   })
 })

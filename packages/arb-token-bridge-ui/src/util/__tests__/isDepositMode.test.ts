@@ -45,19 +45,19 @@ describe('isDepositMode', () => {
   })
 
   it('should return true for L2 source chain and L3 destination chain', () => {
-    const result1 = isDepositMode({
+    const result = isDepositMode({
       sourceChainId: ChainId.ArbitrumOne,
       destinationChainId: 70700 // PopApex
     })
-    expect(result1).toEqual(true)
+    expect(result).toEqual(true)
   })
 
   it('should return true for L1 source chain and L2 Orbit destination chain', () => {
-    const result1 = isDepositMode({
+    const result = isDepositMode({
       sourceChainId: ChainId.Ethereum,
       destinationChainId: 4162 // SX
     })
-    expect(result1).toEqual(true)
+    expect(result).toEqual(true)
   })
 
   it('should return false for L2 source chain and L1 destination chain', () => {
@@ -76,53 +76,50 @@ describe('isDepositMode', () => {
   })
 
   it('should return false for L2 Orbit source chain and L1 destination chain', () => {
-    const result1 = isDepositMode({
+    const result = isDepositMode({
       sourceChainId: 4162, // SX
       destinationChainId: ChainId.Ethereum
     })
-    expect(result1).toEqual(false)
+    expect(result).toEqual(false)
   })
 
   it('should return false for L3 source chain and L2 destination chain', () => {
-    const result2 = isDepositMode({
+    const result = isDepositMode({
       sourceChainId: 70700, // PopApex
       destinationChainId: ChainId.ArbitrumOne
     })
 
-    expect(result2).toEqual(false)
+    expect(result).toEqual(false)
   })
 
   it('should return false for L1 source chain and L3 destination chain', () => {
-    const result2 = isDepositMode({
+    const result = isDepositMode({
       sourceChainId: ChainId.Ethereum,
       destinationChainId: 70700 // PopApex
     })
 
+    expect(result).toEqual(false)
+  })
+
+  it('should return false for L3 source chain and L1 destination chain', () => {
+    const result = isDepositMode({
+      sourceChainId: 70700, // PopApex
+      destinationChainId: ChainId.Ethereum
+    })
+    expect(result).toEqual(false)
+  })
+
+  it('should return false for L2 source chain and L2 destination chain', () => {
+    const result1 = isDepositMode({
+      sourceChainId: ChainId.ArbitrumOne,
+      destinationChainId: ChainId.ArbitrumNova
+    })
+    expect(result1).toEqual(false)
+
+    const result2 = isDepositMode({
+      sourceChainId: ChainId.ArbitrumNova,
+      destinationChainId: ChainId.ArbitrumOne
+    })
     expect(result2).toEqual(false)
-  })
-
-  it('should throw error for L3 source chain and L1 destination chain', () => {
-    expect(() =>
-      isDepositMode({
-        sourceChainId: 70700, // PopApex
-        destinationChainId: ChainId.Ethereum
-      })
-    ).toThrow(new Error('Unsupported source and destination chain pair.'))
-  })
-
-  it('should throw error for L2 source chain and L2 destination chain', () => {
-    expect(() =>
-      isDepositMode({
-        sourceChainId: ChainId.ArbitrumOne,
-        destinationChainId: ChainId.ArbitrumNova
-      })
-    ).toThrow(new Error('Unsupported source and destination chain pair.'))
-
-    expect(() =>
-      isDepositMode({
-        sourceChainId: ChainId.ArbitrumNova,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    ).toThrow(new Error('Unsupported source and destination chain pair.'))
   })
 })

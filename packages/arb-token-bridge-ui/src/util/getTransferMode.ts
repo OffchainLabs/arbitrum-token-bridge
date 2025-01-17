@@ -3,7 +3,7 @@ import { isValidTeleportChainPair } from '../token-bridge-sdk/teleport'
 import { isDepositMode } from './isDepositMode'
 import { getDestinationChainIds } from './networks'
 
-type TransferMode = 'deposit' | 'withdrawal' | 'teleport'
+type TransferMode = 'deposit' | 'withdrawal' | 'teleport' | 'unsupported'
 
 /**
  * determines if the UI is in deposit mode or withdrawal mode or teleport mode
@@ -14,12 +14,11 @@ export function getTransferMode({
 }: {
   sourceChainId: number
   destinationChainId: number
-}): TransferMode | undefined {
-  const validDestinationChains = getDestinationChainIds(sourceChainId)
+}): TransferMode {
+  // const validDestinationChains = getDestinationChainIds(sourceChainId)
 
-  if (!validDestinationChains.includes(destinationChainId)) {
-    throw new Error('Unsupported source and destination chain pair.')
-  }
+  // if (!validDestinationChains.includes(destinationChainId)) {
+  // }
 
   const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
 
@@ -42,4 +41,6 @@ export function getTransferMode({
   if (isWithdrawal) {
     return 'withdrawal'
   }
+
+  return 'unsupported'
 }

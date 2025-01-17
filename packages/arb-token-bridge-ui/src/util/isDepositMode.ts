@@ -1,4 +1,4 @@
-import { getDestinationChainIds, isNetwork } from '../util/networks'
+import { isNetwork } from '../util/networks'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 
 export function isDepositMode({
@@ -11,12 +11,6 @@ export function isDepositMode({
   const {
     isEthereumMainnetOrTestnet: isDestinationChainEthereumMainnetOrTestnet
   } = isNetwork(destinationChainId)
-
-  const validDestinationChains = getDestinationChainIds(sourceChainId)
-
-  if (!validDestinationChains.includes(destinationChainId)) {
-    throw new Error('Unsupported source and destination chain pair.')
-  }
 
   if (isDestinationChainEthereumMainnetOrTestnet) {
     return false
