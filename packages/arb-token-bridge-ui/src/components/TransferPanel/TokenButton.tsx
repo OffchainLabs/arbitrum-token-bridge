@@ -20,7 +20,7 @@ import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 export type TokenButtonOptions = {
   symbol?: string
-  logoSrc?: string | null
+  logoSrc?: string
   disabled?: boolean
 }
 

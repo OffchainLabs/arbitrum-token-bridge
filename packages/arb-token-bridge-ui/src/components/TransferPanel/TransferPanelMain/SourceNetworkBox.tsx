@@ -152,7 +152,6 @@ export function SourceNetworkBox() {
   const tokenButtonOptionsAmount2 = useMemo(
     () => ({
       symbol: nativeCurrency.symbol,
-      logoSrc: null,
       disabled: true,
       balance: nativeCurrencyBalances.sourceBalance
         ? Number(
