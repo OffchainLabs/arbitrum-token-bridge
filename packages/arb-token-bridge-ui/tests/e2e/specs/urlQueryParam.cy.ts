@@ -3,7 +3,12 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { getInitialETHBalance, visitAfterSomeDelay } from '../../support/common'
+import {
+  getInitialETHBalance,
+  getL1NetworkName,
+  getL2NetworkName,
+  visitAfterSomeDelay
+} from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -26,8 +31,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'max',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 
@@ -55,8 +60,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'MAX',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 
@@ -88,8 +93,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'MaX',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 
@@ -124,8 +129,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '56',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -135,8 +140,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '1.6678',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -146,8 +151,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '6',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -157,8 +162,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0.123',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -169,8 +174,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '-0.123',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -180,8 +185,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: 'asdfs',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -191,8 +196,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -202,8 +207,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0.0001',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -213,8 +218,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '123,3,43',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -226,8 +231,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: '0, 123.222, 0.3',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 
