@@ -7,7 +7,7 @@ import { ChainId } from '../types/ChainId'
 
 type CachedReceipts = Record<string, TransactionReceipt>
 
-const cacheKey = `arbitrum:bridge:tx-receipts-cache`
+const localStorageKey = `arbitrum:bridge:tx-receipts-cache`
 const enableCaching = true
 
 const getCacheKey = (chainId: number | string, txHash: string) =>
@@ -70,14 +70,15 @@ const shouldCacheTxReceipt = (
   if (!enableCaching) return false
 
   // Don't cache failed transactions
-  if (typeof txReceipt.status !== 'undefined' && txReceipt.status === 0) {
+  if (txReceipt.status === 0) {
     return false
   }
 
   // Finality checks to avoid caching re-org'ed transactions
   if (
     (chainId === ChainId.Ethereum && txReceipt.confirmations < 65) ||
-    (chainId === ChainId.Sepolia && txReceipt.confirmations < 5)
+    (chainId === ChainId.Sepolia && txReceipt.confirmations < 5) ||
+    (chainId === ChainId.Holesky && txReceipt.confirmations < 5)
   ) {
     return false
   }
@@ -88,7 +89,7 @@ const shouldCacheTxReceipt = (
 function getTxReceiptFromCache(chainId: number, txHash: string) {
   if (!enableCaching || typeof localStorage === 'undefined') return undefined
 
-  const cachedReceipts = localStorage.getItem(cacheKey)
+  const cachedReceipts = localStorage.getItem(localStorageKey)
   if (!cachedReceipts) return undefined
 
   const allReceipts = decodeBigNumbers(JSON.parse(cachedReceipts))
@@ -98,14 +99,14 @@ function getTxReceiptFromCache(chainId: number, txHash: string) {
 function addTxReceiptToCache(chainId: number, txReceipt: TransactionReceipt) {
   if (typeof localStorage === 'undefined') return
 
-  const cachedReceipts = localStorage.getItem(cacheKey)
+  const cachedReceipts = localStorage.getItem(localStorageKey)
   const allReceipts = cachedReceipts
     ? decodeBigNumbers(JSON.parse(cachedReceipts))
     : {}
 
   const key = getCacheKey(chainId, txReceipt.transactionHash)
   localStorage.setItem(
-    cacheKey,
+    localStorageKey,
     JSON.stringify(
       encodeBigNumbers({
         ...allReceipts,
