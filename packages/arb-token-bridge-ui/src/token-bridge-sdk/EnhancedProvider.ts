@@ -14,47 +14,41 @@ const getCacheKey = (chainId: number | string, txHash: string) =>
   `${chainId}:${txHash}`.toLowerCase()
 
 /**
- * Encodes BigNumber properties in cached receipts for localStorage.
- * @param cachedReceipts - The receipts to encode.
- * @returns The encoded receipts.
+ * Converts a TransactionReceipt to a string by encoding BigNumber properties.
+ * @param txReceipt - The receipt to encode.
+ * @returns The encoded receipt as a string.
  */
-const encodeBigNumbers = (cachedReceipts: CachedReceipts) => {
-  const encodedCachedReceipts: Record<string, any> = {}
+const txReceiptToString = (txReceipt: TransactionReceipt): string => {
+  const encodedReceipt: Record<string, any> = { ...txReceipt }
 
-  Object.entries(cachedReceipts).forEach(([key, receipt]) => {
-    const encodedReceipt: Record<string, any> = { ...receipt }
-
-    Object.keys(encodedReceipt).forEach(field => {
-      if (encodedReceipt[field]?._isBigNumber) {
-        encodedReceipt[field] = {
-          _type: 'BigNumber',
-          _data: encodedReceipt[field].toString()
-        }
+  Object.keys(encodedReceipt).forEach(field => {
+    if (encodedReceipt[field]?._isBigNumber) {
+      encodedReceipt[field] = {
+        _type: 'BigNumber',
+        _data: encodedReceipt[field].toString()
       }
-    })
-
-    encodedCachedReceipts[key] = encodedReceipt
+    }
   })
 
-  return encodedCachedReceipts
+  return JSON.stringify(encodedReceipt)
 }
 
-const decodeBigNumbers = (cacheFromLocalStorage: Record<string, any>) => {
-  const decodedCachedReceipts: CachedReceipts = {}
+/**
+ * Converts a stringified receipt back to a TransactionReceipt by decoding BigNumber properties.
+ * @param stringified - The stringified receipt to decode.
+ * @returns The decoded TransactionReceipt.
+ */
+const txReceiptFromString = (stringified: string): TransactionReceipt => {
+  const receipt = JSON.parse(stringified)
+  const decodedReceipt = { ...receipt }
 
-  Object.entries(cacheFromLocalStorage).forEach(([key, receipt]) => {
-    const decodedReceipt = { ...receipt }
-
-    Object.keys(decodedReceipt).forEach(field => {
-      if (decodedReceipt[field]?._type === 'BigNumber') {
-        decodedReceipt[field] = BigNumber.from(decodedReceipt[field]._data)
-      }
-    })
-
-    decodedCachedReceipts[key] = decodedReceipt as TransactionReceipt
+  Object.keys(decodedReceipt).forEach(field => {
+    if (decodedReceipt[field]?._type === 'BigNumber') {
+      decodedReceipt[field] = BigNumber.from(decodedReceipt[field]._data)
+    }
   })
 
-  return decodedCachedReceipts
+  return decodedReceipt as TransactionReceipt
 }
 
 /**
@@ -92,7 +86,13 @@ function getTxReceiptFromCache(chainId: number, txHash: string) {
   const cachedReceipts = localStorage.getItem(localStorageKey)
   if (!cachedReceipts) return undefined
 
-  const allReceipts = decodeBigNumbers(JSON.parse(cachedReceipts))
+  const allReceipts: CachedReceipts = {}
+  const parsedReceipts = JSON.parse(cachedReceipts)
+
+  Object.entries(parsedReceipts).forEach(([key, receipt]) => {
+    allReceipts[key] = txReceiptFromString(JSON.stringify(receipt))
+  })
+
   return allReceipts[getCacheKey(chainId, txHash)]
 }
 
@@ -100,19 +100,24 @@ function addTxReceiptToCache(chainId: number, txReceipt: TransactionReceipt) {
   if (typeof localStorage === 'undefined') return
 
   const cachedReceipts = localStorage.getItem(localStorageKey)
-  const allReceipts = cachedReceipts
-    ? decodeBigNumbers(JSON.parse(cachedReceipts))
-    : {}
+  const allReceipts: CachedReceipts = {}
+
+  if (cachedReceipts) {
+    const parsedReceipts = JSON.parse(cachedReceipts)
+    Object.entries(parsedReceipts).forEach(([key, receipt]) => {
+      allReceipts[key] = JSON.parse(
+        txReceiptToString(receipt as TransactionReceipt)
+      )
+    })
+  }
 
   const key = getCacheKey(chainId, txReceipt.transactionHash)
   localStorage.setItem(
     localStorageKey,
-    JSON.stringify(
-      encodeBigNumbers({
-        ...allReceipts,
-        [key]: txReceipt
-      })
-    )
+    JSON.stringify({
+      ...allReceipts,
+      [key]: JSON.parse(txReceiptToString(txReceipt))
+    })
   )
 }
 
