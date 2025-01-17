@@ -186,7 +186,7 @@ export const visitAfterSomeDelay = (
   url: string,
   options?: Partial<Cypress.VisitOptions>
 ) => {
-  cy.wait(15_000) // let all the race conditions settle, let UI load well first
+  cy.wait(30_000) // let all the race conditions settle, let UI load well first
   cy.visit(url, options)
 }
 
