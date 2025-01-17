@@ -1,11 +1,28 @@
 import {
+  Networkish,
   StaticJsonRpcProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { ChainId } from '../types/ChainId'
+import { ConnectionInfo } from 'ethers/lib/utils.js'
 
 type CachedReceipts = Record<string, TransactionReceipt>
+
+interface Storage {
+  getItem(key: string): string | null
+  setItem(key: string, value: string): void
+}
+
+class WebStorage implements Storage {
+  getItem(key: string): string | null {
+    return localStorage.getItem(key)
+  }
+
+  setItem(key: string, value: string): void {
+    localStorage.setItem(key, value)
+  }
+}
 
 const localStorageKey = `arbitrum:bridge:tx-receipts-cache`
 const enableCaching = true
@@ -80,10 +97,14 @@ const shouldCacheTxReceipt = (
   return true
 }
 
-function getTxReceiptFromCache(chainId: number, txHash: string) {
-  if (!enableCaching || typeof localStorage === 'undefined') return undefined
+function getTxReceiptFromCache(
+  storage: Storage,
+  chainId: number,
+  txHash: string
+) {
+  if (!enableCaching) return undefined
 
-  const cachedReceipts = localStorage.getItem(localStorageKey)
+  const cachedReceipts = storage.getItem(localStorageKey)
   if (!cachedReceipts) return undefined
 
   const allReceipts: CachedReceipts = {}
@@ -96,10 +117,12 @@ function getTxReceiptFromCache(chainId: number, txHash: string) {
   return allReceipts[getCacheKey(chainId, txHash)]
 }
 
-function addTxReceiptToCache(chainId: number, txReceipt: TransactionReceipt) {
-  if (typeof localStorage === 'undefined') return
-
-  const cachedReceipts = localStorage.getItem(localStorageKey)
+function addTxReceiptToCache(
+  storage: Storage,
+  chainId: number,
+  txReceipt: TransactionReceipt
+) {
+  const cachedReceipts = storage.getItem(localStorageKey)
   const allReceipts: CachedReceipts = {}
 
   if (cachedReceipts) {
@@ -112,7 +135,7 @@ function addTxReceiptToCache(chainId: number, txReceipt: TransactionReceipt) {
   }
 
   const key = getCacheKey(chainId, txReceipt.transactionHash)
-  localStorage.setItem(
+  storage.setItem(
     localStorageKey,
     JSON.stringify({
       ...allReceipts,
@@ -122,6 +145,17 @@ function addTxReceiptToCache(chainId: number, txReceipt: TransactionReceipt) {
 }
 
 class EnhancedProvider extends StaticJsonRpcProvider {
+  private storage: Storage
+
+  constructor(
+    url?: ConnectionInfo | string,
+    network?: Networkish,
+    storage: Storage = new WebStorage()
+  ) {
+    super(url, network)
+    this.storage = storage
+  }
+
   async getTransactionReceipt(
     transactionHash: string | Promise<string>
   ): Promise<TransactionReceipt> {
@@ -129,7 +163,7 @@ class EnhancedProvider extends StaticJsonRpcProvider {
     const chainId = this.network.chainId
 
     // Retrieve the cached receipt for the hash, if it exists
-    const cachedReceipt = getTxReceiptFromCache(chainId, hash)
+    const cachedReceipt = getTxReceiptFromCache(this.storage, chainId, hash)
     if (cachedReceipt) return cachedReceipt
 
     // Else, fetch the receipt using the original method
@@ -137,7 +171,7 @@ class EnhancedProvider extends StaticJsonRpcProvider {
 
     // Cache the receipt if it meets the criteria
     if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
-      addTxReceiptToCache(chainId, receipt)
+      addTxReceiptToCache(this.storage, chainId, receipt)
     }
 
     return receipt

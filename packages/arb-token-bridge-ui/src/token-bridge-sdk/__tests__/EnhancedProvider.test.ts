@@ -7,26 +7,18 @@ import { ChainId } from '../../types/ChainId'
 import { rpcURLs } from '../../util/networks'
 import EnhancedProvider from '../EnhancedProvider'
 
-type LocalStorageMock = {
-  store: Record<string, string>
-  getItem: (key: string) => string | null
-  setItem: (key: string, value: string) => void
-  clear: () => void
-}
-const localStorageMock: LocalStorageMock = {
-  store: {},
-  getItem(key: string) {
+class TestStorage {
+  private store: Record<string, string> = {}
+  getItem(key: string): string | null {
     return this.store[key] || null
-  },
-  setItem(key: string, value: string) {
+  }
+  setItem(key: string, value: string): void {
     this.store[key] = value
-  },
-  clear() {
+  }
+  clear(): void {
     this.store = {}
   }
 }
-// Set up localStorage mock before tests
-Object.defineProperty(global, 'localStorage', { value: localStorageMock })
 
 // a type-safe test transaction receipt which can be extended as per our test cases
 const testTxReceipt: TransactionReceipt = {
@@ -50,13 +42,19 @@ const testTxReceipt: TransactionReceipt = {
 }
 
 describe('EnhancedProvider', () => {
+  let storage: TestStorage
+
   beforeEach(() => {
-    localStorageMock.clear()
+    storage = new TestStorage()
     jest.restoreAllMocks()
   })
 
   it('should fetch real transaction and use cache for subsequent requests', async () => {
-    const provider = new EnhancedProvider(rpcURLs[ChainId.Sepolia])
+    const rpcUrl = rpcURLs[ChainId.Sepolia]
+    if (!rpcUrl) {
+      throw new Error('No RPC URL found for Sepolia')
+    }
+    const provider = new EnhancedProvider(rpcUrl, ChainId.Sepolia, storage)
     // Wait for network to be initialized
     await provider.ready
 
@@ -77,7 +75,7 @@ describe('EnhancedProvider', () => {
     expect(superGetReceipt).toHaveBeenCalledTimes(1)
 
     // Check if cache was populated
-    const cache = localStorage.getItem('arbitrum:bridge:tx-receipts-cache')
+    const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
     expect(cache).toBeTruthy()
 
     // Second request - should use cache
@@ -90,7 +88,11 @@ describe('EnhancedProvider', () => {
     let provider: EnhancedProvider
 
     beforeEach(async () => {
-      provider = new EnhancedProvider('https://mock.url')
+      provider = new EnhancedProvider(
+        'https://mock.url',
+        ChainId.Sepolia,
+        storage
+      )
       // Mock the network property
       Object.defineProperty(provider, 'network', {
         value: { chainId: ChainId.Sepolia, name: 'sepolia' },
@@ -116,7 +118,7 @@ describe('EnhancedProvider', () => {
       )
       expect(receipt).toBeTruthy()
 
-      const cache = localStorage.getItem('arbitrum:bridge:tx-receipts-cache')
+      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
       expect(cache).toBeFalsy()
     })
 
@@ -134,7 +136,7 @@ describe('EnhancedProvider', () => {
       const receipt = await provider.getTransactionReceipt('0x1234')
       expect(receipt).toBeTruthy()
 
-      const cache = localStorage.getItem('arbitrum:bridge:tx-receipts-cache')
+      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
       expect(cache).toBeTruthy()
     })
 
@@ -155,7 +157,7 @@ describe('EnhancedProvider', () => {
       expect(receipt).toBeTruthy()
       expect(receipt.status).toBe(0)
 
-      const cache = localStorage.getItem('arbitrum:bridge:tx-receipts-cache')
+      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
       expect(cache).toBeFalsy()
     })
   })
