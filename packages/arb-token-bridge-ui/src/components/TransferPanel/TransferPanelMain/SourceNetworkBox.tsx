@@ -1,5 +1,6 @@
 import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
 import { utils } from 'ethers'
+import Image from 'next/image'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'
 
@@ -31,6 +32,7 @@ import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
 import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
@@ -97,6 +99,10 @@ export function SourceNetworkBox() {
     useSourceChainNativeCurrencyDecimals()
 
   const isCctpTransfer = useIsCctpTransfer()
+
+  const {
+    network: { logo: networkLogo }
+  } = getBridgeUiConfigForChain(networks.sourceChain.id)
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
   const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
@@ -165,11 +171,21 @@ export function SourceNetworkBox() {
 
   return (
     <>
-      <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
-        <NetworkButton
-          type="source"
-          onClick={openSourceNetworkSelectionDialog}
-        />
+      <NetworkContainer network={networks.sourceChain}>
+        <div className="flex justify-between">
+          <NetworkButton
+            type="source"
+            onClick={openSourceNetworkSelectionDialog}
+          />
+          <div className="relative h-[44px] w-[44px]">
+            <Image
+              src={networkLogo}
+              alt={`${networks.sourceChain.name} logo`}
+              layout={'fill'}
+              objectFit={'contain'}
+            />
+          </div>
+        </div>
 
         <div className="flex flex-col gap-1">
           <TransferPanelMainInput
