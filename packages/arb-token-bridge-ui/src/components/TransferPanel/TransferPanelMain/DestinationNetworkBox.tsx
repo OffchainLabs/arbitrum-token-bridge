@@ -129,12 +129,8 @@ function BalancesContainer() {
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
-  const selectedTokenDestinationBalance = isDepositMode
-    ? selectedTokenBalances.childBalance
-    : selectedTokenBalances.parentBalance
-
   const selectedTokenOrNativeCurrencyBalance = selectedToken
-    ? selectedTokenDestinationBalance
+    ? selectedTokenBalances.destinationBalance
     : nativeCurrencyBalances.destinationBalance
 
   return (
