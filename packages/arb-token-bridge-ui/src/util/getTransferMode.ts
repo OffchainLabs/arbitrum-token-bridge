@@ -1,7 +1,6 @@
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 import { isValidTeleportChainPair } from '../token-bridge-sdk/teleport'
 import { isDepositMode } from './isDepositMode'
-import { getDestinationChainIds } from './networks'
 
 type TransferMode = 'deposit' | 'withdrawal' | 'teleport' | 'unsupported'
 
