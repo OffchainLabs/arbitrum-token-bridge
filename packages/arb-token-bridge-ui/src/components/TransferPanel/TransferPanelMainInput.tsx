@@ -43,10 +43,7 @@ function MaxButton({
   const maxButtonVisible = useMemo(() => {
     const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
 
-    const tokenBalance =
-      transferMode === 'deposit' || transferMode === 'teleport'
-        ? selectedTokenBalances.parentBalance
-        : selectedTokenBalances.childBalance
+    const tokenBalance = selectedTokenBalances.sourceBalance
 
     if (selectedToken) {
       return tokenBalance && !tokenBalance.isZero()
@@ -55,9 +52,7 @@ function MaxButton({
     return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
     nativeCurrencyBalances.sourceBalance,
-    transferMode,
-    selectedTokenBalances.parentBalance,
-    selectedTokenBalances.childBalance,
+    selectedTokenBalances.sourceBalance,
     selectedToken
   ])
 
@@ -102,10 +97,7 @@ function SourceChainTokenBalance({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenBalance =
-    transferMode === 'deposit' || transferMode === 'teleport'
-      ? selectedTokenBalances.parentBalance
-      : selectedTokenBalances.childBalance
+  const tokenBalance = selectedTokenBalances.sourceBalance
 
   const balance =
     balanceOverride ??

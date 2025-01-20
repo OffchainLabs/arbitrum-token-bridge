@@ -87,10 +87,7 @@ export function useMaxAmount() {
 
   const maxAmount = useMemo(() => {
     if (selectedToken) {
-      const tokenBalance =
-        transferMode === 'deposit' || transferMode === 'teleport'
-          ? selectedTokenBalances.parentBalance
-          : selectedTokenBalances.childBalance
+      const tokenBalance = selectedTokenBalances.sourceBalance
 
       if (!tokenBalance) {
         return undefined
@@ -106,10 +103,8 @@ export function useMaxAmount() {
     return nativeCurrencyMaxAmount
   }, [
     selectedToken,
-    transferMode,
     nativeCurrencyMaxAmount,
-    selectedTokenBalances.parentBalance,
-    selectedTokenBalances.childBalance
+    selectedTokenBalances.sourceBalance
   ])
 
   const maxAmount2 = useMemo(() => {
