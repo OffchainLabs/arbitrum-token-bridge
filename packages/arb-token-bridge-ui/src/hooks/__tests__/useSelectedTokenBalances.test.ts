@@ -4,10 +4,10 @@ import { BigNumber, constants } from 'ethers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../useNetworks'
-import { ChainId } from '../../util/networks'
 import { useBalances } from '../useBalances'
 import { useSelectedTokenBalances } from '../TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
+import { ChainId } from '../../types/ChainId'
 
 jest.mock('../useNetworks', () => ({
   useNetworks: jest.fn()
