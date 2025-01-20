@@ -4,10 +4,12 @@ import { orbitMainnets } from '../orbitChainsList'
 import { isDepositMode } from '../isDepositMode'
 import { ChainId } from '../../types/ChainId'
 
-beforeAll(() => {
-  // L2 Orbit, custom gas token: SX
-  const sxMainnetChainId = 4162
+// L2 Orbit, custom gas token: SX
+const sxMainnetChainId = 4162
+// L3 Orbit, gas token: ETH, valid teleport chain
+const popApexChainId = 70700
 
+beforeAll(() => {
   const sxMainnet = orbitMainnets[sxMainnetChainId]
 
   if (!sxMainnet) {
@@ -15,9 +17,6 @@ beforeAll(() => {
   }
 
   registerCustomArbitrumNetwork(sxMainnet)
-
-  // L3 Orbit, gas token: ETH, valid teleport chain
-  const popApexChainId = 70700
 
   const popApex = orbitMainnets[popApexChainId]
 
@@ -47,7 +46,7 @@ describe('isDepositMode', () => {
   it('should return true for L2 source chain and L3 destination chain', () => {
     const result = isDepositMode({
       sourceChainId: ChainId.ArbitrumOne,
-      destinationChainId: 70700 // PopApex
+      destinationChainId: popApexChainId
     })
     expect(result).toEqual(true)
   })
@@ -55,7 +54,7 @@ describe('isDepositMode', () => {
   it('should return true for L1 source chain and L2 Orbit destination chain', () => {
     const result = isDepositMode({
       sourceChainId: ChainId.Ethereum,
-      destinationChainId: 4162 // SX
+      destinationChainId: sxMainnetChainId
     })
     expect(result).toEqual(true)
   })
@@ -77,7 +76,7 @@ describe('isDepositMode', () => {
 
   it('should return false for L2 Orbit source chain and L1 destination chain', () => {
     const result = isDepositMode({
-      sourceChainId: 4162, // SX
+      sourceChainId: sxMainnetChainId,
       destinationChainId: ChainId.Ethereum
     })
     expect(result).toEqual(false)
@@ -85,7 +84,7 @@ describe('isDepositMode', () => {
 
   it('should return false for L3 source chain and L2 destination chain', () => {
     const result = isDepositMode({
-      sourceChainId: 70700, // PopApex
+      sourceChainId: popApexChainId,
       destinationChainId: ChainId.ArbitrumOne
     })
 
@@ -95,7 +94,7 @@ describe('isDepositMode', () => {
   it('should return false for L1 source chain and L3 destination chain', () => {
     const result = isDepositMode({
       sourceChainId: ChainId.Ethereum,
-      destinationChainId: 70700 // PopApex
+      destinationChainId: popApexChainId
     })
 
     expect(result).toEqual(false)
@@ -103,7 +102,7 @@ describe('isDepositMode', () => {
 
   it('should return false for L3 source chain and L1 destination chain', () => {
     const result = isDepositMode({
-      sourceChainId: 70700, // PopApex
+      sourceChainId: popApexChainId,
       destinationChainId: ChainId.Ethereum
     })
     expect(result).toEqual(false)

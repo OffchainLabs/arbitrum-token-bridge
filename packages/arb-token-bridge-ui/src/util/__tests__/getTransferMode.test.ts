@@ -4,9 +4,10 @@ import { getTransferMode } from '../getTransferMode'
 import { orbitMainnets } from '../orbitChainsList'
 import { ChainId } from '../../types/ChainId'
 
-beforeAll(() => {
-  const popApexChainId = 70700
+const popApexChainId = 70700
+const rariMainnetChainId = 1380012617
 
+beforeAll(() => {
   const popApex = orbitMainnets[popApexChainId]
 
   if (!popApex) {
@@ -14,8 +15,6 @@ beforeAll(() => {
   }
 
   registerCustomArbitrumNetwork(popApex)
-
-  const rariMainnetChainId = 1380012617
 
   const rariMainnet = orbitMainnets[rariMainnetChainId]
 
@@ -45,13 +44,13 @@ describe('getTransferMode', () => {
   it('should return "deposit" for L2 source chain and L3 destination chain', () => {
     const result1 = getTransferMode({
       sourceChainId: ChainId.ArbitrumOne,
-      destinationChainId: 70700 // PopApex
+      destinationChainId: popApexChainId
     })
     expect(result1).toEqual('deposit')
 
     const result2 = getTransferMode({
       sourceChainId: ChainId.ArbitrumOne,
-      destinationChainId: 1380012617 // RARI mainnet
+      destinationChainId: rariMainnetChainId
     })
 
     expect(result2).toEqual('deposit')
@@ -74,13 +73,13 @@ describe('getTransferMode', () => {
 
   it('should return correctly for L3 source chain and L2 destination chain', () => {
     const result1 = getTransferMode({
-      sourceChainId: 1380012617, // RARI mainnet
+      sourceChainId: rariMainnetChainId,
       destinationChainId: ChainId.ArbitrumOne
     })
     expect(result1).toEqual('withdrawal')
 
     const result2 = getTransferMode({
-      sourceChainId: 70700, // PopApex
+      sourceChainId: popApexChainId,
       destinationChainId: ChainId.ArbitrumOne
     })
 
@@ -90,13 +89,13 @@ describe('getTransferMode', () => {
   it('should return correctly for L1 source chain and L3 destination chain', () => {
     const result1 = getTransferMode({
       sourceChainId: ChainId.Ethereum,
-      destinationChainId: 1380012617 // RARI mainnet
+      destinationChainId: rariMainnetChainId
     })
     expect(result1).toEqual('teleport')
 
     const result2 = getTransferMode({
       sourceChainId: ChainId.Ethereum,
-      destinationChainId: 70700 // PopApex
+      destinationChainId: popApexChainId
     })
 
     expect(result2).toEqual('teleport')
@@ -104,13 +103,13 @@ describe('getTransferMode', () => {
 
   it('should return unsupported for L3 source chain and L1 destination chain', () => {
     const result1 = getTransferMode({
-      sourceChainId: 1380012617, // RARI mainnet
+      sourceChainId: rariMainnetChainId,
       destinationChainId: ChainId.Ethereum
     })
     expect(result1).toEqual('unsupported')
 
     const result2 = getTransferMode({
-      sourceChainId: 70700, // PopApex
+      sourceChainId: popApexChainId,
       destinationChainId: ChainId.Ethereum
     })
     expect(result2).toEqual('unsupported')

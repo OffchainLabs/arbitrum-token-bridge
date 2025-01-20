@@ -587,12 +587,12 @@ export function TransferPanel() {
       const destinationChainId = latestNetworks.current.destinationChain.id
 
       const sourceChainErc20Address =
-        transferMode === 'deposit'
+        transferMode === 'deposit' || transferMode === 'teleport'
           ? selectedToken?.address
           : selectedToken?.l2Address
 
       const destinationChainErc20Address =
-        transferMode === 'deposit'
+        transferMode === 'deposit' || transferMode === 'teleport'
           ? selectedToken?.l2Address
           : selectedToken?.address
 
@@ -878,7 +878,7 @@ export function TransferPanel() {
     addPendingTransaction(txHistoryCompatibleObject)
 
     // if deposit, add to local cache
-    if (transferMode === 'deposit') {
+    if (transferMode === 'deposit' || transferMode === 'teleport') {
       addDepositToCache(
         convertBridgeSdkToPendingDepositTransaction({
           bridgeTransfer,
@@ -902,7 +902,10 @@ export function TransferPanel() {
     clearAmountInput()
 
     // for custom orbit pages, show Projects' listing after transfer
-    if (transferMode === 'deposit' && isNetwork(childChain.id).isOrbitChain) {
+    if (
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
+      isNetwork(childChain.id).isOrbitChain
+    ) {
       setShowProjectsListing(true)
     }
 
@@ -951,6 +954,15 @@ export function TransferPanel() {
   ])
 
   const moveFundsButtonOnClick = async () => {
+    if (transferMode === 'unsupported') {
+      throw Error(
+        `Transfers from ${getNetworkName(
+          latestNetworks.current.sourceChain.id
+        )} to ${getNetworkName(
+          latestNetworks.current.destinationChain.id
+        )} are not supported.`
+      )
+    }
     const isConnectedToTheWrongChain =
       latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
 
@@ -996,7 +1008,10 @@ export function TransferPanel() {
     if (isCctpTransfer) {
       return transferCctp()
     }
-    if (transferMode === 'deposit' && selectedToken) {
+    if (
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
+      selectedToken
+    ) {
       return depositToken()
     }
     return transfer()

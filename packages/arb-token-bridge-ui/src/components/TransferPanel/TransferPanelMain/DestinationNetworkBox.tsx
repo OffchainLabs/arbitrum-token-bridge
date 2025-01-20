@@ -71,7 +71,7 @@ function NativeCurrencyDestinationBalance({ prefix }: { prefix?: string }) {
       <span className="font-light">{prefix}</span>
       <span
         aria-label={`ETH balance amount on ${
-          transferMode === 'deposit'
+          transferMode === 'deposit' || transferMode === 'teleport'
             ? NetworkType.childChain
             : NetworkType.parentChain
         }`}

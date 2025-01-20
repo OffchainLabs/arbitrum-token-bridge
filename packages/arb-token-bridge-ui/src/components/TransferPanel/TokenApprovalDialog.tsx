@@ -249,7 +249,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         <div className="flex flex-col">
           <NoteBox>
             After approval, you&apos;ll see a second prompt in your wallet for
-            the {transferMode} transaction.
+            the {transferMode === 'withdrawal' ? 'withdrawal' : 'deposit'}{' '}
+            transaction.
             <ExternalLink
               href={TOKEN_APPROVAL_ARTICLE_LINK}
               className="arb-hover ml-1 underline"
