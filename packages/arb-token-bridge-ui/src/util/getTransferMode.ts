@@ -1,6 +1,7 @@
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 import { isValidTeleportChainPair } from '../token-bridge-sdk/teleport'
 import { isDepositMode } from './isDepositMode'
+import { getDestinationChainIds } from './networks'
 
 type TransferMode = 'deposit' | 'withdrawal' | 'teleport' | 'unsupported'
 
@@ -14,10 +15,11 @@ export function getTransferMode({
   sourceChainId: number
   destinationChainId: number
 }): TransferMode {
-  // const validDestinationChains = getDestinationChainIds(sourceChainId)
+  const validDestinationChains = getDestinationChainIds(sourceChainId)
 
-  // if (!validDestinationChains.includes(destinationChainId)) {
-  // }
+  if (!validDestinationChains.includes(destinationChainId)) {
+    return 'unsupported'
+  }
 
   const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
 

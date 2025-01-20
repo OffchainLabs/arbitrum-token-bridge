@@ -227,6 +227,7 @@ export function TransferPanelMain() {
 
     if (
       transferMode !== 'teleport' &&
+      transferMode !== 'unsupported' &&
       (isTokenMainnetUSDC(selectedToken.address) ||
         isTokenSepoliaUSDC(selectedToken.address) ||
         isTokenArbitrumOneNativeUSDC(selectedToken.address) ||

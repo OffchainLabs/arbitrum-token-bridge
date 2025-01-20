@@ -128,4 +128,24 @@ describe('getTransferMode', () => {
     })
     expect(result2).toEqual('unsupported')
   })
+
+  it('should return unsupported for unpaired L1 source chain and L2 destination chain', () => {
+    const result1 = getTransferMode({
+      sourceChainId: ChainId.Sepolia,
+      destinationChainId: ChainId.ArbitrumOne
+    })
+    expect(result1).toEqual('unsupported')
+
+    const result2 = getTransferMode({
+      sourceChainId: ChainId.Sepolia,
+      destinationChainId: ChainId.ArbitrumNova
+    })
+    expect(result2).toEqual('unsupported')
+
+    const result3 = getTransferMode({
+      sourceChainId: ChainId.Ethereum,
+      destinationChainId: ChainId.ArbitrumSepolia
+    })
+    expect(result3).toEqual('unsupported')
+  })
 })

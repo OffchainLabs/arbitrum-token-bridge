@@ -16,6 +16,9 @@ export const useIsBatchTransferSupported = () => {
   if (!selectedToken) {
     return false
   }
+  if (transferMode === 'unsupported') {
+    return false
+  }
   if (transferMode === 'withdrawal') {
     return false
   }
