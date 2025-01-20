@@ -15,9 +15,12 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
+import { SafeImage } from '../common/SafeImage'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 export type TokenButtonOptions = {
   symbol?: string
+  logoSrc?: string
   disabled?: boolean
 }
 
@@ -33,6 +36,9 @@ export function TokenButton({
 
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
+
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -51,6 +57,27 @@ export function TokenButton({
     })
   }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
 
+  const tokenLogoSrc = useMemo(() => {
+    if (typeof options?.logoSrc !== 'undefined') {
+      return options.logoSrc || nativeCurrency.logoUrl
+    }
+
+    if (selectedToken) {
+      return (
+        tokensFromLists[selectedToken.address]?.logoURI ??
+        tokensFromUser[selectedToken.address]?.logoURI
+      )
+    }
+
+    return nativeCurrency.logoUrl
+  }, [
+    nativeCurrency.logoUrl,
+    options,
+    selectedToken,
+    tokensFromLists,
+    tokensFromUser
+  ])
+
   return (
     <>
       <Popover className="relative">
@@ -63,18 +90,11 @@ export function TokenButton({
               disabled={disabled}
             >
               <div className="flex items-center gap-2">
-                {/* Commenting it out until we update the token image source files to be of better quality */}
-                {/* {tokenLogo && ( 
-                 // SafeImage is used for token logo, we don't know at buildtime
-                where those images will be loaded from // It would throw error
-                if it's loaded from external domains // eslint-disable-next-line
-                @next/next/no-img-element 
-                 <img
-                    src={tokenLogo}
-                    alt="Token logo"
-                    className="h-5 w-5 sm:h-7 sm:w-7"
-                  />
-                )} */}
+                <SafeImage
+                  src={tokenLogoSrc}
+                  alt={`${selectedToken?.symbol ?? nativeCurrency.symbol} logo`}
+                  className="h-5 w-5 shrink-0"
+                />
                 <span className="text-xl font-light">{tokenSymbol}</span>
                 {!disabled && (
                   <ChevronDownIcon
