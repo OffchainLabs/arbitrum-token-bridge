@@ -188,6 +188,7 @@ export const visitAfterSomeDelay = (
 ) => {
   cy.wait(15_000) // let all the race conditions settle, let UI load well first
   cy.visit(url, options)
+  cy.wait(15_000)
 }
 
 export const wait = (ms = 0): Promise<void> => {
