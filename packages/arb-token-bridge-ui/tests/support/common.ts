@@ -10,8 +10,7 @@ import {
   defaultL2Network,
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
-} from '../../src/util/networks'
-import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
+} from '../../src/util/networksNitroTestnode'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -189,6 +188,7 @@ export const visitAfterSomeDelay = (
 ) => {
   cy.wait(15_000) // let all the race conditions settle, let UI load well first
   cy.visit(url, options)
+  cy.wait(15_000)
 }
 
 export const wait = (ms = 0): Promise<void> => {
@@ -276,7 +276,7 @@ export async function checkForAssertions({
 
   const rollupContract = new ethers.Contract(rollupAddress, abi, parentProvider)
 
-  const parentChainId = await getChainIdFromProvider(parentProvider)
+  const parentChainId = (await parentProvider.getNetwork()).chainId
 
   try {
     while (true) {
