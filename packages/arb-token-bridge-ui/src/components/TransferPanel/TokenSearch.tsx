@@ -17,7 +17,6 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneUSDCe,
-  getL2ERC20Address,
   isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
