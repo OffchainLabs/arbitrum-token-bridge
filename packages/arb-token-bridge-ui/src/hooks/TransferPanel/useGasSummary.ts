@@ -124,6 +124,14 @@ export function useGasSummary(): UseGasSummaryResult {
   }, [childChainGasPrice, estimateGasResult, transferMode])
 
   const gasSummary: UseGasSummaryResult = useMemo(() => {
+    if (transferMode === 'unsupported') {
+      return {
+        status: 'error',
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees
+      }
+    }
+
     if (
       transferMode === 'withdrawal' &&
       (isTokenArbitrumOneNativeUSDC(token?.address) ||

@@ -1,8 +1,6 @@
-import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-
-import { orbitMainnets } from '../orbitChainsList'
 import { isDepositMode } from '../isDepositMode'
 import { ChainId } from '../../types/ChainId'
+import { registerOrbitMainnetChain } from './helpers'
 
 // L2 Orbit, custom gas token: SX
 const sxMainnetChainId = 4162
@@ -10,21 +8,8 @@ const sxMainnetChainId = 4162
 const popApexChainId = 70700
 
 beforeAll(() => {
-  const sxMainnet = orbitMainnets[sxMainnetChainId]
-
-  if (!sxMainnet) {
-    throw new Error(`Could not find SX Mainnet in the Orbit chains list.`)
-  }
-
-  registerCustomArbitrumNetwork(sxMainnet)
-
-  const popApex = orbitMainnets[popApexChainId]
-
-  if (!popApex) {
-    throw new Error(`Could not find Pop Apex in the Orbit chains list.`)
-  }
-
-  registerCustomArbitrumNetwork(popApex)
+  registerOrbitMainnetChain(sxMainnetChainId)
+  registerOrbitMainnetChain(popApexChainId)
 })
 
 describe('isDepositMode', () => {

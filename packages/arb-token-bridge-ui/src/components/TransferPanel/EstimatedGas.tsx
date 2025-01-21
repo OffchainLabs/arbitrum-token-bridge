@@ -94,8 +94,6 @@ export function EstimatedGas({
     networks.destinationChain.id
   ).isArbitrumSepolia
 
-  const isWithdrawalParentChain = transferMode === 'withdrawal' && isParentChain
-
   const estimatedGasFee = useMemo(() => {
     if (
       transferMode === 'withdrawal' &&
@@ -123,7 +121,7 @@ export function EstimatedGas({
     [isSourceChain, networks.sourceChain.id, networks.destinationChain.id]
   )
 
-  if (isWithdrawalParentChain) {
+  if (transferMode === 'withdrawal' && isParentChain) {
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
   }
 

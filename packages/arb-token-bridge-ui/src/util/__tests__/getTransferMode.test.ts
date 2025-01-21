@@ -1,28 +1,13 @@
-import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-
 import { getTransferMode } from '../getTransferMode'
-import { orbitMainnets } from '../orbitChainsList'
 import { ChainId } from '../../types/ChainId'
+import { registerOrbitMainnetChain } from './helpers'
 
 const popApexChainId = 70700
 const rariMainnetChainId = 1380012617
 
 beforeAll(() => {
-  const popApex = orbitMainnets[popApexChainId]
-
-  if (!popApex) {
-    throw new Error(`Could not find Pop Apex in the Orbit chains list.`)
-  }
-
-  registerCustomArbitrumNetwork(popApex)
-
-  const rariMainnet = orbitMainnets[rariMainnetChainId]
-
-  if (!rariMainnet) {
-    throw new Error(`Could not find Rari Mainnet in the Orbit chains list.`)
-  }
-
-  registerCustomArbitrumNetwork(rariMainnet)
+  registerOrbitMainnetChain(popApexChainId)
+  registerOrbitMainnetChain(rariMainnetChainId)
 })
 
 describe('getTransferMode', () => {
