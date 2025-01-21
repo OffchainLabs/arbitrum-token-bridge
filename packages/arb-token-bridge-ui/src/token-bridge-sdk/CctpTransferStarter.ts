@@ -1,4 +1,4 @@
-import { prepareWriteContract, writeContract } from '@wagmi/core'
+import { simulateContract, writeContract } from '@wagmi/core'
 import { constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
@@ -10,7 +10,11 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
-import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
+import {
+  cctpWagmiConfig,
+  fetchPerMessageBurnLimit,
+  getCctpContracts
+} from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
@@ -118,15 +122,19 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       sourceChainId
     })
 
-    const config = await prepareWriteContract({
+    const { request } = await simulateContract(cctpWagmiConfig, {
       address: tokenMessengerContractAddress,
       abi: TokenMessengerAbi,
       functionName: 'depositForBurn',
-      signer,
-      args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
+      args: [
+        amount.toBigInt(),
+        targetChainDomain,
+        mintRecipient,
+        usdcContractAddress
+      ]
     })
 
-    const depositForBurnTx = await writeContract(config)
+    const depositForBurnTx = await writeContract(cctpWagmiConfig, request)
 
     return {
       transferType: this.transferType,

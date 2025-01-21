@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
@@ -13,7 +13,10 @@ import { useTransactionHistory } from './useTransactionHistory'
 import dayjs from 'dayjs'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import {
+  getProviderForChainId,
+  getSignerForChainId
+} from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useTransactionHistoryAddressStore } from '../components/TransactionHistory/TransactionHistorySearchBar'
 
@@ -30,7 +33,7 @@ export function useClaimWithdrawal(
   } = useAppState()
   const { address } = useAccount()
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
-  const { data: signer } = useSigner({ chainId: tx.parentChainId })
+  const signer = getSignerForChainId(tx.parentChainId)
   const { updatePendingTransaction } = useTransactionHistory(
     sanitizedAddress ?? address
   )

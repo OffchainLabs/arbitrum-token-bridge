@@ -1,13 +1,31 @@
-import { readContract } from '@wagmi/core'
+import {
+  createConfig,
+  http,
+  readContract,
+  simulateContract,
+  writeContract
+} from '@wagmi/core'
 import { Signer } from 'ethers'
 import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
 import { ChainDomain } from '../pages/api/cctp/[type]'
-import { prepareWriteContract, writeContract } from '@wagmi/core'
+import { arbitrum, arbitrumSepolia, mainnet, sepolia } from 'wagmi/chains'
+
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { Address } from '../util/AddressUtils'
+import { rpcURLs } from '../util/networks'
+
+export const cctpWagmiConfig = createConfig({
+  chains: [mainnet, sepolia, arbitrum, arbitrumSepolia],
+  transports: {
+    [mainnet.id]: http(rpcURLs[mainnet.id]),
+    [sepolia.id]: http(rpcURLs[sepolia.id]),
+    [arbitrum.id]: http(rpcURLs[arbitrum.id]),
+    [arbitrumSepolia.id]: http(rpcURLs[arbitrumSepolia.id])
+  }
+})
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
@@ -100,7 +118,7 @@ export function fetchPerMessageBurnLimit({
     sourceChainId
   })
 
-  return readContract({
+  return readContract(cctpWagmiConfig, {
     address: tokenMinterContractAddress,
     chainId: sourceChainId,
     abi: TokenMinterAbi,
@@ -146,15 +164,14 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     attestation: Address
     signer: Signer
   }) => {
-    const config = await prepareWriteContract({
+    const { request } = await simulateContract(cctpWagmiConfig, {
       address: messageTransmitterContractAddress,
       abi: MessageTransmitterAbi,
       functionName: 'receiveMessage',
       chainId: targetChainId,
-      signer,
       args: [messageBytes, attestation]
     })
-    return writeContract(config)
+    return writeContract(cctpWagmiConfig, request)
   }
 
   return {

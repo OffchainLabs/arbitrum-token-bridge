@@ -1,6 +1,6 @@
 import { BigNumber, Signer, utils } from 'ethers'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
@@ -59,9 +59,8 @@ export function useGasEstimates({
   const {
     app: { selectedToken: token }
   } = useAppState()
-  const { address: walletAddress } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const balance = useBalanceOnSourceChain(token)
-  const { data: signer } = useSigner()
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
@@ -73,7 +72,7 @@ export function useGasEstimates({
     : undefined
 
   const { data: gasEstimates, error } = useSWR(
-    signer
+    isConnected
       ? ([
           sourceChain.id,
           destinationChain.id,

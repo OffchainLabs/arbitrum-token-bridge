@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
-import { useSigner } from 'wagmi'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
@@ -21,7 +20,7 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { getBridger } from '@/token-bridge-sdk/utils'
+import { getBridger, getSignerForChainId } from '@/token-bridge-sdk/utils'
 import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
@@ -56,9 +55,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
-  const { data: signer } = useSigner({
-    chainId
-  })
+  const signer = getSignerForChainId(chainId)
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)

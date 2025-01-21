@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
@@ -12,9 +12,8 @@ export function useIsTransferAllowed() {
       arbTokenBridge: { eth }
     }
   } = useAppState()
-  const { address: walletAddress, isConnected } = useAccount()
   // do not use `useChainId` because it won't detect chains outside of our wagmi config
-  const { chain } = useNetwork()
+  const { address: walletAddress, isConnected, chain } = useAccount()
   const [networks] = useNetworks()
   const { destinationAddressError } = useDestinationAddressError()
 

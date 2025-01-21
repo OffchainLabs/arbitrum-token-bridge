@@ -3,7 +3,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount, useNetwork, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
@@ -61,7 +61,10 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
-import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
+import {
+  getBridgeTransferProperties,
+  getSignerForChainId
+} from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
@@ -112,12 +115,12 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const { address: walletAddress } = useAccount()
-  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+  const { address: walletAddress, chain } = useAccount()
+  const { switchChainAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
   // do not use `useChainId` because it won't detect chains outside of our wagmi config
-  const latestChain = useLatest(useNetwork())
+  const latestChain = useLatest(chain)
   const [networks] = useNetworks()
   const latestNetworks = useLatest(networks)
   const {
@@ -138,9 +141,7 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner({
-    chainId: networks.sourceChain.id
-  })
+  const signer = getSignerForChainId(networks.sourceChain.id)
 
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
@@ -930,7 +931,7 @@ export function TransferPanel() {
 
   const moveFundsButtonOnClick = async () => {
     const isConnectedToTheWrongChain =
-      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
+      latestChain.current?.id !== latestNetworks.current.sourceChain.id
 
     const sourceChainId = latestNetworks.current.sourceChain.id
     const childChainName = getNetworkName(childChain.id)
@@ -955,7 +956,7 @@ export function TransferPanel() {
           amount2: isBatchTransfer ? Number(amount2) : undefined,
           version: 2
         })
-        await switchNetworkAsync?.(sourceChainId)
+        await switchChainAsync?.({ chainId: sourceChainId })
       }
     } catch (error) {
       if (isUserRejectedError(error)) {

@@ -4,7 +4,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
-import { Chain } from 'wagmi'
+import { Chain } from 'wagmi/chains'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'

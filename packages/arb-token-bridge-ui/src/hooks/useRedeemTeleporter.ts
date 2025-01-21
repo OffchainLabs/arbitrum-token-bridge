@@ -4,9 +4,11 @@ import {
   ParentToChildMessageStatus,
   ParentToChildMessageWriter
 } from '@arbitrum/sdk'
-import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import {
+  getProviderForChainId,
+  getSignerForChainId
+} from '@/token-bridge-sdk/utils'
 import {
   DepositStatus,
   MergedTransaction,
@@ -157,9 +159,7 @@ export function useRedeemTeleporter(
 ): UseRedeemRetryableResult {
   const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
 
-  const { data: signer } = useSigner({
-    chainId: chainIdForRedeemingRetryable
-  })
+  const signer = getSignerForChainId(chainIdForRedeemingRetryable)
   const { updatePendingTransaction } = useTransactionHistory(address)
 
   const redeemerNetworkName = getNetworkName(chainIdForRedeemingRetryable)

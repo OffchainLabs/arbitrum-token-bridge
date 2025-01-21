@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
@@ -10,7 +9,7 @@ import { ChainId } from '../types/ChainId'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 import dayjs from 'dayjs'
 import {
   ChainDomain,
@@ -25,6 +24,7 @@ import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { getSignerForChainId } from '@/token-bridge-sdk/utils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -508,9 +508,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   })
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner({
-    chainId: tx.destinationChainId
-  })
+  const signer = getSignerForChainId(tx.destinationChainId)
 
   const claim = useCallback(async () => {
     if (!tx.cctpData?.attestationHash || !tx.cctpData.messageBytes || !signer) {
