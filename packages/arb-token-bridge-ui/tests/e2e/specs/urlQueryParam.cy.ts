@@ -239,6 +239,17 @@ describe('User enters site with query params on URL', () => {
         cy.findAmountInput().should('be.empty')
       }
     )
+    context('should select token using query params', () => {
+      visitAfterSomeDelay('/', {
+        qs: {
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName(),
+          token: Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN')
+        }
+      })
+
+      cy.findSelectTokenButton(Cypress.env('IARB'))
+    })
   })
 })
 
