@@ -29,7 +29,7 @@ import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
@@ -548,7 +548,7 @@ export function TokenSearch({
     sourceChainId: networks.sourceChain.id,
     destinationChainId: networks.destinationChain.id
   })
-  const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
+  const { updateUsdcBalances } = useUpdateUsdcBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
@@ -584,7 +584,7 @@ export function TokenSearch({
           return
         }
 
-        await updateUSDCBalances()
+        updateUsdcBalances()
 
         // if an Orbit chain is selected we need to fetch its USDC address
         let childChainUsdcAddress
