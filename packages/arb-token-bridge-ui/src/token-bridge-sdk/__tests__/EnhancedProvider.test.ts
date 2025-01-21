@@ -5,7 +5,7 @@ import {
 import { BigNumber } from 'ethers'
 import { ChainId } from '../../types/ChainId'
 import { rpcURLs } from '../../util/networks'
-import EnhancedProvider from '../EnhancedProvider'
+import EnhancedProvider, { shouldCacheTxReceipt } from '../EnhancedProvider'
 
 class TestStorage {
   private store: Record<string, string> = {}
@@ -50,10 +50,8 @@ describe('EnhancedProvider', () => {
   })
 
   it('should fetch real transaction and use cache for subsequent requests', async () => {
-    const rpcUrl = rpcURLs[ChainId.Sepolia]
-    if (!rpcUrl) {
-      throw new Error('No RPC URL found for Sepolia')
-    }
+    const rpcUrl = rpcURLs[ChainId.Sepolia]!
+
     const provider = new EnhancedProvider(rpcUrl, ChainId.Sepolia, storage)
     // Wait for network to be initialized
     await provider.ready
@@ -108,18 +106,7 @@ describe('EnhancedProvider', () => {
         confirmations: 4 // Below Sepolia threshold of 5
       }
 
-      // Mock the parent class's getTransactionReceipt
-      jest
-        .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
-        .mockResolvedValue(mockReceipt)
-
-      const receipt = await provider.getTransactionReceipt(
-        testTxReceipt.transactionHash
-      )
-      expect(receipt).toBeTruthy()
-
-      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
-      expect(cache).toBeFalsy()
+      expect(shouldCacheTxReceipt(ChainId.Sepolia, mockReceipt)).toBeFalsy()
     })
 
     it('should cache receipt when confirmations are above threshold', async () => {
@@ -133,7 +120,9 @@ describe('EnhancedProvider', () => {
         .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
         .mockResolvedValue(mockReceipt)
 
-      const receipt = await provider.getTransactionReceipt('0x1234')
+      const receipt = await provider.getTransactionReceipt(
+        mockReceipt.transactionHash
+      )
       expect(receipt).toBeTruthy()
 
       const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')

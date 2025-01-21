@@ -73,7 +73,7 @@ const txReceiptFromString = (stringified: string): TransactionReceipt => {
  * @param txReceipt - The transaction receipt to check.
  * @returns True if the receipt can be cached, false otherwise.
  */
-const shouldCacheTxReceipt = (
+export const shouldCacheTxReceipt = (
   chainId: number,
   txReceipt: TransactionReceipt
 ): boolean => {
