@@ -15,13 +15,16 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { SafeImage } from '../common/SafeImage'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { Loader } from '../common/atoms/Loader'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useTokenLists } from '../../hooks/useTokenLists'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export type TokenButtonOptions = {
   symbol?: string
+  logoSrc?: string
   disabled?: boolean
 }
 
@@ -37,6 +40,9 @@ export function TokenButton({
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
   const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
+
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -66,6 +72,27 @@ export function TokenButton({
     return isLoadingTokenLists
   }, [tokenFromSearchParams, isLoadingTokenLists])
 
+  const tokenLogoSrc = useMemo(() => {
+    if (typeof options?.logoSrc !== 'undefined') {
+      return options.logoSrc || nativeCurrency.logoUrl
+    }
+
+    if (selectedToken) {
+      return (
+        tokensFromLists[selectedToken.address]?.logoURI ??
+        tokensFromUser[selectedToken.address]?.logoURI
+      )
+    }
+
+    return nativeCurrency.logoUrl
+  }, [
+    nativeCurrency.logoUrl,
+    options,
+    selectedToken,
+    tokensFromLists,
+    tokensFromUser
+  ])
+
   return (
     <>
       <Popover className="relative">
@@ -78,32 +105,27 @@ export function TokenButton({
               disabled={disabled}
             >
               <div className="flex items-center gap-2">
-                {/* Commenting it out until we update the token image source files to be of better quality */}
-                {/* {tokenLogo && ( 
-                 // SafeImage is used for token logo, we don't know at buildtime
-                where those images will be loaded from // It would throw error
-                if it's loaded from external domains // eslint-disable-next-line
-                @next/next/no-img-element 
-                 <img
-                    src={tokenLogo}
-                    alt="Token logo"
-                    className="h-5 w-5 sm:h-7 sm:w-7"
-                  />
-                )} */}
-                <span className="text-xl font-light">
-                  {isLoadingToken ? (
-                    <Loader size="medium" color="white" />
-                  ) : (
-                    tokenSymbol
-                  )}
-                </span>
-                {!disabled && !isLoadingToken && (
-                  <ChevronDownIcon
-                    className={twMerge(
-                      'h-3 w-3 text-gray-6 transition-transform duration-200',
-                      open ? '-rotate-180' : 'rotate-0'
+                {isLoadingToken ? (
+                  <Loader size="small" color="white" />
+                ) : (
+                  <>
+                    <SafeImage
+                      src={tokenLogoSrc}
+                      alt={`${
+                        selectedToken?.symbol ?? nativeCurrency.symbol
+                      } logo`}
+                      className="h-5 w-5 shrink-0"
+                    />
+                    <span className="text-xl font-light">{tokenSymbol}</span>
+                    {!disabled && (
+                      <ChevronDownIcon
+                        className={twMerge(
+                          'h-3 w-3 text-gray-6 transition-transform duration-200',
+                          open ? '-rotate-180' : 'rotate-0'
+                        )}
+                      />
                     )}
-                  />
+                  </>
                 )}
               </div>
             </Popover.Button>

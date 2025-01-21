@@ -124,7 +124,10 @@ export function NetworkButton({
 
   const hasOneOrLessChain = chains.length <= 1
 
-  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+  const disabled =
+    hasOneOrLessChain ||
+    (isSmartContractWallet && type === 'source') ||
+    isLoading
 
   const buttonStyle = {
     backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
@@ -407,6 +410,7 @@ export const NetworkSelectionContainer = (
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [, setQueryParams] = useArbQueryParams()
   const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
+  const { isSmartContractWallet } = useAccountType()
 
   const isSource = props.type === 'source'
 
@@ -444,7 +448,10 @@ export const NetworkSelectionContainer = (
 
       setSelectedToken(null)
       setQueryParams({ destinationAddress: undefined })
-      setAdvancedSettingsCollapsed(true)
+
+      if (!isSmartContractWallet) {
+        setAdvancedSettingsCollapsed(true)
+      }
     },
     [
       isSource,
@@ -453,7 +460,8 @@ export const NetworkSelectionContainer = (
       setSelectedToken,
       setQueryParams,
       setAdvancedSettingsCollapsed,
-      openOneNovaTransferDialog
+      openOneNovaTransferDialog,
+      isSmartContractWallet
     ]
   )
 

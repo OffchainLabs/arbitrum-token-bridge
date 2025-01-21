@@ -12,7 +12,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { useAppState } from '../../state'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
@@ -29,8 +28,6 @@ function MaxButton({
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const [selectedToken] = useSelectedToken()
-  const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
 
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -38,9 +35,7 @@ function MaxButton({
   const maxButtonVisible = useMemo(() => {
     const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
 
-    const tokenBalance = isDepositMode
-      ? selectedTokenBalances.parentBalance
-      : selectedTokenBalances.childBalance
+    const tokenBalance = selectedTokenBalances.sourceBalance
 
     if (selectedToken) {
       return tokenBalance && !tokenBalance.isZero()
@@ -49,9 +44,7 @@ function MaxButton({
     return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
     nativeCurrencyBalances.sourceBalance,
-    isDepositMode,
-    selectedTokenBalances.parentBalance,
-    selectedTokenBalances.childBalance,
+    selectedTokenBalances.sourceBalance,
     selectedToken
   ])
 
@@ -91,9 +84,7 @@ function SourceChainTokenBalance({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenBalance = isDepositMode
-    ? selectedTokenBalances.parentBalance
-    : selectedTokenBalances.childBalance
+  const tokenBalance = selectedTokenBalances.sourceBalance
 
   const balance =
     balanceOverride ??
