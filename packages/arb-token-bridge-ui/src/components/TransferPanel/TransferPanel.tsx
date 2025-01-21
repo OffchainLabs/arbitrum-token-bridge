@@ -61,10 +61,7 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
-import {
-  getBridgeTransferProperties,
-  getSignerForChainId
-} from '../../token-bridge-sdk/utils'
+import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
@@ -80,6 +77,7 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -141,7 +139,7 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const signer = getSignerForChainId(networks.sourceChain.id)
+  const signer = useEthersSigner({ chainId: networks.sourceChain.id })
 
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
@@ -463,6 +461,7 @@ export function TransferPanel() {
           error,
           originFunction: 'cctpTransferStarter.transfer'
         })
+        console.error('error: ', error)
         errorToast(
           `USDC ${
             isDepositMode ? 'Deposit' : 'Withdrawal'

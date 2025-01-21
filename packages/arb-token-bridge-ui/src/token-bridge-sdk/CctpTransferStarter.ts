@@ -1,5 +1,5 @@
 import { simulateContract, writeContract } from '@wagmi/core'
-import { constants, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import {
@@ -98,7 +98,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     })
 
     if (amount.gt(burnLimit)) {
-      const formatedLimit = formatAmount(burnLimit, {
+      const formatedLimit = formatAmount(BigNumber.from(burnLimit), {
         decimals: 6, // hardcode for USDC
         symbol: 'USDC'
       })
@@ -140,7 +140,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: depositForBurnTx,
+      sourceChainTransaction: { hash: depositForBurnTx },
       destinationChainProvider: this.destinationChainProvider
     }
   }

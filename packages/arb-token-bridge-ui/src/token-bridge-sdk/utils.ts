@@ -1,10 +1,5 @@
 import { BigNumber, Signer } from 'ethers'
-import {
-  JsonRpcProvider,
-  JsonRpcSigner,
-  Provider,
-  StaticJsonRpcProvider
-} from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { isNetwork, rpcURLs } from '../util/networks'
 import { ChainId } from '../types/ChainId'
@@ -125,27 +120,4 @@ export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   }
 
   return createProviderWithCache(chainId)
-}
-
-const getSignerForChainCache: {
-  [chainId: number]: JsonRpcSigner
-} = {
-  // start with empty cache
-}
-
-function createSignerWithCache(chainId: ChainId) {
-  const rpcUrl = rpcURLs[chainId]
-  const signer = new JsonRpcProvider(rpcUrl, chainId).getSigner()
-  getSignerForChainCache[chainId] = signer
-  return signer
-}
-
-export function getSignerForChainId(chainId: ChainId): JsonRpcSigner {
-  const cachedSigner = getSignerForChainCache[chainId]
-
-  if (typeof cachedSigner !== 'undefined') {
-    return cachedSigner
-  }
-
-  return createSignerWithCache(chainId)
 }

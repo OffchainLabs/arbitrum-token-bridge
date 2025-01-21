@@ -745,14 +745,14 @@ export const useTransactionHistory = (
     if (!runFetcher || !connector) {
       return
     }
-    connector.on('change', event => {
+    connector.onAccountsChanged = (accounts: string[]) => {
       // reset state on account change
-      if (event.account) {
+      if (accounts.length > 0) {
         setPage(1)
         setPauseCount(0)
         setFetching(true)
       }
-    })
+    }
   }, [connector, runFetcher, setPage])
 
   useEffect(() => {

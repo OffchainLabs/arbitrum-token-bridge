@@ -17,7 +17,7 @@ import { NoteBox } from '../common/NoteBox'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { getSignerForChainId } from '@/token-bridge-sdk/utils'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -41,7 +41,7 @@ export function CustomFeeTokenApprovalDialog(
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
-  const l1Signer = getSignerForChainId(parentChain.id)
+  const l1Signer = useEthersSigner({ chainId: parentChain.id })
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
 
   const [checked, setChecked] = useState(false)

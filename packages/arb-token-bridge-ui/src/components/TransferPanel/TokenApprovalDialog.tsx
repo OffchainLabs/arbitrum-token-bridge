@@ -20,11 +20,12 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { getBridger, getSignerForChainId } from '@/token-bridge-sdk/utils'
+import { getBridger } from '@/token-bridge-sdk/utils'
 import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -55,7 +56,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
-  const signer = getSignerForChainId(chainId)
+  const signer = useEthersSigner({ chainId })
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)

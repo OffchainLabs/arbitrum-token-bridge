@@ -1,4 +1,5 @@
-import { Address, useAccount } from 'wagmi'
+import { Address } from 'viem'
+import { useAccount } from 'wagmi'
 import { useMemo } from 'react'
 
 import { useBalance } from './useBalance'

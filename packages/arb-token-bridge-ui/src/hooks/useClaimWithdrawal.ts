@@ -13,12 +13,10 @@ import { useTransactionHistory } from './useTransactionHistory'
 import dayjs from 'dayjs'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
-import {
-  getProviderForChainId,
-  getSignerForChainId
-} from '@/token-bridge-sdk/utils'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useTransactionHistoryAddressStore } from '../components/TransactionHistory/TransactionHistorySearchBar'
+import { useEthersSigner } from '../util/wagmi/useEthersSigner'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -33,7 +31,7 @@ export function useClaimWithdrawal(
   } = useAppState()
   const { address } = useAccount()
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
-  const signer = getSignerForChainId(tx.parentChainId)
+  const signer = useEthersSigner({ chainId: tx.parentChainId })
   const { updatePendingTransaction } = useTransactionHistory(
     sanitizedAddress ?? address
   )

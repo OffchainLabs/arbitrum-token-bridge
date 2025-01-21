@@ -181,13 +181,16 @@ export function getProps(targetChainKey: string | null) {
     appInfo
   )
 
+  const transports = Object.keys(rpcURLs).reduce((acc, chainId) => {
+    const chainIdNumber = Number(chainId)
+    acc[chainIdNumber] = http(rpcURLs[chainIdNumber])
+    return acc
+  }, {} as Record<number, ReturnType<typeof http>>)
+
   const wagmiConfig = createConfig({
     ...config,
     connectors,
-    transports: {
-      [mainnet.id]: http(rpcURLs[mainnet.id]),
-      [sepolia.id]: http(rpcURLs[sepolia.id])
-    }
+    transports
   })
 
   return {

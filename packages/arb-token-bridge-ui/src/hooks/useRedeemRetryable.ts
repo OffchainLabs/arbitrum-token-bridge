@@ -8,12 +8,10 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
-import {
-  getProviderForChainId,
-  getSignerForChainId
-} from '@/token-bridge-sdk/utils'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
+import { useEthersSigner } from '../util/wagmi/useEthersSigner'
 
 export type UseRedeemRetryableResult = {
   redeem: () => Promise<void>
@@ -24,7 +22,7 @@ export function useRedeemRetryable(
   tx: MergedTransaction,
   address: Address | undefined
 ): UseRedeemRetryableResult {
-  const signer = getSignerForChainId(tx.destinationChainId)
+  const signer = useEthersSigner({ chainId: tx.destinationChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
 
   const destinationNetworkName = getNetworkName(tx.destinationChainId)

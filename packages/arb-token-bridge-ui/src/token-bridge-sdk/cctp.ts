@@ -1,31 +1,16 @@
-import {
-  createConfig,
-  http,
-  readContract,
-  simulateContract,
-  writeContract
-} from '@wagmi/core'
+import { readContract, simulateContract, writeContract } from '@wagmi/core'
 import { Signer } from 'ethers'
 import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
 import { ChainDomain } from '../pages/api/cctp/[type]'
-import { arbitrum, arbitrumSepolia, mainnet, sepolia } from 'wagmi/chains'
 
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { Address } from '../util/AddressUtils'
-import { rpcURLs } from '../util/networks'
+import { getProps } from '../util/wagmi/setup'
 
-export const cctpWagmiConfig = createConfig({
-  chains: [mainnet, sepolia, arbitrum, arbitrumSepolia],
-  transports: {
-    [mainnet.id]: http(rpcURLs[mainnet.id]),
-    [sepolia.id]: http(rpcURLs[sepolia.id]),
-    [arbitrum.id]: http(rpcURLs[arbitrum.id]),
-    [arbitrumSepolia.id]: http(rpcURLs[arbitrumSepolia.id])
-  }
-})
+export const { wagmiConfig: cctpWagmiConfig } = getProps(null)
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
@@ -171,7 +156,8 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
       chainId: targetChainId,
       args: [messageBytes, attestation]
     })
-    return writeContract(cctpWagmiConfig, request)
+    const txHash = await writeContract(cctpWagmiConfig, request)
+    return { hash: txHash }
   }
 
   return {
