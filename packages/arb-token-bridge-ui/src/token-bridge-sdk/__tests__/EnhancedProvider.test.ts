@@ -139,26 +139,5 @@ describe('EnhancedProvider', () => {
       const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
       expect(cache).toBeTruthy()
     })
-
-    it('should not cache failed transactions', async () => {
-      const mockReceipt = {
-        ...testTxReceipt,
-        status: 0 // Failed transaction
-      }
-
-      // Mock the parent class's getTransactionReceipt
-      jest
-        .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
-        .mockResolvedValue(mockReceipt)
-
-      const receipt = await provider.getTransactionReceipt(
-        testTxReceipt.transactionHash
-      )
-      expect(receipt).toBeTruthy()
-      expect(receipt.status).toBe(0)
-
-      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
-      expect(cache).toBeFalsy()
-    })
   })
 })

@@ -6,8 +6,7 @@ import {
 import { BigNumber } from 'ethers'
 import { ChainId } from '../types/ChainId'
 import { ConnectionInfo } from 'ethers/lib/utils.js'
-
-type CachedReceipts = Record<string, TransactionReceipt>
+import { isNetwork } from '../util/networks'
 
 interface Storage {
   getItem(key: string): string | null
@@ -69,7 +68,7 @@ const txReceiptFromString = (stringified: string): TransactionReceipt => {
 }
 
 /**
- * Checks if a transaction receipt can be cached based on its status and confirmations.
+ * Checks if a transaction receipt can be cached based on its chain and confirmations.
  * @param chainId - The ID of the chain.
  * @param txReceipt - The transaction receipt to check.
  * @returns True if the receipt can be cached, false otherwise.
@@ -80,8 +79,8 @@ const shouldCacheTxReceipt = (
 ): boolean => {
   if (!enableCaching) return false
 
-  // Don't cache failed transactions
-  if (txReceipt.status === 0) {
+  //   for now, only enable caching for testnets,
+  if (!isNetwork(chainId).isTestnet) {
     return false
   }
 
@@ -104,17 +103,12 @@ function getTxReceiptFromCache(
 ) {
   if (!enableCaching) return undefined
 
-  const cachedReceipts = storage.getItem(localStorageKey)
-  if (!cachedReceipts) return undefined
+  const cachedReceipts = JSON.parse(storage.getItem(localStorageKey) || '{}')
+  const receipt = cachedReceipts[getCacheKey(chainId, txHash)]
 
-  const allReceipts: CachedReceipts = {}
-  const parsedReceipts = JSON.parse(cachedReceipts)
+  if (!receipt) return undefined
 
-  Object.entries(parsedReceipts).forEach(([key, receipt]) => {
-    allReceipts[key] = txReceiptFromString(JSON.stringify(receipt))
-  })
-
-  return allReceipts[getCacheKey(chainId, txHash)]
+  return txReceiptFromString(JSON.stringify(receipt))
 }
 
 function addTxReceiptToCache(
@@ -122,23 +116,13 @@ function addTxReceiptToCache(
   chainId: number,
   txReceipt: TransactionReceipt
 ) {
-  const cachedReceipts = storage.getItem(localStorageKey)
-  const allReceipts: CachedReceipts = {}
-
-  if (cachedReceipts) {
-    const parsedReceipts = JSON.parse(cachedReceipts)
-    Object.entries(parsedReceipts).forEach(([key, receipt]) => {
-      allReceipts[key] = JSON.parse(
-        txReceiptToString(receipt as TransactionReceipt)
-      )
-    })
-  }
+  const cachedReceipts = JSON.parse(storage.getItem(localStorageKey) || '{}')
 
   const key = getCacheKey(chainId, txReceipt.transactionHash)
   storage.setItem(
     localStorageKey,
     JSON.stringify({
-      ...allReceipts,
+      ...cachedReceipts,
       [key]: JSON.parse(txReceiptToString(txReceipt))
     })
   )
