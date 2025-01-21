@@ -17,19 +17,15 @@ jest.mock('../useBalances', () => ({
   useBalances: jest.fn()
 }))
 
-jest.mock('../../state', () => ({
-  useAppState: jest.fn().mockReturnValue({
-    app: {
-      selectedToken: {
-        type: 'ERC20',
-        decimals: 18,
-        name: 'random',
-        symbol: 'RAND',
-        address: '0x123',
-        l2Address: '0x234',
-        listIds: new Set('1')
-      }
-    }
+jest.mock('../useSelectedToken', () => ({
+  useSelectedToken: jest.fn().mockReturnValue({
+    type: 'ERC20',
+    decimals: 18,
+    name: 'random',
+    symbol: 'RAND',
+    address: '0x123',
+    l2Address: '0x234',
+    listIds: new Set('1')
   })
 }))
 
