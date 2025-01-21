@@ -1,5 +1,5 @@
 import {
-  StaticJsonRpcProvider,
+  JsonRpcBatchProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
@@ -64,7 +64,7 @@ describe('EnhancedProvider', () => {
 
     // Spy on the parent class's getTransactionReceipt that fires the RPC call
     const superGetReceipt = jest
-      .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
+      .spyOn(JsonRpcBatchProvider.prototype, 'getTransactionReceipt')
       .mockResolvedValue(mockReceipt)
 
     // First request - should hit the network
@@ -117,7 +117,7 @@ describe('EnhancedProvider', () => {
 
       // Mock the parent class's getTransactionReceipt
       jest
-        .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
+        .spyOn(JsonRpcBatchProvider.prototype, 'getTransactionReceipt')
         .mockResolvedValue(mockReceipt)
 
       const receipt = await provider.getTransactionReceipt(
