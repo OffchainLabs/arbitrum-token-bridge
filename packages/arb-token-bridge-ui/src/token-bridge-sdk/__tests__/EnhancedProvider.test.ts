@@ -5,7 +5,7 @@ import {
 import { BigNumber } from 'ethers'
 import { ChainId } from '../../types/ChainId'
 import { rpcURLs } from '../../util/networks'
-import EnhancedProvider, { shouldCacheTxReceipt } from '../EnhancedProvider'
+import { EnhancedProvider, shouldCacheTxReceipt } from '../EnhancedProvider'
 
 class TestStorage {
   private store: Record<string, string> = {}

@@ -13,7 +13,7 @@ import {
   getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
-import EnhancedProvider from './EnhancedProvider'
+import { EnhancedProvider } from './EnhancedProvider'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()

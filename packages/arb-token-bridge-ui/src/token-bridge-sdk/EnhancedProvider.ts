@@ -128,7 +128,7 @@ function addTxReceiptToCache(
   )
 }
 
-class EnhancedProvider extends StaticJsonRpcProvider {
+export class EnhancedProvider extends StaticJsonRpcProvider {
   private storage: Storage
 
   constructor(
@@ -161,5 +161,3 @@ class EnhancedProvider extends StaticJsonRpcProvider {
     return receipt
   }
 }
-
-export default EnhancedProvider
