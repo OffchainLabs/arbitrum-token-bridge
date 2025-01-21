@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import { utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { Chain } from 'wagmi/chains'
+import { isAddress } from 'ethers/lib/utils'
 
 import { useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
@@ -16,7 +17,7 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -203,8 +204,12 @@ export function TransferPanelMain() {
 
   const { updateErc20ParentBalances, updateErc20ChildBalances } = useBalances()
 
-  const { updateUSDCBalances } = useUpdateUSDCBalances({
-    walletAddress: destinationAddressOrWalletAddress
+  const { updateUsdcBalances } = useUpdateUsdcBalances({
+    walletAddress:
+      destinationAddressOrWalletAddress &&
+      isAddress(destinationAddressOrWalletAddress)
+        ? destinationAddressOrWalletAddress
+        : undefined
   })
 
   useEffect(() => {
@@ -229,7 +234,7 @@ export function TransferPanelMain() {
         isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
         isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
     ) {
-      updateUSDCBalances()
+      updateUsdcBalances()
       return
     }
 
@@ -242,7 +247,7 @@ export function TransferPanelMain() {
     updateErc20ParentBalances,
     updateErc20ChildBalances,
     destinationAddressOrWalletAddress,
-    updateUSDCBalances,
+    updateUsdcBalances,
     isTeleportMode
   ])
 
