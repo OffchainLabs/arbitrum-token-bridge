@@ -1,10 +1,10 @@
-import { SwitchNetworkArgs } from '@wagmi/core'
+import { SwitchChainParameters } from '@wagmi/core'
+import { useSwitchChain } from 'wagmi'
 
 import { getNetworkName, isNetwork } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { warningToast } from '../components/common/atoms/Toast'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
-import { useSwitchChain } from 'wagmi'
 
 type SwitchNetworkConfig = {
   isSwitchingNetworkBeforeTx?: boolean
@@ -34,7 +34,7 @@ const handleSwitchNetworkNotSupported = (
  */
 function handleSwitchNetworkError(
   error: any,
-  { chainId }: SwitchNetworkArgs,
+  { chainId }: SwitchChainParameters,
   context: unknown = { isSwitchingNetworkBeforeTx: false }
 ) {
   const { isSwitchingNetworkBeforeTx } = context as {
@@ -78,5 +78,5 @@ export function useSwitchNetworkWithConfig({
     onError: handleSwitchNetworkError
   }
 
-  return useSwitchChain(config)
+  return useSwitchChain({ config })
 }

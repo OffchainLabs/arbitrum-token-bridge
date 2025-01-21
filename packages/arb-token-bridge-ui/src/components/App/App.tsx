@@ -233,7 +233,7 @@ function AppContent() {
 const searchParams = new URLSearchParams(window.location.search)
 const targetChainKey = searchParams.get('sourceChain')
 
-const { wagmiConfig, rainbowKitProviderProps } = getProps(targetChainKey)
+const { wagmiConfig } = getProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.
 //
@@ -348,10 +348,7 @@ export default function App() {
       <ArbQueryParamProvider>
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider
-              theme={rainbowkitTheme}
-              {...rainbowKitProviderProps}
-            >
+            <RainbowKitProvider theme={rainbowkitTheme}>
               <ConnectedChainSyncer />
               <AppContextProvider>
                 <AppContent />

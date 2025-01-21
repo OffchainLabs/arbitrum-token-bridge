@@ -1,5 +1,7 @@
 import { mainnet, arbitrum } from 'wagmi/chains'
+import { createConfig, http } from 'wagmi'
 import {
+  Chain,
   connectorsForWallets,
   getDefaultConfig,
   getDefaultWallets
@@ -25,11 +27,10 @@ import {
   isE2eTestingEnvironment,
   isDevelopmentEnvironment
 } from '../CommonUtils'
-import { getCustomChainsFromLocalStorage } from '../networks'
+import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
 import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
-import { createConfig } from 'wagmi'
 import { _chains } from '@rainbow-me/rainbowkit/dist/config/getDefaultConfig'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
@@ -39,7 +40,7 @@ const wagmiOrbitChains = getOrbitChains().map(chain =>
   getWagmiChain(chain.chainId)
 )
 
-const defaultChains = [
+const defaultChains: readonly [Chain, ...Chain[]] = [
   // mainnet, arb1, & arb nova are for network switch tests
   mainnet,
   arbitrum,
@@ -52,7 +53,7 @@ const defaultChains = [
   holesky
 ]
 
-const getChainList = () => {
+function getChainList(): readonly [Chain, ...Chain[]] {
   // for E2E tests, only have local + minimal required chains
   if (isE2eTestingEnvironment) {
     return [
@@ -153,18 +154,8 @@ function getChains(targetChainKey: TargetChainKey) {
   const target = chainList.filter(chain => chain.id === targetChainId)
   const others = chainList.filter(chain => chain.id !== targetChainId)
 
-  return [...target, ...others]
+  return [...target, ...others] as unknown as _chains
 }
-
-// [
-//   customInfuraProvider(),
-//   publicProvider(),
-//   jsonRpcProvider({
-//     rpc: chain => ({
-//       http: rpcURLs[chain.id]!
-//     })
-//   })
-// ]
 
 export function getProps(targetChainKey: string | null) {
   const config = getDefaultConfig({
@@ -172,9 +163,7 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     ...appInfo,
-    chains: getChains(
-      sanitizeTargetChainKey(targetChainKey)
-    ) as unknown as _chains
+    chains: getChains(sanitizeTargetChainKey(targetChainKey))
   })
 
   const { wallets } = getDefaultWallets()
@@ -193,16 +182,15 @@ export function getProps(targetChainKey: string | null) {
   )
 
   const wagmiConfig = createConfig({
-    chains,
+    ...config,
     connectors,
-    ...config
+    transports: {
+      [mainnet.id]: http(rpcURLs[mainnet.id]),
+      [sepolia.id]: http(rpcURLs[sepolia.id])
+    }
   })
 
   return {
-    rainbowKitProviderProps: {
-      appInfo,
-      chains
-    },
     wagmiConfig
   }
 }
