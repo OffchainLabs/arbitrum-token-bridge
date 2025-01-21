@@ -141,10 +141,12 @@ export const fillCustomDestinationAddress = () => {
 
   // unlock custom destination address input
   cy.findByLabelText('Custom destination input lock')
+    .scrollIntoView()
     .should('be.visible')
     .click()
 
   cy.findByLabelText('Custom Destination Address Input')
+    .scrollIntoView()
     .should('be.visible')
     .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
