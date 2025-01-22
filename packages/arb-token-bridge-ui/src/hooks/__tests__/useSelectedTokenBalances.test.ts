@@ -8,7 +8,9 @@ import { useBalances } from '../useBalances'
 import { useSelectedTokenBalances } from '../TransferPanel/useSelectedTokenBalances'
 import { useSelectedToken } from '../useSelectedToken'
 import { ChainId } from '../../types/ChainId'
-import { TokenType } from '../arbTokenBridge.types'
+
+type BridgeToken = NonNullable<ReturnType<typeof useSelectedToken>[0]>
+const Erc20Type = 'ERC20' as BridgeToken['type']
 
 jest.mock('../useNetworks', () => ({
   useNetworks: jest.fn()
@@ -21,7 +23,7 @@ jest.mock('../useBalances', () => ({
 jest.mock('../useSelectedToken', () => ({
   useSelectedToken: jest.fn().mockReturnValue([
     {
-      type: TokenType.ERC20,
+      type: Erc20Type,
       decimals: 18,
       name: 'random',
       symbol: 'RAND',
@@ -93,7 +95,7 @@ describe('useSelectedTokenBalances', () => {
   it('should return ERC20 parent balance as source balance and zero as destination balance when source chain is Sepolia and destination chain is Arbitrum Sepolia, and selected token address on Sepolia is 0x222 but without child chain address (unbridged token)', () => {
     mockedUseSelectedToken.mockReturnValueOnce([
       {
-        type: TokenType.ERC20,
+        type: Erc20Type,
         decimals: 18,
         name: 'random',
         symbol: 'RAND',
@@ -123,7 +125,7 @@ describe('useSelectedTokenBalances', () => {
   it('should return zero as source balance and ERC20 parent balance as destination balance when source chain is Arbitrum Sepolia and destination chain is Sepolia, and selected token address on Sepolia is 0x222 but without child chain address (unbridged token)', () => {
     mockedUseSelectedToken.mockReturnValueOnce([
       {
-        type: TokenType.ERC20,
+        type: Erc20Type,
         decimals: 18,
         name: 'random',
         symbol: 'RAND',
