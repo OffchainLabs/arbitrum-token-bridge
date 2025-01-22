@@ -8,6 +8,7 @@ import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import type { Chain } from 'wagmi'
+import { errors } from 'ethers'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -59,12 +60,12 @@ Sentry.init({
     }
 
     const { code, message } = hint.originalException as {
-      code?: number
+      code?: errors
       message?: string
     }
 
     if (code && message) {
-      event.fingerprint = ['{{ default }}', code.toString(), message]
+      event.fingerprint = ['{{ default }}', code, message]
     }
 
     return event
