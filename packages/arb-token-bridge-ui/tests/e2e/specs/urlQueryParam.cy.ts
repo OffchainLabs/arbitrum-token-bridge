@@ -38,6 +38,7 @@ describe('User enters site with query params on URL', () => {
         val => (l1ETHbal = Number(formatAmount(val)))
       )
     }
+    cy.login({ networkType: 'parentChain' })
   })
 
   it('should correctly populate amount input from query param', () => {
