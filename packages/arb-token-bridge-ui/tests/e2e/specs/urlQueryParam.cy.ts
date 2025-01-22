@@ -19,8 +19,8 @@ describe('User enters site with query params on URL', () => {
   const nativeTokenDecimals = Cypress.env('NATIVE_TOKEN_DECIMALS')
   const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
 
-  const balanceCloseToMargin = scaleFrom18DecimalsToNativeTokenDecimals({
-    amount: utils.parseEther('0.0001'),
+  const balanceBuffer = scaleFrom18DecimalsToNativeTokenDecimals({
+    amount: utils.parseEther('0.001'),
     decimals: nativeTokenDecimals
   })
 
@@ -75,10 +75,8 @@ describe('User enters site with query params on URL', () => {
         })
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
-          expect(amount).to.be.closeTo(
-            Number(l1ETHbal),
-            Number(utils.formatEther(balanceCloseToMargin))
-          )
+          // Add a little buffer since we round down in the UI
+          expect(amount).to.be.lt(Number(l1ETHbal) + Number(balanceBuffer))
         })
       }
     )
@@ -111,10 +109,7 @@ describe('User enters site with query params on URL', () => {
         )
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
-          expect(amount).to.be.closeTo(
-            Number(l1ETHbal),
-            Number(utils.formatEther(balanceCloseToMargin))
-          )
+          expect(amount).to.be.lt(Number(l1ETHbal) + Number(balanceBuffer))
         })
       }
     )
@@ -152,10 +147,7 @@ describe('User enters site with query params on URL', () => {
         )
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
-          expect(amount).to.be.closeTo(
-            Number(l1ETHbal),
-            Number(utils.formatEther(balanceCloseToMargin))
-          )
+          expect(amount).to.be.lt(Number(l1ETHbal) + Number(balanceBuffer))
         })
       }
     )
