@@ -2,6 +2,8 @@
  * When user enters the page with query params on URL
  */
 
+import { utils } from 'ethers'
+import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
@@ -16,6 +18,11 @@ describe('User enters site with query params on URL', () => {
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const nativeTokenDecimals = Cypress.env('NATIVE_TOKEN_DECIMALS')
   const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
+
+  const balanceCloseToMargin = scaleFrom18DecimalsToNativeTokenDecimals({
+    amount: utils.parseEther('0.0001'),
+    decimals: nativeTokenDecimals
+  })
 
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
@@ -68,7 +75,10 @@ describe('User enters site with query params on URL', () => {
         })
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
-          expect(amount).to.be.lt(Number(l1ETHbal))
+          expect(amount).to.be.closeTo(
+            Number(l1ETHbal),
+            Number(utils.formatEther(balanceCloseToMargin))
+          )
         })
       }
     )
@@ -101,7 +111,10 @@ describe('User enters site with query params on URL', () => {
         )
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
-          expect(amount).to.be.lt(Number(l1ETHbal))
+          expect(amount).to.be.closeTo(
+            Number(l1ETHbal),
+            Number(utils.formatEther(balanceCloseToMargin))
+          )
         })
       }
     )
@@ -139,7 +152,10 @@ describe('User enters site with query params on URL', () => {
         )
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
-          expect(amount).to.be.lt(Number(l1ETHbal))
+          expect(amount).to.be.closeTo(
+            Number(l1ETHbal),
+            Number(utils.formatEther(balanceCloseToMargin))
+          )
         })
       }
     )
