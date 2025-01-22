@@ -12,6 +12,7 @@ import { twMerge } from 'tailwind-merge'
  * Shows the selected token logo by default.
  * @param {Object} props
  * @param {string | null} [props.srcOverride] - Optional URL to override default token logo source
+ * @param {string | undefined} [props.className] - Class name override
  */
 export const TokenLogo = ({
   srcOverride,
