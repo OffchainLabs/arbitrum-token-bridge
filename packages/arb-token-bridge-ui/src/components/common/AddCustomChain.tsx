@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { isAddress } from 'ethers/lib/utils.js'
+import { isAddress } from 'ethers/lib/utils'
 import { Popover } from '@headlessui/react'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
