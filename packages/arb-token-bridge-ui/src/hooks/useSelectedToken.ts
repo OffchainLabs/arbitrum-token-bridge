@@ -52,14 +52,21 @@ export const useSelectedToken = () => {
           parentChain.id,
           childChain.id,
           tokenFromSearchParams,
-          Object.keys(tokensFromUser),
+          JSON.stringify(tokensFromLists),
+          JSON.stringify(tokensFromUser),
           'useSelectedToken'
         ] as const)
       : null
 
   const { data } = useSWRImmutable(
     queryKey,
-    async ([parentChainId, childChainId, _tokenFromSearchParams]) => {
+    async ([
+      parentChainId,
+      childChainId,
+      _tokenFromSearchParams,
+      _tokensFromLists,
+      _tokensFromUser
+    ]) => {
       const parentProvider = getProviderForChainId(parentChainId)
       const childProvider = getProviderForChainId(childChainId)
 
@@ -72,8 +79,8 @@ export const useSelectedToken = () => {
       }
 
       return (
-        tokensFromLists[_tokenFromSearchParams] ||
-        tokensFromUser[_tokenFromSearchParams] ||
+        JSON.parse(_tokensFromLists)[_tokenFromSearchParams] ||
+        JSON.parse(_tokensFromUser)[_tokenFromSearchParams] ||
         null
       )
     }
