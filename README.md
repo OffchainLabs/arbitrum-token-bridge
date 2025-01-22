@@ -69,14 +69,9 @@ Interested in contributing to this repo? We welcome your contribution.
 
    2. In `.env` created, add `NEXT_PUBLIC_INFURA_KEY=my-infura-key`
 
-   3. Set `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to your WalletConnect project ID. You can create a new project on the [WalletConnect dashboard](https://cloud.walletconnect.com/app).
+   3. (Optional) If you want to use a different RPC provider or your own RPC, please see [RPC Configuration](./packages/arb-token-bridge-ui/docs/rpc-configuration.md).
 
-   4. For custom urls, set optional vars:
-
-   - `NEXT_PUBLIC_ETHEREUM_RPC_URL=my-eth-node`
-   - `NEXT_PUBLIC_SEPOLIA_RPC_URL=my-sepolia-node`
-     (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
-     If no custom URL is provided, Infura will be used by default.
+   4. Set `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to your WalletConnect project ID. You can create a new project on the [WalletConnect dashboard](https://cloud.walletconnect.com/app).
 
 5. Build the project and internal packages
 

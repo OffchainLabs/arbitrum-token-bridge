@@ -29,12 +29,12 @@ import {
   getNativeTokenDecimals
 } from './tests/support/common'
 
+import { registerLocalNetwork } from './src/util/networks'
 import {
   defaultL2Network,
   defaultL3Network,
-  defaultL3CustomGasTokenNetwork,
-  registerLocalNetwork
-} from './src/util/networks'
+  defaultL3CustomGasTokenNetwork
+} from './src/util/networksNitroTestnode'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 
 const tests = process.env.TEST_FILE
@@ -77,17 +77,23 @@ export default defineConfig({
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       if (!ethRpcUrl && !isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 variable missing.'
+        )
       }
       if (!arbRpcUrl) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2 variable missing.'
+        )
       }
       if (!l3RpcUrl && isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_L3_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3 variable missing.'
+        )
       }
       if (!sepoliaRpcUrl) {
         throw new Error(
-          'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
+          'process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA variable missing.'
         )
       }
 
@@ -246,19 +252,19 @@ const ethRpcUrl = (() => {
   // For consistency purpose, we would be using 'custom-localhost'
   // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
   // so we have to add a / to the end of the rpc url
-  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+  if (!process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1) {
     return MAINNET_INFURA_RPC_URL
   }
-  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
-    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  if (process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1
   }
-  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
+  return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 + '/'
 })()
 
-const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const l3RpcUrl = process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL
+const arbRpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2
+const l3RpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3
 const sepoliaRpcUrl =
-  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+  process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const parentProvider = new StaticJsonRpcProvider(
