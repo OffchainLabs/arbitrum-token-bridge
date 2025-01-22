@@ -23,7 +23,7 @@ jest.mock('../useBalances', () => ({
 jest.mock('../useSelectedToken', () => ({
   useSelectedToken: jest.fn().mockReturnValue([
     {
-      type: Erc20Type,
+      type: 'ERC20',
       decimals: 18,
       name: 'random',
       symbol: 'RAND',
