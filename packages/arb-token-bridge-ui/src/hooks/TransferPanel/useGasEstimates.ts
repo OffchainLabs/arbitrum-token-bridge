@@ -9,6 +9,7 @@ import { useAppState } from '../../state'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 async function fetcher([
   signer,
@@ -59,8 +60,9 @@ export function useGasEstimates({
   const {
     app: { selectedToken: token }
   } = useAppState()
-  const { address: walletAddress, isConnected } = useAccount()
+  const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(token)
+  const signer = useEthersSigner()
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
@@ -72,7 +74,7 @@ export function useGasEstimates({
     : undefined
 
   const { data: gasEstimates, error } = useSWR(
-    isConnected
+    signer
       ? ([
           sourceChain.id,
           destinationChain.id,

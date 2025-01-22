@@ -3,7 +3,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount } from 'wagmi'
+import { useAccount, useConfig } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
@@ -140,6 +140,7 @@ export function TransferPanel() {
   const { isSmartContractWallet } = useAccountType()
 
   const signer = useEthersSigner({ chainId: networks.sourceChain.id })
+  const wagmiConfig = useConfig()
 
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
@@ -450,7 +451,8 @@ export function TransferPanel() {
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
           signer,
-          destinationAddress
+          destinationAddress,
+          wagmiConfig
         })
         depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {

@@ -189,6 +189,7 @@ export function getProps(targetChainKey: string | null) {
 
   const wagmiConfig = createConfig({
     ...config,
+    batch: { multicall: true },
     connectors,
     transports
   })
