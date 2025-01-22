@@ -161,11 +161,10 @@ export function SourceNetworkBox() {
             )
           )
         : undefined,
-      logoSrc: nativeCurrency.logoUrl
+      logoSrc: null
     }),
     [
       nativeCurrency.symbol,
-      nativeCurrency.logoUrl,
       nativeCurrencyBalances.sourceBalance,
       nativeCurrencyDecimalsOnSourceChain
     ]
