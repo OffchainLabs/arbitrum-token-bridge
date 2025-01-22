@@ -4,6 +4,7 @@
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
+  getInitialERC20Balance,
   getInitialETHBalance,
   getL1NetworkConfig,
   getL2NetworkConfig,
@@ -12,15 +13,31 @@ import {
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
+  const nativeTokenDecimals = Cypress.env('NATIVE_TOKEN_DECIMALS')
+  const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
+
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   before(() => {
-    getInitialETHBalance(
-      Cypress.env('ETH_RPC_URL'),
-      Cypress.env('ADDRESS')
-    ).then(val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 }))))
-    cy.login({ networkType: 'parentChain' })
+    if (isCustomFeeToken) {
+      getInitialERC20Balance({
+        tokenAddress: Cypress.env('NATIVE_TOKEN_ADDRESS'),
+        multiCallerAddress: getL1NetworkConfig().multiCall,
+        address: Cypress.env('ADDRESS'),
+        rpcURL: Cypress.env('ETH_RPC_URL')
+      }).then(
+        val =>
+          (l1ETHbal = Number(
+            formatAmount(val, { decimals: nativeTokenDecimals })
+          ))
+      )
+    } else {
+      getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
+        val => (l1ETHbal = Number(formatAmount(val)))
+      )
+    }
   })
 
   it('should correctly populate amount input from query param', () => {
