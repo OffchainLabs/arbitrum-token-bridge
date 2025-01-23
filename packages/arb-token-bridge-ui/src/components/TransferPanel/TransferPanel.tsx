@@ -463,7 +463,6 @@ export function TransferPanel() {
           error,
           originFunction: 'cctpTransferStarter.transfer'
         })
-        console.error('error: ', error)
         errorToast(
           `USDC ${
             isDepositMode ? 'Deposit' : 'Withdrawal'

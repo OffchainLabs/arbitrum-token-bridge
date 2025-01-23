@@ -233,7 +233,10 @@ export function clickMoveFundsButton({
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
   if (shouldConfirmInMetamask) {
-    cy.confirmMetamaskTransaction()
+    cy.confirmMetamaskTransaction({
+      gasConfig: 'market',
+      shouldWaitForPopupClosure: true
+    })
   }
 }
 
