@@ -1,10 +1,14 @@
-const nextJest = require('next/jest')
+import nextJest from 'next/jest.js'
 
 const createJestConfig = nextJest({
   dir: './'
 })
 
 const customJestConfig = {
+  preset: 'ts-jest',
+  transform: {
+    '^.+\\.(ts|tsx)?$': 'ts-jest'
+  },
   testEnvironment: 'jsdom',
   setupFiles: ['<rootDir>/setupTests.ts'],
 
@@ -22,7 +26,8 @@ const transformNodeModules = [
   'filter-obj',
   // wagmi
   '@wagmi',
-  'wagmi'
+  'wagmi',
+  '@rainbow-me/rainbowkit'
 ]
 
 module.exports = async function () {
