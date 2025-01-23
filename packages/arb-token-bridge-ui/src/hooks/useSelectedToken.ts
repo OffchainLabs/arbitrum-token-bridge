@@ -25,7 +25,6 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
-import { useTokenLists } from './useTokenLists'
 
 const commonUSDC = {
   name: 'USD Coin',
@@ -41,48 +40,26 @@ export const useSelectedToken = () => {
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
-  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
 
-  const queryKey =
-    !isLoadingTokenLists &&
-    tokenFromSearchParams &&
-    tokensFromLists &&
-    tokensFromUser
-      ? ([
-          parentChain.id,
-          childChain.id,
-          tokenFromSearchParams,
-          JSON.stringify(tokensFromLists),
-          JSON.stringify(tokensFromUser),
-          'useSelectedToken'
-        ] as const)
-      : null
-
-  const { data } = useSWRImmutable(
-    queryKey,
-    async ([
-      parentChainId,
-      childChainId,
-      _tokenFromSearchParams,
-      _tokensFromLists,
-      _tokensFromUser
-    ]) => {
-      const parentProvider = getProviderForChainId(parentChainId)
-      const childProvider = getProviderForChainId(childChainId)
-
-      if (isTokenNativeUSDC(_tokenFromSearchParams)) {
-        return getUsdcToken({
-          tokenAddress: _tokenFromSearchParams,
-          parentProvider,
-          childProvider
-        })
+  const { data: usdcToken } = useSWRImmutable(
+    [tokenFromSearchParams, parentChain.id, childChain.id],
+    async ([_tokenAddress, _parentChainId, _childChainId]) => {
+      if (!_tokenAddress) {
+        return null
       }
 
-      return (
-        JSON.parse(_tokensFromLists)[_tokenFromSearchParams] ||
-        JSON.parse(_tokensFromUser)[_tokenFromSearchParams] ||
-        null
-      )
+      if (!isTokenNativeUSDC(_tokenAddress)) {
+        return null
+      }
+
+      const parentProvider = getProviderForChainId(_parentChainId)
+      const childProvider = getProviderForChainId(_childChainId)
+
+      return getUsdcToken({
+        tokenAddress: _tokenAddress,
+        parentProvider,
+        childProvider
+      })
     }
   )
 
@@ -92,7 +69,17 @@ export const useSelectedToken = () => {
     [setQueryParams]
   )
 
-  return [data ?? null, setSelectedToken] as const
+  if (!tokenFromSearchParams) {
+    return [null, setSelectedToken] as const
+  }
+
+  return [
+    tokensFromUser[tokenFromSearchParams] ||
+      tokensFromLists[tokenFromSearchParams] ||
+      usdcToken ||
+      null,
+    setSelectedToken
+  ] as const
 }
 
 function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
