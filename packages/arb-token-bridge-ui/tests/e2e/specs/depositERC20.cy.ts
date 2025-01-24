@@ -90,6 +90,9 @@ describe('Deposit Token', () => {
 
         context('should deposit successfully', () => {
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
+          cy.isMetamaskWindowActive().then(active =>
+            cy.log(`Metamask window active: ${active}`)
+          )
           cy.switchToMetamaskNotification()
           cy.rejectMetamaskTransaction()
           // cy.findTransactionInTransactionHistory({

@@ -231,8 +231,15 @@ export function clickMoveFundsButton({
 } = {}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
+  cy.isMetamaskWindowActive().then(active =>
+    cy.log(`Metamask window active funds button 1: ${active}`)
+  )
   cy.wait(15_000)
+  cy.isMetamaskWindowActive().then(active =>
+    cy.log(`Metamask window active funds button 2: ${active}`)
+  )
   if (shouldConfirmInMetamask) {
+    cy.acceptMetamaskAccess()
     cy.confirmMetamaskTransaction({
       gasConfig: 'market',
       shouldWaitForPopupClosure: true
