@@ -51,6 +51,9 @@ describe('Approve token for deposit', () => {
        * We add another check to make sure the test fails if needed
        */
       cy.wait(25_000)
+      cy.isMetamaskWindowActive().then(active =>
+        cy.log(`Metamask window active approval: ${active}`)
+      )
       cy.rejectMetamaskTransaction()
     })
   })
