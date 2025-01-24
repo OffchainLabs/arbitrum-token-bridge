@@ -783,6 +783,8 @@ export function TransferPanel() {
         overrides: Object.keys(overrides).length > 0 ? overrides : undefined
       })
 
+      alert('transfer method submitted in MM')
+
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (error) {
