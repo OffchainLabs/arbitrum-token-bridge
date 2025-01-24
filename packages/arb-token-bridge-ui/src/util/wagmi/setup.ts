@@ -187,6 +187,8 @@ export function getProps(targetChainKey: string | null) {
     return acc
   }, {} as Record<number, ReturnType<typeof http>>)
 
+  console.log('transports: ', transports)
+
   const wagmiConfig = createConfig({
     ...config,
     batch: { multicall: true },

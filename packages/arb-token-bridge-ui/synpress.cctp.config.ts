@@ -2,7 +2,7 @@ import { BigNumber, Contract, Wallet, utils } from 'ethers'
 import { Address } from 'viem'
 import { defineConfig } from 'cypress'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import synpressPlugins from '@synthetixio/synpress/plugins'
+import { configureSynpressForMetaMask } from '@synthetixio/synpress/cypress'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 import {
@@ -237,11 +237,11 @@ export default defineConfig({
       }
 
       setupCypressTasks(on, { requiresNetworkSetup: false })
-      synpressPlugins(on, config)
+      configureSynpressForMetaMask(on, config)
       return config
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts'
+    supportFile: 'tests/support/e2e.ts'
   }
 })

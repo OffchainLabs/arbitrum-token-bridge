@@ -17,17 +17,15 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
-import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
+import { formatAmount } from '../../src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
   // issue has been raised with synpress and this is just a workaround
   // TODO: remove this whenever fixed
-  return cy
-    .task('getCurrentNetworkName')
-    .then((currentNetworkName: NetworkName) => {
-      return currentNetworkName !== networkName
-    })
+  return cy.task('getCurrentNetworkName').then(currentNetworkName => {
+    return currentNetworkName !== networkName
+  })
 }
 
 export function login({
@@ -44,7 +42,7 @@ export function login({
   // if networkName is not specified we connect to default network from config
   const network =
     networkType === 'parentChain' ? getL1NetworkConfig() : getL2NetworkConfig()
-  const networkNameWithDefault = networkName ?? network.networkName
+  const networkNameWithDefault = networkName ?? network.name
 
   function _startWebApp() {
     const sourceChain =
@@ -64,7 +62,7 @@ export function login({
 
   shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+      cy.switchNetwork(networkNameWithDefault).then(() => {
         _startWebApp()
       })
     } else {
@@ -77,12 +75,11 @@ export function login({
 
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps()
-  cy.resetMetamaskAccount()
-  // resetMetamaskAccount doesn't seem to remove the connected network in CI
-  // changeMetamaskNetwork fails if already connected to the desired network
+  cy.resetAccount()
+  // resetAccount doesn't seem to remove the connected network in CI
+  // switchNetwork fails if already connected to the desired network
   // as a workaround we switch to another network after all the tests
-  cy.changeMetamaskNetwork('sepolia')
+  cy.switchNetwork('sepolia', true)
 }
 
 export const connectToApp = () => {
@@ -233,9 +230,8 @@ export function clickMoveFundsButton({
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
   if (shouldConfirmInMetamask) {
-    cy.confirmMetamaskTransaction({
-      gasConfig: 'market',
-      shouldWaitForPopupClosure: true
+    cy.confirmTransaction({
+      gasSetting: 'market'
     })
   }
 }
@@ -357,17 +353,18 @@ export function findClaimButton(
  * shouldWaitForPopupClosure needs to be set to true for the test to pass
  */
 export function confirmSpending(
-  spendLimit: Parameters<
-    typeof cy.confirmMetamaskPermissionToSpend
-  >[0]['spendLimit']
+  spendLimit: Exclude<
+    Parameters<typeof cy.approveTokenPermission>[0],
+    undefined
+  >['spendLimit']
 ) {
-  cy.confirmMetamaskPermissionToSpend({
+  cy.approveTokenPermission({
     spendLimit,
-    shouldWaitForPopupClosure: true
+    gasSetting: 'market'
   })
-  cy.confirmMetamaskPermissionToSpend({
+  cy.approveTokenPermission({
     spendLimit,
-    shouldWaitForPopupClosure: true
+    gasSetting: 'market'
   })
 }
 
@@ -382,11 +379,11 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   })
   cy.findClaimButton(formattedAmount, { timeout: 120_000 }).click()
   if (options.accept) {
-    cy.confirmMetamaskTransaction(undefined)
+    cy.confirmTransaction()
     cy.findByLabelText('show settled transactions').should('be.visible').click()
     cy.findByText(formattedAmount).should('be.visible')
   } else {
-    cy.rejectMetamaskTransaction()
+    cy.rejectTransaction()
   }
 }
 

@@ -1,16 +1,10 @@
 {
   "compilerOptions": {
     "baseUrl": "../../../../",
-    "types": [
-      "cypress.d.ts",
-      "@synthetixio/synpress/support",
-      "cypress-wait-until",
-      "@testing-library/cypress"
-    ],
-    "outDir": "./output",
+    "types": ["cypress", "node", "@testing-library/cypress"],
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["**/*.*"],
+  "include": ["test", "src", "cypress.config.ts", "**/*.ts"],
   "exclude": ["node_modules"]
 }

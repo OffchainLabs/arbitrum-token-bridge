@@ -2,8 +2,8 @@
  * When user wants to bridge USDC through CCTP from L2 to L1
  */
 
-import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
+import { CommonAddress } from '../../../src/util/CommonAddressUtils'
+import { formatAmount } from '../../../src/util/NumberUtils'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -72,13 +72,13 @@ describe('Withdraw USDC through CCTP', () => {
       'be.visible'
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
-    cy.clickMoveFundsButton().click()
+    cy.clickMoveFundsButton()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending(USDCAmountToSend.toString())
+    cy.confirmSpending(USDCAmountToSend)
     // eslint-disable-next-line
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction({ gasConfig: 'aggressive' })
+    cy.confirmTransaction({ gasSetting: 'aggressive' })
     cy.findTransactionInTransactionHistory({
       amount: USDCAmountToSend,
       symbol: 'USDC'
@@ -89,13 +89,13 @@ describe('Withdraw USDC through CCTP', () => {
       }),
       { timeout: 120_000 }
     ).click()
-    cy.allowMetamaskToSwitchNetwork()
-    cy.rejectMetamaskTransaction()
-    cy.changeMetamaskNetwork('arbitrum-sepolia')
+    cy.approveSwitchNetwork()
+    cy.rejectTransaction()
+    cy.switchNetwork('arbitrum-sepolia')
   })
 
   it('should claim deposit', () => {
-    cy.changeMetamaskNetwork('sepolia')
+    cy.switchNetwork('sepolia')
     cy.claimCctp(0.00012, { accept: true })
     cy.claimCctp(0.00013, { accept: true })
   })
@@ -109,14 +109,14 @@ describe('Withdraw USDC through CCTP', () => {
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
     cy.fillCustomDestinationAddress()
-    cy.clickMoveFundsButton().click()
+    cy.clickMoveFundsButton()
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending(USDCAmountToSend.toString())
+    cy.confirmSpending(USDCAmountToSend)
 
     // eslint-disable-next-line
     cy.wait(10_000)
-    cy.confirmMetamaskTransaction(undefined)
+    cy.confirmTransaction()
     const txData = {
       amount: USDCAmountToSend,
       symbol: 'USDC'
@@ -136,7 +136,7 @@ describe('Withdraw USDC through CCTP', () => {
       }),
       { timeout: 120_000 }
     ).click()
-    cy.allowMetamaskToSwitchNetwork()
-    cy.rejectMetamaskTransaction()
+    cy.approveSwitchNetwork()
+    cy.rejectTransaction()
   })
 })

@@ -8,8 +8,8 @@ import {
 } from 'ethers'
 import { formatUnits, parseUnits } from 'ethers/lib/utils'
 import { defineConfig } from 'cypress'
+import { configureSynpressForMetaMask } from '@synthetixio/synpress/cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import synpressPlugins from '@synthetixio/synpress/plugins'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
@@ -226,13 +226,13 @@ export default defineConfig({
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
 
-      synpressPlugins(on, config)
+      configureSynpressForMetaMask(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: true })
       return config
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts',
+    supportFile: 'tests/support/e2e.ts',
     defaultCommandTimeout: 20_000
   }
 })

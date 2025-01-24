@@ -72,15 +72,7 @@ describe('User enters site with query params on URL', () => {
         // it's very hard to get the max amount separately
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-        cy.waitUntil(
-          () => cy.findAmountInput().then($el => Number(String($el.val())) > 0),
-          // optional timeouts and error messages
-          {
-            errorMsg: 'was expecting a numerical input value greater than 0',
-            timeout: 5000,
-            interval: 500
-          }
-        )
+        cy.findAmountInput().then($el => Number(String($el.val())) > 0)
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
           expect(amount).to.be.lt(Number(l1ETHbal))
@@ -106,19 +98,11 @@ describe('User enters site with query params on URL', () => {
         // it's very hard to get the max amount separately
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-        cy.waitUntil(
-          () =>
-            cy.findAmountInput().should($el => {
-              const amount = parseFloat(String($el.val()))
-              expect(amount).to.be.gt(0)
-            }),
-          // optional timeouts and error messages
-          {
-            errorMsg: 'was expecting a numerical input value greater than 0',
-            timeout: 5000,
-            interval: 500
-          }
-        )
+
+        cy.findAmountInput().should($el => {
+          const amount = parseFloat(String($el.val()))
+          expect(amount).to.be.gt(0)
+        })
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
           expect(amount).to.be.lt(Number(l1ETHbal))

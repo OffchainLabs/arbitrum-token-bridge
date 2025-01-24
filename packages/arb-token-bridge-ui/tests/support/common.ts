@@ -22,7 +22,7 @@ export type NetworkName =
   | 'sepolia'
 
 type NetworkConfig = {
-  networkName: NetworkName
+  name: NetworkName
   rpcUrl: string
   chainId: number
   symbol: string
@@ -44,7 +44,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
-    networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
+    name: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
@@ -65,7 +65,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     : defaultL3Network
 
   return {
-    networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
+    name: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
     symbol: nativeTokenSymbol,
@@ -78,7 +78,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
 
 export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'sepolia',
+    name: 'sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
     chainId: 11155111,
     symbol: 'ETH',
@@ -89,7 +89,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
 
 export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'arbitrum-sepolia',
+    name: 'arbitrum-sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
     chainId: 421614,
     symbol: 'ETH',
@@ -152,16 +152,6 @@ export async function getInitialERC20Balance({
   return tokenData.balance
 }
 
-export const acceptMetamaskAccess = () => {
-  cy.acceptMetamaskAccess().then(() => {
-    cy.isCypressWindowActive().then(cyWindowIsActive => {
-      if (!cyWindowIsActive) {
-        cy.switchToCypressWindow().should('be.true')
-      }
-    })
-  })
-}
-
 export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
@@ -176,8 +166,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   cy.connectToApp()
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
-      acceptMetamaskAccess()
-      cy.task('setWalletConnectedToDapp')
+      cy.connectToDapp().task('setWalletConnectedToDapp')
     }
   })
 }

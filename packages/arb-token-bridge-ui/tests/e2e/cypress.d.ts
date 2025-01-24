@@ -4,7 +4,6 @@ import {
   connectToApp,
   login,
   logout,
-  openTransactionsPanel,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -48,7 +47,6 @@ declare global {
       }): typeof login
       logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
-      openTransactionsPanel: typeof openTransactionsPanel
       searchAndSelectToken({
         tokenName,
         tokenAddress
@@ -68,8 +66,11 @@ declare global {
       findMoveFundsButton: typeof findMoveFundsButton
       clickMoveFundsButton: typeof clickMoveFundsButton
       findSelectTokenButton: typeof findSelectTokenButton
-      openTransactionDetails: typeof openTransactionDetails
-      closeTransactionDetails: typeof closeTransactionDetails
+      openTransactionDetails({
+        amount: number,
+        symbol: string
+      }): typeof openTransactionDetails
+      closeTransactionDetails(): typeof closeTransactionDetails
       switchToTransferPanelTab: typeof switchToTransferPanelTab
       switchToTransactionHistoryTab: typeof switchToTransactionHistoryTab
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress

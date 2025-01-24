@@ -132,7 +132,7 @@ describe('Withdraw ERC20 Token', () => {
             .should('be.enabled')
             .click()
 
-          cy.confirmMetamaskTransaction()
+          cy.confirmTransaction()
 
           cy.findTransactionInTransactionHistory({
             duration: 'an hour',
@@ -161,7 +161,7 @@ describe('Withdraw ERC20 Token', () => {
           })
         ).click()
 
-        cy.confirmMetamaskTransaction()
+        cy.confirmTransaction()
 
         cy.findByLabelText('show settled transactions')
           .should('be.visible')
@@ -247,7 +247,7 @@ describe('Withdraw ERC20 Token', () => {
             .should('be.enabled')
             .click()
 
-          cy.confirmMetamaskTransaction()
+          cy.confirmTransaction()
           const txData = {
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
