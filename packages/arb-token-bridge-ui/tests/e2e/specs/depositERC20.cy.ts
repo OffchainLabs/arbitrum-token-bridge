@@ -90,6 +90,7 @@ describe('Deposit Token', () => {
 
         context('should deposit successfully', () => {
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
+          cy.switchToMetamaskNotification()
           cy.rejectMetamaskTransaction()
           // cy.findTransactionInTransactionHistory({
           //   duration: depositTime,
