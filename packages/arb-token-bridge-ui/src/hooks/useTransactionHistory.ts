@@ -231,6 +231,48 @@ function dedupeTransactions(txs: Transfer[]) {
   )
 }
 
+function getChainPairForTransfer(tx: Transfer): ChainPair | undefined {
+  if (isTransferTeleportFromSubgraph(tx)) {
+    // can't determine child chain id without fetching extra details
+    return undefined
+  }
+
+  // just in case local storage has incomplete details
+  if (!tx.parentChainId || !tx.childChainId) {
+    return undefined
+  }
+
+  return {
+    parentChainId: tx.parentChainId,
+    childChainId: tx.childChainId
+  }
+}
+
+function addToPrevFailedChainPairs(
+  prevFailedChainPairs: ChainPair[] | undefined,
+  newFailedChainPair: ChainPair | undefined
+) {
+  if (!newFailedChainPair) {
+    return prevFailedChainPairs
+  }
+
+  if (!prevFailedChainPairs) {
+    return [newFailedChainPair]
+  }
+  if (
+    typeof prevFailedChainPairs.find(
+      prevPair =>
+        prevPair.parentChainId === newFailedChainPair.parentChainId &&
+        prevPair.childChainId === newFailedChainPair.childChainId
+    ) !== 'undefined'
+  ) {
+    // already added
+    return prevFailedChainPairs
+  }
+
+  return [...prevFailedChainPairs, newFailedChainPair]
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
@@ -321,7 +363,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
 
   const { data: failedChainPairs, mutate: addFailedChainPair } =
     useSWRImmutable<ChainPair[]>(
-      address ? ['failed_chain_pairs', address] : null
+      address ? ['failed_chain_pairs_without_status', address] : null
     )
 
   const fetcher = useCallback(
@@ -399,23 +441,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 pageSize: 1000
               })
             } catch {
-              addFailedChainPair(prevFailedChainPairs => {
-                if (!prevFailedChainPairs) {
-                  return [chainPair]
-                }
-                if (
-                  typeof prevFailedChainPairs.find(
-                    prevPair =>
-                      prevPair.parentChainId === chainPair.parentChainId &&
-                      prevPair.childChainId === chainPair.childChainId
-                  ) !== 'undefined'
-                ) {
-                  // already added
-                  return prevFailedChainPairs
-                }
-
-                return [...prevFailedChainPairs, chainPair]
-              })
+              addFailedChainPair(prevFailedChainPairs =>
+                addToPrevFailedChainPairs(prevFailedChainPairs, chainPair)
+              )
 
               return []
             }
@@ -490,8 +518,13 @@ export const useTransactionHistory = (
     data,
     loading: isLoadingTxsWithoutStatus,
     error,
-    failedChainPairs
+    failedChainPairs: failedChainPairsWithoutStatus
   } = useTransactionHistoryWithoutStatuses(address)
+
+  const { data: failedChainPairs, mutate: addFailedChainPair } =
+    useSWRImmutable<ChainPair[]>(
+      address ? ['failed_chain_pairs', address] : null
+    )
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -568,10 +601,20 @@ export const useTransactionHistory = (
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
-      return Promise.all(
-        dedupedTransactions
-          .slice(startIndex, endIndex)
-          .map(transformTransaction)
+      const transactionsBatch = dedupedTransactions.slice(startIndex, endIndex)
+
+      return Promise.all(transactionsBatch.map(transformTransaction)).catch(
+        () => {
+          const chainPairs = transactionsBatch.map(getChainPairForTransfer)
+
+          chainPairs.forEach(chainPair => {
+            addFailedChainPair(prevFailedChainPairs =>
+              addToPrevFailedChainPairs(prevFailedChainPairs, chainPair)
+            )
+          })
+
+          return [] as MergedTransaction[]
+        }
       )
     },
     {
@@ -615,6 +658,16 @@ export const useTransactionHistory = (
       )
     )
   }, [newTransactionsData, txPages, address])
+
+  const mergedFailedChainPairs = useMemo(() => {
+    return [
+      ...new Map(
+        [...failedChainPairsWithoutStatus, ...(failedChainPairs || [])].map(
+          pair => [`${pair.parentChainId}-${pair.childChainId}`, pair]
+        )
+      ).values()
+    ]
+  }, [failedChainPairs, failedChainPairsWithoutStatus])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -845,7 +898,7 @@ export const useTransactionHistory = (
     loading: isLoadingFirstPage || isLoadingMore,
     completed,
     error: txPagesError ?? error,
-    failedChainPairs,
+    failedChainPairs: mergedFailedChainPairs,
     pause,
     resume,
     addPendingTransaction,

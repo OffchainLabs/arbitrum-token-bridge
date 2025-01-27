@@ -1,13 +1,17 @@
 import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
 import { Tab } from '@headlessui/react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
   ContentWrapper,
   TransactionHistoryTable
 } from './TransactionHistoryTable'
-import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
+import {
+  TransactionHistoryStatusBar,
+  TransactionStatusInfo
+} from '../TransactionHistory/TransactionStatusInfo'
 import {
   isTxClaimable,
   isTxCompleted,
@@ -17,8 +21,13 @@ import {
 } from './helpers'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import {
+  ChainPair,
+  useTransactionHistory
+} from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
+import { Tooltip } from '../common/Tooltip'
+import { getNetworkName } from '../../util/networks'
 
 function useTransactionHistoryUpdater() {
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
@@ -47,9 +56,49 @@ function useTransactionHistoryUpdater() {
 const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
 
+const FailedChainPairsTooltip = ({
+  failedChainPairs
+}: {
+  failedChainPairs: ChainPair[]
+}) => {
+  if (failedChainPairs.length === 0) {
+    return null
+  }
+
+  return (
+    <TransactionHistoryStatusBar wrapperClassName="flex space-x-1 bg-error">
+      <div className="flex space-x-2">
+        <ExclamationTriangleIcon width={20} />
+        <span>We were unable to fetch data for the some chains.</span>
+      </div>
+      <Tooltip
+        theme="dark"
+        content={
+          <div className="flex flex-col space-y-1 text-xs">
+            <span>
+              We were unable to fetch data for the following chain pairs:
+            </span>
+            <ul className="flex list-disc flex-col pl-4">
+              {failedChainPairs.map(pair => (
+                <li key={`${pair.parentChainId}-${pair.childChainId}`}>
+                  <b>{getNetworkName(pair.parentChainId)}</b>
+                  {' <> '}
+                  <b>{getNetworkName(pair.childChainId)}</b>
+                </li>
+              ))}
+            </ul>
+          </div>
+        }
+      >
+        <b className="cursor-pointer underline">Learn more.</b>
+      </Tooltip>
+    </TransactionHistoryStatusBar>
+  )
+}
+
 export function TransactionHistorySearchResults() {
   const props = useTransactionHistoryUpdater()
-  const { transactions } = props
+  const { transactions, failedChainPairs } = props
   const { searchError } = useTransactionHistoryAddressStore()
 
   const oldestTxTimeAgoString = useMemo(() => {
@@ -104,6 +153,7 @@ export function TransactionHistorySearchResults() {
     <>
       <div className="pr-4 md:pr-0">
         <TransactionStatusInfo />
+        <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
       </div>
       <Tab.Group as="div" className="h-full overflow-hidden rounded md:pr-0">
         <Tab.List className="mb-4 flex border-b border-white/30">

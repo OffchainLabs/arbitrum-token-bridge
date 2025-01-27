@@ -9,6 +9,23 @@ import Image from 'next/image'
 import ArrowsIcon from '@/images/arrows.svg'
 
 import { useTransactionReminderInfo } from './useTransactionReminderInfo'
+import { PropsWithChildren } from 'react'
+
+export const TransactionHistoryStatusBar = ({
+  children,
+  wrapperClassName
+}: PropsWithChildren<{ wrapperClassName: string }>) => {
+  return (
+    <div
+      className={twMerge(
+        'mb-3 mt-3 w-full rounded border-x-0 border-white/30 px-3 py-2 text-left text-sm text-white sm:border md:mt-0',
+        wrapperClassName
+      )}
+    >
+      {children}
+    </div>
+  )
+}
 
 const Content = ({
   numClaimableTransactions,
@@ -98,17 +115,12 @@ export const TransactionStatusInfo = () => {
   }
 
   return (
-    <div
-      className={twMerge(
-        'mb-3 mt-3 w-full rounded border-x-0 border-white/30 px-3 py-2 text-left text-sm text-white sm:border md:mt-0',
-        colorClassName.dark
-      )}
-    >
+    <TransactionHistoryStatusBar wrapperClassName={colorClassName.dark}>
       <Content
         numClaimableTransactions={numClaimableTransactions}
         numRetryablesToRedeem={numRetryablesToRedeem}
         numPendingTransactions={numPendingTransactions}
       />
-    </div>
+    </TransactionHistoryStatusBar>
   )
 }
