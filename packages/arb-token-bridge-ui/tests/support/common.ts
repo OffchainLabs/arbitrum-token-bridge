@@ -22,7 +22,7 @@ export type NetworkName =
   | 'Sepolia'
 
 type NetworkConfig = {
-  networkName: NetworkName
+  name: NetworkName
   rpcUrl: string
   chainId: number
   symbol: string
@@ -50,7 +50,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
-    networkName: isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local',
+    name: isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
@@ -71,7 +71,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     : defaultL3Network
 
   return {
-    networkName: isOrbitTest ? 'L3 Local' : 'Arbitrum Local',
+    name: isOrbitTest ? 'L3 Local' : 'Arbitrum Local',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
     symbol: nativeTokenSymbol,
@@ -84,7 +84,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
 
 export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'Sepolia',
+    name: 'Sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
     chainId: 11155111,
     symbol: 'ETH',
@@ -95,7 +95,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
 
 export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'Arbitrum Sepolia',
+    name: 'Arbitrum Sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
     chainId: 421614,
     symbol: 'ETH',

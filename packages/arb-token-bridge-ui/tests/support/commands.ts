@@ -44,7 +44,7 @@ export function login({
   // if networkName is not specified we connect to default network from config
   const network =
     networkType === 'parentChain' ? getL1NetworkConfig() : getL2NetworkConfig()
-  const networkNameWithDefault = networkName ?? network.networkName
+  const networkNameWithDefault = networkName ?? network.name
 
   function _startWebApp() {
     const sourceChain = networkNameWithDefault.toLowerCase().replace(' ', '-')
@@ -81,7 +81,7 @@ export const logout = () => {
   // resetMetamaskAccount doesn't seem to remove the connected network in CI
   // changeMetamaskNetwork fails if already connected to the desired network
   // as a workaround we switch to another network after all the tests
-  cy.changeMetamaskNetwork('sepolia')
+  cy.changeMetamaskNetwork('Sepolia')
 }
 
 export const connectToApp = () => {
