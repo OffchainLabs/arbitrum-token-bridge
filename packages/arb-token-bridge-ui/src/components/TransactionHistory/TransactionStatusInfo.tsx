@@ -14,7 +14,7 @@ import { PropsWithChildren } from 'react'
 export const TransactionHistoryStatusBar = ({
   children,
   wrapperClassName
-}: PropsWithChildren<{ wrapperClassName: string }>) => {
+}: PropsWithChildren<{ wrapperClassName?: string }>) => {
   return (
     <div
       className={twMerge(
