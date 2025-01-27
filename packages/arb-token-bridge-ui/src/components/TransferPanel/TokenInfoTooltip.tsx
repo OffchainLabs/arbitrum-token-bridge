@@ -1,37 +1,35 @@
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { shortenAddress } from '../../util/CommonUtils'
-import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
-import { ExternalLink } from '../common/ExternalLink'
 import { Tooltip } from '../common/Tooltip'
 import { TokenLogo } from './TokenLogo'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { ExternalLink } from '../common/ExternalLink'
+import { shortenAddress } from '../../util/CommonUtils'
+import { getExplorerUrl } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
-const createBlockExplorerUrlForToken = ({
-  explorerLink,
-  tokenAddress
+export function BlockExplorerTokenLink({
+  chainId,
+  address
 }: {
-  explorerLink: string | undefined
-  tokenAddress: string | undefined
-}): string | undefined => {
-  if (!explorerLink) {
-    return undefined
+  chainId: ChainId
+  address: string | undefined
+}) {
+  if (typeof address === 'undefined') {
+    return null
   }
-  if (!tokenAddress) {
-    return undefined
-  }
-  try {
-    const url = new URL(explorerLink)
-    url.pathname += `token/${tokenAddress}`
-    return url.toString()
-  } catch (error) {
-    captureSentryErrorWithExtraData({
-      error,
-      originFunction: 'createBlockExplorerUrlForToken'
-    })
-    return undefined
-  }
+
+  return (
+    <ExternalLink
+      href={`${getExplorerUrl(chainId)}/token/${address}`}
+      className="arb-hover text-xs underline"
+      onClick={e => e.stopPropagation()}
+    >
+      {shortenAddress(address).toLowerCase()}
+    </ExternalLink>
+  )
 }
 
 export const TokenInfoTooltip = ({
@@ -46,20 +44,15 @@ export const TokenInfoTooltip = ({
     provider: childChainProvider
   })
 
-  if (!token) {
-    return <span>{childChainNativeCurrency.symbol}</span>
+  if (!token || isTokenNativeUSDC(token.address)) {
+    return <span>{token?.symbol ?? childChainNativeCurrency.symbol}</span>
   }
 
-  const tokenAddress = isDepositMode ? token.address : token.l2Address
-
-  const href = createBlockExplorerUrlForToken({
-    explorerLink: networks.sourceChain.blockExplorers?.default.url,
-    tokenAddress
-  })
+  const tokenAddress = isDepositMode ? token.l2Address : token.address
 
   return (
     <Tooltip
-      wrapperClassName="underline"
+      wrapperClassName="underline cursor-pointer"
       theme="dark"
       content={
         <div className="flex items-center space-x-2">
@@ -71,14 +64,10 @@ export const TokenInfoTooltip = ({
                 {token.name}
               </span>
             </div>
-            {href && tokenAddress && (
-              <ExternalLink
-                className="arb-hover text-xs text-gray-300 underline"
-                href={href}
-              >
-                <span>{shortenAddress(tokenAddress)}</span>
-              </ExternalLink>
-            )}
+            <BlockExplorerTokenLink
+              chainId={networks.destinationChain.id}
+              address={tokenAddress}
+            />
           </div>
         </div>
       }
