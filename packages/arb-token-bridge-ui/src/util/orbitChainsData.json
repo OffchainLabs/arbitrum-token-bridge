@@ -1185,7 +1185,7 @@
         "childWethGateway": "0x27571468a8336d26E432A177e36E33Cf94D3DC8d"
       },
       "bridgeUiConfig": {
-        "color": "#FFE804",
+        "color": "#FFC804",
         "network": {
           "name": "BirdLayer",
           "logo": "/images/BirdLayer_Logo.png",
