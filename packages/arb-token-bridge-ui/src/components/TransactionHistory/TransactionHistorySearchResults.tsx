@@ -56,7 +56,7 @@ function useTransactionHistoryUpdater() {
 const tabClasses =
   'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
 
-const FailedChainPairsTooltip = ({
+const FailedChainPairsStatusBar = ({
   failedChainPairs
 }: {
   failedChainPairs: ChainPair[]
@@ -69,7 +69,10 @@ const FailedChainPairsTooltip = ({
     <TransactionHistoryStatusBar wrapperClassName="flex space-x-1 bg-error">
       <div className="flex space-x-2">
         <ExclamationTriangleIcon width={20} />
-        <span>We were unable to fetch data for the some chains.</span>
+        <span>
+          We were unable to fetch data for the some chains. You can see the full
+          list{' '}
+        </span>
       </div>
       <Tooltip
         theme="dark"
@@ -90,7 +93,7 @@ const FailedChainPairsTooltip = ({
           </div>
         }
       >
-        <b className="cursor-pointer underline">Learn more.</b>
+        <b className="cursor-pointer underline">here.</b>
       </Tooltip>
     </TransactionHistoryStatusBar>
   )
@@ -153,7 +156,7 @@ export function TransactionHistorySearchResults() {
     <>
       <div className="pr-4 md:pr-0">
         <TransactionStatusInfo />
-        <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+        <FailedChainPairsStatusBar failedChainPairs={failedChainPairs} />
       </div>
       <Tab.Group as="div" className="h-full overflow-hidden rounded md:pr-0">
         <Tab.List className="mb-4 flex border-b border-white/30">
