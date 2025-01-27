@@ -74,7 +74,7 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'parentChain',
-          networkName: 'mainnet'
+          networkName: 'Ethereum'
         })
 
         cy.findSelectTokenButton('ETH').click()
@@ -98,7 +98,7 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'parentChain',
-          networkName: 'mainnet'
+          networkName: 'Ethereum'
         })
 
         cy.findSelectTokenButton('ETH').click()

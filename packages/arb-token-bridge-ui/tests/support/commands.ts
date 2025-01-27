@@ -47,8 +47,7 @@ export function login({
   const networkNameWithDefault = networkName ?? network.networkName
 
   function _startWebApp() {
-    const sourceChain =
-      networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
+    const sourceChain = networkNameWithDefault.toLowerCase().replace(' ', '-')
 
     // when testing Orbit chains we want to set destination chain to L3
     const destinationChain =

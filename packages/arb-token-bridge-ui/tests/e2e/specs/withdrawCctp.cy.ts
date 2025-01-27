@@ -53,7 +53,7 @@ export const confirmAndApproveCctpWithdrawal = () => {
 
 describe('Withdraw USDC through CCTP', () => {
   beforeEach(() => {
-    cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
+    cy.login({ networkType: 'childChain', networkName: 'Arbitrum Sepolia' })
     cy.findSourceChainButton('Arbitrum Sepolia')
     cy.findDestinationChainButton('Sepolia')
     cy.findSelectTokenButton('ETH')
@@ -72,7 +72,7 @@ describe('Withdraw USDC through CCTP', () => {
       'be.visible'
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
-    cy.clickMoveFundsButton().click()
+    cy.clickMoveFundsButton()
 
     confirmAndApproveCctpWithdrawal()
     cy.confirmSpending(USDCAmountToSend.toString())
@@ -109,7 +109,7 @@ describe('Withdraw USDC through CCTP', () => {
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
     cy.fillCustomDestinationAddress()
-    cy.clickMoveFundsButton().click()
+    cy.clickMoveFundsButton()
 
     confirmAndApproveCctpWithdrawal()
     cy.confirmSpending(USDCAmountToSend.toString())
