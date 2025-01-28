@@ -1,15 +1,13 @@
 // tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
-import { ethers } from 'ethers'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-
 import { isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
+import { isLayerZeroToken } from '../token-bridge-sdk/utils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -239,29 +237,6 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
     }
   ],
   [ChainId.ArbitrumNova]: []
-}
-
-async function isLayerZeroToken(
-  parentChainErc20Address: string,
-  parentChainId: number
-) {
-  const parentProvider = getProviderForChainId(parentChainId)
-
-  // https://github.com/LayerZero-Labs/LayerZero-v2/blob/592625b9e5967643853476445ffe0e777360b906/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol#L37
-  const layerZeroTokenOftContract = new ethers.Contract(
-    parentChainErc20Address,
-    [
-      'function oftVersion() external pure virtual returns (bytes4 interfaceId, uint64 version)'
-    ],
-    parentProvider
-  )
-
-  try {
-    const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
-    return !!_isLayerZeroToken
-  } catch (error) {
-    return false
-  }
 }
 
 /**
