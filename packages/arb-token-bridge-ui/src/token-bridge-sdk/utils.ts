@@ -13,7 +13,12 @@ import {
   getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
-import { EnhancedProvider } from './EnhancedProvider'
+import { EnhancedProvider, ProviderOptions } from './EnhancedProvider'
+
+const defaultProviderOptions = {
+  enableBatching: false,
+  enableCaching: false
+}
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -100,26 +105,52 @@ export const getBridger = async ({
     : Erc20Bridger.fromProvider(destinationChainProvider)
 }
 
-const getProviderForChainCache: {
+const providerInstanceCache: {
   [chainId: number]: StaticJsonRpcProvider
 } = {
   // start with empty cache
 }
 
-function createProviderWithCache(chainId: ChainId) {
+/**
+ * Creates a new provider instance with the specified options.
+ */
+function createProvider(
+  chainId: ChainId,
+  options: ProviderOptions = defaultProviderOptions
+): StaticJsonRpcProvider {
   const rpcUrl = rpcURLs[chainId]
+  const { enableBatching, enableCaching } = options
 
-  const provider = new EnhancedProvider(rpcUrl, chainId)
-  getProviderForChainCache[chainId] = provider
-  return provider
+  // Only enable tx receipt caching for testnets by default
+  const shouldEnableCaching = enableCaching && isNetwork(chainId).isTestnet
+
+  // Create appropriate provider based on options
+  if (enableBatching) {
+    return new EnhancedProvider(rpcUrl, chainId, undefined, {
+      enableCaching: shouldEnableCaching,
+      enableBatching: true
+    })
+  }
+
+  return shouldEnableCaching
+    ? new EnhancedProvider(rpcUrl, chainId, undefined, {
+        enableCaching: true,
+        enableBatching: false
+      })
+    : new StaticJsonRpcProvider(rpcUrl, chainId)
 }
 
-export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
-  const cachedProvider = getProviderForChainCache[chainId]
+export function getProviderForChainId(
+  chainId: ChainId,
+  options: ProviderOptions = defaultProviderOptions
+): StaticJsonRpcProvider {
+  const cachedProvider = providerInstanceCache[chainId]
 
   if (typeof cachedProvider !== 'undefined') {
     return cachedProvider
   }
 
-  return createProviderWithCache(chainId)
+  const provider = createProvider(chainId, options)
+  providerInstanceCache[chainId] = provider
+  return provider
 }

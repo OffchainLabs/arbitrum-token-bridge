@@ -2,7 +2,8 @@ import {
   JsonRpcBatchProvider,
   Network,
   Networkish,
-  TransactionReceipt
+  TransactionReceipt,
+  StaticJsonRpcProvider
 } from '@ethersproject/providers'
 import { BigNumber, version } from 'ethers'
 import { ChainId } from '../types/ChainId'
@@ -28,7 +29,11 @@ class WebStorage implements Storage {
 }
 
 const localStorageKey = `arbitrum:bridge:tx-receipts-cache`
-const enableCaching = true
+
+export type ProviderOptions = {
+  enableBatching?: boolean
+  enableCaching?: boolean
+}
 
 const getCacheKey = (chainId: number | string, txHash: string) =>
   `${chainId}:${txHash}`.toLowerCase()
@@ -75,15 +80,17 @@ const txReceiptFromString = (stringified: string): TransactionReceipt => {
  * Checks if a transaction receipt can be cached based on its chain and confirmations.
  * @param chainId - The ID of the chain.
  * @param txReceipt - The transaction receipt to check.
+ * @param options - Provider options for caching behavior.
  * @returns True if the receipt can be cached, false otherwise.
  */
 export const shouldCacheTxReceipt = (
   chainId: number,
-  txReceipt: TransactionReceipt
+  txReceipt: TransactionReceipt,
+  options: ProviderOptions
 ): boolean => {
-  if (!enableCaching) return false
+  if (!options.enableCaching) return false
 
-  //   for now, only enable caching for testnets,
+  // for now, only enable caching for testnets
   if (!isNetwork(chainId).isTestnet) {
     return false
   }
@@ -103,9 +110,10 @@ export const shouldCacheTxReceipt = (
 function getTxReceiptFromCache(
   storage: Storage,
   chainId: number,
-  txHash: string
+  txHash: string,
+  options: ProviderOptions
 ) {
-  if (!enableCaching) return undefined
+  if (!options.enableCaching) return undefined
 
   const cachedReceipts = JSON.parse(storage.getItem(localStorageKey) || '{}')
   const receipt = cachedReceipts[getCacheKey(chainId, txHash)]
@@ -133,6 +141,8 @@ function addTxReceiptToCache(
 }
 
 export class EnhancedProvider extends JsonRpcBatchProvider {
+  // `detectNetwork()` to give this provider StaticJsonRpcProvider's functionality
+  // copied from https://github.com/ethers-io/ethers.js/blob/v5.7/packages/providers/src.ts/url-json-rpc-provider.ts#L29
   async detectNetwork(): Promise<Network> {
     let network = this.network
     if (network == null) {
@@ -158,14 +168,34 @@ export class EnhancedProvider extends JsonRpcBatchProvider {
   }
 
   private storage: Storage
+  private options: ProviderOptions
+  private staticProvider?: StaticJsonRpcProvider
 
   constructor(
     url?: ConnectionInfo | string,
     network?: Networkish,
-    storage: Storage = new WebStorage()
+    storage: Storage = new WebStorage(),
+    options: ProviderOptions = {
+      enableCaching: true,
+      enableBatching: true
+    }
   ) {
     super(url, network)
     this.storage = storage
+    this.options = options
+
+    // Create static provider if batching is disabled
+    if (!this.options.enableBatching) {
+      this.staticProvider = new StaticJsonRpcProvider(url, network)
+    }
+  }
+
+  // Override send method to use non-batched provider when batching is disabled
+  async send(method: string, params: Array<any>): Promise<any> {
+    if (!this.options.enableBatching && this.staticProvider) {
+      return this.staticProvider.send(method, params)
+    }
+    return super.send(method, params)
   }
 
   async getTransactionReceipt(
@@ -174,15 +204,23 @@ export class EnhancedProvider extends JsonRpcBatchProvider {
     const hash = await transactionHash
     const chainId = this.network.chainId
 
-    // Retrieve the cached receipt for the hash, if it exists
-    const cachedReceipt = getTxReceiptFromCache(this.storage, chainId, hash)
+    // Check cache first if caching is enabled
+    const cachedReceipt = getTxReceiptFromCache(
+      this.storage,
+      chainId,
+      hash,
+      this.options
+    )
     if (cachedReceipt) return cachedReceipt
 
-    // Else, fetch the receipt using the original method
-    const receipt = await super.getTransactionReceipt(hash)
+    // Use appropriate provider based on batching setting
+    const receipt =
+      !this.options.enableBatching && this.staticProvider
+        ? await this.staticProvider.getTransactionReceipt(hash)
+        : await super.getTransactionReceipt(hash)
 
     // Cache the receipt if it meets the criteria
-    if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
+    if (receipt && shouldCacheTxReceipt(chainId, receipt, this.options)) {
       addTxReceiptToCache(this.storage, chainId, receipt)
     }
 

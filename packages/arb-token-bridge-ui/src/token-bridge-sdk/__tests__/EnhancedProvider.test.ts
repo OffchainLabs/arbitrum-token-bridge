@@ -1,14 +1,7 @@
-/**
- * Tests for EnhancedProvider functionality including:
- * 1. Transaction Receipt Caching
- * 2. Request Batching
- * 3. Confirmation Thresholds
- */
-
 import { http, passthrough } from 'msw'
 import { setupServer } from 'msw/node'
 import {
-  JsonRpcProvider,
+  JsonRpcBatchProvider,
   StaticJsonRpcProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
@@ -31,14 +24,11 @@ class TestStorage {
 }
 
 const TEST_DATA = {
-  rpcUrls: {
-    arbitrumOne: rpcURLs[ChainId.ArbitrumOne]!,
-    sepolia: rpcURLs[ChainId.Sepolia]!
-  },
+  rpcUrl: rpcURLs[ChainId.Sepolia]!,
   txHashes: [
-    '0x67452e705c6c98f3f5b46cb2e8f746b87875a03bdd971886c0d45be8d0f8f491',
-    '0xf7f5097afe4898d9b819c08a8c1f5be61e03bc353d4c64643614418c168e4bdb',
-    '0x37188fcf248dee4a6fffb5bdc1ac43db3c5fce5a5f3714b197400593b44da695'
+    '0xd2287acfb45a212ab347a0f8f534282cc98ea2dd93b771d46b230e467cdea730',
+    '0x88d2b63dfd2876a96609c5e870a05bbcbdf44833098b1fb3118c9ef78b179451',
+    '0x1ac1427f8f506e6c7d28a6631b48ce86c56650d5de05c4552f993887bec78607'
   ],
   mockTxReceipt: {
     to: '0x99E2d366BA678522F3793d2c2E758Ac29a59678E',
@@ -49,7 +39,7 @@ const TEST_DATA = {
     logsBloom: '',
     blockHash: '',
     transactionHash:
-      '0x40c993848fc927ced60283b2188734b50e736d305d462289cbe231876c6570a8',
+      '0x1ac1427f8f506e6c7d28a6631b48ce86c56650d5de05c4552f993887bec78607',
     logs: [],
     blockNumber: 7483636,
     confirmations: 19088,
@@ -72,7 +62,7 @@ const resetRequestCount = () => {
 }
 
 const server = setupServer(
-  http.post(TEST_DATA.rpcUrls.arbitrumOne, async ({ request }) => {
+  http.post(TEST_DATA.rpcUrl, async ({ request }) => {
     const body = await request.json()
     const txReceiptsInRequest =
       JSON.stringify(body || '').split('eth_getTransactionReceipt').length - 1
@@ -93,14 +83,18 @@ const server = setupServer(
 
 describe('EnhancedProvider', () => {
   let storage: TestStorage
-
-  beforeAll(() => {
-    server.listen()
-  })
+  let mockBatchSend: jest.SpyInstance
+  let mockStaticSend: jest.SpyInstance
 
   beforeEach(() => {
     storage = new TestStorage()
     jest.restoreAllMocks()
+    mockBatchSend = jest.spyOn(JsonRpcBatchProvider.prototype, 'send')
+    mockStaticSend = jest.spyOn(StaticJsonRpcProvider.prototype, 'send')
+  })
+
+  beforeAll(() => {
+    server.listen()
   })
 
   afterEach(() => {
@@ -113,77 +107,211 @@ describe('EnhancedProvider', () => {
   })
 
   describe('RPC call batching', () => {
-    it('should make individual HTTP requests with `StaticJsonRpcProvider`', async () => {
-      const provider = new StaticJsonRpcProvider(
-        TEST_DATA.rpcUrls.arbitrumOne,
-        ChainId.ArbitrumOne
+    it('should use batch provider for all RPC calls when batching is enabled', async () => {
+      const provider = new EnhancedProvider(
+        TEST_DATA.rpcUrl,
+        ChainId.ArbitrumOne,
+        undefined,
+        { enableCaching: false, enableBatching: true }
       )
 
-      const receipts = await Promise.all(
+      // Test various RPC methods
+      await provider.getBlockNumber()
+      await provider.getGasPrice()
+      await Promise.all(
         TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
       )
 
-      expect(singleRequestCount).toBe(3)
-      expect(batchedRequestCount).toBe(0)
-      expect(receipts.length).toBe(3)
+      // All calls should go through batch provider
+      expect(mockBatchSend).toHaveBeenCalled()
+      expect(mockStaticSend).not.toHaveBeenCalled()
     })
 
-    it('should batch multiple requests into single HTTP request with `EnhancedProvider`', async () => {
+    it('should use static provider for all RPC calls when batching is disabled', async () => {
       const provider = new EnhancedProvider(
-        TEST_DATA.rpcUrls.arbitrumOne,
-        ChainId.ArbitrumOne
+        TEST_DATA.rpcUrl,
+        ChainId.ArbitrumOne,
+        undefined,
+        { enableCaching: false, enableBatching: false }
       )
 
-      const receipts = await Promise.all(
+      // Test various RPC methods
+      await provider.getBlockNumber()
+      await provider.getGasPrice()
+      await Promise.all(
         TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
       )
 
+      // All calls should go through static provider
+      expect(mockStaticSend).toHaveBeenCalled()
+      expect(mockBatchSend).not.toHaveBeenCalled()
+    })
+
+    it('should batch multiple requests into single HTTP request when batching is enabled', async () => {
+      const provider = new EnhancedProvider(
+        TEST_DATA.rpcUrl,
+        ChainId.ArbitrumOne,
+        undefined,
+        { enableCaching: false, enableBatching: true }
+      )
+
+      // Multiple RPC calls should be batched
+      await Promise.all([
+        provider.getBlockNumber(),
+        provider.getGasPrice(),
+        ...TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
+      ])
+
+      // should send batched request
       expect(singleRequestCount).toBe(0)
       expect(batchedRequestCount).toBe(1)
-      expect(receipts.length).toBe(3)
+    })
+
+    it('should make individual requests when batching is disabled', async () => {
+      const provider = new EnhancedProvider(
+        TEST_DATA.rpcUrl,
+        ChainId.ArbitrumOne,
+        undefined,
+        { enableCaching: false, enableBatching: false }
+      )
+
+      // Multiple RPC calls should not be batched
+      await Promise.all([
+        provider.getBlockNumber(),
+        provider.getGasPrice(),
+        ...TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
+      ])
+
+      // should send individual calls
+      expect(singleRequestCount).toBe(3)
+      expect(batchedRequestCount).toBe(0)
     })
   })
 
   describe('Transaction Receipt Caching', () => {
     let provider: EnhancedProvider
 
-    beforeEach(async () => {
-      provider = new EnhancedProvider(
-        TEST_DATA.rpcUrls.sepolia,
+    it('should cache and reuse transaction receipts with batching enabled', async () => {
+      const provider = new EnhancedProvider(
+        TEST_DATA.rpcUrl,
         ChainId.Sepolia,
-        storage
+        undefined,
+        { enableCaching: true, enableBatching: true }
       )
-      await provider.ready
-    })
 
-    it('should cache and reuse transaction receipts', async () => {
-      const txHash =
-        '0x019ae29f37f27399fc2ac3f640b05e7e3700c75759026a4b4d51d7e572480e4c'
-      const mockReceipt = {
-        ...TEST_DATA.mockTxReceipt,
-        transactionHash: txHash
-      }
-
-      const superGetReceipt = jest
-        .spyOn(JsonRpcProvider.prototype, 'getTransactionReceipt')
-        .mockResolvedValue(mockReceipt)
+      const txHash = TEST_DATA.txHashes[0]!
 
       // First request - should hit network
       const firstReceipt = await provider.getTransactionReceipt(txHash)
       expect(firstReceipt).toBeTruthy()
-      expect(superGetReceipt).toHaveBeenCalledTimes(1)
+      expect(batchedRequestCount).toBe(1)
+      expect(singleRequestCount).toBe(0)
 
       // Verify cache population
       const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
       expect(cache).toBeTruthy()
 
+      // reset request count
+      resetRequestCount()
+      server.resetHandlers()
+
       // Second request - should use cache
       const secondReceipt = await provider.getTransactionReceipt(txHash)
       expect(secondReceipt).toEqual(firstReceipt)
+      expect(batchedRequestCount).toBe(0)
+      expect(singleRequestCount).toBe(0) // No additional calls
+    })
+
+    it('should cache and reuse transaction receipts with batching disabled', async () => {
+      const provider = new EnhancedProvider(
+        TEST_DATA.rpcUrl,
+        ChainId.Sepolia,
+        storage,
+        { enableCaching: true, enableBatching: false }
+      )
+
+      const txHash = TEST_DATA.mockTxReceipt.transactionHash
+
+      // Mock static provider for receipt calls
+      mockStaticSend.mockImplementation(async (method, params) => {
+        if (method === 'eth_getTransactionReceipt') {
+          return {
+            ...TEST_DATA.mockTxReceipt,
+            transactionHash: params[0],
+            confirmations: 10 // Above threshold
+          }
+        }
+        return {}
+      })
+
+      // First request - should hit network
+      await provider.getTransactionReceipt(txHash)
+      expect(mockStaticSend).toHaveBeenCalledTimes(1)
+      expect(mockBatchSend).not.toHaveBeenCalled()
+
+      // Second request - should use cache
+      await provider.getTransactionReceipt(txHash)
+      expect(mockStaticSend).toHaveBeenCalledTimes(1) // No additional calls
+
+      // Verify cache was created
+      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
+      expect(cache).toBeTruthy()
+    })
+
+    it('should not cache when caching is disabled with batching enabled', async () => {
+      const provider = new EnhancedProvider(
+        TEST_DATA.rpcUrl,
+        ChainId.Sepolia,
+        storage,
+        { enableCaching: false, enableBatching: true }
+      )
+
+      const txHash = TEST_DATA.mockTxReceipt.transactionHash
+      mockBatchSend.mockResolvedValue(TEST_DATA.mockTxReceipt)
+
+      // First request
+      await provider.getTransactionReceipt(txHash)
+      expect(mockBatchSend).toHaveBeenCalledTimes(1)
+
+      // Second request - should hit network again
+      await provider.getTransactionReceipt(txHash)
+      expect(mockBatchSend).toHaveBeenCalledTimes(2)
+
+      // Verify no cache was created
+      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
+      expect(cache).toBe(null)
+    })
+
+    it('should not cache when caching is disabled with batching disabled', async () => {
+      const provider = new EnhancedProvider(
+        TEST_DATA.rpcUrl,
+        ChainId.Sepolia,
+        storage,
+        { enableCaching: false, enableBatching: false }
+      )
+
+      const txHash = TEST_DATA.mockTxReceipt.transactionHash
+      const superGetReceipt = jest
+        .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
+        .mockResolvedValue(TEST_DATA.mockTxReceipt)
+
+      // First request
+      await provider.getTransactionReceipt(txHash)
       expect(superGetReceipt).toHaveBeenCalledTimes(1)
+      expect(mockBatchSend).not.toHaveBeenCalled()
+
+      // Second request - should hit network again
+      await provider.getTransactionReceipt(txHash)
+      expect(superGetReceipt).toHaveBeenCalledTimes(2)
+
+      // Verify no cache was created
+      const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
+      expect(cache).toBe(null)
     })
 
     describe('Caching: Confirmation Thresholds', () => {
+      const defaultOptions = { enableCaching: true, enableBatching: true }
+
       beforeEach(async () => {
         Object.defineProperty(provider, 'network', {
           value: { chainId: ChainId.Sepolia, name: 'sepolia' },
@@ -197,7 +325,9 @@ describe('EnhancedProvider', () => {
           confirmations: 4 // Below Sepolia threshold of 5
         }
 
-        expect(shouldCacheTxReceipt(ChainId.Sepolia, mockReceipt)).toBeFalsy()
+        expect(
+          shouldCacheTxReceipt(ChainId.Sepolia, mockReceipt, defaultOptions)
+        ).toBeFalsy()
       })
 
       it('should cache receipts above confirmation threshold', async () => {
@@ -206,9 +336,12 @@ describe('EnhancedProvider', () => {
           confirmations: 10 // Above Sepolia threshold of 5
         }
 
-        jest
-          .spyOn(JsonRpcProvider.prototype, 'getTransactionReceipt')
-          .mockResolvedValue(mockReceipt)
+        mockBatchSend.mockImplementation(async (method, params) => {
+          if (method === 'eth_getTransactionReceipt') {
+            return mockReceipt
+          }
+          return {}
+        })
 
         const receipt = await provider.getTransactionReceipt(
           mockReceipt.transactionHash
@@ -217,6 +350,20 @@ describe('EnhancedProvider', () => {
 
         const cache = storage.getItem('arbitrum:bridge:tx-receipts-cache')
         expect(cache).toBeTruthy()
+      })
+
+      it('should not cache when caching is disabled regardless of confirmations', async () => {
+        const mockReceipt = {
+          ...TEST_DATA.mockTxReceipt,
+          confirmations: 10 // Above threshold
+        }
+
+        expect(
+          shouldCacheTxReceipt(ChainId.Sepolia, mockReceipt, {
+            enableCaching: false,
+            enableBatching: true
+          })
+        ).toBeFalsy()
       })
     })
   })
