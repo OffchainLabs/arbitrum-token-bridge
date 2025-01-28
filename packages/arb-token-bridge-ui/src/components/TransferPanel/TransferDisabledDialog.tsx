@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
@@ -26,7 +26,7 @@ const generateTransferDisabledContent = ({
   unsupportedToken,
   l2ChainIdForTeleportName,
   isGHO,
-  isUsdtDeposit
+  isUsdtTransfer
 }: {
   sourceChainName: string
   destinationChainName: string
@@ -34,17 +34,17 @@ const generateTransferDisabledContent = ({
   unsupportedToken: string
   l2ChainIdForTeleportName: string | null
   isGHO: boolean
-  isUsdtDeposit: boolean
+  isUsdtTransfer: boolean
 }) => {
   // OFT migration message
-  if (isUsdtDeposit) {
+  if (isUsdtTransfer) {
     return (
       <>
         <p>
           USDT is currently undergoing an upgrade to USDT0. We are working to
           provide official support on this page soon.
           <p>
-            Until then, we encourage you to initiate deposits{' '}
+            Until then, we encourage you to initiate USDT transfers{' '}
             <ExternalLink
               href="https://usdt0.to/transfer"
               className="underline"
@@ -163,6 +163,10 @@ export function TransferDisabledDialog() {
     number | undefined
   >()
 
+  const isUsdtTransfer = useMemo(() => {
+    return isTokenUSDT(selectedToken?.address)
+  }, [selectedToken?.address])
+
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {
       if (!isTeleportMode) {
@@ -210,9 +214,6 @@ export function TransferDisabledDialog() {
         ?.find(_token => _token.symbol === 'GHO')
         ?.l1Address.toLowerCase()
 
-  const isUsdtDeposit =
-    isDepositMode && isTeleportMode && isTokenUSDT(selectedToken?.address)
-
   return (
     <Dialog
       closeable
@@ -230,7 +231,7 @@ export function TransferDisabledDialog() {
           unsupportedToken,
           l2ChainIdForTeleportName,
           isGHO,
-          isUsdtDeposit
+          isUsdtTransfer
         })}
       </div>
     </Dialog>
