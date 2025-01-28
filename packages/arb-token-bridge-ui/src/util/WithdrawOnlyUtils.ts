@@ -8,7 +8,8 @@ import { isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
   isTokenArbitrumOneUSDCe,
-  isTokenArbitrumSepoliaUSDCe
+  isTokenArbitrumSepoliaUSDCe,
+  isTokenUSDT
 } from './TokenUtils'
 
 export type WithdrawOnlyToken = {
@@ -283,6 +284,14 @@ export async function isWithdrawOnlyToken({
     (isTokenArbitrumOneUSDCe(parentChainErc20Address) ||
       isTokenArbitrumSepoliaUSDCe(parentChainErc20Address)) &&
     isNetwork(childChainId).isOrbitChain
+  ) {
+    return true
+  }
+
+  // disable USDT deposits during OFT migration
+  if (
+    isNetwork(parentChainId).isEthereumMainnet &&
+    isTokenUSDT(parentChainErc20Address)
   ) {
     return true
   }

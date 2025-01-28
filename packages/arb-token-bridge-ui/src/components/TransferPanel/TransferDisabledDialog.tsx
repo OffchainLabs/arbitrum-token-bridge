@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { isTokenUSDT, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { ExternalLink } from '../common/ExternalLink'
 import { getNetworkName } from '../../util/networks'
@@ -17,6 +17,117 @@ type TransferDisabledDialogStore = {
   isOpen: boolean
   openDialog: () => void
   closeDialog: () => void
+}
+
+const generateTransferDisabledContent = ({
+  sourceChainName,
+  destinationChainName,
+  isTeleportMode,
+  unsupportedToken,
+  l2ChainIdForTeleportName,
+  isGHO,
+  isUsdtDeposit
+}: {
+  sourceChainName: string
+  destinationChainName: string
+  isTeleportMode: boolean
+  unsupportedToken: string
+  l2ChainIdForTeleportName: string | null
+  isGHO: boolean
+  isUsdtDeposit: boolean
+}) => {
+  if (isUsdtDeposit) {
+    return (
+      <>
+        <p>
+          USDT is currently undergoing an upgrade to USDT0. We are working to
+          provide official support on this page soon.
+          <p>
+            Till then, we encourage you to initiate deposits{' '}
+            <ExternalLink
+              href="https://usdt0.to/transfer"
+              className="underline"
+            >
+              here
+            </ExternalLink>
+            .
+          </p>
+        </p>
+        <p>
+          If you have any questions or need assistance, please feel free to
+          reach out to us on{' '}
+          <ExternalLink
+            href="https://discord.com/invite/ZpZuw7p"
+            className="underline"
+          >
+            Discord
+          </ExternalLink>{' '}
+          and connect with our support team in #support.
+        </p>
+      </>
+    )
+  }
+
+  if (isTeleportMode) {
+    return (
+      <>
+        <p>
+          Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
+          is not yet supported for direct {sourceChainName} to{' '}
+          {destinationChainName} transfers.
+        </p>
+        {l2ChainIdForTeleportName && (
+          <p>
+            To bridge <span className="font-medium">{unsupportedToken}</span>:
+            <li>
+              First bridge from {sourceChainName} to {l2ChainIdForTeleportName}.
+            </li>
+            <li>
+              Then bridge from {l2ChainIdForTeleportName} to{' '}
+              {destinationChainName}.
+            </li>
+          </p>
+        )}
+        <p>
+          For more information please contact us on{' '}
+          <ExternalLink
+            href="https://discord.com/invite/ZpZuw7p"
+            className="underline"
+          >
+            Discord
+          </ExternalLink>{' '}
+          and reach out in #support for assistance.
+        </p>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <p>
+        Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
+        has a custom bridge solution that is incompatible with the canonical
+        Arbitrum bridge.
+      </p>
+      {isGHO && (
+        <p>
+          Please use the{' '}
+          <ExternalLink
+            className="underline hover:opacity-70"
+            href="https://app.transporter.io/?from=mainnet&tab=token&to=arbitrum&token=GHO"
+          >
+            CCIP bridge for GHO
+          </ExternalLink>{' '}
+          instead.
+        </p>
+      )}
+      <p>
+        For more information please contact{' '}
+        <span className="font-medium">{unsupportedToken}</span>
+        &apos;s developer team directly or explore their docs.
+      </p>
+    </>
+  )
 }
 
 export const useTransferDisabledDialogStore =
@@ -96,6 +207,8 @@ export function TransferDisabledDialog() {
         ?.find(_token => _token.symbol === 'GHO')
         ?.l1Address.toLowerCase()
 
+  const isUsdtDeposit = isDepositMode && isTokenUSDT(selectedToken?.address)
+
   return (
     <Dialog
       closeable
@@ -106,68 +219,15 @@ export function TransferDisabledDialog() {
       onClose={onClose}
     >
       <div className="flex flex-col space-y-4 py-4">
-        {/* teleport transfer disabled content if token is not in the allowlist */}
-        {isTeleportMode ? (
-          <>
-            <p>
-              Unfortunately,{' '}
-              <span className="font-medium">{unsupportedToken}</span> is not yet
-              supported for direct {sourceChainName} to {destinationChainName}{' '}
-              transfers.
-            </p>
-            {l2ChainIdForTeleportName && (
-              <p>
-                To bridge{' '}
-                <span className="font-medium">{unsupportedToken}</span>:
-                <li>
-                  First bridge from {sourceChainName} to{' '}
-                  {l2ChainIdForTeleportName}.
-                </li>
-                <li>
-                  Then bridge from {l2ChainIdForTeleportName} to{' '}
-                  {destinationChainName}.
-                </li>
-              </p>
-            )}
-            <p>
-              For more information please contact us on{' '}
-              <ExternalLink
-                href="https://discord.com/invite/ZpZuw7p"
-                className="underline"
-              >
-                Discord
-              </ExternalLink>{' '}
-              and reach out in #support for assistance.
-            </p>
-          </>
-        ) : (
-          // canonical transfer disabled content for all other cases
-          <>
-            <p>
-              Unfortunately,{' '}
-              <span className="font-medium">{unsupportedToken}</span> has a
-              custom bridge solution that is incompatible with the canonical
-              Arbitrum bridge.
-            </p>
-            {isGHO && (
-              <p>
-                Please use the{' '}
-                <ExternalLink
-                  className="underline hover:opacity-70"
-                  href="https://app.transporter.io/?from=mainnet&tab=token&to=arbitrum&token=GHO"
-                >
-                  CCIP bridge for GHO
-                </ExternalLink>{' '}
-                instead.
-              </p>
-            )}
-            <p>
-              For more information please contact{' '}
-              <span className="font-medium">{unsupportedToken}</span>
-              &apos;s developer team directly or explore their docs.
-            </p>
-          </>
-        )}
+        {generateTransferDisabledContent({
+          sourceChainName,
+          destinationChainName,
+          isTeleportMode,
+          unsupportedToken,
+          l2ChainIdForTeleportName,
+          isGHO,
+          isUsdtDeposit
+        })}
       </div>
     </Dialog>
   )
