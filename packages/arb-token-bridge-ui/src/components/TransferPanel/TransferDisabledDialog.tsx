@@ -55,7 +55,14 @@ const generateTransferDisabledContent = ({
           </p>
         </p>
         <p>
-          If you have any questions or need assistance, please feel free to
+          Read more about the upgrade{' '}
+          <ExternalLink
+            href="https://x.com/USDT0_to/status/1884266492797342207"
+            className="underline"
+          >
+            here
+          </ExternalLink>
+          . If you have any questions or need assistance, please feel free to
           reach out to us on{' '}
           <ExternalLink
             href="https://discord.com/invite/ZpZuw7p"
