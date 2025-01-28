@@ -70,8 +70,8 @@ const FailedChainPairsStatusBar = ({
       <div className="flex space-x-2">
         <ExclamationTriangleIcon width={20} />
         <span>
-          We were unable to fetch data for the some chains. You can see the full
-          list{' '}
+          We were unable to fetch data for some of the chains. You can see the
+          full list{' '}
         </span>
       </div>
       <Tooltip
