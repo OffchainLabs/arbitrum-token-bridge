@@ -36,6 +36,7 @@ const generateTransferDisabledContent = ({
   isGHO: boolean
   isUsdtDeposit: boolean
 }) => {
+  // OFT migration message
   if (isUsdtDeposit) {
     return (
       <>
@@ -68,6 +69,7 @@ const generateTransferDisabledContent = ({
     )
   }
 
+  // teleport transfer disabled content if token is not in the allowlist
   if (isTeleportMode) {
     return (
       <>
@@ -102,6 +104,7 @@ const generateTransferDisabledContent = ({
     )
   }
 
+  // canonical transfer disabled content for all other cases
   return (
     <>
       <p>
@@ -207,7 +210,8 @@ export function TransferDisabledDialog() {
         ?.find(_token => _token.symbol === 'GHO')
         ?.l1Address.toLowerCase()
 
-  const isUsdtDeposit = isDepositMode && isTokenUSDT(selectedToken?.address)
+  const isUsdtDeposit =
+    isDepositMode && isTeleportMode && isTokenUSDT(selectedToken?.address)
 
   return (
     <Dialog
