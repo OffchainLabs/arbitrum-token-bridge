@@ -41,20 +41,17 @@ const generateTransferDisabledContent = ({
     return (
       <>
         <p>
-          USDT is currently undergoing an upgrade to USDT0. We are working to
-          provide official support on this page soon.
-          <p>
-            Until then, we encourage you to initiate USDT transfers{' '}
-            <ExternalLink
-              href="https://usdt0.to/transfer"
-              className="underline"
-            >
-              here
-            </ExternalLink>
-            .
-          </p>
+          USDT is currently upgrading to USDT0.
+          <br />
+          Official support on the Arbitrum Bridge will be live soon.
         </p>
         <p>
+          Until then, you can use the{' '}
+          <ExternalLink href="https://usdt0.to/transfer" className="underline">
+            Tether Bridge
+          </ExternalLink>
+          .
+          <br />
           Read more about the upgrade{' '}
           <ExternalLink
             href="https://x.com/USDT0_to/status/1884266492797342207"
@@ -62,15 +59,17 @@ const generateTransferDisabledContent = ({
           >
             here
           </ExternalLink>
-          . If you have any questions or need assistance, please feel free to
-          reach out to us on{' '}
+          .
+        </p>
+        <p>
+          For questions and support, connect with our support team on{' '}
           <ExternalLink
             href="https://discord.com/invite/ZpZuw7p"
             className="underline"
           >
             Discord
           </ExternalLink>{' '}
-          and connect with our support team in #support.
+          in #support.
         </p>
       </>
     )
