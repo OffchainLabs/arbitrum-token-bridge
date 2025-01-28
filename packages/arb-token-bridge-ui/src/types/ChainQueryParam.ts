@@ -18,9 +18,9 @@ const chainQueryParams = [
   'base',
   'arbitrum-sepolia',
   'base-sepolia',
-  'custom-localhost',
-  'arbitrum-localhost',
-  'l3-localhost'
+  'ethereum-local',
+  'arbitrum-local',
+  'l3-local'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
@@ -68,13 +68,13 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'base-sepolia'
 
     case ChainId.Local:
-      return 'custom-localhost'
+      return 'ethereum-local'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-localhost'
+      return 'arbitrum-local'
 
     case ChainId.L3Local:
-      return 'l3-localhost'
+      return 'l3-local'
 
     default:
       const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -123,13 +123,13 @@ export function getChainForChainKeyQueryParam(
     case 'base-sepolia':
       return customChains.baseSepolia
 
-    case 'custom-localhost':
+    case 'ethereum-local':
       return customChains.localL1Network
 
-    case 'arbitrum-localhost':
+    case 'arbitrum-local':
       return customChains.localL2Network
 
-    case 'l3-localhost':
+    case 'l3-local':
       return customChains.localL3Network
 
     default:
