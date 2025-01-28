@@ -43,7 +43,7 @@ const generateTransferDisabledContent = ({
           USDT is currently undergoing an upgrade to USDT0. We are working to
           provide official support on this page soon.
           <p>
-            Till then, we encourage you to initiate deposits{' '}
+            Until then, we encourage you to initiate deposits{' '}
             <ExternalLink
               href="https://usdt0.to/transfer"
               className="underline"
