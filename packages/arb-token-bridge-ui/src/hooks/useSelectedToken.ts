@@ -42,7 +42,7 @@ export const useSelectedToken = () => {
   const tokensFromUser = useTokensFromUser()
 
   const { data: usdcToken } = useSWRImmutable(
-    [tokenFromSearchParams, parentChain.id, childChain.id],
+    [tokenFromSearchParams, parentChain.id, childChain.id, 'usd_token'],
     async ([_tokenAddress, _parentChainId, _childChainId]) => {
       if (!_tokenAddress) {
         return null
@@ -62,6 +62,8 @@ export const useSelectedToken = () => {
       })
     }
   )
+
+  console.log({ usdcToken })
 
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) =>
