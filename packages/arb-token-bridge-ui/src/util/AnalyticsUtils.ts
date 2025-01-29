@@ -106,20 +106,6 @@ type AnalyticsEventMap = {
   'Show All Projects Click': {
     network: string
   }
-  'OFT Deposit': {
-    tokenSymbol: string
-    assetType: string
-    accountType: string
-    network: string
-    amount: number
-  }
-  'OFT Withdrawal': {
-    tokenSymbol: string
-    assetType: string
-    accountType: string
-    network: string
-    amount: number
-  }
 }
 
 type AnalyticsEvent = keyof AnalyticsEventMap

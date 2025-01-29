@@ -13,10 +13,12 @@ import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
 import { isLayerZeroToken } from './oftUtils'
 
-// OFT v2 interface from LayerZero docs
+// Update the interface definition to match IOFT.sol
+// https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oft/interfaces/IOFT.sol
 const OFTv2Interface = [
-  'function estimateSendFee(uint16 _dstChainId, bytes32 _toAddress, uint256 _amount, bool _useZro, bytes calldata _adapterParams) external view returns (uint256 nativeFee, uint256 zroFee)',
-  'function send(uint16 _dstChainId, bytes32 _toAddress, uint256 _amount, address payable _refundAddress, address _zroPaymentAddress, bytes calldata _adapterParams) external payable',
+  'function quoteSend(tuple(uint32 dstEid, bytes32 to, uint256 amountLD, uint256 minAmountLD, bytes extraOptions, bytes composeMsg) _sendParam, bool _payInLzToken) external view returns (tuple(uint256 nativeFee, uint256 lzTokenFee))',
+  'function quoteOFT(tuple(uint32 dstEid, bytes32 to, uint256 amountLD, uint256 minAmountLD, bytes extraOptions, bytes composeMsg) sendParam) external view returns (tuple(uint256 minAmountLD, uint256 maxAmountLD), tuple(int256 feeAmountLD, string description)[], tuple(uint256 amountSentLD, uint256 amountReceivedLD))',
+  'function send(tuple(uint32 dstEid, bytes32 to, uint256 amountLD, uint256 minAmountLD, bytes extraOptions, bytes composeMsg) sendParam, tuple(uint256 nativeFee, uint256 lzTokenFee) fee, address refundAddress) external payable returns (tuple(bytes32 guid, uint64 nonce, tuple(uint256 nativeFee, uint256 lzTokenFee) fee), tuple(uint256 amountSentLD, uint256 amountReceivedLD))',
   'function allowance(address owner, address spender) external view returns (uint256)'
 ]
 
@@ -35,12 +37,9 @@ export class OftTransferStarter extends BridgeTransferStarter {
       throw Error('OFT token address not found')
     }
 
-    const sourceChainId = await this.sourceChainProvider
-      .getNetwork()
-      .then(n => n.chainId)
     const isOft = await isLayerZeroToken(
       this.sourceChainErc20Address,
-      sourceChainId
+      this.sourceChainProvider
     )
 
     if (!isOft) {
@@ -120,20 +119,17 @@ export class OftTransferStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    // Default adapter params for version 2
-    const adapterParams = ethers.utils.solidityPack(
-      ['uint16', 'uint256'],
-      [2, 200000] // version 2, gas limit 200k
-    )
+    const sendParam = {
+      dstEid: destinationChainId,
+      to: ethers.utils.hexZeroPad(address, 32),
+      amountLD: amount,
+      minAmountLD: amount, // Set to same as amount for no slippage
+      extraOptions: '0x', // No extra options
+      composeMsg: '0x' // No composed message
+    }
 
     try {
-      const [nativeFee] = await contract.estimateSendFee(
-        destinationChainId,
-        ethers.utils.hexZeroPad(address, 32),
-        amount,
-        false, // don't use ZRO token
-        adapterParams
-      )
+      const { nativeFee } = await contract.quoteSend(sendParam, false)
 
       return {
         estimatedParentChainGas: nativeFee,
@@ -162,27 +158,27 @@ export class OftTransferStarter extends BridgeTransferStarter {
       signer
     )
 
-    // Default adapter params for version 2
-    const adapterParams = ethers.utils.solidityPack(
-      ['uint16', 'uint256'],
-      [2, 200000] // version 2, gas limit 200k
-    )
+    const sendParam = {
+      dstEid: destinationChainId,
+      to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
+      amountLD: amount,
+      minAmountLD: amount, // Set to same as amount for no slippage
+      extraOptions: '0x', // No extra options
+      composeMsg: '0x' // No composed message
+    }
 
-    const [nativeFee] = await contract.estimateSendFee(
-      destinationChainId,
-      ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
-      amount,
-      false, // don't use ZRO token
-      adapterParams
+    // Get the messaging fee quote
+    const { nativeFee, lzTokenFee } = await contract.quoteSend(sendParam, false)
+
+    // Get OFT-specific details (optional, can be used for UI feedback)
+    const [oftLimit, oftFeeDetails, oftReceipt] = await contract.quoteOFT(
+      sendParam
     )
 
     const tx = await contract.send(
-      destinationChainId,
-      ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
-      amount,
+      sendParam,
+      { nativeFee, lzTokenFee },
       address, // refund address
-      ethers.constants.AddressZero, // don't use ZRO token
-      adapterParams,
       { value: nativeFee }
     )
 
@@ -191,7 +187,13 @@ export class OftTransferStarter extends BridgeTransferStarter {
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
       sourceChainTransaction: tx,
-      destinationChainProvider: this.destinationChainProvider
+      destinationChainProvider: this.destinationChainProvider,
+      // Add additional OFT-specific details if needed
+      oftDetails: {
+        limits: oftLimit,
+        fees: oftFeeDetails,
+        receipt: oftReceipt
+      }
     }
   }
 }
