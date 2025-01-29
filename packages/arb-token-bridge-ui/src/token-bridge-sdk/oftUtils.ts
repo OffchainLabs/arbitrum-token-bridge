@@ -8,7 +8,10 @@ const USDT_ETH_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
 export const lzProtocolConfig = {
   [ChainId.Ethereum]: {
     lzEndpointId: 30101,
-    endpointV2: '0x1a44076050125825900e736c501f859c50fE728c'
+    endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
+    oftAdapters: {
+      [USDT_ETH_ADDRESS]: '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee'
+    }
   },
   [ChainId.Sepolia]: {
     lzEndpointId: 40161,
@@ -58,6 +61,11 @@ export async function validateOftTransfer({
     return false
   }
 
+  // USDT on Ethereum is not an OFT, but it will support OFT transfers
+  if (tokenAddress.toLowerCase() === USDT_ETH_ADDRESS.toLowerCase()) {
+    return true
+  }
+
   // Check if the token is an OFT
   return isLayerZeroToken(tokenAddress, sourceChainProvider)
 }
@@ -76,13 +84,6 @@ export async function isLayerZeroToken(
   )
 
   try {
-    // USDT on ETH is not an OFT, but it will support OFT transfers
-    if (
-      parentChainErc20Address.toLowerCase() === USDT_ETH_ADDRESS.toLowerCase()
-    ) {
-      return true
-    }
-
     const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
     return !!_isLayerZeroToken
   } catch (error) {

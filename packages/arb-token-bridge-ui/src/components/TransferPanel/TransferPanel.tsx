@@ -150,6 +150,8 @@ export function TransferPanel() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
+  const isOftTransfer = useIsOftTransfer()
+
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
   // Link the amount state directly to the amount in query params -  no need of useState
@@ -196,8 +198,6 @@ export function TransferPanel() {
   const [showProjectsListing, setShowProjectsListing] = useState(false)
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
-
-  const isOftTransfer = useIsOftTransfer()
 
   useEffect(() => {
     // hide Project listing when networks are changed
@@ -1090,7 +1090,7 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     }
 
-    if (await isOftTransfer) {
+    if (isOftTransfer) {
       return transferOft()
     }
     if (isCctpTransfer) {
@@ -1142,6 +1142,9 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
+        <span className="text-xl text-white">
+          OFT: {isOftTransfer.toString()}
+        </span>
         <TransferPanelMain />
         <AdvancedSettings />
         <TransferPanelSummary

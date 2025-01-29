@@ -15,7 +15,7 @@ export const useIsOftTransfer = function () {
     // Only create cache key if we have all required params
     selectedToken && !isTeleportMode
       ? [
-          'validate-oft-transfer',
+          'oft-transfer',
           selectedToken.address,
           networks.sourceChain.id,
           networks.destinationChain.id
