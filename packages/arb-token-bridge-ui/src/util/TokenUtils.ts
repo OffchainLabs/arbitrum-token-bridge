@@ -427,8 +427,15 @@ export function sanitizeTokenSymbol(
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
-    isTokenEthereumUSDT(options.erc20L1Address) ||
-    isTokenArbitrumOneUSDT(options.erc20L1Address)
+    isTokenEthereumUSDT(options.erc20L1Address) &&
+    options.chainId === ChainId.Ethereum
+  ) {
+    return 'USDT'
+  }
+
+  if (
+    isTokenEthereumUSDT(options.erc20L1Address) &&
+    options.chainId === ChainId.ArbitrumOne
   ) {
     return 'USD₮0'
   }
@@ -464,10 +471,17 @@ export function sanitizeTokenName(
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
-    isTokenEthereumUSDT(options.erc20L1Address) ||
-    isTokenArbitrumOneUSDT(options.erc20L1Address)
+    isTokenEthereumUSDT(options.erc20L1Address) &&
+    options.chainId === ChainId.Ethereum
   ) {
-    return 'USD Tether'
+    return 'USDT'
+  }
+
+  if (
+    isTokenEthereumUSDT(options.erc20L1Address) &&
+    options.chainId === ChainId.ArbitrumOne
+  ) {
+    return 'USD₮0'
   }
 
   if (
