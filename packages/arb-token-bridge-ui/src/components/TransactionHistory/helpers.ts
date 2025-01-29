@@ -15,7 +15,8 @@ import {
   TeleporterMergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { ChainId, getL1BlockTime, isNetwork } from '../../util/networks'
+import { getL1BlockTime, isNetwork } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import {
   getParentToChildMessageDataFromParentTxHash,
@@ -31,19 +32,11 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import { isTeleportTx } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../types/Transactions'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
 const DEPOSITS_LOCAL_STORAGE_KEY = 'arbitrum:bridge:deposits'
-
-export enum StatusLabel {
-  PENDING = 'Pending',
-  CLAIMABLE = 'Claimable',
-  SUCCESS = 'Success',
-  EXPIRED = 'Expired',
-  FAILURE = 'Failure'
-}
 
 function isDeposit(tx: MergedTransaction): boolean {
   return !tx.isWithdrawal
@@ -191,26 +184,50 @@ export function addDepositToCache(tx: Deposit) {
     return
   }
 
-  const cachedDeposits = getDepositsWithoutStatusesFromCache(
+  const cachedDepositsForSender = getDepositsWithoutStatusesFromCache(
     tx.sender.toLowerCase()
   )
 
-  const foundInCache = cachedDeposits.find(cachedTx =>
+  const foundInCacheForSender = cachedDepositsForSender.find(cachedTx =>
     isSameTransaction(
       { ...cachedTx, txId: cachedTx.txID },
       { ...tx, txId: tx.txID }
     )
   )
 
-  if (foundInCache) {
+  if (!foundInCacheForSender) {
+    const newCachedDepositsForSender = [tx, ...cachedDepositsForSender]
+
+    localStorage.setItem(
+      `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.sender.toLowerCase()}`,
+      JSON.stringify(newCachedDepositsForSender)
+    )
+  }
+
+  if (!isCustomDestinationAddressTx(tx) || !tx.destination) {
     return
   }
 
-  const newCachedDeposits = [tx, ...cachedDeposits]
+  const cachedDepositsForReceiver = getDepositsWithoutStatusesFromCache(
+    tx.destination.toLowerCase()
+  )
+
+  const foundInCacheForReceiver = cachedDepositsForReceiver.find(cachedTx =>
+    isSameTransaction(
+      { ...cachedTx, txId: cachedTx.txID },
+      { ...tx, txId: tx.txID }
+    )
+  )
+
+  if (foundInCacheForReceiver) {
+    return
+  }
+
+  const newCachedDepositsForReceiver = [tx, ...cachedDepositsForReceiver]
 
   localStorage.setItem(
-    `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.sender.toLowerCase()}`,
-    JSON.stringify(newCachedDeposits)
+    `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.destination.toLowerCase()}`,
+    JSON.stringify(newCachedDepositsForReceiver)
   )
 }
 

@@ -16,7 +16,6 @@ import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
-import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
@@ -182,7 +181,6 @@ function AppContent() {
     <>
       <Header />
       <TokenListSyncer />
-      <BalanceUpdater />
       <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
     </>

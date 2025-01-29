@@ -69,7 +69,10 @@ describe('Redeem ERC20 Deposit', () => {
 
       context('deposit should be redeemed', () => {
         // open transaction history and wait for deposit to fetch data
-        cy.openTransactionsPanel('pending')
+        cy.switchToTransactionHistoryTab('pending')
+
+        // give ci more time to fetch the transactions
+        cy.wait(15_000)
 
         // find the Retry button and the amount in the row
         cy.findTransactionInTransactionHistory({
@@ -94,7 +97,7 @@ describe('Redeem ERC20 Deposit', () => {
           symbol: 'WETH'
         })
 
-        cy.closeTransactionHistoryPanel()
+        cy.switchToTransferPanelTab()
 
         // wait for the destination balance to update
         cy.wait(5_000)

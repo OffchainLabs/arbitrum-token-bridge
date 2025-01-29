@@ -11,7 +11,8 @@ import {
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { CommonAddress } from './CommonAddressUtils'
-import { ChainId, isNetwork } from './networks'
+import { isNetwork } from './networks'
+import { ChainId } from '../types/ChainId'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
@@ -407,6 +408,9 @@ export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
     isTokenArbitrumSepoliaNativeUSDC(tokenAddress)
   )
 }
+
+export const isTokenEthereumUSDT = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDT.toLowerCase()
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(

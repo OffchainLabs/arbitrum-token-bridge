@@ -19,6 +19,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
+import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -28,10 +29,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import {
-  AdvancedSettings,
-  useDestinationAddressStore
-} from './AdvancedSettings'
+import { AdvancedSettings } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
@@ -80,6 +78,7 @@ import { Button } from '../common/Button'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useMainContentTabs } from '../MainContent/MainContent'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -145,8 +144,8 @@ export function TransferPanel() {
     chainId: networks.sourceChain.id
   })
 
-  const { openTransactionHistoryPanel, setTransferring } =
-    useAppContextActions()
+  const { setTransferring } = useAppContextActions()
+  const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const isCctpTransfer = useIsCctpTransfer()
@@ -155,11 +154,13 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2 }] = useArbQueryParams()
+  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
   const { openConnectModal } = useConnectModal()
+  const latestDestinationAddress = useLatest(destinationAddress)
+
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
@@ -176,9 +177,12 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
-  const { destinationAddress } = useDestinationAddressStore()
+  const [
+    customDestinationAddressConfirmationDialogProps,
+    openCustomDestinationAddressConfirmationDialog
+  ] = useDialog()
 
-  const isCustomDestinationTransfer = !!destinationAddress
+  const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
   const {
     updateEthParentBalance,
@@ -222,6 +226,13 @@ export function TransferPanel() {
 
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
+
+  const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
+    return (
+      destinationAddress?.trim().toLowerCase() ===
+      walletAddress?.trim().toLowerCase()
+    )
+  }, [destinationAddress, walletAddress])
 
   async function depositToken() {
     if (!selectedToken) {
@@ -340,6 +351,12 @@ export function TransferPanel() {
       setShowSmartContractWalletTooltip(true)
     }, 3000)
 
+  const confirmCustomDestinationAddressForSCWallets = async () => {
+    const waitForInput = openCustomDestinationAddressConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
   const transferCctp = async () => {
     if (!selectedToken) {
       return
@@ -350,6 +367,8 @@ export function TransferPanel() {
     if (!isTransferAllowed) {
       throw new Error(transferNotAllowedError)
     }
+
+    const destinationAddress = latestDestinationAddress.current
 
     setTransferring(true)
 
@@ -372,6 +391,16 @@ export function TransferPanel() {
       } else {
         const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
         if (!withdrawalConfirmation) return
+      }
+
+      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
+      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      if (
+        isSmartContractWallet &&
+        areSenderAndCustomDestinationAddressesEqual
+      ) {
+        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        if (!confirmation) return false
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -501,7 +530,7 @@ export function TransferPanel() {
       }
 
       addPendingTransaction(newTransfer)
-      openTransactionHistoryPanel()
+      switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
     } catch (e) {
@@ -563,12 +592,11 @@ export function TransferPanel() {
         destinationChainErc20Address
       })
 
-      const { isNativeCurrencyTransfer, isWithdrawal } =
-        getBridgeTransferProperties({
-          sourceChainId,
-          sourceChainErc20Address,
-          destinationChainId
-        })
+      const { isWithdrawal } = getBridgeTransferProperties({
+        sourceChainId,
+        sourceChainErc20Address,
+        destinationChainId
+      })
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
@@ -587,6 +615,18 @@ export function TransferPanel() {
       if (destinationAddressError) {
         console.error(destinationAddressError)
         return
+      }
+
+      const destinationAddress = latestDestinationAddress.current
+
+      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
+      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      if (
+        isSmartContractWallet &&
+        areSenderAndCustomDestinationAddressesEqual
+      ) {
+        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        if (!confirmation) return false
       }
 
       const isCustomNativeTokenAmount2 =
@@ -766,6 +806,8 @@ export function TransferPanel() {
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
+    const destinationAddress = latestDestinationAddress.current
+
     if (!isSmartContractWallet) {
       trackEvent(
         isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
@@ -836,7 +878,7 @@ export function TransferPanel() {
       )
     }
 
-    openTransactionHistoryPanel()
+    switchToTransactionHistoryTab()
     setTransferring(false)
     clearAmountInput()
 
@@ -968,6 +1010,10 @@ export function TransferPanel() {
       <USDCDepositConfirmationDialog
         {...usdcDepositConfirmationDialogProps}
         amount={amount}
+      />
+
+      <CustomDestinationAddressConfirmationDialog
+        {...customDestinationAddressConfirmationDialogProps}
       />
 
       <div

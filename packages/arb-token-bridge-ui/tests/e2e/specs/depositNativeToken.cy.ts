@@ -31,14 +31,13 @@ describe('Deposit native token', () => {
     cy.findGasFeeSummary(zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
-    cy.findMoveFundsButton().click()
-    cy.confirmMetamaskTransaction()
+    cy.clickMoveFundsButton()
     cy.findTransactionInTransactionHistory({
       duration: depositTime,
       amount: ETHAmountToDeposit,
       symbol: nativeTokenSymbol
     })
-    cy.closeTransactionHistoryPanel()
+    cy.switchToTransferPanelTab()
     cy.findAmountInput().should('have.value', '')
     cy.findMoveFundsButton().should('be.disabled')
   })
@@ -54,8 +53,7 @@ describe('Deposit native token', () => {
     cy.findGasFeeSummary(zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
     cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
-    cy.findMoveFundsButton().click()
-    cy.confirmMetamaskTransaction()
+    cy.clickMoveFundsButton()
 
     const txData = {
       amount: ETHAmountToDeposit,
@@ -77,7 +75,7 @@ describe('Deposit native token', () => {
     )
 
     cy.closeTransactionDetails()
-    cy.closeTransactionHistoryPanel()
+    cy.switchToTransferPanelTab()
     cy.findAmountInput().should('have.value', '')
     cy.findMoveFundsButton().should('be.disabled')
   })

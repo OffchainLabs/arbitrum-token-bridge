@@ -15,7 +15,8 @@ import {
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
-import { ChainId, isNetwork, getNetworkName } from '../../util/networks'
+import { isNetwork, getNetworkName } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
@@ -31,10 +32,7 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
-import {
-  useAdvancedSettingsStore,
-  useDestinationAddressStore
-} from '../TransferPanel/AdvancedSettings'
+import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -125,7 +123,10 @@ export function NetworkButton({
 
   const hasOneOrLessChain = chains.length <= 1
 
-  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+  const disabled =
+    hasOneOrLessChain ||
+    (isSmartContractWallet && type === 'source') ||
+    isLoading
 
   const buttonStyle = {
     backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
@@ -405,8 +406,9 @@ export const NetworkSelectionContainer = (
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
-  const { setDestinationAddress } = useDestinationAddressStore()
+  const [, setQueryParams] = useArbQueryParams()
   const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
+  const { isSmartContractWallet } = useAccountType()
 
   const isSource = props.type === 'source'
 
@@ -443,17 +445,21 @@ export const NetworkSelectionContainer = (
       })
 
       actions.app.setSelectedToken(null)
-      setDestinationAddress(undefined)
-      setAdvancedSettingsCollapsed(true)
+      setQueryParams({ destinationAddress: undefined })
+
+      if (!isSmartContractWallet) {
+        setAdvancedSettingsCollapsed(true)
+      }
     },
     [
-      actions.app,
       isSource,
       networks,
-      openOneNovaTransferDialog,
       setNetworks,
-      setDestinationAddress,
-      setAdvancedSettingsCollapsed
+      actions.app,
+      setQueryParams,
+      setAdvancedSettingsCollapsed,
+      openOneNovaTransferDialog,
+      isSmartContractWallet
     ]
   )
 

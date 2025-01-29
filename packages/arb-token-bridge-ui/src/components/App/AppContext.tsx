@@ -1,23 +1,16 @@
 import { createContext, useContext, useReducer, Dispatch } from 'react'
 
-export enum TransactionHistoryTab {
-  DEPOSITS = 0,
-  WITHDRAWALS = 1,
-  CCTP = 2
-}
 type AppContextState = {
   layout: {
     isTransferPanelVisible: boolean
     isTransferring: boolean
-    isTransactionHistoryPanelVisible: boolean
   }
 }
 
 const initialState: AppContextState = {
   layout: {
     isTransferPanelVisible: true,
-    isTransferring: false,
-    isTransactionHistoryPanelVisible: false
+    isTransferring: false
   }
 }
 
@@ -29,7 +22,6 @@ const AppContext = createContext<AppContextValue>([initialState, () => {}])
 type Action =
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
-  | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
@@ -37,15 +29,6 @@ function reducer(state: AppContextState, action: Action) {
       return {
         ...state,
         layout: { ...state.layout, isTransferPanelVisible: action.payload }
-      }
-
-    case 'layout.set_txhistory_panel_visible':
-      return {
-        ...state,
-        layout: {
-          ...state.layout,
-          isTransactionHistoryPanelVisible: action.payload
-        }
       }
 
     case 'layout.set_is_transferring':
@@ -88,17 +71,7 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_is_transferring', payload })
   }
 
-  const openTransactionHistoryPanel = () => {
-    dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
-  }
-
-  const closeTransactionHistoryPanel = () => {
-    dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
-  }
-
   return {
-    setTransferring,
-    openTransactionHistoryPanel,
-    closeTransactionHistoryPanel
+    setTransferring
   }
 }

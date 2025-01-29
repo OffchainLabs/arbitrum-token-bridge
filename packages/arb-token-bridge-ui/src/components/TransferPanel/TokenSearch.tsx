@@ -29,7 +29,7 @@ import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
@@ -47,7 +47,7 @@ import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
-  listIds: new Set<number>(),
+  listIds: new Set<string>(),
   type: TokenType.ERC20,
   // the address field is for L1 address but native USDC does not have an L1 address
   // the L2 address is used instead to avoid errors
@@ -57,7 +57,7 @@ export const ARB_ONE_NATIVE_USDC_TOKEN = {
 
 export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
-  listIds: new Set<number>(),
+  listIds: new Set<string>(),
   type: TokenType.ERC20,
   address: CommonAddress.ArbitrumSepolia.USDC,
   l2Address: CommonAddress.ArbitrumSepolia.USDC
@@ -534,7 +534,7 @@ export function TokenSearch({
     parentChainProvider,
     isTeleportMode
   } = useNetworksRelationship(networks)
-  const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
+  const { updateUsdcBalances } = useUpdateUsdcBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
@@ -570,7 +570,7 @@ export function TokenSearch({
           return
         }
 
-        await updateUSDCBalances()
+        updateUsdcBalances()
 
         // if an Orbit chain is selected we need to fetch its USDC address
         let childChainUsdcAddress

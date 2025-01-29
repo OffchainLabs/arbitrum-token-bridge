@@ -39,7 +39,7 @@ describe('Approve token for deposit', () => {
         timeout: 50000,
         interval: 500
       })
-      cy.findMoveFundsButton().click()
+      cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
       cy.findByText(/pay a one-time approval fee/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
@@ -50,7 +50,7 @@ describe('Approve token for deposit', () => {
        * If confirm spending fails, test is still considered to be passing by Cypress
        * We add another check to make sure the test fails if needed
        */
-      cy.wait(10_000)
+      cy.wait(25_000)
       cy.rejectMetamaskTransaction()
     })
   })

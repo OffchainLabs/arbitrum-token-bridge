@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
+import Image from 'next/image'
 
 import { formatAmount } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -20,6 +21,7 @@ import { NoteBox } from '../common/NoteBox'
 import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
+import LightningIcon from '@/images/LightningIcon.svg'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -262,17 +264,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode &&
-        (isDestinationChainArbitrumOne ||
-          isDestinationChainArbitrumSepolia) && (
-          <div
-            className={twMerge(
-              'grid grid-cols-[260px_auto] items-center text-sm font-light'
-            )}
-          >
-            <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
-          </div>
-        )}
+      {!isDepositMode && (
+        <div
+          className={twMerge(
+            'grid grid-cols-[260px_auto] items-center text-sm font-light'
+          )}
+        >
+          <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
+        </div>
+      )}
     </TransferPanelSummaryContainer>
   )
 }
@@ -281,26 +281,32 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
   const {
     confirmationTimeInReadableFormat,
     confirmationTimeInReadableFormatShort,
-    isDefaultConfirmationTime
+    fastWithdrawalActive
   } = getConfirmationTime(chainId)
   return (
     <>
       <span className="whitespace-nowrap">Confirmation time:</span>
-      <span className="flex items-center font-medium">
+      <span className="flex flex-col items-start font-medium sm:flex-row sm:items-center">
         <span className="hidden sm:inline">
           {confirmationTimeInReadableFormat}
         </span>
         <span className="sm:hidden">
           {confirmationTimeInReadableFormatShort}
         </span>
-        {!isDefaultConfirmationTime && (
-          <Tooltip
-            content={
-              'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
-            }
-          >
-            <InformationCircleIcon className="ml-1 h-3 w-3" />
-          </Tooltip>
+        {fastWithdrawalActive && (
+          <div className="flex items-center">
+            <Tooltip
+              content={
+                'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
+              }
+            >
+              <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
+            </Tooltip>
+            <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
+              <Image src={LightningIcon} alt="Lightning Icon" />
+              <span className="font-normal">FAST</span>
+            </div>
+          </div>
         )}
       </span>
     </>

@@ -156,6 +156,7 @@ describe("Validation Functions", () => {
           decimals: 18,
           logoUrl: "https://example.com/token-logo.png",
         },
+        fastWithdrawalTime: 900000,
       };
       expect(() =>
         bridgeUiConfigSchema.parse(validBridgeUiConfig)

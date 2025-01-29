@@ -3,7 +3,12 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { getInitialETHBalance, visitAfterSomeDelay } from '../../support/common'
+import {
+  getInitialETHBalance,
+  getL1NetworkName,
+  getL2NetworkName,
+  visitAfterSomeDelay
+} from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -26,8 +31,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'max',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 
@@ -38,26 +43,15 @@ describe('User enters site with query params on URL', () => {
         // it's very hard to get the max amount separately
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-        cy.waitUntil(
-          () =>
-            cy
-              .findAmountInput()
-              .invoke('val')
-              .should($val => {
-                cy.wrap(Number($val)).should('be.gt', 0)
-              }),
-          // optional timeouts and error messages
-          {
-            errorMsg: 'was expecting a numerical input value greater than 0',
-            timeout: 5000,
-            interval: 500
-          }
-        )
-        cy.findAmountInput()
-          .invoke('val')
-          .should($val => {
-            cy.wrap(Number($val)).should('be.lt', l1ETHbal)
-          })
+
+        cy.findAmountInput().should($el => {
+          const amount = parseFloat(String($el.val()))
+          expect(amount).to.be.gt(0)
+        })
+        cy.findAmountInput().should($el => {
+          const amount = parseFloat(String($el.val()))
+          expect(amount).to.be.lt(Number(l1ETHbal))
+        })
       }
     )
     context(
@@ -66,8 +60,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'MAX',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 
@@ -79,7 +73,7 @@ describe('User enters site with query params on URL', () => {
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         cy.waitUntil(
-          () => cy.findAmountInput().then($el => Number($el.val()) > 0),
+          () => cy.findAmountInput().then($el => Number(String($el.val())) > 0),
           // optional timeouts and error messages
           {
             errorMsg: 'was expecting a numerical input value greater than 0',
@@ -87,11 +81,10 @@ describe('User enters site with query params on URL', () => {
             interval: 500
           }
         )
-        cy.findAmountInput()
-          .invoke('val')
-          .should($val => {
-            cy.wrap(Number($val)).should('be.lt', l1ETHbal)
-          })
+        cy.findAmountInput().should($el => {
+          const amount = parseFloat(String($el.val()))
+          expect(amount).to.be.lt(Number(l1ETHbal))
+        })
       }
     )
     context(
@@ -100,8 +93,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'MaX',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 
@@ -115,12 +108,10 @@ describe('User enters site with query params on URL', () => {
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         cy.waitUntil(
           () =>
-            cy
-              .findAmountInput()
-              .invoke('val')
-              .should($val => {
-                cy.wrap(Number($val)).should('be.gt', 0)
-              }),
+            cy.findAmountInput().should($el => {
+              const amount = parseFloat(String($el.val()))
+              expect(amount).to.be.gt(0)
+            }),
           // optional timeouts and error messages
           {
             errorMsg: 'was expecting a numerical input value greater than 0',
@@ -128,19 +119,18 @@ describe('User enters site with query params on URL', () => {
             interval: 500
           }
         )
-        cy.findAmountInput()
-          .invoke('val')
-          .should($val => {
-            cy.wrap(Number($val)).should('be.lt', l1ETHbal)
-          })
+        cy.findAmountInput().should($el => {
+          const amount = parseFloat(String($el.val()))
+          expect(amount).to.be.lt(Number(l1ETHbal))
+        })
       }
     )
     context('?amount=56 should set transfer panel amount to 56', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '56',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -150,8 +140,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '1.6678',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -161,8 +151,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '6',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -172,8 +162,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0.123',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -184,8 +174,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '-0.123',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -195,8 +185,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: 'asdfs',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -206,8 +196,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -217,8 +207,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0.0001',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -228,8 +218,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '123,3,43',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
+          sourceChain: getL1NetworkName(),
+          destinationChain: getL2NetworkName()
         }
       })
 
@@ -241,8 +231,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: '0, 123.222, 0.3',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
+            sourceChain: getL1NetworkName(),
+            destinationChain: getL2NetworkName()
           }
         })
 

@@ -10,7 +10,7 @@ import {
   ChildToParentMessageData,
   L2ToL3MessageData,
   TxnType
-} from '../../hooks/useTransactions'
+} from '../../types/Transactions'
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
