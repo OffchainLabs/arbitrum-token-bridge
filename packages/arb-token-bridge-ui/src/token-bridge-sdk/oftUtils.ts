@@ -2,6 +2,8 @@ import { ethers } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { ChainId } from '../types/ChainId'
 
+const USDT_ETH_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
+
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 export const lzProtocolConfig = {
   [ChainId.Ethereum]: {
@@ -74,6 +76,13 @@ export async function isLayerZeroToken(
   )
 
   try {
+    // USDT on ETH is not an OFT, but it will support OFT transfers
+    if (
+      parentChainErc20Address.toLowerCase() === USDT_ETH_ADDRESS.toLowerCase()
+    ) {
+      return true
+    }
+
     const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
     return !!_isLayerZeroToken
   } catch (error) {
