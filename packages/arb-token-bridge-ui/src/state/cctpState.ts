@@ -9,7 +9,7 @@ import { ChainId } from '../types/ChainId'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'
-import { useAccount } from 'wagmi'
+import { useAccount, useConfig } from 'wagmi'
 import dayjs from 'dayjs'
 import {
   ChainDomain,
@@ -507,6 +507,7 @@ export function useClaimCctp(tx: MergedTransaction) {
     sourceChainId: tx.cctpData?.sourceChainId
   })
   const { isSmartContractWallet } = useAccountType()
+  const wagmiConfig = useConfig()
 
   const signer = useEthersSigner({ chainId: tx.destinationChainId })
 
@@ -521,7 +522,7 @@ export function useClaimCctp(tx: MergedTransaction) {
       const { hash: receiveTxHash } = await receiveMessage({
         attestation,
         messageBytes: tx.cctpData.messageBytes as Address,
-        signer
+        wagmiConfig
       })
       const receiveTx = await signer.provider.getTransaction(receiveTxHash)
       const receiveReceiptTx = await receiveTx.wait()

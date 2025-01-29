@@ -1,5 +1,9 @@
-import { readContract, simulateContract, writeContract } from '@wagmi/core'
-import { Signer } from 'ethers'
+import {
+  Config,
+  readContract,
+  simulateContract,
+  writeContract
+} from '@wagmi/core'
 import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
 import { ChainDomain } from '../pages/api/cctp/[type]'
 
@@ -8,9 +12,6 @@ import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { Address } from '../util/AddressUtils'
-import { getProps } from '../util/wagmi/setup'
-
-export const { wagmiConfig: cctpWagmiConfig } = getProps(null)
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
@@ -95,15 +96,17 @@ export function getCctpContracts({
 }
 
 export function fetchPerMessageBurnLimit({
-  sourceChainId
+  sourceChainId,
+  wagmiConfig
 }: {
   sourceChainId: CCTPSupportedChainId
+  wagmiConfig: Config
 }) {
   const { usdcContractAddress, tokenMinterContractAddress } = getCctpContracts({
     sourceChainId
   })
 
-  return readContract(cctpWagmiConfig, {
+  return readContract(wagmiConfig, {
     address: tokenMinterContractAddress,
     chainId: sourceChainId,
     abi: TokenMinterAbi,
@@ -143,20 +146,20 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
   const receiveMessage = async ({
     messageBytes,
     attestation,
-    signer
+    wagmiConfig
   }: {
     messageBytes: Address
     attestation: Address
-    signer: Signer
+    wagmiConfig: Config
   }) => {
-    const { request } = await simulateContract(cctpWagmiConfig, {
+    const { request } = await simulateContract(wagmiConfig, {
       address: messageTransmitterContractAddress,
       abi: MessageTransmitterAbi,
       functionName: 'receiveMessage',
       chainId: targetChainId,
       args: [messageBytes, attestation]
     })
-    const txHash = await writeContract(cctpWagmiConfig, request)
+    const txHash = await writeContract(wagmiConfig, request)
     return { hash: txHash }
   }
 

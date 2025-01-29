@@ -233,7 +233,7 @@ function AppContent() {
 const searchParams = new URLSearchParams(window.location.search)
 const targetChainKey = searchParams.get('sourceChain')
 
-const { wagmiConfig } = getProps(targetChainKey)
+const wagmiConfig = getProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.
 //

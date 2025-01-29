@@ -195,7 +195,5 @@ export function getProps(targetChainKey: string | null) {
     transports
   })
 
-  return {
-    wagmiConfig
-  }
+  return wagmiConfig
 }

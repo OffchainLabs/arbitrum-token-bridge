@@ -95,7 +95,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     // cctp has an upper limit for transfer
     const burnLimit = await fetchPerMessageBurnLimit({
-      sourceChainId
+      sourceChainId,
+      wagmiConfig
     })
 
     if (amount.gt(burnLimit)) {
