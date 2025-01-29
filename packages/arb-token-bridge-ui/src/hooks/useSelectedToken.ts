@@ -63,8 +63,6 @@ export const useSelectedToken = () => {
     }
   )
 
-  console.log({ usdcToken })
-
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) =>
       setQueryParams({ token: sanitizeTokenAddress(erc20ParentAddress) }),

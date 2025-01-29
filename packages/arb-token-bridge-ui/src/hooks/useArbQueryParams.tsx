@@ -115,6 +115,8 @@ const TokenQueryParam = {
   },
   decode: (token: string | (string | null)[] | null | undefined) => {
     const tokenStr = token?.toString()
+    // We are not checking for a valid address because we handle it in the UI
+    // by showing an invalid token dialog
     return tokenStr?.toLowerCase()
   }
 }

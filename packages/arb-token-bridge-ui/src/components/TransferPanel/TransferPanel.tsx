@@ -223,7 +223,7 @@ export function TransferPanel() {
   const isTokenAlreadyImported = useMemo(() => {
     const tokenLowercased = tokenFromSearchParams?.toLowerCase()
 
-    if (!tokenLowercased) {
+    if (typeof tokenLowercased === 'undefined') {
       return true
     }
 
@@ -256,7 +256,7 @@ export function TransferPanel() {
     tokensFromUser
   ])
 
-  const importDialogTokenAddress = useMemo(() => {
+  const shouldShowImportDialog = useMemo(() => {
     if (
       typeof isTokenAlreadyImported === 'undefined' ||
       isTokenAlreadyImported
@@ -1076,11 +1076,11 @@ export function TransferPanel() {
         />
         <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
-        {importDialogTokenAddress && (
+        {shouldShowImportDialog && tokenFromSearchParams && (
           <TokenImportDialog
             {...tokenImportDialogProps}
             onClose={closeWithResetTokenImportDialog}
-            tokenAddress={importDialogTokenAddress}
+            tokenAddress={tokenFromSearchParams}
           />
         )}
 
