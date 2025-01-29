@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
-import { isTokenUSDT, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { isTokenEthereumUSDT, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { ExternalLink } from '../common/ExternalLink'
-import { getNetworkName } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -17,126 +17,6 @@ type TransferDisabledDialogStore = {
   isOpen: boolean
   openDialog: () => void
   closeDialog: () => void
-}
-
-const generateTransferDisabledContent = ({
-  sourceChainName,
-  destinationChainName,
-  isTeleportMode,
-  unsupportedToken,
-  l2ChainIdForTeleportName,
-  isGHO,
-  isUsdtTransfer
-}: {
-  sourceChainName: string
-  destinationChainName: string
-  isTeleportMode: boolean
-  unsupportedToken: string
-  l2ChainIdForTeleportName: string | null
-  isGHO: boolean
-  isUsdtTransfer: boolean
-}) => {
-  // OFT migration message
-  if (isUsdtTransfer) {
-    return (
-      <>
-        <p>
-          USDT is currently upgrading to USDT0.
-          <br />
-          Official support on the Arbitrum Bridge will be live soon.
-        </p>
-        <p>
-          Until then, you can use the{' '}
-          <ExternalLink href="https://usdt0.to/transfer" className="underline">
-            Tether Bridge
-          </ExternalLink>
-          .
-          <br />
-          Read more about the upgrade{' '}
-          <ExternalLink
-            href="https://x.com/USDT0_to/status/1884266492797342207"
-            className="underline"
-          >
-            here
-          </ExternalLink>
-          .
-        </p>
-        <p>
-          For questions and support, connect with our support team on{' '}
-          <ExternalLink
-            href="https://discord.com/invite/ZpZuw7p"
-            className="underline"
-          >
-            Discord
-          </ExternalLink>{' '}
-          in #support.
-        </p>
-      </>
-    )
-  }
-
-  // teleport transfer disabled content if token is not in the allowlist
-  if (isTeleportMode) {
-    return (
-      <>
-        <p>
-          Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
-          is not yet supported for direct {sourceChainName} to{' '}
-          {destinationChainName} transfers.
-        </p>
-        {l2ChainIdForTeleportName && (
-          <p>
-            To bridge <span className="font-medium">{unsupportedToken}</span>:
-            <li>
-              First bridge from {sourceChainName} to {l2ChainIdForTeleportName}.
-            </li>
-            <li>
-              Then bridge from {l2ChainIdForTeleportName} to{' '}
-              {destinationChainName}.
-            </li>
-          </p>
-        )}
-        <p>
-          For more information please contact us on{' '}
-          <ExternalLink
-            href="https://discord.com/invite/ZpZuw7p"
-            className="underline"
-          >
-            Discord
-          </ExternalLink>{' '}
-          and reach out in #support for assistance.
-        </p>
-      </>
-    )
-  }
-
-  // canonical transfer disabled content for all other cases
-  return (
-    <>
-      <p>
-        Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
-        has a custom bridge solution that is incompatible with the canonical
-        Arbitrum bridge.
-      </p>
-      {isGHO && (
-        <p>
-          Please use the{' '}
-          <ExternalLink
-            className="underline hover:opacity-70"
-            href="https://app.transporter.io/?from=mainnet&tab=token&to=arbitrum&token=GHO"
-          >
-            CCIP bridge for GHO
-          </ExternalLink>{' '}
-          instead.
-        </p>
-      )}
-      <p>
-        For more information please contact{' '}
-        <span className="font-medium">{unsupportedToken}</span>
-        &apos;s developer team directly or explore their docs.
-      </p>
-    </>
-  )
 }
 
 export const useTransferDisabledDialogStore =
@@ -170,8 +50,12 @@ export function TransferDisabledDialog() {
   >()
 
   const isUsdtTransfer = useMemo(() => {
-    return isTokenUSDT(selectedToken?.address)
-  }, [selectedToken?.address])
+    return (
+      isTokenEthereumUSDT(selectedToken?.address) &&
+      (isNetwork(networks.sourceChain.id).isEthereumMainnet ||
+        isNetwork(networks.sourceChain.id).isArbitrumOne)
+    )
+  }, [selectedToken?.address, networks.sourceChain.id])
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {
@@ -230,15 +114,105 @@ export function TransferDisabledDialog() {
       onClose={onClose}
     >
       <div className="flex flex-col space-y-4 py-4">
-        {generateTransferDisabledContent({
-          sourceChainName,
-          destinationChainName,
-          isTeleportMode,
-          unsupportedToken,
-          l2ChainIdForTeleportName,
-          isGHO,
-          isUsdtTransfer
-        })}
+        {isUsdtTransfer ? (
+          <>
+            <p>
+              USDT is currently upgrading to USDT0.
+              <br />
+              Official support on the Arbitrum Bridge will be live soon.
+            </p>
+            <p>
+              Until then, you can use the{' '}
+              <ExternalLink
+                href="https://usdt0.to/transfer"
+                className="underline"
+              >
+                Tether Bridge
+              </ExternalLink>
+              .
+              <br />
+              Read more about the upgrade{' '}
+              <ExternalLink
+                href="https://x.com/USDT0_to/status/1884266492797342207"
+                className="underline"
+              >
+                here
+              </ExternalLink>
+              .
+            </p>
+            <p>
+              For questions and support, connect with our support team on{' '}
+              <ExternalLink
+                href="https://discord.com/invite/ZpZuw7p"
+                className="underline"
+              >
+                Discord
+              </ExternalLink>{' '}
+              in #support.
+            </p>
+          </>
+        ) : isTeleportMode ? (
+          // teleport transfer disabled content if token is not in the allowlist
+          <>
+            <p>
+              Unfortunately,{' '}
+              <span className="font-medium">{unsupportedToken}</span> is not yet
+              supported for direct {sourceChainName} to {destinationChainName}{' '}
+              transfers.
+            </p>
+            {l2ChainIdForTeleportName && (
+              <p>
+                To bridge{' '}
+                <span className="font-medium">{unsupportedToken}</span>:
+                <li>
+                  First bridge from {sourceChainName} to{' '}
+                  {l2ChainIdForTeleportName}.
+                </li>
+                <li>
+                  Then bridge from {l2ChainIdForTeleportName} to{' '}
+                  {destinationChainName}.
+                </li>
+              </p>
+            )}
+            <p>
+              For more information please contact us on{' '}
+              <ExternalLink
+                href="https://discord.com/invite/ZpZuw7p"
+                className="underline"
+              >
+                Discord
+              </ExternalLink>{' '}
+              and reach out in #support for assistance.
+            </p>
+          </>
+        ) : (
+          // canonical transfer disabled content for all other cases
+          <>
+            <p>
+              Unfortunately,{' '}
+              <span className="font-medium">{unsupportedToken}</span> has a
+              custom bridge solution that is incompatible with the canonical
+              Arbitrum bridge.
+            </p>
+            {isGHO && (
+              <p>
+                Please use the{' '}
+                <ExternalLink
+                  className="underline hover:opacity-70"
+                  href="https://app.transporter.io/?from=mainnet&tab=token&to=arbitrum&token=GHO"
+                >
+                  CCIP bridge for GHO
+                </ExternalLink>{' '}
+                instead.
+              </p>
+            )}
+            <p>
+              For more information please contact{' '}
+              <span className="font-medium">{unsupportedToken}</span>
+              &apos;s developer team directly or explore their docs.
+            </p>
+          </>
+        )}
       </div>
     </Dialog>
   )

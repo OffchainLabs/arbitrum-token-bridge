@@ -409,14 +409,8 @@ export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   )
 }
 
-export const isTokenArbitrumOneUSDT = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDT.toLowerCase()
-
 export const isTokenEthereumUSDT = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDT.toLowerCase()
-
-export const isTokenUSDT = (tokenAddress: string | undefined) =>
-  isTokenArbitrumOneUSDT(tokenAddress) || isTokenEthereumUSDT(tokenAddress)
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
