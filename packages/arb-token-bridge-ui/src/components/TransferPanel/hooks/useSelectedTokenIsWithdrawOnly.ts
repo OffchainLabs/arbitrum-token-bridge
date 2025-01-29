@@ -22,7 +22,8 @@ export function useSelectedTokenIsWithdrawOnly() {
     return [
       selectedToken.address.toLowerCase(),
       parentChain.id,
-      childChain.id
+      childChain.id,
+      'useSelectedTokenIsWithdrawOnly'
     ] as const
   }, [selectedToken, isDepositMode, parentChain.id, childChain.id])
 
