@@ -1,3 +1,4 @@
+// from https://github.com/wevm/wagmi/blob/651aa72827a79f38a89f5a64209592816c8e6492/site/react/guides/ethers.md#connector-client--signer
 import { providers } from 'ethers'
 import { useMemo } from 'react'
 import type { Account, Chain, Client, Transport } from 'viem'
