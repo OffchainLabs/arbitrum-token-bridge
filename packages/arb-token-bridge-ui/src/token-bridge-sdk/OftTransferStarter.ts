@@ -11,7 +11,7 @@ import {
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
-import { isLayerZeroToken } from './oftUtils'
+import { validateOftTransfer } from './oftUtils'
 
 // https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oft/interfaces/IOFT.sol
 const OFTv2Interface = [
@@ -23,6 +23,7 @@ const OFTv2Interface = [
 
 export class OftTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oft'
+  private isOftTokenValidated: boolean | null = null
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -32,14 +33,33 @@ export class OftTransferStarter extends BridgeTransferStarter {
   }
 
   private async validateIsOftToken() {
+    // Return cached result if available
+    if (this.isOftTokenValidated !== null) {
+      if (!this.isOftTokenValidated) {
+        throw Error('Token is not an OFT')
+      }
+      return
+    }
+
     if (!this.sourceChainErc20Address) {
+      this.isOftTokenValidated = false
       throw Error('OFT token address not found')
     }
 
-    const isOft = await isLayerZeroToken(
-      this.sourceChainErc20Address,
-      this.sourceChainProvider
-    )
+    const destinationChainId = await this.destinationChainProvider
+      .getNetwork()
+      .then(n => n.chainId)
+
+    const isOft = await validateOftTransfer({
+      sourceChainId: await this.sourceChainProvider
+        .getNetwork()
+        .then(n => n.chainId),
+      destinationChainId,
+      tokenAddress: this.sourceChainErc20Address,
+      sourceChainProvider: this.sourceChainProvider
+    })
+
+    this.isOftTokenValidated = isOft
 
     if (!isOft) {
       throw Error('Token is not an OFT')

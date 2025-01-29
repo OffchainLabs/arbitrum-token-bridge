@@ -30,6 +30,36 @@ export const lzProtocolConfig = {
   }
 }
 
+export type ValidateOftTransferParams = {
+  sourceChainId: number
+  destinationChainId: number
+  tokenAddress?: string
+  sourceChainProvider: Provider
+}
+
+export async function validateOftTransfer({
+  sourceChainId,
+  destinationChainId,
+  tokenAddress,
+  sourceChainProvider
+}: ValidateOftTransferParams): Promise<boolean> {
+  // Check if both source and destination chains are supported by LayerZero
+  const isSourceChainSupported = sourceChainId in lzProtocolConfig
+  const isDestinationChainSupported = destinationChainId in lzProtocolConfig
+
+  if (!isSourceChainSupported || !isDestinationChainSupported) {
+    return false
+  }
+
+  // Check if we have a token address
+  if (!tokenAddress) {
+    return false
+  }
+
+  // Check if the token is an OFT
+  return isLayerZeroToken(tokenAddress, sourceChainProvider)
+}
+
 export async function isLayerZeroToken(
   parentChainErc20Address: string,
   parentProvider: Provider
