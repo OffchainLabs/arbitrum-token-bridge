@@ -409,6 +409,9 @@ export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   )
 }
 
+export const isTokenEthereumUSDT = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDT.toLowerCase()
+
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,
