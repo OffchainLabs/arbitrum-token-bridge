@@ -956,7 +956,7 @@ export function TransferPanel() {
           amount2: isBatchTransfer ? Number(amount2) : undefined,
           version: 2
         })
-        await switchChainAsync?.({ chainId: sourceChainId })
+        await switchChainAsync({ chainId: sourceChainId })
       }
     } catch (error) {
       if (isUserRejectedError(error)) {

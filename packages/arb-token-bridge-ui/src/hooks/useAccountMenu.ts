@@ -7,6 +7,7 @@ import { useArbQueryParams } from './useArbQueryParams'
 import { shortenAddress } from '../util/CommonUtils'
 import { onDisconnectHandler } from '../util/walletConnectUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { ChainId } from '../types/ChainId'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -50,19 +51,19 @@ export const useAccountMenu = () => {
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
   const { data: ensName } = useEnsName({
     address,
-    chainId: 1
+    chainId: ChainId.Ethereum
   })
 
   const { data: ensAvatar } = useEnsAvatar({
     name: ensName ?? '',
-    chainId: 1
+    chainId: ChainId.Ethereum
   })
 
   useEffect(() => {
     if (!address) return
     async function resolveUdName() {
       const udName = await tryLookupUDName(
-        getProviderForChainId(1),
+        getProviderForChainId(ChainId.Ethereum),
         address as string
       )
 
@@ -83,7 +84,7 @@ export const useAccountMenu = () => {
     if (!address) return
     async function resolveUdName() {
       const udName = await tryLookupUDName(
-        getProviderForChainId(1),
+        getProviderForChainId(ChainId.Ethereum),
         address as string
       )
 

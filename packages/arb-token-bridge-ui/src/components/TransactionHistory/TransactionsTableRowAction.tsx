@@ -71,7 +71,7 @@ export function TransactionsTableRowAction({
   const handleRedeemRetryable = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchChainAsync?.({ chainId: chainIdForRedeemingRetryable })
+        await switchChainAsync({ chainId: chainIdForRedeemingRetryable })
       }
 
       if (isTeleportTx(tx)) {
@@ -97,7 +97,7 @@ export function TransactionsTableRowAction({
   const handleClaim = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchChainAsync?.({ chainId: tx.destinationChainId })
+        await switchChainAsync({ chainId: tx.destinationChainId })
       }
 
       if (tx.isCctp) {
