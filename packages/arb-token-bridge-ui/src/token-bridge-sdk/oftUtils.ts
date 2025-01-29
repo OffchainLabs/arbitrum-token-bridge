@@ -1,6 +1,7 @@
 import { ethers } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { ChainId } from '../types/ChainId'
+import { CommonAddress } from '../util/CommonAddressUtils'
 
 const USDT_ETH_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
 
@@ -10,7 +11,8 @@ export const lzProtocolConfig = {
     lzEndpointId: 30101,
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
     oftAdapters: {
-      [USDT_ETH_ADDRESS]: '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee'
+      [CommonAddress.Ethereum.USDT]:
+        '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee'
     }
   },
   [ChainId.Sepolia]: {
@@ -23,7 +25,11 @@ export const lzProtocolConfig = {
   },
   [ChainId.ArbitrumOne]: {
     lzEndpointId: 30110,
-    endpointV2: '0x1a44076050125825900e736c501f859c50fE728c'
+    endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
+    oftAdapters: {
+      [CommonAddress.ArbitrumOne.USDT]:
+        '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92'
+    }
   },
   [ChainId.ArbitrumSepolia]: {
     lzEndpointId: 30101,
