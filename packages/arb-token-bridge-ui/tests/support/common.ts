@@ -179,7 +179,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
     // ensures we don't test with the same state that could have caused the test to fail
     cy.reload(true)
   }
-  cy.connectToApp()
+  cy.acceptTnC()
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
       cy.findByText('Connect a Wallet').should('be.visible')

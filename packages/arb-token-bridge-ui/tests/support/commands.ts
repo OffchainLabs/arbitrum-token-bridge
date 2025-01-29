@@ -84,7 +84,7 @@ export const logout = () => {
   cy.changeMetamaskNetwork('Sepolia')
 }
 
-export const connectToApp = () => {
+export const acceptTnC = () => {
   // initial modal prompts which come in the web-app
   cy.findByText(/Agree to Terms and Continue/i)
     .should('be.visible')
@@ -388,7 +388,7 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
 }
 
 Cypress.Commands.addAll({
-  connectToApp,
+  acceptTnC,
   login,
   logout,
   selectTransactionsPanelTab,
