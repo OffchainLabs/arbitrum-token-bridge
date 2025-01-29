@@ -4,7 +4,6 @@ import {
   connectToApp,
   login,
   logout,
-  openTransactionsPanel,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -48,7 +47,6 @@ declare global {
       }): typeof login
       logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
-      openTransactionsPanel: typeof openTransactionsPanel
       searchAndSelectToken({
         tokenName,
         tokenAddress

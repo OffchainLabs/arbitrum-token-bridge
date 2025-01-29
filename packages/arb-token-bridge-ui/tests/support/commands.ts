@@ -89,8 +89,6 @@ export const connectToApp = () => {
   cy.findByText(/Agree to Terms and Continue/i)
     .should('be.visible')
     .click()
-  cy.findByText('Connect a Wallet').should('be.visible')
-  cy.findByText('MetaMask').should('be.visible').click()
 }
 
 export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
