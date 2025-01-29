@@ -77,6 +77,8 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
+import { useIsOftTransfer } from './hooks/useIsOftTransfer'
+import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -194,6 +196,8 @@ export function TransferPanel() {
   const [showProjectsListing, setShowProjectsListing] = useState(false)
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+  const isOftTransfer = useIsOftTransfer()
 
   useEffect(() => {
     // hide Project listing when networks are changed
@@ -391,7 +395,7 @@ export function TransferPanel() {
       }
 
       // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
       if (
         isSmartContractWallet &&
         areSenderAndCustomDestinationAddressesEqual
@@ -538,6 +542,122 @@ export function TransferPanel() {
     }
   }
 
+  const transferOft = async () => {
+    if (!selectedToken) {
+      return
+    }
+    if (!signer) {
+      throw new Error(signerUndefinedError)
+    }
+    if (!isTransferAllowed) {
+      throw new Error(transferNotAllowedError)
+    }
+
+    const destinationAddress = latestDestinationAddress.current
+
+    setTransferring(true)
+
+    try {
+      const { sourceChainProvider, destinationChainProvider } = networks
+
+      // confirm if the user is certain about the custom destination address for SCW
+      if (
+        isSmartContractWallet &&
+        areSenderAndCustomDestinationAddressesEqual
+      ) {
+        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        if (!confirmation) return false
+      }
+
+      const oftTransferStarter = new OftTransferStarter({
+        sourceChainProvider,
+        sourceChainErc20Address: selectedToken.address,
+        destinationChainProvider
+      })
+
+      const isTokenApprovalRequired =
+        await oftTransferStarter.requiresTokenApproval({
+          amount: amountBigNumber,
+          signer
+        })
+
+      if (isTokenApprovalRequired) {
+        const userConfirmation = await tokenAllowanceApproval()
+        if (!userConfirmation) return false
+
+        if (isSmartContractWallet) {
+          showDelayedSmartContractTxRequest()
+        }
+
+        try {
+          const tx = await oftTransferStarter.approveToken({
+            signer,
+            amount: amountBigNumber
+          })
+          await tx.wait()
+        } catch (error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+          captureSentryErrorWithExtraData({
+            error,
+            originFunction: 'oftTransferStarter.approveToken'
+          })
+          errorToast(
+            `OFT token approval transaction failed: ${
+              (error as Error)?.message ?? error
+            }`
+          )
+          return
+        }
+      }
+
+      try {
+        if (isSmartContractWallet) {
+          showDelayedSmartContractTxRequest()
+        }
+
+        const transfer = await oftTransferStarter.transfer({
+          amount: amountBigNumber,
+          signer,
+          destinationAddress
+        })
+
+        window.alert('OFT transfer succeeded')
+        console.log('xxxx', transfer)
+
+        clearAmountInput()
+        switchToTransactionHistoryTab()
+
+        trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
+          tokenSymbol: selectedToken.symbol,
+          assetType: 'ERC-20',
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: getNetworkName(networks.sourceChain.id),
+          amount: Number(amount)
+        })
+      } catch (error) {
+        if (isUserRejectedError(error)) {
+          return
+        }
+        captureSentryErrorWithExtraData({
+          error,
+          originFunction: 'oftTransferStarter.transfer'
+        })
+        errorToast(
+          `OFT ${
+            isDepositMode ? 'Deposit' : 'Withdrawal'
+          } transaction failed: ${(error as Error)?.message ?? error}`
+        )
+      }
+    } catch (error) {
+      console.error('Error in OFT transfer:', error)
+      errorToast(`OFT transfer failed: ${(error as Error)?.message ?? error}`)
+    } finally {
+      setTransferring(false)
+    }
+  }
+
   const transfer = async () => {
     const sourceChainId = latestNetworks.current.sourceChain.id
 
@@ -617,7 +737,7 @@ export function TransferPanel() {
       const destinationAddress = latestDestinationAddress.current
 
       // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
       if (
         isSmartContractWallet &&
         areSenderAndCustomDestinationAddressesEqual
@@ -970,6 +1090,9 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     }
 
+    if (await isOftTransfer) {
+      return transferOft()
+    }
     if (isCctpTransfer) {
       return transferCctp()
     }

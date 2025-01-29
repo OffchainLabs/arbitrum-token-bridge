@@ -7,7 +7,7 @@ import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
-import { isLayerZeroToken } from '../token-bridge-sdk/utils'
+import { isLayerZeroToken } from '../token-bridge-sdk/oftUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string

@@ -10,7 +10,8 @@ import {
   BridgeTransferStarterProps
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner, isLayerZeroToken } from './utils'
+import { getAddressFromSigner } from './utils'
+import { isLayerZeroToken } from './oftUtils'
 
 // OFT v2 interface from LayerZero docs
 const OFTv2Interface = [
