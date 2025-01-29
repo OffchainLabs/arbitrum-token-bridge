@@ -430,7 +430,7 @@ export function sanitizeTokenSymbol(
     isTokenEthereumUSDT(options.erc20L1Address) ||
     isTokenArbitrumOneUSDT(options.erc20L1Address)
   ) {
-    return 'USDT0'
+    return 'USD₮0'
   }
 
   if (
@@ -467,7 +467,7 @@ export function sanitizeTokenName(
     isTokenEthereumUSDT(options.erc20L1Address) ||
     isTokenArbitrumOneUSDT(options.erc20L1Address)
   ) {
-    return 'USDT0'
+    return 'USD Tether'
   }
 
   if (
