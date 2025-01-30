@@ -54,6 +54,7 @@ export const useSelectedToken = () => {
       }
 
       if (!isTokenNativeUSDC(_tokenAddress)) {
+        console.log(`${_tokenAddress} is not native usdc.`)
         return null
       }
 
@@ -67,6 +68,8 @@ export const useSelectedToken = () => {
       })
     }
   )
+
+  console.log({ usdcToken })
 
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) =>
@@ -147,10 +150,7 @@ async function getUsdcToken({
   }
 
   // Arbitrum Sepolia USDC when Ethereum is the parent chain
-  if (
-    isTokenArbitrumSepoliaNativeUSDC(tokenAddress) &&
-    isParentChainEthereumMainnet
-  ) {
+  if (isTokenArbitrumSepoliaNativeUSDC(tokenAddress) && isParentChainSepolia) {
     return {
       ...commonUSDC,
       address: CommonAddress.ArbitrumSepolia.USDC,
