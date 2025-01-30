@@ -42,7 +42,12 @@ export const useSelectedToken = () => {
   const tokensFromUser = useTokensFromUser()
 
   const { data: usdcToken } = useSWRImmutable(
-    [tokenFromSearchParams, parentChain.id, childChain.id, 'usd_token'],
+    [
+      tokenFromSearchParams,
+      parentChain.id,
+      childChain.id,
+      'useSelectedToken_usdc'
+    ],
     async ([_tokenAddress, _parentChainId, _childChainId]) => {
       if (!_tokenAddress) {
         return null
