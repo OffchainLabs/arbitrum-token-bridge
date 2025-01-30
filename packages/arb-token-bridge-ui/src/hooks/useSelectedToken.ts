@@ -54,7 +54,6 @@ export const useSelectedToken = () => {
       }
 
       if (!isTokenNativeUSDC(_tokenAddress)) {
-        console.log(`${_tokenAddress} is not native usdc.`)
         return null
       }
 
