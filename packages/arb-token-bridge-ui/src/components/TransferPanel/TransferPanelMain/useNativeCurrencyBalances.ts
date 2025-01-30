@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { BigNumber } from 'ethers'
+import { BigNumber, constants } from 'ethers'
+import { useAccount } from 'wagmi'
 
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworks } from '../../../hooks/useNetworks'
@@ -13,12 +14,20 @@ export function useNativeCurrencyBalances(): {
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+  const { isConnected } = useAccount()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const { ethParentBalance, erc20ParentBalances, ethChildBalance } =
     useBalances()
 
   return useMemo(() => {
+    if (!isConnected) {
+      return {
+        sourceBalance: constants.Zero,
+        destinationBalance: constants.Zero
+      }
+    }
+
     if (!nativeCurrency.isCustom) {
       return {
         sourceBalance: isDepositMode ? ethParentBalance : ethChildBalance,
