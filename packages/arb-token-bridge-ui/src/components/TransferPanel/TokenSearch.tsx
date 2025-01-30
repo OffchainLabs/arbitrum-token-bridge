@@ -33,10 +33,7 @@ import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
-import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { Switch } from '../common/atoms/Switch'
-import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
@@ -525,10 +522,7 @@ export function TokenSearch({
   } = useAppState()
   const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const { childChain, parentChain, parentChainProvider, isTeleportMode } =
-    useNetworksRelationship(networks)
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
+  const { childChain, parentChainProvider } = useNetworksRelationship(networks)
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -572,19 +566,6 @@ export function TokenSearch({
       if (data) {
         token.updateTokenData(_token.address)
         setSelectedToken(_token.address)
-      }
-
-      if (isTransferDisabledToken(_token.address, childChain.id)) {
-        openTransferDisabledDialog()
-        return
-      }
-
-      if (
-        isTeleportMode &&
-        !isTeleportEnabledToken(_token.address, parentChain.id, childChain.id)
-      ) {
-        openTransferDisabledDialog()
-        return
       }
     } catch (error: any) {
       console.warn(error)
