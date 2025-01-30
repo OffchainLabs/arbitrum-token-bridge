@@ -256,16 +256,6 @@ export function TransferPanel() {
     tokensFromUser
   ])
 
-  const shouldShowImportDialog = useMemo(() => {
-    if (
-      typeof isTokenAlreadyImported === 'undefined' ||
-      isTokenAlreadyImported
-    ) {
-      return undefined
-    }
-    return tokenFromSearchParams
-  }, [isTokenAlreadyImported, tokenFromSearchParams])
-
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
       selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
@@ -1076,7 +1066,7 @@ export function TransferPanel() {
         />
         <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
-        {shouldShowImportDialog && tokenFromSearchParams && (
+        {isTokenAlreadyImported === false && tokenFromSearchParams && (
           <TokenImportDialog
             {...tokenImportDialogProps}
             onClose={closeWithResetTokenImportDialog}
