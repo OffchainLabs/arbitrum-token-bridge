@@ -1108,6 +1108,7 @@ export function TransferPanel() {
         {...tokenApprovalDialogProps}
         token={selectedToken}
         isCctp={isCctp}
+        isOft={isOftTransfer}
       />
 
       {nativeCurrency.isCustom && (

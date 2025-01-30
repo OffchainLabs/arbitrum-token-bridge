@@ -9,14 +9,14 @@ export const useIsOftTransfer = function () {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { isTeleportMode } = useNetworksRelationship(networks)
+  const { isTeleportMode, isDepositMode } = useNetworksRelationship(networks)
 
   const { data: isOft = false } = useSWR(
     // Only create cache key if we have all required params
     selectedToken && !isTeleportMode
       ? [
           'oft-transfer',
-          selectedToken.address,
+          isDepositMode ? selectedToken.address : selectedToken.l2Address,
           networks.sourceChain.id,
           networks.destinationChain.id
         ]
@@ -25,7 +25,9 @@ export const useIsOftTransfer = function () {
       validateOftTransfer({
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id,
-        tokenAddress: selectedToken?.address,
+        tokenAddress: isDepositMode
+          ? selectedToken?.address
+          : selectedToken?.l2Address,
         sourceChainProvider: networks.sourceChainProvider
       }),
     {

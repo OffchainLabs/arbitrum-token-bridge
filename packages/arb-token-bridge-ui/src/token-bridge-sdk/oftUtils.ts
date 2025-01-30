@@ -6,13 +6,23 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 const USDT_ETH_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
-export const lzProtocolConfig = {
+export const lzProtocolConfig: {
+  [id: number]: {
+    lzEndpointId: number
+    endpointV2: string
+    oftAdapters?: { [id: string]: string }
+    peerToken?: { [id: string]: string }
+  }
+} = {
   [ChainId.Ethereum]: {
     lzEndpointId: 30101,
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
     oftAdapters: {
       [CommonAddress.Ethereum.USDT]:
         '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee'
+    },
+    peerToken: {
+      [CommonAddress.Ethereum.USDT]: CommonAddress.ArbitrumOne.USDT
     }
   },
   [ChainId.Sepolia]: {
@@ -28,7 +38,10 @@ export const lzProtocolConfig = {
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
     oftAdapters: {
       [CommonAddress.ArbitrumOne.USDT]:
-        '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92'
+        '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92' // ArbitrumOne USDT0 lockbox
+    },
+    peerToken: {
+      [CommonAddress.ArbitrumOne.USDT]: CommonAddress.Ethereum.USDT
     }
   },
   [ChainId.ArbitrumSepolia]: {

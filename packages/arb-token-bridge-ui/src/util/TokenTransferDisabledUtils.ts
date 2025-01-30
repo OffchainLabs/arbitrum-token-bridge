@@ -18,11 +18,6 @@ const transferDisabledTokens: { [chainId: number]: TransferDisabledToken[] } = {
       symbol: 'FU',
       l1Address: '0x43df01681966d5339702e96ef039e481b9da20c1',
       l2Address: '0x9aee3C99934C88832399D6C6E08ad802112eBEab'
-    },
-    {
-      symbol: 'USDT', // disable USDT transfers during OFT migration
-      l1Address: CommonAddress.Ethereum.USDT,
-      l2Address: CommonAddress.ArbitrumOne.USDT
     }
   ]
 }
