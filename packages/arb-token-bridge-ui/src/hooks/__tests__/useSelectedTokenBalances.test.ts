@@ -31,7 +31,7 @@ jest.mock('../useSelectedToken', () => ({
       l2Address: '0x234',
       listIds: new Set('1')
     },
-    () => null
+    jest.fn()
   ])
 }))
 
@@ -102,7 +102,7 @@ describe('useSelectedTokenBalances', () => {
         address: '0x222',
         listIds: new Set('2')
       },
-      () => null
+      jest.fn()
     ])
 
     mockedUseNetworks.mockReturnValue([
@@ -132,7 +132,7 @@ describe('useSelectedTokenBalances', () => {
         address: '0x222',
         listIds: new Set('2')
       },
-      () => null
+      jest.fn()
     ])
 
     mockedUseNetworks.mockReturnValue([
@@ -153,7 +153,7 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return null as source balance and null as destination balance when source chain is Sepolia and destination chain is Arbitrum Sepolia, and selected token is null', () => {
-    mockedUseSelectedToken.mockReturnValueOnce([null, () => null])
+    mockedUseSelectedToken.mockReturnValueOnce([null, jest.fn()])
 
     mockedUseNetworks.mockReturnValue([
       {
@@ -173,7 +173,7 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return null as source balance and null as destination balance when source chain is Arbitrum Sepolia and destination chain is Sepolia, and selected token is null', () => {
-    mockedUseSelectedToken.mockReturnValueOnce([null, () => null])
+    mockedUseSelectedToken.mockReturnValueOnce([null, jest.fn()])
 
     mockedUseNetworks.mockReturnValue([
       {
