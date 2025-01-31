@@ -62,10 +62,12 @@ jobs:
       # with the following error: > Cannot read properties of undefined (reading 'waitForTimeout')
       # so we are reverting to Chromium 128 on ci
       # https://snapshot.debian.org/package/chromium/128.0.6613.137-1/
+      # the other packages are dependencies of chromium
       - name: Set up Chromium 128
         run: |
           wget https://snapshot.debian.org/archive/debian/20240911T150313Z/pool/main/c/chromium/chromium_128.0.6613.137-1_amd64.deb
-          sudo apt-get install ./chromium_128.0.6613.137-1_amd64.deb
+          wget chromium-common_128.0.6613.137-1_amd64.deb
+          sudo apt-get install libjpeg62-turbo libxml2 ./chromium-common_128.0.6613.137-1_amd64.deb ./chromium_128.0.6613.137-1_amd64.deb
 
       - name: Checkout
         uses: actions/checkout@v4
