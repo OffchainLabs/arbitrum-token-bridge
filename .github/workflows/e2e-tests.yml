@@ -66,7 +66,7 @@ jobs:
       - name: Set up Chromium 128
         run: |
           wget https://snapshot.debian.org/archive/debian/20240911T150313Z/pool/main/c/chromium/chromium_128.0.6613.137-1_amd64.deb
-          wget chromium-common_128.0.6613.137-1_amd64.deb
+          wget https://snapshot.debian.org/archive/debian/20240911T150313Z/pool/main/c/chromium/chromium-common_128.0.6613.137-1_amd64.deb
           sudo apt-get install libjpeg62-turbo libxml2 ./chromium-common_128.0.6613.137-1_amd64.deb ./chromium_128.0.6613.137-1_amd64.deb
 
       - name: Checkout
