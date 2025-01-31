@@ -169,8 +169,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           sourceChainId: sourceChain.id,
           destinationChainId: destinationChain.id,
           sourceChainErc20Address: isDepositMode
-            ? token?.address!
-            : token?.l2Address!
+            ? token?.address
+            : token?.l2Address
         })
 
         setContractAddress(sourceChainAdapterAddress)

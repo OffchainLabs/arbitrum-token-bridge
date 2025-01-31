@@ -58,12 +58,19 @@ export function getOftTransferConfig({
 }: {
   sourceChainId: number
   destinationChainId: number
-  sourceChainErc20Address: string
+  sourceChainErc20Address?: string
 }): {
   isValid: boolean
   sourceChainAdapterAddress: string
   destinationChainLzEndpointId: number
 } {
+  if (!sourceChainErc20Address)
+    return {
+      isValid: false,
+      sourceChainAdapterAddress: '',
+      destinationChainLzEndpointId: 0
+    }
+
   const sourceChainOftAdapterConfig =
     lzProtocolConfig[sourceChainId]?.adapterConfig?.[sourceChainErc20Address]
 

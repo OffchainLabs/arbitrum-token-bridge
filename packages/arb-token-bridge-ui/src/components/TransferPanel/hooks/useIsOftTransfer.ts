@@ -26,8 +26,8 @@ export const useIsOftTransfer = function () {
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id,
         sourceChainErc20Address: isDepositMode
-          ? selectedToken?.address!
-          : selectedToken?.l2Address!
+          ? selectedToken?.address
+          : selectedToken?.l2Address
       }).isValid,
     {
       shouldRetryOnError: false,

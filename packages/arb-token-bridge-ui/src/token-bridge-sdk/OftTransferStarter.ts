@@ -13,17 +13,7 @@ import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
 import { getOftTransferConfig, buildSendParams, getOftQuote } from './oftUtils'
 import { Provider } from '@ethersproject/providers'
-import OftAbi from './OFTContracts/oft-abi.json'
-
-interface SendParam {
-  dstEid: number
-  to: string
-  amountLD: string
-  minAmountLD: string
-  extraOptions: string
-  composeMsg: string
-  oftCmd: string
-}
+import oftAbi from './oftAbi.json'
 
 export class OftTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oft'
@@ -82,7 +72,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
   private getContract(providerOrSigner: Signer | Provider): ethers.Contract {
     return new ethers.Contract(
       this.getContractAddress(),
-      OftAbi,
+      oftAbi,
       providerOrSigner
     )
   }
