@@ -61,10 +61,15 @@ jobs:
       # we found on 26 Sep 2024 that using Chromium 129 mysteriously broke ci at setupMetamask step
       # with the following error: > Cannot read properties of undefined (reading 'waitForTimeout')
       # so we are reverting to Chromium 128 on ci
+      # we remove the existing chromium package and install the 128 version
       # https://snapshot.debian.org/package/chromium/128.0.6613.137-1/
       # the other packages are dependencies of chromium
       - name: Set up Chromium 128
         run: |
+          sudo apt-get remove chromium --purge
+          rm -rf ~/.config/chromium
+          rm -rf ~/.cache/chromium
+          sudo rm -rf /etc/chromium
           wget http://ftp.de.debian.org/debian/pool/main/i/icu/libicu72_72.1-3_amd64.deb
           wget http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-3+b1_amd64.deb
           wget http://ftp.us.debian.org/debian/pool/main/libx/libxml2/libxml2n_2.13.3+dfsg-0exp2+b1_amd64.deb
@@ -122,12 +127,12 @@ jobs:
           start: yarn start
           command: >-
             ${{
-              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
-              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser chrome') ||
-              'yarn test:e2e --browser chrome'
+              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit' ||
+              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp') ||
+              'yarn test:e2e'
             }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
