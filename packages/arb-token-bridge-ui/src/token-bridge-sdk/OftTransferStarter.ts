@@ -27,9 +27,9 @@ interface SendParam {
 
 export class OftTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oft'
-  private isOftTokenValidated: boolean | undefined
-  private oftAdapterAddress: string | undefined
-  private destLzEndpointId: number | undefined
+  private isOftTokenValidated?: boolean
+  private oftAdapterAddress?: string
+  private destLzEndpointId?: number
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)

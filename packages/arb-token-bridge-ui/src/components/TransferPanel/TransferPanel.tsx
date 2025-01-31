@@ -571,7 +571,9 @@ export function TransferPanel() {
 
       const oftTransferStarter = new OftTransferStarter({
         sourceChainProvider,
-        sourceChainErc20Address: selectedToken.address,
+        sourceChainErc20Address: isDepositMode
+          ? selectedToken.address
+          : selectedToken?.l2Address,
         destinationChainProvider
       })
 

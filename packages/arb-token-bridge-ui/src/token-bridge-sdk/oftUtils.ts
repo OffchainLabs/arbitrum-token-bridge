@@ -4,13 +4,13 @@ import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
-export const lzProtocolConfig: {
+const lzProtocolConfig: {
   [id: number]: {
     lzEndpointId: number
     endpointV2: string
     peerToken?: { [id: string]: string }
     adapterConfig?: {
-      [id: string]: { oftAdapterEndpoint: string; peerTokenAddress: string }
+      [id: string]: { oftAdapterEndpoint: string }
     }
   }
 } = {
@@ -19,8 +19,7 @@ export const lzProtocolConfig: {
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
     adapterConfig: {
       [CommonAddress.Ethereum.USDT]: {
-        oftAdapterEndpoint: '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee',
-        peerTokenAddress: CommonAddress.ArbitrumOne.USDT
+        oftAdapterEndpoint: '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee'
       }
     }
   },
@@ -37,8 +36,7 @@ export const lzProtocolConfig: {
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
     adapterConfig: {
       [CommonAddress.ArbitrumOne.USDT]: {
-        oftAdapterEndpoint: '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92',
-        peerTokenAddress: CommonAddress.Ethereum.USDT
+        oftAdapterEndpoint: '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92'
       }
     }
   },
@@ -67,6 +65,7 @@ export function getOftTransferConfig({
 } {
   const sourceChainOftAdapterConfig =
     lzProtocolConfig[sourceChainId]?.adapterConfig?.[sourceChainErc20Address]
+
   const destinationChainLzEndpointId =
     lzProtocolConfig[destinationChainId]?.lzEndpointId
 

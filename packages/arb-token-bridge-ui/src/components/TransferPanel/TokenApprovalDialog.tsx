@@ -27,7 +27,7 @@ import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
-import { lzProtocolConfig } from '../../token-bridge-sdk/oftUtils'
+import { getOftTransferConfig } from '../../token-bridge-sdk/oftUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -111,7 +111,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       } else if (isOft) {
         const oftTransferStarter = new OftTransferStarter({
           sourceChainProvider,
-          destinationChainProvider
+          destinationChainProvider,
+          sourceChainErc20Address: isDepositMode
+            ? token.address
+            : token.l2Address
         })
         gasEstimate = await oftTransferStarter.approveTokenEstimateGas({
           amount: constants.MaxUint256,
@@ -162,11 +165,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   useEffect(() => {
     const getContractAddress = async function () {
       if (isOft) {
-        setContractAddress(
-          lzProtocolConfig?.[sourceChain.id]?.oftAdapters?.[
-            token?.address ?? ''
-          ] ?? ''
-        )
+        const { sourceChainAdapterAddress } = getOftTransferConfig({
+          sourceChainId: sourceChain.id,
+          destinationChainId: destinationChain.id,
+          sourceChainErc20Address: isDepositMode
+            ? token?.address!
+            : token?.l2Address!
+        })
+
+        setContractAddress(sourceChainAdapterAddress)
         return
       }
       if (isCctp) {
@@ -222,7 +229,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     token?.address,
     sourceChain.id,
     destinationChain.id,
-    isTeleportMode
+    isTeleportMode,
+    isOft
   ])
 
   function closeWithReset(confirmed: boolean) {
