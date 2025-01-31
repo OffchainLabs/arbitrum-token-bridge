@@ -644,6 +644,7 @@ export function TransferPanel() {
           error,
           originFunction: 'oftTransferStarter.transfer'
         })
+        console.error(error)
         errorToast(
           `OFT ${
             isDepositMode ? 'Deposit' : 'Withdrawal'

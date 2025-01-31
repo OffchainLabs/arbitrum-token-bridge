@@ -1,4 +1,4 @@
-import { BigNumber, constants, ethers } from 'ethers'
+import { BigNumber, constants, ethers, Signer } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   BridgeTransferStarter,
@@ -9,23 +9,28 @@ import {
   RequiresTokenApprovalProps,
   BridgeTransferStarterProps
 } from './BridgeTransferStarter'
-import { fetchErc20Allowance, getL1ERC20Address } from '../util/TokenUtils'
+import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
 import { lzProtocolConfig } from './oftUtils'
+import { Provider } from '@ethersproject/providers'
+import OftAbi from './OFTContracts/oft-abi.json'
 
-// https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oft/interfaces/IOFT.sol
-const OFTv2Interface = [
-  'function quoteSend(tuple(uint32 dstEid, bytes32 to, uint256 amountLD, uint256 minAmountLD, bytes extraOptions, bytes composeMsg) _sendParam, bool _payInLzToken) external view returns (tuple(uint256 nativeFee, uint256 lzTokenFee))',
-  'function quoteOFT(tuple(uint32 dstEid, bytes32 to, uint256 amountLD, uint256 minAmountLD, bytes extraOptions, bytes composeMsg) sendParam) external view returns (tuple(uint256 minAmountLD, uint256 maxAmountLD), tuple(int256 feeAmountLD, string description)[], tuple(uint256 amountSentLD, uint256 amountReceivedLD))',
-  'function send(tuple(uint32 dstEid, bytes32 to, uint256 amountLD, uint256 minAmountLD, bytes extraOptions, bytes composeMsg) sendParam, tuple(uint256 nativeFee, uint256 lzTokenFee) fee, address refundAddress) external payable returns (tuple(bytes32 guid, uint64 nonce, tuple(uint256 nativeFee, uint256 lzTokenFee) fee), tuple(uint256 amountSentLD, uint256 amountReceivedLD))',
-  'function allowance(address owner, address spender) external view returns (uint256)'
-]
+interface SendParam {
+  dstEid: number
+  to: string
+  amountLD: string
+  minAmountLD: string
+  extraOptions: string
+  composeMsg: string
+  oftCmd: string
+}
 
 export class OftTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oft'
   private isOftTokenValidated: boolean | null = null
   private oftAdapterAddress: string | null = null
   private destLzEndpointId: number | null = null
+
   constructor(props: BridgeTransferStarterProps) {
     super(props)
     if (!this.sourceChainErc20Address) {
@@ -37,7 +42,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
     // Return cached result if available
     if (this.isOftTokenValidated !== null) {
       if (!this.isOftTokenValidated) {
-        throw Error('Token is not an OFT')
+        throw Error('Token is not supported for OFT transfer')
       }
       return
     }
@@ -54,7 +59,6 @@ export class OftTransferStarter extends BridgeTransferStarter {
       .getNetwork()
       .then(n => n.chainId)
 
-    // Check if token has OFT adapters for both chains
     const sourceChainConfig = lzProtocolConfig[sourceChainId]
     const destChainConfig = lzProtocolConfig[destinationChainId]
     const destErc20Address =
@@ -64,7 +68,6 @@ export class OftTransferStarter extends BridgeTransferStarter {
       throw Error('Erc20 token not found on parent chain')
     }
 
-    // Only check for adapter support
     if (
       sourceChainConfig?.oftAdapters?.[this.sourceChainErc20Address] &&
       destChainConfig?.oftAdapters?.[destErc20Address]
@@ -72,7 +75,6 @@ export class OftTransferStarter extends BridgeTransferStarter {
       this.isOftTokenValidated = true
       this.oftAdapterAddress =
         sourceChainConfig.oftAdapters[this.sourceChainErc20Address] ?? null
-
       this.destLzEndpointId = destChainConfig.lzEndpointId
       return
     }
@@ -86,6 +88,14 @@ export class OftTransferStarter extends BridgeTransferStarter {
       throw Error('OFT validation not performed')
     }
     return this.oftAdapterAddress!
+  }
+
+  private getContract(providerOrSigner: Signer | Provider): ethers.Contract {
+    return new ethers.Contract(
+      this.getContractAddress(),
+      OftAbi,
+      providerOrSigner
+    )
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -123,7 +133,6 @@ export class OftTransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
-
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address!,
       this.sourceChainProvider
@@ -132,16 +141,13 @@ export class OftTransferStarter extends BridgeTransferStarter {
     return contract.estimateGas.approve(
       this.oftAdapterAddress!,
       amount ?? constants.MaxUint256,
-      {
-        from: address
-      }
+      { from: address }
     )
   }
 
   public async approveToken({ signer, amount }: ApproveTokenProps) {
     await this.validateOftTransfer()
     const spender = this.getContractAddress()
-
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address!,
       signer
@@ -154,24 +160,22 @@ export class OftTransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
-
-    const contract = new ethers.Contract(
-      this.getContractAddress(),
-      OFTv2Interface,
-      this.sourceChainProvider
-    )
+    const oftContract = this.getContract(signer)
 
     const sendParam = {
       dstEid: this.destLzEndpointId!,
       to: ethers.utils.hexZeroPad(address, 32),
-      amountLD: amount,
-      minAmountLD: amount,
+      amountLD: amount.toString(),
+      minAmountLD: amount.toString(),
       extraOptions: '0x',
-      composeMsg: '0x'
+      composeMsg: '0x',
+      oftCmd: '0x'
     }
 
     try {
-      const { nativeFee } = await contract.quoteSend(sendParam, false)
+      const { nativeFee } = await oftContract.quoteSend(sendParam, false)
+
+      console.log('successfully received the estimation', { nativeFee })
       return {
         estimatedParentChainGas: nativeFee,
         estimatedChildChainGas: constants.Zero
@@ -189,49 +193,36 @@ export class OftTransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
+    const oftContract = this.getContract(signer)
 
-    const contract = new ethers.Contract(
-      this.getContractAddress(),
-      OFTv2Interface,
-      signer
-    )
-
-    const sendParam = {
+    const sendParam: SendParam = {
       dstEid: this.destLzEndpointId!,
       to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
-      amountLD: amount,
-      minAmountLD: amount,
+      amountLD: amount.toString(),
+      minAmountLD: amount.toString(),
       extraOptions: '0x',
-      composeMsg: '0x'
+      composeMsg: '0x',
+      oftCmd: '0x'
     }
 
-    const { nativeFee, lzTokenFee } = await contract.quoteSend(sendParam, false)
-    const [oftLimit, oftFeeDetails, oftReceipt] = await contract.quoteOFT(
-      sendParam
-    )
+    const quote = await oftContract.quoteSend(sendParam, false)
 
-    const tx = await contract.send(
+    const sendTx = await oftContract.send(
       sendParam,
-      { nativeFee, lzTokenFee },
+      {
+        nativeFee: quote.nativeFee.toString(),
+        lzTokenFee: quote.lzTokenFee.toString()
+      },
       address,
-      { value: nativeFee }
+      { value: quote.nativeFee.toString() }
     )
 
-    const transfer = {
+    return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: tx,
-      destinationChainProvider: this.destinationChainProvider,
-      oftDetails: {
-        limits: oftLimit,
-        fees: oftFeeDetails,
-        receipt: oftReceipt
-      }
+      sourceChainTransaction: sendTx,
+      destinationChainProvider: this.destinationChainProvider
     }
-
-    console.log('xxxxx transfer', transfer)
-
-    return transfer
   }
 }
