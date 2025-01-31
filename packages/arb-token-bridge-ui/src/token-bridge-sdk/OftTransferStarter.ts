@@ -11,7 +11,7 @@ import {
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
-import { getOftTransferConfig } from './oftUtils'
+import { getOftTransferConfig, buildSendParams, getOftQuote } from './oftUtils'
 import { Provider } from '@ethersproject/providers'
 import OftAbi from './OFTContracts/oft-abi.json'
 
@@ -151,23 +151,23 @@ export class OftTransferStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const oftContract = this.getContract(signer)
 
-    const sendParam = {
+    const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
-      to: ethers.utils.hexZeroPad(address, 32),
-      amountLD: amount.toString(),
-      minAmountLD: amount.toString(),
-      extraOptions: '0x',
-      composeMsg: '0x',
-      oftCmd: '0x'
-    }
+      address,
+      amount
+    })
 
     try {
-      const { nativeFee } = await oftContract.quoteSend(sendParam, false)
+      // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
+      const { nativeFee } = await getOftQuote({
+        contract: oftContract,
+        sendParams
+      })
+      const nativeFeeBN = BigNumber.from(nativeFee)
 
-      console.log('successfully received the estimation', { nativeFee })
       return {
-        estimatedParentChainGas: nativeFee,
-        estimatedChildChainGas: constants.Zero
+        estimatedParentChainGas: nativeFeeBN,
+        estimatedChildChainGas: nativeFeeBN
       }
     } catch (e) {
       console.warn('Error estimating OFT transfer gas:', e)
@@ -184,26 +184,28 @@ export class OftTransferStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const oftContract = this.getContract(signer)
 
-    const sendParam: SendParam = {
+    const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
-      to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
-      amountLD: amount.toString(),
-      minAmountLD: amount.toString(),
-      extraOptions: '0x',
-      composeMsg: '0x',
-      oftCmd: '0x'
-    }
+      address,
+      amount,
+      destinationAddress
+    })
 
-    const quote = await oftContract.quoteSend(sendParam, false)
+    const { nativeFee, lzTokenFee } = await getOftQuote({
+      contract: oftContract,
+      sendParams
+    })
+
+    debugger
 
     const sendTx = await oftContract.send(
-      sendParam,
+      sendParams,
       {
-        nativeFee: quote.nativeFee.toString(),
-        lzTokenFee: quote.lzTokenFee.toString()
+        nativeFee: nativeFee,
+        lzTokenFee: lzTokenFee
       },
       address,
-      { value: quote.nativeFee.toString() }
+      { value: nativeFee }
     )
 
     return {

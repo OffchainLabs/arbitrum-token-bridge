@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
+import { BigNumber } from 'ethers'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 const lzProtocolConfig: {
@@ -102,5 +103,63 @@ export async function isLayerZeroToken(
     return !!_isLayerZeroToken
   } catch (error) {
     return false
+  }
+}
+
+interface SendParam {
+  dstEid: number
+  to: string
+  amountLD: string
+  minAmountLD: string
+  extraOptions: string
+  composeMsg: string
+  oftCmd: string
+}
+
+interface QuoteResult {
+  nativeFee: string
+  lzTokenFee: string
+}
+
+export function buildSendParams({
+  dstEid,
+  address,
+  amount,
+  destinationAddress
+}: {
+  dstEid: number
+  address: string
+  amount: BigNumber
+  destinationAddress?: string
+}): SendParam {
+  return {
+    dstEid,
+    to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
+    amountLD: amount.toString(),
+    minAmountLD: amount.toString(),
+    extraOptions: '0x',
+    composeMsg: '0x',
+    oftCmd: '0x'
+  }
+}
+
+export async function getOftQuote({
+  contract,
+  sendParams
+}: {
+  contract: ethers.Contract
+  sendParams: SendParam
+}): Promise<QuoteResult> {
+  try {
+    const quote = await contract.quoteSend(sendParams, false)
+    return {
+      nativeFee: quote.nativeFee.toString(),
+      lzTokenFee: quote.lzTokenFee.toString()
+    }
+  } catch {
+    return {
+      nativeFee: BigInt(1e14).toString(), // 0.0001 native token
+      lzTokenFee: BigInt(0).toString()
+    }
   }
 }

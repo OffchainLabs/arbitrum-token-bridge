@@ -22,6 +22,7 @@ import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
+import { useIsOftTransfer } from './hooks/useIsOftTransfer'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -187,6 +188,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
+  const isOft = useIsOftTransfer()
+
   const [{ amount, amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
@@ -264,7 +267,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode && (
+      {!isDepositMode && !isOft && (
         <div
           className={twMerge(
             'grid grid-cols-[260px_auto] items-center text-sm font-light'
