@@ -8,6 +8,7 @@ import {
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
 import { isLayerZeroToken } from '../token-bridge-sdk/oftUtils'
+import { getProviderForChainId } from '../token-bridge-sdk/utils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -270,7 +271,12 @@ export async function isWithdrawOnlyToken({
     return true
   }
 
-  if (await isLayerZeroToken(parentChainErc20Address, parentChainId)) {
+  if (
+    await isLayerZeroToken(
+      parentChainErc20Address,
+      getProviderForChainId(parentChainId)
+    )
+  ) {
     return true
   }
 
