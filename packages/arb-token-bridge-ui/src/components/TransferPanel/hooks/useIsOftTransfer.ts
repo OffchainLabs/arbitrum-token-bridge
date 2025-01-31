@@ -2,7 +2,7 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useAppState } from '../../../state'
 import useSWR from 'swr'
-import { validateOftTransfer } from '../../../token-bridge-sdk/oftUtils'
+import { getOftTransferConfig } from '../../../token-bridge-sdk/oftUtils'
 
 export const useIsOftTransfer = function () {
   const {
@@ -22,14 +22,13 @@ export const useIsOftTransfer = function () {
         ]
       : null,
     async () =>
-      validateOftTransfer({
+      getOftTransferConfig({
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id,
-        tokenAddress: isDepositMode
-          ? selectedToken?.address
-          : selectedToken?.l2Address,
-        sourceChainProvider: networks.sourceChainProvider
-      }),
+        sourceChainErc20Address: isDepositMode
+          ? selectedToken?.address!
+          : selectedToken?.l2Address!
+      }).isValid,
     {
       shouldRetryOnError: false,
       revalidateOnFocus: false

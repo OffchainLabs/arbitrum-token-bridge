@@ -3,26 +3,25 @@ import { Provider } from '@ethersproject/providers'
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 
-const USDT_ETH_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
-
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 export const lzProtocolConfig: {
   [id: number]: {
     lzEndpointId: number
     endpointV2: string
-    oftAdapters?: { [id: string]: string }
     peerToken?: { [id: string]: string }
+    adapterConfig?: {
+      [id: string]: { oftAdapterEndpoint: string; peerTokenAddress: string }
+    }
   }
 } = {
   [ChainId.Ethereum]: {
     lzEndpointId: 30101,
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
-    oftAdapters: {
-      [CommonAddress.Ethereum.USDT]:
-        '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee'
-    },
-    peerToken: {
-      [CommonAddress.Ethereum.USDT]: CommonAddress.ArbitrumOne.USDT
+    adapterConfig: {
+      [CommonAddress.Ethereum.USDT]: {
+        oftAdapterEndpoint: '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee',
+        peerTokenAddress: CommonAddress.ArbitrumOne.USDT
+      }
     }
   },
   [ChainId.Sepolia]: {
@@ -36,12 +35,11 @@ export const lzProtocolConfig: {
   [ChainId.ArbitrumOne]: {
     lzEndpointId: 30110,
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',
-    oftAdapters: {
-      [CommonAddress.ArbitrumOne.USDT]:
-        '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92' // ArbitrumOne USDT0 lockbox
-    },
-    peerToken: {
-      [CommonAddress.ArbitrumOne.USDT]: CommonAddress.Ethereum.USDT
+    adapterConfig: {
+      [CommonAddress.ArbitrumOne.USDT]: {
+        oftAdapterEndpoint: '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92',
+        peerTokenAddress: CommonAddress.Ethereum.USDT
+      }
     }
   },
   [ChainId.ArbitrumSepolia]: {
@@ -54,39 +52,37 @@ export const lzProtocolConfig: {
   }
 }
 
-export type ValidateOftTransferParams = {
-  sourceChainId: number
-  destinationChainId: number
-  tokenAddress?: string
-  sourceChainProvider: Provider
-}
-
-export async function validateOftTransfer({
+export function getOftTransferConfig({
   sourceChainId,
   destinationChainId,
-  tokenAddress,
-  sourceChainProvider
-}: ValidateOftTransferParams): Promise<boolean> {
-  // Check if both source and destination chains are supported by LayerZero
-  const isSourceChainSupported = sourceChainId in lzProtocolConfig
-  const isDestinationChainSupported = destinationChainId in lzProtocolConfig
+  sourceChainErc20Address
+}: {
+  sourceChainId: number
+  destinationChainId: number
+  sourceChainErc20Address: string
+}): {
+  isValid: boolean
+  sourceChainAdapterAddress: string
+  destinationChainLzEndpointId: number
+} {
+  const sourceChainOftAdapterConfig =
+    lzProtocolConfig[sourceChainId]?.adapterConfig?.[sourceChainErc20Address]
+  const destinationChainLzEndpointId =
+    lzProtocolConfig[destinationChainId]?.lzEndpointId
 
-  if (!isSourceChainSupported || !isDestinationChainSupported) {
-    return false
+  if (!sourceChainOftAdapterConfig || !destinationChainLzEndpointId) {
+    return {
+      isValid: false,
+      sourceChainAdapterAddress: '',
+      destinationChainLzEndpointId: 0
+    }
   }
 
-  // Check if we have a token address
-  if (!tokenAddress) {
-    return false
+  return {
+    isValid: true,
+    sourceChainAdapterAddress: sourceChainOftAdapterConfig.oftAdapterEndpoint,
+    destinationChainLzEndpointId
   }
-
-  // USDT on Ethereum is not an OFT, but it will support OFT transfers
-  if (tokenAddress.toLowerCase() === USDT_ETH_ADDRESS.toLowerCase()) {
-    return true
-  }
-
-  // Check if the token is an OFT
-  return isLayerZeroToken(tokenAddress, sourceChainProvider)
 }
 
 export async function isLayerZeroToken(

@@ -11,7 +11,7 @@ import {
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
-import { lzProtocolConfig } from './oftUtils'
+import { getOftTransferConfig } from './oftUtils'
 import { Provider } from '@ethersproject/providers'
 import OftAbi from './OFTContracts/oft-abi.json'
 
@@ -27,9 +27,9 @@ interface SendParam {
 
 export class OftTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oft'
-  private isOftTokenValidated: boolean | null = null
-  private oftAdapterAddress: string | null = null
-  private destLzEndpointId: number | null = null
+  private isOftTokenValidated: boolean | undefined
+  private oftAdapterAddress: string | undefined
+  private destLzEndpointId: number | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -39,8 +39,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
   }
 
   private async validateOftTransfer() {
-    // Return cached result if available
-    if (this.isOftTokenValidated !== null) {
+    if (typeof this.isOftTokenValidated !== 'undefined') {
       if (!this.isOftTokenValidated) {
         throw Error('Token is not supported for OFT transfer')
       }
@@ -52,35 +51,25 @@ export class OftTransferStarter extends BridgeTransferStarter {
       throw Error('OFT token address not found')
     }
 
-    const sourceChainId = await this.sourceChainProvider
-      .getNetwork()
-      .then(n => n.chainId)
-    const destinationChainId = await this.destinationChainProvider
-      .getNetwork()
-      .then(n => n.chainId)
+    const [sourceChainId, destinationChainId] = await Promise.all([
+      this.sourceChainProvider.getNetwork().then(n => n.chainId),
+      this.destinationChainProvider.getNetwork().then(n => n.chainId)
+    ])
 
-    const sourceChainConfig = lzProtocolConfig[sourceChainId]
-    const destChainConfig = lzProtocolConfig[destinationChainId]
-    const destErc20Address =
-      sourceChainConfig?.peerToken?.[this.sourceChainErc20Address]
+    const oftTransferConfig = getOftTransferConfig({
+      sourceChainId,
+      destinationChainId,
+      sourceChainErc20Address: this.sourceChainErc20Address
+    })
 
-    if (!destErc20Address) {
-      throw Error('Erc20 token not found on parent chain')
+    if (!oftTransferConfig.isValid) {
+      this.isOftTokenValidated = false
+      throw Error('Token is not supported for OFT transfer')
     }
 
-    if (
-      sourceChainConfig?.oftAdapters?.[this.sourceChainErc20Address] &&
-      destChainConfig?.oftAdapters?.[destErc20Address]
-    ) {
-      this.isOftTokenValidated = true
-      this.oftAdapterAddress =
-        sourceChainConfig.oftAdapters[this.sourceChainErc20Address] ?? null
-      this.destLzEndpointId = destChainConfig.lzEndpointId
-      return
-    }
-
-    this.isOftTokenValidated = false
-    throw Error('Token is not supported for OFT transfer')
+    this.isOftTokenValidated = true
+    this.oftAdapterAddress = oftTransferConfig.sourceChainAdapterAddress
+    this.destLzEndpointId = oftTransferConfig.destinationChainLzEndpointId
   }
 
   private getContractAddress(): string {

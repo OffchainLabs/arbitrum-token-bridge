@@ -7,7 +7,7 @@ export const CommonAddress = {
   ArbitrumOne: {
     USDC: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     'USDC.e': '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
-    USDT: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+    USDT: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a',
 
     CU: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02'
