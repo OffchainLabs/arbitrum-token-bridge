@@ -66,10 +66,11 @@ jobs:
       - name: Set up Chromium 128
         run: |
           wget http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-3+b1_amd64.deb
+          wget http://ftp.us.debian.org/debian/pool/main/libx/libxml2/libxml2n_2.13.3+dfsg-0exp2+b1_amd64.deb
           wget http://ftp.us.debian.org/debian/pool/main/libx/libxml2/libxml2-dev_2.13.3+dfsg-0exp2+b1_amd64.deb
           wget https://snapshot.debian.org/archive/debian/20240911T150313Z/pool/main/c/chromium/chromium-common_128.0.6613.137-1_amd64.deb
           wget https://snapshot.debian.org/archive/debian/20240911T150313Z/pool/main/c/chromium/chromium_128.0.6613.137-1_amd64.deb
-          sudo apt-get install ./libjpeg62-turbo_2.1.5-3+b1_amd64.deb ./libxml2-dev_2.13.3+dfsg-0exp2+b1_amd64.deb ./chromium-common_128.0.6613.137-1_amd64.deb ./chromium_128.0.6613.137-1_amd64.deb
+          sudo apt-get install ./libxml2n_2.13.3+dfsg-0exp2+b1_amd64.deb ./libjpeg62-turbo_2.1.5-3+b1_amd64.deb ./libxml2-dev_2.13.3+dfsg-0exp2+b1_amd64.deb ./chromium-common_128.0.6613.137-1_amd64.deb ./chromium_128.0.6613.137-1_amd64.deb
 
       - name: Checkout
         uses: actions/checkout@v4
