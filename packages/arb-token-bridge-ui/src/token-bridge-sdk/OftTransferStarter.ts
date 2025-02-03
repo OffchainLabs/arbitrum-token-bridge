@@ -141,7 +141,12 @@ export class OftTransferStarter extends BridgeTransferStarter {
     return contract.functions.approve(spender, amount ?? constants.MaxUint256)
   }
 
+  // for OFT, we don't have functions for gas estimates, `sendQuote` method tells us the fees directly
   public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+    return undefined
+  }
+
+  public async transferEstimateFee({ amount, signer }: TransferEstimateGas) {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
@@ -153,35 +158,15 @@ export class OftTransferStarter extends BridgeTransferStarter {
       amount
     })
 
-    try {
-      // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
-      const { nativeFee } = await getOftQuote({
-        contract: oftContract,
-        sendParams
-      })
+    // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
+    const { nativeFee } = await getOftQuote({
+      contract: oftContract,
+      sendParams
+    })
 
-      // [do not merge] OFT gives the total fee that needs to be paid that covers both the source and destination message transfers
-      // HACK: for now we are adding the gas prices of the source and destination chains to get the total gas price
-      const gasPrice = (await this.sourceChainProvider.getGasPrice()).add(
-        await this.destinationChainProvider.getGasPrice()
-      )
-
-      const nativeGas = BigNumber.from(nativeFee).div(gasPrice)
-
-      return {
-        estimatedParentChainGas: this.isSourceChainEthereum
-          ? nativeGas
-          : constants.Zero,
-        estimatedChildChainGas: this.isSourceChainEthereum
-          ? constants.Zero
-          : nativeGas
-      }
-    } catch (e) {
-      console.warn('Error estimating OFT transfer gas:', e)
-      return {
-        estimatedParentChainGas: BigNumber.from(300000),
-        estimatedChildChainGas: constants.Zero
-      }
+    return {
+      estimatedSourceChainFee: nativeFee,
+      estimatedDestinationChainFee: constants.Zero
     }
   }
 
