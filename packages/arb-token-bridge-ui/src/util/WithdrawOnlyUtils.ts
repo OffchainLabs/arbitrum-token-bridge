@@ -10,6 +10,7 @@ import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
+import { CommonAddress } from './CommonAddressUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -244,13 +245,13 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
     {
       symbol: 'USDC',
       l2CustomAddr: '',
-      l1Address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      l1Address: CommonAddress.Ethereum.USDC,
       l2Address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
     },
     {
       symbol: 'USDT',
       l2CustomAddr: '',
-      l1Address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      l1Address: CommonAddress.Ethereum.USDT,
       l2Address: '0x4ef0c9098563e2478bdf0cc32a10d24abaa46b1c'
     }
   ]
