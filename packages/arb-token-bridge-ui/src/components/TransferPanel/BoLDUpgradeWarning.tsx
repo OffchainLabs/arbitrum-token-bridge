@@ -18,7 +18,7 @@ export const BoLDUpgradeWarning = () => {
       <p>
         Withdrawals initiated between{' '}
         <span className="font-bold">Feb 5 09:00 ET and Feb 12 09:00 ET</span> on
-        Arbitrum&apos;s canonical bridge (the page you&apos;'re on right now)
+        Arbitrum&apos;s canonical bridge (the page you&apos;re on right now)
         will be delayed by an <span className="underline">additional</span> 6.4
         days.{' '}
       </p>
