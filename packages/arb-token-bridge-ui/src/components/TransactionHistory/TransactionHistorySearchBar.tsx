@@ -75,7 +75,7 @@ export function TransactionHistorySearchBar() {
           value={address}
           onChange={event => setAddress(event.target.value)}
           inputMode="search"
-          placeholder="Search by address"
+          placeholder="Search by wallet address"
           aria-label="Transaction history wallet address input"
           className="h-full w-full bg-transparent py-1 pl-1 pr-3 text-sm font-light placeholder:text-white/60"
           // stop password managers from autofilling
