@@ -1703,6 +1703,53 @@
           "description": "Bringing the real world onchain. Optimized for real world assets."
         }
       }
+    },
+    {
+      "chainId": 5113,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x544ab136Eb7DEbc6ecFc409dBf48DaEC885A23c7",
+        "inbox": "0x3A7f7ac40f95F69C2067b93Ef981fEC474EbAd63",
+        "outbox": "0x33028bd56bc1dD69Af64f7161F75db28d7d178b8",
+        "rollup": "0x5bcc7b0def15cA7D9cDd17Cc7028d61Bc0C80b0d",
+        "sequencerInbox": "0x3a286C5AcBD24670f095DA0BE738eeF6B014c0D3"
+      },
+      "nativeToken": "0x9a0Ef1333681b357047282144dc06D7DAA1f76Ba",
+      "explorerUrl": "https://syndicate-exo.explorer.alchemy.com",
+      "rpcUrl": "https://syndicate-exo.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Syndicate Exo",
+      "slug": "syndicate-exo",
+      "parentChainId": 17000,
+      "tokenBridge": {
+        "parentCustomGateway": "0x9C8394A948FD0a85933d739694BeB5AD9D3c4423",
+        "parentErc20Gateway": "0x472790750901166E36c78E01f2984934D08e0303",
+        "parentGatewayRouter": "0xBCbEfd2e664D18368892D8C2Adc3c88DD15B20B4",
+        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8C117Dde85c41dE53B2e394E6adE09915Fc266Bf",
+        "childErc20Gateway": "0x4AF204Dd6c5a26783f8306D47E1F6919553E00D4",
+        "childGatewayRouter": "0x5079579759f4AA2AF1fbE0510309dd463B3e9e5C",
+        "childMultiCall": "0x9617F5611303F213E8871d9F81f375864644f517",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#e1e3d5",
+        "network": {
+          "name": "Syndicate Exo",
+          "logo": "/images/SyndicateExo_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Syndicate",
+          "symbol": "SYND",
+          "logoUrl": "/images/SyndicateExo_NativeTokenLogo.png"
+        }
+      }
     }
   ]
 }
