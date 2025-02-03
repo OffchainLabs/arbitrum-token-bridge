@@ -1146,9 +1146,6 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-        <span className="text-xl text-white">
-          OFT: {isOftTransfer.toString()}
-        </span>
         <TransferPanelMain />
         <AdvancedSettings />
         <TransferPanelSummary

@@ -153,11 +153,18 @@ export class OftTransferStarter extends BridgeTransferStarter {
         contract: oftContract,
         sendParams
       })
-      const nativeFeeBN = BigNumber.from(nativeFee)
+
+      // [do not merge] OFT gives the total fee that needs to be paid that covers both the source and destination message transfers
+      // HACK: for now we are adding the gas prices of the source and destination chains to get the total gas price
+      const gasPrice = (await this.sourceChainProvider.getGasPrice()).add(
+        await this.destinationChainProvider.getGasPrice()
+      )
+
+      const nativeGas = BigNumber.from(nativeFee).div(gasPrice)
 
       return {
-        estimatedParentChainGas: nativeFeeBN,
-        estimatedChildChainGas: nativeFeeBN
+        estimatedParentChainGas: nativeGas,
+        estimatedChildChainGas: constants.Zero
       }
     } catch (e) {
       console.warn('Error estimating OFT transfer gas:', e)
