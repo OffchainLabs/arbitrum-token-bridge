@@ -14,12 +14,14 @@ import { getAddressFromSigner } from './utils'
 import { getOftTransferConfig, buildSendParams, getOftQuote } from './oftUtils'
 import { Provider } from '@ethersproject/providers'
 import oftAbi from './oftAbi.json'
+import { isNetwork } from '../util/networks'
 
 export class OftTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oft'
   private isOftTokenValidated?: boolean
   private oftAdapterAddress?: string
   private destLzEndpointId?: number
+  private isTransferFromEthereum?: boolean
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -55,6 +57,12 @@ export class OftTransferStarter extends BridgeTransferStarter {
     if (!oftTransferConfig.isValid) {
       this.isOftTokenValidated = false
       throw Error('Token is not supported for OFT transfer')
+    }
+
+    if (isNetwork(sourceChainId).isEthereumMainnet) {
+      this.isTransferFromEthereum = true
+    } else {
+      this.isTransferFromEthereum = false
     }
 
     this.isOftTokenValidated = true
@@ -93,6 +101,9 @@ export class OftTransferStarter extends BridgeTransferStarter {
     amount,
     signer
   }: RequiresTokenApprovalProps): Promise<boolean> {
+    // only Eth adapter will need token approval
+    if (!this.isTransferFromEthereum) return false
+
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
@@ -119,7 +130,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
 
     return contract.estimateGas.approve(
       this.oftAdapterAddress!,
-      amount ?? constants.MaxUint256,
+      constants.MaxUint256, // Eth USDT will need MAX approval since that cannot be changed afterwards
       { from: address }
     )
   }
@@ -163,8 +174,12 @@ export class OftTransferStarter extends BridgeTransferStarter {
       const nativeGas = BigNumber.from(nativeFee).div(gasPrice)
 
       return {
-        estimatedParentChainGas: nativeGas,
-        estimatedChildChainGas: constants.Zero
+        estimatedParentChainGas: this.isTransferFromEthereum
+          ? nativeGas
+          : constants.Zero,
+        estimatedChildChainGas: this.isTransferFromEthereum
+          ? constants.Zero
+          : nativeGas
       }
     } catch (e) {
       console.warn('Error estimating OFT transfer gas:', e)
