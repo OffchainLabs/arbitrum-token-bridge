@@ -130,16 +130,15 @@ jobs:
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # pin@v6.7.6
         with:
-          browser: /usr/bin/chromium
           start: yarn start
           command: >-
             ${{
-              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit' ||
-              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
-              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
-              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
-              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp') ||
-              'yarn test:e2e'
+              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser /usr/bin/chromium' ||
+              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token --browser /usr/bin/chromium') ||
+              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token --browser /usr/bin/chromium') ||
+              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token --browser /usr/bin/chromium') ||
+              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser /usr/bin/chromium') ||
+              'yarn test:e2e --browser /usr/bin/chromium'
             }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
