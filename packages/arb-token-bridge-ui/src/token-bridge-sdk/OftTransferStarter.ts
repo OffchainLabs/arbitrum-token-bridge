@@ -101,10 +101,10 @@ export class OftTransferStarter extends BridgeTransferStarter {
     amount,
     signer
   }: RequiresTokenApprovalProps): Promise<boolean> {
+    await this.validateOftTransfer()
+
     // only Eth adapter will need token approval
     if (!this.isTransferFromEthereum) return false
-
-    await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
     const spender = this.getContractAddress()
