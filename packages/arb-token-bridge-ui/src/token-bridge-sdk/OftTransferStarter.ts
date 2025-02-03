@@ -21,7 +21,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
   private isOftTokenValidated?: boolean
   private oftAdapterAddress?: string
   private destLzEndpointId?: number
-  private isTransferFromEthereum?: boolean
+  private isSourceChainEthereum?: boolean
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -59,12 +59,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
       throw Error('Token is not supported for OFT transfer')
     }
 
-    if (isNetwork(sourceChainId).isEthereumMainnet) {
-      this.isTransferFromEthereum = true
-    } else {
-      this.isTransferFromEthereum = false
-    }
-
+    this.isSourceChainEthereum = !!isNetwork(sourceChainId).isEthereumMainnet
     this.isOftTokenValidated = true
     this.oftAdapterAddress = oftTransferConfig.sourceChainAdapterAddress
     this.destLzEndpointId = oftTransferConfig.destinationChainLzEndpointId
@@ -104,7 +99,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     // only Eth adapter will need token approval
-    if (!this.isTransferFromEthereum) return false
+    if (!this.isSourceChainEthereum) return false
 
     const address = await getAddressFromSigner(signer)
     const spender = this.getContractAddress()
@@ -174,10 +169,10 @@ export class OftTransferStarter extends BridgeTransferStarter {
       const nativeGas = BigNumber.from(nativeFee).div(gasPrice)
 
       return {
-        estimatedParentChainGas: this.isTransferFromEthereum
+        estimatedParentChainGas: this.isSourceChainEthereum
           ? nativeGas
           : constants.Zero,
-        estimatedChildChainGas: this.isTransferFromEthereum
+        estimatedChildChainGas: this.isSourceChainEthereum
           ? constants.Zero
           : nativeGas
       }
