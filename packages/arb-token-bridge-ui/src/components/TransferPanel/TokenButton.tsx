@@ -6,7 +6,10 @@ import { twMerge } from 'tailwind-merge'
 
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  nativeCurrencyEther,
+  useNativeCurrency
+} from '../../hooks/useNativeCurrency'
 import {
   onPopoverButtonClick,
   onPopoverClose,
@@ -86,6 +89,10 @@ export function TokenButton({
       return options.logoSrc || nativeCurrency.logoUrl
     }
 
+    if (isSelectedTokenEther) {
+      return nativeCurrencyEther.logoUrl
+    }
+
     if (selectedToken) {
       return (
         tokensFromLists[selectedToken.address]?.logoURI ??
@@ -95,6 +102,7 @@ export function TokenButton({
 
     return nativeCurrency.logoUrl
   }, [
+    isSelectedTokenEther,
     nativeCurrency.logoUrl,
     options,
     selectedToken,

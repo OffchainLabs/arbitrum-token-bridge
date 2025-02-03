@@ -52,6 +52,14 @@ function StyledLoader() {
   )
 }
 
+function NativeTokenNetworkText({ chainId }: { chainId: number }) {
+  return (
+    <span className="flex text-xs text-white/70">
+      Native token on {getNetworkName(chainId)}
+    </span>
+  )
+}
+
 function BlockExplorerTokenLink({
   chain,
   address
@@ -124,23 +132,17 @@ function TokenListInfo({
   }, [token])
 
   if (isNativeCurrencyEther(token)) {
-    const parentChainName = getNetworkName(parentChain.id)
-
-    return (
-      <span className="flex text-xs text-white/70">
-        Native token on {parentChainName}
-      </span>
-    )
+    return <NativeTokenNetworkText chainId={parentChain.id} />
   }
 
   if (!token) {
-    const nativeTokenChain = getNetworkName(
-      (childChainNativeCurrencyIsCustom ? childChain : networks.sourceChain).id
-    )
     return (
-      <span className="flex text-xs text-white/70">
-        Native token on {nativeTokenChain}
-      </span>
+      <NativeTokenNetworkText
+        chainId={
+          (childChainNativeCurrencyIsCustom ? childChain : networks.sourceChain)
+            .id
+        }
+      />
     )
   }
 
