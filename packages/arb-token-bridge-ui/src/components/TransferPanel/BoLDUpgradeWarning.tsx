@@ -18,13 +18,14 @@ export const BoLDUpgradeWarning = () => {
       <p>
         Withdrawals initiated between{' '}
         <span className="font-bold">Feb 5 09:00 ET and Feb 12 09:00 ET</span> on
-        Arbitrum's canonical bridge (the page you're on right now) will be
+        Arbitrum&apos;s canonical bridge (the page you&apos;'re on right now) will be
         delayed by an <span className="underline">additional</span> 6.4 days.{' '}
       </p>
 
       <p>This is happening because BoLD is getting an essential update.</p>
 
-      <p>It's super annoying, but it's worth it, trust us.</p>
+    <div className="mt-2 flex w-full flex-col gap-2 rounded border border-white/30 bg-orange-dark/60 p-2 text-sm font-light text-white">
+      <p>It&apos;s super annoying, but it&apos;s worth it, trust us.</p>
 
       <p>
         To avoid this additional delay of nearly a week, you can either:
