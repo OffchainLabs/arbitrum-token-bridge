@@ -30,8 +30,8 @@ export const BoLDUpgradeWarning = () => {
       <p>
         To avoid this additional delay of nearly a week, you can either:
         <ul>
-          <li>Use a third-party fast bridge</li>
-          <li>Do your withdrawal before Feb 5 or after Feb 12</li>
+          <li>(1) use a third-party fast bridge</li>
+          <li>(2) do your withdrawal before Feb 5 or after Feb 12</li>
         </ul>
       </p>
 
