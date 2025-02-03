@@ -52,5 +52,9 @@ export const EmptyTransactionHistory = ({
       </ContentWrapper>
     )
   }
-  return <ContentWrapper>Looks like no transactions here yet.</ContentWrapper>
+  return (
+    <ContentWrapper className="lg:text-center">
+      No {tabType} transactions.
+    </ContentWrapper>
+  )
 }

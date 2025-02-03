@@ -25,14 +25,13 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
-import { useTokenLists } from './useTokenLists'
 
 const commonUSDC = {
   name: 'USD Coin',
   type: TokenType.ERC20,
   symbol: 'USDC',
   decimals: 6,
-  listIds: new Set<number>()
+  listIds: new Set<string>()
 }
 
 export const useSelectedToken = () => {
@@ -41,47 +40,31 @@ export const useSelectedToken = () => {
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
-  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
 
-  const queryKey = !isLoadingTokenLists
-    ? ([
-        parentChain.id,
-        childChain.id,
-        tokenFromSearchParams,
-        Object.keys(tokensFromUser),
-        'useSelectedToken'
-      ] as const)
-    : null
-
-  const { data } = useSWRImmutable(
-    queryKey,
-    async ([parentChainId, childChainId, _tokenFromSearchParams, _keys]) => {
-      const tokenAddressLowercased = _tokenFromSearchParams?.toLowerCase()
-
-      const parentProvider = getProviderForChainId(parentChainId)
-      const childProvider = getProviderForChainId(childChainId)
-
-      if (!tokenAddressLowercased) {
+  const { data: usdcToken } = useSWRImmutable(
+    [
+      tokenFromSearchParams,
+      parentChain.id,
+      childChain.id,
+      'useSelectedToken_usdc'
+    ],
+    async ([_tokenAddress, _parentChainId, _childChainId]) => {
+      if (!_tokenAddress) {
         return null
       }
 
-      if (isTokenNativeUSDC(tokenAddressLowercased)) {
-        return getUsdcToken({
-          tokenAddress: tokenAddressLowercased,
-          parentProvider,
-          childProvider
-        })
-      }
-
-      if (!tokensFromLists || !tokensFromUser) {
+      if (!isTokenNativeUSDC(_tokenAddress)) {
         return null
       }
 
-      return (
-        tokensFromLists[tokenAddressLowercased] ||
-        tokensFromUser[tokenAddressLowercased] ||
-        null
-      )
+      const parentProvider = getProviderForChainId(_parentChainId)
+      const childProvider = getProviderForChainId(_childChainId)
+
+      return getUsdcToken({
+        tokenAddress: _tokenAddress,
+        parentProvider,
+        childProvider
+      })
     }
   )
 
@@ -91,7 +74,17 @@ export const useSelectedToken = () => {
     [setQueryParams]
   )
 
-  return [data ?? null, setSelectedToken] as const
+  if (!tokenFromSearchParams) {
+    return [null, setSelectedToken] as const
+  }
+
+  return [
+    tokensFromUser[tokenFromSearchParams] ||
+      tokensFromLists[tokenFromSearchParams] ||
+      usdcToken ||
+      null,
+    setSelectedToken
+  ] as const
 }
 
 function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
@@ -144,8 +137,11 @@ async function getUsdcToken({
     }
   }
 
-  // Arbitrum One USDC when Ethereum is the par
-  if (isTokenArbitrumOneNativeUSDC(tokenAddress) && !isParentChainArbitrumOne) {
+  // Arbitrum One USDC when Ethereum is the parent chain
+  if (
+    isTokenArbitrumOneNativeUSDC(tokenAddress) &&
+    isParentChainEthereumMainnet
+  ) {
     return {
       ...commonUSDC,
       address: CommonAddress.ArbitrumOne.USDC,
@@ -154,10 +150,7 @@ async function getUsdcToken({
   }
 
   // Arbitrum Sepolia USDC when Ethereum is the parent chain
-  if (
-    isTokenArbitrumSepoliaNativeUSDC(tokenAddress) &&
-    !isParentChainArbitrumOne
-  ) {
+  if (isTokenArbitrumSepoliaNativeUSDC(tokenAddress) && isParentChainSepolia) {
     return {
       ...commonUSDC,
       address: CommonAddress.ArbitrumSepolia.USDC,

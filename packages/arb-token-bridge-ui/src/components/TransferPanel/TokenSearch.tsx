@@ -36,10 +36,7 @@ import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
-import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { Switch } from '../common/atoms/Switch'
-import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
@@ -48,7 +45,7 @@ import { ether } from '../../constants'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
-  listIds: new Set<number>(),
+  listIds: new Set<string>(),
   type: TokenType.ERC20,
   // the address field is for L1 address but native USDC does not have an L1 address
   // the L2 address is used instead to avoid errors
@@ -58,7 +55,7 @@ export const ARB_ONE_NATIVE_USDC_TOKEN = {
 
 export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
-  listIds: new Set<number>(),
+  listIds: new Set<string>(),
   type: TokenType.ERC20,
   address: CommonAddress.ArbitrumSepolia.USDC,
   l2Address: CommonAddress.ArbitrumSepolia.USDC
@@ -567,10 +564,7 @@ export function TokenSearch({
   } = useAppState()
   const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const { childChain, parentChain, parentChainProvider, isTeleportMode } =
-    useNetworksRelationship(networks)
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
+  const { childChain, parentChainProvider } = useNetworksRelationship(networks)
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -618,23 +612,6 @@ export function TokenSearch({
       if (data) {
         token.updateTokenData(parentErc20Address)
         setSelectedToken(parentErc20Address)
-      }
-
-      if (isTransferDisabledToken(parentErc20Address, childChain.id)) {
-        openTransferDisabledDialog()
-        return
-      }
-
-      if (
-        isTeleportMode &&
-        !isTeleportEnabledToken(
-          parentErc20Address,
-          parentChain.id,
-          childChain.id
-        )
-      ) {
-        openTransferDisabledDialog()
-        return
       }
     } catch (error: any) {
       console.warn(error)

@@ -19,6 +19,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
+import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -78,6 +79,7 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { isExperimentalFeatureEnabled } from '../../util'
+import { useMainContentTabs } from '../MainContent/MainContent'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -144,8 +146,8 @@ export function TransferPanel() {
     chainId: networks.sourceChain.id
   })
 
-  const { openTransactionHistoryPanel, setTransferring } =
-    useAppContextActions()
+  const { setTransferring } = useAppContextActions()
+  const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const isCctpTransfer = useIsCctpTransfer()
@@ -174,6 +176,11 @@ export function TransferPanel() {
   const [
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
+  ] = useDialog()
+
+  const [
+    customDestinationAddressConfirmationDialogProps,
+    openCustomDestinationAddressConfirmationDialog
   ] = useDialog()
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
@@ -217,7 +224,11 @@ export function TransferPanel() {
   const isTokenAlreadyImported = useMemo(() => {
     const tokenLowercased = tokenFromSearchParams?.toLowerCase()
 
-    if (!tokenLowercased) {
+    if (tokenFromSearchParams === 'eth') {
+      return true
+    }
+
+    if (typeof tokenLowercased === 'undefined') {
       return true
     }
 
@@ -250,29 +261,19 @@ export function TransferPanel() {
     tokensFromUser
   ])
 
-  const importDialogTokenAddress = useMemo(() => {
-    if (
-      isExperimentalFeatureEnabled('eth-custom-orbit') &&
-      tokenFromSearchParams === 'eth'
-    ) {
-      return undefined
-    }
-
-    if (
-      typeof isTokenAlreadyImported === 'undefined' ||
-      isTokenAlreadyImported
-    ) {
-      return undefined
-    }
-    return tokenFromSearchParams
-  }, [isTokenAlreadyImported, tokenFromSearchParams])
-
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
       selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
 
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
+
+  const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
+    return (
+      destinationAddress?.trim().toLowerCase() ===
+      walletAddress?.trim().toLowerCase()
+    )
+  }, [destinationAddress, walletAddress])
 
   async function depositToken() {
     if (!selectedToken) {
@@ -391,6 +392,12 @@ export function TransferPanel() {
       setShowSmartContractWalletTooltip(true)
     }, 3000)
 
+  const confirmCustomDestinationAddressForSCWallets = async () => {
+    const waitForInput = openCustomDestinationAddressConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
   const transferCctp = async () => {
     if (!selectedToken) {
       return
@@ -425,6 +432,16 @@ export function TransferPanel() {
       } else {
         const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
         if (!withdrawalConfirmation) return
+      }
+
+      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
+      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      if (
+        isSmartContractWallet &&
+        areSenderAndCustomDestinationAddressesEqual
+      ) {
+        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        if (!confirmation) return false
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -554,7 +571,7 @@ export function TransferPanel() {
       }
 
       addPendingTransaction(newTransfer)
-      openTransactionHistoryPanel()
+      switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
     } catch (e) {
@@ -642,6 +659,16 @@ export function TransferPanel() {
       }
 
       const destinationAddress = latestDestinationAddress.current
+
+      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
+      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      if (
+        isSmartContractWallet &&
+        areSenderAndCustomDestinationAddressesEqual
+      ) {
+        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        if (!confirmation) return false
+      }
 
       const isCustomNativeTokenAmount2 =
         nativeCurrency.isCustom &&
@@ -892,7 +919,7 @@ export function TransferPanel() {
       )
     }
 
-    openTransactionHistoryPanel()
+    switchToTransactionHistoryTab()
     setTransferring(false)
     clearAmountInput()
 
@@ -1026,6 +1053,10 @@ export function TransferPanel() {
         amount={amount}
       />
 
+      <CustomDestinationAddressConfirmationDialog
+        {...customDestinationAddressConfirmationDialogProps}
+      />
+
       <div
         className={twMerge(
           'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
@@ -1040,11 +1071,11 @@ export function TransferPanel() {
         />
         <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
-        {importDialogTokenAddress && (
+        {isTokenAlreadyImported === false && tokenFromSearchParams && (
           <TokenImportDialog
             {...tokenImportDialogProps}
             onClose={closeWithResetTokenImportDialog}
-            tokenAddress={importDialogTokenAddress}
+            tokenAddress={tokenFromSearchParams}
           />
         )}
 

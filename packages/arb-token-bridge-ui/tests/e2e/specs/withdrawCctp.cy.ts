@@ -72,7 +72,7 @@ describe('Withdraw USDC through CCTP', () => {
       'be.visible'
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
-    cy.findMoveFundsButton().click()
+    cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
     cy.confirmSpending(USDCAmountToSend.toString())
@@ -97,7 +97,6 @@ describe('Withdraw USDC through CCTP', () => {
   it('should claim deposit', () => {
     cy.changeMetamaskNetwork('sepolia')
     cy.claimCctp(0.00012, { accept: true })
-    cy.closeTransactionHistoryPanel()
     cy.claimCctp(0.00013, { accept: true })
   })
 
@@ -110,7 +109,7 @@ describe('Withdraw USDC through CCTP', () => {
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
     cy.fillCustomDestinationAddress()
-    cy.findMoveFundsButton().click()
+    cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
     cy.confirmSpending(USDCAmountToSend.toString())

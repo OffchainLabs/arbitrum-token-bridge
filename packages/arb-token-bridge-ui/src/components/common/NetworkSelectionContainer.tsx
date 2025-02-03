@@ -15,7 +15,8 @@ import {
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
-import { ChainId, isNetwork, getNetworkName } from '../../util/networks'
+import { isNetwork, getNetworkName } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
@@ -123,7 +124,10 @@ export function NetworkButton({
 
   const hasOneOrLessChain = chains.length <= 1
 
-  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+  const disabled =
+    hasOneOrLessChain ||
+    (isSmartContractWallet && type === 'source') ||
+    isLoading
 
   const buttonStyle = {
     backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
@@ -405,6 +409,7 @@ export const NetworkSelectionContainer = (
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [, setQueryParams] = useArbQueryParams()
   const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
+  const { isSmartContractWallet } = useAccountType()
 
   const isSource = props.type === 'source'
 
@@ -442,7 +447,10 @@ export const NetworkSelectionContainer = (
 
       setSelectedToken(null)
       setQueryParams({ destinationAddress: undefined })
-      setAdvancedSettingsCollapsed(true)
+
+      if (!isSmartContractWallet) {
+        setAdvancedSettingsCollapsed(true)
+      }
     },
     [
       isSource,
@@ -451,7 +459,8 @@ export const NetworkSelectionContainer = (
       setSelectedToken,
       setQueryParams,
       setAdvancedSettingsCollapsed,
-      openOneNovaTransferDialog
+      openOneNovaTransferDialog,
+      isSmartContractWallet
     ]
   )
 

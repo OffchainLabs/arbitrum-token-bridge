@@ -4,12 +4,8 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import {
-  ChainId,
-  getChains,
-  getChildChainIds,
-  isNetwork
-} from '../util/networks'
+import { getChains, getChildChainIds, isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -17,7 +13,7 @@ import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
-import { isTeleportTx, Transaction } from './useTransactions'
+import { isTeleportTx, Transaction } from '../types/Transactions'
 import { MergedTransaction } from '../state/app/state'
 import {
   isCustomDestinationAddressTx,
@@ -161,13 +157,7 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   }
 
   if (isDeposit(tx)) {
-    return transformDeposit(
-      await updateAdditionalDepositData({
-        depositTx: tx,
-        parentProvider,
-        childProvider
-      })
-    )
+    return transformDeposit(await updateAdditionalDepositData(tx))
   }
 
   let withdrawal: L2ToL1EventResultPlus | undefined
@@ -838,7 +828,7 @@ export const useTransactionHistory = (
 
   if (isLoadingTxsWithoutStatus || error) {
     return {
-      transactions: [],
+      transactions: newTransactionsData || [],
       loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],

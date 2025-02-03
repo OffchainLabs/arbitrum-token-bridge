@@ -38,6 +38,10 @@ export function useUpdateUSDCTokenData() {
       return
     }
 
+    if (typeof token === 'undefined') {
+      return
+    }
+
     if (isArbOneUSDC && isDestinationChainArbitrumOne) {
       token.updateTokenData(CommonAddress.Ethereum.USDC)
       setSelectedToken(CommonAddress.Ethereum.USDC)
@@ -53,6 +57,7 @@ export function useUpdateUSDCTokenData() {
     isDestinationChainArbitrumOne,
     isDestinationChainArbitrumSepolia,
     selectedToken,
+    setSelectedToken,
     token
   ])
 }

@@ -62,6 +62,7 @@ export function WithdrawalConfirmationDialog(
     from: childChain.id,
     to: parentChain.id,
     tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
+    tokenAddress: selectedToken?.address,
     amount: props.amount
   })
 

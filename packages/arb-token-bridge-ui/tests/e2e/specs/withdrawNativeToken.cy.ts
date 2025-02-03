@@ -61,7 +61,7 @@ describe('Withdraw native token', () => {
           ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
           cy.login({ networkType: 'childChain' })
           cy.typeAmount(ETHToWithdraw)
-          cy.findMoveFundsButton().click()
+          cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
           cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
           // the Continue withdrawal button should be disabled at first
@@ -96,7 +96,7 @@ describe('Withdraw native token', () => {
           })
 
           context('transfer panel amount should be reset', () => {
-            cy.closeTransactionHistoryPanel()
+            cy.switchToTransferPanelTab()
             cy.findAmountInput().should('have.value', '')
             cy.findMoveFundsButton().should('be.disabled')
           })
@@ -106,9 +106,7 @@ describe('Withdraw native token', () => {
           // increase the timeout for this test as claim button can take ~(20 blocks *10 blocks/sec) to activate
           cy.login({ networkType: 'parentChain' }) // login to L1 to claim the funds (otherwise would need to change network after clicking on claim)
 
-          cy.findByLabelText('Open Transaction History')
-            .should('be.visible')
-            .click()
+          cy.switchToTransactionHistoryTab('pending')
 
           cy.findClaimButton(
             formatAmount(ETHToWithdraw, {
@@ -128,7 +126,7 @@ describe('Withdraw native token', () => {
             })}`
           ).should('be.visible')
 
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
 
           // the balance on the destination chain should not be the same as before
           cy.findByLabelText(
@@ -148,7 +146,7 @@ describe('Withdraw native token', () => {
 
       cy.typeAmount(ETHToWithdraw)
       cy.fillCustomDestinationAddress()
-      cy.findMoveFundsButton().click()
+      cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
       cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
       // the Continue withdrawal button should be disabled at first
@@ -194,7 +192,7 @@ describe('Withdraw native token', () => {
       cy.closeTransactionDetails()
 
       context('transfer panel amount should be reset', () => {
-        cy.closeTransactionHistoryPanel()
+        cy.switchToTransferPanelTab()
         cy.findAmountInput().should('have.value', '')
         cy.findMoveFundsButton().should('be.disabled')
       })

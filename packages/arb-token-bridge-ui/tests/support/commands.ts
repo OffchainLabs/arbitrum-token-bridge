@@ -108,31 +108,6 @@ export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
     .and('equal', 'selected')
 }
 
-export const openTransactionsPanel = (tab: 'pending' | 'settled') => {
-  cy.log(`opening transactions panel on ${tab}`)
-  cy.findByRole('button', { name: /account header button/i })
-    .should('be.visible')
-    .click()
-  cy.findByRole('button', { name: /transactions/i })
-    .should('be.visible')
-    .click()
-
-  cy.selectTransactionsPanelTab(tab)
-
-  // Waiting for transactions to be fetched
-  return cy.waitUntil(
-    () =>
-      cy
-        .findByText(/Showing \d+ \w+ transactions made in/)
-        .should('be.visible'),
-    {
-      errorMsg: 'Failed to fetch transactions.',
-      timeout: 120_000,
-      interval: 500
-    }
-  )
-}
-
 export const searchAndSelectToken = ({
   tokenName,
   tokenAddress
@@ -166,10 +141,12 @@ export const fillCustomDestinationAddress = () => {
 
   // unlock custom destination address input
   cy.findByLabelText('Custom destination input lock')
+    .scrollIntoView()
     .should('be.visible')
     .click()
 
   cy.findByLabelText('Custom Destination Address Input')
+    .scrollIntoView()
     .should('be.visible')
     .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
@@ -247,11 +224,17 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
-export function startTransfer() {
+export function clickMoveFundsButton({
+  shouldConfirmInMetamask = true
+}: {
+  shouldConfirmInMetamask?: boolean
+} = {}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
-  cy.confirmMetamaskTransaction()
+  if (shouldConfirmInMetamask) {
+    cy.confirmMetamaskTransaction()
+  }
 }
 
 export function findSelectTokenButton(
@@ -263,8 +246,20 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
-export function closeTransactionHistoryPanel() {
-  cy.findByLabelText('Close side panel').click()
+export function switchToTransferPanelTab() {
+  return cy.findByLabelText('Switch to Bridge Tab').click()
+}
+
+export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
+  cy.log(`opening transactions panel on ${tab}`)
+
+  cy.findByLabelText('Switch to Transaction History Tab').click()
+
+  cy.selectTransactionsPanelTab(tab)
+
+  cy.findByText(/Showing \d+ \w+ transactions made in/, {
+    timeout: 120_000
+  }).should('be.visible')
 }
 
 export function openTransactionDetails({
@@ -317,6 +312,8 @@ export function findTransactionInTransactionHistory({
   amount2?: number
   duration?: string
 }) {
+  const timeout = 120_000
+
   // Replace . with \.
   const parsedAmount = amount.toString().replace(/\./g, '\\.')
 
@@ -326,15 +323,18 @@ export function findTransactionInTransactionHistory({
     }`
   )
 
-  cy.findByTestId(rowId).as('row')
+  cy.findByTestId(rowId, { timeout }).as('row')
   if (duration) {
-    cy.get('@row').findAllByText(duration).first().should('be.visible')
+    cy.get('@row', { timeout })
+      .findAllByText(duration, { timeout })
+      .first()
+      .should('be.visible', { timeout })
   }
 
-  cy.get('@row')
-    .findByLabelText('Transaction details button')
-    .should('be.visible')
-  return cy.get('@row')
+  cy.get('@row', { timeout })
+    .findByLabelText('Transaction details button', { timeout })
+    .should('be.visible', { timeout })
+  return cy.get('@row', { timeout })
 }
 
 export function findClaimButton(
@@ -372,7 +372,7 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   const formattedAmount = formatAmount(amount, {
     symbol: 'USDC'
   })
-  cy.openTransactionsPanel('pending')
+  cy.switchToTransactionHistoryTab('pending')
   cy.findTransactionInTransactionHistory({
     amount,
     symbol: 'USDC'
@@ -391,7 +391,6 @@ Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
-  openTransactionsPanel,
   selectTransactionsPanelTab,
   searchAndSelectToken,
   fillCustomDestinationAddress,
@@ -404,9 +403,10 @@ Cypress.Commands.addAll({
   findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  startTransfer,
+  clickMoveFundsButton,
   findSelectTokenButton,
-  closeTransactionHistoryPanel,
+  switchToTransferPanelTab,
+  switchToTransactionHistoryTab,
   openTransactionDetails,
   closeTransactionDetails,
   findTransactionInTransactionHistory,

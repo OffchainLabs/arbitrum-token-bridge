@@ -89,7 +89,7 @@ describe('Deposit Token', () => {
         })
 
         context('should deposit successfully', () => {
-          cy.startTransfer()
+          cy.clickMoveFundsButton()
           cy.findTransactionInTransactionHistory({
             duration: depositTime,
             amount: ERC20AmountToSend,
@@ -98,7 +98,7 @@ describe('Deposit Token', () => {
         })
 
         context('transfer panel amount should be reset', () => {
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
           cy.findAmountInput().should('have.value', '')
           cy.findMoveFundsButton().should('be.disabled')
         })
@@ -130,7 +130,7 @@ describe('Deposit Token', () => {
         })
 
         context('should deposit successfully', () => {
-          cy.startTransfer()
+          cy.clickMoveFundsButton()
           const txData = {
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
@@ -150,20 +150,11 @@ describe('Deposit Token', () => {
           // switch to settled transactions
           cy.selectTransactionsPanelTab('settled')
 
-          //wait for some time for tx to go through and find the new amount in settled transactions
-          cy.waitUntil(
-            () =>
-              cy.findTransactionInTransactionHistory({
-                duration: 'a few seconds ago',
-                amount: ERC20AmountToSend,
-                symbol: testCase.symbol
-              }),
-            {
-              errorMsg: 'Could not find settled ERC20 Deposit transaction',
-              timeout: 60_000,
-              interval: 500
-            }
-          )
+          cy.findTransactionInTransactionHistory({
+            duration: 'a few seconds ago',
+            amount: ERC20AmountToSend,
+            symbol: testCase.symbol
+          })
           // open the tx details popup
           const txData = {
             amount: ERC20AmountToSend,
@@ -182,7 +173,7 @@ describe('Deposit Token', () => {
 
         context('funds should reach destination account successfully', () => {
           // close transaction history
-          cy.closeTransactionHistoryPanel()
+          cy.switchToTransferPanelTab()
 
           // the custom destination address should now have some balance greater than zero
           cy.findByLabelText(`${testCase.symbol} balance amount on childChain`)
