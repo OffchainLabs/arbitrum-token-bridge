@@ -168,7 +168,7 @@ const ETH_IDENTIFIER = 'native_currency_eth'
 function TokensPanel({
   onTokenSelected
 }: {
-  onTokenSelected: (parentErc20Address: string | null) => void
+  onTokenSelected: (parentErc20AddressOrKey: string | null) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
@@ -568,17 +568,21 @@ export function TokenSearch({
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
-  async function selectToken(parentErc20Address: string | null) {
+  async function selectToken(parentErc20AddressOrKey: string | null) {
     close()
 
-    if (parentErc20Address === null) {
+    if (parentErc20AddressOrKey === null) {
       setSelectedToken(null)
       return
     }
 
-    if (parentErc20Address === 'eth') {
+    if (parentErc20AddressOrKey === 'eth') {
       setSelectedToken('eth')
+      return
     }
+
+    // we know it's an address now
+    const parentErc20Address = parentErc20AddressOrKey
 
     if (!parentErc20Address) {
       return

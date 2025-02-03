@@ -161,7 +161,7 @@ function TokenListInfo({
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  onTokenSelected: (parentErc20Address: string | null) => void
+  onTokenSelected: (parentErc20AddressOrKey: string | null) => void
   token: ERC20BridgeToken | NativeCurrencyEther | null
 }
 
