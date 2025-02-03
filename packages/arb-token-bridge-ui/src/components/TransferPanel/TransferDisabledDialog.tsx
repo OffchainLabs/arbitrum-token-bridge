@@ -12,6 +12,7 @@ import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
+import { isUsdtTransferBetweenEthAndArbOne } from '../../util/TokenTransferDisabledUtils'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -49,13 +50,11 @@ export function TransferDisabledDialog() {
     number | undefined
   >()
 
-  const isUsdtTransfer = useMemo(() => {
-    return (
-      isTokenEthereumUSDT(selectedToken?.address) &&
-      (isNetwork(networks.sourceChain.id).isEthereumMainnet ||
-        isNetwork(networks.sourceChain.id).isArbitrumOne)
-    )
-  }, [selectedToken?.address, networks.sourceChain.id])
+  const isUsdtTransfer = isUsdtTransferBetweenEthAndArbOne({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id,
+    tokenAddress: selectedToken?.address
+  })
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {

@@ -1,5 +1,7 @@
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from './CommonAddressUtils'
+import { isNetwork } from './networks'
+import { isTokenEthereumUSDT } from './TokenUtils'
 
 export type TransferDisabledToken = {
   symbol: string
@@ -25,6 +27,29 @@ const transferDisabledTokens: { [chainId: number]: TransferDisabledToken[] } = {
       l2Address: CommonAddress.ArbitrumOne.USDT
     }
   ]
+}
+
+export const isUsdtTransferBetweenEthAndArbOne = ({
+  tokenAddress,
+  sourceChainId,
+  destinationChainId
+}: {
+  tokenAddress?: string
+  sourceChainId: number
+  destinationChainId: number
+}) => {
+  const isDepositFromEthToArbOne =
+    isNetwork(sourceChainId).isEthereumMainnet &&
+    isNetwork(destinationChainId).isArbitrumOne
+
+  const isWithdrawalFromArbOneToEth =
+    isNetwork(sourceChainId).isArbitrumOne &&
+    isNetwork(destinationChainId).isEthereumMainnet
+
+  return (
+    isTokenEthereumUSDT(tokenAddress) &&
+    (isDepositFromEthToArbOne || isWithdrawalFromArbOneToEth)
+  )
 }
 
 export function isTransferDisabledToken(

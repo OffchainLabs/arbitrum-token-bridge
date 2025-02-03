@@ -21,7 +21,10 @@ import {
   UseGasSummaryResult,
   useGasSummary
 } from '../../hooks/TransferPanel/useGasSummary'
-import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import {
+  isTransferDisabledToken,
+  isUsdtTransferBetweenEthAndArbOne
+} from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
@@ -280,6 +283,12 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
+    const isUsdtTransfer = isUsdtTransferBetweenEthAndArbOne({
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id,
+      tokenAddress: selectedToken?.address
+    })
+
     // ERC-20
     if (selectedToken) {
       const selectedTokenIsDisabled =
@@ -289,7 +298,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             selectedToken.address,
             parentChain.id,
             childChain.id
-          ))
+          )) ||
+        isUsdtTransfer
 
       if (
         isDepositMode &&
