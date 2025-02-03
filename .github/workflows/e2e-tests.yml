@@ -66,6 +66,7 @@ jobs:
       # the other packages are dependencies of chromium
       - name: Set up Chromium 128
         run: |
+          sudo apt-get update
           sudo apt-get remove chromium --purge
           rm -rf ~/.config/chromium
           rm -rf ~/.cache/chromium
