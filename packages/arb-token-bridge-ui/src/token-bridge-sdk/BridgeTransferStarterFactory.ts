@@ -9,7 +9,6 @@ import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
 import { EthTeleportStarter } from './EthTeleportStarter'
 import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
-import { OftTransferStarter } from './OftTransferStarter'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
