@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { BigNumber, Signer } from 'ethers'
 import useSWR from 'swr'
-import { useAppState } from '../../state'
 import { useAccount, useSigner } from 'wagmi'
 import { getOftTransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
@@ -48,9 +47,6 @@ export function useOftFeeEstimates({
 }: {
   sourceChainErc20Address?: string
 }) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const { data: signer } = useSigner()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
@@ -66,14 +62,14 @@ export function useOftFeeEstimates({
     }).isValid
   }, [sourceChainId, destinationChainId, sourceChainErc20Address])
 
-  const { data: gasEstimates, error } = useSWR(
+  const { data: feeEstimates, error } = useSWR(
     signer && isValidOftTransfer
       ? ([
           sourceChainId,
           destinationChainId,
           sourceChainErc20Address,
           walletAddress,
-          'oftGasEstimates'
+          'oftFeeEstimates'
         ] as const)
       : null,
     ([
@@ -106,8 +102,8 @@ export function useOftFeeEstimates({
   )
 
   return {
-    gasEstimates,
-    isLoading: !error && !gasEstimates,
+    feeEstimates,
+    isLoading: !error && !feeEstimates,
     error
   }
 }
