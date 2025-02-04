@@ -115,23 +115,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
 1. Set up the Nitro test node
 
-   1. First, make sure you have installed Chromium version 128 on your local machine. Homebrew only has the latest version so you will have to do this from the builds archive. Follow the instructions below to install.
-
-      - Look for the branch base position number for version 128 on https://chromiumdash.appspot.com/releases?platform=Mac
-      - Version 128 should use the branch base position number `1331488`, it is shown on git history
-        https://chromium.googlesource.com/chromium/src/+/545591e4a0b85ce8937a0ce751bacdc0fe92f1ed
-      - Visit the Chromium continuous builds archive
-        https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html
-      - Find the relevant build for your machine, for example if you are using an M chip Mac, you should look for the `Mac_Arm` folder
-        https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Mac_Arm/
-      - Find `1331488` and download `chrome-mac.zip`
-        https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Mac_Arm/1331488/
-      - Install Chromium by extracting the zipped file and move `Chromium.app` to your `Applications` folder
-      - Due to file permissions, when you try to open the newly installed Chromium app, you will encounter the error `"Chromium" is damaged and can't be opened. You should move it to the Bin.`
-      - Run this command on your terminal. It fixes the issue by removing metadata, specifically quarantine flags to allow the app to be used.
-        ```
-        xattr -cr /Applications/Chromium.app
-        ```
+   1. First, make sure you have installed Chromium version 128 on your local machine. This is the latest version that works with our e2e setup.
 
    2. Make sure you have a Nitro test node running. Follow the instructions [here](https://docs.arbitrum.io/node-running/how-tos/local-dev-node).
 
