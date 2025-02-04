@@ -7,12 +7,12 @@ const boldUpgrades: {
   }
 } = {
   [ChainId.ArbitrumOne]: {
-    dateStart: new Date('2025-02-05T15:00:00'),
-    dateEnd: new Date('2025-02-12T15:00:00')
+    dateStart: new Date('2025-02-05T14:00:00Z'),
+    dateEnd: new Date('2025-02-12T14:00:00Z')
   },
   [ChainId.ArbitrumNova]: {
-    dateStart: new Date('2025-02-05T15:00:00'),
-    dateEnd: new Date('2025-02-12T15:00:00')
+    dateStart: new Date('2025-02-05T14:00:00Z'),
+    dateEnd: new Date('2025-02-12T14:00:00Z')
   }
 }
 
