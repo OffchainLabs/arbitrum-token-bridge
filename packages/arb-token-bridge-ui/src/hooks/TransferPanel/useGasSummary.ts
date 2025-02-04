@@ -143,7 +143,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (gasEstimatesError) {
+    if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
       return {
         status: 'error',
         estimatedParentChainGasFees,
