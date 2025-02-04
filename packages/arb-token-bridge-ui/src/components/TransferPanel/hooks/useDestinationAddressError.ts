@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
-import { isAddress } from 'ethers/lib/utils.js'
+import { isAddress } from 'ethers/lib/utils'
 
 import { DestinationAddressErrors } from '../AdvancedSettings'
 import { addressIsDenylisted } from '../../../util/AddressUtils'

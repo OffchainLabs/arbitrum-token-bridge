@@ -20,7 +20,6 @@ import {
 } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { isCustomDestinationAddressTx } from '../state/app/utils'
 import { addressIsSmartContract } from '../util/AddressUtils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
 import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
@@ -51,14 +50,9 @@ export class EthDepositStarter extends BridgeTransferStarter {
     amount: BigNumber
     destinationAddress?: string
   }) {
-    const address = await getAddressFromSigner(signer)
+    const isCustomDestinationAddress = !!destinationAddress
 
-    const isDifferentDestinationAddress = isCustomDestinationAddressTx({
-      sender: address,
-      destination: destinationAddress
-    })
-
-    if (!isDifferentDestinationAddress) {
+    if (!isCustomDestinationAddress) {
       return BigNumber.from(0)
     }
 
@@ -180,17 +174,14 @@ export class EthDepositStarter extends BridgeTransferStarter {
       await this.destinationChainProvider.getNetwork()
     ).chainId
 
-    const isDifferentDestinationAddress = isCustomDestinationAddressTx({
-      sender: address,
-      destination: destinationAddress
-    })
+    const isCustomDestinationAddress = !!destinationAddress
 
     await validateSignerChainId({
       signer,
       sourceChainIdOrProvider: this.sourceChainProvider
     })
 
-    const depositRequest = isDifferentDestinationAddress
+    const depositRequest = isCustomDestinationAddress
       ? await ethBridger.getDepositToRequest({
           amount,
           from: address,
@@ -227,7 +218,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       gasLimit: percentIncrease(gasLimit, BigNumber.from(5))
     }
 
-    const sourceChainTransaction = isDifferentDestinationAddress
+    const sourceChainTransaction = isCustomDestinationAddress
       ? await ethBridger.depositTo({
           amount,
           parentSigner: signer,

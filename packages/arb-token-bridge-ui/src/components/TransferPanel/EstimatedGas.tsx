@@ -2,8 +2,8 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-import { useAppState } from '../../state'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -13,6 +13,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 function getGasFeeTooltip(chainId: ChainId) {
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
@@ -53,9 +54,7 @@ export function EstimatedGas({
 }: {
   chainType: 'source' | 'destination'
 }) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const {
     childChain,

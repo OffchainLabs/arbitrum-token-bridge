@@ -1005,6 +1005,193 @@
           "logoUrl": "/images/DataLakeMainnet_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 51828,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0xd46AB997110a91C4CB6f4576ffE6769a3033622A",
+        "inbox": "0xF649EF414d5674851614615b3e3861E90a812379",
+        "outbox": "0x48a5c0942046753B8026b1dc074Dd22297A31340",
+        "rollup": "0xAa400A624190FFbD09F292d09C2Ed01704609C67",
+        "sequencerInbox": "0x6CBf221c8cc7E2B9De4bce3a5c75378591Bdf8Ea"
+      },
+      "nativeToken": "0x6a9896837021EA3eD83F623F655C119c54abE02c",
+      "explorerUrl": "https://scan.chainbounty.io/",
+      "rpcUrl": "https://rpc.chainbounty.io",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "ChainBounty",
+      "slug": "chainbounty",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x5113CD511cB1bBf6d5A2BbA7c6dBe1D37D5Bd55a",
+        "parentErc20Gateway": "0x81d8Bb220060Ba83653925c2a5D5c7060fD7729B",
+        "parentGatewayRouter": "0xa55090a934B9863Ae6E7a011a320693bEFd703BA",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x73b8CcD46942A25Ca18ad8f1a12Cf23D1887BbCC",
+        "childErc20Gateway": "0xda420F3473Fb58D50fc080F3C5221A4cb0dFD4DD",
+        "childGatewayRouter": "0xbDA34ce7668707d2f3fDecf7f346d3B9dE45a246",
+        "childMultiCall": "0x56B3516DbD7066FA2252B4C792A8aD3CD75f690c",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFBA68",
+        "network": {
+          "name": "ChainBounty",
+          "logo": "/images/ChainBounty_Logo.svg",
+          "description": "ChainBounty is a decentralized platform that helps solve security challenges in the crypto space. With collective intelligence and a fair reward system, anyone can join the fight against cybercrime."
+        },
+        "nativeTokenData": {
+          "name": "ChainBounty",
+          "symbol": "BOUNTY",
+          "logoUrl": "/images/ChainBounty_Logo.svg"
+        },
+        "fastWithdrawalTime": 3600000
+      }
+    },
+    {
+      "chainId": 668668,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x9be649C1C1D073536D55db83abA093E8558A962E",
+        "inbox": "0x1BEdFe383749b07A73370496E035c31Fd336509C",
+        "outbox": "0x09E2EF7161c89aAC723f817695629BEBd9914f41",
+        "rollup": "0x65DC757cd6A72332e37FD49382396b9aCee35462",
+        "sequencerInbox": "0xF759d5DD167072D470D08BF65Aef1aD3F8Efc947"
+      },
+      "nativeToken": "0xb8D4554538991977E49E4C5490B92CFE58EF5281",
+      "explorerUrl": "https://conwai.calderaexplorer.xyz/",
+      "rpcUrl": "https://conwai.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Conwai",
+      "slug": "conwai",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0xa69A708032931b5f9A79Ce0e7b976F759327a7bD",
+        "parentErc20Gateway": "0x86495D9c9E8Bd8E0b8F52bED8A90d43601d46C07",
+        "parentGatewayRouter": "0xe0a4b93C0f34b04358c8788e54A097D6769fD0eD",
+        "parentMultiCall": "0x411f8A148e448bBe75382d4FFABee0796484f3c6",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x39537559ADD8396CDed00849f611D0feE7A42122",
+        "childErc20Gateway": "0xc4BC8400fF5825a0DD0B5737fa1041Ae77CB5ff6",
+        "childGatewayRouter": "0xe0eFA3089D69ac76737712D925ED0D21e6EbD544",
+        "childMultiCall": "0xfCa388141231b858A8426f298ca77f771e9E3c3A",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#000000",
+        "network": {
+          "name": "Conwai",
+          "logo": "/images/Conwai_Logo.svg",
+          "description": "Layer 3 for the full AI lifecycle."
+        },
+        "nativeTokenData": {
+          "name": "Conwai",
+          "symbol": "CNW",
+          "logoUrl": "/images/Conwai_NativeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 92278,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0xaF25849aEb040bEab7a0c783fc6861d26aE49796",
+        "inbox": "0xc7b143E5E4Bf1893BA33007ecb3Db9c1092dab38",
+        "outbox": "0xA5b6E1DbA5c9037cCd2013D7dd7BD173AFc90d4c",
+        "rollup": "0xE18FD99F6C0eBEC7d01893E9f7Cf363EeF38F9B4",
+        "sequencerInbox": "0x21f9c31eD91612B48A8ae450Bdd0f19F8f5Bea40"
+      },
+      "nativeToken": "0xa4f63404b58C3efD9Db6D53352BD386fFa174e5A",
+      "explorerUrl": "https://explorer-miracle-chain-dqfxgxhidy.t.conduit.xyz/",
+      "rpcUrl": "https://rpc-miracle-chain-dqfxgxhidy.t.conduit.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Miracle Chain",
+      "slug": "miracle-chain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x7f8FBbDEAB9Dca3114809EE55ff465d770E0f839",
+        "parentErc20Gateway": "0x841C2f295fAd92eD08c52CD5304Ec5BC88962124",
+        "parentGatewayRouter": "0xb7dd0d29CB25D825aF320A09eA8Fc28A13E15F2B",
+        "parentMultiCall": "0xb7dd0d29CB25D825aF320A09eA8Fc28A13E15F2B",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x54A15cb513e07F6f28B983C91950c86B264d304e",
+        "childErc20Gateway": "0x7Ef6D4be278A4d87c940B17177dcB6DA1CF07593",
+        "childGatewayRouter": "0xf4Bd41665cc15a6e7240643ea6E45881de9831dA",
+        "childMultiCall": "0xA0b0aF7b5ABB99760A4B045b922518c8de7F4475",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#5d2f69",
+        "network": {
+          "name": "Miracle Chain",
+          "logo": "/images/MiracleChain_Logo.png",
+          "description": "Miracle Chain powers the MiraclePlay Universe, enabling cross-chain interactions, fostering collaboration among blockchain communities, and delivering a competitive, immersive gaming experience."
+        },
+        "nativeTokenData": {
+          "name": "Miracle Play",
+          "symbol": "MPT",
+          "logoUrl": "/images/MiracleChain_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 53456,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x113E7DC5e4A42b1bEe9DB0594f48EFdEa7b88eE0",
+        "inbox": "0x5b777fa9fBF1587509fe5b2Ab681af7Af890A5A3",
+        "outbox": "0x1B7b002b9430c6D59058beFa1f718A91fBe51ff0",
+        "rollup": "0x4BB5E86b2506C2E8537e50d2596D4af89Dd54307",
+        "sequencerInbox": "0xf5299083F7C234425f01CccDD9141e500011fffb"
+      },
+      "explorerUrl": "https://scan.birdlayer.xyz",
+      "rpcUrl": "https://rpc.birdlayer.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "BirdLayer",
+      "slug": "birdlayer",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x07a873c2372653615e2EA3D4405Aa19D2972Eb7C",
+        "parentErc20Gateway": "0x6111D7AAa83fbE979301C458fF8f07F1d2E30002",
+        "parentGatewayRouter": "0xf222cf6633f381B10D3b01793FC9bD3C07975800",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        "parentWethGateway": "0x8F6D27486eb773C7eEd27760D6aBd7355e0B64e9",
+        "childCustomGateway": "0xfEc33B9e6ce2bf63e6C545Ba356719a9F8EB472d",
+        "childErc20Gateway": "0x16D58745A9ad3Ea35b922CF71E65Fc98d0A37AE5",
+        "childGatewayRouter": "0xE4D8B01Eff656681c94C2a20A557A5e0872c523f",
+        "childMultiCall": "0x157c5776c948c5783213d1ba58b14ef8c15dfcC4",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x8d312E9A5C7edF5612C9e28C22593dA40d707720",
+        "childWethGateway": "0x27571468a8336d26E432A177e36E33Cf94D3DC8d"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFC804",
+        "network": {
+          "name": "BirdLayer",
+          "logo": "/images/BirdLayer_Logo.png",
+          "description": "Birdlayer - an Omni-Trading Layer3 platform using Arbitrum Orbit, connecting EVM and non-EVM ecosystems for seamless trading."
+        }
+      }
     }
   ],
   "testnet": [
