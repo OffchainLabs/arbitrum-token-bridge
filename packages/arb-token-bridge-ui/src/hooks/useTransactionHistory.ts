@@ -61,6 +61,7 @@ import {
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useArbQueryParams } from './useArbQueryParams'
+import { useOftTransactionHistory } from './useOftTransactionHistory'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -272,6 +273,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       isTestnetMode
     ]
   )
+
+  const oftTransfers = useOftTransactionHistory(address)
+  console.log('xxxx oftTransfers', oftTransfers)
 
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
