@@ -60,7 +60,10 @@ export function TransferDisabledDialog() {
       return false
     }
 
-    if (isTransferDisabledToken(selectedToken.address, childChain.id)) {
+    if (
+      isTransferDisabledToken(selectedToken.address, childChain.id) ||
+      isUsdtTransfer
+    ) {
       return true
     }
 
