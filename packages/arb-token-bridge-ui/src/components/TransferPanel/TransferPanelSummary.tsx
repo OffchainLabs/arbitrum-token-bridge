@@ -269,18 +269,16 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode &&
-        (isAffectedByBoLDUpgrade ? (
-          <BoLDUpgradeWarning />
-        ) : (
-          <div
-            className={twMerge(
-              'grid grid-cols-[260px_auto] items-center text-sm font-light'
-            )}
-          >
-            <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
-          </div>
-        ))}
+      {!isDepositMode && !isAffectedByBoLDUpgrade && (
+        <div
+          className={twMerge(
+            'grid grid-cols-[260px_auto] items-center text-sm font-light'
+          )}
+        >
+          <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
+        </div>
+      )}
+      {isAffectedByBoLDUpgrade && <BoLDUpgradeWarning />}
     </TransferPanelSummaryContainer>
   )
 }

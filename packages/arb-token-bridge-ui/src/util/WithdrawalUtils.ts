@@ -158,7 +158,6 @@ export function getConfirmationTime(chainId: number) {
     const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId(
       { chainId }
     )
-
     confirmationTimeInSeconds =
       getL1BlockTime(blockNumberReferenceChainId) *
         getConfirmPeriodBlocks(chainId) +
