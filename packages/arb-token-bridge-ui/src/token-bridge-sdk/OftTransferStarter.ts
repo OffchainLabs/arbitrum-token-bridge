@@ -188,8 +188,6 @@ export class OftTransferStarter extends BridgeTransferStarter {
       sendParams
     })
 
-    debugger
-
     const sendTx = await oftContract.send(
       sendParams,
       {
