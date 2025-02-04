@@ -22,6 +22,7 @@ import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
+import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -191,9 +192,19 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const {
+    isArbitrumOne: isSourceChainArbitrumOne,
+    isArbitrumNova: isSourceChainArbitrumNova
+  } = isNetwork(networks.sourceChain.id)
+
+  const {
     isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia,
+    isEthereumMainnet: isDestinationChainEthereumMainnet
   } = isNetwork(networks.destinationChain.id)
+
+  const isAffectedByBoLDUpgrade =
+    (isSourceChainArbitrumOne || isSourceChainArbitrumNova) &&
+    isDestinationChainEthereumMainnet
 
   const isDepositingUSDCtoArbOneOrArbSepolia =
     isTokenNativeUSDC(token?.address) &&
@@ -264,7 +275,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode && (
+      {!isDepositMode && !isAffectedByBoLDUpgrade && (
         <div
           className={twMerge(
             'grid grid-cols-[260px_auto] items-center text-sm font-light'
@@ -273,6 +284,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
         </div>
       )}
+      {isAffectedByBoLDUpgrade && <BoLDUpgradeWarning />}
     </TransferPanelSummaryContainer>
   )
 }
