@@ -10,7 +10,6 @@ import {
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
 import { NetworkContainer } from '../TransferPanelMain'
-import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
@@ -21,6 +20,7 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -86,9 +86,7 @@ export function SourceNetworkBox() {
     sourceChainId: networks.sourceChain.id,
     destinationChainId: networks.destinationChain.id
   })
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()

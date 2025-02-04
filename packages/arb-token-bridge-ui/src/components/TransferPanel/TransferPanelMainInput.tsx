@@ -11,10 +11,9 @@ import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
-import { useAppState } from '../../state'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
-import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
@@ -28,14 +27,7 @@ function MaxButton({
   className = '',
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
-  const [networks] = useNetworks()
-  const transferMode = getTransferMode({
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
-  })
+  const [selectedToken] = useSelectedToken()
 
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -81,9 +73,7 @@ function SourceChainTokenBalance({
   balanceOverride?: AmountInputOptions['balance']
   symbolOverride?: AmountInputOptions['symbol']
 }) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
   const transferMode = getTransferMode({
@@ -161,9 +151,6 @@ function ErrorMessage({
 }: {
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
 }) {
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
-
   if (typeof errorMessage === 'undefined') {
     return null
   }
@@ -191,14 +178,7 @@ function ErrorMessage({
     case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
       return (
         <div className="text-sm text-brick">
-          <span>This token can&apos;t be bridged over.</span>{' '}
-          <button
-            className="arb-hover underline"
-            onClick={openTransferDisabledDialog}
-          >
-            Learn more
-          </button>
-          <span>.</span>
+          <span>This token can&apos;t be bridged over.</span>
         </div>
       )
   }

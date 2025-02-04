@@ -1,16 +1,14 @@
 import useSWRImmutable from 'swr/immutable'
 import { useMemo } from 'react'
 
-import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../../util/WithdrawOnlyUtils'
 import { getTransferMode } from '../../../util/getTransferMode'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 export function useSelectedTokenIsWithdrawOnly() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { parentChain, childChain } = useNetworksRelationship(networks)
   const transferMode = getTransferMode({
@@ -28,7 +26,8 @@ export function useSelectedTokenIsWithdrawOnly() {
     return [
       selectedToken.address.toLowerCase(),
       parentChain.id,
-      childChain.id
+      childChain.id,
+      'useSelectedTokenIsWithdrawOnly'
     ] as const
   }, [selectedToken, transferMode, parentChain.id, childChain.id])
 

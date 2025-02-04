@@ -5,13 +5,13 @@ import Image from 'next/image'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { NetworkContainer } from '../TransferPanelMain'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useAppState } from '../../../state'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
 import { EstimatedGas } from '../EstimatedGas'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useDialog } from '../../common/Dialog'
 import {
   NetworkButton,
@@ -118,9 +118,6 @@ function BalanceRow({
 }
 
 function BalancesContainer() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
   const transferMode = getTransferMode({
@@ -129,6 +126,7 @@ function BalancesContainer() {
   })
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
+  const [selectedToken] = useSelectedToken()
 
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()

@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
+import { utils } from 'ethers'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
-import { useAppState } from '../../state'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -17,6 +17,10 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { SafeImage } from '../common/SafeImage'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
+import { Loader } from '../common/atoms/Loader'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useTokenLists } from '../../hooks/useTokenLists'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -29,13 +33,13 @@ export function TokenButton({
 }: {
   options?: TokenButtonOptions
 }): JSX.Element {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const disabled = options?.disabled ?? false
 
   const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
@@ -56,6 +60,17 @@ export function TokenButton({
       chainId: networks.sourceChain.id
     })
   }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
+
+  const isLoadingToken = useMemo(() => {
+    // don't show loader if native currency is selected
+    if (!tokenFromSearchParams) {
+      return false
+    }
+    if (!utils.isAddress(tokenFromSearchParams)) {
+      return false
+    }
+    return isLoadingTokenLists
+  }, [tokenFromSearchParams, isLoadingTokenLists])
 
   const tokenLogoSrc = useMemo(() => {
     if (typeof options?.logoSrc !== 'undefined') {
@@ -90,19 +105,27 @@ export function TokenButton({
               disabled={disabled}
             >
               <div className="flex items-center gap-2">
-                <SafeImage
-                  src={tokenLogoSrc}
-                  alt={`${selectedToken?.symbol ?? nativeCurrency.symbol} logo`}
-                  className="h-5 w-5 shrink-0"
-                />
-                <span className="text-xl font-light">{tokenSymbol}</span>
-                {!disabled && (
-                  <ChevronDownIcon
-                    className={twMerge(
-                      'h-3 w-3 text-gray-6 transition-transform duration-200',
-                      open ? '-rotate-180' : 'rotate-0'
+                {isLoadingToken ? (
+                  <Loader size="small" color="white" />
+                ) : (
+                  <>
+                    <SafeImage
+                      src={tokenLogoSrc}
+                      alt={`${
+                        selectedToken?.symbol ?? nativeCurrency.symbol
+                      } logo`}
+                      className="h-5 w-5 shrink-0"
+                    />
+                    <span className="text-xl font-light">{tokenSymbol}</span>
+                    {!disabled && (
+                      <ChevronDownIcon
+                        className={twMerge(
+                          'h-3 w-3 text-gray-6 transition-transform duration-200',
+                          open ? '-rotate-180' : 'rotate-0'
+                        )}
+                      />
                     )}
-                  />
+                  </>
                 )}
               </div>
             </Popover.Button>

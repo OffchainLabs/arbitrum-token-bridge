@@ -1,7 +1,7 @@
-import { useAppState } from '../../state'
 import { getTransferMode } from '../../util/getTransferMode'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useNetworks } from '../useNetworks'
+import { useSelectedToken } from '../useSelectedToken'
 
 export const useIsBatchTransferSupported = () => {
   const [{ sourceChain, destinationChain }] = useNetworks()
@@ -9,9 +9,7 @@ export const useIsBatchTransferSupported = () => {
     sourceChainId: sourceChain.id,
     destinationChainId: destinationChain.id
   })
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   if (!selectedToken) {
     return false
