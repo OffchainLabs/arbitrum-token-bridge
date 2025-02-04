@@ -233,7 +233,18 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: 'tests/support/index.ts',
-    defaultCommandTimeout: 20_000
+    defaultCommandTimeout: 20_000,
+    browsers: [{
+      name: 'chrome',
+      family: 'chromium',
+      channel: 'stable',
+      displayName: 'Chromium',
+      majorVersion: '128',
+      path: process.platform === 'darwin' 
+        ? `${process.cwd()}/cypress/browsers/chrome/mac_arm-128.0.6613.137/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`
+        : `${process.cwd()}/cypress/browsers/chrome/linux-128.0.6613.137/chrome-linux64/chrome`,
+      version: '128.0.6613.137'
+    }]
   }
 })
 
