@@ -79,6 +79,7 @@ import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChain
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftTransfer } from './hooks/useIsOftTransfer'
 import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
+import { OftTransactionHistoryDialog } from '../TransactionHistory/OftTransactionHistoryDialog_2'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -177,6 +178,8 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
+  const [oftTransactionHistoryDialogProps, openOftTransactionHistoryDialog] =
+    useDialog()
 
   const [
     customDestinationAddressConfirmationDialogProps,
@@ -354,6 +357,12 @@ export function TransferPanel() {
 
   const confirmCustomDestinationAddressForSCWallets = async () => {
     const waitForInput = openCustomDestinationAddressConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const showOftTransactionHistoryDialog = async () => {
+    const waitForInput = openOftTransactionHistoryDialog()
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -625,12 +634,6 @@ export function TransferPanel() {
           destinationAddress
         })
 
-        window.alert('OFT transfer succeeded')
-        console.log('xxxx', transfer)
-
-        clearAmountInput()
-        switchToTransactionHistoryTab()
-
         trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
           tokenSymbol: selectedToken.symbol,
           assetType: 'ERC-20',
@@ -638,6 +641,9 @@ export function TransferPanel() {
           network: getNetworkName(networks.sourceChain.id),
           amount: Number(amount)
         })
+
+        await showOftTransactionHistoryDialog()
+        clearAmountInput()
       } catch (error) {
         if (isUserRejectedError(error)) {
           return
@@ -1139,6 +1145,8 @@ export function TransferPanel() {
       <CustomDestinationAddressConfirmationDialog
         {...customDestinationAddressConfirmationDialogProps}
       />
+
+      <OftTransactionHistoryDialog {...oftTransactionHistoryDialogProps} />
 
       <div
         className={twMerge(
