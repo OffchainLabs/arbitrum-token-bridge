@@ -14,7 +14,6 @@ import {
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
 import { EnhancedProvider } from './EnhancedProvider'
-import { getOftTransferConfig } from './oftUtils'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -55,12 +54,6 @@ export const getBridgeTransferProperties = (
     destinationChainId
   })
 
-  const isOft = getOftTransferConfig({
-    sourceChainId,
-    destinationChainId,
-    sourceChainErc20Address: props.sourceChainErc20Address
-  }).isValid
-
   const isNativeCurrencyTransfer =
     typeof props.sourceChainErc20Address === 'undefined'
 
@@ -69,7 +62,6 @@ export const getBridgeTransferProperties = (
     isWithdrawal,
     isNativeCurrencyTransfer,
     isTeleport,
-    isOft,
     isSupported: isDeposit || isWithdrawal || isTeleport
   }
 }
