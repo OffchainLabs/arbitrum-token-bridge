@@ -2,7 +2,6 @@ import { BigNumber, constants } from 'ethers'
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
-import { useAppState } from '../../state'
 import { useNetworks } from '../useNetworks'
 import {
   isTokenArbitrumOneNativeUSDC,
@@ -10,6 +9,7 @@ import {
 } from '../../util/TokenUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
+import { useSelectedToken } from '../useSelectedToken'
 import { useBalances } from '../useBalances'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 
@@ -19,8 +19,7 @@ export type Balances = {
 }
 
 export function useSelectedTokenBalances(): Balances {
-  const { app } = useAppState()
-  const { selectedToken } = app
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isConnected } = useAccount()
   const { isDepositMode } = useNetworksRelationship(networks)
