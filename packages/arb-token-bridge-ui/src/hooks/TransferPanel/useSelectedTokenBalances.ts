@@ -1,6 +1,7 @@
 import { BigNumber, constants } from 'ethers'
 import { useMemo } from 'react'
-import { useAppState } from '../../state'
+import { useAccount } from 'wagmi'
+
 import { useNetworks } from '../useNetworks'
 import {
   isTokenArbitrumOneNativeUSDC,
@@ -8,6 +9,7 @@ import {
 } from '../../util/TokenUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
+import { useSelectedToken } from '../useSelectedToken'
 import { useBalances } from '../useBalances'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 
@@ -17,9 +19,9 @@ export type Balances = {
 }
 
 export function useSelectedTokenBalances(): Balances {
-  const { app } = useAppState()
-  const { selectedToken } = app
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
+  const { isConnected } = useAccount()
   const { isDepositMode } = useNetworksRelationship(networks)
 
   const {
@@ -49,6 +51,13 @@ export function useSelectedTokenBalances(): Balances {
     const result: Balances = {
       sourceBalance: null,
       destinationBalance: null
+    }
+
+    if (!isConnected) {
+      return {
+        sourceBalance: constants.Zero,
+        destinationBalance: constants.Zero
+      }
     }
 
     if (!selectedToken) {
@@ -109,6 +118,7 @@ export function useSelectedTokenBalances(): Balances {
       destinationBalance: parentBalance
     }
   }, [
+    isConnected,
     erc20ParentBalances,
     erc20ChildBalances,
     isEthereumArbitrumOnePair,
