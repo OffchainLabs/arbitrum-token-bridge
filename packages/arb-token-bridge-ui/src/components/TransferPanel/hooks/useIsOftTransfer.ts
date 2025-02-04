@@ -1,13 +1,11 @@
+import useSWR from 'swr'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useAppState } from '../../../state'
-import useSWR from 'swr'
 import { getOftTransferConfig } from '../../../token-bridge-sdk/oftUtils'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 export const useIsOftTransfer = function () {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isTeleportMode, isDepositMode } = useNetworksRelationship(networks)
 

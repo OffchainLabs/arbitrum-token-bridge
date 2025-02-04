@@ -75,7 +75,7 @@ export function useGasSummary(): UseGasSummaryResult {
     })
 
   const isOft = useIsOftTransfer()
-  const { gasEstimates: oftGasEstimates } = useOftFeeEstimates({
+  const { feeEstimates: oftFeeEstimates } = useOftFeeEstimates({
     sourceChainErc20Address: isDepositMode
       ? selectedToken?.address
       : selectedToken?.l2Address
@@ -86,8 +86,8 @@ export function useGasSummary(): UseGasSummaryResult {
       return parseFloat(
         utils.formatEther(
           isDepositMode
-            ? oftGasEstimates.sourceChainGasFee
-            : oftGasEstimates.destinationChainGasFee
+            ? oftFeeEstimates.sourceChainGasFee
+            : oftFeeEstimates.destinationChainGasFee
         )
       )
     }
@@ -104,7 +104,7 @@ export function useGasSummary(): UseGasSummaryResult {
     estimateGasResult,
     parentChainGasPrice,
     isOft,
-    oftGasEstimates,
+    oftFeeEstimates,
     isDepositMode
   ])
 
@@ -113,8 +113,8 @@ export function useGasSummary(): UseGasSummaryResult {
       return parseFloat(
         utils.formatEther(
           isDepositMode
-            ? oftGasEstimates.destinationChainGasFee
-            : oftGasEstimates.sourceChainGasFee
+            ? oftFeeEstimates.destinationChainGasFee
+            : oftFeeEstimates.sourceChainGasFee
         )
       )
     }
@@ -151,7 +151,7 @@ export function useGasSummary(): UseGasSummaryResult {
     childChainGasPrice,
     estimateGasResult,
     isDepositMode,
-    oftGasEstimates,
+    oftFeeEstimates,
     isOft
   ])
 
