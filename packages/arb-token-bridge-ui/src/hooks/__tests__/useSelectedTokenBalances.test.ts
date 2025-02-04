@@ -35,6 +35,13 @@ jest.mock('../useSelectedToken', () => ({
   ])
 }))
 
+jest.mock('wagmi', () => ({
+  ...jest.requireActual('wagmi'),
+  useAccount: () => ({
+    isConnected: true
+  })
+}))
+
 describe('useSelectedTokenBalances', () => {
   const mockedUseNetworks = jest.mocked(useNetworks)
   const mockedUseBalances = jest.mocked(useBalances)

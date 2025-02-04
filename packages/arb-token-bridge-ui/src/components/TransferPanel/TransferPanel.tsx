@@ -108,7 +108,7 @@ export function TransferPanel() {
   const {
     app: {
       connectionState,
-      arbTokenBridge: { token },
+      arbTokenBridge: { token, bridgeTokens },
       warningTokens
     }
   } = useAppState()
@@ -221,18 +221,31 @@ export function TransferPanel() {
     connectionState
   })
 
-  const isTokenAlreadyImported = useMemo(() => {
-    const tokenLowercased = tokenFromSearchParams?.toLowerCase()
+  // If USDC comes from query params we need to add it to the list
+  useEffect(() => {
+    if (
+      typeof tokenFromSearchParams === 'undefined' ||
+      !isTokenNativeUSDC(tokenFromSearchParams) ||
+      !token ||
+      !bridgeTokens ||
+      typeof bridgeTokens[tokenFromSearchParams] !== 'undefined'
+    ) {
+      return
+    }
 
+    token.add(tokenFromSearchParams)
+  }, [bridgeTokens, token, tokenFromSearchParams])
+
+  const isTokenAlreadyImported = useMemo(() => {
     if (tokenFromSearchParams === 'eth') {
       return true
     }
 
-    if (typeof tokenLowercased === 'undefined') {
+    if (typeof tokenFromSearchParams === 'undefined') {
       return true
     }
 
-    if (isTokenNativeUSDC(tokenLowercased)) {
+    if (isTokenNativeUSDC(tokenFromSearchParams)) {
       return true
     }
 
@@ -251,8 +264,8 @@ export function TransferPanel() {
     }
 
     return (
-      typeof tokensFromLists[tokenLowercased] !== 'undefined' ||
-      typeof tokensFromUser[tokenLowercased] !== 'undefined'
+      typeof tokensFromLists[tokenFromSearchParams] !== 'undefined' ||
+      typeof tokensFromUser[tokenFromSearchParams] !== 'undefined'
     )
   }, [
     isLoadingTokenLists,
