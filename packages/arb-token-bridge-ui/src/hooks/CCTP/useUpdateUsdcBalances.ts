@@ -99,6 +99,11 @@ export function useUpdateUsdcBalances({
   const updateUsdcBalances = useCallback(() => {
     const parentUsdcAddress = getParentUsdcAddress(parentChain.id)
 
+    const {
+      isEthereumMainnet: isParentEthereumMainnet,
+      isSepolia: isParentSepolia
+    } = isNetwork(parentChain.id)
+
     // USDC is not native for the selected networks, do nothing
     if (!parentUsdcAddress) {
       return
@@ -112,6 +117,14 @@ export function useUpdateUsdcBalances({
 
     if (childUsdcAddress) {
       updateErc20ChildBalance([childUsdcAddress.toLowerCase()])
+    }
+
+    if (isParentEthereumMainnet) {
+      updateErc20ChildBalance([CommonAddress.ArbitrumOne['USDC.e']])
+    }
+
+    if (isParentSepolia) {
+      updateErc20ChildBalance([CommonAddress.ArbitrumSepolia['USDC.e']])
     }
   }, [
     isLoading,
