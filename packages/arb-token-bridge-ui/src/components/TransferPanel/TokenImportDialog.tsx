@@ -4,7 +4,7 @@ import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
-import { useActions, useAppState } from '../../state'
+import { useAppState } from '../../state'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
@@ -17,11 +17,9 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
-import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
-import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 enum ImportStatus {
   LOADING,
@@ -65,19 +63,13 @@ export function TokenImportDialog({
 }: TokenImportDialogProps): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token },
-      selectedToken
+      arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
-  const actions = useActions()
+  const { childChainProvider, parentChainProvider } =
+    useNetworksRelationship(networks)
 
   const tokensFromUser = useTokensFromUser()
   const latestTokensFromUser = useLatest(tokensFromUser)
@@ -90,8 +82,6 @@ export function TokenImportDialog({
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
   const [isDialogVisible, setIsDialogVisible] = useState(false)
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
@@ -176,9 +166,9 @@ export function TokenImportDialog({
   const selectToken = useCallback(
     async (_token: ERC20BridgeToken) => {
       await token.updateTokenData(_token.address)
-      actions.app.setSelectedToken(_token)
+      setSelectedToken(_token.address)
     },
-    [token, actions]
+    [token, setSelectedToken]
   )
 
   useEffect(() => {
@@ -257,7 +247,6 @@ export function TokenImportDialog({
     l1Address,
     onClose,
     selectToken,
-    selectedToken,
     tokensFromUser
   ])
 
@@ -295,19 +284,6 @@ export function TokenImportDialog({
       storeNewToken(l1Address).catch(() => {
         setStatus(ImportStatus.ERROR)
       })
-    }
-
-    if (isTransferDisabledToken(l1Address, childChain.id)) {
-      openTransferDisabledDialog()
-      return
-    }
-
-    if (
-      isTeleportMode &&
-      !isTeleportEnabledToken(l1Address, parentChain.id, childChain.id)
-    ) {
-      openTransferDisabledDialog()
-      return
     }
   }
 

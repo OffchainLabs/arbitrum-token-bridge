@@ -53,6 +53,7 @@ export function useNativeCurrencyBalances(): {
     erc20ParentBalances,
     ethChildBalance,
     isDepositMode,
+    isConnected,
     ethParentBalance
   ])
 }
