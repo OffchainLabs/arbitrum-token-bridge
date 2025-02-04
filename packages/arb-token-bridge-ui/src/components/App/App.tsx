@@ -158,9 +158,7 @@ function AppContent() {
   if (!isConnected) {
     return (
       <>
-        <Header>
-          <HeaderConnectWalletButton />
-        </Header>
+        <Header />
 
         <div className="flex flex-col items-start gap-4 px-6 pb-8 pt-12 text-white">
           <p className="text-5xl">No wallet connected</p>
@@ -189,9 +187,7 @@ function AppContent() {
 
   return (
     <>
-      <Header>
-        <HeaderAccountPopover />
-      </Header>
+      <Header />
       <TokenListSyncer />
       <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
