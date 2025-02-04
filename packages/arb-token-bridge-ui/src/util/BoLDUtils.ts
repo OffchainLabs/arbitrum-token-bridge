@@ -16,31 +16,38 @@ const boldUpgrades: {
   }
 }
 
-type BoldUpgradeStatus =
+export enum BoldUpgradeStatus {
+  NotScheduled = 1,
+  Scheduled,
+  InProgress,
+  Done
+}
+
+export type BoldUpgradeInfo =
   | {
-      status: '1_not_scheduled'
+      status: BoldUpgradeStatus.NotScheduled
     }
   | {
-      status: '2_scheduled'
+      status: BoldUpgradeStatus.Scheduled
       dateStart: Date
       dateEnd: Date
     }
   | {
-      status: '3_in_progress'
+      status: BoldUpgradeStatus.InProgress
       dateStart: Date
       dateEnd: Date
       secondsRemaining: number
     }
   | {
-      status: '4_done'
+      status: BoldUpgradeStatus.Done
     }
 
-export function getBoldUpgradeStatus(chainId: number): BoldUpgradeStatus {
+export function getBoldUpgradeInfo(chainId: number): BoldUpgradeInfo {
   const upgrade = boldUpgrades[chainId]
 
   if (typeof upgrade === 'undefined') {
     return {
-      status: '1_not_scheduled'
+      status: BoldUpgradeStatus.NotScheduled
     }
   }
 
@@ -49,7 +56,7 @@ export function getBoldUpgradeStatus(chainId: number): BoldUpgradeStatus {
 
   if (now < dateStart) {
     return {
-      status: '2_scheduled',
+      status: BoldUpgradeStatus.Scheduled,
       dateStart,
       dateEnd
     }
@@ -57,7 +64,7 @@ export function getBoldUpgradeStatus(chainId: number): BoldUpgradeStatus {
 
   if (now <= dateEnd) {
     return {
-      status: '3_in_progress',
+      status: BoldUpgradeStatus.InProgress,
       dateStart,
       dateEnd,
       secondsRemaining: getDifferenceInSeconds(now, dateEnd)
@@ -65,7 +72,7 @@ export function getBoldUpgradeStatus(chainId: number): BoldUpgradeStatus {
   }
 
   return {
-    status: '4_done'
+    status: BoldUpgradeStatus.Done
   }
 }
 

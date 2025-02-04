@@ -15,7 +15,7 @@ import {
   getConfirmPeriodBlocks,
   getL1BlockTime
 } from './networks'
-import { getBoldUpgradeStatus } from './BoLDUtils'
+import { getBoldUpgradeInfo, BoldUpgradeStatus } from './BoLDUtils'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -159,17 +159,18 @@ export function getConfirmationTime(chainId: number) {
       { chainId }
     )
 
-    const boldUpgradeStatus = getBoldUpgradeStatus(chainId)
-    const boldUpgradeSecondsRemaining =
-      boldUpgradeStatus.status === '3_in_progress'
-        ? boldUpgradeStatus.secondsRemaining
-        : 0
-
     confirmationTimeInSeconds =
       getL1BlockTime(blockNumberReferenceChainId) *
         getConfirmPeriodBlocks(chainId) +
-      CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE +
-      boldUpgradeSecondsRemaining
+      CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
+
+    const boldUpgradeInfo = getBoldUpgradeInfo(chainId)
+    const boldUpgradeSecondsRemaining =
+      boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
+        ? boldUpgradeInfo.secondsRemaining
+        : 0
+
+    confirmationTimeInSeconds += boldUpgradeSecondsRemaining
   }
 
   const confirmationTimeInReadableFormat = formatDuration(

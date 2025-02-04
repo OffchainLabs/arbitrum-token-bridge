@@ -23,7 +23,7 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
-import { getBoldUpgradeStatus } from '../../util/BoLDUtils'
+import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -195,7 +195,10 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isArbitrumSepolia: isDestinationChainArbitrumSepolia
   } = isNetwork(networks.destinationChain.id)
 
-  const { status: boldStatus } = getBoldUpgradeStatus(networks.sourceChain.id)
+  const boldUpgradeInfo = getBoldUpgradeInfo(networks.sourceChain.id)
+  const isAffectedByBoLDUpgrade =
+    boldUpgradeInfo.status === BoldUpgradeStatus.Scheduled ||
+    boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
 
   const isDepositingUSDCtoArbOneOrArbSepolia =
     isTokenNativeUSDC(token?.address) &&
@@ -267,7 +270,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         </span>
       </div>
       {!isDepositMode &&
-        (boldStatus === '2_scheduled' || boldStatus === '3_in_progress' ? (
+        (isAffectedByBoLDUpgrade ? (
           <BoLDUpgradeWarning />
         ) : (
           <div
