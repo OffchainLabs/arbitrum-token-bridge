@@ -1,4 +1,5 @@
-import { BigNumber, constants, ethers, Signer } from 'ethers'
+import { constants, ethers, Signer } from 'ethers'
+import { Provider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   BridgeTransferStarter,
@@ -12,7 +13,6 @@ import {
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
 import { getOftTransferConfig, buildSendParams, getOftQuote } from './oftUtils'
-import { Provider } from '@ethersproject/providers'
 import oftAbi from './oftAbi.json'
 import { isNetwork } from '../util/networks'
 
