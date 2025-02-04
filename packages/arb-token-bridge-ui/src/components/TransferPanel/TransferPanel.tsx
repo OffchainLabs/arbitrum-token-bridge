@@ -79,7 +79,7 @@ import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChain
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftTransfer } from './hooks/useIsOftTransfer'
 import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
-import { OftTransactionHistoryDialog } from '../TransactionHistory/OftTransactionHistoryDialog_2'
+import { OftTransactionHistoryDialog } from '../TransactionHistory/OftTransactionHistoryDialog'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
