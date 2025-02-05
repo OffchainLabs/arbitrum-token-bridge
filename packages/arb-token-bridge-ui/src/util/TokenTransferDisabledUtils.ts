@@ -1,5 +1,4 @@
 import { ChainId } from '../types/ChainId'
-import { CommonAddress } from './CommonAddressUtils'
 
 export type TransferDisabledToken = {
   symbol: string

@@ -675,45 +675,40 @@ export function TransferPanel() {
         }
       }
 
-      try {
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
-
-        const transfer = await oftTransferStarter.transfer({
-          amount: amountBigNumber,
-          signer,
-          destinationAddress
-        })
-
-        trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
-          tokenSymbol: selectedToken.symbol,
-          assetType: 'ERC-20',
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: getNetworkName(networks.sourceChain.id),
-          amount: Number(amount)
-        })
-
-        await showOftTransactionHistoryDialog()
-        clearAmountInput()
-      } catch (error) {
-        if (isUserRejectedError(error)) {
-          return
-        }
-        captureSentryErrorWithExtraData({
-          error,
-          originFunction: 'oftTransferStarter.transfer'
-        })
-        console.error(error)
-        errorToast(
-          `OFT ${
-            isDepositMode ? 'Deposit' : 'Withdrawal'
-          } transaction failed: ${(error as Error)?.message ?? error}`
-        )
+      if (isSmartContractWallet) {
+        showDelayedSmartContractTxRequest()
       }
+
+      const transfer = await oftTransferStarter.transfer({
+        amount: amountBigNumber,
+        signer,
+        destinationAddress
+      })
+
+      trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
+        tokenSymbol: selectedToken.symbol,
+        assetType: 'ERC-20',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        network: getNetworkName(networks.sourceChain.id),
+        amount: Number(amount)
+      })
+
+      await showOftTransactionHistoryDialog()
+      clearAmountInput()
     } catch (error) {
-      console.error('Error in OFT transfer:', error)
-      errorToast(`OFT transfer failed: ${(error as Error)?.message ?? error}`)
+      if (isUserRejectedError(error)) {
+        return
+      }
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'oftTransferStarter.transfer'
+      })
+      console.error(error)
+      errorToast(
+        `OFT ${isDepositMode ? 'Deposit' : 'Withdrawal'} transaction failed: ${
+          (error as Error)?.message ?? error
+        }`
+      )
     } finally {
       setTransferring(false)
     }
