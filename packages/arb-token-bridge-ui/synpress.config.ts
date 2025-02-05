@@ -36,6 +36,7 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './src/util/networksNitroTestnode'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
+import { browserConfig } from './tests/e2e/browser.config'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -67,184 +68,11 @@ let l2WethAddress = isOrbitTest
 export default defineConfig({
   ...getCommonSynpressConfig(shouldRecordVideo),
   e2e: {
-    async setupNodeEvents(on, config) {
-      logsPrinter(on)
-
-      await registerLocalNetwork()
-
-      const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
-      const ethBridger = await EthBridger.fromProvider(childProvider)
-      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
-
-      if (!ethRpcUrl && !isOrbitTest) {
-        throw new Error(
-          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 variable missing.'
-        )
-      }
-      if (!arbRpcUrl) {
-        throw new Error(
-          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2 variable missing.'
-        )
-      }
-      if (!l3RpcUrl && isOrbitTest) {
-        throw new Error(
-          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3 variable missing.'
-        )
-      }
-      if (!sepoliaRpcUrl) {
-        throw new Error(
-          'process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA variable missing.'
-        )
-      }
-
-      const userWalletAddress = await userWallet.getAddress()
-
-      // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([
-        fundEth({
-          address: userWalletAddress,
-          provider: parentProvider,
-          sourceWallet: localWallet,
-          amount: utils.parseEther('2'),
-          networkType: 'parentChain'
-        }),
-        fundEth({
-          address: userWalletAddress,
-          provider: childProvider,
-          sourceWallet: localWallet,
-          amount: utils.parseEther('2'),
-          networkType: 'childChain'
-        })
-      ])
-
-      // Deploy and fund ERC20 to Parent and Child chains
-      const l1ERC20Token = await deployERC20ToParentChain()
-
-      // Approve custom fee token if not ETH
-      if (isCustomFeeToken) {
-        await approveCustomFeeToken({
-          signer: localWallet.connect(parentProvider),
-          erc20ParentAddress: l1ERC20Token.address
-        })
-        await approveCustomFeeToken({
-          signer: localWallet.connect(parentProvider),
-          erc20ParentAddress: erc20Bridger.nativeToken!
-        })
-        await ethBridger.approveGasToken({
-          parentSigner: localWallet.connect(parentProvider)
-        })
-      }
-      if (isCustomFeeToken) {
-        await fundUserWalletNativeCurrency()
-      }
-
-      await fundErc20ToParentChain(l1ERC20Token)
-      await fundErc20ToChildChain({
-        parentSigner: localWallet.connect(parentProvider),
-        parentErc20Address: l1ERC20Token.address,
-        amount: parseUnits('5', ERC20TokenDecimals),
-        isCustomFeeToken
-      })
-      await approveErc20(l1ERC20Token)
-
-      if (isCustomFeeToken) {
-        await approveCustomFeeToken({
-          signer: userWallet.connect(parentProvider),
-          erc20ParentAddress: erc20Bridger.nativeToken!
-        })
-        await ethBridger.approveGasToken({
-          parentSigner: userWallet.connect(parentProvider)
-        })
-        await erc20Bridger.approveGasToken({
-          parentSigner: userWallet.connect(parentProvider),
-          erc20ParentAddress: l1WethAddress
-        })
-      }
-
-      // Wrap ETH to test WETH transactions and approve it's usage
-      await fundWethOnParentChain()
-      await approveWeth()
-      if (isCustomFeeToken) {
-        await approveCustomFeeToken({
-          signer: userWallet.connect(parentProvider),
-          erc20ParentAddress: l1WethAddress
-        })
-      }
-
-      await fundErc20ToChildChain({
-        parentSigner: userWallet.connect(parentProvider),
-        parentErc20Address: l1WethAddress,
-        amount: utils.parseEther('0.1'),
-        isCustomFeeToken
-      })
-
-      // Generate activity on chains so that assertions get posted and claims can be made
-      generateActivityOnChains({
-        parentProvider,
-        childProvider,
-        wallet: localWallet
-      })
-      // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
-      checkForAssertions({
-        parentProvider,
-        testType: isCustomFeeToken
-          ? 'orbit-custom'
-          : process.env.E2E_ORBIT === 'true'
-          ? 'orbit-eth'
-          : 'regular'
-      })
-
-      // Set Cypress variables
-      config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
-      config.env.ARB_RPC_URL = isOrbitTest ? l3RpcUrl : arbRpcUrl
-      config.env.ETH_SEPOLIA_RPC_URL = sepoliaRpcUrl
-      config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
-      config.env.ADDRESS = userWalletAddress
-      config.env.PRIVATE_KEY = userWallet.privateKey
-      config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
-      config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
-      config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
-      config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
-      config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken
-      config.env.NATIVE_TOKEN_DECIMALS = await getNativeTokenDecimals({
-        parentProvider,
-        childProvider
-      })
-
-      config.env.CUSTOM_DESTINATION_ADDRESS =
-        await getCustomDestinationAddress()
-
-      config.env.ERC20_TOKEN_ADDRESS_CHILD_CHAIN = await getL2ERC20Address({
-        erc20L1Address: l1ERC20Token.address,
-        l1Provider: parentProvider,
-        l2Provider: childProvider
-      })
-      config.env.L1_WETH_ADDRESS = l1WethAddress
-      config.env.L2_WETH_ADDRESS = l2WethAddress
-
-      config.env.REDEEM_RETRYABLE_TEST_TX =
-        await generateTestTxForRedeemRetryable()
-
-      synpressPlugins(on, config)
-      setupCypressTasks(on, { requiresNetworkSetup: true })
-      return config
-    },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: 'tests/support/index.ts',
     defaultCommandTimeout: 20_000,
-    browsers: [{
-      name: 'chrome',
-      family: 'chromium',
-      channel: 'stable',
-      displayName: 'Chromium',
-      majorVersion: '128',
-      path: process.platform === 'darwin' 
-        ? `${process.cwd()}/cypress/browsers/chrome/mac_arm-128.0.6613.137/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`
-        : `${process.cwd()}/cypress/browsers/chrome/linux-128.0.6613.137/chrome-linux64/chrome`,
-      version: '128.0.6613.137'
-    }]
+    browsers: [browserConfig]
   }
 })
 

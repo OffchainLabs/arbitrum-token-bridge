@@ -15,11 +15,13 @@
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
-    "install:chromium": "npx @puppeteer/browsers install chrome@128.0.6613.137 --path ./packages/arb-token-bridge-ui/cypress/browsers",
-    "test:e2e": "yarn install:chromium && yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn synpress run --configFile synpress.config.ts",
-    "test:e2e:cctp": "yarn test:e2e --configFile synpress.cctp.config.ts",
-    "test:e2e:orbit": "E2E_ORBIT=true yarn test:e2e",
-    "test:e2e:orbit:custom-gas-token": "E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn test:e2e"
+    "postinstall": "yarn install:chromium",
+    "install:chromium": "npx @puppeteer/browsers install chrome@$npm_package_config_chromeVersion --path ./packages/arb-token-bridge-ui/cypress/browsers",
+    "test:e2e:base": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn synpress run",
+    "test:e2e": "yarn test:e2e:base --configFile synpress.config.ts",
+    "test:e2e:cctp": "yarn test:e2e:base --configFile synpress.cctp.config.ts",
+    "test:e2e:orbit": "E2E_ORBIT=true yarn test:e2e:base --configFile synpress.config.ts",
+    "test:e2e:orbit:custom-gas-token": "E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn test:e2e:base --configFile synpress.config.ts"
   },
   "resolutions": {
     "**/@walletconnect/ethereum-provider": "2.13.1",
@@ -34,5 +36,8 @@
   ],
   "devDependencies": {
     "audit-ci": "^6.3.0"
+  },
+  "config": {
+    "chromeVersion": "128.0.6613.137"
   }
 }
