@@ -4,7 +4,7 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { BigNumber } from 'ethers'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
-const lzProtocolConfig: {
+const oftProtocolConfig: {
   [id: number]: {
     lzEndpointId: number
     endpointV2: string
@@ -50,7 +50,7 @@ const lzProtocolConfig: {
   }
 }
 
-export function getOftTransferConfig({
+export function getOftV2TransferConfig({
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address
@@ -58,29 +58,27 @@ export function getOftTransferConfig({
   sourceChainId: number
   destinationChainId: number
   sourceChainErc20Address?: string
-}): {
-  isValid: boolean
-  sourceChainAdapterAddress: string
-  destinationChainLzEndpointId: number
-} {
-  if (!sourceChainErc20Address)
+}):
+  | { isValid: false }
+  | {
+      isValid: true
+      sourceChainAdapterAddress: string
+      destinationChainLzEndpointId: number
+    } {
+  if (!sourceChainErc20Address) {
     return {
-      isValid: false,
-      sourceChainAdapterAddress: '',
-      destinationChainLzEndpointId: 0
+      isValid: false
     }
-
+  }
   const sourceChainOftAdapterConfig =
-    lzProtocolConfig[sourceChainId]?.adapterConfig?.[sourceChainErc20Address]
+    oftProtocolConfig[sourceChainId]?.adapterConfig?.[sourceChainErc20Address]
 
   const destinationChainLzEndpointId =
-    lzProtocolConfig[destinationChainId]?.lzEndpointId
+    oftProtocolConfig[destinationChainId]?.lzEndpointId
 
   if (!sourceChainOftAdapterConfig || !destinationChainLzEndpointId) {
     return {
-      isValid: false,
-      sourceChainAdapterAddress: '',
-      destinationChainLzEndpointId: 0
+      isValid: false
     }
   }
 
@@ -127,23 +125,16 @@ export function buildSendParams({
   }
 }
 
-export async function getOftQuote({
+export async function getOftV2Quote({
   contract,
   sendParams
 }: {
   contract: ethers.Contract
   sendParams: SendParam
 }): Promise<QuoteResult> {
-  try {
-    const quote = await contract.quoteSend(sendParams, false)
-    return {
-      nativeFee: quote.nativeFee.toString(),
-      lzTokenFee: quote.lzTokenFee.toString()
-    }
-  } catch {
-    return {
-      nativeFee: BigInt(1e14).toString(), // 0.0001 native token
-      lzTokenFee: BigInt(0).toString()
-    }
+  const quote = await contract.quoteSend(sendParams, false)
+  return {
+    nativeFee: quote.nativeFee.toString(),
+    lzTokenFee: quote.lzTokenFee.toString()
   }
 }

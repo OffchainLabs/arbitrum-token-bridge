@@ -36,7 +36,7 @@ import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
-import { useIsOftTransfer } from '../hooks/useIsOftTransfer'
+import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 
 function Amount2ToggleButton({
   onClick
@@ -99,7 +99,7 @@ export function SourceNetworkBox() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
-  const isOft = useIsOftTransfer()
+  const isOft = useIsOftV2Transfer()
 
   const {
     network: { logo: networkLogo }

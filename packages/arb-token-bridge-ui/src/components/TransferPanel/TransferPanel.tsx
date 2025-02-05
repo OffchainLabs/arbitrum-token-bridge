@@ -79,8 +79,8 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
-import { useIsOftTransfer } from './hooks/useIsOftTransfer'
-import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
+import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { OftTransactionHistoryDialog } from '../TransactionHistory/OftTransactionHistoryDialog'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -154,7 +154,7 @@ export function TransferPanel() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
-  const isOftTransfer = useIsOftTransfer()
+  const isOftTransfer = useIsOftV2Transfer()
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -630,7 +630,7 @@ export function TransferPanel() {
         if (!confirmation) return false
       }
 
-      const oftTransferStarter = new OftTransferStarter({
+      const oftTransferStarter = new OftV2TransferStarter({
         sourceChainProvider,
         sourceChainErc20Address: isDepositMode
           ? selectedToken.address

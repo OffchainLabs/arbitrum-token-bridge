@@ -18,8 +18,8 @@ import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 import { useSelectedToken } from '../useSelectedToken'
-import { useIsOftTransfer } from '../../components/TransferPanel/hooks/useIsOftTransfer'
-import { useOftFeeEstimates } from './useOftFeeEstimates'
+import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
+import { useOftV2FeeEstimates } from './useOftV2FeeEstimates'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -74,15 +74,16 @@ export function useGasSummary(): UseGasSummaryResult {
         : selectedToken?.address
     })
 
-  const isOft = useIsOftTransfer()
-  const { feeEstimates: oftFeeEstimates } = useOftFeeEstimates({
-    sourceChainErc20Address: isDepositMode
-      ? selectedToken?.address
-      : selectedToken?.l2Address
-  })
+  const isOft = useIsOftV2Transfer()
+  const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
+    useOftV2FeeEstimates({
+      sourceChainErc20Address: isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address
+    })
 
   const estimatedParentChainGasFees = useMemo(() => {
-    if (isOft) {
+    if (isOft && oftFeeEstimates) {
       return parseFloat(
         utils.formatEther(
           isDepositMode
@@ -109,7 +110,7 @@ export function useGasSummary(): UseGasSummaryResult {
   ])
 
   const estimatedChildChainGasFees = useMemo(() => {
-    if (isOft) {
+    if (isOft && oftFeeEstimates) {
       return parseFloat(
         utils.formatEther(
           isDepositMode
@@ -184,7 +185,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (gasEstimatesError) {
+    if (gasEstimatesError || oftFeeEstimatesError) {
       return {
         status: 'error',
         estimatedParentChainGasFees,
@@ -204,7 +205,8 @@ export function useGasSummary(): UseGasSummaryResult {
     amountBigNumber,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
-    gasEstimatesError
+    gasEstimatesError,
+    oftFeeEstimatesError
   ])
 
   return gasSummary

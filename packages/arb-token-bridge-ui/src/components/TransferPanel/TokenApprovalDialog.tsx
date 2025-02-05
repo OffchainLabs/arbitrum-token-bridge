@@ -26,8 +26,8 @@ import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
-import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
-import { getOftTransferConfig } from '../../token-bridge-sdk/oftUtils'
+import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
+import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -109,7 +109,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           signer
         })
       } else if (isOft) {
-        const oftTransferStarter = new OftTransferStarter({
+        const oftTransferStarter = new OftV2TransferStarter({
           sourceChainProvider,
           destinationChainProvider,
           sourceChainErc20Address: isDepositMode
@@ -165,7 +165,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   useEffect(() => {
     const getContractAddress = async function () {
       if (isOft) {
-        const { sourceChainAdapterAddress } = getOftTransferConfig({
+        const oftTransferConfig = getOftV2TransferConfig({
           sourceChainId: sourceChain.id,
           destinationChainId: destinationChain.id,
           sourceChainErc20Address: isDepositMode
@@ -173,7 +173,11 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             : token?.l2Address
         })
 
-        setContractAddress(sourceChainAdapterAddress)
+        if (!oftTransferConfig.isValid) {
+          throw new Error('OFT transfer validation failed')
+        }
+
+        setContractAddress(oftTransferConfig.sourceChainAdapterAddress)
         return
       }
       if (isCctp) {
@@ -227,6 +231,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isDepositMode,
     parentChainProvider,
     token?.address,
+    token?.l2Address,
     sourceChain.id,
     destinationChain.id,
     isTeleportMode,

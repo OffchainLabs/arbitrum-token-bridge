@@ -3,13 +3,13 @@ import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useSelectedToken } from '../useSelectedToken'
-import { useIsOftTransfer } from '../../components/TransferPanel/hooks/useIsOftTransfer'
+import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 
 export const useIsBatchTransferSupported = () => {
   const [networks] = useNetworks()
   const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
   const [selectedToken] = useSelectedToken()
-  const isOftTransfer = useIsOftTransfer()
+  const isOftTransfer = useIsOftV2Transfer()
 
   if (!selectedToken) {
     return false
