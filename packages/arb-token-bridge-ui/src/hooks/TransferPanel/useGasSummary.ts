@@ -18,6 +18,8 @@ import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 import { useSelectedToken } from '../useSelectedToken'
+import { useIsSelectedTokenEther } from '../useIsSelectedTokenEther'
+import { nativeCurrencyEther } from '../useNativeCurrency'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -37,6 +39,7 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+  const isSelectedTokenEther = useIsSelectedTokenEther()
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
@@ -56,7 +59,9 @@ export function useGasSummary(): UseGasSummaryResult {
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
 
-  const balance = useBalanceOnSourceChain(selectedToken)
+  const balance = useBalanceOnSourceChain(
+    isSelectedTokenEther ? nativeCurrencyEther : selectedToken
+  )
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({

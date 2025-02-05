@@ -236,6 +236,10 @@ export function TransferPanel() {
   }, [bridgeTokens, token, tokenFromSearchParams])
 
   const isTokenAlreadyImported = useMemo(() => {
+    if (tokenFromSearchParams === 'eth') {
+      return true
+    }
+
     if (typeof tokenFromSearchParams === 'undefined') {
       return true
     }
