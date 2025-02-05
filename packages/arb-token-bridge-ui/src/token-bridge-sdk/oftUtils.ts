@@ -41,11 +41,11 @@ const oftProtocolConfig: {
     }
   },
   [ChainId.ArbitrumSepolia]: {
-    lzEndpointId: 30101,
+    lzEndpointId: 40231,
     endpointV2: '0x6EDCE65403992e310A62460808c4b910D972f10f'
   },
   [ChainId.ArbitrumNova]: {
-    lzEndpointId: 40231,
+    lzEndpointId: 30175,
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c'
   }
 }
