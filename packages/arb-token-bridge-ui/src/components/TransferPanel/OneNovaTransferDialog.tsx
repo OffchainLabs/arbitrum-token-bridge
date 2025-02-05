@@ -1,14 +1,15 @@
 import { Tab } from '@headlessui/react'
 import Hop from '@/images/bridge/hop.png'
 
-import { useAppState } from '../../state'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { SecurityNotGuaranteed } from './SecurityLabels'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { ether } from '../../constants'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useNetworks } from '../../hooks/useNetworks'
 
@@ -46,9 +47,7 @@ function getDialogSourceAndDestinationChains({
 }
 
 export function OneNovaTransferDialog(props: UseDialogProps) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [{ amount }] = useArbQueryParams()
   const [{ sourceChain, destinationChain }] = useNetworks()
 

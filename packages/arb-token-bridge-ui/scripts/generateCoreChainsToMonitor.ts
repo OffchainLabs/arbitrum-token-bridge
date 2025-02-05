@@ -1,7 +1,8 @@
 import fs from 'fs'
 import 'dotenv/config'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
-import { ChainId, rpcURLs } from '../src/util/networks'
+import { rpcURLs } from '../src/util/networks'
+import { ChainId } from '../src/types/ChainId'
 import { getChainToMonitor } from './utils'
 
 // github secrets return '' for empty values, so we need to sanitize the value
