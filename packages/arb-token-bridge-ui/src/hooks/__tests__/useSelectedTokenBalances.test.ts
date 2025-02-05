@@ -6,8 +6,11 @@ import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../useNetworks'
 import { useBalances } from '../useBalances'
 import { useSelectedTokenBalances } from '../TransferPanel/useSelectedTokenBalances'
-import { useAppState } from '../../state'
+import { useSelectedToken } from '../useSelectedToken'
 import { ChainId } from '../../types/ChainId'
+
+type BridgeToken = NonNullable<ReturnType<typeof useSelectedToken>[0]>
+const Erc20Type = 'ERC20' as BridgeToken['type']
 
 jest.mock('../useNetworks', () => ({
   useNetworks: jest.fn()
@@ -17,26 +20,32 @@ jest.mock('../useBalances', () => ({
   useBalances: jest.fn()
 }))
 
-jest.mock('../../state', () => ({
-  useAppState: jest.fn().mockReturnValue({
-    app: {
-      selectedToken: {
-        type: 'ERC20',
-        decimals: 18,
-        name: 'random',
-        symbol: 'RAND',
-        address: '0x123',
-        l2Address: '0x234',
-        listIds: new Set('1')
-      }
-    }
+jest.mock('../useSelectedToken', () => ({
+  useSelectedToken: jest.fn().mockReturnValue([
+    {
+      type: 'ERC20',
+      decimals: 18,
+      name: 'random',
+      symbol: 'RAND',
+      address: '0x123',
+      l2Address: '0x234',
+      listIds: new Set('1')
+    },
+    jest.fn()
+  ])
+}))
+
+jest.mock('wagmi', () => ({
+  ...jest.requireActual('wagmi'),
+  useAccount: () => ({
+    isConnected: true
   })
 }))
 
 describe('useSelectedTokenBalances', () => {
   const mockedUseNetworks = jest.mocked(useNetworks)
   const mockedUseBalances = jest.mocked(useBalances)
-  const mockedUseAppState = jest.mocked(useAppState)
+  const mockedUseSelectedToken = jest.mocked(useSelectedToken)
 
   beforeAll(() => {
     mockedUseBalances.mockReturnValue({
@@ -91,18 +100,17 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return ERC20 parent balance as source balance and zero as destination balance when source chain is Sepolia and destination chain is Arbitrum Sepolia, and selected token address on Sepolia is 0x222 but without child chain address (unbridged token)', () => {
-    mockedUseAppState.mockReturnValueOnce({
-      app: {
-        selectedToken: {
-          type: 'ERC20',
-          decimals: 18,
-          name: 'random',
-          symbol: 'RAND',
-          address: '0x222',
-          listIds: new Set('2')
-        }
-      }
-    })
+    mockedUseSelectedToken.mockReturnValueOnce([
+      {
+        type: Erc20Type,
+        decimals: 18,
+        name: 'random',
+        symbol: 'RAND',
+        address: '0x222',
+        listIds: new Set('2')
+      },
+      jest.fn()
+    ])
 
     mockedUseNetworks.mockReturnValue([
       {
@@ -122,18 +130,17 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return zero as source balance and ERC20 parent balance as destination balance when source chain is Arbitrum Sepolia and destination chain is Sepolia, and selected token address on Sepolia is 0x222 but without child chain address (unbridged token)', () => {
-    mockedUseAppState.mockReturnValueOnce({
-      app: {
-        selectedToken: {
-          type: 'ERC20',
-          decimals: 18,
-          name: 'random',
-          symbol: 'RAND',
-          address: '0x222',
-          listIds: new Set('2')
-        }
-      }
-    })
+    mockedUseSelectedToken.mockReturnValueOnce([
+      {
+        type: Erc20Type,
+        decimals: 18,
+        name: 'random',
+        symbol: 'RAND',
+        address: '0x222',
+        listIds: new Set('2')
+      },
+      jest.fn()
+    ])
 
     mockedUseNetworks.mockReturnValue([
       {
@@ -153,11 +160,7 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return null as source balance and null as destination balance when source chain is Sepolia and destination chain is Arbitrum Sepolia, and selected token is null', () => {
-    mockedUseAppState.mockReturnValueOnce({
-      app: {
-        selectedToken: null
-      }
-    })
+    mockedUseSelectedToken.mockReturnValueOnce([null, jest.fn()])
 
     mockedUseNetworks.mockReturnValue([
       {
@@ -177,11 +180,7 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return null as source balance and null as destination balance when source chain is Arbitrum Sepolia and destination chain is Sepolia, and selected token is null', () => {
-    mockedUseAppState.mockReturnValueOnce({
-      app: {
-        selectedToken: null
-      }
-    })
+    mockedUseSelectedToken.mockReturnValueOnce([null, jest.fn()])
 
     mockedUseNetworks.mockReturnValue([
       {
