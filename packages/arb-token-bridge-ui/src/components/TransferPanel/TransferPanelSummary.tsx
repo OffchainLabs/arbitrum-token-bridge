@@ -25,6 +25,7 @@ import LightningIcon from '@/images/LightningIcon.svg'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
 import { useIsOftTransfer } from './hooks/useIsOftTransfer'
+import { OftTransferDisclaimer } from './OftTransferDisclaimer'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -282,6 +283,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         </div>
       )}
       {!isOft && isAffectedByBoLDUpgrade && <BoLDUpgradeWarning />}
+
+      {isOft && <OftTransferDisclaimer />}
     </TransferPanelSummaryContainer>
   )
 }
