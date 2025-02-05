@@ -222,17 +222,24 @@ export function TransferPanel() {
 
   // If USDC comes from query params we need to add it to the list
   useEffect(() => {
-    if (
-      typeof tokenFromSearchParams === 'undefined' ||
-      !isTokenNativeUSDC(tokenFromSearchParams) ||
-      !token ||
-      !bridgeTokens ||
-      typeof bridgeTokens[tokenFromSearchParams] !== 'undefined'
-    ) {
-      return
-    }
+    async function addUsdcToken() {
+      if (
+        typeof tokenFromSearchParams === 'undefined' ||
+        !isTokenNativeUSDC(tokenFromSearchParams) ||
+        !token ||
+        !bridgeTokens ||
+        typeof bridgeTokens[tokenFromSearchParams] !== 'undefined'
+      ) {
+        return
+      }
 
-    token.add(tokenFromSearchParams)
+      try {
+        await token.add(tokenFromSearchParams)
+      } catch {
+        //
+      }
+    }
+    addUsdcToken()
   }, [bridgeTokens, token, tokenFromSearchParams])
 
   const isTokenAlreadyImported = useMemo(() => {
