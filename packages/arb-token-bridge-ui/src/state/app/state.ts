@@ -52,6 +52,7 @@ export interface MergedTransaction {
   blockNum: number | null
   tokenAddress: string | null
   isCctp?: boolean
+  isOft?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   parentToChildMsgData?: ParentToChildMessageData
   childToParentMsgData?: ChildToParentMessageData
