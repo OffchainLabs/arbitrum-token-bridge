@@ -15,6 +15,8 @@ import {
   getConfirmPeriodBlocks,
   getL1BlockTime
 } from './networks'
+import { BoldUpgradeStatus, getBoldUpgradeInfo } from './BoLDUtils'
+
 export async function withdrawInitTxEstimateGas({
   amount,
   address,
@@ -106,7 +108,8 @@ export async function withdrawInitTxEstimateGas({
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
       estimatedChildChainGas: isToken
         ? BigNumber.from(1_400_000)
-        : BigNumber.from(800_000)
+        : BigNumber.from(800_000),
+      isError: true
     }
   }
 }
@@ -160,6 +163,14 @@ export function getConfirmationTime(chainId: number) {
       getL1BlockTime(blockNumberReferenceChainId) *
         getConfirmPeriodBlocks(chainId) +
       CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
+
+    const boldUpgradeInfo = getBoldUpgradeInfo(chainId)
+    const boldUpgradeSecondsRemaining =
+      boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
+        ? boldUpgradeInfo.secondsRemaining
+        : 0
+
+    confirmationTimeInSeconds += boldUpgradeSecondsRemaining
   }
 
   const confirmationTimeInReadableFormat = formatDuration(
