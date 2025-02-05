@@ -1,17 +1,14 @@
 import { useCallback } from 'react'
 import useSWR from 'swr'
-import { BigNumber } from 'ethers'
-import { AssetType, NodeBlockDeadlineStatus } from './arbTokenBridge.types'
-import { DepositStatus, MergedTransaction } from '../state/app/state'
-import { Address } from '../util/AddressUtils'
-import { CCTPSupportedChainId } from '../state/cctpState'
-import {
-  TxnType,
-  ParentToChildMessageData,
-  ChildToParentMessageData
-} from '../types/Transactions'
+import { AssetType } from './arbTokenBridge.types'
+import { MergedTransaction } from '../state/app/state'
+import { CommonAddress } from '../util/CommonAddressUtils'
+import { getChainIdFromEid } from '../token-bridge-sdk/oftUtils'
+import { isDepositMode } from '../util/isDepositMode'
+import { useAccount } from 'wagmi'
 
-const LAYERZERO_API_URL = 'https://scan.layerzero-api.com/v1'
+const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
+const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
 
 export enum LayerZeroMessageStatus {
   INFLIGHT = 'INFLIGHT',
@@ -20,21 +17,6 @@ export enum LayerZeroMessageStatus {
   PAYLOAD_STORED = 'PAYLOAD_STORED',
   BLOCKED = 'BLOCKED',
   CONFIRMING = 'CONFIRMING'
-}
-
-const getOftTransactionStatus = (message: LayerZeroMessage) => {
-  switch (message.status.name) {
-    case LayerZeroMessageStatus.INFLIGHT ||
-      LayerZeroMessageStatus.CONFIRMING ||
-      LayerZeroMessageStatus.PAYLOAD_STORED:
-      return 'pending'
-    case LayerZeroMessageStatus.DELIVERED:
-      return 'pending'
-    case LayerZeroMessageStatus.FAILED || LayerZeroMessageStatus.BLOCKED:
-      return 'failed'
-    default:
-      return 'pending'
-  }
 }
 
 interface LayerZeroMessage {
@@ -153,39 +135,71 @@ interface LayerZeroMessage {
   updated: string
 }
 
+const getOftTransactionStatus = (message: LayerZeroMessage) => {
+  switch (message.status.name) {
+    case LayerZeroMessageStatus.INFLIGHT ||
+      LayerZeroMessageStatus.CONFIRMING ||
+      LayerZeroMessageStatus.PAYLOAD_STORED:
+      return 'pending'
+    case LayerZeroMessageStatus.DELIVERED:
+      return 'success'
+    case LayerZeroMessageStatus.FAILED || LayerZeroMessageStatus.BLOCKED:
+      return 'failed'
+    default:
+      return 'pending'
+  }
+}
+
+function validateSourceAndDestinationChainIds(message: LayerZeroMessage) {
+  const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
+  const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
+
+  if (!sourceChainId || !destinationChainId) {
+    return false
+  }
+
+  return true
+}
+
 function transformLayerZeroMessage(
   message: LayerZeroMessage
 ): MergedTransaction {
-  const status = LayerZeroStatusToMergedTxnStatusMap[message.status.name]
+  const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
+  const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
+
+  if (!sourceChainId || !destinationChainId) {
+    throw new Error('Invalid chain ids')
+  }
+
+  const isDeposit = isDepositMode({
+    sourceChainId,
+    destinationChainId
+  })
+
   return {
     sender: message.pathway.sender.address,
     destination: message.pathway.receiver.address,
-    direction: 'deposit',
+    direction: isDeposit ? 'deposit' : 'withdraw',
     status: getOftTransactionStatus(message),
-    createdAt: Math.floor(new Date(message.created).getTime() / 1000),
+    createdAt: new Date(message.created).getTime(),
     resolvedAt:
       getOftTransactionStatus(message) === 'pending'
         ? null
-        : Math.floor(new Date(message.updated).getTime() / 1000),
+        : new Date(message.updated).getTime(),
     txId: message.source.tx.txHash,
-    asset: string,
-    assetType: AssetType,
-    value: string | null,
-    value2: string,
-    uniqueId: BigNumber | null,
-    isWithdrawal: boolean,
-    blockNum: number | null,
-    tokenAddress: string | null,
+    asset: message.pathway.sender.name || 'USDT',
+    assetType: AssetType.ERC20,
+    value: '0.00001', // TODO: fix this
+    uniqueId: null,
+    isWithdrawal: false,
+    blockNum: null,
+    tokenAddress: CommonAddress.Ethereum.USDT,
     isOft: true,
     isCctp: false,
-    nodeBlockDeadline: NodeBlockDeadlineStatus,
-    parentToChildMsgData: ParentToChildMessageData,
-    childToParentMsgData: ChildToParentMessageData,
-    depositStatus: DepositStatus,
-    childChainId: number,
-    parentChainId: number,
-    sourceChainId: number,
-    destinationChainId: number
+    childChainId: isDeposit ? destinationChainId : sourceChainId,
+    parentChainId: isDeposit ? sourceChainId : destinationChainId,
+    sourceChainId,
+    destinationChainId
   }
 }
 
@@ -198,10 +212,20 @@ interface LayerZeroResponse {
   }
 }
 
-export function useOftTransactionHistory(address: Address | undefined) {
+export function useOftTransactionHistory({
+  walletAddress,
+  isTestnet
+}: {
+  walletAddress?: string
+  isTestnet: boolean
+}) {
+  const { address } = useAccount()
+
+  const walletAddressToFetch = walletAddress ?? address
+
   const fetcher = useCallback(
     async (url: string) => {
-      if (!address) return null
+      if (!walletAddressToFetch) return null
 
       const response = await fetch(url)
       if (!response.ok) {
@@ -210,14 +234,19 @@ export function useOftTransactionHistory(address: Address | undefined) {
 
       const data: LayerZeroResponse = await response.json()
 
-      console.log('xxxx data', data)
-      return data.data.map(transformLayerZeroMessage)
+      return data.data
+        .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
+        .map(transformLayerZeroMessage)
     },
-    [address]
+    [walletAddressToFetch]
   )
 
   const { data, error, isLoading } = useSWR(
-    address ? `${LAYERZERO_API_URL}/messages/wallet/${address}` : null,
+    walletAddressToFetch
+      ? `${
+          isTestnet ? LAYERZERO_API_URL_TESTNET : LAYERZERO_API_URL_MAINNET
+        }/messages/wallet/${walletAddressToFetch}`
+      : null,
     fetcher,
     {
       refreshInterval: 30000, // Refresh every 30 seconds

@@ -147,3 +147,15 @@ export async function getOftQuote({
     }
   }
 }
+
+export const getChainIdFromEid = (eid: number) => {
+  const chainId = Object.keys(lzProtocolConfig).find(
+    key => lzProtocolConfig[Number(key)]?.lzEndpointId === eid
+  )
+
+  if (!chainId) {
+    return null
+  }
+
+  return Number(chainId)
+}

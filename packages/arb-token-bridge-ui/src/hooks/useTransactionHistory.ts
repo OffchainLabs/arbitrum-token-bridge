@@ -40,7 +40,8 @@ import {
   getUpdatedWithdrawal,
   isCctpTransfer,
   isSameTransaction,
-  isTxPending
+  isTxPending,
+  isOftTransfer
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useAccountType } from './useAccountType'
@@ -92,6 +93,10 @@ export type Transfer =
 
 function getTransactionTimestamp(tx: Transfer) {
   if (isCctpTransfer(tx)) {
+    return normalizeTimestamp(tx.createdAt ?? 0)
+  }
+
+  if (isOftTransfer(tx)) {
     return normalizeTimestamp(tx.createdAt ?? 0)
   }
 
@@ -154,7 +159,7 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   const parentProvider = getProviderForChainId(tx.parentChainId)
   const childProvider = getProviderForChainId(tx.childChainId)
 
-  if (isCctpTransfer(tx)) {
+  if (isCctpTransfer(tx) || isOftTransfer(tx)) {
     return tx
   }
 
@@ -274,9 +279,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     ]
   )
 
-  const oftTransfers = useOftTransactionHistory(address)
-  console.log('xxxx oftTransfers', oftTransfers)
-
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
@@ -330,6 +332,12 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     cctpTransfersMainnet.isLoadingWithdrawals ||
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
+
+  const { transactions: oftTransfers, isLoading: oftLoading } =
+    useOftTransactionHistory({
+      walletAddress: address,
+      isTestnet: isTestnetMode
+    })
 
   const { data: failedChainPairs, mutate: addFailedChainPair } =
     useSWRImmutable<ChainPair[]>(
@@ -466,12 +474,15 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const transactions = [
     ...deposits,
     ...withdrawals,
-    ...combinedCctpTransfers
+    ...combinedCctpTransfers,
+    ...oftTransfers
   ].flat()
+
+  console.log('xxxx', oftTransfers, transactions)
 
   return {
     data: transactions,
-    loading: depositsLoading || withdrawalsLoading || cctpLoading,
+    loading: depositsLoading || withdrawalsLoading || cctpLoading || oftLoading,
     error: depositsError ?? withdrawalsError,
     failedChainPairs: failedChainPairs || []
   }

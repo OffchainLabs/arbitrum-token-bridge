@@ -46,9 +46,16 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
   return (tx as MergedTransaction).isCctp === true
 }
 
+export function isOftTransfer(tx: Transfer): tx is MergedTransaction {
+  return (tx as MergedTransaction).isOft === true
+}
+
 export function isTxCompleted(tx: MergedTransaction): boolean {
   if (tx.isCctp) {
     return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
+  }
+  if (tx.isOft && tx.status === 'success') {
+    return true
   }
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.L2_SUCCESS
@@ -63,6 +70,11 @@ export function isTxPending(tx: MergedTransaction) {
   ) {
     return true
   }
+
+  if (tx.isOft && tx.status === 'pending') {
+    return true
+  }
+
   if (isDeposit(tx)) {
     return (
       tx.depositStatus === DepositStatus.L1_PENDING ||
@@ -75,6 +87,9 @@ export function isTxPending(tx: MergedTransaction) {
 export function isTxClaimable(tx: MergedTransaction): boolean {
   if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
     return true
+  }
+  if (tx.isOft) {
+    return false
   }
   if (isDeposit(tx)) {
     return false
