@@ -1,6 +1,7 @@
 import { constants, utils } from 'ethers'
 import { useMemo } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'
+import { createPublicClient, http } from 'viem'
 
 import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
@@ -18,6 +19,7 @@ import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
+import { rpcURLs } from '../../util/networks'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -39,6 +41,23 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+
+  // Create public clients directly to avoid wagmi client issues
+  const sourceChainClient = useMemo(
+    () =>
+      createPublicClient({
+        transport: http(rpcURLs[networks.sourceChain.id])
+      }),
+    [networks.sourceChain.id]
+  )
+
+  const destinationChainClient = useMemo(
+    () =>
+      createPublicClient({
+        transport: http(rpcURLs[networks.destinationChain.id])
+      }),
+    [networks.destinationChain.id]
+  )
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
@@ -71,7 +90,9 @@ export function useGasSummary(): UseGasSummaryResult {
         : token?.l2Address,
       destinationChainErc20Address: isDepositMode
         ? token?.l2Address
-        : token?.address
+        : token?.address,
+      sourceChainClient,
+      destinationChainClient
     })
 
   const estimatedParentChainGasFees = useMemo(() => {

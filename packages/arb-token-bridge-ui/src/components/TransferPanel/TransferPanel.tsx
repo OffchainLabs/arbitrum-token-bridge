@@ -3,10 +3,15 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount, useConfig } from 'wagmi'
+import { useAccount, useConfig, usePublicClient, useWalletClient } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
+import { getAddress } from 'viem'
+import { L2Network } from '@arbitrum/sdk'
+import { type BridgeTransfer } from '@arbitrum/sdk-viem/dist/types'
+import { type AssetType } from '@arbitrum/sdk-viem/dist/assetTypes'
+import { type Provider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -24,11 +29,10 @@ import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import { isGatewayRegistered } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
+import { GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
@@ -38,12 +42,7 @@ import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
-  AssetType,
-  DepositGasEstimates
-} from '../../hooks/arbTokenBridge.types'
-import {
   ImportTokenModalStatus,
-  getWarningTokenDescription,
   useTokenFromSearchParams
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
@@ -52,18 +51,12 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import {
-  BridgeTransfer,
-  TransferOverrides
-} from '@/token-bridge-sdk/BridgeTransferStarter'
 import { addDepositToCache } from '../TransactionHistory/helpers'
 import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
-import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import { useBalances } from '../../hooks/useBalances'
 import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
@@ -78,6 +71,7 @@ import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
+import { useArbitrumClient } from '../../hooks/useArbitrumClient'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -391,7 +385,7 @@ export function TransferPanel() {
       }
 
       // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
       if (
         isSmartContractWallet &&
         areSenderAndCustomDestinationAddressesEqual
@@ -539,76 +533,145 @@ export function TransferPanel() {
     }
   }
 
+  const publicClient = usePublicClient()
+  const { data: walletClient, isLoading: isWalletLoading } = useWalletClient()
+  const {
+    address: account,
+    isConnecting: isAccountConnecting,
+    isConnected
+  } = useAccount()
+
+  const arbitrumClient = useArbitrumClient()
+
+  const isWalletReady = useMemo(() => {
+    return (
+      isConnected && !!walletClient && !isWalletLoading && !isAccountConnecting
+    )
+  }, [isConnected, walletClient, isWalletLoading, isAccountConnecting])
+
   const transfer = async () => {
-    const sourceChainId = latestNetworks.current.sourceChain.id
+    console.log('[Debug] Transfer started', {
+      publicClient: !!publicClient,
+      walletClient: !!walletClient,
+      isWalletLoading,
+      isAccountConnecting,
+      isConnected,
+      isWalletReady,
+      chain: latestChain.current?.id,
+      sourceChainId: latestNetworks.current.sourceChain.id,
+      amount: amountBigNumber.toString(),
+      arbitrumClient: !!arbitrumClient
+    })
 
     if (!isTransferAllowed) {
+      console.log('[Debug] Transfer not allowed')
       throw new Error(transferNotAllowedError)
     }
 
-    if (!signer) {
+    // Check if wallet is ready
+    if (!isWalletReady) {
+      if (isWalletLoading || isAccountConnecting) {
+        console.log('[Debug] Wallet is still connecting...')
+        throw new Error('Please wait, wallet is connecting...')
+      }
+      if (!isConnected || !walletClient) {
+        console.log('[Debug] Wallet not connected')
+        throw new Error('Please connect your wallet')
+      }
+    }
+
+    if (!publicClient) {
+      console.log('[Debug] Public client undefined')
       throw new Error(signerUndefinedError)
     }
 
-    // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && isTeleportMode) {
-      console.error(
-        getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
-      )
-      return
+    if (!arbitrumClient) {
+      console.log('[Debug] Arbitrum client not initialized')
+      throw new Error('Arbitrum client not initialized')
     }
-
-    const childChainName = getNetworkName(childChain.id)
 
     setTransferring(true)
 
     try {
-      const warningToken =
-        selectedToken && warningTokens[selectedToken.address.toLowerCase()]
-      if (warningToken) {
-        const description = getWarningTokenDescription(warningToken.type)
-        warningToast(
-          `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
-        )
+      // Ensure we're on the source chain
+      const currentChainId = await walletClient.getChainId()
+      const sourceChainId = latestNetworks.current.sourceChain.id
+
+      console.log('[Debug] Chain check:', {
+        currentChainId,
+        sourceChainId,
+        account,
+        arbitrumClient: !!arbitrumClient
+      })
+
+      if (currentChainId !== sourceChainId) {
+        console.log('[Debug] Switching to source chain')
+        await walletClient.switchChain({ id: sourceChainId })
+      }
+
+      if (isDepositMode && !selectedToken) {
+        if (!arbitrumClient?.parentWalletClient) {
+          throw new Error('Parent wallet client not initialized')
+        }
+
+        const destAddress = destinationAddress
+          ? getAddress(destinationAddress)
+          : (account as `0x${string}`)
+
+        const depositValue = BigInt(amountBigNumber.toString())
+
+        console.log('[Debug] Starting ETH deposit with:', {
+          amount: depositValue,
+          from: account,
+          to: destAddress,
+          hasParentWalletClient: true
+        })
+
+        const tx = await arbitrumClient.parentWalletClient.depositEth({
+          account: destAddress,
+          amount: depositValue
+        })
+
+        // Convert the transaction to a BridgeTransfer format
+        const bridgeTransfer: BridgeTransfer = {
+          type: 'deposit-eth',
+          status: 'pending',
+          txHash: tx.hash,
+          from: account as `0x${string}`,
+          to: destAddress,
+          value: depositValue,
+          assetType: 'eth' as AssetType,
+          direction: 'deposit',
+          timestampMs: Date.now()
+        }
+
+        onTxSubmit(bridgeTransfer)
         return
       }
 
-      const destinationChainId = latestNetworks.current.destinationChain.id
+      // For other cases (tokens or withdrawals), use the existing bridge transfer logic
+      const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
+        {
+          sourceChainId: latestNetworks.current.sourceChain.id,
+          sourceChainErc20Address: selectedToken?.address
+            ? getAddress(selectedToken.address)
+            : undefined,
+          destinationChainId: latestNetworks.current.destinationChain.id,
+          destinationChainErc20Address: selectedToken?.l2Address
+            ? getAddress(selectedToken.l2Address)
+            : undefined
+        },
+        {
+          l1PublicClient: publicClient,
+          l2PublicClient: publicClient,
+          walletClient,
+          l2Network: childChain as unknown as L2Network
+        }
+      )
 
-      const sourceChainErc20Address = isDepositMode
-        ? selectedToken?.address
-        : selectedToken?.l2Address
-
-      const destinationChainErc20Address = isDepositMode
-        ? selectedToken?.l2Address
-        : selectedToken?.address
-
-      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
-        sourceChainId,
-        sourceChainErc20Address,
-        destinationChainId,
-        destinationChainErc20Address
+      console.log('[Debug] BridgeTransferStarter created', {
+        transferType: bridgeTransferStarter.transferType
       })
-
-      const { isWithdrawal } = getBridgeTransferProperties({
-        sourceChainId,
-        sourceChainErc20Address,
-        destinationChainId
-      })
-
-      if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
-        /*
-        just a fail-safe - since our types allow for an optional `selectedToken?.l2Address`, we can theoretically end up with a case
-        where user is trying to make an ERC-20 withdrawal but passing `sourceChainErc20Address` as undefined, ending up with
-        the SDK to initialize wrongly and make an ETH withdrawal instead. To summarize:
-        - if it's a withdrawal
-        - if a token is selected
-        - but the token's address on the child chain is not found (ie. sourceChainErc20Address)
-      */
-        throw Error(
-          'Source chain token address not found for ERC-20 withdrawal.'
-        )
-      }
 
       if (destinationAddressError) {
         console.error(destinationAddressError)
@@ -618,7 +681,7 @@ export function TransferPanel() {
       const destinationAddress = latestDestinationAddress.current
 
       // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain’s address that matches their source-chain wallet address, which they may not control.
+      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
       if (
         isSmartContractWallet &&
         areSenderAndCustomDestinationAddressesEqual
@@ -632,110 +695,6 @@ export function TransferPanel() {
         isBatchTransferSupported &&
         Number(amount2) > 0
 
-      const isNativeCurrencyApprovalRequired =
-        await bridgeTransferStarter.requiresNativeCurrencyApproval({
-          signer,
-          amount: amountBigNumber,
-          destinationAddress,
-          options: {
-            approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
-              : undefined
-          }
-        })
-
-      if (isNativeCurrencyApprovalRequired) {
-        // show native currency approval dialog
-        const userConfirmation = await customFeeTokenApproval()
-        if (!userConfirmation) return false
-
-        const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
-          signer,
-          amount: amountBigNumber,
-          destinationAddress,
-          options: {
-            approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
-              : undefined
-          }
-        })
-
-        if (approvalTx) {
-          await approvalTx.wait()
-        }
-      }
-
-      // checks for the selected token
-      if (selectedToken) {
-        const tokenAddress = selectedToken.address
-
-        // is selected token deployed on parent-chain?
-        if (!tokenAddress) Error('Token not deployed on source chain.')
-
-        // warning token handling
-        const warningToken =
-          selectedToken && warningTokens[selectedToken.address.toLowerCase()]
-        if (warningToken) {
-          const description = getWarningTokenDescription(warningToken.type)
-          warningToast(
-            `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
-          )
-          return
-        }
-
-        // token suspension handling
-        const isTokenSuspended = !(await isGatewayRegistered({
-          erc20ParentChainAddress: selectedToken.address,
-          parentChainProvider,
-          childChainProvider
-        }))
-        if (isTokenSuspended) {
-          warningToast(
-            'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
-          )
-          return
-        }
-
-        // if token is being bridged for first time, it will need to be registered in gateway
-        const userConfirmationForFirstTimeTokenBridging =
-          await firstTimeTokenBridgingConfirmation()
-        if (!userConfirmationForFirstTimeTokenBridging) {
-          throw Error('User declined bridging the token for the first time')
-        }
-      }
-
-      // if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
-      if (isWithdrawal && !isSmartContractWallet) {
-        const withdrawalConfirmation = await confirmWithdrawal()
-        if (!withdrawalConfirmation) return false
-      }
-
-      // token approval
-      if (selectedToken) {
-        const isTokenApprovalRequired =
-          await bridgeTransferStarter.requiresTokenApproval({
-            amount: amountBigNumber,
-            signer,
-            destinationAddress
-          })
-        if (isTokenApprovalRequired) {
-          const userConfirmation = await tokenAllowanceApproval()
-          if (!userConfirmation) return false
-
-          if (isSmartContractWallet && isWithdrawal) {
-            showDelayInSmartContractTransaction()
-          }
-          const approvalTx = await bridgeTransferStarter.approveToken({
-            signer,
-            amount: amountBigNumber
-          })
-
-          if (approvalTx) {
-            await approvalTx.wait()
-          }
-        }
-      }
-
       // show a delay in case of SCW because tx is executed in an external app
       if (isSmartContractWallet) {
         showDelayInSmartContractTransaction()
@@ -746,49 +705,69 @@ export function TransferPanel() {
             tokenSymbol: selectedToken?.symbol,
             assetType: 'ERC-20',
             accountType: 'Smart Contract',
-            network: childChainName,
+            network: getNetworkName(childChain.id),
             amount: Number(amount),
             amount2: isBatchTransfer ? Number(amount2) : undefined
           }
         )
       }
 
-      const overrides: TransferOverrides = {}
+      const overrides: any = {}
 
       if (isBatchTransfer) {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
-        const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
-          amount: amountBigNumber,
-          signer,
-          destinationAddress
-        })) as DepositGasEstimates
-
-        if (!gasEstimates.estimatedChildChainSubmissionCost) {
-          errorToast('Failed to estimate deposit maxSubmissionCost')
-          throw 'Failed to estimate deposit maxSubmissionCost'
-        }
+        const gasEstimate = await bridgeTransferStarter.estimateGas({
+          amount,
+          destinationAddress: destinationAddress
+            ? getAddress(destinationAddress)
+            : undefined
+        })
 
         overrides.maxSubmissionCost = utils
           // we are not scaling these to native decimals because arbitrum-sdk does it for us
           .parseEther(amount2)
-          .add(gasEstimates.estimatedChildChainSubmissionCost)
+          .add(gasEstimate)
         overrides.excessFeeRefundAddress = destinationAddress
+          ? getAddress(destinationAddress)
+          : undefined
       }
 
+      console.log('[Debug] Calling transfer', {
+        amount,
+        destinationAddress: destinationAddress
+          ? getAddress(destinationAddress)
+          : undefined,
+        overrides: Object.keys(overrides).length > 0 ? overrides : undefined,
+        publicClient: !!publicClient,
+        walletClient: !!walletClient
+      })
+
       // finally, call the transfer function
-      const transfer = await bridgeTransferStarter.transfer({
-        amount: amountBigNumber,
-        signer,
-        destinationAddress,
+      const { hash } = await bridgeTransferStarter.transfer({
+        amount,
+        destinationAddress: destinationAddress
+          ? getAddress(destinationAddress)
+          : undefined,
         overrides: Object.keys(overrides).length > 0 ? overrides : undefined
       })
 
+      console.log('[Debug] Transfer successful', { hash })
+
       // transaction submitted callback
-      onTxSubmit(transfer)
+      const bridgeTransfer: BridgeTransfer = {
+        transferType: bridgeTransferStarter.transferType,
+        status: 'pending',
+        sourceChainProvider: publicClient as unknown as Provider,
+        destinationChainProvider: publicClient as unknown as Provider,
+        sourceChainTransaction: { hash }
+      }
+
+      onTxSubmit(bridgeTransfer)
     } catch (error) {
+      console.error('[Debug] Transfer failed', error)
       captureSentryErrorWithExtraData({
         error,
-        originFunction: 'bridgeTransferStarter.transfer',
+        originFunction: 'transfer',
         additionalData: selectedToken
           ? {
               erc20_address_on_parent_chain: selectedToken.address,
@@ -957,27 +936,71 @@ export function TransferPanel() {
           version: 2
         })
         await switchChainAsync({ chainId: sourceChainId })
+
+        // Wait for the wallet client to update after chain switch
+        let retries = 0
+        const maxRetries = 5
+        const retryDelay = 1000
+
+        while (retries < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
+
+          // Verify that we're now on the correct chain and have a wallet client
+          if (latestChain.current?.id === sourceChainId && walletClient) {
+            break
+          }
+
+          console.log('[Debug] Chain switch verification attempt', {
+            attempt: retries + 1,
+            currentChain: latestChain.current?.id,
+            expectedChain: sourceChainId,
+            hasWalletClient: !!walletClient
+          })
+
+          retries++
+
+          if (retries === maxRetries) {
+            console.log(
+              '[Debug] Chain switch verification failed after retries',
+              {
+                currentChain: latestChain.current?.id,
+                expectedChain: sourceChainId,
+                hasWalletClient: !!walletClient
+              }
+            )
+            setTransferring(false)
+            return networkConnectionWarningToast()
+          }
+        }
       }
+
+      if (!isTransferAllowed) {
+        setTransferring(false)
+        return networkConnectionWarningToast()
+      }
+
+      if (isCctpTransfer) {
+        return transferCctp()
+      }
+      if (isDepositMode && selectedToken) {
+        return depositToken()
+      }
+      return transfer()
     } catch (error) {
       if (isUserRejectedError(error)) {
         return
       }
       return networkConnectionWarningToast()
     } finally {
-      setTransferring(false)
+      // Only set transferring to false if we haven't started a transfer
+      if (
+        !isTransferAllowed ||
+        isCctpTransfer ||
+        (isDepositMode && selectedToken)
+      ) {
+        setTransferring(false)
+      }
     }
-
-    if (!isTransferAllowed) {
-      return networkConnectionWarningToast()
-    }
-
-    if (isCctpTransfer) {
-      return transferCctp()
-    }
-    if (isDepositMode && selectedToken) {
-      return depositToken()
-    }
-    return transfer()
   }
 
   return (

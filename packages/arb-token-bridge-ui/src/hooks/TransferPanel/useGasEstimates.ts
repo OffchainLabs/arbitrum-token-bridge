@@ -1,18 +1,14 @@
-import { BigNumber, Signer, utils } from 'ethers'
+import { BigNumber } from 'ethers'
 import useSWR from 'swr'
-import { useAccount } from 'wagmi'
+import { type PublicClient, createPublicClient, http, getAddress, createWalletClient } from 'viem'
+import { L2Network } from '@arbitrum/sdk'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { useAppState } from '../../state'
-import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
-import { useNetworks } from '../useNetworks'
-import { useArbQueryParams } from '../useArbQueryParams'
-import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
+import { rpcURLs } from '../../util/networks'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
 
 async function fetcher([
-  signer,
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
@@ -20,7 +16,6 @@ async function fetcher([
   destinationAddress,
   amount
 ]: [
-  signer: Signer,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
@@ -28,80 +23,94 @@ async function fetcher([
   destinationAddress: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
-  // use chainIds to initialize the bridgeTransferStarter to save RPC calls
-  const bridgeTransferStarter = BridgeTransferStarterFactory.create({
-    sourceChainId,
-    sourceChainErc20Address,
-    destinationChainId,
-    destinationChainErc20Address
-  })
+  try {
+    const l1PublicClient = createPublicClient({
+      transport: http(rpcURLs[sourceChainId])
+    })
 
-  return await bridgeTransferStarter.transferEstimateGas({
-    amount,
-    signer,
-    destinationAddress
-  })
+    const l2PublicClient = createPublicClient({
+      transport: http(rpcURLs[destinationChainId])
+    })
+
+    const arbitrumNetwork = await getArbitrumNetwork(destinationChainId)
+    // Cast to L2Network since we know it has the required properties
+    const l2Network = arbitrumNetwork as unknown as L2Network
+
+    // Create a minimal wallet client for gas estimation
+    const walletClient = createWalletClient({
+      transport: http(rpcURLs[sourceChainId])
+    })
+
+    const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
+      {
+        sourceChainId,
+        sourceChainErc20Address: sourceChainErc20Address 
+          ? getAddress(sourceChainErc20Address)
+          : undefined,
+        destinationChainId,
+        destinationChainErc20Address: destinationChainErc20Address
+          ? getAddress(destinationChainErc20Address)
+          : undefined
+      },
+      {
+        l1PublicClient,
+        l2PublicClient,
+        l2Network,
+        walletClient
+      }
+    )
+
+    return bridgeTransferStarter.transferEstimateGas({
+      amount,
+      destinationAddress: destinationAddress
+        ? getAddress(destinationAddress)
+        : undefined
+    })
+  } catch (error) {
+    console.error('Gas estimation failed:', error)
+    throw error
+  }
 }
 
 export function useGasEstimates({
   sourceChainErc20Address,
   destinationChainErc20Address,
-  amount
+  amount,
+  sourceChainClient,
+  destinationChainClient
 }: {
   sourceChainErc20Address?: string
   destinationChainErc20Address?: string
   amount: BigNumber
+  sourceChainClient: PublicClient
+  destinationChainClient: PublicClient
 }): {
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
-  error: any
+  error: Error | null
 } {
-  const [{ sourceChain, destinationChain }] = useNetworks()
-  const [{ destinationAddress }] = useArbQueryParams()
-  const {
-    app: { selectedToken: token }
-  } = useAppState()
-  const { address: walletAddress } = useAccount()
-  const balance = useBalanceOnSourceChain(token)
-  const signer = useEthersSigner()
-
-  const amountToTransfer =
-    balance !== null && amount.gte(balance) ? balance : amount
-
-  const sanitizedDestinationAddress = utils.isAddress(
-    String(destinationAddress)
-  )
-    ? destinationAddress
-    : undefined
-
   const { data: gasEstimates, error } = useSWR(
-    signer
+    sourceChainClient?.chain?.id && destinationChainClient?.chain?.id
       ? ([
-          sourceChain.id,
-          destinationChain.id,
+          sourceChainClient.chain.id,
+          destinationChainClient.chain.id,
           sourceChainErc20Address,
           destinationChainErc20Address,
-          amountToTransfer.toString(), // BigNumber is not serializable
-          sanitizedDestinationAddress,
-          walletAddress,
+          undefined, // destinationAddress
+          amount.toString(), // BigNumber is not serializable
           'gasEstimates'
         ] as const)
       : null,
     ([
-      _sourceChainId,
-      _destinationChainId,
+      sourceChainId,
+      destinationChainId,
       _sourceChainErc20Address,
       _destinationChainErc20Address,
-      _amount,
       _destinationAddress,
-      _walletAddress
+      _amount
     ]) => {
-      const sourceProvider = getProviderForChainId(_sourceChainId)
-      const _signer = sourceProvider.getSigner(_walletAddress)
-
       return fetcher([
-        _signer,
-        _sourceChainId,
-        _destinationChainId,
+        sourceChainId,
+        destinationChainId,
         _sourceChainErc20Address,
         _destinationChainErc20Address,
         _destinationAddress,

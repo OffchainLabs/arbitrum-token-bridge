@@ -1,88 +1,47 @@
-import {
-  BridgeTransferStarter,
-  BridgeTransferStarterPropsWithChainIds
-} from './BridgeTransferStarter'
-import { EthDepositStarter } from './EthDepositStarter'
-import { Erc20DepositStarter } from './Erc20DepositStarter'
-import { EthWithdrawalStarter } from './EthWithdrawalStarter'
-import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
-import { EthTeleportStarter } from './EthTeleportStarter'
-import { Erc20TeleportStarter } from './Erc20TeleportStarter'
-import { getBridgeTransferProperties, getProviderForChainId } from './utils'
+import { type Address, type PublicClient, type WalletClient } from 'viem'
+import { type L2Network } from '@arbitrum/sdk'
+import { EthDepositStarterViem } from './EthDepositStarterViem'
+import { Erc20DepositStarterViem } from './Erc20DepositStarterViem'
 
-function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
-  let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
-
-  if (props.sourceChainErc20Address) {
-    cacheKey += `-sourceErc20:${props.sourceChainErc20Address}`
-  }
-
-  if (props.destinationChainErc20Address) {
-    cacheKey += `-destinationErc20:${props.destinationChainErc20Address}`
-  }
-
-  return cacheKey
+export interface BridgeTransferStarterFactoryParams {
+  sourceChainId: number
+  sourceChainErc20Address?: Address
+  destinationChainId: number
+  destinationChainErc20Address?: Address
 }
 
-function withCache(
-  key: string,
-  value: BridgeTransferStarter
-): BridgeTransferStarter {
-  cache[key] = value
-  return value
+export interface BridgeTransferStarterFactoryDeps {
+  l1PublicClient: PublicClient
+  l2PublicClient: PublicClient
+  walletClient: WalletClient
+  l2Network: L2Network
 }
-
-const cache: { [key: string]: BridgeTransferStarter } = {}
 
 export class BridgeTransferStarterFactory {
-  public static create(
-    props: BridgeTransferStarterPropsWithChainIds
-  ): BridgeTransferStarter {
-    const sourceChainProvider = getProviderForChainId(props.sourceChainId)
-    const destinationChainProvider = getProviderForChainId(
-      props.destinationChainId
+  static async create(
+    params: BridgeTransferStarterFactoryParams,
+    deps: BridgeTransferStarterFactoryDeps
+  ) {
+    const { sourceChainErc20Address } = params
+    const { l1PublicClient, l2PublicClient, walletClient, l2Network } = deps
+
+    // If no token address is provided, we're dealing with ETH
+    if (!sourceChainErc20Address) {
+      return new EthDepositStarterViem(
+        l1PublicClient,
+        l2PublicClient,
+        walletClient,
+        l2Network
+      )
+    }
+
+    // Handle ERC20 tokens
+    return new Erc20DepositStarterViem(
+      l1PublicClient,
+      l2PublicClient,
+      walletClient,
+      l2Network,
+      sourceChainErc20Address
     )
-
-    // once we have the providers, we can get the transfer properties, and initialize the classes further
-    const initProps = {
-      sourceChainProvider,
-      destinationChainProvider,
-      sourceChainErc20Address: props.sourceChainErc20Address,
-      destinationChainErc20Address: props.destinationChainErc20Address
-    }
-
-    const { isDeposit, isNativeCurrencyTransfer, isSupported, isTeleport } =
-      getBridgeTransferProperties(props)
-
-    if (!isSupported) {
-      throw new Error('Unsupported transfer detected')
-    }
-
-    const cacheKey = getCacheKey(props)
-    const cacheValue = cache[cacheKey]
-
-    if (typeof cacheValue !== 'undefined') {
-      return cacheValue
-    }
-
-    if (isTeleport) {
-      if (isNativeCurrencyTransfer) {
-        return withCache(cacheKey, new EthTeleportStarter(initProps))
-      }
-      return withCache(cacheKey, new Erc20TeleportStarter(initProps))
-    }
-
-    // deposits
-    if (isDeposit) {
-      if (!isNativeCurrencyTransfer) {
-        return withCache(cacheKey, new Erc20DepositStarter(initProps))
-      }
-      return withCache(cacheKey, new EthDepositStarter(initProps))
-    }
-    // withdrawals
-    if (!isNativeCurrencyTransfer) {
-      return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
-    }
-    return withCache(cacheKey, new EthWithdrawalStarter(initProps))
   }
 }
