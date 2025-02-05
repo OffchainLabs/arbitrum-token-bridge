@@ -68,14 +68,6 @@ export function TokenButton({
     return isLoadingTokenLists
   }, [tokenFromSearchParams, isLoadingTokenLists])
 
-  const tokenLogoSrc = useMemo(() => {
-    if (typeof options?.logoSrc !== 'undefined') {
-      return options.logoSrc || nativeCurrency.logoUrl
-    }
-
-    return selectedToken?.logoURI ?? nativeCurrency.logoUrl
-  }, [nativeCurrency.logoUrl, options, selectedToken])
-
   return (
     <>
       <Popover className="relative">
@@ -92,7 +84,7 @@ export function TokenButton({
                   <Loader size="small" color="white" />
                 ) : (
                   <>
-                    <TokenLogo srcOverride={tokenLogoSrc} />
+                    <TokenLogo srcOverride={options?.logoSrc} />
                     <span className="text-xl font-light">{tokenSymbol}</span>
                     {!disabled && (
                       <ChevronDownIcon

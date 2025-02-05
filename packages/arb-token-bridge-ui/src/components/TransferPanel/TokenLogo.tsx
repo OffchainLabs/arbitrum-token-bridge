@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 
-import { useAppState } from '../../state'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SafeImage } from '../common/SafeImage'
 import { twMerge } from 'tailwind-merge'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 /**
  * Shows the selected token logo by default.
@@ -21,9 +21,7 @@ export const TokenLogo = ({
   srcOverride?: string | null
   className?: string
 }) => {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
 
