@@ -11,6 +11,7 @@ export function OftTransactionHistoryDialog(props: UseDialogProps) {
       {...props}
       title="Transfer Initiated Successfully"
       className="flex flex-col gap-4"
+      closeable={false}
     >
       <div className="flex flex-col space-y-4 py-4">
         <p className="flex items-center gap-1">

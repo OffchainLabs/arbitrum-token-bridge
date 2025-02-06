@@ -79,8 +79,8 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
-import { useIsOftTransfer } from './hooks/useIsOftTransfer'
-import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
+import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { OftTransactionHistoryDialog } from '../TransactionHistory/OftTransactionHistoryDialog'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -110,7 +110,7 @@ export function TransferPanel() {
   const {
     app: {
       connectionState,
-      arbTokenBridge: { token, bridgeTokens },
+      arbTokenBridge: { token },
       warningTokens
     }
   } = useAppState()
@@ -154,7 +154,7 @@ export function TransferPanel() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
-  const isOftTransfer = useIsOftTransfer()
+  const isOftTransfer = useIsOftV2Transfer()
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -226,21 +226,6 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
-
-  // If USDC comes from query params we need to add it to the list
-  useEffect(() => {
-    if (
-      typeof tokenFromSearchParams === 'undefined' ||
-      !isTokenNativeUSDC(tokenFromSearchParams) ||
-      !token ||
-      !bridgeTokens ||
-      typeof bridgeTokens[tokenFromSearchParams] !== 'undefined'
-    ) {
-      return
-    }
-
-    token.add(tokenFromSearchParams)
-  }, [bridgeTokens, token, tokenFromSearchParams])
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
@@ -630,7 +615,7 @@ export function TransferPanel() {
         if (!confirmation) return false
       }
 
-      const oftTransferStarter = new OftTransferStarter({
+      const oftTransferStarter = new OftV2TransferStarter({
         sourceChainProvider,
         sourceChainErc20Address: isDepositMode
           ? selectedToken.address
@@ -675,45 +660,40 @@ export function TransferPanel() {
         }
       }
 
-      try {
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
-
-        const transfer = await oftTransferStarter.transfer({
-          amount: amountBigNumber,
-          signer,
-          destinationAddress
-        })
-
-        trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
-          tokenSymbol: selectedToken.symbol,
-          assetType: 'ERC-20',
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: getNetworkName(networks.sourceChain.id),
-          amount: Number(amount)
-        })
-
-        await showOftTransactionHistoryDialog()
-        clearAmountInput()
-      } catch (error) {
-        if (isUserRejectedError(error)) {
-          return
-        }
-        captureSentryErrorWithExtraData({
-          error,
-          originFunction: 'oftTransferStarter.transfer'
-        })
-        console.error(error)
-        errorToast(
-          `OFT ${
-            isDepositMode ? 'Deposit' : 'Withdrawal'
-          } transaction failed: ${(error as Error)?.message ?? error}`
-        )
+      if (isSmartContractWallet) {
+        showDelayedSmartContractTxRequest()
       }
+
+      const transfer = await oftTransferStarter.transfer({
+        amount: amountBigNumber,
+        signer,
+        destinationAddress
+      })
+
+      trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
+        tokenSymbol: selectedToken.symbol,
+        assetType: 'ERC-20',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        network: getNetworkName(networks.sourceChain.id),
+        amount: Number(amount)
+      })
+
+      await showOftTransactionHistoryDialog()
+      clearAmountInput()
     } catch (error) {
-      console.error('Error in OFT transfer:', error)
-      errorToast(`OFT transfer failed: ${(error as Error)?.message ?? error}`)
+      if (isUserRejectedError(error)) {
+        return
+      }
+      captureSentryErrorWithExtraData({
+        error,
+        originFunction: 'oftTransferStarter.transfer'
+      })
+      console.error(error)
+      errorToast(
+        `OFT ${isDepositMode ? 'Deposit' : 'Withdrawal'} transaction failed: ${
+          (error as Error)?.message ?? error
+        }`
+      )
     } finally {
       setTransferring(false)
     }

@@ -12,14 +12,19 @@ import {
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner } from './utils'
-import { getOftTransferConfig, buildSendParams, getOftQuote } from './oftUtils'
-import oftAbi from './oftAbi.json'
+import {
+  getOftV2TransferConfig,
+  buildSendParams,
+  getOftV2Quote
+} from './oftUtils'
+import oftV2Abi from './oftV2Abi.json'
 import { isNetwork } from '../util/networks'
 
-export class OftTransferStarter extends BridgeTransferStarter {
-  public transferType: TransferType = 'oft'
-  private isOftTokenValidated?: boolean
+export class OftV2TransferStarter extends BridgeTransferStarter {
+  public transferType: TransferType = 'oftV2'
+  private isOftTransferValidated?: boolean
   private oftAdapterAddress?: string
+  private oftAdapterContract?: ethers.Contract
   private destLzEndpointId?: number
   private isSourceChainEthereum?: boolean
 
@@ -31,15 +36,15 @@ export class OftTransferStarter extends BridgeTransferStarter {
   }
 
   private async validateOftTransfer() {
-    if (typeof this.isOftTokenValidated !== 'undefined') {
-      if (!this.isOftTokenValidated) {
-        throw Error('Token is not supported for OFT transfer')
+    if (typeof this.isOftTransferValidated !== 'undefined') {
+      if (!this.isOftTransferValidated) {
+        throw Error('OFT transfer validation failed')
       }
       return
     }
 
     if (!this.sourceChainErc20Address) {
-      this.isOftTokenValidated = false
+      this.isOftTransferValidated = false
       throw Error('OFT token address not found')
     }
 
@@ -48,36 +53,48 @@ export class OftTransferStarter extends BridgeTransferStarter {
       this.destinationChainProvider.getNetwork().then(n => n.chainId)
     ])
 
-    const oftTransferConfig = getOftTransferConfig({
+    const oftTransferConfig = getOftV2TransferConfig({
       sourceChainId,
       destinationChainId,
       sourceChainErc20Address: this.sourceChainErc20Address
     })
 
     if (!oftTransferConfig.isValid) {
-      this.isOftTokenValidated = false
-      throw Error('Token is not supported for OFT transfer')
+      this.isOftTransferValidated = false
+      throw Error('OFT transfer validation failed')
     }
 
     this.isSourceChainEthereum = !!isNetwork(sourceChainId).isEthereumMainnet
-    this.isOftTokenValidated = true
+    this.isOftTransferValidated = true
     this.oftAdapterAddress = oftTransferConfig.sourceChainAdapterAddress
     this.destLzEndpointId = oftTransferConfig.destinationChainLzEndpointId
   }
 
-  private getContractAddress(): string {
-    if (!this.isOftTokenValidated) {
-      throw Error('OFT validation not performed')
+  private getOftAdapterContractAddress(): string {
+    if (!this.isOftTransferValidated) {
+      throw Error('OFT transfer validation failed')
     }
     return this.oftAdapterAddress!
   }
 
-  private getContract(providerOrSigner: Signer | Provider): ethers.Contract {
-    return new ethers.Contract(
-      this.getContractAddress(),
-      oftAbi,
+  private getOftAdapterContract(
+    providerOrSigner: Signer | Provider
+  ): ethers.Contract {
+    if (!this.isOftTransferValidated) {
+      throw Error('OFT transfer validation failed')
+    }
+
+    if (this.oftAdapterContract) {
+      return this.oftAdapterContract
+    }
+
+    const oftAdapterContract = new ethers.Contract(
+      this.getOftAdapterContractAddress(),
+      oftV2Abi,
       providerOrSigner
     )
+    this.oftAdapterContract = oftAdapterContract
+    return oftAdapterContract
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -102,7 +119,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
     if (!this.isSourceChainEthereum) return false
 
     const address = await getAddressFromSigner(signer)
-    const spender = this.getContractAddress()
+    const spender = this.getOftAdapterContractAddress()
 
     const allowance = await fetchErc20Allowance({
       address: this.sourceChainErc20Address!,
@@ -130,19 +147,19 @@ export class OftTransferStarter extends BridgeTransferStarter {
     )
   }
 
-  public async approveToken({ signer, amount }: ApproveTokenProps) {
+  public async approveToken({ signer }: ApproveTokenProps) {
     await this.validateOftTransfer()
-    const spender = this.getContractAddress()
+    const spender = this.getOftAdapterContractAddress()
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address!,
       signer
     )
 
-    return contract.functions.approve(spender, amount ?? constants.MaxUint256)
+    return contract.functions.approve(spender, constants.MaxUint256) // Eth USDT will need MAX approval since that cannot be changed afterwards
   }
 
   // for OFT, we don't have functions for gas estimates, `sendQuote` method tells us the fees directly
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas() {
     return undefined
   }
 
@@ -150,7 +167,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
-    const oftContract = this.getContract(signer)
+    const oftContract = this.getOftAdapterContract(signer)
 
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
@@ -159,7 +176,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
     })
 
     // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
-    const { nativeFee } = await getOftQuote({
+    const { nativeFee } = await getOftV2Quote({
       contract: oftContract,
       sendParams
     })
@@ -174,7 +191,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
-    const oftContract = this.getContract(signer)
+    const oftContract = this.getOftAdapterContract(signer)
 
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
@@ -183,7 +200,7 @@ export class OftTransferStarter extends BridgeTransferStarter {
       destinationAddress
     })
 
-    const { nativeFee, lzTokenFee } = await getOftQuote({
+    const { nativeFee, lzTokenFee } = await getOftV2Quote({
       contract: oftContract,
       sendParams
     })

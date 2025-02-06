@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { BigNumber, Signer } from 'ethers'
 import useSWR from 'swr'
 import { useAccount, useSigner } from 'wagmi'
-import { getOftTransferConfig } from '../../token-bridge-sdk/oftUtils'
-import { OftTransferStarter } from '../../token-bridge-sdk/OftTransferStarter'
+import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
+import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { useNetworks } from '../useNetworks'
 
@@ -27,7 +27,7 @@ async function fetcher([
   const destinationChainProvider = getProviderForChainId(destinationChainId)
 
   const { estimatedSourceChainFee, estimatedDestinationChainFee } =
-    await new OftTransferStarter({
+    await new OftV2TransferStarter({
       sourceChainProvider,
       destinationChainProvider,
       sourceChainErc20Address
@@ -42,7 +42,7 @@ async function fetcher([
   }
 }
 
-export function useOftFeeEstimates({
+export function useOftV2FeeEstimates({
   sourceChainErc20Address
 }: {
   sourceChainErc20Address?: string
@@ -55,7 +55,7 @@ export function useOftFeeEstimates({
   const destinationChainId = networks.destinationChain.id
 
   const isValidOftTransfer = useMemo(() => {
-    return !!getOftTransferConfig({
+    return !!getOftV2TransferConfig({
       sourceChainId,
       destinationChainId,
       sourceChainErc20Address
@@ -93,17 +93,13 @@ export function useOftFeeEstimates({
       refreshInterval: 30_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
-      errorRetryInterval: 5_000,
-      fallbackData: {
-        sourceChainGasFee: BigNumber.from(0),
-        destinationChainGasFee: BigNumber.from(0)
-      }
+      errorRetryInterval: 5_000
     }
   )
 
   return {
     feeEstimates,
     isLoading: !error && !feeEstimates,
-    error
+    error: !!error
   }
 }
