@@ -158,15 +158,27 @@ export function useGasSummary(): UseGasSummaryResult {
     )
   }, [childChainGasPrice, estimateGasResult, isDepositMode])
 
-  const gasSummary = getGasSummary({
-    selectedTokenAddress: selectedToken?.address,
-    amountBigNumber,
-    balance,
-    isDepositMode,
-    estimatedParentChainGasFees,
-    estimatedChildChainGasFees,
-    gasEstimatesError
-  })
+  const gasSummary = useMemo(
+    () =>
+      getGasSummary({
+        selectedTokenAddress: selectedToken?.address,
+        amountBigNumber,
+        balance,
+        isDepositMode,
+        estimatedParentChainGasFees,
+        estimatedChildChainGasFees,
+        gasEstimatesError
+      }),
+    [
+      selectedToken,
+      amountBigNumber,
+      balance,
+      isDepositMode,
+      estimatedParentChainGasFees,
+      estimatedChildChainGasFees,
+      gasEstimatesError
+    ]
+  )
 
   return gasSummary
 }
