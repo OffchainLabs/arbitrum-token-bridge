@@ -1750,6 +1750,53 @@
           "logoUrl": "/images/SyndicateExo_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 2426,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0x47d1Be0136781b3872B68759f2E8881bEF640a33",
+        "inbox": "0xf1eE942531646976a6117cF5473d9c0B0788ce59",
+        "outbox": "0xC5d79Afb36DBDE207dA328c5d7F6CDA25ee29f54",
+        "rollup": "0x6bC07A018ed6C61098C9CCb8582170bBE28c489C",
+        "sequencerInbox": "0x35897557265A1Cf268c23087959ffd9db6291441"
+      },
+      "nativeToken": "0xa111a06BDEbb8b1dAA79000F4B386A36E0AccE56",
+      "explorerUrl": "https://standard-testnet.explorer.alchemy.com",
+      "rpcUrl": "https://standard-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Standard Testnet",
+      "slug": "standard-testnet",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0x850600581Db23302e09cc008A929502bA6e70fEe",
+        "parentErc20Gateway": "0x02052d5373692ae096d8F0D9a35Fc7a58D474eA6",
+        "parentGatewayRouter": "0x655B508Cf9a3E992ce0e43FE3e61aEE3626113Cf",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xf30874aA4025AfBEe63cFb13695384d3be0E8e1c",
+        "childErc20Gateway": "0x60Ed3acc77F5B8C8425C99854569C921fd8E679a",
+        "childGatewayRouter": "0x028af2322E587e0470F2B41e74Eec501923a0747",
+        "childMultiCall": "0xc52B3849075653aDB8EB9385ac78D2513Ded0242",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#CCFF35",
+        "network": {
+          "name": "Standard Testnet",
+          "logo": "/images/StandardTestnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Standard",
+          "symbol": "STND",
+          "logoUrl": "/images/StandardTestnet_NativeTokenLogo.svg"
+        }
+      }
     }
   ]
 }
