@@ -12,7 +12,7 @@ import { isExperimentalModeEnabled } from '../../util'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 
-function HeaderAccountOrConnectWalletButton() {
+export function HeaderAccountOrConnectWalletButton() {
   const { isConnected } = useAccount()
 
   if (isConnected) {
@@ -21,7 +21,7 @@ function HeaderAccountOrConnectWalletButton() {
   return <HeaderConnectWalletButton />
 }
 
-export function Header() {
+export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 
@@ -59,9 +59,7 @@ export function Header() {
             EXPERIMENTAL MODE: features may be incomplete or not work properly
           </span>
         )}
-        <div className="hidden sm:flex">
-          <HeaderAccountOrConnectWalletButton />
-        </div>
+        <div className="hidden sm:flex">{children}</div>
       </div>
       <AppMobileSidebar />
     </header>

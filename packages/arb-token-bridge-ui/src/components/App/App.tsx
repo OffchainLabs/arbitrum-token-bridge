@@ -22,7 +22,7 @@ import { config, useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { Header } from '../common/Header'
+import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
 import { getNetworkName } from '../../util/networks'
 import {
   ArbQueryParamProvider,
@@ -147,7 +147,9 @@ function AppContent() {
   if (!tosAccepted) {
     return (
       <>
-        <Header />
+        <Header>
+          <HeaderAccountOrConnectWalletButton />
+        </Header>
         <WelcomeDialog />
       </>
     )
@@ -185,7 +187,9 @@ function AppContent() {
 
   return (
     <>
-      <Header />
+      <Header>
+        <HeaderAccountOrConnectWalletButton />
+      </Header>
       <TokenListSyncer />
       <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
