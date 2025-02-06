@@ -96,7 +96,8 @@ export class BridgeTransferStarterFactory {
           new EthDepositStarterViem(
             props.sourcePublicClient,
             props.destinationPublicClient,
-            props.walletClient
+            props.walletClient,
+            initProps
           )
         )
       }

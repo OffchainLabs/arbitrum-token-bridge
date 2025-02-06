@@ -8,7 +8,6 @@ import { BigNumber, ContractTransaction, providers, Signer } from 'ethers'
 import { type Address, type PublicClient, type WalletClient } from 'viem'
 import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
-import { rpcURLs } from '../util/networks'
 import {
   ApproveNativeCurrencyProps,
   BridgeTransfer,
@@ -27,29 +26,13 @@ export class EthDepositStarterViem extends BridgeTransferStarter {
   constructor(
     sourcePublicClient: PublicClient,
     destinationPublicClient: PublicClient,
-    walletClient: WalletClient
+    walletClient: WalletClient,
+    initProps: {
+      sourceChainProvider: providers.StaticJsonRpcProvider
+      destinationChainProvider: providers.StaticJsonRpcProvider
+    }
   ) {
-    // Create ethers providers from RPC URLs
-    const sourceProvider = new providers.StaticJsonRpcProvider(
-      rpcURLs[sourcePublicClient.chain?.id ?? 1],
-      {
-        name: sourcePublicClient.chain?.name ?? 'mainnet',
-        chainId: sourcePublicClient.chain?.id ?? 1
-      }
-    )
-
-    const destinationProvider = new providers.StaticJsonRpcProvider(
-      rpcURLs[destinationPublicClient.chain?.id ?? 42161],
-      {
-        name: destinationPublicClient.chain?.name ?? 'arbitrum',
-        chainId: destinationPublicClient.chain?.id ?? 42161
-      }
-    )
-
-    super({
-      sourceChainProvider: sourceProvider,
-      destinationChainProvider: destinationProvider
-    })
+    super(initProps)
 
     this.sourcePublicClient = sourcePublicClient
     this.destinationPublicClient = destinationPublicClient
