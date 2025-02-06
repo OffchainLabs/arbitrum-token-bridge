@@ -107,7 +107,7 @@ export function TransferPanel() {
   const {
     app: {
       connectionState,
-      arbTokenBridge: { token, bridgeTokens },
+      arbTokenBridge: { token },
       warningTokens
     }
   } = useAppState()
@@ -219,21 +219,6 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
-
-  // If USDC comes from query params we need to add it to the list
-  useEffect(() => {
-    if (
-      typeof tokenFromSearchParams === 'undefined' ||
-      !isTokenNativeUSDC(tokenFromSearchParams) ||
-      !token ||
-      !bridgeTokens ||
-      typeof bridgeTokens[tokenFromSearchParams] !== 'undefined'
-    ) {
-      return
-    }
-
-    token.add(tokenFromSearchParams)
-  }, [bridgeTokens, token, tokenFromSearchParams])
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
