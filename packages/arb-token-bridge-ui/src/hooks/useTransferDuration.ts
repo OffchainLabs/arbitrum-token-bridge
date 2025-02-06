@@ -72,9 +72,7 @@ export const useTransferDuration = (
   }
 
   if (tx.isWithdrawal) {
-    console.log(tx)
     const withdrawalDuration = getWithdrawalDuration(tx)
-    console.log({ withdrawalDuration })
     return {
       approximateDurationInMinutes: withdrawalDuration,
       estimatedMinutesLeft: getRemainingMinutes({

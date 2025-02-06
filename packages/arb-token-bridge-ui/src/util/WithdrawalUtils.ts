@@ -15,7 +15,6 @@ import {
   getConfirmPeriodBlocks,
   getL1BlockTime
 } from './networks'
-import { BoldUpgradeStatus, getBoldUpgradeInfo } from './BoLDUtils'
 
 export async function withdrawInitTxEstimateGas({
   amount,
