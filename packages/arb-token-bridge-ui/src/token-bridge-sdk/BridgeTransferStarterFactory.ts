@@ -11,7 +11,6 @@ import { EthTeleportStarter } from './EthTeleportStarter'
 import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { type PublicClient, type WalletClient } from 'viem'
-import { type L2Network } from '@arbitrum/sdk'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -44,7 +43,6 @@ export class BridgeTransferStarterFactory {
       sourcePublicClient?: PublicClient
       destinationPublicClient?: PublicClient
       walletClient?: WalletClient
-      destinationNetwork?: L2Network
     }
   ): BridgeTransferStarter {
     const sourceChainProvider = getProviderForChainId(props.sourceChainId)
@@ -91,16 +89,14 @@ export class BridgeTransferStarterFactory {
         props.useViem &&
         props.sourcePublicClient &&
         props.destinationPublicClient &&
-        props.walletClient &&
-        props.destinationNetwork
+        props.walletClient
       ) {
         return withCache(
           cacheKey,
           new EthDepositStarterViem(
             props.sourcePublicClient,
             props.destinationPublicClient,
-            props.walletClient,
-            props.destinationNetwork
+            props.walletClient
           )
         )
       }

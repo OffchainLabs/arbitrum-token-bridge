@@ -81,8 +81,6 @@ import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChain
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { useArbitrumClient } from '../../hooks/useArbitrumClient'
-import { getArbitrumNetwork } from '@arbitrum/sdk'
-import { L2Network } from '@arbitrum/sdk'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -650,10 +648,6 @@ export function TransferPanel() {
           )
         }
 
-        const arbitrumNetwork = await getArbitrumNetwork(destinationChainId)
-        // Cast to L2Network since we know it has the required properties
-        const l2Network = arbitrumNetwork as unknown as L2Network
-
         const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
           {
             sourceChainId,
@@ -663,8 +657,7 @@ export function TransferPanel() {
             useViem: true,
             sourcePublicClient: parentPublicClient,
             destinationPublicClient: childPublicClient,
-            walletClient: parentWalletClient,
-            destinationNetwork: l2Network
+            walletClient: parentWalletClient
           }
         )
 

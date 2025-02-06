@@ -11,6 +11,7 @@
     "@headlessui/tailwindcss": "^0.1.2",
     "@heroicons/react": "^2.0.18",
     "@offchainlabs/cobalt": "^0.3.12",
+    "@offchainlabs/ethers-viem-compat": "^0.0.1",
     "@rainbow-me/rainbowkit": "^2.2.2",
     "@rehooks/local-storage": "^2.4.4",
     "@sentry/react": "^8.33.1",
