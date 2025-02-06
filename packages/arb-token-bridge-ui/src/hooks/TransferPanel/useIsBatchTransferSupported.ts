@@ -1,14 +1,12 @@
-import { useAppState } from '../../state'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
+import { useSelectedToken } from '../useSelectedToken'
 
 export const useIsBatchTransferSupported = () => {
   const [networks] = useNetworks()
   const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   if (!selectedToken) {
     return false

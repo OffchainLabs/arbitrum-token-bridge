@@ -5,9 +5,9 @@ import { useAccount } from 'wagmi'
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { useAppState } from '../../state'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
+import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
@@ -56,12 +56,10 @@ export function useGasEstimates({
   error: any
 } {
   const [{ sourceChain, destinationChain }] = useNetworks()
+  const [selectedToken] = useSelectedToken()
   const [{ destinationAddress }] = useArbQueryParams()
-  const {
-    app: { selectedToken: token }
-  } = useAppState()
   const { address: walletAddress } = useAccount()
-  const balance = useBalanceOnSourceChain(token)
+  const balance = useBalanceOnSourceChain(selectedToken)
   const signer = useEthersSigner()
 
   const amountToTransfer =

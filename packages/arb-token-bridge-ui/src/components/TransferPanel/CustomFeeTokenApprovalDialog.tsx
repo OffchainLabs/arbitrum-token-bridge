@@ -9,12 +9,12 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
-import { useAppState } from '../../state'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { shortenAddress } from '../../util/CommonUtils'
 import { NoteBox } from '../common/NoteBox'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
@@ -29,8 +29,7 @@ export function CustomFeeTokenApprovalDialog(
   const { customFeeToken, isOpen } = props
 
   const { ethToUSD } = useETHPrice()
-  const { app } = useAppState()
-  const { selectedToken } = app
+  const [selectedToken] = useSelectedToken()
 
   const [networks] = useNetworks()
   const { sourceChain, destinationChain } = networks

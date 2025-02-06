@@ -6,7 +6,6 @@ import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { Chain } from 'wagmi/chains'
 
-import { useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -24,6 +23,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
@@ -191,10 +191,7 @@ export function TransferPanelMain() {
     useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   const { address: walletAddress } = useAccount()
 

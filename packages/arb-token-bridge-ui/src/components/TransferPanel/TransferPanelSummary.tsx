@@ -13,15 +13,16 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
-import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { Tooltip } from '../common/Tooltip'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { NoteBox } from '../common/NoteBox'
 import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
+import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -43,9 +44,7 @@ function StyledLoader() {
 }
 
 function TotalGasFees() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   const {
     status: gasSummaryStatus,
@@ -191,9 +190,19 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const {
+    isArbitrumOne: isSourceChainArbitrumOne,
+    isArbitrumNova: isSourceChainArbitrumNova
+  } = isNetwork(networks.sourceChain.id)
+
+  const {
     isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia,
+    isEthereumMainnet: isDestinationChainEthereumMainnet
   } = isNetwork(networks.destinationChain.id)
+
+  const isAffectedByBoLDUpgrade =
+    (isSourceChainArbitrumOne || isSourceChainArbitrumNova) &&
+    isDestinationChainEthereumMainnet
 
   const isDepositingUSDCtoArbOneOrArbSepolia =
     isTokenNativeUSDC(token?.address) &&
@@ -264,7 +273,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode && (
+      {!isDepositMode && !isAffectedByBoLDUpgrade && (
         <div
           className={twMerge(
             'grid grid-cols-[260px_auto] items-center text-sm font-light'
@@ -273,6 +282,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
         </div>
       )}
+      {isAffectedByBoLDUpgrade && <BoLDUpgradeWarning />}
     </TransferPanelSummaryContainer>
   )
 }
