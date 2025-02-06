@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { hex } from 'wcag-contrast'
 
 import { isNetwork, getNetworkName } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
@@ -129,8 +130,13 @@ export function NetworkButton({
     (isSmartContractWallet && type === 'source') ||
     isLoading
 
+  const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
+
+  const colorContrast = hex('#ffffff', backgroundColor)
+
   const buttonStyle = {
-    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+    backgroundColor,
+    color: colorContrast >= 3 ? '#ffffff' : '#000000'
   }
 
   return (

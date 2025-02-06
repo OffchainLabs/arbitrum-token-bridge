@@ -421,7 +421,16 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
+  const { isArbitrumOne, isArbitrumSepolia, isEthereumMainnet } = isNetwork(
+    options.chainId
+  )
+
+  if (
+    options.erc20L1Address.toLowerCase() === CommonAddress.Ethereum.USDT &&
+    isEthereumMainnet
+  ) {
+    return 'USDT'
+  }
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
@@ -451,7 +460,16 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
+  const { isArbitrumOne, isArbitrumSepolia, isEthereumMainnet } = isNetwork(
+    options.chainId
+  )
+
+  if (
+    options.erc20L1Address.toLowerCase() === CommonAddress.Ethereum.USDT &&
+    isEthereumMainnet
+  ) {
+    return 'USDT'
+  }
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||

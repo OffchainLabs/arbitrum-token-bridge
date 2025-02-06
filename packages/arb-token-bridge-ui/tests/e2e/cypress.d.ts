@@ -3,8 +3,6 @@ import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
   login,
-  logout,
-  openTransactionsPanel,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -40,9 +38,7 @@ declare global {
       connectToApp: typeof connectToApp
       // eslint-disable-next-line no-unused-vars
       login: typeof login
-      logout: typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
-      openTransactionsPanel: typeof openTransactionsPanel
       searchAndSelectToken({
         tokenName,
         tokenAddress

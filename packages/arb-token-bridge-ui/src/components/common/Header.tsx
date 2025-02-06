@@ -12,7 +12,7 @@ import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 import { isExperimentalModeEnabled } from '../../util'
 
-function HeaderAccountOrConnectWalletButton() {
+export function HeaderAccountOrConnectWalletButton() {
   const { isConnected } = useAccount()
 
   if (isConnected) {
@@ -21,7 +21,7 @@ function HeaderAccountOrConnectWalletButton() {
   return <HeaderConnectWalletButton />
 }
 
-export function Header() {
+export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 

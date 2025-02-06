@@ -17,8 +17,8 @@ import { config, useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { Header } from '../common/Header'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
+import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
@@ -154,7 +154,9 @@ function AppContent() {
 
   return (
     <>
-      <Header />
+      <Header>
+        <HeaderAccountOrConnectWalletButton />
+      </Header>
       <TokenListSyncer />
       <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
