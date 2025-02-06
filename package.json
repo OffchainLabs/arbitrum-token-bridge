@@ -38,6 +38,6 @@
   },
   "config": {
     "chromeVersion": "128.0.6613.137",
-    "chromePath": "node_modules/.cache/puppeteer"
+    "chromePath": "node_modules/.cache/synpress"
   }
 }
