@@ -1,12 +1,14 @@
+import { act, renderHook, RenderHookResult } from '@testing-library/react'
+import { constants } from 'ethers'
+
 import { useNetworks } from '../useNetworks'
 import { useBalances } from '../useBalances'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
-import { act, renderHook, RenderHookResult } from '@testing-library/react'
 import {
   useGasSummary,
   UseGasSummaryResult
 } from '../TransferPanel/useGasSummary'
-import { constants } from 'ethers'
+import { useGasEstimates } from '../TransferPanel/useGasEstimates'
 
 jest.mock('../useNetworks', () => ({
   useNetworks: jest.fn()
@@ -31,6 +33,10 @@ jest.mock('../useBalanceOnSourceChain', () => ({
   useBalanceOnSourceChain: jest.fn().mockReturnValue(constants.Zero)
 }))
 
+jest.mock('../useGasEstimates', () => ({
+  useGasEstimates: jest.fn()
+}))
+
 const renderHookAsyncUseGasSummary = async () => {
   let hook: RenderHookResult<UseGasSummaryResult, undefined> | undefined
 
@@ -46,10 +52,6 @@ const renderHookAsyncUseGasSummary = async () => {
 }
 
 describe('useGasSummary', () => {
-  afterEach(() => {
-    jest.restoreAllMocks()
-  })
-
   it('should return loading status if balance is zero', async () => {
     const { result } = await renderHookAsyncUseGasSummary()
     expect(result.current.status).toEqual('loading')
