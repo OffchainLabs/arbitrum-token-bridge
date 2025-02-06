@@ -5,6 +5,7 @@ import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
 import { isNetwork } from '../util/networks'
 import { getConfirmationTime } from '../util/WithdrawalUtils'
+import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../util/BoLDUtils'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,
@@ -71,7 +72,9 @@ export const useTransferDuration = (
   }
 
   if (tx.isWithdrawal) {
+    console.log(tx)
     const withdrawalDuration = getWithdrawalDuration(tx)
+    console.log({ withdrawalDuration })
     return {
       approximateDurationInMinutes: withdrawalDuration,
       estimatedMinutesLeft: getRemainingMinutes({
@@ -110,9 +113,18 @@ export function getWithdrawalConfirmationDate({
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
 
-  const { confirmationTimeInSeconds } = getConfirmationTime(
-    withdrawalFromChainId
-  )
+  let { confirmationTimeInSeconds } = getConfirmationTime(withdrawalFromChainId)
+  const boldUpgradeInfo = getBoldUpgradeInfo(withdrawalFromChainId)
+
+  // In case the BoLD upgrade is ongoing, and the tx was created during this time, we add the extra confirmation time
+  if (boldUpgradeInfo.status === BoldUpgradeStatus.InProgress) {
+    const isDuringBold = createdAtDate >= dayjs(boldUpgradeInfo.dateStart)
+
+    if (isDuringBold) {
+      confirmationTimeInSeconds += boldUpgradeInfo.secondsRemaining
+    }
+  }
+
   return createdAtDate.add(confirmationTimeInSeconds, 'second')
 }
 

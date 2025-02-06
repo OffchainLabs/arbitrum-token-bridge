@@ -163,14 +163,6 @@ export function getConfirmationTime(chainId: number) {
       getL1BlockTime(blockNumberReferenceChainId) *
         getConfirmPeriodBlocks(chainId) +
       CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
-
-    const boldUpgradeInfo = getBoldUpgradeInfo(chainId)
-    const boldUpgradeSecondsRemaining =
-      boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
-        ? boldUpgradeInfo.secondsRemaining
-        : 0
-
-    confirmationTimeInSeconds += boldUpgradeSecondsRemaining
   }
 
   const confirmationTimeInReadableFormat = formatDuration(
