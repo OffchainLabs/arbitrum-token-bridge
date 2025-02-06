@@ -58,14 +58,31 @@ jobs:
           docker-images: false
           swap-storage: true
 
-      # we found on 26 Sep that using Chrome 129 mysteriously broke ci at setupMetamask step
+      # we found on 26 Sep 2024 that using Chromium 129 mysteriously broke ci at setupMetamask step
       # with the following error: > Cannot read properties of undefined (reading 'waitForTimeout')
-      # so we are reverting to Chrome 128 on ci
-      # https://www.ubuntuupdates.org/package_logs?type=ppas&vals=8
-      - name: Set up Chrome 128
+      # so we are reverting to Chromium 128 on ci
+      # we remove the existing chromium package and install the 128 version
+      # https://snapshot.debian.org/package/chromium/128.0.6613.137-1/
+      # the other packages are dependencies of chromium
+      - name: Set up Chromium 128
         run: |
-          wget http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_128.0.6613.137-1_amd64.deb
-          sudo apt-get install ./google-chrome-stable_128.0.6613.137-1_amd64.deb
+          sudo apt-get update
+          sudo apt-get remove chromium --purge
+          rm -rf ~/.config/chromium
+          rm -rf ~/.cache/chromium
+          sudo rm -rf /etc/chromium
+          wget http://ftp.de.debian.org/debian/pool/main/i/icu/libicu72_72.1-3_amd64.deb
+          wget http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-3+b1_amd64.deb
+          wget http://ftp.us.debian.org/debian/pool/main/libx/libxml2/libxml2n_2.13.3+dfsg-0exp2+b1_amd64.deb
+          wget http://ftp.us.debian.org/debian/pool/main/libx/libxml2/libxml2-dev_2.13.3+dfsg-0exp2+b1_amd64.deb
+          wget https://snapshot.debian.org/archive/debian/20240911T150313Z/pool/main/c/chromium/chromium-common_128.0.6613.137-1_amd64.deb
+          wget https://snapshot.debian.org/archive/debian/20240911T150313Z/pool/main/c/chromium/chromium_128.0.6613.137-1_amd64.deb
+          sudo apt-get install ./libicu72_72.1-3_amd64.deb ./libxml2n_2.13.3+dfsg-0exp2+b1_amd64.deb ./libjpeg62-turbo_2.1.5-3+b1_amd64.deb ./libxml2-dev_2.13.3+dfsg-0exp2+b1_amd64.deb ./chromium-common_128.0.6613.137-1_amd64.deb ./chromium_128.0.6613.137-1_amd64.deb
+     
+      - name: Get Chromium version info
+        run: |
+          which chromium
+          chromium --version
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -116,12 +133,12 @@ jobs:
           start: yarn start
           command: >-
             ${{
-              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
-              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser chrome') ||
-              'yarn test:e2e --browser chrome'
+              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser /usr/bin/chromium' ||
+              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token --browser /usr/bin/chromium') ||
+              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token --browser /usr/bin/chromium') ||
+              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token --browser /usr/bin/chromium') ||
+              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser /usr/bin/chromium') ||
+              'yarn test:e2e --browser /usr/bin/chromium'
             }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
