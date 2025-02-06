@@ -206,7 +206,7 @@ function getTxIdFromTransaction(tx: Transfer) {
     return tx.transactionHash
   }
 
-  if (isCctpTransfer(tx)) {
+  if (isCctpTransfer(tx) || isOftTransfer(tx)) {
     return tx.txId
   }
   if (isDeposit(tx)) {
@@ -478,8 +478,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     ...oftTransfers
   ].flat()
 
-  console.log('xxxx', oftTransfers, transactions)
-
   return {
     data: transactions,
     loading: depositsLoading || withdrawalsLoading || cctpLoading || oftLoading,
@@ -590,6 +588,8 @@ export const useTransactionHistory = (
       const dedupedTransactions = dedupeTransactions(dataWithCache).sort(
         sortByTimestampDescending
       )
+
+      console.log('xxxx', { dataWithCache, dedupedTransactions })
 
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE

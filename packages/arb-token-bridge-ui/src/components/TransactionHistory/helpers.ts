@@ -105,6 +105,10 @@ export function isTxExpired(tx: MergedTransaction): boolean {
 }
 
 export function isTxFailed(tx: MergedTransaction): boolean {
+  if (tx.isOft) {
+    return tx.status === 'failed'
+  }
+
   if (isDeposit(tx)) {
     if (!tx.depositStatus) {
       return false
