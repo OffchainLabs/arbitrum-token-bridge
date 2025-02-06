@@ -31,7 +31,6 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -150,7 +149,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childWalletAddress: walletAddress
   })
   const { destinationAddressError } = useDestinationAddressError()
-  const isOftV2Transfer = useIsOftV2Transfer()
 
   const ethL1BalanceFloat = ethParentBalance
     ? parseFloat(utils.formatEther(ethParentBalance))
@@ -274,11 +272,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         }
       })
     }
-
-    // // OFT transfers using SC wallets not enabled yet
-    // if (isSmartContractWallet && isOftV2Transfer) {
-    //   return notReady()
-    // }
 
     // Check if destination address is valid for ERC20 transfers
     if (destinationAddressError) {
