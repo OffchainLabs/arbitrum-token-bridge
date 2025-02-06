@@ -20,7 +20,7 @@ export function captureSentryErrorWithExtraData({
     // Add query string to tags
     const query = new URLSearchParams(window.location.search)
     for (const [key, value] of query.entries()) {
-      scope.setTag(key, value)
+      scope.setTag(`query.${key}`, value)
     }
 
     Sentry.captureException(error)
