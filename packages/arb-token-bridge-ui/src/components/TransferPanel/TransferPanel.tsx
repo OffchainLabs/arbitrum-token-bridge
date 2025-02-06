@@ -283,10 +283,10 @@ export function TransferPanel() {
       const [confirmed] = await waitForInput()
 
       if (confirmed) {
-        transfer()
+        return transfer()
       }
     } else {
-      transfer()
+      return transfer()
     }
   }
 
