@@ -1,6 +1,5 @@
-import { constants, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import { useMemo } from 'react'
-import { useDebounce } from '@uidotdev/usehooks'
 
 import { useGasPrice } from '../useGasPrice'
 import {
@@ -9,15 +8,13 @@ import {
 } from '../../util/TokenUtils'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
-import { useArbQueryParams } from '../useArbQueryParams'
 import { useGasEstimates } from './useGasEstimates'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
-import { truncateExtraDecimals } from '../../util/NumberUtils'
-import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 import { useSelectedToken } from '../useSelectedToken'
+import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -32,26 +29,73 @@ export type UseGasSummaryResult = {
   estimatedChildChainGasFees: number | undefined
 }
 
+export function getGasSummary({
+  selectedTokenAddress,
+  amountBigNumber,
+  balance,
+  isDepositMode,
+  estimatedParentChainGasFees,
+  estimatedChildChainGasFees,
+  gasEstimatesError
+}: {
+  selectedTokenAddress: string | undefined
+  amountBigNumber: BigNumber
+  balance: BigNumber | null
+  isDepositMode: boolean
+  estimatedParentChainGasFees: number | undefined
+  estimatedChildChainGasFees: number | undefined
+  gasEstimatesError: any
+}): UseGasSummaryResult {
+  if (
+    !isDepositMode &&
+    (isTokenArbitrumOneNativeUSDC(selectedTokenAddress) ||
+      isTokenArbitrumSepoliaNativeUSDC(selectedTokenAddress))
+  ) {
+    return {
+      status: 'unavailable',
+      estimatedParentChainGasFees: undefined,
+      estimatedChildChainGasFees
+    }
+  }
+
+  if (balance === null) {
+    return {
+      status: 'loading',
+      estimatedParentChainGasFees,
+      estimatedChildChainGasFees
+    }
+  }
+
+  if (amountBigNumber.gt(balance)) {
+    return {
+      status: 'insufficientBalance',
+      estimatedParentChainGasFees,
+      estimatedChildChainGasFees
+    }
+  }
+
+  if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
+    return {
+      status: 'error',
+      estimatedParentChainGasFees,
+      estimatedChildChainGasFees
+    }
+  }
+
+  return {
+    status: 'success',
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
+  }
+}
+
 export function useGasSummary(): UseGasSummaryResult {
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
 
-  const [{ amount }] = useArbQueryParams()
-  const debouncedAmount = useDebounce(amount, 300)
-  const decimals = useSelectedTokenDecimals()
-
-  const amountBigNumber = useMemo(() => {
-    if (isNaN(Number(debouncedAmount))) {
-      return constants.Zero
-    }
-    const amountSafe = debouncedAmount || '0'
-
-    const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
-
-    return utils.parseUnits(correctDecimalsAmount, decimals)
-  }, [debouncedAmount, decimals])
+  const amountBigNumber = useAmountBigNumber()
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
@@ -114,57 +158,15 @@ export function useGasSummary(): UseGasSummaryResult {
     )
   }, [childChainGasPrice, estimateGasResult, isDepositMode])
 
-  const gasSummary: UseGasSummaryResult = useMemo(() => {
-    if (
-      !isDepositMode &&
-      (isTokenArbitrumOneNativeUSDC(selectedToken?.address) ||
-        isTokenArbitrumSepoliaNativeUSDC(selectedToken?.address))
-    ) {
-      return {
-        status: 'unavailable',
-        estimatedParentChainGasFees: undefined,
-        estimatedChildChainGasFees
-      }
-    }
-
-    if (balance === null) {
-      return {
-        status: 'loading',
-        estimatedParentChainGasFees,
-        estimatedChildChainGasFees
-      }
-    }
-
-    if (amountBigNumber.gt(balance)) {
-      return {
-        status: 'insufficientBalance',
-        estimatedParentChainGasFees,
-        estimatedChildChainGasFees
-      }
-    }
-
-    if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
-      return {
-        status: 'error',
-        estimatedParentChainGasFees,
-        estimatedChildChainGasFees
-      }
-    }
-
-    return {
-      status: 'success',
-      estimatedParentChainGasFees,
-      estimatedChildChainGasFees
-    }
-  }, [
-    isDepositMode,
-    selectedToken?.address,
-    balance,
+  const gasSummary = getGasSummary({
+    selectedTokenAddress: selectedToken?.address,
     amountBigNumber,
+    balance,
+    isDepositMode,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
     gasEstimatesError
-  ])
+  })
 
   return gasSummary
 }
