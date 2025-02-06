@@ -7,6 +7,7 @@ import { useAccountType } from '../../../hooks/useAccountType'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useAccount } from 'wagmi'
 
 export async function getDestinationAddressError({
   destinationAddress,
@@ -41,19 +42,26 @@ export async function getDestinationAddressError({
 export function useDestinationAddressError() {
   const [{ destinationAddress }] = useArbQueryParams()
   const [networks] = useNetworks()
+  const { address, isConnected } = useAccount()
   const { isTeleportMode } = useNetworksRelationship(networks)
   const { isSmartContractWallet: isSenderSmartContractWallet } =
     useAccountType()
 
   const { data: destinationAddressError } = useSWRImmutable(
     [
+      address?.toLowerCase(),
       destinationAddress?.toLowerCase(),
       isSenderSmartContractWallet,
       isTeleportMode,
       'useDestinationAddressError'
     ] as const,
     // Extracts the first element of the query key as the fetcher param
-    ([_destinationAddress, _isSenderSmartContractWallet, _isTeleportMode]) =>
+    ([
+      _address,
+      _destinationAddress,
+      _isSenderSmartContractWallet,
+      _isTeleportMode
+    ]) =>
       getDestinationAddressError({
         destinationAddress: _destinationAddress,
         isSenderSmartContractWallet: _isSenderSmartContractWallet,
