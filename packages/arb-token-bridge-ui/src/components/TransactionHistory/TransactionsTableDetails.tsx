@@ -6,6 +6,7 @@ import Image from 'next/image'
 import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
+import LayerZeroIcon from '@/images/LayerZeroIcon.png'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
@@ -206,15 +207,29 @@ export const TransactionsTableDetails = () => {
                 </DetailsBox>
 
                 <DetailsBox header="Bridge">
-                  <div className="flex space-x-2">
+                  <div className="flex items-center space-x-2">
                     <Image
                       alt="Bridge logo"
-                      src={tx.isCctp ? CctpLogoColor : ArbitrumLogo}
+                      className="h-4 w-4 shrink-0"
+                      src={
+                        tx.isOft
+                          ? LayerZeroIcon
+                          : tx.isCctp
+                          ? CctpLogoColor
+                          : ArbitrumLogo
+                      }
                       width={16}
                       height={16}
                     />
 
-                    {tx.isCctp ? (
+                    {tx.isOft ? (
+                      <span>
+                        LayerZero OFT{' '}
+                        <span className="text-white/70">
+                          (Omnichain Fungible Token)
+                        </span>
+                      </span>
+                    ) : tx.isCctp ? (
                       <span>
                         CCTP{' '}
                         <span className="text-white/70">

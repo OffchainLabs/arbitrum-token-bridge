@@ -177,7 +177,7 @@ function transformLayerZeroMessage(
   })
 
   return {
-    sender: message.pathway.sender.address,
+    sender: message.source.tx.from,
     destination: message.pathway.receiver.address,
     direction: isDeposit ? 'deposit' : 'withdraw',
     status: getOftTransactionStatus(message),
@@ -233,6 +233,8 @@ export function useOftTransactionHistory({
       }
 
       const data: LayerZeroResponse = await response.json()
+
+      console.log('xxxx', data)
 
       return data.data
         .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
