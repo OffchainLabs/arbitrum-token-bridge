@@ -1,93 +1,49 @@
-import { useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { useAccount, useWalletClient } from 'wagmi'
 
+import { useNetworks } from '../../hooks/useNetworks'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useAppContextState } from '../App/AppContext'
 import { Button } from '../common/Button'
 import { useTransferReadiness } from './useTransferReadiness'
+import { useAccountType } from '../../hooks/useAccountType'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useAppContextState } from '../App/AppContext'
+import { getNetworkName } from '../../util/networks'
 
-export function MoveFundsButton({ onClick }: { onClick: () => void }) {
-  const {
-    layout: { isTransferring }
-  } = useAppContextState()
+export function MoveFundsButton({
+  onClick
+}: Pick<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>) {
+  const { layout } = useAppContextState()
+  const { isTransferring } = layout
+
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
-  const { isConnected } = useAccount()
-  const { data: walletClient, isLoading: isWalletLoading } = useWalletClient()
-
-  const { transferReady, errorMessages } = useTransferReadiness()
-
-  const isButtonEnabled = isDepositMode
-    ? transferReady.deposit
-    : transferReady.withdrawal
-
-  const isWalletReady = isConnected && !!walletClient && !isWalletLoading
-
-  const handleClick = useCallback(() => {
-    console.log('[Debug] MoveFundsButton clicked', {
-      transferReady,
-      errorMessages,
-      isTransferring,
-      isDepositMode,
-      isConnected,
-      walletClient: !!walletClient,
-      isWalletLoading,
-      isWalletReady
-    })
-    onClick()
-  }, [
-    onClick,
-    transferReady,
-    errorMessages,
-    isTransferring,
-    isDepositMode,
-    isConnected,
-    walletClient,
-    isWalletLoading,
-    isWalletReady
-  ])
-
-  if (!isConnected) {
-    return (
-      <Button
-        variant="primary"
-        className="w-full"
-        onClick={() => {
-          // This will trigger the wallet connect modal
-          window.ethereum?.request({ method: 'eth_requestAccounts' })
-        }}
-      >
-        Connect Wallet
-      </Button>
-    )
-  }
-
-  if (!isWalletReady) {
-    return (
-      <Button variant="primary" className="w-full" disabled={true}>
-        Connecting Wallet...
-      </Button>
-    )
-  }
+  const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  )
+  const { isSmartContractWallet } = useAccountType()
+  const { transferReady } = useTransferReadiness()
 
   return (
     <Button
       variant="primary"
-      className={twMerge(
-        'mt-6 w-full',
-        !isButtonEnabled && 'cursor-not-allowed opacity-50'
-      )}
-      disabled={!isButtonEnabled || isTransferring}
       loading={isTransferring}
-      onClick={handleClick}
+      disabled={
+        isDepositMode ? !transferReady.deposit : !transferReady.withdrawal
+      }
+      onClick={onClick}
+      style={{
+        borderColor: destinationChainUIcolor,
+        backgroundColor: `${destinationChainUIcolor}66`
+      }}
+      className={twMerge(
+        'w-full border py-3 text-lg',
+        'disabled:!border-white/10 disabled:!bg-white/10',
+        'lg:text-2xl'
+      )}
     >
-      {isTransferring
-        ? 'Moving funds...'
-        : isDepositMode
-        ? 'Deposit'
-        : 'Withdraw'}
+      {isSmartContractWallet && isTransferring
+        ? 'Sending request...'
+        : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
     </Button>
   )
 }

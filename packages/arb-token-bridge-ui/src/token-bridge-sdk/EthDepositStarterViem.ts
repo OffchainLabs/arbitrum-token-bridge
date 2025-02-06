@@ -1,18 +1,97 @@
 import { type Address, type PublicClient, type WalletClient } from 'viem'
 import { type L2Network } from '@arbitrum/sdk'
-import { BridgeTransfer, TransferType } from './BridgeTransferStarter'
-import { providers } from 'ethers'
+import {
+  BridgeTransfer,
+  TransferType,
+  BridgeTransferStarter,
+  TransferProps,
+  BridgeTransferStarterProps
+} from './BridgeTransferStarter'
+import { providers, BigNumber, ContractTransaction } from 'ethers'
 import { rpcURLs } from '../util/networks'
+import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { depositEth, depositEthTo } from '@arbitrum/sdk-viem'
 
-export class EthDepositStarterViem {
+export class EthDepositStarterViem extends BridgeTransferStarter {
+  public transferType: TransferType = 'eth_deposit'
+  protected readonly sourcePublicClient: PublicClient
+  protected readonly destinationPublicClient: PublicClient
+  protected readonly walletClient: WalletClient
+  protected readonly destinationNetwork: L2Network
+
   constructor(
-    protected readonly l1PublicClient: PublicClient,
-    protected readonly l2PublicClient: PublicClient,
-    protected readonly walletClient: WalletClient,
-    protected readonly l2Network: L2Network
-  ) {}
+    sourcePublicClient: PublicClient,
+    destinationPublicClient: PublicClient,
+    walletClient: WalletClient,
+    destinationNetwork: L2Network
+  ) {
+    // Create ethers providers from RPC URLs
+    const sourceProvider = new providers.StaticJsonRpcProvider(
+      rpcURLs[sourcePublicClient.chain?.id ?? 1],
+      {
+        name: sourcePublicClient.chain?.name ?? 'mainnet',
+        chainId: sourcePublicClient.chain?.id ?? 1
+      }
+    )
 
-  async deposit(params: {
+    const destinationProvider = new providers.StaticJsonRpcProvider(
+      rpcURLs[destinationPublicClient.chain?.id ?? 42161],
+      {
+        name: destinationPublicClient.chain?.name ?? 'arbitrum',
+        chainId: destinationPublicClient.chain?.id ?? 42161
+      }
+    )
+
+    super({
+      sourceChainProvider: sourceProvider,
+      destinationChainProvider: destinationProvider
+    })
+
+    this.sourcePublicClient = sourcePublicClient
+    this.destinationPublicClient = destinationPublicClient
+    this.walletClient = walletClient
+    this.destinationNetwork = destinationNetwork
+  }
+
+  public async requiresNativeCurrencyApproval(): Promise<boolean> {
+    // ETH deposits don't require approval
+    return false
+  }
+
+  public async approveNativeCurrencyEstimateGas(): Promise<BigNumber | void> {
+    // ETH deposits don't require approval
+    return
+  }
+
+  public async approveNativeCurrency(): Promise<ContractTransaction | void> {
+    // ETH deposits don't require approval
+    return
+  }
+
+  public async requiresTokenApproval(): Promise<boolean> {
+    // ETH deposits don't require token approval
+    return false
+  }
+
+  public async approveTokenEstimateGas(): Promise<BigNumber | void> {
+    // ETH deposits don't require token approval
+    return
+  }
+
+  public async approveToken(): Promise<ContractTransaction | void> {
+    // ETH deposits don't require token approval
+    return
+  }
+
+  public async transferEstimateGas(): Promise<GasEstimates | undefined> {
+    // For ETH deposits, we use fixed gas estimates
+    return {
+      estimatedParentChainGas: BigNumber.from(3000000),
+      estimatedChildChainGas: BigNumber.from(1000000)
+    }
+  }
+
+  private async deposit(params: {
     amount: bigint
     from: Address
     to?: Address
@@ -23,99 +102,63 @@ export class EthDepositStarterViem {
       throw new Error('Wallet client is undefined')
     }
 
-    if (!this.l2Network) {
-      throw new Error('L2Network is undefined')
+    if (!this.destinationNetwork) {
+      throw new Error('Destination network is undefined')
     }
 
     console.log('[Debug] EthDepositStarterViem.deposit called with:', {
       amount: amount.toString(),
       from,
       to,
-      l2Network: {
-        chainID: this.l2Network.chainID,
-        ethBridge: !!this.l2Network.ethBridge,
-        inbox: this.l2Network.ethBridge?.inbox
+      destinationNetwork: {
+        chainID: this.destinationNetwork.chainID,
+        ethBridge: !!this.destinationNetwork.ethBridge,
+        inbox: this.destinationNetwork.ethBridge?.inbox
       }
     })
 
-    // Use the depositEth function directly from the wallet client
-    const hash = await this.walletClient.writeContract({
-      address: this.l2Network.ethBridge.inbox as `0x${string}`,
-      abi: [
-        {
-          inputs: [
-            { name: 'to', type: 'address' },
-            { name: 'l2CallValue', type: 'uint256' },
-            { name: 'maxSubmissionCost', type: 'uint256' },
-            { name: 'excessFeeRefundAddress', type: 'address' },
-            { name: 'callValueRefundAddress', type: 'address' },
-            { name: 'maxGas', type: 'uint256' },
-            { name: 'gasPriceBid', type: 'uint256' },
-            { name: 'data', type: 'bytes' }
-          ],
-          name: 'createRetryableTicket',
-          outputs: [{ name: '', type: 'uint256' }],
-          stateMutability: 'payable',
-          type: 'function'
-        }
-      ],
-      functionName: 'createRetryableTicket',
-      args: [
-        to ?? from,
-        amount,
-        BigInt(0), // maxSubmissionCost
-        from,
-        from,
-        BigInt(3000000), // maxGas
-        BigInt(1), // gasPriceBid
-        '0x' // data
-      ],
-      value: amount
-    })
+    // Use depositEth or depositEthTo from sdk-viem based on whether a destination address is provided
+    const result = to
+      ? await depositEthTo(
+          this.sourcePublicClient,
+          this.destinationPublicClient,
+          this.walletClient,
+          {
+            amount,
+            account: from,
+            destinationAddress: to
+          }
+        )
+      : await depositEth(
+          this.sourcePublicClient,
+          this.destinationPublicClient,
+          this.walletClient,
+          {
+            amount,
+            account: from
+          }
+        )
 
-    console.log('[Debug] EthDepositStarterViem.deposit result:', { hash })
+    if (result.status !== 'success') {
+      throw new Error('Deposit failed')
+    }
 
-    return { hash, status: 'success' }
+    return { hash: result.hash, status: 'success' }
   }
 
-  async transfer(params: {
-    amount: bigint
-    from: Address
-    to?: Address
-  }): Promise<BridgeTransfer> {
-    const result = await this.deposit(params)
-
-    // Check if chain information is available
-    if (!this.l1PublicClient.chain?.id || !this.l1PublicClient.chain?.name) {
-      throw new Error('L1 chain information missing')
-    }
-    if (!this.l2PublicClient.chain?.id || !this.l2PublicClient.chain?.name) {
-      throw new Error('L2 chain information missing')
-    }
-
-    // Create ethers providers from RPC URLs
-    const l1Provider = new providers.StaticJsonRpcProvider(
-      rpcURLs[this.l1PublicClient.chain.id],
-      {
-        name: this.l1PublicClient.chain.name,
-        chainId: this.l1PublicClient.chain.id
-      }
-    )
-
-    const l2Provider = new providers.StaticJsonRpcProvider(
-      rpcURLs[this.l2PublicClient.chain.id],
-      {
-        name: this.l2PublicClient.chain.name,
-        chainId: this.l2PublicClient.chain.id
-      }
-    )
+  public async transfer(props: TransferProps): Promise<BridgeTransfer> {
+    const result = await this.deposit({
+      amount: BigInt(props.amount.toString()),
+      from: (await props.signer.getAddress()) as Address,
+      to: props.destinationAddress as Address
+    })
 
     return {
-      transferType: 'eth_deposit' as TransferType,
+      transferType: this.transferType,
       status: 'pending',
-      sourceChainProvider: l1Provider,
+      sourceChainProvider: this.sourceChainProvider,
       sourceChainTransaction: { hash: result.hash },
-      destinationChainProvider: l2Provider
+      destinationChainProvider: this.destinationChainProvider
     }
   }
 } 
