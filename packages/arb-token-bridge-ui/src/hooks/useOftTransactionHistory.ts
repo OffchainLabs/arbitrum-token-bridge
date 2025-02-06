@@ -6,6 +6,7 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { getChainIdFromEid } from '../token-bridge-sdk/oftUtils'
 import { isDepositMode } from '../util/isDepositMode'
 import { useAccount } from 'wagmi'
+import { getProviderForChainId } from '../token-bridge-sdk/utils'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
@@ -161,7 +162,7 @@ function validateSourceAndDestinationChainIds(message: LayerZeroMessage) {
   return true
 }
 
-function transformLayerZeroMessage(
+function mapLayerZeroMessageToMergedTransaction(
   message: LayerZeroMessage
 ): MergedTransaction {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
@@ -177,8 +178,9 @@ function transformLayerZeroMessage(
   })
 
   return {
+    isOft: true,
     sender: message.source.tx.from,
-    destination: message.pathway.receiver.address,
+    destination: undefined, // TODO:to be filled later
     direction: isDeposit ? 'deposit' : 'withdraw',
     status: getOftTransactionStatus(message),
     createdAt: new Date(message.created).getTime(),
@@ -187,19 +189,40 @@ function transformLayerZeroMessage(
         ? null
         : new Date(message.updated).getTime(),
     txId: message.source.tx.txHash,
-    asset: message.pathway.sender.name || 'USDT',
+    asset: message.pathway.sender.name || 'USDT', // TODO: to be properly filled later
     assetType: AssetType.ERC20,
-    value: '0.00001', // TODO: fix this
+    value: '0.00001', // TODO: fix this to be properly filled later
     uniqueId: null,
     isWithdrawal: false,
     blockNum: null,
     tokenAddress: CommonAddress.Ethereum.USDT,
-    isOft: true,
     isCctp: false,
     childChainId: isDeposit ? destinationChainId : sourceChainId,
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
     sourceChainId,
     destinationChainId
+  }
+}
+
+export async function updateAdditionalLayerZeroData(tx: MergedTransaction) {
+  const { txId } = tx
+
+  const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
+  const destinationChainProvider = getProviderForChainId(tx.destinationChainId)
+
+  const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
+    txId
+  )
+
+  console.log('sourceChainTxReceipt', sourceChainTxReceipt)
+  //   const destinationChainTxReceipt = await destinationChainProvider.getTransactionReceipt(txId)
+
+  debugger
+
+  return {
+    ...tx,
+    blockNum: sourceChainTxReceipt.blockNumber,
+    tokenAddress: sourceChainTxReceipt.logs[0].address
   }
 }
 
@@ -238,7 +261,7 @@ export function useOftTransactionHistory({
 
       return data.data
         .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
-        .map(transformLayerZeroMessage)
+        .map(mapLayerZeroMessageToMergedTransaction)
     },
     [walletAddressToFetch]
   )

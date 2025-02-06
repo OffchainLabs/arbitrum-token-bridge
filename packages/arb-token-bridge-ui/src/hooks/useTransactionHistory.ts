@@ -62,7 +62,10 @@ import {
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useArbQueryParams } from './useArbQueryParams'
-import { useOftTransactionHistory } from './useOftTransactionHistory'
+import {
+  updateAdditionalLayerZeroData,
+  useOftTransactionHistory
+} from './useOftTransactionHistory'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -159,8 +162,12 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   const parentProvider = getProviderForChainId(tx.parentChainId)
   const childProvider = getProviderForChainId(tx.childChainId)
 
-  if (isCctpTransfer(tx) || isOftTransfer(tx)) {
+  if (isCctpTransfer(tx)) {
     return tx
+  }
+
+  if (isOftTransfer(tx)) {
+    return await updateAdditionalLayerZeroData(tx)
   }
 
   if (isDeposit(tx)) {
