@@ -1,46 +1,29 @@
-import { create } from 'zustand'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { isTokenEthereumUSDT, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { ExternalLink } from '../common/ExternalLink'
-import { getNetworkName } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
-
-type TransferDisabledDialogStore = {
-  isOpen: boolean
-  openDialog: () => void
-  closeDialog: () => void
-}
-
-export const useTransferDisabledDialogStore =
-  create<TransferDisabledDialogStore>(set => ({
-    isOpen: false,
-    openDialog: () => set({ isOpen: true }),
-    closeDialog: () => set({ isOpen: false })
-  }))
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
-  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
-  const { app } = useAppState()
-  const { selectedToken } = app
-  const {
-    app: { setSelectedToken }
-  } = useActions()
+  const { isDepositMode, isTeleportMode, parentChain, childChain } =
+    useNetworksRelationship(networks)
+  const [selectedToken, setSelectedToken] = useSelectedToken()
+  // for tracking local state and prevent flickering with async URL params updating
+  const [selectedTokenAddressLocalValue, setSelectedTokenAddressLocalValue] =
+    useState<string | null>(null)
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
-  const {
-    isOpen: isOpenTransferDisabledDialog,
-    openDialog: openTransferDisabledDialog,
-    closeDialog: closeTransferDisabledDialog
-  } = useTransferDisabledDialogStore()
   const unsupportedToken = sanitizeTokenSymbol(selectedToken?.symbol ?? '', {
     erc20L1Address: selectedToken?.address,
     chainId: networks.sourceChain.id
@@ -48,6 +31,14 @@ export function TransferDisabledDialog() {
   const [l2ChainIdForTeleport, setL2ChainIdForTeleport] = useState<
     number | undefined
   >()
+
+  const isUsdtTransfer = useMemo(() => {
+    return (
+      isTokenEthereumUSDT(selectedToken?.address) &&
+      (isNetwork(networks.sourceChain.id).isEthereumMainnet ||
+        isNetwork(networks.sourceChain.id).isArbitrumOne)
+    )
+  }, [selectedToken?.address, networks.sourceChain.id])
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {
@@ -62,26 +53,48 @@ export function TransferDisabledDialog() {
     updateL2ChainIdForTeleport()
   }, [isTeleportMode, networks.destinationChainProvider])
 
-  useEffect(() => {
-    // do not allow import of withdraw-only tokens at deposit mode
+  const shouldShowDialog = useMemo(() => {
+    if (
+      !selectedToken ||
+      selectedToken.address === selectedTokenAddressLocalValue
+    ) {
+      return false
+    }
+
+    if (isTransferDisabledToken(selectedToken.address, childChain.id)) {
+      return true
+    }
+
+    if (
+      isTeleportMode &&
+      !isTeleportEnabledToken(
+        selectedToken.address,
+        parentChain.id,
+        childChain.id
+      )
+    ) {
+      return true
+    }
+
     if (
       isDepositMode &&
       isSelectedTokenWithdrawOnly &&
       !isSelectedTokenWithdrawOnlyLoading
     ) {
-      openTransferDisabledDialog()
+      return true
     }
-  }, [
-    isSelectedTokenWithdrawOnly,
-    isDepositMode,
-    openTransferDisabledDialog,
-    isSelectedTokenWithdrawOnlyLoading
-  ])
 
-  const onClose = () => {
-    setSelectedToken(null)
-    closeTransferDisabledDialog()
-  }
+    return false
+  }, [
+    childChain.id,
+    isDepositMode,
+    isSelectedTokenWithdrawOnly,
+    isSelectedTokenWithdrawOnlyLoading,
+    isTeleportMode,
+    parentChain.id,
+    selectedToken,
+    selectedTokenAddressLocalValue
+  ])
 
   const sourceChainName = getNetworkName(networks.sourceChain.id)
   const destinationChainName = getNetworkName(networks.destinationChain.id)
@@ -96,18 +109,72 @@ export function TransferDisabledDialog() {
         ?.find(_token => _token.symbol === 'GHO')
         ?.l1Address.toLowerCase()
 
+  useEffect(() => {
+    if (
+      selectedTokenAddressLocalValue &&
+      (!selectedToken ||
+        selectedToken.address !== selectedTokenAddressLocalValue)
+    ) {
+      setSelectedTokenAddressLocalValue(null)
+    }
+  }, [selectedToken, selectedTokenAddressLocalValue])
+
+  const onClose = () => {
+    if (selectedToken) {
+      setSelectedTokenAddressLocalValue(selectedToken.address)
+      setSelectedToken(null)
+    }
+  }
+
   return (
     <Dialog
       closeable
       title="Token cannot be bridged here"
       cancelButtonProps={{ className: 'hidden' }}
       actionButtonTitle="Close"
-      isOpen={isOpenTransferDisabledDialog}
+      isOpen={shouldShowDialog}
       onClose={onClose}
     >
       <div className="flex flex-col space-y-4 py-4">
-        {/* teleport transfer disabled content if token is not in the allowlist */}
-        {isTeleportMode ? (
+        {isUsdtTransfer ? (
+          <>
+            <p>
+              USDT is currently upgrading to USDT0.
+              <br />
+              Official support on the Arbitrum Bridge will be live soon.
+            </p>
+            <p>
+              Until then, you can use the{' '}
+              <ExternalLink
+                href="https://usdt0.to/transfer"
+                className="underline"
+              >
+                Tether Bridge
+              </ExternalLink>
+              .
+              <br />
+              Read more about the upgrade{' '}
+              <ExternalLink
+                href="https://x.com/USDT0_to/status/1884266492797342207"
+                className="underline"
+              >
+                here
+              </ExternalLink>
+              .
+            </p>
+            <p>
+              For questions and support, connect with our support team on{' '}
+              <ExternalLink
+                href="https://discord.com/invite/ZpZuw7p"
+                className="underline"
+              >
+                Discord
+              </ExternalLink>{' '}
+              in #support.
+            </p>
+          </>
+        ) : isTeleportMode ? (
+          // teleport transfer disabled content if token is not in the allowlist
           <>
             <p>
               Unfortunately,{' '}

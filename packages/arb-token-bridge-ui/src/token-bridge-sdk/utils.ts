@@ -13,6 +13,7 @@ import {
   getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
+import { EnhancedProvider } from './EnhancedProvider'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -107,7 +108,8 @@ const getProviderForChainCache: {
 
 function createProviderWithCache(chainId: ChainId) {
   const rpcUrl = rpcURLs[chainId]
-  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
+
+  const provider = new EnhancedProvider(rpcUrl, chainId)
   getProviderForChainCache[chainId] = provider
   return provider
 }

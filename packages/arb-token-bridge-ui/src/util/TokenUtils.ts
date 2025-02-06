@@ -409,6 +409,9 @@ export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   )
 }
 
+export const isTokenEthereumUSDT = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDT.toLowerCase()
+
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,
@@ -418,7 +421,16 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
+  const { isArbitrumOne, isArbitrumSepolia, isEthereumMainnet } = isNetwork(
+    options.chainId
+  )
+
+  if (
+    options.erc20L1Address.toLowerCase() === CommonAddress.Ethereum.USDT &&
+    isEthereumMainnet
+  ) {
+    return 'USDT'
+  }
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
@@ -448,7 +460,16 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
+  const { isArbitrumOne, isArbitrumSepolia, isEthereumMainnet } = isNetwork(
+    options.chainId
+  )
+
+  if (
+    options.erc20L1Address.toLowerCase() === CommonAddress.Ethereum.USDT &&
+    isEthereumMainnet
+  ) {
+    return 'USDT'
+  }
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
