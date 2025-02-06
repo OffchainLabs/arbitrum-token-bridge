@@ -275,10 +275,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       })
     }
 
-    // OFT transfers using SC wallets not enabled yet
-    if (isSmartContractWallet && isOftV2Transfer) {
-      return notReady()
-    }
+    // // OFT transfers using SC wallets not enabled yet
+    // if (isSmartContractWallet && isOftV2Transfer) {
+    //   return notReady()
+    // }
 
     // Check if destination address is valid for ERC20 transfers
     if (destinationAddressError) {
