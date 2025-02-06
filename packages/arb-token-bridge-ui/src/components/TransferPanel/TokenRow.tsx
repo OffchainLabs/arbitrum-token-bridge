@@ -298,11 +298,9 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   }
 
   if (isDepositMode) {
-    return token?.isL2Native ? (
-      <BlockExplorerTokenLink chainId={childChain.id} address={token.address} />
-    ) : (
+    return (
       <BlockExplorerTokenLink
-        chainId={parentChain.id}
+        chainId={token?.isL2Native ? childChain.id : parentChain.id}
         address={token.address}
       />
     )
