@@ -38,13 +38,13 @@ export type TransferPanelSummaryProps = {
 
 function StyledLoader() {
   return (
-    <span className="flex">
-      <Loader size="small" />
+    <span className="flex justify-end">
+      <Loader size="small" color="white" />
     </span>
   )
 }
 
-function TotalGasFees() {
+function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
   const [selectedToken] = useSelectedToken()
 
   const {
@@ -63,8 +63,6 @@ function TotalGasFees() {
   const parentChainNativeCurrency = useNativeCurrency({
     provider: parentChainProvider
   })
-
-  const gasSummaryLoading = gasSummaryStatus === 'loading'
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -89,8 +87,14 @@ function TotalGasFees() {
     estimatedParentChainGasFees
   ])
 
-  if (gasSummaryLoading) {
-    return <StyledLoader />
+  if (typeof estimatedTotalGasFees === 'undefined') {
+    return (
+      // Show 2 loaders as a placeholder for 2 cells in the grid: token amount and usdc amount
+      <>
+        <StyledLoader />
+        {showUsdcValue && <StyledLoader />}
+      </>
+    )
   }
 
   /**
@@ -104,12 +108,16 @@ function TotalGasFees() {
    */
   if (sameNativeCurrency) {
     return (
-      <span className="tabular-nums">
-        {formatAmount(estimatedTotalGasFees, {
-          symbol: childChainNativeCurrency.symbol
-        })}{' '}
-        <NativeCurrencyPrice amount={estimatedTotalGasFees} showBrackets />
-      </span>
+      <>
+        <span className="text-right tabular-nums">
+          {formatAmount(estimatedTotalGasFees, {
+            symbol: childChainNativeCurrency.symbol
+          })}{' '}
+        </span>
+        <span className="text-right">
+          <NativeCurrencyPrice amount={estimatedTotalGasFees} />
+        </span>
+      </>
     )
   }
   /** Different Native Currencies between Parent and Child chains
@@ -124,25 +132,34 @@ function TotalGasFees() {
    *  only show child chain native currency
    *  x XAI
    */
-  return (
-    <>
-      {isDepositMode && (
-        <span className="tabular-nums">
+  if (isDepositMode) {
+    return (
+      <>
+        <span className="text-right tabular-nums">
           {formatAmount(estimatedParentChainGasFees, {
             symbol: parentChainNativeCurrency.symbol
           })}{' '}
-          <NativeCurrencyPrice
-            amount={estimatedParentChainGasFees}
-            showBrackets
-          />
           {selectedToken && ' and '}
+          {selectedToken &&
+            formatAmount(estimatedChildChainGasFees, {
+              symbol: childChainNativeCurrency.symbol
+            })}
         </span>
-      )}
-      {(selectedToken || !isDepositMode) &&
-        formatAmount(estimatedChildChainGasFees, {
-          symbol: childChainNativeCurrency.symbol
-        })}
-    </>
+        {!selectedToken && (
+          <span className="text-right">
+            <NativeCurrencyPrice amount={estimatedParentChainGasFees} />
+          </span>
+        )}
+      </>
+    )
+  }
+
+  return (
+    <span className="text-right">
+      {formatAmount(estimatedChildChainGasFees, {
+        symbol: childChainNativeCurrency.symbol
+      })}
+    </span>
   )
 }
 
@@ -178,6 +195,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const { status: gasSummaryStatus } = useGasSummary()
 
   const [networks] = useNetworks()
+  const [selectedToken] = useSelectedToken()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
 
@@ -192,7 +210,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const {
     isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia,
+    isTestnet
   } = isNetwork(networks.destinationChain.id)
 
   const boldUpgradeInfo = getBoldUpgradeInfo(networks.sourceChain.id)
@@ -204,6 +223,27 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isTokenNativeUSDC(token?.address) &&
     isDepositMode &&
     (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
+
+  const showUsdValueForGasFees = useMemo(() => {
+    if (isTestnet) {
+      return false
+    }
+    if (childChainNativeCurrency.isCustom && !isDepositMode) {
+      return false
+    }
+    if (childChainNativeCurrency.isCustom && selectedToken) {
+      return false
+    }
+    return true
+  }, [
+    childChainNativeCurrency.isCustom,
+    isDepositMode,
+    isTestnet,
+    selectedToken
+  ])
+
+  const showUsdValueForReceivedToken =
+    isBridgingEth && !isBatchTransferSupported && !Number(amount2) && !isTestnet
 
   if (gasSummaryStatus === 'unavailable') {
     return (
@@ -227,47 +267,52 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   return (
     <TransferPanelSummaryContainer>
-      <div
-        className={twMerge(
-          'grid grid-cols-[260px_auto] items-center text-sm font-light'
-        )}
-      >
-        <span className="text-left">You will pay in gas fees:</span>
-
-        <span className="font-medium">
-          <TotalGasFees />
-        </span>
-      </div>
-
-      <div
-        className={twMerge(
-          'grid grid-cols-[260px_auto] items-center text-sm font-light'
-        )}
-      >
-        <span>
-          You will receive on {getNetworkName(networks.destinationChain.id)}:
-        </span>
-        <span className="font-medium">
-          <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
-          {isDepositingUSDCtoArbOneOrArbSepolia ? (
-            <>USDC</>
-          ) : (
-            <TokenSymbolWithExplorerLink
-              token={token}
-              isParentChain={!isDepositMode}
-            />
+      <div className="flex flex-col space-y-2 rounded bg-white/10 p-2">
+        <div
+          className={twMerge(
+            'grid text-sm font-light',
+            showUsdValueForGasFees ? 'grid-cols-3' : 'grid-cols-2'
           )}
-          {isBridgingEth && (
-            <NativeCurrencyPrice amount={Number(amount)} showBrackets />
+        >
+          <span className="text-left">You will pay in gas fees:</span>
+
+          <TotalGasFees showUsdcValue={showUsdValueForGasFees} />
+        </div>
+
+        <div
+          className={twMerge(
+            'grid text-sm font-light',
+            showUsdValueForReceivedToken ? 'grid-cols-3' : 'grid-cols-2'
           )}
-          {isBatchTransferSupported && Number(amount2) > 0 && (
-            <span>
-              {' '}
-              and {formatAmount(Number(amount2))}{' '}
-              {childChainNativeCurrency.symbol}
+        >
+          <span className="whitespace-nowrap">
+            You will receive on {getNetworkName(networks.destinationChain.id)}:
+          </span>
+
+          <span className="text-right">
+            <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
+            {isDepositingUSDCtoArbOneOrArbSepolia ? (
+              <>USDC</>
+            ) : (
+              <TokenSymbolWithExplorerLink
+                token={token}
+                isParentChain={!isDepositMode}
+              />
+            )}
+            {isBatchTransferSupported && Number(amount2) > 0 && (
+              <span>
+                {' '}
+                and {formatAmount(Number(amount2))}{' '}
+                {childChainNativeCurrency.symbol}
+              </span>
+            )}
+          </span>
+          {showUsdValueForReceivedToken && (
+            <span className="text-right">
+              <NativeCurrencyPrice amount={Number(amount)} />
             </span>
           )}
-        </span>
+        </div>
       </div>
       {!isDepositMode &&
         (isAffectedByBoLDUpgrade ? (
@@ -275,7 +320,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         ) : (
           <div
             className={twMerge(
-              'grid grid-cols-[260px_auto] items-center text-sm font-light'
+              'grid grid-cols-2 items-center rounded bg-white/10 p-2 text-sm font-light'
             )}
           >
             <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
@@ -294,12 +339,12 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
   return (
     <>
       <span className="whitespace-nowrap">Confirmation time:</span>
-      <span className="flex flex-col items-start font-medium sm:flex-row sm:items-center">
+      <span className="flex flex-col items-start justify-end sm:flex-row sm:items-center">
         <span className="hidden sm:inline">
-          {confirmationTimeInReadableFormat}
+          ~{confirmationTimeInReadableFormat}
         </span>
         <span className="sm:hidden">
-          {confirmationTimeInReadableFormatShort}
+          ~{confirmationTimeInReadableFormatShort}
         </span>
         {fastWithdrawalActive && (
           <div className="flex items-center">
