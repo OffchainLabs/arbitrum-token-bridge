@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { BigNumber, Signer } from 'ethers'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
+
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { useNetworks } from '../useNetworks'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 async function fetcher([
   signer,
@@ -56,7 +58,7 @@ export function useOftV2FeeEstimates({
 }: {
   sourceChainErc20Address?: string
 }) {
-  const { data: signer } = useSigner()
+  const signer = useEthersSigner()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
 
