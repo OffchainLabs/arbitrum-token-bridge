@@ -15,7 +15,7 @@ export function BlockExplorerTokenLink({
   address
 }: {
   chainId: ChainId
-  address: string | undefined
+  address?: string
 }) {
   if (typeof address === 'undefined') {
     return null
@@ -76,7 +76,13 @@ export const TokenInfoTooltip = ({
         interactive: true
       }}
     >
-      {token.symbol}
+      <ExternalLink
+        href={`${getExplorerUrl(
+          networks.destinationChain.id
+        )}/token/${tokenAddress}`}
+      >
+        {token.symbol}
+      </ExternalLink>
     </Tooltip>
   )
 }

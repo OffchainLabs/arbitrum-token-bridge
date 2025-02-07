@@ -1,4 +1,4 @@
-import Tippy, { TippyProps } from '@tippyjs/react'
+import Tippy, { type TippyProps } from '@tippyjs/react'
 
 export type TooltipProps = {
   show?: boolean
