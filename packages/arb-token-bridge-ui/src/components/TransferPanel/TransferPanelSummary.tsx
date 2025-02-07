@@ -23,6 +23,9 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
+import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
+import { OftTransferDisclaimer } from './OftTransferDisclaimer'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -186,23 +189,20 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
+  const isOft = useIsOftV2Transfer()
+
   const [{ amount, amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
   const {
-    isArbitrumOne: isSourceChainArbitrumOne,
-    isArbitrumNova: isSourceChainArbitrumNova
-  } = isNetwork(networks.sourceChain.id)
-
-  const {
     isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia,
-    isEthereumMainnet: isDestinationChainEthereumMainnet
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
   } = isNetwork(networks.destinationChain.id)
 
+  const boldUpgradeInfo = getBoldUpgradeInfo(networks.sourceChain.id)
   const isAffectedByBoLDUpgrade =
-    (isSourceChainArbitrumOne || isSourceChainArbitrumNova) &&
-    isDestinationChainEthereumMainnet
+    boldUpgradeInfo.status === BoldUpgradeStatus.Scheduled ||
+    boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
 
   const isDepositingUSDCtoArbOneOrArbSepolia =
     isTokenNativeUSDC(token?.address) &&
@@ -273,16 +273,21 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode && !isAffectedByBoLDUpgrade && (
-        <div
-          className={twMerge(
-            'grid grid-cols-[260px_auto] items-center text-sm font-light'
-          )}
-        >
-          <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
-        </div>
-      )}
-      {isAffectedByBoLDUpgrade && <BoLDUpgradeWarning />}
+      {!isDepositMode &&
+        !isOft &&
+        (isAffectedByBoLDUpgrade ? (
+          <BoLDUpgradeWarning />
+        ) : (
+          <div
+            className={twMerge(
+              'grid grid-cols-[260px_auto] items-center text-sm font-light'
+            )}
+          >
+            <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
+          </div>
+        ))}
+
+      {isOft && <OftTransferDisclaimer />}
     </TransferPanelSummaryContainer>
   )
 }

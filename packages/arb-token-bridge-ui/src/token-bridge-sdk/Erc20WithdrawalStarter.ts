@@ -1,4 +1,4 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -11,6 +11,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import {
+  fetchErc20Allowance,
   fetchErc20L2GatewayAddress,
   getL1ERC20Address
 } from '../util/TokenUtils'
@@ -19,7 +20,6 @@ import {
   getChainIdFromProvider,
   percentIncrease
 } from './utils'
-import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
@@ -86,6 +86,15 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     // no-op
   }
 
+  /**
+   * Most tokens inherently allow the token gateway to burn the withdrawal amount
+   * on the child chain because they inherit the
+   * IArbToken interface that allows the gateway to burn without allowance approval
+   *
+   * if the token does not have the bridgeBurn method, approval is required
+   * https://github.com/OffchainLabs/token-bridge-contracts/blob/d54877598e80a00d264d2b4353968faafd6f534d/contracts/tokenbridge/arbitrum/IArbToken.sol
+   *
+   */
   public requiresTokenApproval = async ({
     amount,
     signer
@@ -94,38 +103,45 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const destinationChainErc20Address =
-      await this.getDestinationChainErc20Address()
-
     const address = await getAddressFromSigner(signer)
 
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    const destinationChainId = await getChainIdFromProvider(
-      this.destinationChainProvider
-    )
+    const gatewayAddress = await this.getSourceChainGatewayAddress()
 
-    // check first if token is even eligible for allowance check on l2
-    if (
-      (await tokenRequiresApprovalOnL2({
-        tokenAddressOnParentChain: destinationChainErc20Address,
-        parentChainId: destinationChainId,
-        childChainId: sourceChainId
-      })) &&
-      this.sourceChainErc20Address
-    ) {
-      const token = ERC20__factory.connect(
-        this.sourceChainErc20Address,
-        this.sourceChainProvider
-      )
+    const sourceChainTokenBridge = getArbitrumNetwork(sourceChainId).tokenBridge
 
-      const gatewayAddress = await this.getSourceChainGatewayAddress()
-      const allowance = await token.allowance(address, gatewayAddress)
+    // tokens that use the standard gateways do not require approval on child chain
+    const standardGateways = [
+      sourceChainTokenBridge?.childErc20Gateway.toLowerCase(),
+      sourceChainTokenBridge?.childWethGateway.toLowerCase()
+    ]
 
-      return allowance.lt(amount)
+    if (standardGateways.includes(gatewayAddress.toLowerCase())) {
+      return false
     }
 
-    return false
+    // the below checks are only run for tokens using custom gateway / custom custom gateway
+    //
+    // check if token withdrawal gas estimation fails
+    // if it fails, the token gateway is not allowed to burn the token without additional approval
+    const transferEstimateGasResult = await this.transferEstimateGas({
+      amount,
+      signer
+    })
+
+    if (!transferEstimateGasResult.isError) {
+      return false
+    }
+
+    const allowanceForSourceChainGateway = await fetchErc20Allowance({
+      address: this.sourceChainErc20Address,
+      provider: this.sourceChainProvider,
+      owner: address,
+      spender: gatewayAddress
+    })
+
+    return allowanceForSourceChainGateway.lt(amount)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {

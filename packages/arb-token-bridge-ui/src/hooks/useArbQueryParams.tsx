@@ -52,7 +52,8 @@ export const useArbQueryParams = () => {
     amount2: withDefault(AmountQueryParam, ''), // extra eth to send together with erc20
     destinationAddress: withDefault(StringParam, undefined),
     token: TokenQueryParam, // import a new token using a Dialog Box
-    settingsOpen: withDefault(BooleanParam, false)
+    settingsOpen: withDefault(BooleanParam, false),
+    txHistory: withDefault(BooleanParam, true) // enable/disable tx history
   })
 }
 

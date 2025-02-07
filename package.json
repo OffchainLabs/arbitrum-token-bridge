@@ -15,8 +15,7 @@
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
-    "test:e2e": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn synpress run --configFile synpress.config.ts",
-    "test:e2e:local": "yarn test:e2e --browser chromium",
+    "test:e2e": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn synpress run --configFile synpress.config.ts --browser chromium",
     "test:e2e:cctp": "yarn test:e2e --configFile synpress.cctp.config.ts",
     "test:e2e:orbit": "E2E_ORBIT=true yarn test:e2e",
     "test:e2e:orbit:custom-gas-token": "E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn test:e2e"
