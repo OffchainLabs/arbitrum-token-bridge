@@ -43,10 +43,7 @@ export function OftTransactionHistoryDisclaimer() {
       (mainnetUsdtBalance && mainnetUsdtBalance.gt(0)) ||
       (arbOneUsdtBalance && arbOneUsdtBalance.gt(0))
 
-    if (userHasUsdtBalance) {
-      return true
-    }
-    return false
+    return userHasUsdtBalance
   }, [mainnetBalances, arbOneBalances])
 
   if (!showDisclaimer) {
