@@ -81,7 +81,6 @@ import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChain
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
-import { OftTransactionHistoryDialog } from '../TransactionHistory/OftTransactionHistoryDialog'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -181,8 +180,6 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
-  const [oftTransactionHistoryDialogProps, openOftTransactionHistoryDialog] =
-    useDialog()
 
   const [
     customDestinationAddressConfirmationDialogProps,
@@ -394,12 +391,6 @@ export function TransferPanel() {
 
   const confirmCustomDestinationAddressForSCWallets = async () => {
     const waitForInput = openCustomDestinationAddressConfirmationDialog()
-    const [confirmed] = await waitForInput()
-    return confirmed
-  }
-
-  const showOftTransactionHistoryDialog = async () => {
-    const waitForInput = openOftTransactionHistoryDialog()
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -678,7 +669,7 @@ export function TransferPanel() {
         amount: Number(amount)
       })
 
-      await showOftTransactionHistoryDialog()
+      switchToTransactionHistoryTab()
       clearAmountInput()
     } catch (error) {
       if (isUserRejectedError(error)) {
@@ -1177,8 +1168,6 @@ export function TransferPanel() {
       <CustomDestinationAddressConfirmationDialog
         {...customDestinationAddressConfirmationDialogProps}
       />
-
-      <OftTransactionHistoryDialog {...oftTransactionHistoryDialogProps} />
 
       <div
         className={twMerge(
