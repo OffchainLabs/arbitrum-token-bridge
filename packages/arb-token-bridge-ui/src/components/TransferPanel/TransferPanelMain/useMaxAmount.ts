@@ -3,18 +3,16 @@ import { utils } from 'ethers'
 
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useAppState } from '../../../state'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 
 export function useMaxAmount() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const selectedTokenBalances = useSelectedTokenBalances()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
@@ -80,9 +78,7 @@ export function useMaxAmount() {
 
   const maxAmount = useMemo(() => {
     if (selectedToken) {
-      const tokenBalance = isDepositMode
-        ? selectedTokenBalances.parentBalance
-        : selectedTokenBalances.childBalance
+      const tokenBalance = selectedTokenBalances.sourceBalance
 
       if (!tokenBalance) {
         return undefined
@@ -98,10 +94,8 @@ export function useMaxAmount() {
     return nativeCurrencyMaxAmount
   }, [
     selectedToken,
-    isDepositMode,
     nativeCurrencyMaxAmount,
-    selectedTokenBalances.parentBalance,
-    selectedTokenBalances.childBalance
+    selectedTokenBalances.sourceBalance
   ])
 
   const maxAmount2 = useMemo(() => {

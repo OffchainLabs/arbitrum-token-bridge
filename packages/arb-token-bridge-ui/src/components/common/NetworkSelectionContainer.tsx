@@ -14,8 +14,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { hex } from 'wcag-contrast'
 
-import { ChainId, isNetwork, getNetworkName } from '../../util/networks'
+import { isNetwork, getNetworkName } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
@@ -31,6 +33,7 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
 
 type NetworkType = 'core' | 'more' | 'orbit'
@@ -122,10 +125,18 @@ export function NetworkButton({
 
   const hasOneOrLessChain = chains.length <= 1
 
-  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+  const disabled =
+    hasOneOrLessChain ||
+    (isSmartContractWallet && type === 'source') ||
+    isLoading
+
+  const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
+
+  const colorContrast = hex('#ffffff', backgroundColor)
 
   const buttonStyle = {
-    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+    backgroundColor,
+    color: colorContrast >= 3 ? '#ffffff' : '#000000'
   }
 
   return (
@@ -400,10 +411,12 @@ export const NetworkSelectionContainer = (
   }
 ) => {
   const actions = useActions()
+  const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [, setQueryParams] = useArbQueryParams()
   const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
+  const { isSmartContractWallet } = useAccountType()
 
   const isSource = props.type === 'source'
 
@@ -439,18 +452,22 @@ export const NetworkSelectionContainer = (
         destinationChainId: isSource ? networks.destinationChain.id : value.id
       })
 
-      actions.app.setSelectedToken(null)
+      setSelectedToken(null)
       setQueryParams({ destinationAddress: undefined })
-      setAdvancedSettingsCollapsed(true)
+
+      if (!isSmartContractWallet) {
+        setAdvancedSettingsCollapsed(true)
+      }
     },
     [
       isSource,
       networks,
       setNetworks,
-      actions.app,
+      setSelectedToken,
       setQueryParams,
       setAdvancedSettingsCollapsed,
-      openOneNovaTransferDialog
+      openOneNovaTransferDialog,
+      isSmartContractWallet
     ]
   )
 

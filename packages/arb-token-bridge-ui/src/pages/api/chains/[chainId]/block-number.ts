@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 
-import { ChainId } from '../../../../util/networks'
+import { ChainId } from '../../../../types/ChainId'
 import {
   getL1SubgraphClient,
   getL2SubgraphClient,

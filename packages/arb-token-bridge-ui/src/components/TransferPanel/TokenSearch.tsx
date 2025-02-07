@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { twMerge } from 'tailwind-merge'
 
-import { useActions, useAppState } from '../../state'
+import { useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
@@ -14,11 +14,9 @@ import {
 } from '../../util/TokenListUtils'
 import {
   fetchErc20Data,
-  erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneUSDCe,
-  getL2ERC20Address,
   isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
@@ -29,19 +27,14 @@ import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
-import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
 import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
-import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
-import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
-import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
@@ -369,11 +362,11 @@ function TokensPanel({
     isDepositMode,
     isArbitrumOne,
     isArbitrumSepolia,
-    isOrbitChain,
     isParentChainArbitrumOne,
     isParentChainArbitrumSepolia,
-    getBalance,
-    nativeCurrency
+    isOrbitChain,
+    nativeCurrency,
+    getBalance
   ])
 
   const storeNewToken = async () => {
@@ -527,22 +520,9 @@ export function TokenSearch({
       arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
-  const {
-    app: { setSelectedToken }
-  } = useActions()
+  const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
-  const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
-  const { isLoading: isLoadingAccountType } = useAccountType()
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
-  const { setTokenQueryParam } = useTokenFromSearchParams()
+  const { childChain, parentChainProvider } = useNetworksRelationship(networks)
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -564,53 +544,22 @@ export function TokenSearch({
     }
 
     try {
-      // Native USDC on L2 won't have a corresponding L1 address
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
+
       const isL2NativeUSDC =
         isTokenArbitrumOneNativeUSDC(_token.address) ||
         isTokenArbitrumSepoliaNativeUSDC(_token.address)
 
       if (isL2NativeUSDC) {
-        if (isLoadingAccountType) {
-          return
-        }
-
-        await updateUSDCBalances()
-
-        // if an Orbit chain is selected we need to fetch its USDC address
-        let childChainUsdcAddress
-        try {
-          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
-            ? (
-                await getL2ERC20Address({
-                  erc20L1Address: _token.address,
-                  l1Provider: parentChainProvider,
-                  l2Provider: childChainProvider
-                })
-              ).toLowerCase()
-            : undefined
-        } catch {
-          // could be never bridged before
-        }
-
-        setSelectedToken({
-          name: 'USD Coin',
-          type: TokenType.ERC20,
-          symbol: 'USDC',
-          address: _token.address,
-          l2Address: childChainUsdcAddress,
-          decimals: 6,
-          listIds: new Set()
-        })
-        return
-      }
-
-      if (typeof bridgeTokens === 'undefined') {
+        setSelectedToken(_token.address)
         return
       }
 
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
-        setTokenQueryParam(_token.address)
+        setSelectedToken(_token.address)
         return
       }
 
@@ -625,23 +574,7 @@ export function TokenSearch({
 
       if (data) {
         token.updateTokenData(_token.address)
-        setSelectedToken({
-          ...erc20DataToErc20BridgeToken(data),
-          l2Address: _token.l2Address
-        })
-      }
-
-      if (isTransferDisabledToken(_token.address, childChain.id)) {
-        openTransferDisabledDialog()
-        return
-      }
-
-      if (
-        isTeleportMode &&
-        !isTeleportEnabledToken(_token.address, parentChain.id, childChain.id)
-      ) {
-        openTransferDisabledDialog()
-        return
+        setSelectedToken(_token.address)
       }
     } catch (error: any) {
       console.warn(error)

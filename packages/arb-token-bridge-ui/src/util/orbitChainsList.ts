@@ -1,4 +1,6 @@
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
+import { ChainId } from '../types/ChainId'
+import { isE2eTestingEnvironment } from './CommonUtils'
 import { ChainWithRpcUrl } from './networks'
 import orbitChainsData from './orbitChainsData.json'
 
@@ -59,6 +61,13 @@ export function getOrbitChains(
     testnet: boolean
   } = { mainnet: true, testnet: true }
 ): OrbitChainConfig[] {
+  if (isE2eTestingEnvironment) {
+    // During E2E tests, only return local chains
+    return Object.values(orbitChains).filter(
+      chain => chain.chainId === ChainId.L3Local
+    )
+  }
+
   const mainnetChains = mainnet ? Object.values(orbitMainnets) : []
   const testnetChains = testnet ? Object.values(orbitTestnets) : []
 

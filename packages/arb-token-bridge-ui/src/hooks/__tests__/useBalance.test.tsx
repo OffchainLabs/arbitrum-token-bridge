@@ -17,7 +17,7 @@ const Container = ({ children }: PropsWithChildren<unknown>) => (
 )
 
 const provider = new StaticJsonRpcProvider(
-  process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
+  process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
   1
 )
 jest.mock('../../token-bridge-sdk/utils', () => ({

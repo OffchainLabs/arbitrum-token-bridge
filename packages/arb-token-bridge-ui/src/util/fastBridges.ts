@@ -9,8 +9,9 @@ import Synapse from '@/images/bridge/synapse.png'
 import Wormhole from '@/images/bridge/wormhole.svg'
 // import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
+import deBridge from '@/images/bridge/deBridge.svg'
 
-import { ChainId } from './networks'
+import { ChainId } from '../types/ChainId'
 import { USDC_LEARN_MORE_LINK } from '../constants'
 
 export enum FastBridgeNames {
@@ -22,7 +23,8 @@ export enum FastBridgeNames {
   Synapse = 'Synapse',
   Wormhole = 'Wormhole',
   LIFI = 'LI.FI',
-  Router = 'Router'
+  Router = 'Router',
+  deBridge = 'deBridge'
 }
 
 export enum SpecialTokenSymbol {
@@ -39,11 +41,13 @@ export function getFastBridges({
   from,
   to,
   tokenSymbol,
+  tokenAddress = '',
   amount
 }: {
   from: ChainId
   to: ChainId
   tokenSymbol: string
+  tokenAddress?: string
   amount: string
 }): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
@@ -77,6 +81,8 @@ export function getFastBridges({
         return `https://stargate.finance/transfer?srcChain=${chainIdToSlug(
           from
         )}&dstChain=${chainIdToSlug(to)}&srcToken=${tokenSymbol}`
+      case FastBridgeNames.deBridge:
+        return `https://app.debridge.finance/?inputChain=${from}&outputChain=${to}&amount=${amount}&inputCurrency=${tokenAddress}`
       case FastBridgeNames.Synapse:
         // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
@@ -118,6 +124,10 @@ export function getFastBridges({
     [FastBridgeNames.Synapse]: {
       imageSrc: Synapse,
       href: getBridgeDeepLink(FastBridgeNames.Synapse)
+    },
+    [FastBridgeNames.deBridge]: {
+      imageSrc: deBridge,
+      href: getBridgeDeepLink(FastBridgeNames.deBridge)
     }
   }
 

@@ -4,11 +4,13 @@
 import { ethers } from 'ethers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import { ChainId, isNetwork } from '../util/networks'
+import { isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
+import { CommonAddress } from './CommonAddressUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -237,7 +239,22 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2Address: '0xd5A1a674F0DA33A4147a8Cd96143E598e738c7FF'
     }
   ],
-  [ChainId.ArbitrumNova]: []
+  [ChainId.ArbitrumNova]: [],
+  // Plume
+  98865: [
+    {
+      symbol: 'USDC',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDC,
+      l2Address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+    },
+    {
+      symbol: 'USDT',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDT,
+      l2Address: '0x4ef0c9098563e2478bdf0cc32a10d24abaa46b1c'
+    }
+  ]
 }
 
 async function isLayerZeroToken(

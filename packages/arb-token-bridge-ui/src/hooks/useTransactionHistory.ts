@@ -4,12 +4,8 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import {
-  ChainId,
-  getChains,
-  getChildChainIds,
-  isNetwork
-} from '../util/networks'
+import { getChains, getChildChainIds, isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -64,6 +60,7 @@ import {
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { useArbQueryParams } from './useArbQueryParams'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -161,13 +158,7 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   }
 
   if (isDeposit(tx)) {
-    return transformDeposit(
-      await updateAdditionalDepositData({
-        depositTx: tx,
-        parentProvider,
-        childProvider
-      })
-    )
+    return transformDeposit(await updateAdditionalDepositData(tx))
   }
 
   let withdrawal: L2ToL1EventResultPlus | undefined
@@ -249,12 +240,13 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
+  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
 
   // Check what type of CCTP (deposit, withdrawal or all) to fetch
   // We need this because of Smart Contract Wallets
   const cctpTypeToFetch = useCallback(
     (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (isLoadingAccountType || !chain) {
+      if (isLoadingAccountType || !chain || !isTxHistoryEnabled) {
         return undefined
       }
       if (isSmartContractWallet) {
@@ -272,7 +264,13 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
         ? 'all'
         : undefined
     },
-    [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
+    [
+      isSmartContractWallet,
+      isTxHistoryEnabled,
+      isLoadingAccountType,
+      chain,
+      isTestnetMode
+    ]
   )
 
   const cctpTransfersMainnet = useCctpFetching({
@@ -435,7 +433,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
   )
 
-  const shouldFetch = address && chain && !isLoadingAccountType
+  const shouldFetch =
+    address && chain && !isLoadingAccountType && isTxHistoryEnabled
 
   const {
     data: depositsData,
@@ -487,6 +486,7 @@ export const useTransactionHistory = (
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
+  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
@@ -520,7 +520,7 @@ export const useTransactionHistory = (
   )
 
   const depositsFromCache = useMemo(() => {
-    if (isLoadingAccountType || !chain) {
+    if (isLoadingAccountType || !chain || !isTxHistoryEnabled) {
       return []
     }
     return getDepositsWithoutStatusesFromCache(address)
@@ -551,7 +551,8 @@ export const useTransactionHistory = (
     isTestnetMode,
     isLoadingAccountType,
     isSmartContractWallet,
-    chain
+    chain,
+    isTxHistoryEnabled
   ])
 
   const {

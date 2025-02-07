@@ -26,15 +26,18 @@ import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
+import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
   isCctp: boolean
+  isOft: boolean
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { address: walletAddress } = useAccount()
-  const { isOpen, token, isCctp } = props
+  const { isOpen, token, isCctp, isOft } = props
 
   const { ethToUSD } = useETHPrice()
 
@@ -105,6 +108,18 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           amount: constants.MaxUint256,
           signer
         })
+      } else if (isOft) {
+        const oftTransferStarter = new OftV2TransferStarter({
+          sourceChainProvider,
+          destinationChainProvider,
+          sourceChainErc20Address: isDepositMode
+            ? token.address
+            : token.l2Address
+        })
+        gasEstimate = await oftTransferStarter.approveTokenEstimateGas({
+          amount: constants.MaxUint256,
+          signer
+        })
       } else {
         const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
           {
@@ -143,11 +158,28 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     sourceChainProvider,
     destinationChain,
     destinationChainProvider,
-    chainId
+    chainId,
+    isOft
   ])
 
   useEffect(() => {
     const getContractAddress = async function () {
+      if (isOft) {
+        const oftTransferConfig = getOftV2TransferConfig({
+          sourceChainId: sourceChain.id,
+          destinationChainId: destinationChain.id,
+          sourceChainErc20Address: isDepositMode
+            ? token?.address
+            : token?.l2Address
+        })
+
+        if (!oftTransferConfig.isValid) {
+          throw new Error('OFT transfer validation failed')
+        }
+
+        setContractAddress(oftTransferConfig.sourceChainAdapterAddress)
+        return
+      }
       if (isCctp) {
         setContractAddress(
           getCctpContracts({ sourceChainId: chainId })
@@ -201,11 +233,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isDepositMode,
     parentChainProvider,
     token?.address,
+    token?.l2Address,
     token?.parentBridgeAddress,
     token?.childBridgeAddress,
     sourceChain.id,
     destinationChain.id,
-    isTeleportMode
+    isTeleportMode,
+    isOft
   ])
 
   function closeWithReset(confirmed: boolean) {

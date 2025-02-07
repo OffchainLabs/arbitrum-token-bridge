@@ -1,5 +1,5 @@
 import useSWRImmutable from 'swr/immutable'
-import { ChainId } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 
 export function useCCTPIsBlocked() {

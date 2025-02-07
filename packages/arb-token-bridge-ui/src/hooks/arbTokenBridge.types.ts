@@ -86,6 +86,7 @@ export interface ContractStorage<T> {
 export type GasEstimates = {
   estimatedParentChainGas: BigNumber
   estimatedChildChainGas: BigNumber
+  isError?: boolean
 }
 
 export type DepositGasEstimates = GasEstimates & {
