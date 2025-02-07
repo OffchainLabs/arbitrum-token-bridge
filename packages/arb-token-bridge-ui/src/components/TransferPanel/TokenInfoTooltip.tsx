@@ -15,7 +15,7 @@ export function BlockExplorerTokenLink({
   address
 }: {
   chainId: ChainId
-  address?: string
+  address: string | undefined
 }) {
   if (typeof address === 'undefined') {
     return null
