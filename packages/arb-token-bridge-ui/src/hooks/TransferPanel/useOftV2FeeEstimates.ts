@@ -64,7 +64,7 @@ export function useOftV2FeeEstimates({
   const destinationChainId = networks.destinationChain.id
 
   const isValidOftTransfer = useMemo(() => {
-    return !!getOftV2TransferConfig({
+    return getOftV2TransferConfig({
       sourceChainId,
       destinationChainId,
       sourceChainErc20Address

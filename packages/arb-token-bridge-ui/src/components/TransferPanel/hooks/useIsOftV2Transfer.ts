@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { getOftV2TransferConfig } from '../../../token-bridge-sdk/oftUtils'
@@ -9,28 +9,22 @@ export const useIsOftV2Transfer = function () {
   const [networks] = useNetworks()
   const { isTeleportMode, isDepositMode } = useNetworksRelationship(networks)
 
-  const { data: isOft = false } = useSWR(
+  const { data: isOft = false } = useSWRImmutable(
     // Only create cache key if we have all required params
     selectedToken && !isTeleportMode
       ? [
-          'oft-transfer',
           isDepositMode ? selectedToken.address : selectedToken.l2Address,
           networks.sourceChain.id,
-          networks.destinationChain.id
+          networks.destinationChain.id,
+          'oft-transfer'
         ]
       : null,
-    async () =>
+    async ([_sourceChainErc20Address, _sourceChainId, _destinationChainId]) =>
       getOftV2TransferConfig({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id,
-        sourceChainErc20Address: isDepositMode
-          ? selectedToken?.address
-          : selectedToken?.l2Address
-      }).isValid,
-    {
-      shouldRetryOnError: false,
-      revalidateOnFocus: false
-    }
+        sourceChainId: _sourceChainId,
+        destinationChainId: _destinationChainId,
+        sourceChainErc20Address: _sourceChainErc20Address
+      }).isValid
   )
 
   return isOft
