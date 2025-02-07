@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { isAddress } from 'ethers/lib/utils'
+import { useAccount } from 'wagmi'
 
 import { DestinationAddressErrors } from '../AdvancedSettings'
 import { addressIsDenylisted } from '../../../util/AddressUtils'
@@ -42,28 +42,26 @@ export async function getDestinationAddressError({
 export function useDestinationAddressError() {
   const [{ destinationAddress }] = useArbQueryParams()
   const [networks] = useNetworks()
+  const { address, isConnected } = useAccount()
   const { isTeleportMode } = useNetworksRelationship(networks)
   const { isSmartContractWallet: isSenderSmartContractWallet } =
     useAccountType()
 
-  const queryKey = useMemo(() => {
-    if (typeof destinationAddress === 'undefined') {
-      // Don't fetch
-      return null
-    }
-
-    return [
-      destinationAddress.toLowerCase(),
+  const { data: destinationAddressError } = useSWRImmutable(
+    [
+      address?.toLowerCase(),
+      destinationAddress?.toLowerCase(),
       isSenderSmartContractWallet,
       isTeleportMode,
       'useDestinationAddressError'
-    ] as const
-  }, [destinationAddress, isSenderSmartContractWallet, isTeleportMode])
-
-  const { data: destinationAddressError } = useSWRImmutable(
-    queryKey,
+    ] as const,
     // Extracts the first element of the query key as the fetcher param
-    ([_destinationAddress, _isSenderSmartContractWallet, _isTeleportMode]) =>
+    ([
+      _address,
+      _destinationAddress,
+      _isSenderSmartContractWallet,
+      _isTeleportMode
+    ]) =>
       getDestinationAddressError({
         destinationAddress: _destinationAddress,
         isSenderSmartContractWallet: _isSenderSmartContractWallet,
