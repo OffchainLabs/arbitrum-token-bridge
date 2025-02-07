@@ -18,7 +18,7 @@ export const highlightOftTransactionHistoryDisclaimer = () => {
   }, 3000)
 }
 
-//only show this dialog if the user has positive balances of `CommonAddress.Ethereum.USDT` or `CommonAddress.Arbitrum.USDT`
+//only show this disclaimer if the user has positive balances of `CommonAddress.Ethereum.USDT` or `CommonAddress.Arbitrum.USDT`
 export function OftTransactionHistoryDisclaimer() {
   const { address: walletAddress } = useAccount()
 
