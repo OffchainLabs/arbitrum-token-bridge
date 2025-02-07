@@ -114,6 +114,11 @@ body > iframe {
   color: #60461f;
 }
 
+.tippy-box[data-theme~='dark'] {
+  border-radius: 5px;
+  border: 1px solid #777;
+}
+
 /*
   Custom
 */
