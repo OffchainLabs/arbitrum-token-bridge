@@ -24,6 +24,8 @@ import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
+import { OftTransferDisclaimer } from './OftTransferDisclaimer'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -205,6 +207,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
+  const isOft = useIsOftV2Transfer()
+
   const [{ amount, amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
@@ -315,6 +319,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         </div>
       </div>
       {!isDepositMode &&
+        !isOft &&
         (isAffectedByBoLDUpgrade ? (
           <BoLDUpgradeWarning />
         ) : (
@@ -326,6 +331,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
           </div>
         ))}
+
+      {isOft && <OftTransferDisclaimer />}
     </TransferPanelSummaryContainer>
   )
 }

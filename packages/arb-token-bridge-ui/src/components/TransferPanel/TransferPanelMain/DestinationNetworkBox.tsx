@@ -93,7 +93,7 @@ function BalanceRow({
         />
         <span>{symbol}</span>
       </div>
-      <div>
+      <div className="flex space-x-1">
         <span>Balance: </span>
         <span
           aria-label={`${symbol} balance amount on ${
