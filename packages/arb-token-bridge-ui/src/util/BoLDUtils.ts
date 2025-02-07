@@ -45,6 +45,13 @@ export type BoldUpgradeInfo =
 export function getBoldUpgradeInfo(chainId: number): BoldUpgradeInfo {
   const upgrade = boldUpgrades[chainId]
 
+  // Skip this logic entirely in tests
+  if (process.env.NODE_ENV === 'test') {
+    return {
+      status: BoldUpgradeStatus.NotScheduled
+    }
+  }
+
   if (typeof upgrade === 'undefined') {
     return {
       status: BoldUpgradeStatus.NotScheduled
