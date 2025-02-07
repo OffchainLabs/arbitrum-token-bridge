@@ -37,6 +37,7 @@ import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { getTransferMode } from '../../../util/getTransferMode'
+import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 
 function Amount2ToggleButton({
   onClick
@@ -101,6 +102,8 @@ export function SourceNetworkBox() {
     useSourceChainNativeCurrencyDecimals()
 
   const isCctpTransfer = useIsCctpTransfer()
+
+  const isOft = useIsOftV2Transfer()
 
   const {
     network: { logo: networkLogo }
@@ -242,7 +245,8 @@ export function SourceNetworkBox() {
           )}
 
           {(transferMode === 'deposit' || transferMode === 'teleport') &&
-            selectedToken && (
+            selectedToken &&
+            !isOft && (
               <p className="mt-1 text-xs font-light text-white">
                 Make sure you have {nativeCurrency.symbol} in your{' '}
                 {getNetworkName(childChain.id)} account, as you’ll need it to

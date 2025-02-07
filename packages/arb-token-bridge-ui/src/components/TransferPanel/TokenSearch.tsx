@@ -559,6 +559,15 @@ export function TokenSearch({
         return
       }
 
+      const isL2NativeUSDC =
+        isTokenArbitrumOneNativeUSDC(_token.address) ||
+        isTokenArbitrumSepoliaNativeUSDC(_token.address)
+
+      if (isL2NativeUSDC) {
+        setSelectedToken(_token.address)
+        return
+      }
+
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         setSelectedToken(_token.address)

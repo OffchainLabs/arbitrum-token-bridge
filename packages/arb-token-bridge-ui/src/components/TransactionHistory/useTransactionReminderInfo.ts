@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
-import { useAccount } from 'wagmi'
 
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxClaimable, isTxPending } from './helpers'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 export function useTransactionReminderInfo() {
-  const { address } = useAccount()
-  const { transactions } = useTransactionHistory(address)
+  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const { transactions } = useTransactionHistory(sanitizedAddress)
 
   const {
     numClaimableTransactions,

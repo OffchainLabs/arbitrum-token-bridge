@@ -1,6 +1,5 @@
 import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
-import { publicProvider } from 'wagmi/providers/public'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import {
@@ -160,11 +159,16 @@ export function getProps(targetChainKey: string | null) {
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
     [
-      publicProvider(),
       jsonRpcProvider({
-        rpc: chain => ({
-          http: rpcURLs[chain.id]!
-        })
+        rpc: chain => {
+          const rpcUrl = rpcURLs[chain.id]
+
+          if (typeof rpcUrl === 'undefined') {
+            throw Error(`[wagmi/setup] no rpc url found for chain ${chain.id}`)
+          }
+
+          return { http: rpcUrl }
+        }
       })
     ]
   )

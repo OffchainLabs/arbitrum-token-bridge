@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { Dialog } from '../common/Dialog'
-import { isTokenEthereumUSDT, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { ExternalLink } from '../common/ExternalLink'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
@@ -35,14 +35,6 @@ export function TransferDisabledDialog() {
   const [l2ChainIdForTeleport, setL2ChainIdForTeleport] = useState<
     number | undefined
   >()
-
-  const isUsdtTransfer = useMemo(() => {
-    return (
-      isTokenEthereumUSDT(selectedToken?.address) &&
-      (isNetwork(networks.sourceChain.id).isEthereumMainnet ||
-        isNetwork(networks.sourceChain.id).isArbitrumOne)
-    )
-  }, [selectedToken?.address, networks.sourceChain.id])
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {
@@ -139,44 +131,7 @@ export function TransferDisabledDialog() {
       onClose={onClose}
     >
       <div className="flex flex-col space-y-4 py-4">
-        {isUsdtTransfer ? (
-          <>
-            <p>
-              USDT is currently upgrading to USDT0.
-              <br />
-              Official support on the Arbitrum Bridge will be live soon.
-            </p>
-            <p>
-              Until then, you can use the{' '}
-              <ExternalLink
-                href="https://usdt0.to/transfer"
-                className="underline"
-              >
-                Tether Bridge
-              </ExternalLink>
-              .
-              <br />
-              Read more about the upgrade{' '}
-              <ExternalLink
-                href="https://x.com/USDT0_to/status/1884266492797342207"
-                className="underline"
-              >
-                here
-              </ExternalLink>
-              .
-            </p>
-            <p>
-              For questions and support, connect with our support team on{' '}
-              <ExternalLink
-                href="https://discord.com/invite/ZpZuw7p"
-                className="underline"
-              >
-                Discord
-              </ExternalLink>{' '}
-              in #support.
-            </p>
-          </>
-        ) : transferMode === 'teleport' ? (
+        {transferMode === 'teleport' ? (
           // teleport transfer disabled content if token is not in the allowlist
           <>
             <p>
