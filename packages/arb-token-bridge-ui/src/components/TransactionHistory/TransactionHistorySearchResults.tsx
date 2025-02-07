@@ -30,8 +30,6 @@ function useTransactionHistoryUpdater() {
 
   const { transactions, updatePendingTransaction } = transactionHistoryProps
 
-  console.log('xxxxyyy', { transactions })
-
   const pendingTransactions = useMemo(() => {
     return transactions.filter(isTxPending)
   }, [transactions])
