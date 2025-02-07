@@ -119,11 +119,11 @@ export function useSelectedTokenBalances(): Balances {
     }
   }, [
     isConnected,
-    selectedToken,
     erc20ParentBalances,
     erc20ChildBalances,
     isEthereumArbitrumOnePair,
     isSepoliaArbSepoliaPair,
+    selectedToken,
     isDepositMode
   ])
 }

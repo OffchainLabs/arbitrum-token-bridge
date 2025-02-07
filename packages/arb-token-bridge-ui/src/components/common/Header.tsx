@@ -6,11 +6,11 @@ import { useAccount } from 'wagmi'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
-import { HeaderAccountPopover } from './HeaderAccountPopover'
-import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 import { isExperimentalModeEnabled } from '../../util'
+import { HeaderAccountPopover } from './HeaderAccountPopover'
+import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 
 export function HeaderAccountOrConnectWalletButton() {
   const { isConnected } = useAccount()
@@ -59,9 +59,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
             EXPERIMENTAL MODE: features may be incomplete or not work properly
           </span>
         )}
-        <div className="hidden sm:flex">
-          <HeaderAccountOrConnectWalletButton />
-        </div>
+        <div className="hidden sm:flex">{children}</div>
       </div>
       <AppMobileSidebar />
     </header>
