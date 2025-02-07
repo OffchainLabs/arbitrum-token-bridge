@@ -8,20 +8,19 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { Loader } from '../common/atoms/Loader'
 import { Tooltip } from '../common/Tooltip'
-import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { NoteBox } from '../common/NoteBox'
 import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
+import { TokenInfoTooltip } from './TokenInfoTooltip'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
@@ -137,7 +136,7 @@ function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
   if (isDepositMode) {
     return (
       <>
-        <span className="text-right tabular-nums">
+        <span className="whitespace-nowrap text-right tabular-nums">
           {formatAmount(estimatedParentChainGasFees, {
             symbol: parentChainNativeCurrency.symbol
           })}{' '}
@@ -147,11 +146,18 @@ function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
               symbol: childChainNativeCurrency.symbol
             })}
         </span>
-        {!selectedToken && (
-          <span className="text-right">
-            <NativeCurrencyPrice amount={estimatedParentChainGasFees} />
-          </span>
-        )}
+
+        <div className="flex justify-end space-x-0.5 text-right">
+          <NativeCurrencyPrice amount={estimatedParentChainGasFees} />
+          {selectedToken && (
+            <Tooltip
+              theme="dark"
+              content={<span>Showing USD prices for ETH only.</span>}
+            >
+              <InformationCircleIcon width={12} />
+            </Tooltip>
+          )}
+        </div>
       </>
     )
   }
@@ -197,7 +203,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const { status: gasSummaryStatus } = useGasSummary()
 
   const [networks] = useNetworks()
-  const [selectedToken] = useSelectedToken()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
 
@@ -211,26 +216,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const [{ amount, amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
-
-  const {
-    isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia,
-    isTestnet
-  } = isNetwork(networks.destinationChain.id)
+  const { isTestnet } = isNetwork(networks.destinationChain.id)
 
   const boldUpgradeInfo = getBoldUpgradeInfo(networks.sourceChain.id)
   const isAffectedByBoLDUpgrade =
     boldUpgradeInfo.status === BoldUpgradeStatus.Scheduled ||
     boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
 
-  const isDepositingUSDCtoArbOneOrArbSepolia =
-    isTokenNativeUSDC(token?.address) &&
-    isDepositMode &&
-    (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
-
   const showUsdValueForGasFees =
-    !isTestnet &&
-    !(childChainNativeCurrency.isCustom && (!isDepositMode || selectedToken))
+    !isTestnet && !(childChainNativeCurrency.isCustom && !isDepositMode)
 
   const showUsdValueForReceivedToken =
     isBridgingEth && !isBatchTransferSupported && !Number(amount2) && !isTestnet
@@ -279,16 +273,11 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             You will receive on {getNetworkName(networks.destinationChain.id)}:
           </span>
 
-          <span className="text-right">
+          <div className="flex items-center justify-end space-x-1">
             <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
-            {isDepositingUSDCtoArbOneOrArbSepolia ? (
-              <>USDC</>
-            ) : (
-              <TokenSymbolWithExplorerLink
-                token={token}
-                isParentChain={!isDepositMode}
-              />
-            )}
+            <span className="-mt-0.5">
+              <TokenInfoTooltip token={token} />
+            </span>
             {isBatchTransferSupported && Number(amount2) > 0 && (
               <span>
                 {' '}
@@ -296,7 +285,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
                 {childChainNativeCurrency.symbol}
               </span>
             )}
-          </span>
+          </div>
           {showUsdValueForReceivedToken && (
             <span className="text-right">
               <NativeCurrencyPrice amount={Number(amount)} />
