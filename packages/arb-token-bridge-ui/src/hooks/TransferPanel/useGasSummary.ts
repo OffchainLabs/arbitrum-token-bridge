@@ -75,12 +75,15 @@ export function useGasSummary(): UseGasSummaryResult {
     })
 
   const isOft = useIsOftV2Transfer()
-  const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
-    useOftV2FeeEstimates({
-      sourceChainErc20Address: isDepositMode
-        ? selectedToken?.address
-        : selectedToken?.l2Address
-    })
+  const {
+    feeEstimates: oftFeeEstimates,
+    error: oftFeeEstimatesError,
+    isLoading: oftFeeSummaryLoading
+  } = useOftV2FeeEstimates({
+    sourceChainErc20Address: isDepositMode
+      ? selectedToken?.address
+      : selectedToken?.l2Address
+  })
 
   const estimatedParentChainGasFees = useMemo(() => {
     if (isOft && oftFeeEstimates) {
@@ -169,7 +172,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (balance === null) {
+    if (balance === null || oftFeeSummaryLoading) {
       return {
         status: 'loading',
         estimatedParentChainGasFees,
@@ -206,7 +209,8 @@ export function useGasSummary(): UseGasSummaryResult {
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
     gasEstimatesError,
-    oftFeeEstimatesError
+    oftFeeEstimatesError,
+    oftFeeSummaryLoading
   ])
 
   return gasSummary

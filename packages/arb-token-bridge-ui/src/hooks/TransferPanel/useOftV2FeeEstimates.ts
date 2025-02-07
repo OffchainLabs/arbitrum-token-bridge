@@ -12,14 +12,23 @@ async function fetcher([
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
-  walletAddress
+  walletAddress,
+  isValidOftTransfer
 ]: [
   signer: Signer,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
-  walletAddress: string | undefined
+  walletAddress: string | undefined,
+  isValidOftTransfer: boolean
 ]) {
+  if (!isValidOftTransfer) {
+    return {
+      sourceChainGasFee: BigNumber.from(0),
+      destinationChainGasFee: BigNumber.from(0)
+    }
+  }
+
   // Assuming minimal dust amount for gas estimates
   const amount = BigNumber.from(1)
 
@@ -55,7 +64,7 @@ export function useOftV2FeeEstimates({
   const destinationChainId = networks.destinationChain.id
 
   const isValidOftTransfer = useMemo(() => {
-    return !!getOftV2TransferConfig({
+    return getOftV2TransferConfig({
       sourceChainId,
       destinationChainId,
       sourceChainErc20Address
@@ -63,12 +72,13 @@ export function useOftV2FeeEstimates({
   }, [sourceChainId, destinationChainId, sourceChainErc20Address])
 
   const { data: feeEstimates, error } = useSWR(
-    signer && isValidOftTransfer
+    signer
       ? ([
           sourceChainId,
           destinationChainId,
           sourceChainErc20Address,
           walletAddress,
+          isValidOftTransfer,
           'oftFeeEstimates'
         ] as const)
       : null,
@@ -76,7 +86,8 @@ export function useOftV2FeeEstimates({
       _sourceChainId,
       _destinationChainId,
       _sourceChainErc20Address,
-      _walletAddress
+      _walletAddress,
+      _isValidOftTransfer
     ]) => {
       const sourceProvider = getProviderForChainId(_sourceChainId)
       const _signer = sourceProvider.getSigner(_walletAddress)
@@ -86,7 +97,8 @@ export function useOftV2FeeEstimates({
         _sourceChainId,
         _destinationChainId,
         _sourceChainErc20Address,
-        _walletAddress
+        _walletAddress,
+        _isValidOftTransfer
       ])
     },
     {

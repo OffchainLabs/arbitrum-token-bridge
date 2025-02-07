@@ -81,7 +81,7 @@ import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChain
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
-import { OftTransactionHistoryDialog } from '../TransactionHistory/OftTransactionHistoryDialog'
+import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -290,10 +290,10 @@ export function TransferPanel() {
       const [confirmed] = await waitForInput()
 
       if (confirmed) {
-        transfer()
+        return transfer()
       }
     } else {
-      transfer()
+      return transfer()
     }
   }
 
@@ -670,16 +670,22 @@ export function TransferPanel() {
         destinationAddress
       })
 
-      trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
+      trackEvent('OFT Transfer', {
         tokenSymbol: selectedToken.symbol,
         assetType: 'ERC-20',
         accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
         network: getNetworkName(networks.sourceChain.id),
-        amount: Number(amount)
+        amount: Number(amount),
+        sourceChain: getNetworkName(networks.sourceChain.id),
+        destinationChain: getNetworkName(networks.destinationChain.id)
       })
 
-      await showOftTransactionHistoryDialog()
+      switchToTransactionHistoryTab()
       clearAmountInput()
+
+      setTimeout(() => {
+        highlightOftTransactionHistoryDisclaimer()
+      }, 100)
     } catch (error) {
       if (isUserRejectedError(error)) {
         return
@@ -1177,8 +1183,6 @@ export function TransferPanel() {
       <CustomDestinationAddressConfirmationDialog
         {...customDestinationAddressConfirmationDialogProps}
       />
-
-      <OftTransactionHistoryDialog {...oftTransactionHistoryDialogProps} />
 
       <div
         className={twMerge(
