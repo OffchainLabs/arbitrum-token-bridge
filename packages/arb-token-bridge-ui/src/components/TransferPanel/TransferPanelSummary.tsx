@@ -228,23 +228,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isDepositMode &&
     (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 
-  const showUsdValueForGasFees = useMemo(() => {
-    if (isTestnet) {
-      return false
-    }
-    if (childChainNativeCurrency.isCustom && !isDepositMode) {
-      return false
-    }
-    if (childChainNativeCurrency.isCustom && selectedToken) {
-      return false
-    }
-    return true
-  }, [
-    childChainNativeCurrency.isCustom,
-    isDepositMode,
-    isTestnet,
-    selectedToken
-  ])
+  const showUsdValueForGasFees =
+    !isTestnet &&
+    !(childChainNativeCurrency.isCustom && (!isDepositMode || selectedToken))
 
   const showUsdValueForReceivedToken =
     isBridgingEth && !isBatchTransferSupported && !Number(amount2) && !isTestnet

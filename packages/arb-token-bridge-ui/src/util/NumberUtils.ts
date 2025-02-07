@@ -5,7 +5,7 @@ export function formatUSD(value: number) {
     return `$0.00`
   }
 
-  if (value < 0.01) {
+  if (value > 0 && value < 0.01) {
     return `< $0.01`
   }
 
