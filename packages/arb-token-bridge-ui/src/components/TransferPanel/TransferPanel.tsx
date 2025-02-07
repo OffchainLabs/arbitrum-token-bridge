@@ -81,6 +81,7 @@ import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChain
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
+import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -671,6 +672,10 @@ export function TransferPanel() {
 
       switchToTransactionHistoryTab()
       clearAmountInput()
+
+      setTimeout(() => {
+        highlightOftTransactionHistoryDisclaimer()
+      }, 100)
     } catch (error) {
       if (isUserRejectedError(error)) {
         return
