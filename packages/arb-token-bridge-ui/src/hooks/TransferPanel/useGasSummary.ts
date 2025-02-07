@@ -18,6 +18,8 @@ import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 import { useSelectedToken } from '../useSelectedToken'
+import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
+import { useOftV2FeeEstimates } from './useOftV2FeeEstimates'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -72,7 +74,28 @@ export function useGasSummary(): UseGasSummaryResult {
         : selectedToken?.address
     })
 
+  const isOft = useIsOftV2Transfer()
+  const {
+    feeEstimates: oftFeeEstimates,
+    error: oftFeeEstimatesError,
+    isLoading: oftFeeSummaryLoading
+  } = useOftV2FeeEstimates({
+    sourceChainErc20Address: isDepositMode
+      ? selectedToken?.address
+      : selectedToken?.l2Address
+  })
+
   const estimatedParentChainGasFees = useMemo(() => {
+    if (isOft && oftFeeEstimates) {
+      return parseFloat(
+        utils.formatEther(
+          isDepositMode
+            ? oftFeeEstimates.sourceChainGasFee
+            : oftFeeEstimates.destinationChainGasFee
+        )
+      )
+    }
+
     if (!estimateGasResult?.estimatedParentChainGas) {
       return
     }
@@ -81,9 +104,25 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedParentChainGas.mul(parentChainGasPrice)
       )
     )
-  }, [estimateGasResult, parentChainGasPrice])
+  }, [
+    estimateGasResult,
+    parentChainGasPrice,
+    isOft,
+    oftFeeEstimates,
+    isDepositMode
+  ])
 
   const estimatedChildChainGasFees = useMemo(() => {
+    if (isOft && oftFeeEstimates) {
+      return parseFloat(
+        utils.formatEther(
+          isDepositMode
+            ? oftFeeEstimates.destinationChainGasFee
+            : oftFeeEstimates.sourceChainGasFee
+        )
+      )
+    }
+
     if (!estimateGasResult?.estimatedChildChainGas) {
       return
     }
@@ -112,7 +151,13 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedChildChainGas.mul(childChainGasPrice)
       )
     )
-  }, [childChainGasPrice, estimateGasResult, isDepositMode])
+  }, [
+    childChainGasPrice,
+    estimateGasResult,
+    isDepositMode,
+    oftFeeEstimates,
+    isOft
+  ])
 
   const gasSummary: UseGasSummaryResult = useMemo(() => {
     if (
@@ -127,7 +172,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (balance === null) {
+    if (balance === null || oftFeeSummaryLoading) {
       return {
         status: 'loading',
         estimatedParentChainGasFees,
@@ -143,7 +188,10 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') {
+    if (
+      (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') ||
+      oftFeeEstimatesError
+    ) {
       return {
         status: 'error',
         estimatedParentChainGasFees,
@@ -163,7 +211,9 @@ export function useGasSummary(): UseGasSummaryResult {
     amountBigNumber,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
-    gasEstimatesError
+    gasEstimatesError,
+    oftFeeEstimatesError,
+    oftFeeSummaryLoading
   ])
 
   return gasSummary

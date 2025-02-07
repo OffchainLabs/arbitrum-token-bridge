@@ -19,6 +19,7 @@ import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
+import { OftTransactionHistoryDisclaimer } from './OftTransactionHistoryDisclaimer'
 
 function useTransactionHistoryUpdater() {
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
@@ -110,6 +111,9 @@ export function TransactionHistorySearchResults() {
       <div className="pr-4 md:pr-0">
         <TransactionStatusInfo />
       </div>
+
+      <OftTransactionHistoryDisclaimer />
+
       <Tab.Group as="div" className="h-full overflow-hidden rounded md:pr-0">
         <Tab.List className="mb-4 flex border-b border-white/30">
           <TabButton

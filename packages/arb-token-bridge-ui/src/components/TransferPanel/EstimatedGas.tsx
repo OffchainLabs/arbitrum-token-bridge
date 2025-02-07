@@ -14,6 +14,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 
 function getGasFeeTooltip(chainId: ChainId) {
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
@@ -85,6 +86,8 @@ export function EstimatedGas({
     [isBridgingEth, childChain.id]
   )
 
+  const isOft = useIsOftV2Transfer()
+
   const isDestinationArbOne = isNetwork(
     networks.destinationChain.id
   ).isArbitrumOne
@@ -121,7 +124,7 @@ export function EstimatedGas({
     [isSourceChain, networks.sourceChain.id, networks.destinationChain.id]
   )
 
-  if (isWithdrawalParentChain) {
+  if (isWithdrawalParentChain && !isOft) {
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
   }
 

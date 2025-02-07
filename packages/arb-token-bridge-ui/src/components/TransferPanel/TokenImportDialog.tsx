@@ -1,4 +1,3 @@
-import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
 import { create } from 'zustand'

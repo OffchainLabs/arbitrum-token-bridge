@@ -4,26 +4,27 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 
 import { formatAmount } from '../../util/NumberUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { Loader } from '../common/atoms/Loader'
 import { Tooltip } from '../common/Tooltip'
-import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { NoteBox } from '../common/NoteBox'
 import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
+import { TokenInfoTooltip } from './TokenInfoTooltip'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
+import { OftTransferDisclaimer } from './OftTransferDisclaimer'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -187,23 +188,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
+  const isOft = useIsOftV2Transfer()
+
   const [{ amount, amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
-
-  const {
-    isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia
-  } = isNetwork(networks.destinationChain.id)
 
   const boldUpgradeInfo = getBoldUpgradeInfo(networks.sourceChain.id)
   const isAffectedByBoLDUpgrade =
     boldUpgradeInfo.status === BoldUpgradeStatus.Scheduled ||
     boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
-
-  const isDepositingUSDCtoArbOneOrArbSepolia =
-    isTokenNativeUSDC(token?.address) &&
-    isDepositMode &&
-    (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 
   if (gasSummaryStatus === 'unavailable') {
     return (
@@ -247,16 +240,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span>
           You will receive on {getNetworkName(networks.destinationChain.id)}:
         </span>
-        <span className="font-medium">
+        <span className="flex space-x-1 font-medium">
           <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
-          {isDepositingUSDCtoArbOneOrArbSepolia ? (
-            <>USDC</>
-          ) : (
-            <TokenSymbolWithExplorerLink
-              token={token}
-              isParentChain={!isDepositMode}
-            />
-          )}
+          <TokenInfoTooltip token={token} />
           {isBridgingEth && (
             <NativeCurrencyPrice amount={Number(amount)} showBrackets />
           )}
@@ -270,6 +256,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         </span>
       </div>
       {!isDepositMode &&
+        !isOft &&
         (isAffectedByBoLDUpgrade ? (
           <BoLDUpgradeWarning />
         ) : (
@@ -281,6 +268,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
           </div>
         ))}
+
+      {isOft && <OftTransferDisclaimer />}
     </TransferPanelSummaryContainer>
   )
 }
