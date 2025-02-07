@@ -4,7 +4,6 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
-import { Chain } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
@@ -13,7 +12,6 @@ import {
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
-import { shortenAddress } from '../../util/CommonUtils'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
@@ -21,11 +19,10 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -34,6 +31,7 @@ import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { getTransferMode } from '../../util/getTransferMode'
+import { BlockExplorerTokenLink } from './TokenInfoTooltip'
 
 function tokenListIdsToNames(ids: string[]): string {
   return ids
@@ -46,28 +44,6 @@ function StyledLoader() {
     <div className="mr-2">
       <Loader color="white" size="small" />
     </div>
-  )
-}
-
-function BlockExplorerTokenLink({
-  chain,
-  address
-}: {
-  chain: Chain
-  address: string | undefined
-}) {
-  if (typeof address === 'undefined') {
-    return null
-  }
-
-  return (
-    <ExternalLink
-      href={`${getExplorerUrl(chain.id)}/token/${address}`}
-      className="arb-hover text-xs underline"
-      onClick={e => e.stopPropagation()}
-    >
-      {shortenAddress(address).toLowerCase()}
-    </ExternalLink>
   )
 }
 
@@ -322,7 +298,7 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   ) {
     return (
       <BlockExplorerTokenLink
-        chain={parentChain}
+        chainId={parentChain.id}
         address={nativeCurrency.address}
       />
     )
@@ -333,16 +309,20 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   }
 
   if (transferMode === 'deposit' || transferMode === 'teleport') {
-    return token?.isL2Native ? (
-      <BlockExplorerTokenLink chain={childChain} address={token.address} />
-    ) : (
-      <BlockExplorerTokenLink chain={parentChain} address={token.address} />
+    return (
+      <BlockExplorerTokenLink
+        chainId={token?.isL2Native ? childChain.id : parentChain.id}
+        address={token.address}
+      />
     )
   }
 
   if (typeof token.l2Address !== 'undefined') {
     return (
-      <BlockExplorerTokenLink chain={childChain} address={token.l2Address} />
+      <BlockExplorerTokenLink
+        chainId={childChain.id}
+        address={token.l2Address}
+      />
     )
   }
   return (
