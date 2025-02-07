@@ -119,6 +119,26 @@ body > iframe {
   border: 1px solid #777;
 }
 
+.tippy-box[data-theme~='dark'] .tippy-arrow:before {
+  border: none;
+  border-top: 1px solid #777;
+  border-right: 1px solid #777;
+  background-color: #333;
+  width: 9px;
+  height: 9px;
+  left: 50%;
+}
+
+.tippy-box[data-theme~='dark'][data-placement^='bottom'] .tippy-arrow:before {
+  transform: rotate(-45deg) translateY(-30%) translateX(10%);
+  margin-top: 3px;
+}
+
+.tippy-box[data-theme~='dark'][data-placement^='top'] .tippy-arrow:before {
+  transform: rotate(135deg) translateY(-70%) translateX(70%);
+  margin-bottom: 3px;
+}
+
 /*
   Custom
 */
