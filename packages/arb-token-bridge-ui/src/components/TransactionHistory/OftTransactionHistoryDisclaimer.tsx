@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { ExternalLink } from '../common/ExternalLink'
@@ -22,7 +22,6 @@ export const highlightOftTransactionHistoryDisclaimer = () => {
 export function OftTransactionHistoryDisclaimer() {
   const { address: walletAddress } = useAccount()
 
-  const [showDisclaimer, setShowDisclaimer] = useState(false)
   const {
     erc20: [mainnetBalances]
   } = useBalance({
@@ -36,7 +35,7 @@ export function OftTransactionHistoryDisclaimer() {
     walletAddress
   })
 
-  useEffect(() => {
+  const showDisclaimer = useMemo(() => {
     const mainnetUsdtBalance = mainnetBalances?.[CommonAddress.Ethereum.USDT]
     const arbOneUsdtBalance = arbOneBalances?.[CommonAddress.ArbitrumOne.USDT]
 
@@ -45,8 +44,9 @@ export function OftTransactionHistoryDisclaimer() {
       (arbOneUsdtBalance && arbOneUsdtBalance.gt(0))
 
     if (userHasUsdtBalance) {
-      setShowDisclaimer(true)
+      return true
     }
+    return false
   }, [mainnetBalances, arbOneBalances])
 
   if (!showDisclaimer) {

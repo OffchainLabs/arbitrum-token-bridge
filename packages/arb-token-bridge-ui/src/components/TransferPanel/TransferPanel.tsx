@@ -662,12 +662,14 @@ export function TransferPanel() {
         destinationAddress
       })
 
-      trackEvent(isDepositMode ? 'OFT Deposit' : 'OFT Withdrawal', {
+      trackEvent('OFT Transfer', {
         tokenSymbol: selectedToken.symbol,
         assetType: 'ERC-20',
         accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
         network: getNetworkName(networks.sourceChain.id),
-        amount: Number(amount)
+        amount: Number(amount),
+        sourceChain: getNetworkName(networks.sourceChain.id),
+        destinationChain: getNetworkName(networks.destinationChain.id)
       })
 
       switchToTransactionHistoryTab()
