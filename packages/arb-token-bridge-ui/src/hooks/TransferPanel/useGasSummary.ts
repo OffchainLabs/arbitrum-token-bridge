@@ -17,6 +17,7 @@ import { useSelectedToken } from '../useSelectedToken'
 import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
 import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 import { useOftV2FeeEstimates } from './useOftV2FeeEstimates'
+import { isNetwork } from '../../util/networks'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -31,31 +32,66 @@ export type UseGasSummaryResult = {
   estimatedChildChainGasFees: number | undefined
 }
 
+function isWithdrawalFromArbSepoliaToSepolia({
+  sourceChainId,
+  destinationChainId
+}: {
+  sourceChainId: number
+  destinationChainId: number
+}): boolean {
+  const { isArbitrumSepolia: isSourceChainArbitrumSepolia } =
+    isNetwork(sourceChainId)
+  const { isSepolia: isDestinationChainSepolia } = isNetwork(destinationChainId)
+  return isSourceChainArbitrumSepolia && isDestinationChainSepolia
+}
+
+function isWithdrawalFromArbOneToEthereum({
+  sourceChainId,
+  destinationChainId
+}: {
+  sourceChainId: number
+  destinationChainId: number
+}): boolean {
+  const { isArbitrumOne: isSourceChainArbitrumOne } = isNetwork(sourceChainId)
+  const { isEthereumMainnet: isDestinationChainEthereum } =
+    isNetwork(destinationChainId)
+  return isSourceChainArbitrumOne && isDestinationChainEthereum
+}
+
 export function getGasSummary({
   selectedTokenAddress,
   amountBigNumber,
   balance,
-  isDepositMode,
   estimatedParentChainGasFees,
   estimatedChildChainGasFees,
   gasEstimatesError,
   oftFeeEstimatesError,
-  oftFeeSummaryLoading
+  oftFeeSummaryLoading,
+  sourceChainId,
+  destinationChainId
 }: {
   selectedTokenAddress: string | undefined
   amountBigNumber: BigNumber
   balance: BigNumber | null
-  isDepositMode: boolean
   estimatedParentChainGasFees: number | undefined
   estimatedChildChainGasFees: number | undefined
   gasEstimatesError: any
   oftFeeEstimatesError: boolean
   oftFeeSummaryLoading: boolean
+  sourceChainId: number
+  destinationChainId: number
 }): UseGasSummaryResult {
   if (
-    !isDepositMode &&
-    (isTokenArbitrumOneNativeUSDC(selectedTokenAddress) ||
-      isTokenArbitrumSepoliaNativeUSDC(selectedTokenAddress))
+    (isTokenArbitrumOneNativeUSDC(selectedTokenAddress) &&
+      isWithdrawalFromArbOneToEthereum({
+        sourceChainId,
+        destinationChainId
+      })) ||
+    (isTokenArbitrumSepoliaNativeUSDC(selectedTokenAddress) &&
+      isWithdrawalFromArbSepoliaToSepolia({
+        sourceChainId,
+        destinationChainId
+      }))
   ) {
     return {
       status: 'unavailable',
@@ -216,23 +252,24 @@ export function useGasSummary(): UseGasSummaryResult {
         selectedTokenAddress: selectedToken?.address,
         amountBigNumber,
         balance,
-        isDepositMode,
         estimatedParentChainGasFees,
         estimatedChildChainGasFees,
         gasEstimatesError,
         oftFeeEstimatesError,
-        oftFeeSummaryLoading
+        oftFeeSummaryLoading,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       }),
     [
       selectedToken,
       amountBigNumber,
       balance,
-      isDepositMode,
       estimatedParentChainGasFees,
       estimatedChildChainGasFees,
       gasEstimatesError,
       oftFeeEstimatesError,
-      oftFeeSummaryLoading
+      oftFeeSummaryLoading,
+      networks
     ]
   )
 
