@@ -74,16 +74,6 @@ export function login({
   })
 }
 
-// once all assertions are run, before test exit, make sure web-app is reset to original
-export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps()
-  cy.resetMetamaskAccount()
-  // resetMetamaskAccount doesn't seem to remove the connected network in CI
-  // changeMetamaskNetwork fails if already connected to the desired network
-  // as a workaround we switch to another network after all the tests
-  cy.changeMetamaskNetwork('Sepolia')
-}
-
 export const acceptTnC = () => {
   // initial modal prompts which come in the web-app
   cy.findByText(/Agree to Terms and Continue/i)
@@ -390,7 +380,6 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
 Cypress.Commands.addAll({
   acceptTnC,
   login,
-  logout,
   selectTransactionsPanelTab,
   searchAndSelectToken,
   fillCustomDestinationAddress,

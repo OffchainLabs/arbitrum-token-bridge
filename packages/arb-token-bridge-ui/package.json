@@ -48,6 +48,7 @@
     "use-query-params": "^2.2.1",
     "viem": "^2.22.10",
     "wagmi": "^2.14.8",
+    "wcag-contrast": "^3.0.0",
     "zod": "^3.24.1",
     "zustand": "^4.3.9"
   },
@@ -93,6 +94,7 @@
     "@types/react-dom": "^18.2.4",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/react-virtualized": "^9.21.20",
+    "@types/wcag-contrast": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^6.13.2",
     "autoprefixer": "^10.4.13",

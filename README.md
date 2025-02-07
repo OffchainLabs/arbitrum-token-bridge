@@ -115,7 +115,9 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
 1. Set up the Nitro test node
 
-   1. First, make sure you have a Nitro test node running. Follow the instructions [here](https://docs.arbitrum.io/node-running/how-tos/local-dev-node).
+   1. First, make sure you have installed Chromium version 128 on your local machine. This is the latest version that works with our e2e setup.
+
+   2. Make sure you have a Nitro test node running. Follow the instructions [here](https://docs.arbitrum.io/node-running/how-tos/local-dev-node).
 
       Use the following command to run your test nodes locally for our tests. You may omit `--l3node --l3-token-bridge` if you don't intend on testing Orbit chains.
 
@@ -129,7 +131,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
       --l3-fee-token --l3-fee-token-decimals 18
       ```
 
-   2. When the Nitro test-node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes.
+   3. When the Nitro test-node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes.
 
 2. At the root of the token bridge UI:
 

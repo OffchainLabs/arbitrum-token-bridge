@@ -3,7 +3,6 @@ import '@synthetixio/synpress/support/index.d.ts'
 import {
   acceptTnC,
   login,
-  logout,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -45,7 +44,6 @@ declare global {
         url?: string
         query?: { [s: string]: string }
       }): typeof login
-      logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       searchAndSelectToken({
         tokenName,
