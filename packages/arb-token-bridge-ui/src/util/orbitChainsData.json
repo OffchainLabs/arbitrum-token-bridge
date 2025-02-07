@@ -1837,11 +1837,12 @@
         "network": {
           "name": "Pivotal Testnet",
           "logo": "/images/PivotalTestnet_Logo.svg",
-          "description": "Pivotal is a Bitcoin Secured Network, secured by Babylon’s Bitcoin Staking Protocol and built on Arbitrum Orbit."
+          "description": "Pivotal is a Bitcoin Secured Network, secured by Babylon's Bitcoin Staking Protocol and built on Arbitrum Orbit."
         },
         "nativeTokenData": {
           "name": "USDC",
-          "symbol": "USDC"
+          "symbol": "USDC",
+          "logoUrl": "/images/UsdcLogo.svg"
         }
       }
     }
