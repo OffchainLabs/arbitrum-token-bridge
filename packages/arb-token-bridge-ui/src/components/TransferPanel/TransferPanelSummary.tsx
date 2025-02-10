@@ -275,9 +275,11 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             You will receive on {getNetworkName(networks.destinationChain.id)}:
           </span>
 
-          <div className="flex items-center justify-end space-x-1">
-            <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
-            <span className="-mt-0.5">
+          <div className="text-right sm:flex sm:justify-end sm:space-x-0.5">
+            <span className="flex items-center justify-end space-x-0.5">
+              <span className="tabular-nums">
+                {formatAmount(Number(amount))}
+              </span>
               <TokenInfoTooltip token={token} />
             </span>
             {isBatchTransferSupported && Number(amount2) > 0 && (
