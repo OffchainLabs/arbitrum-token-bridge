@@ -26,7 +26,7 @@ export function Tooltip({
   }
 
   return (
-    <Tippy {...tippyProps} theme={theme} content={content}>
+    <Tippy {...tippyProps} theme={theme} content={content} arrow={false}>
       <div className={wrapperClassName}>{children}</div>
     </Tippy>
   )
