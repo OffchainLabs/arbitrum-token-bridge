@@ -321,7 +321,7 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
   return (
     <>
       <span>Confirmation time:</span>
-      <span className="flex flex-col items-start justify-end sm:flex-row sm:items-center">
+      <span className="flex flex-col items-end justify-end sm:flex-row">
         <span className="hidden sm:inline">
           ~{confirmationTimeInReadableFormat}
         </span>
