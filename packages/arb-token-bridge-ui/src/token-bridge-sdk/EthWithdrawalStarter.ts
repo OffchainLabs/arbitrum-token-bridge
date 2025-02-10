@@ -1,5 +1,7 @@
 import { BigNumber } from 'ethers'
 import { EthBridger } from '@arbitrum/sdk'
+import { Address } from 'wagmi'
+
 import {
   BridgeTransferStarter,
   TransferEstimateGas,
@@ -35,12 +37,13 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
-    const address = (await getAddressFromSigner(signer)) as `0x${string}`
-
+  public async transferEstimateGas({
+    amount,
+    senderAddress
+  }: TransferEstimateGas) {
     return withdrawInitTxEstimateGas({
       amount,
-      address,
+      address: senderAddress as Address,
       childChainProvider: this.sourceChainProvider
     })
   }

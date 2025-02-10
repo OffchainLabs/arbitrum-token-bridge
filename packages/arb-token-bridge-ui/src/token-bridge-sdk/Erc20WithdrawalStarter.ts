@@ -1,6 +1,8 @@
 import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Address } from 'wagmi'
+
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -127,7 +129,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     // if it fails, the token gateway is not allowed to burn the token without additional approval
     const transferEstimateGasResult = await this.transferEstimateGas({
       amount,
-      signer
+      senderAddress: address
     })
 
     if (!transferEstimateGasResult.isError) {
@@ -185,7 +187,10 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     )
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    senderAddress
+  }: TransferEstimateGas) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -193,11 +198,9 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     const destinationChainErc20Address =
       await this.getDestinationChainErc20Address()
 
-    const address = (await getAddressFromSigner(signer)) as `0x${string}`
-
     return withdrawInitTxEstimateGas({
       amount,
-      address,
+      address: senderAddress as Address,
       erc20L1Address: destinationChainErc20Address,
       childChainProvider: this.sourceChainProvider
     })

@@ -163,15 +163,17 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     return undefined
   }
 
-  public async transferEstimateFee({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateFee({
+    amount,
+    senderAddress
+  }: TransferEstimateGas) {
     await this.validateOftTransfer()
 
-    const address = await getAddressFromSigner(signer)
-    const oftContract = this.getOftAdapterContract(signer)
+    const oftContract = this.getOftAdapterContract(this.sourceChainProvider)
 
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
-      address,
+      address: senderAddress,
       amount
     })
 

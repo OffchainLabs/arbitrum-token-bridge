@@ -1,25 +1,23 @@
 import { useMemo } from 'react'
-import { BigNumber, Signer } from 'ethers'
+import { BigNumber } from 'ethers'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { useNetworks } from '../useNetworks'
 
 async function fetcher([
-  signer,
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
-  walletAddress,
+  senderAddress,
   isValidOftTransfer
 ]: [
-  signer: Signer,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
-  walletAddress: string | undefined,
+  senderAddress: string,
   isValidOftTransfer: boolean
 ]) {
   if (!isValidOftTransfer) {
@@ -42,7 +40,7 @@ async function fetcher([
       sourceChainErc20Address
     }).transferEstimateFee({
       amount,
-      signer
+      senderAddress
     })
 
   return {
@@ -56,8 +54,7 @@ export function useOftV2FeeEstimates({
 }: {
   sourceChainErc20Address?: string
 }) {
-  const { data: signer } = useSigner()
-  const { address: walletAddress } = useAccount()
+  const { address: senderAddress } = useAccount()
   const [networks] = useNetworks()
 
   const sourceChainId = networks.sourceChain.id
@@ -72,12 +69,12 @@ export function useOftV2FeeEstimates({
   }, [sourceChainId, destinationChainId, sourceChainErc20Address])
 
   const { data: feeEstimates, error } = useSWR(
-    signer
+    senderAddress
       ? ([
           sourceChainId,
           destinationChainId,
           sourceChainErc20Address,
-          walletAddress,
+          senderAddress,
           isValidOftTransfer,
           'oftFeeEstimates'
         ] as const)
@@ -86,18 +83,14 @@ export function useOftV2FeeEstimates({
       _sourceChainId,
       _destinationChainId,
       _sourceChainErc20Address,
-      _walletAddress,
+      _senderAddress,
       _isValidOftTransfer
     ]) => {
-      const sourceProvider = getProviderForChainId(_sourceChainId)
-      const _signer = sourceProvider.getSigner(_walletAddress)
-
       return fetcher([
-        _signer,
         _sourceChainId,
         _destinationChainId,
         _sourceChainErc20Address,
-        _walletAddress,
+        _senderAddress,
         _isValidOftTransfer
       ])
     },

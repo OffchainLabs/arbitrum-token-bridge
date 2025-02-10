@@ -107,7 +107,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
         spender: await this.getSourceChainGatewayAddress()
       })
 
-    const gasEstimates = await this.transferEstimateGas({ amount, signer })
+    const gasEstimates = await this.transferEstimateGas({
+      amount,
+      senderAddress: address
+    })
 
     const destinationChainGasPrice =
       await this.destinationChainProvider.getGasPrice()
@@ -181,7 +184,12 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    const gasEstimates = await this.transferEstimateGas({ amount, signer })
+    const senderAddress = await getAddressFromSigner(signer)
+
+    const gasEstimates = await this.transferEstimateGas({
+      amount,
+      senderAddress
+    })
 
     const destinationChainGasPrice =
       await this.destinationChainProvider.getGasPrice()
@@ -269,16 +277,17 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    senderAddress
+  }: TransferEstimateGas) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await getAddressFromSigner(signer)
-
     return depositTokenEstimateGas({
       amount,
-      address,
+      address: senderAddress,
       parentChainErc20Address: this.sourceChainErc20Address,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider

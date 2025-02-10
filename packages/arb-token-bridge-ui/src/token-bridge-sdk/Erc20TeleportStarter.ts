@@ -127,7 +127,10 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    senderAddress
+  }: TransferEstimateGas) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -138,7 +141,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     try {
       const depositRequest = await l1l3Bridger.getDepositRequest({
-        l1Signer: signer,
+        from: senderAddress,
         erc20L1Address: this.sourceChainErc20Address,
         amount,
         l1Provider: this.sourceChainProvider,

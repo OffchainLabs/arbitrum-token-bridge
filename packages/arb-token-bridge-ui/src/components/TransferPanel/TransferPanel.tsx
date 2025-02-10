@@ -914,10 +914,15 @@ export function TransferPanel() {
       const overrides: TransferOverrides = {}
 
       if (isBatchTransfer) {
+        if (!walletAddress) {
+          errorToast('Wallet address is undefined. Connect wallet to proceed.')
+          throw 'Wallet address is undefined'
+        }
+
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer,
+          senderAddress: walletAddress,
           destinationAddress
         })) as DepositGasEstimates
 

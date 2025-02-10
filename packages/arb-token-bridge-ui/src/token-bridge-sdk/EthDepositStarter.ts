@@ -54,11 +54,13 @@ export class EthDepositStarter extends BridgeTransferStarter {
       await fetchNativeCurrency({ provider: this.destinationChainProvider })
     ).decimals
 
+    const senderAddress = await getAddressFromSigner(signer)
+
     // Eth transfers to a custom destination use retryables
     // In the case of native currency we need to also approve native currency used for gas
     const gasEstimates = await this.transferEstimateGas({
       amount,
-      signer,
+      senderAddress,
       destinationAddress
     })
 
@@ -147,14 +149,12 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async transferEstimateGas({
     amount,
-    signer,
+    senderAddress,
     destinationAddress
   }: TransferEstimateGas) {
-    const address = await getAddressFromSigner(signer)
-
     return depositEthEstimateGas({
       amount,
-      address,
+      address: senderAddress,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider,
       destinationAddress

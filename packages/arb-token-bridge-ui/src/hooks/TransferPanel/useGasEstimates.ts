@@ -1,17 +1,16 @@
-import { BigNumber, Signer, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
 
 async function fetcher([
-  signer,
+  senderAddress,
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
@@ -19,7 +18,7 @@ async function fetcher([
   destinationAddress,
   amount
 ]: [
-  signer: Signer,
+  senderAddress: string,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
@@ -37,7 +36,7 @@ async function fetcher([
 
   return await bridgeTransferStarter.transferEstimateGas({
     amount,
-    signer,
+    senderAddress,
     destinationAddress
   })
 }
@@ -59,7 +58,6 @@ export function useGasEstimates({
   const [{ destinationAddress }] = useArbQueryParams()
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
-  const { data: signer } = useSigner()
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
@@ -71,7 +69,7 @@ export function useGasEstimates({
     : undefined
 
   const { data: gasEstimates, error } = useSWR(
-    signer
+    walletAddress
       ? ([
           sourceChain.id,
           destinationChain.id,
@@ -91,20 +89,16 @@ export function useGasEstimates({
       _amount,
       _destinationAddress,
       _walletAddress
-    ]) => {
-      const sourceProvider = getProviderForChainId(_sourceChainId)
-      const _signer = sourceProvider.getSigner(_walletAddress)
-
-      return fetcher([
-        _signer,
+    ]) =>
+      fetcher([
+        _walletAddress,
         _sourceChainId,
         _destinationChainId,
         _sourceChainErc20Address,
         _destinationChainErc20Address,
         _destinationAddress,
         BigNumber.from(_amount)
-      ])
-    },
+      ]),
     {
       refreshInterval: 30_000,
       shouldRetryOnError: true,
