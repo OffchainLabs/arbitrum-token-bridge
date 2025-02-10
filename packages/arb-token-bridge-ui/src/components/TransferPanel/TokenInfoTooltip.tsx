@@ -9,6 +9,7 @@ import { shortenAddress } from '../../util/CommonUtils'
 import { getExplorerUrl } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { getTransferMode } from '../../util/getTransferMode'
 
 export function BlockExplorerTokenLink({
   chainId,
@@ -38,17 +39,23 @@ export const TokenInfoTooltip = ({
   token: ERC20BridgeToken | null
 }) => {
   const [networks] = useNetworks()
-  const { isDepositMode, childChainProvider } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
+  })
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
   })
 
   if (!token || isTokenNativeUSDC(token.address)) {
     return <span>{token?.symbol ?? childChainNativeCurrency.symbol}</span>
   }
 
-  const tokenAddress = isDepositMode ? token.l2Address : token.address
+  const tokenAddress =
+    transferMode === 'deposit' || transferMode === 'teleport'
+      ? token.l2Address
+      : token.address
 
   return (
     <Tooltip
