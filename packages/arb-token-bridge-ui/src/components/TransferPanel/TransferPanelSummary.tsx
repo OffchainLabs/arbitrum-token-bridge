@@ -145,14 +145,14 @@ function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
             })}
         </span>
 
-        <div className="flex justify-end space-x-0.5 text-right">
+        <div className="flex items-center justify-end space-x-0.5 text-right">
           <NativeCurrencyPrice amount={estimatedParentChainGasFees} />
           {selectedToken && showUsdcValue && (
             <Tooltip
               theme="dark"
               content={<span>Showing USD prices for ETH only.</span>}
             >
-              <InformationCircleIcon width={12} />
+              <InformationCircleIcon width={15} />
             </Tooltip>
           )}
         </div>
