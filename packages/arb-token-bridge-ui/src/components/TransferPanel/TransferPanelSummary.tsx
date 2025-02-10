@@ -325,13 +325,13 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
     <>
       <span>Confirmation time:</span>
       <span className="flex flex-col items-end justify-end sm:flex-row">
-        <span className="hidden sm:inline">
-          ~{confirmationTimeInReadableFormat}
-        </span>
-        <span className="sm:hidden">
-          ~{confirmationTimeInReadableFormatShort}
-        </span>
-        <div className="flex items-center">
+        <span className="flex items-center space-x-0.5">
+          <span className="hidden sm:inline">
+            ~{confirmationTimeInReadableFormat}
+          </span>
+          <span className="sm:hidden">
+            ~{confirmationTimeInReadableFormatShort}
+          </span>
           <Tooltip
             content={
               fastWithdrawalActive
@@ -345,13 +345,13 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
           >
             <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
           </Tooltip>
-          {fastWithdrawalActive && (
-            <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
-              <Image src={LightningIcon} alt="Lightning Icon" />
-              <span className="font-normal">FAST</span>
-            </div>
-          )}
-        </div>
+        </span>
+        {fastWithdrawalActive && (
+          <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
+            <Image src={LightningIcon} alt="Lightning Icon" />
+            <span className="font-normal">FAST</span>
+          </div>
+        )}
       </span>
     </>
   )
