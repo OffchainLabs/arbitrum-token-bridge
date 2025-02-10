@@ -36,6 +36,7 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './src/util/networksNitroTestnode'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
+import { browserConfig } from './tests/e2e/browser.config'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -233,7 +234,8 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: 'tests/support/index.ts',
-    defaultCommandTimeout: 20_000
+    defaultCommandTimeout: 20_000,
+    browsers: [browserConfig]
   }
 })
 
