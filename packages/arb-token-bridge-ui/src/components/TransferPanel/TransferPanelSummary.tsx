@@ -252,7 +252,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
       <div className="flex flex-col space-y-2 rounded bg-white/10 p-2">
         <div
           className={twMerge(
-            'grid text-sm font-light',
+            'grid items-center text-sm font-light',
             showUsdValueForGasFees
               ? 'grid-cols-[1.5fr_1fr_1fr]'
               : 'grid-cols-[1.5fr_1fr]'
@@ -265,7 +265,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
         <div
           className={twMerge(
-            'grid text-sm font-light',
+            'grid items-center text-sm font-light',
             showUsdValueForReceivedToken
               ? 'grid-cols-[1.5fr_1fr_1fr]'
               : 'grid-cols-[1.5fr_1fr]'

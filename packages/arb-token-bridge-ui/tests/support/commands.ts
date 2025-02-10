@@ -202,7 +202,7 @@ export function findGasFeeSummary(
   return cy
     .findByText('You will pay in gas fees:')
     .siblings()
-    .last()
+    .eq(1)
     .should('contain', amount)
 }
 
