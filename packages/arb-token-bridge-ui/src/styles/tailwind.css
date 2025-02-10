@@ -132,7 +132,7 @@ body > iframe {
   position: absolute;
   width: 0;
   height: 0;
-  left: 0;
+  left: -7px;
   border-right: 8px solid transparent;
   border-left: 8px solid transparent;
 }
@@ -142,7 +142,7 @@ body > iframe {
   position: absolute;
   width: 0;
   height: 0;
-  left: 1px;
+  left: -6px;
   border-right: 7px solid transparent;
   border-left: 7px solid transparent;
 }
@@ -165,6 +165,10 @@ body > iframe {
 .tippy-box[data-theme~='dark'][data-placement^='bottom'] .tippy-arrow:after {
   bottom: -1px;
   border-bottom: 7px solid #333;
+}
+
+.tippy-box[data-theme~='dark'][data-placement^='bottom'] .tippy-arrow {
+  top: -1px;
 }
 
 /*
