@@ -8,7 +8,7 @@ const customJestConfig = {
   preset: 'ts-jest',
   transform: {
     '^.+\\.(ts|tsx)?$': 'ts-jest',
-    '^.+\\.(js|jsx)$': 'babel-jest'
+    '^.+\\.(js|jsx)$': ['babel-jest', { configFile: './babel.config.jest.js' }]
   },
   testEnvironment: 'jsdom',
   setupFiles: ['<rootDir>/setupTests.ts'],
