@@ -16,6 +16,7 @@ import { CommonAddress } from './src/util/CommonAddressUtils'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { TokenMessengerAbi } from './src/util/cctp/TokenMessengerAbi'
 import { ChainDomain } from './src/pages/api/cctp/[type]'
+import { browserConfig } from './tests/e2e/browser.config'
 
 export async function fundUsdc({
   address, // wallet address where funding is required
@@ -242,6 +243,7 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts'
+    supportFile: 'tests/support/index.ts',
+    browsers: [browserConfig]
   }
 })
