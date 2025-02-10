@@ -17,7 +17,10 @@ import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20Depo
 import { useSelectedToken } from '../useSelectedToken'
 import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 import { useOftV2FeeEstimates } from './useOftV2FeeEstimates'
-import { isNetwork } from '../../util/networks'
+import {
+  isWithdrawalFromArbOneToEthereum,
+  isWithdrawalFromArbSepoliaToSepolia
+} from '../../util/networks'
 import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
@@ -33,32 +36,6 @@ export type UseGasSummaryResult = {
   status: GasEstimationStatus
   estimatedParentChainGasFees: number | undefined
   estimatedChildChainGasFees: number | undefined
-}
-
-function isWithdrawalFromArbSepoliaToSepolia({
-  sourceChainId,
-  destinationChainId
-}: {
-  sourceChainId: number
-  destinationChainId: number
-}): boolean {
-  const { isArbitrumSepolia: isSourceChainArbitrumSepolia } =
-    isNetwork(sourceChainId)
-  const { isSepolia: isDestinationChainSepolia } = isNetwork(destinationChainId)
-  return isSourceChainArbitrumSepolia && isDestinationChainSepolia
-}
-
-function isWithdrawalFromArbOneToEthereum({
-  sourceChainId,
-  destinationChainId
-}: {
-  sourceChainId: number
-  destinationChainId: number
-}): boolean {
-  const { isArbitrumOne: isSourceChainArbitrumOne } = isNetwork(sourceChainId)
-  const { isEthereumMainnet: isDestinationChainEthereum } =
-    isNetwork(destinationChainId)
-  return isSourceChainArbitrumOne && isDestinationChainEthereum
 }
 
 export function getGasSummaryStatus({
