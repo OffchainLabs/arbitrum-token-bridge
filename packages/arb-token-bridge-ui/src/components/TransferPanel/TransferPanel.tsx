@@ -80,6 +80,7 @@ import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
+import { useArbitrumClient } from '../../hooks/useArbitrumClient'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
@@ -202,6 +203,9 @@ export function TransferPanel() {
   const [showProjectsListing, setShowProjectsListing] = useState(false)
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+  const { parentPublicClient, childPublicClient, parentWalletClient } =
+    useArbitrumClient()
 
   useEffect(() => {
     // hide Project listing when networks are changed
@@ -700,6 +704,7 @@ export function TransferPanel() {
 
   const transfer = async () => {
     const sourceChainId = latestNetworks.current.sourceChain.id
+    const destinationAddress = latestDestinationAddress.current
 
     if (!isTransferAllowed) {
       throw new Error(transferNotAllowedError)
@@ -742,6 +747,38 @@ export function TransferPanel() {
         ? selectedToken?.l2Address
         : selectedToken?.address
 
+      // For ETH deposits, we require viem clients
+      if (isDepositMode && !selectedToken) {
+        if (!parentPublicClient || !childPublicClient || !parentWalletClient) {
+          throw new Error(
+            'Viem clients required for ETH deposits are not available'
+          )
+        }
+
+        const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
+          {
+            sourceChainId,
+            sourceChainErc20Address,
+            destinationChainId,
+            destinationChainErc20Address,
+            useViem: true,
+            sourcePublicClient: parentPublicClient,
+            destinationPublicClient: childPublicClient,
+            walletClient: parentWalletClient
+          }
+        )
+
+        const transfer = await bridgeTransferStarter.transfer({
+          amount: amountBigNumber,
+          signer,
+          destinationAddress
+        })
+
+        onTxSubmit(transfer)
+        return
+      }
+
+      // For all other cases (non-ETH deposits), use existing bridgeTransferStarter
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
@@ -773,8 +810,6 @@ export function TransferPanel() {
         console.error(destinationAddressError)
         return
       }
-
-      const destinationAddress = latestDestinationAddress.current
 
       // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
       // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
