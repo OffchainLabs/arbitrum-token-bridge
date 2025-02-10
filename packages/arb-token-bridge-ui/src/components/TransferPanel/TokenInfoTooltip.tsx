@@ -53,7 +53,6 @@ export const TokenInfoTooltip = ({
   return (
     <Tooltip
       wrapperClassName="underline cursor-pointer"
-      theme="dark"
       content={
         <div className="flex items-center space-x-2">
           <TokenLogo srcOverride={token.logoURI} className="h-7 w-7" />
