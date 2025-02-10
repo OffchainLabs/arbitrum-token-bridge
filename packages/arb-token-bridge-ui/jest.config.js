@@ -5,6 +5,11 @@ const createJestConfig = nextJest({
 })
 
 const customJestConfig = {
+  preset: 'ts-jest',
+  transform: {
+    '^.+\\.(ts|tsx)?$': 'ts-jest',
+    '^.+\\.(js|jsx)$': 'babel-jest'
+  },
   testEnvironment: 'jsdom',
   setupFiles: ['<rootDir>/setupTests.ts'],
 
@@ -22,7 +27,8 @@ const transformNodeModules = [
   'filter-obj',
   // wagmi
   '@wagmi',
-  'wagmi'
+  'wagmi',
+  '@uidotdev/usehooks'
 ]
 
 module.exports = async function () {

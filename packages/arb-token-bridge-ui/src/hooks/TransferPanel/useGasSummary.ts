@@ -1,5 +1,6 @@
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { useMemo } from 'react'
+import { useDebounce } from '@uidotdev/usehooks'
 
 import { useGasPrice } from '../useGasPrice'
 import {
@@ -14,10 +15,12 @@ import { DepositGasEstimates } from '../arbTokenBridge.types'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 import { useSelectedToken } from '../useSelectedToken'
-import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
 import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 import { useOftV2FeeEstimates } from './useOftV2FeeEstimates'
 import { isNetwork } from '../../util/networks'
+import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
+import { useArbQueryParams } from '../useArbQueryParams'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -58,12 +61,10 @@ function isWithdrawalFromArbOneToEthereum({
   return isSourceChainArbitrumOne && isDestinationChainEthereum
 }
 
-export function getGasSummary({
+export function getGasSummaryStatus({
   selectedTokenAddress,
   amountBigNumber,
   balance,
-  estimatedParentChainGasFees,
-  estimatedChildChainGasFees,
   gasEstimatesError,
   oftFeeEstimatesError,
   oftFeeSummaryLoading,
@@ -73,14 +74,12 @@ export function getGasSummary({
   selectedTokenAddress: string | undefined
   amountBigNumber: BigNumber
   balance: BigNumber | null
-  estimatedParentChainGasFees: number | undefined
-  estimatedChildChainGasFees: number | undefined
   gasEstimatesError: any
   oftFeeEstimatesError: boolean
   oftFeeSummaryLoading: boolean
   sourceChainId: number
   destinationChainId: number
-}): UseGasSummaryResult {
+}): GasEstimationStatus {
   if (
     (isTokenArbitrumOneNativeUSDC(selectedTokenAddress) &&
       isWithdrawalFromArbOneToEthereum({
@@ -93,45 +92,25 @@ export function getGasSummary({
         destinationChainId
       }))
   ) {
-    return {
-      status: 'unavailable',
-      estimatedParentChainGasFees: undefined,
-      estimatedChildChainGasFees
-    }
+    return 'unavailable'
   }
 
   if (balance === null || oftFeeSummaryLoading) {
-    return {
-      status: 'loading',
-      estimatedParentChainGasFees,
-      estimatedChildChainGasFees
-    }
+    return 'loading'
   }
 
   if (amountBigNumber.gt(balance)) {
-    return {
-      status: 'insufficientBalance',
-      estimatedParentChainGasFees,
-      estimatedChildChainGasFees
-    }
+    return 'insufficientBalance'
   }
 
   if (
     (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') ||
     oftFeeEstimatesError
   ) {
-    return {
-      status: 'error',
-      estimatedParentChainGasFees,
-      estimatedChildChainGasFees
-    }
+    return 'error'
   }
 
-  return {
-    status: 'success',
-    estimatedParentChainGasFees,
-    estimatedChildChainGasFees
-  }
+  return 'success'
 }
 
 export function useGasSummary(): UseGasSummaryResult {
@@ -139,8 +118,20 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+  const [{ amount }] = useArbQueryParams()
+  const debouncedAmount = useDebounce(amount, 300)
+  const decimals = useSelectedTokenDecimals()
 
-  const amountBigNumber = useAmountBigNumber()
+  const amountBigNumber = useMemo(() => {
+    if (isNaN(Number(debouncedAmount))) {
+      return constants.Zero
+    }
+    const amountSafe = debouncedAmount || '0'
+
+    const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
+
+    return utils.parseUnits(correctDecimalsAmount, decimals)
+  }, [debouncedAmount, decimals])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
@@ -246,14 +237,12 @@ export function useGasSummary(): UseGasSummaryResult {
     isOft
   ])
 
-  const gasSummary = useMemo(
+  const gasSummaryStatus = useMemo(
     () =>
-      getGasSummary({
+      getGasSummaryStatus({
         selectedTokenAddress: selectedToken?.address,
         amountBigNumber,
         balance,
-        estimatedParentChainGasFees,
-        estimatedChildChainGasFees,
         gasEstimatesError,
         oftFeeEstimatesError,
         oftFeeSummaryLoading,
@@ -264,8 +253,6 @@ export function useGasSummary(): UseGasSummaryResult {
       selectedToken,
       amountBigNumber,
       balance,
-      estimatedParentChainGasFees,
-      estimatedChildChainGasFees,
       gasEstimatesError,
       oftFeeEstimatesError,
       oftFeeSummaryLoading,
@@ -273,5 +260,9 @@ export function useGasSummary(): UseGasSummaryResult {
     ]
   )
 
-  return gasSummary
+  return {
+    status: gasSummaryStatus,
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
+  }
 }
