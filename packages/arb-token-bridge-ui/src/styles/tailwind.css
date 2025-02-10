@@ -18,6 +18,10 @@
   --blue-link: #1366C1;
 }
 
+*:focus-visible, button:focus-visible, input:focus-visible {
+  outline-color: white !important;
+}
+
 /* Firefox */
 * {
   scrollbar-width: thin;
