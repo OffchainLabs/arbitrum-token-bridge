@@ -1797,6 +1797,54 @@
           "logoUrl": "/images/StandardTestnet_NativeTokenLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 9116,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x41852F68033cf31FECc9dd4222e1881758f2Dbd9",
+        "inbox": "0x07F9E388c57F6575920e39CF6dFFFC2ABe85df7a",
+        "outbox": "0xAF030552c3865b203Bcfa5585BEE8900B98a5a08",
+        "rollup": "0x68bBcca4049d6D6c29b3001caCcb9A45F24aEF64",
+        "sequencerInbox": "0x4353f6B198D2952f07E1405470023b58d8Ae7534"
+      },
+      "nativeToken": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+      "explorerUrl": "https://testnet.pivotalscan.org",
+      "rpcUrl": "https://testnet.pivotalprotocol.com",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Pivotal Testnet",
+      "slug": "pivotal-testnet",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0x78a19969C80a0d4e702af85E4514440053347dB7",
+        "parentErc20Gateway": "0x235519fb271982181F0B13B4ddD6d6c007A21957",
+        "parentGatewayRouter": "0xEb0fBE4545ff5856C9A9066234144B15eEF81706",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x5458EACA065B9E587590Ff8EAf023006640D2D3A",
+        "childErc20Gateway": "0x768206826933100bD0ef301b2471A9b8a83247e0",
+        "childGatewayRouter": "0xcFB5702f34a39ec9Bb2EcA94A4DbA4f0970FbCf4",
+        "childMultiCall": "0xE13c609644d3Ee9A04aa5eD04d09b4942dD81cba",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#573EF3",
+        "network": {
+          "name": "Pivotal Testnet",
+          "logo": "/images/PivotalTestnet_Logo.svg",
+          "description": "Pivotal is a Bitcoin Secured Network, secured by Babylon's Bitcoin Staking Protocol and built on Arbitrum Orbit."
+        },
+        "nativeTokenData": {
+          "name": "USDC",
+          "symbol": "USDC",
+          "logoUrl": "/images/UsdcLogo.svg"
+        }
+      }
     }
   ]
 }
