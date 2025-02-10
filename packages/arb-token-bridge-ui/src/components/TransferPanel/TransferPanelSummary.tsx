@@ -134,7 +134,7 @@ function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
   if (isDepositMode) {
     return (
       <>
-        <span className="whitespace-nowrap text-right tabular-nums">
+        <span className="text-right tabular-nums">
           {formatAmount(estimatedParentChainGasFees, {
             symbol: parentChainNativeCurrency.symbol
           })}{' '}
@@ -253,7 +253,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <div
           className={twMerge(
             'grid text-sm font-light',
-            showUsdValueForGasFees ? 'grid-cols-3' : 'grid-cols-2'
+            showUsdValueForGasFees
+              ? 'grid-cols-[1.5fr_1fr_1fr]'
+              : 'grid-cols-[1.5fr_1fr]'
           )}
         >
           <span className="text-left">You will pay in gas fees:</span>
@@ -264,10 +266,12 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <div
           className={twMerge(
             'grid text-sm font-light',
-            showUsdValueForReceivedToken ? 'grid-cols-3' : 'grid-cols-2'
+            showUsdValueForReceivedToken
+              ? 'grid-cols-[1.5fr_1fr_1fr]'
+              : 'grid-cols-[1.5fr_1fr]'
           )}
         >
-          <span className="whitespace-nowrap">
+          <span>
             You will receive on {getNetworkName(networks.destinationChain.id)}:
           </span>
 
@@ -316,7 +320,7 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
   } = getConfirmationTime(chainId)
   return (
     <>
-      <span className="whitespace-nowrap">Confirmation time:</span>
+      <span>Confirmation time:</span>
       <span className="flex flex-col items-start justify-end sm:flex-row sm:items-center">
         <span className="hidden sm:inline">
           ~{confirmationTimeInReadableFormat}
