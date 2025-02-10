@@ -115,9 +115,7 @@ function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
             symbol: childChainNativeCurrency.symbol
           })}{' '}
         </span>
-        <span className="text-right">
-          <NativeCurrencyPrice amount={estimatedTotalGasFees} />
-        </span>
+        <NativeCurrencyPrice amount={estimatedTotalGasFees} />
       </>
     )
   }
@@ -287,9 +285,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             )}
           </div>
           {showUsdValueForReceivedToken && (
-            <span className="text-right">
-              <NativeCurrencyPrice amount={Number(amount)} />
-            </span>
+            <NativeCurrencyPrice amount={Number(amount)} />
           )}
         </div>
       </div>
