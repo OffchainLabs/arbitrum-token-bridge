@@ -56,7 +56,7 @@ export function useGasEstimates({
   const [{ sourceChain, destinationChain }] = useNetworks()
   const [selectedToken] = useSelectedToken()
   const [{ destinationAddress }] = useArbQueryParams()
-  const { address: walletAddress } = useAccount()
+  const { address: senderAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
 
   const amountToTransfer =
@@ -69,7 +69,7 @@ export function useGasEstimates({
     : undefined
 
   const { data: gasEstimates, error } = useSWR(
-    walletAddress
+    senderAddress
       ? ([
           sourceChain.id,
           destinationChain.id,
@@ -77,7 +77,7 @@ export function useGasEstimates({
           destinationChainErc20Address,
           amountToTransfer.toString(), // BigNumber is not serializable
           sanitizedDestinationAddress,
-          walletAddress,
+          senderAddress,
           'gasEstimates'
         ] as const)
       : null,
@@ -88,10 +88,10 @@ export function useGasEstimates({
       _destinationChainErc20Address,
       _amount,
       _destinationAddress,
-      _walletAddress
+      _senderAddress
     ]) =>
       fetcher([
-        _walletAddress,
+        _senderAddress,
         _sourceChainId,
         _destinationChainId,
         _sourceChainErc20Address,
