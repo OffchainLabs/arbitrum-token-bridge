@@ -25,6 +25,7 @@ import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationA
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import type { AnalyticsEventMap } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
@@ -67,7 +68,7 @@ import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChain
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { createTransferStateMachine } from '../../token-bridge-sdk/TransferStateMachineFactory'
 import { DefaultTransferContext } from '../../token-bridge-sdk/DefaultTransferStateMachine'
-import { AnalyticsEventMap } from '../../util/AnalyticsUtils'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -391,7 +392,7 @@ export function TransferPanel() {
         isTeleportMode,
         isDepositMode,
         walletAddress,
-        selectedToken,
+        selectedToken: selectedToken ?? undefined,
         sourceChainId: latestNetworks.current.sourceChain.id,
         destinationChainId: latestNetworks.current.destinationChain.id,
         isBatchTransfer,
@@ -436,7 +437,10 @@ export function TransferPanel() {
           const [confirmed] = await waitForInput()
           return confirmed
         },
-        onTrackEvent: (event, data) => {
+        onTrackEvent: (
+          event: keyof AnalyticsEventMap,
+          data: AnalyticsEventMap[keyof AnalyticsEventMap]
+        ) => {
           trackEvent(event, {
             ...data,
             network: getNetworkName(childChain.id),
