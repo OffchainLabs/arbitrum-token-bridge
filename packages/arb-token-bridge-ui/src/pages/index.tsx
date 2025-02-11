@@ -163,18 +163,14 @@ export async function getServerSideProps({
 }
 
 export default function Index() {
-  const [chainsLoaded, setChainsLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    async function loadChains() {
-      addOrbitChainsToArbitrumSDK()
-      setChainsLoaded(true)
-    }
-
-    loadChains()
+    addOrbitChainsToArbitrumSDK()
+    setLoaded(true)
   }, [])
 
-  if (!chainsLoaded) {
+  if (!loaded) {
     return null
   }
 
