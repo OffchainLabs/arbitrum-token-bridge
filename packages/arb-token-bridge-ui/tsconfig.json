@@ -3,7 +3,7 @@
   "include": [
     "src",
     "additional.d.ts",
-    "next.config.js",
+    "next.config.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "build/types/**/*.ts"

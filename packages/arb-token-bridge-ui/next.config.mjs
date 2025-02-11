@@ -4,7 +4,7 @@
  * @type {import('next').NextConfig}
  **/
 
-module.exports = {
+export default {
   distDir: 'build',
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
