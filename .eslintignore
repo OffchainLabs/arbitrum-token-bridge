@@ -4,7 +4,6 @@ cypress.config.ts
 cypress.cctp.config.ts
 tailwind.config.js
 
-packages/arb-token-bridge/craco.config.js
-packages/arb-token-bridge/prettier.config.js
+packages/arb-token-bridge/prettier.config.ts
 packages/arb-token-bridge/build/static/js/*.js
 packages/arb-token-bridge/tests/**/*.ts
