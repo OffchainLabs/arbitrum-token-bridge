@@ -18,7 +18,7 @@ export type ProviderName =
   | 'Ledger'
   | 'Other'
 
-type AnalyticsEventMap = {
+export type AnalyticsEventMap = {
   'Transfer Button Click': {
     type: TransferDirection
     isCctpTransfer: boolean
