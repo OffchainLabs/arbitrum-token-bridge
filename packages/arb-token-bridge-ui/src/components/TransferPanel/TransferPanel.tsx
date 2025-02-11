@@ -355,11 +355,18 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
-    if (!signer) {
+    if (!signer || !walletAddress) {
       throw new Error(signerUndefinedError)
     }
     if (!isTransferAllowed) {
       throw new Error(transferNotAllowedError)
+    }
+
+    // Ensure we have a valid destination address
+    const effectiveDestinationAddress =
+      latestDestinationAddress.current || walletAddress
+    if (!effectiveDestinationAddress) {
+      throw new Error('No valid destination address')
     }
 
     // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -380,7 +387,7 @@ export function TransferPanel() {
         sourceChainProvider: latestNetworks.current.sourceChainProvider,
         destinationChainProvider:
           latestNetworks.current.destinationChainProvider,
-        destinationAddress: latestDestinationAddress.current,
+        destinationAddress: effectiveDestinationAddress,
         sourceChainErc20Address: isDepositMode
           ? selectedToken?.address
           : selectedToken?.l2Address,
@@ -398,7 +405,6 @@ export function TransferPanel() {
         nativeCurrencyDecimals: nativeCurrencyDecimalsOnSourceChain,
         isCctp: isCctpTransfer,
         isOftTransfer,
-        // Callbacks for UI interactions
         onTokenApprovalNeeded: async () => {
           setIsCctp(isCctpTransfer) // Set CCTP state for the approval dialog
           const confirmed = await tokenAllowanceApproval()
@@ -436,19 +442,35 @@ export function TransferPanel() {
           const [confirmed] = await waitForInput()
           return confirmed
         },
-        onTrackEvent: (
-          event: keyof AnalyticsEventMap,
-          data: AnalyticsEventMap[typeof event]
-        ) => {
-          trackEvent(event, {
-            ...data,
+        onTrackEvent: (event: keyof AnalyticsEventMap) => {
+          const baseEventData = {
+            type: isTeleportMode
+              ? 'Teleport'
+              : isDepositMode
+              ? 'Deposit'
+              : ('Withdrawal' as const),
+            isCctpTransfer,
+            tokenSymbol: selectedToken?.symbol,
+            assetType: selectedToken ? 'ERC-20' : ('ETH' as const),
+            accountType: isSmartContractWallet
+              ? 'Smart Contract'
+              : ('EOA' as const),
             network: getNetworkName(childChain.id),
-            amount2: isBatchTransfer ? Number(amount2) : undefined,
-            isCustomDestinationTransfer: !!latestDestinationAddress.current,
-            parentChainErc20Address: selectedToken?.address
-          })
+            amount: Number(amount),
+            isCustomDestinationTransfer: !!latestDestinationAddress.current
+          } as const
+
+          if (event === 'Transfer Button Click') {
+            trackEvent(event, {
+              ...baseEventData,
+              parentChainErc20Address: selectedToken?.address,
+              ...(isBatchTransfer ? { amount2: Number(amount2) } : {})
+            })
+          } else {
+            trackEvent(event, baseEventData)
+          }
         }
-      }
+      } as const
 
       const finalResult = await executeTransfer(context)
 

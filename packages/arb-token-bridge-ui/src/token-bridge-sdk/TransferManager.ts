@@ -37,13 +37,21 @@ export type TransferContext = {
   onCustomDestinationAddressConfirmationNeeded: () => Promise<boolean>
   onFirstTimeTokenBridgingConfirmationNeeded: () => Promise<boolean>
   onSmartContractWalletDelayNeeded: () => Promise<void>
-  onCctpDepositConfirmationNeeded: () => Promise<'bridge-normal-usdce' | 'bridge-cctp-usd' | false>
+  onCctpDepositConfirmationNeeded: () => Promise<
+    'bridge-normal-usdce' | 'bridge-cctp-usd' | false
+  >
   onCctpWithdrawalConfirmationNeeded: () => Promise<boolean>
-  onTrackEvent: <T extends keyof AnalyticsEventMap>(event: T, data: AnalyticsEventMap[T]) => void
+  onTrackEvent: <T extends keyof AnalyticsEventMap>(
+    event: T,
+    data: AnalyticsEventMap[T]
+  ) => void
 }
 
-export async function validateTransfer(context: TransferContext): Promise<void> {
-  const { signer, isSmartContractWallet, isTeleportMode, destinationAddress } = context
+export async function validateTransfer(
+  context: TransferContext
+): Promise<void> {
+  const { signer, isSmartContractWallet, isTeleportMode, destinationAddress } =
+    context
 
   if (!signer) {
     throw new Error('Signer is required')
@@ -51,7 +59,9 @@ export async function validateTransfer(context: TransferContext): Promise<void> 
 
   // SC Teleport transfers aren't enabled yet
   if (isSmartContractWallet && isTeleportMode) {
-    throw new Error('Smart contract wallet teleport transfers are not supported')
+    throw new Error(
+      'Smart contract wallet teleport transfers are not supported'
+    )
   }
 
   // Check destination address validity
@@ -62,7 +72,10 @@ export async function validateTransfer(context: TransferContext): Promise<void> 
 
 export async function handleTokenApproval(
   context: TransferContext,
-  transferStarter: OftV2TransferStarter | CctpTransferStarter | BridgeTransferStarter
+  transferStarter:
+    | OftV2TransferStarter
+    | CctpTransferStarter
+    | BridgeTransferStarter
 ): Promise<void> {
   const {
     amount,
@@ -104,7 +117,9 @@ export async function handleTokenApproval(
   }
 }
 
-export async function handleCctpConfirmation(context: TransferContext): Promise<void> {
+export async function handleCctpConfirmation(
+  context: TransferContext
+): Promise<void> {
   const {
     isDepositMode,
     onCctpDepositConfirmationNeeded,
@@ -148,7 +163,8 @@ async function handleBatchTransferGasEstimates(
   context: TransferContext,
   bridgeTransferStarter: BridgeTransferStarter
 ): Promise<{ maxSubmissionCost?: BigNumber; excessFeeRefundAddress?: string }> {
-  const { amount, amount2, signer, destinationAddress, isBatchTransfer } = context
+  const { amount, amount2, signer, destinationAddress, isBatchTransfer } =
+    context
 
   if (!isBatchTransfer || !amount2) {
     return {}
@@ -165,7 +181,9 @@ async function handleBatchTransferGasEstimates(
   }
 
   return {
-    maxSubmissionCost: utils.parseEther(amount2.toString()).add(gasEstimates.estimatedChildChainSubmissionCost),
+    maxSubmissionCost: utils
+      .parseEther(amount2.toString())
+      .add(gasEstimates.estimatedChildChainSubmissionCost),
     excessFeeRefundAddress: destinationAddress
   }
 }
@@ -174,13 +192,15 @@ async function handleNativeCurrencyApproval(
   context: TransferContext,
   bridgeTransferStarter: BridgeTransferStarter
 ): Promise<void> {
-  const { amount, signer, destinationAddress, onNativeCurrencyApprovalNeeded } = context
+  const { amount, signer, destinationAddress, onNativeCurrencyApprovalNeeded } =
+    context
 
-  const isNativeCurrencyApprovalRequired = await bridgeTransferStarter.requiresNativeCurrencyApproval({
-    signer,
-    amount,
-    destinationAddress
-  })
+  const isNativeCurrencyApprovalRequired =
+    await bridgeTransferStarter.requiresNativeCurrencyApproval({
+      signer,
+      amount,
+      destinationAddress
+    })
 
   if (!isNativeCurrencyApprovalRequired) {
     return
@@ -203,7 +223,9 @@ async function handleNativeCurrencyApproval(
   }
 }
 
-async function handleStandardBridgeTransfer(context: TransferContext): Promise<BridgeTransfer> {
+async function handleStandardBridgeTransfer(
+  context: TransferContext
+): Promise<BridgeTransfer> {
   const {
     sourceChainId,
     destinationChainId,
@@ -240,7 +262,10 @@ async function handleStandardBridgeTransfer(context: TransferContext): Promise<B
   }
 
   // Handle batch transfer gas estimates
-  const overrides = await handleBatchTransferGasEstimates(context, bridgeTransferStarter)
+  const overrides = await handleBatchTransferGasEstimates(
+    context,
+    bridgeTransferStarter
+  )
 
   // Handle approvals
   await handleTokenApproval(context, bridgeTransferStarter)
@@ -255,7 +280,9 @@ async function handleStandardBridgeTransfer(context: TransferContext): Promise<B
   })
 }
 
-export async function executeTransfer(context: TransferContext): Promise<BridgeTransfer> {
+export async function executeTransfer(
+  context: TransferContext
+): Promise<BridgeTransfer> {
   await validateTransfer(context)
 
   const {
@@ -315,4 +342,4 @@ export async function executeTransfer(context: TransferContext): Promise<BridgeT
 
   // Handle standard bridge transfers
   return handleStandardBridgeTransfer(context)
-} 
+}
