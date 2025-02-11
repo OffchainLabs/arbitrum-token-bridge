@@ -3,6 +3,7 @@
   "version": "3.3.0",
   "license": "Apache-2.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@apollo/client": "^3.7.11",
     "@arbitrum/sdk": "^4.0.2",
@@ -62,10 +63,10 @@
     "lint": "tsc && eslint 'src/**/*.{js,ts,tsx}'",
     "lint:fix": "tsc && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
-    "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
-    "generateOpenGraphImages": "ts-node --project ./scripts/tsconfig.json ./src/generateOpenGraphImages.tsx",
-    "generateCoreChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateCoreChainsToMonitor.ts",
-    "generateOrbitChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts"
+    "generateDenylist": "tsx ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
+    "generateOpenGraphImages": "tsx ./scripts/tsconfig.json ./src/generateOpenGraphImages.tsx",
+    "generateCoreChainsToMonitor": "tsx ./scripts/tsconfig.json ./scripts/generateCoreChainsToMonitor.ts",
+    "generateOrbitChainsToMonitor": "tsx ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts"
   },
   "browserslist": {
     "production": [
@@ -83,7 +84,8 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
-    "@synthetixio/synpress": "3.7.3",
+    "@synthetixio/synpress": "^4.0.5",
+    "@testing-library/cypress": "^10.0.3",
     "@testing-library/react": "^16.1.0",
     "@types/jest": "^29.5.1",
     "@types/lodash-es": "^4.17.6",
@@ -119,6 +121,7 @@
     "start-server-and-test": "^2.0.9",
     "tailwindcss": "^3.4.16",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.2.2"
   }
 }
