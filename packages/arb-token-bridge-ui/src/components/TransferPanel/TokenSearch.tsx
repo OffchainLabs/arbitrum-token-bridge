@@ -37,6 +37,7 @@ import { Switch } from '../common/atoms/Switch'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { getTransferMode } from '../../util/getTransferMode'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -171,8 +172,12 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
+  const { childChain, childChainProvider, parentChain } =
     useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const {
     ethParentBalance,
     erc20ParentBalances,
@@ -203,15 +208,17 @@ function TokensPanel({
     (address: string) => {
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
         if (nativeCurrency.isCustom) {
-          return isDepositMode
+          return transferMode === 'deposit' || transferMode === 'teleport'
             ? erc20ParentBalances?.[nativeCurrency.address]
             : ethChildBalance
         }
 
-        return isDepositMode ? ethParentBalance : ethChildBalance
+        return transferMode === 'deposit' || transferMode === 'teleport'
+          ? ethParentBalance
+          : ethChildBalance
       }
 
-      if (isDepositMode) {
+      if (transferMode === 'deposit' || transferMode === 'teleport') {
         return erc20ParentBalances?.[address.toLowerCase()]
       }
 
@@ -236,7 +243,7 @@ function TokensPanel({
       erc20ChildBalances,
       ethParentBalance,
       ethChildBalance,
-      isDepositMode
+      transferMode
     ]
   )
 
@@ -246,7 +253,7 @@ function TokensPanel({
       ...Object.keys(tokensFromUser),
       ...Object.keys(tokensFromLists)
     ]
-    if (!isDepositMode) {
+    if (transferMode === 'withdrawal') {
       // L2 to L1 withdrawals
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
@@ -284,7 +291,11 @@ function TokensPanel({
           token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
         }
 
-        if (isTokenArbitrumOneUSDCe(address) && isDepositMode && isOrbitChain) {
+        if (
+          isTokenArbitrumOneUSDCe(address) &&
+          transferMode === 'deposit' &&
+          isOrbitChain
+        ) {
           // hide USDC.e if depositing to an Orbit chain
           return false
         }
@@ -359,7 +370,7 @@ function TokensPanel({
     newToken,
     tokensFromUser,
     tokensFromLists,
-    isDepositMode,
+    transferMode,
     isArbitrumOne,
     isArbitrumSepolia,
     isParentChainArbitrumOne,

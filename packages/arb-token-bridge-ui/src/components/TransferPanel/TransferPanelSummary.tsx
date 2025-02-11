@@ -20,6 +20,7 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
+import { getTransferMode } from '../../util/getTransferMode'
 import { TokenInfoTooltip } from './TokenInfoTooltip'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
@@ -55,8 +56,12 @@ function TotalGasFees() {
   } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
+  const { childChainProvider, parentChainProvider } =
     useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -127,7 +132,7 @@ function TotalGasFees() {
    */
   return (
     <>
-      {isDepositMode && (
+      {(transferMode === 'deposit' || transferMode === 'teleport') && (
         <span className="tabular-nums">
           {formatAmount(estimatedParentChainGasFees, {
             symbol: parentChainNativeCurrency.symbol
@@ -139,7 +144,7 @@ function TotalGasFees() {
           {selectedToken && ' and '}
         </span>
       )}
-      {(selectedToken || !isDepositMode) &&
+      {(selectedToken || transferMode === 'withdrawal') &&
         formatAmount(estimatedChildChainGasFees, {
           symbol: childChainNativeCurrency.symbol
         })}
@@ -179,8 +184,11 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const { status: gasSummaryStatus } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -255,7 +263,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-      {!isDepositMode &&
+      {transferMode === 'withdrawal' &&
         !isOft &&
         (isAffectedByBoLDUpgrade ? (
           <BoLDUpgradeWarning />

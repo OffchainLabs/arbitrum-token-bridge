@@ -11,7 +11,7 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useBalances } from '../useBalances'
-import { useNetworksRelationship } from '../useNetworksRelationship'
+import { getTransferMode } from '../../util/getTransferMode'
 
 export type Balances = {
   sourceBalance: BigNumber | null
@@ -21,8 +21,11 @@ export type Balances = {
 export function useSelectedTokenBalances(): Balances {
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const { isConnected } = useAccount()
-  const { isDepositMode } = useNetworksRelationship(networks)
 
   const {
     isArbitrumOne: isSourceChainArbitrumOne,
@@ -106,7 +109,7 @@ export function useSelectedTokenBalances(): Balances {
         erc20ChildBalances?.[selectedToken.address.toLowerCase()] ?? null
     }
 
-    if (isDepositMode) {
+    if (transferMode === 'deposit' || transferMode === 'teleport') {
       return {
         sourceBalance: parentBalance,
         destinationBalance: childBalance
@@ -118,12 +121,12 @@ export function useSelectedTokenBalances(): Balances {
       destinationBalance: parentBalance
     }
   }, [
+    selectedToken,
     isConnected,
     erc20ParentBalances,
     erc20ChildBalances,
     isEthereumArbitrumOnePair,
     isSepoliaArbSepoliaPair,
-    selectedToken,
-    isDepositMode
+    transferMode
   ])
 }

@@ -79,6 +79,7 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
+import { getTransferMode } from '../../util/getTransferMode'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
@@ -123,6 +124,10 @@ export function TransferPanel() {
   const latestChain = useLatest(useNetwork())
   const [networks] = useNetworks()
   const latestNetworks = useLatest(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: latestNetworks.current.sourceChain.id,
+    destinationChainId: latestNetworks.current.destinationChain.id
+  })
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
   const {
@@ -130,9 +135,7 @@ export function TransferPanel() {
       childChain,
       childChainProvider,
       parentChain,
-      parentChainProvider,
-      isDepositMode,
-      isTeleportMode
+      parentChainProvider
     }
   } = useLatest(useNetworksRelationship(latestNetworks.current))
   const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
@@ -263,8 +266,11 @@ export function TransferPanel() {
     const isUnbridgedToken =
       selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
 
-    return isDepositMode && isUnbridgedToken
-  }, [isDepositMode, selectedToken])
+    return (
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
+      isUnbridgedToken
+    )
+  }, [transferMode, selectedToken])
 
   const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
     return (
@@ -416,7 +422,7 @@ export function TransferPanel() {
         networks
 
       // show confirmation popup before cctp transfer
-      if (isDepositMode) {
+      if (transferMode === 'deposit') {
         const depositConfirmation =
           await confirmUsdcDepositFromNormalOrCctpBridge()
 
@@ -506,7 +512,7 @@ export function TransferPanel() {
         })
         errorToast(
           `USDC ${
-            isDepositMode ? 'Deposit' : 'Withdrawal'
+            transferMode === 'deposit' ? 'Deposit' : 'Withdrawal'
           } transaction failed: ${(error as Error)?.message ?? error}`
         )
       }
@@ -515,13 +521,16 @@ export function TransferPanel() {
 
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
-        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: 'Smart Contract',
-          network: childChainName,
-          amount: Number(amount),
-          complete: false,
-          version: 2
-        })
+        trackEvent(
+          transferMode === 'deposit' ? 'CCTP Deposit' : 'CCTP Withdrawal',
+          {
+            accountType: 'Smart Contract',
+            network: childChainName,
+            amount: Number(amount),
+            complete: false,
+            version: 2
+          }
+        )
 
         return
       }
@@ -530,13 +539,16 @@ export function TransferPanel() {
         return
       }
 
-      trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-        accountType: 'EOA',
-        network: childChainName,
-        amount: Number(amount),
-        complete: false,
-        version: 2
-      })
+      trackEvent(
+        transferMode === 'deposit' ? 'CCTP Deposit' : 'CCTP Withdrawal',
+        {
+          accountType: 'EOA',
+          network: childChainName,
+          amount: Number(amount),
+          complete: false,
+          version: 2
+        }
+      )
 
       const newTransfer: MergedTransaction = {
         txId: depositForBurnTx.hash,
@@ -544,8 +556,8 @@ export function TransferPanel() {
         assetType: AssetType.ERC20,
         blockNum: null,
         createdAt: dayjs().valueOf(),
-        direction: isDepositMode ? 'deposit' : 'withdraw',
-        isWithdrawal: !isDepositMode,
+        direction: transferMode === 'deposit' ? 'deposit' : 'withdraw',
+        isWithdrawal: transferMode === 'withdrawal',
         resolvedAt: null,
         status: 'pending',
         uniqueId: null,
@@ -609,9 +621,10 @@ export function TransferPanel() {
 
       const oftTransferStarter = new OftV2TransferStarter({
         sourceChainProvider,
-        sourceChainErc20Address: isDepositMode
-          ? selectedToken.address
-          : selectedToken?.l2Address,
+        sourceChainErc20Address:
+          transferMode === 'deposit' || transferMode === 'teleport'
+            ? selectedToken.address
+            : selectedToken?.l2Address,
         destinationChainProvider
       })
 
@@ -688,9 +701,11 @@ export function TransferPanel() {
       })
       console.error(error)
       errorToast(
-        `OFT ${isDepositMode ? 'Deposit' : 'Withdrawal'} transaction failed: ${
-          (error as Error)?.message ?? error
-        }`
+        `OFT ${
+          transferMode === 'deposit' || transferMode === 'teleport'
+            ? 'Deposit'
+            : 'Withdrawal'
+        } transaction failed: ${(error as Error)?.message ?? error}`
       )
     } finally {
       setTransferring(false)
@@ -709,7 +724,7 @@ export function TransferPanel() {
     }
 
     // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && isTeleportMode) {
+    if (isSmartContractWallet && transferMode === 'teleport') {
       console.error(
         getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
       )
@@ -733,13 +748,15 @@ export function TransferPanel() {
 
       const destinationChainId = latestNetworks.current.destinationChain.id
 
-      const sourceChainErc20Address = isDepositMode
-        ? selectedToken?.address
-        : selectedToken?.l2Address
+      const sourceChainErc20Address =
+        transferMode === 'deposit' || transferMode === 'teleport'
+          ? selectedToken?.address
+          : selectedToken?.l2Address
 
-      const destinationChainErc20Address = isDepositMode
-        ? selectedToken?.l2Address
-        : selectedToken?.address
+      const destinationChainErc20Address =
+        transferMode === 'deposit' || transferMode === 'teleport'
+          ? selectedToken?.l2Address
+          : selectedToken?.address
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
@@ -899,7 +916,11 @@ export function TransferPanel() {
         showDelayInSmartContractTransaction()
 
         trackEvent(
-          isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
+          transferMode === 'teleport'
+            ? 'Teleport'
+            : transferMode === 'deposit'
+            ? 'Deposit'
+            : 'Withdraw',
           {
             tokenSymbol: selectedToken?.symbol,
             assetType: 'ERC-20',
@@ -966,7 +987,11 @@ export function TransferPanel() {
 
     if (!isSmartContractWallet) {
       trackEvent(
-        isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
+        transferMode === 'teleport'
+          ? 'Teleport'
+          : transferMode === 'deposit'
+          ? 'Deposit'
+          : 'Withdraw',
         {
           tokenSymbol: selectedToken?.symbol,
           assetType: selectedToken ? 'ERC-20' : 'ETH',
@@ -1015,7 +1040,7 @@ export function TransferPanel() {
     addPendingTransaction(txHistoryCompatibleObject)
 
     // if deposit, add to local cache
-    if (isDepositMode) {
+    if (transferMode === 'deposit' || transferMode === 'teleport') {
       addDepositToCache(
         convertBridgeSdkToPendingDepositTransaction({
           bridgeTransfer,
@@ -1039,7 +1064,10 @@ export function TransferPanel() {
     clearAmountInput()
 
     // for custom orbit pages, show Projects' listing after transfer
-    if (isDepositMode && isNetwork(childChain.id).isOrbitChain) {
+    if (
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
+      isNetwork(childChain.id).isOrbitChain
+    ) {
       setShowProjectsListing(true)
     }
 
@@ -1059,11 +1087,12 @@ export function TransferPanel() {
 
   const trackTransferButtonClick = useCallback(() => {
     trackEvent('Transfer Button Click', {
-      type: isTeleportMode
-        ? 'Teleport'
-        : isDepositMode
-        ? 'Deposit'
-        : 'Withdrawal',
+      type:
+        transferMode === 'teleport'
+          ? 'Teleport'
+          : transferMode === 'deposit'
+          ? 'Deposit'
+          : 'Withdrawal',
       isCctpTransfer,
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
@@ -1080,14 +1109,22 @@ export function TransferPanel() {
     childChain.name,
     isBatchTransfer,
     isCctpTransfer,
-    isDepositMode,
+    transferMode,
     isSmartContractWallet,
-    isTeleportMode,
     selectedToken,
     isCustomDestinationTransfer
   ])
 
   const moveFundsButtonOnClick = async () => {
+    if (transferMode === 'unsupported') {
+      throw Error(
+        `Transfers from ${getNetworkName(
+          latestNetworks.current.sourceChain.id
+        )} to ${getNetworkName(
+          latestNetworks.current.destinationChain.id
+        )} are not supported.`
+      )
+    }
     const isConnectedToTheWrongChain =
       latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
 
@@ -1101,11 +1138,12 @@ export function TransferPanel() {
       setTransferring(true)
       if (isConnectedToTheWrongChain) {
         trackEvent('Switch Network and Transfer', {
-          type: isTeleportMode
-            ? 'Teleport'
-            : isDepositMode
-            ? 'Deposit'
-            : 'Withdrawal',
+          type:
+            transferMode === 'teleport'
+              ? 'Teleport'
+              : transferMode === 'deposit'
+              ? 'Deposit'
+              : 'Withdrawal',
           tokenSymbol: selectedToken?.symbol,
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -1135,7 +1173,10 @@ export function TransferPanel() {
     if (isCctpTransfer) {
       return transferCctp()
     }
-    if (isDepositMode && selectedToken) {
+    if (
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
+      selectedToken
+    ) {
       return depositToken()
     }
     return transfer()

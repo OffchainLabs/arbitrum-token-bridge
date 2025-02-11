@@ -26,6 +26,7 @@ import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { getTransferMode } from '../../util/getTransferMode'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 
@@ -48,16 +49,14 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     sourceChainProvider,
     destinationChainProvider
   } = networks
-  const {
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: sourceChain.id,
+    destinationChainId: destinationChain.id
+  })
+  const { childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
-  const provider = isDepositMode ? parentChainProvider : childChainProvider
-  const gasPrice = useGasPrice({ provider })
+  const gasPrice = useGasPrice({ provider: sourceChainProvider })
   const chainId = useChainId()
   const { data: signer } = useSigner({
     chainId
@@ -112,9 +111,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         const oftTransferStarter = new OftV2TransferStarter({
           sourceChainProvider,
           destinationChainProvider,
-          sourceChainErc20Address: isDepositMode
-            ? token.address
-            : token.l2Address
+          sourceChainErc20Address:
+            transferMode === 'deposit' || transferMode === 'teleport'
+              ? token.address
+              : token.l2Address
         })
         gasEstimate = await oftTransferStarter.approveTokenEstimateGas({
           amount: constants.MaxUint256,
@@ -124,13 +124,11 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
           {
             sourceChainId: sourceChain.id,
-            sourceChainErc20Address: isDepositMode
-              ? token.address
-              : token.l2Address,
+            sourceChainErc20Address:
+              transferMode === 'withdrawal' ? token.l2Address : token.address,
             destinationChainId: destinationChain.id,
-            destinationChainErc20Address: isDepositMode
-              ? token.l2Address
-              : token.address
+            destinationChainErc20Address:
+              transferMode === 'withdrawal' ? token.address : token.l2Address
           }
         )
 
@@ -148,7 +146,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }, [
     isCctp,
     isOpen,
-    isDepositMode,
+    transferMode,
     isTestnet,
     signer,
     walletAddress,
@@ -168,9 +166,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         const oftTransferConfig = getOftV2TransferConfig({
           sourceChainId: sourceChain.id,
           destinationChainId: destinationChain.id,
-          sourceChainErc20Address: isDepositMode
-            ? token?.address
-            : token?.l2Address
+          sourceChainErc20Address:
+            transferMode === 'deposit' || transferMode === 'teleport'
+              ? token?.address
+              : token?.l2Address
         })
 
         if (!oftTransferConfig.isValid) {
@@ -192,7 +191,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         return
       }
 
-      if (isTeleportMode) {
+      if (transferMode === 'teleport') {
         const l1L3Bridger = await getBridger({
           sourceChainId: sourceChain.id,
           destinationChainId: destinationChain.id
@@ -206,7 +205,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         return
       }
 
-      if (isDepositMode) {
+      if (transferMode === 'deposit') {
         setContractAddress(
           await fetchErc20ParentChainGatewayAddress({
             erc20ParentChainAddress: token.address,
@@ -228,13 +227,12 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     chainId,
     childChainProvider,
     isCctp,
-    isDepositMode,
+    transferMode,
     parentChainProvider,
     token?.address,
     token?.l2Address,
     sourceChain.id,
     destinationChain.id,
-    isTeleportMode,
     isOft
   ])
 
@@ -287,7 +285,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         <div className="flex flex-col">
           <NoteBox>
             After approval, you&apos;ll see a second prompt in your wallet for
-            the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
+            the {transferMode === 'withdrawal' ? 'withdrawal' : 'deposit'}{' '}
+            transaction.
             <ExternalLink
               href={TOKEN_APPROVAL_ARTICLE_LINK}
               className="arb-hover ml-1 underline"
