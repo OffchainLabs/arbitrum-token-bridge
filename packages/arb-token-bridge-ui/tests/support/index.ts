@@ -1,4 +1,5 @@
-import '@synthetixio/synpress/support'
+import { synpressCommandsForMetaMask } from "@synthetixio/synpress/cypress/support";
+
 import logCollector from 'cypress-terminal-report/src/installLogsCollector'
 
 import {
@@ -7,6 +8,11 @@ import {
   getL2TestnetNetworkConfig
 } from './common'
 import './commands'
+
+Cypress.on("uncaught:exception", () => {
+  // failing the test
+  return false;
+});
 
 logCollector({
   collectTypes: [
@@ -19,6 +25,8 @@ logCollector({
   ]
 })
 
+synpressCommandsForMetaMask();
+
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing
   cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'sepolia')
@@ -28,12 +36,12 @@ before(() => {
         // L1
         // only CI setup is required, Metamask already has localhost
         if (Cypress.env('ETH_RPC_URL') !== 'http://localhost:8545') {
-          cy.addMetamaskNetwork(getL1NetworkConfig())
+          cy.addNetwork(getL1NetworkConfig())
         }
 
         // L2
-        cy.addMetamaskNetwork(getL2NetworkConfig())
-        cy.addMetamaskNetwork(getL2TestnetNetworkConfig())
+        cy.addNetwork(getL2NetworkConfig())
+        cy.addNetwork(getL2TestnetNetworkConfig())
 
         cy.task('setNetworkSetupComplete')
       }

@@ -1,8 +1,9 @@
 import { BigNumber, Contract, Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import synpressPlugins from '@synthetixio/synpress/plugins'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
+import { configureSynpressForMetaMask } from '@synthetixio/synpress/cypress'
+
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 import {
   setupCypressTasks,
@@ -237,13 +238,20 @@ export default defineConfig({
         await createCctpTx('deposit', customAddress as Address, '0.00013')
       }
 
+      configureSynpressForMetaMask(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: false })
-      synpressPlugins(on, config)
+
+      config.browsers = [
+        {
+          ...browserConfig,
+          family: 'chromium' // type issue if not added here
+        }
+      ]
+
       return config
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: 'tests/support/index.ts',
-    browsers: [browserConfig]
   }
 })

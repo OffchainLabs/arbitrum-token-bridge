@@ -2,15 +2,15 @@
   "compilerOptions": {
     "baseUrl": "../../../../",
     "types": [
-      "cypress.d.ts",
-      "@synthetixio/synpress/support",
-      "cypress-wait-until",
+      "cypress",
+      "./tests/e2e/cypress.d.ts",
       "@testing-library/cypress"
     ],
     "outDir": "./output",
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strict": true
   },
-  "include": ["**/*.*"],
+  "include": ["cypress.config.ts", "**/*.*"],
   "exclude": ["node_modules"]
 }

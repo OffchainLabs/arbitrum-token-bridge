@@ -1,5 +1,5 @@
-import { config as packageConfig } from '../../../../package.json'
 import { join, resolve } from 'path'
+import { config as packageConfig } from '../../../../package.json'
 
 const getBrowserPath = () => {
   const workspaceRoot = resolve(process.cwd(), '../..')
@@ -26,10 +26,12 @@ const getBrowserPath = () => {
 
 export const browserConfig = {
   name: 'chrome',
-  family: 'chromium',
   channel: 'stable',
+  family: 'chromium',
   displayName: 'Chromium',
   version: packageConfig.chromeVersion,
   majorVersion: packageConfig.chromeVersion.split('.')[0],
-  path: getBrowserPath()
+  path: getBrowserPath(),
+  isHeaded: true,
+  isHeadless: false
 }

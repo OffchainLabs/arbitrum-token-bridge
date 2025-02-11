@@ -22,7 +22,7 @@ export type NetworkName =
   | 'sepolia'
 
 type NetworkConfig = {
-  networkName: NetworkName
+  name: NetworkName
   rpcUrl: string
   chainId: number
   symbol: string
@@ -44,7 +44,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
-    networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
+    name: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
@@ -78,7 +78,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
 
 export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'sepolia',
+    name: 'sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
     chainId: 11155111,
     symbol: 'ETH',
@@ -153,13 +153,7 @@ export async function getInitialERC20Balance({
 }
 
 export const acceptMetamaskAccess = () => {
-  cy.acceptMetamaskAccess().then(() => {
-    cy.isCypressWindowActive().then(cyWindowIsActive => {
-      if (!cyWindowIsActive) {
-        cy.switchToCypressWindow().should('be.true')
-      }
-    })
-  })
+  cy.connectToDapp()
 }
 
 export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
@@ -173,7 +167,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
     // ensures we don't test with the same state that could have caused the test to fail
     cy.reload(true)
   }
-  cy.connectToApp()
+  cy.connectToDapp()
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
       acceptMetamaskAccess()

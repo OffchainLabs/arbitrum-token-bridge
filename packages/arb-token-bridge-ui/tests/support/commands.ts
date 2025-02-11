@@ -17,7 +17,7 @@ import {
   getL2NetworkConfig
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
-import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
+import { formatAmount } from '../../src/util/NumberUtils'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -64,7 +64,7 @@ export function login({
 
   shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+      cy.switchNetwork(networkNameWithDefault).then(() => {
         _startWebApp()
       })
     } else {
@@ -345,17 +345,13 @@ export function findClaimButton(
  */
 export function confirmSpending(
   spendLimit: Parameters<
-    typeof cy.confirmMetamaskPermissionToSpend
+    typeof cy.approveTokenPermission
   >[0]['spendLimit']
 ) {
-  cy.confirmMetamaskPermissionToSpend({
-    spendLimit,
-    shouldWaitForPopupClosure: true
-  })
-  cy.confirmMetamaskPermissionToSpend({
-    spendLimit,
-    shouldWaitForPopupClosure: true
-  })
+  cy.approveTokenPermission({
+    spendLimit})
+    cy.approveTokenPermission({
+      spendLimit})
 }
 
 export function claimCctp(amount: number, options: { accept: boolean }) {
