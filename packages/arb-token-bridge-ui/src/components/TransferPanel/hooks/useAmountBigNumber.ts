@@ -1,19 +1,14 @@
 import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
-import { useAppState } from '../../../state'
 import { constants, utils } from 'ethers'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
+import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 export function useAmountBigNumber() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [{ amount }] = useArbQueryParams()
-  const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
 
   return useMemo(() => {
     try {
@@ -23,9 +18,9 @@ export function useAmountBigNumber() {
         return utils.parseUnits(amountSafe, selectedToken.decimals)
       }
 
-      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
+      return utils.parseUnits(amountSafe, nativeCurrencyDecimalsOnSourceChain)
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, selectedToken, nativeCurrency])
+  }, [amount, selectedToken, nativeCurrencyDecimalsOnSourceChain])
 }

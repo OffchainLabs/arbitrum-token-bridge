@@ -1,22 +1,30 @@
 import React, { useMemo } from 'react'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
+import Image from 'next/image'
 
 import { formatAmount } from '../../util/NumberUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
-import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
-import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { Tooltip } from '../common/Tooltip'
 import { NoteBox } from '../common/NoteBox'
 import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { getConfirmationTime } from '../../util/WithdrawalUtils'
+import LightningIcon from '@/images/LightningIcon.svg'
+import { TokenInfoTooltip } from './TokenInfoTooltip'
+import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
+import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
+import { OftTransferDisclaimer } from './OftTransferDisclaimer'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -38,9 +46,7 @@ function StyledLoader() {
 }
 
 function TotalGasFees() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   const {
     status: gasSummaryStatus,
@@ -182,18 +188,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
+  const isOft = useIsOftV2Transfer()
+
   const [{ amount, amount2 }] = useArbQueryParams()
   const isBatchTransferSupported = useIsBatchTransferSupported()
 
-  const {
-    isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia
-  } = isNetwork(networks.destinationChain.id)
-
-  const isDepositingUSDCtoArbOneOrArbSepolia =
-    isTokenNativeUSDC(token?.address) &&
-    isDepositMode &&
-    (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
+  const boldUpgradeInfo = getBoldUpgradeInfo(networks.sourceChain.id)
+  const isAffectedByBoLDUpgrade =
+    boldUpgradeInfo.status === BoldUpgradeStatus.Scheduled ||
+    boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
 
   if (gasSummaryStatus === 'unavailable') {
     return (
@@ -237,16 +240,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span>
           You will receive on {getNetworkName(networks.destinationChain.id)}:
         </span>
-        <span className="font-medium">
+        <span className="flex space-x-1 font-medium">
           <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
-          {isDepositingUSDCtoArbOneOrArbSepolia ? (
-            <>USDC</>
-          ) : (
-            <TokenSymbolWithExplorerLink
-              token={token}
-              isParentChain={!isDepositMode}
-            />
-          )}
+          <TokenInfoTooltip token={token} />
           {isBridgingEth && (
             <NativeCurrencyPrice amount={Number(amount)} showBrackets />
           )}
@@ -259,6 +255,57 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
+      {!isDepositMode &&
+        !isOft &&
+        (isAffectedByBoLDUpgrade ? (
+          <BoLDUpgradeWarning />
+        ) : (
+          <div
+            className={twMerge(
+              'grid grid-cols-[260px_auto] items-center text-sm font-light'
+            )}
+          >
+            <ConfirmationTimeInfo chainId={networks.sourceChain.id} />
+          </div>
+        ))}
+
+      {isOft && <OftTransferDisclaimer />}
     </TransferPanelSummaryContainer>
+  )
+}
+
+function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
+  const {
+    confirmationTimeInReadableFormat,
+    confirmationTimeInReadableFormatShort,
+    fastWithdrawalActive
+  } = getConfirmationTime(chainId)
+  return (
+    <>
+      <span className="whitespace-nowrap">Confirmation time:</span>
+      <span className="flex flex-col items-start font-medium sm:flex-row sm:items-center">
+        <span className="hidden sm:inline">
+          {confirmationTimeInReadableFormat}
+        </span>
+        <span className="sm:hidden">
+          {confirmationTimeInReadableFormatShort}
+        </span>
+        {fastWithdrawalActive && (
+          <div className="flex items-center">
+            <Tooltip
+              content={
+                'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
+              }
+            >
+              <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
+            </Tooltip>
+            <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
+              <Image src={LightningIcon} alt="Lightning Icon" />
+              <span className="font-normal">FAST</span>
+            </div>
+          </div>
+        )}
+      </span>
+    </>
   )
 }

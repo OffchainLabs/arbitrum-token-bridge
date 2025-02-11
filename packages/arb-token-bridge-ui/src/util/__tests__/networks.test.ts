@@ -1,11 +1,11 @@
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 
 import {
-  ChainId,
-  getBaseChainIdByChainId,
+  getBlockNumberReferenceChainIdByChainId,
   getDestinationChainIds,
   getSupportedChainIds
 } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { orbitTestnets } from '../orbitChainsList'
 
 const xaiTestnetChainId = 37714555429
@@ -32,7 +32,6 @@ beforeAll(() => {
     isTestnet: true,
     name: 'Arbitrum Local',
     parentChainId: 1337,
-    retryableLifetimeSeconds: 604800,
     tokenBridge: {
       parentCustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
       parentErc20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
@@ -63,21 +62,21 @@ beforeAll(() => {
   registerCustomArbitrumNetwork(polterTestnet)
 })
 
-describe('getBaseChainIdByChainId', () => {
+describe('getBlockNumberReferenceChainIdByChainId', () => {
   describe('chainId is the id of a base chain', () => {
     it('should return the chainId', () => {
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: ChainId.Ethereum
         })
       ).toBe(ChainId.Ethereum)
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: ChainId.Sepolia
         })
       ).toBe(ChainId.Sepolia)
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: ChainId.Local
         })
       ).toBe(ChainId.Local)
@@ -87,22 +86,22 @@ describe('getBaseChainIdByChainId', () => {
   describe('chainId is the id of an L2 chain', () => {
     it('should return the correct base chain', () => {
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: ChainId.ArbitrumOne
         })
       ).toBe(ChainId.Ethereum)
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: ChainId.ArbitrumNova
         })
       ).toBe(ChainId.Ethereum)
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: ChainId.ArbitrumSepolia
         })
       ).toBe(ChainId.Sepolia)
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: ChainId.ArbitrumLocal
         })
       ).toBe(ChainId.Local)
@@ -112,7 +111,7 @@ describe('getBaseChainIdByChainId', () => {
   describe('chainId is the id of an L3 Orbit chain', () => {
     it('should return the correct base chain', () => {
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: xaiTestnetChainId
         })
       ).toBe(ChainId.Sepolia)
@@ -122,7 +121,7 @@ describe('getBaseChainIdByChainId', () => {
   describe('chainId is the id of an chain not added to the list of chains', () => {
     it('should return the chainId', () => {
       expect(
-        getBaseChainIdByChainId({
+        getBlockNumberReferenceChainIdByChainId({
           chainId: 2222
         })
       ).toBe(2222)

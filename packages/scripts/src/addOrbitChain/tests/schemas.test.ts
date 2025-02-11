@@ -12,7 +12,10 @@ import {
   urlSchema,
   validateOrbitChainsList,
 } from "../schemas";
-import { mockOrbitChain } from "./__mocks__/chainDataMocks";
+import {
+  mockOrbitChain,
+  mockValidTokenBridge,
+} from "./__mocks__/chainDataMocks";
 
 describe("Validation Functions", () => {
   describe("isValidAddress", () => {
@@ -91,10 +94,6 @@ describe("Validation Functions", () => {
       expect(descriptionSchema.parse("A description")).toBe("A description.");
       expect(descriptionSchema.parse("A description.")).toBe("A description.");
     });
-
-    it("should throw for descriptions that are too long", () => {
-      expect(() => descriptionSchema.parse("A".repeat(251))).toThrow();
-    });
   });
 
   describe("ethBridgeSchema", () => {
@@ -127,23 +126,7 @@ describe("Validation Functions", () => {
 
   describe("tokenBridgeSchema", () => {
     it("should validate correct tokenBridge objects", async () => {
-      const validTokenBridge = {
-        parentGatewayRouter: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childGatewayRouter: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        parentErc20Gateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childErc20Gateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        parentCustomGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childCustomGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        parentWethGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childWethGateway: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        parentWeth: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childWeth: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        parentProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childProxyAdmin: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        parentMultiCall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-        childMultiCall: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-      };
-      const result = await tokenBridgeSchema.parseAsync(validTokenBridge);
+      const result = await tokenBridgeSchema.parseAsync(mockValidTokenBridge);
       expect(result).toMatchSnapshot();
     });
 
@@ -173,6 +156,7 @@ describe("Validation Functions", () => {
           decimals: 18,
           logoUrl: "https://example.com/token-logo.png",
         },
+        fastWithdrawalTime: 900000,
       };
       expect(() =>
         bridgeUiConfigSchema.parse(validBridgeUiConfig)

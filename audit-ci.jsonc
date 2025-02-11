@@ -1,13 +1,5 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": [
-    // https://github.com/advisories/GHSA-fc9h-whq2-v747
-    // Valid ECDSA signatures erroneously rejected in Elliptic
-    // Legitimate transactions or communications may be incorrectly flagged as invalid.
-    // No patched version available yet
-    // from: arb-token-bridge-ui>@unstoppabledomains/resolution>elliptic
-    // from: arb-token-bridge-ui>ethers>@ethersproject/signing-key>elliptic
-    "GHSA-fc9h-whq2-v747"
-  ]
+  "allowlist": []
 }

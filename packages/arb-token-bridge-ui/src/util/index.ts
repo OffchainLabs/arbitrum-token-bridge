@@ -6,13 +6,6 @@ export const sanitizeImageSrc = (url: string): string => {
   return url
 }
 
-export function preloadImages(imageSources: string[]) {
-  imageSources.forEach(imageSrc => {
-    const image = new Image()
-    image.src = imageSrc
-  })
-}
-
 export const loadEnvironmentVariableWithFallback = ({
   env,
   fallback
@@ -48,7 +41,7 @@ export const getAPIBaseUrl = () => {
 }
 
 // add feature flags to the array
-const featureFlags = ['eth-custom-dest'] as const
+const featureFlags = [] as const
 
 type FeatureFlag = (typeof featureFlags)[number]
 

@@ -22,6 +22,7 @@ async function isBlocked(address: Address): Promise<boolean> {
 
     const url = new URL(process.env.NEXT_PUBLIC_SCREENING_API_ENDPOINT ?? '')
     url.searchParams.set('address', address)
+    url.searchParams.set('ref', window.location.hostname)
 
     const response = await fetch(url, {
       method: 'GET',
@@ -65,10 +66,13 @@ export function useAccountIsBlocked() {
       return null
     }
 
-    return [address.toLowerCase(), 'useAccountIsBlocked']
+    return [
+      address.toLocaleLowerCase() as Address,
+      'useAccountIsBlocked'
+    ] as const
   }, [address])
 
-  const { data: isBlocked } = useSWRImmutable<boolean>(
+  const { data: isBlocked } = useSWRImmutable(
     queryKey,
     // Extracts the first element of the query key as the fetcher param
     ([_address]) => fetcher(_address)

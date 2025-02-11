@@ -2,21 +2,17 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import * as core from "@actions/core";
-import { warning } from "@actions/core";
+import { getArbitrumNetworkInformationFromRollup } from "@arbitrum/sdk";
 import axios from "axios";
+import { fileTypeFromBuffer } from "file-type";
 import * as fs from "fs";
+import path from "path";
 import sharp from "sharp";
-
-import {
-  commitChanges,
-  createBranch,
-  createPullRequest,
-  getContent,
-  getIssue,
-  updateContent,
-} from "./github";
+import { lookup } from "mime-types";
+import { getIssue } from "./github";
 import {
   chainDataLabelToKey,
+  getParentChainInfo,
   IncomingChainData,
   Issue,
   OrbitChain,
@@ -26,9 +22,17 @@ import {
   validateOrbitChain,
   validateOrbitChainsList,
 } from "./schemas";
+import { getProvider } from "./provider";
+import { ethers } from "ethers";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
+const ZERO_ADDRESS = ethers.constants.AddressZero;
+
+export const getFileExtension = (mimeType: string): string => {
+  const extension = lookup(mimeType);
+  return extension ? `.${extension}` : "";
+};
 
 export const initializeAndFetchData = async (): Promise<void> => {
   core.startGroup("Initialization and Data Fetching");
@@ -62,8 +66,7 @@ export const processChainData = async (): Promise<{
   const branchName = `add-orbit-chain/${stripWhitespace(
     validatedIncomingData.name
   )}`;
-  console.log(`Creating new branch: ${branchName}`);
-  await createBranch(branchName);
+  console.log(`Branch name generated: ${branchName}`);
 
   console.log("Chain data processing completed successfully");
   core.endGroup();
@@ -81,8 +84,7 @@ export const handleImages = async (
   );
   const chainLogoPath = await fetchAndSaveImage(
     validatedIncomingData.chainLogo,
-    `${stripWhitespace(validatedIncomingData.name)}_Logo`,
-    branchName
+    `${stripWhitespace(validatedIncomingData.name)}_Logo`
   );
   console.log(`Chain logo saved at: ${chainLogoPath}`);
 
@@ -99,8 +101,7 @@ export const handleImages = async (
         ? chainLogoPath
         : await fetchAndSaveImage(
             validatedIncomingData.nativeTokenLogo,
-            `${stripWhitespace(validatedIncomingData.name)}_NativeTokenLogo`,
-            branchName
+            `${stripWhitespace(validatedIncomingData.name)}_NativeTokenLogo`
           );
     console.log(`Native token logo saved at: ${nativeTokenLogoPath}`);
   } else {
@@ -118,7 +119,7 @@ export const createAndValidateOrbitChain = async (
 ) => {
   core.startGroup("Orbit Chain Creation and Validation");
   console.log("Creating OrbitChain object...");
-  const orbitChain = transformIncomingDataToOrbitChain(
+  const orbitChain = await transformIncomingDataToOrbitChain(
     validatedIncomingData,
     chainLogoPath,
     nativeTokenLogoPath
@@ -131,7 +132,7 @@ export const createAndValidateOrbitChain = async (
 };
 
 export const updateAndValidateOrbitChainsList = async (
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>,
+  orbitChain: OrbitChain,
   targetJsonPath: string
 ) => {
   core.startGroup("Orbit ChainsList Update and Validation");
@@ -149,57 +150,15 @@ export const updateAndValidateOrbitChainsList = async (
   return updatedOrbitChainsList;
 };
 
-export const commitChangesAndCreatePR = async (
-  branchName: string,
-  targetJsonPath: string,
-  updatedOrbitChainsList: ReturnType<typeof updateOrbitChainsFile>,
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>
-) => {
-  core.startGroup("Commit Changes and Create Pull Request");
-  console.log("Preparing to commit changes...");
-  const repoRelativePath = targetJsonPath.replace(/^\.\.\/\.\.\//, "");
-  console.log(`Repo relative path: ${repoRelativePath}`);
-  const fileContents = JSON.stringify(updatedOrbitChainsList, null, 2);
-  console.log("Committing changes...");
-  await commitChanges(branchName, repoRelativePath, fileContents);
-  console.log("Changes committed successfully");
-  const issue = await getIssue(process.env.ISSUE_NUMBER!);
-  console.log("Creating pull request...");
-  await createPullRequest(branchName, orbitChain.name, issue.html_url)
-    .catch((err) => {
-      if (err.message.includes("A pull request already exists")) {
-        console.log("Pull request already exists.");
-      } else {
-        throw err;
-      }
-    })
-    .then(() => {
-      console.log("Pull request created successfully");
-    });
-  core.endGroup();
-};
-
-export const setOutputs = (
-  branchName: string,
-  orbitChain: ReturnType<typeof transformIncomingDataToOrbitChain>,
-  targetJsonPath: string
-) => {
-  core.startGroup("Set Outputs");
-  console.log("Setting output values...");
-  const repoRelativePath = targetJsonPath.replace(/^\.\.\/\.\.\//, "");
-  core.setOutput("branch_name", branchName);
-  console.log(`Set output - branch_name: ${branchName}`);
-  core.setOutput(
-    "issue_url",
-    getIssue(process.env.ISSUE_NUMBER!).then((issue) => issue.html_url)
-  );
-  console.log("Set output - issue_url (promise)");
-  core.setOutput("orbit_list_path", repoRelativePath);
-  console.log(`Set output - orbit_list_path: ${repoRelativePath}`);
-  core.setOutput("chain_name", orbitChain.name);
-  console.log(`Set output - chain_name: ${orbitChain.name}`);
-  console.log("All outputs set successfully");
-  core.endGroup();
+export const extractImageUrlFromMarkdown = (
+  markdown: string
+): string | null => {
+  // Match markdown image syntax: ![alt text](url)
+  const markdownMatch = markdown.match(/!\[.*?\]\((.*?)\)/);
+  if (markdownMatch && markdownMatch[1]) {
+    return markdownMatch[1];
+  }
+  return markdown;
 };
 
 export const extractRawChainData = (
@@ -217,7 +176,14 @@ export const extractRawChainData = (
     const key = chainDataLabelToKey[trimmedLabel] || trimmedLabel;
 
     if (trimmedValue !== "_No response_") {
-      rawData[key] = trimmedValue;
+      if (key === "chainLogo" || key === "nativeTokenLogo") {
+        const imageUrl = extractImageUrlFromMarkdown(trimmedValue);
+        rawData[key] = imageUrl || trimmedValue;
+      } else if (key === "fastWithdrawalActive") {
+        rawData[key] = trimmedValue === "Yes";
+      } else {
+        rawData[key] = trimmedValue;
+      }
     }
   }
 
@@ -262,51 +228,78 @@ export const resizeImage = async (
   return resizedImage;
 };
 
-export const fetchAndSaveImage = async (
-  urlOrPath: string,
-  fileName: string,
-  branchName: string
-): Promise<string> => {
-  const isLocalPath = !urlOrPath.startsWith("http");
-  if (isLocalPath) {
+export const fetchAndProcessImage = async (
+  urlOrPath: string
+): Promise<{ buffer: Buffer; fileExtension: string }> => {
+  let imageBuffer: Buffer;
+  let fileExtension: string;
+
+  if (urlOrPath.startsWith("http")) {
+    console.log("Fetching image from:", urlOrPath);
+
+    const response = await axios.get(urlOrPath, {
+      responseType: "arraybuffer",
+      timeout: 10000, // 10 seconds timeout
+    });
+
+    if (response.status !== 200) {
+      throw new Error(`Failed to fetch image. Status: ${response.status}`);
+    }
+
+    imageBuffer = Buffer.from(response.data);
+
+    const isSVG =
+      response.headers["content-type"]?.includes("svg") ||
+      imageBuffer.toString("utf8").trim().toLowerCase().startsWith("<svg") ||
+      imageBuffer
+        .toString("utf8")
+        .includes('xmlns="http://www.w3.org/2000/svg"');
+
+    if (isSVG) {
+      fileExtension = ".svg";
+    } else {
+      // Try to determine file extension from response headers
+      fileExtension = lookup(response.headers["content-type"] as string) || "";
+      if (!fileExtension) {
+        // If not found in headers, try to determine from the image data
+        const detectedType = await fileTypeFromBuffer(imageBuffer);
+        fileExtension = detectedType ? `.${detectedType.ext}` : "";
+      }
+    }
+  } else {
+    // Handle local paths
     const localPath = `../../arb-token-bridge-ui/public/${urlOrPath}`;
     if (!fs.existsSync(localPath)) {
       throw new Error(
         `Provided local path '${localPath}' did not match any existing images.`
       );
     }
-    return urlOrPath;
+    imageBuffer = fs.readFileSync(localPath);
+    fileExtension = path.extname(localPath);
   }
 
-  const fileExtension = urlOrPath.split(".").pop()?.split("?")[0] || "";
-  if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension)) {
-    throw new Error(
-      `Invalid image extension '${fileExtension}'. Expected: ${SUPPORTED_IMAGE_EXTENSIONS.join(
-        ", "
-      )}.`
+  // If still not found, default to .webp
+  if (!fileExtension) {
+    console.warn("Could not determine file type, defaulting to .webp");
+    fileExtension = ".webp";
+  }
+
+  // we don't need to convert or resize SVGs
+  if (fileExtension === ".svg") {
+    return { buffer: imageBuffer, fileExtension };
+  }
+
+  if (!SUPPORTED_IMAGE_EXTENSIONS.includes(fileExtension.replace(".", ""))) {
+    console.warn(
+      `Unsupported image extension '${fileExtension}'. Converting to WEBP.`
     );
+
+    // Convert the image to .webp using sharp
+    imageBuffer = await sharp(imageBuffer).webp().toBuffer();
+    fileExtension = ".webp";
   }
 
-  const imageSavePath = `images/${fileName}.${fileExtension}`;
-  const fullSavePath = `../../arb-token-bridge-ui/public/${imageSavePath}`;
-
-  // Create directories if they don't exist
-  const dirs = fullSavePath.split("/").slice(0, -1).join("/");
-  if (!fs.existsSync(dirs)) {
-    fs.mkdirSync(dirs, { recursive: true });
-  }
-
-  if (fs.existsSync(fullSavePath)) {
-    warning(
-      `${fileName} already exists at '${imageSavePath}'. Using the existing image.`
-    );
-    return `/${imageSavePath}`;
-  }
-
-  const response = await axios.get(urlOrPath, { responseType: "arraybuffer" });
-  let imageBuffer = Buffer.from(response.data);
-
-  // Resize the image
+  // Resize the image (only for non-SVG)
   try {
     imageBuffer = await resizeImage(imageBuffer);
   } catch (error) {
@@ -317,64 +310,73 @@ export const fetchAndSaveImage = async (
     }
   }
 
-  // Check if the file already exists in the repository
-  let sha: string | undefined;
-  try {
-    const { data } = await getContent(branchName, imageSavePath);
+  return { buffer: imageBuffer, fileExtension };
+};
 
-    if ("sha" in data) {
-      sha = data.sha;
-    }
-  } catch (error) {
-    // File doesn't exist, which is fine
-  }
+export const fetchAndSaveImage = async (
+  urlOrPath: string,
+  fileName: string
+): Promise<string> => {
+  const { buffer, fileExtension } = await fetchAndProcessImage(urlOrPath);
+  const imageSavePath = `images/${fileName}${fileExtension}`;
 
-  await updateContent(branchName, imageSavePath, imageBuffer, sha);
+  const fullPath = path.join(
+    process.cwd(),
+    "../../packages/arb-token-bridge-ui/public/images"
+  );
+
+  // Save the file locally
+  fs.writeFileSync(path.join(fullPath, `${fileName}${fileExtension}`), buffer);
+  console.log(`Successfully saved image to ${imageSavePath}`);
 
   return `/${imageSavePath}`;
 };
 
-export const transformIncomingDataToOrbitChain = (
+export const transformIncomingDataToOrbitChain = async (
   chainData: IncomingChainData,
   chainLogoPath: string,
   nativeTokenLogoPath?: string
-): OrbitChain => {
+): Promise<OrbitChain> => {
   const parentChainId = parseInt(chainData.parentChainId, 10);
   const isTestnet = TESTNET_PARENT_CHAIN_IDS.includes(parentChainId);
+  const parentChainInfo = getParentChainInfo(parentChainId);
+  const provider = getProvider(parentChainInfo);
+  const rollupData = await getArbitrumNetworkInformationFromRollup(
+    chainData.rollup,
+    provider
+  );
 
   return {
     chainId: parseInt(chainData.chainId, 10),
-    confirmPeriodBlocks: parseInt(chainData.confirmPeriodBlocks, 10),
+    confirmPeriodBlocks: rollupData.confirmPeriodBlocks,
     ethBridge: {
-      bridge: chainData.bridge,
-      inbox: chainData.inbox,
-      outbox: chainData.outbox,
+      bridge: rollupData.ethBridge.bridge,
+      inbox: rollupData.ethBridge.inbox,
+      outbox: rollupData.ethBridge.outbox,
       rollup: chainData.rollup,
-      sequencerInbox: chainData.sequencerInbox,
+      sequencerInbox: rollupData.ethBridge.sequencerInbox,
     },
     nativeToken: chainData.nativeTokenAddress,
     explorerUrl: chainData.explorerUrl,
     rpcUrl: chainData.rpcUrl,
-    isArbitrum: true,
     isCustom: true,
     isTestnet,
     name: chainData.name,
     slug: nameToSlug(chainData.name),
     parentChainId,
-    retryableLifetimeSeconds: 604800,
     tokenBridge: {
       parentCustomGateway: chainData.parentCustomGateway,
       parentErc20Gateway: chainData.parentErc20Gateway,
       parentGatewayRouter: chainData.parentGatewayRouter,
       parentMultiCall: chainData.parentMultiCall,
-      parentProxyAdmin: chainData.parentProxyAdmin,
+      parentProxyAdmin: ZERO_ADDRESS,
       parentWeth: chainData.parentWeth,
       parentWethGateway: chainData.parentWethGateway,
       childCustomGateway: chainData.childCustomGateway,
       childErc20Gateway: chainData.childErc20Gateway,
       childGatewayRouter: chainData.childGatewayRouter,
       childMultiCall: chainData.childMultiCall,
-      childProxyAdmin: chainData.childProxyAdmin,
+      childProxyAdmin: ZERO_ADDRESS,
       childWeth: chainData.childWeth,
       childWethGateway: chainData.childWethGateway,
     },
@@ -389,9 +391,13 @@ export const transformIncomingDataToOrbitChain = (
         nativeTokenData: {
           name: chainData.nativeTokenName || "",
           symbol: chainData.nativeTokenSymbol || "",
-          decimals: 18,
           logoUrl: nativeTokenLogoPath,
         },
+      }),
+      ...(chainData.fastWithdrawalActive && {
+        fastWithdrawalTime: chainData.fastWithdrawalMinutes
+          ? Number(chainData.fastWithdrawalMinutes) * 60 * 1000
+          : undefined,
       }),
     },
   };

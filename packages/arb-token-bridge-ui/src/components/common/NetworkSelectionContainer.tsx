@@ -14,8 +14,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { hex } from 'wcag-contrast'
 
-import { ChainId, isNetwork, getNetworkName } from '../../util/networks'
+import { isNetwork, getNetworkName } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
@@ -31,12 +33,14 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
 
-type NetworkType = 'core' | 'other' | 'orbit'
+type NetworkType = 'core' | 'more' | 'orbit'
 
 enum ChainGroupName {
   core = 'CORE CHAINS',
-  other = 'OTHER CHAINS',
+  more = 'MORE CHAINS',
   orbit = 'ORBIT CHAINS'
 }
 
@@ -49,8 +53,8 @@ const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   core: {
     name: ChainGroupName.core
   },
-  other: {
-    name: ChainGroupName.other,
+  more: {
+    name: ChainGroupName.more,
     description: (
       <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
         <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
@@ -121,10 +125,18 @@ export function NetworkButton({
 
   const hasOneOrLessChain = chains.length <= 1
 
-  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+  const disabled =
+    hasOneOrLessChain ||
+    (isSmartContractWallet && type === 'source') ||
+    isLoading
+
+  const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
+
+  const colorContrast = hex('#ffffff', backgroundColor)
 
   const buttonStyle = {
-    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+    backgroundColor,
+    color: colorContrast >= 3 ? '#ffffff' : '#000000'
   }
 
   return (
@@ -185,7 +197,10 @@ function NetworkRow({
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-[1.1]">{network.name}</span>
         {network.description && (
-          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15] text-white/70">
+          <p
+            className="line-clamp-3 text-left text-xs leading-[1.15] text-white/70"
+            title={network.description}
+          >
             {network.description}
           </p>
         )}
@@ -252,7 +267,7 @@ function NetworksPanel({
     const coreNetworks = chainIds.filter(
       chainId => isNetwork(chainId).isCoreChain
     )
-    const otherNetworks = chainIds.filter(
+    const moreNetworks = chainIds.filter(
       chainId =>
         !isNetwork(chainId).isCoreChain && !isNetwork(chainId).isOrbitChain
     )
@@ -262,7 +277,7 @@ function NetworksPanel({
 
     return {
       core: coreNetworks,
-      other: otherNetworks,
+      more: moreNetworks,
       orbit: orbitNetworks
     }
   }, [debouncedNetworkSearched, chainIds])
@@ -281,8 +296,8 @@ function NetworksPanel({
         groupedNetworks.push(ChainGroupName.core, ...networksToShow.core)
       }
 
-      if (networksToShow.other.length > 0) {
-        groupedNetworks.push(ChainGroupName.other, ...networksToShow.other)
+      if (networksToShow.more.length > 0) {
+        groupedNetworks.push(ChainGroupName.more, ...networksToShow.more)
       }
 
       if (networksToShow.orbit.length > 0) {
@@ -325,9 +340,9 @@ function NetworksPanel({
         )
       }
 
-      if (networkOrChainTypeName === ChainGroupName.other) {
+      if (networkOrChainTypeName === ChainGroupName.more) {
         return (
-          <ChainTypeInfoRow chainGroup={chainGroupInfo.other} style={style} />
+          <ChainTypeInfoRow chainGroup={chainGroupInfo.more} style={style} />
         )
       }
 
@@ -396,8 +411,12 @@ export const NetworkSelectionContainer = (
   }
 ) => {
   const actions = useActions()
+  const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+  const [, setQueryParams] = useArbQueryParams()
+  const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
+  const { isSmartContractWallet } = useAccountType()
 
   const isSource = props.type === 'source'
 
@@ -433,9 +452,23 @@ export const NetworkSelectionContainer = (
         destinationChainId: isSource ? networks.destinationChain.id : value.id
       })
 
-      actions.app.setSelectedToken(null)
+      setSelectedToken(null)
+      setQueryParams({ destinationAddress: undefined })
+
+      if (!isSmartContractWallet) {
+        setAdvancedSettingsCollapsed(true)
+      }
     },
-    [actions.app, isSource, networks, openOneNovaTransferDialog, setNetworks]
+    [
+      isSource,
+      networks,
+      setNetworks,
+      setSelectedToken,
+      setQueryParams,
+      setAdvancedSettingsCollapsed,
+      openOneNovaTransferDialog,
+      isSmartContractWallet
+    ]
   )
 
   return (

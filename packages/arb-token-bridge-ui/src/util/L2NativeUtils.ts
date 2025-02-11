@@ -1,4 +1,4 @@
-import { ChainId } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { CommonAddress } from './CommonAddressUtils'
 
 export type L2NativeToken = {

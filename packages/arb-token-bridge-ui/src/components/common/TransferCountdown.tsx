@@ -5,7 +5,7 @@ import {
   useTransferDuration
 } from '../../hooks/useTransferDuration'
 import { isNetwork } from '../../util/networks'
-import { isTeleportTx } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../types/Transactions'
 
 /**
  * Displays a transfer countdown for a deposit, withdrawal, or cctp.

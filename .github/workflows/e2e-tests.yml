@@ -27,9 +27,14 @@ jobs:
       - id: set-matrix
         run: echo "e2eFiles=$(node .github/workflows/formatSpecfiles.js ${{ inputs.test_type }} | jq . --compact-output)" >> $GITHUB_OUTPUT
 
+  build:
+    name: 'Build'
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
   test-e2e:
-    name: "Test E2E - ${{ matrix.test.name }}${{ matrix.test.type == 'orbit' && ' with L3' || ''}}"
-    needs: [load-e2e-files]
+    name: "Test E2E - ${{ matrix.test.name }} ${{ matrix.test.typeName }}"
+    needs: [build, load-e2e-files]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -43,7 +48,7 @@ jobs:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
           tool-cache: false
-  
+
           # all of these default to true, but feel free to set to
           # "false" if necessary for your workflow
           android: true
@@ -53,15 +58,6 @@ jobs:
           docker-images: false
           swap-storage: true
 
-      # we found on 26 Sep that using Chrome 129 mysteriously broke ci at setupMetamask step
-      # with the following error: > Cannot read properties of undefined (reading 'waitForTimeout')
-      # so we are reverting to Chrome 128 on ci
-      # https://www.ubuntuupdates.org/package_logs?type=ppas&vals=8
-      - name: Set up Chrome 128
-        run: |
-          wget http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_128.0.6613.137-1_amd64.deb
-          sudo apt-get install ./google-chrome-stable_128.0.6613.137-1_amd64.deb
-      
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -69,13 +65,14 @@ jobs:
         uses: OffchainLabs/actions/node-modules/install@main
 
       - name: Restore build artifacts
-        uses: ./.github/actions/build-artifacts/restore
+        uses: ./.github/actions/restore-build-artifacts
 
       - name: Install cypress
         run: yarn cypress install
 
       - name: Install linux dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install --no-install-recommends -y \
           fluxbox \
           xvfb
@@ -89,17 +86,34 @@ jobs:
 
       - name: Run nitro testnode
         if: inputs.test_type != 'cctp'
+        timeout-minutes: 20
         uses: OffchainLabs/actions/run-nitro-test-node@a20a76172ce524832ac897bef2fa10a62ed81c29
         with:
-          nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
-          l3-node: ${{ matrix.test.type == 'orbit' }}
-          no-l3-token-bridge: ${{ matrix.test.type != 'orbit' }}
+          nitro-testnode-ref: badbcbea9b43d46e115da4d7c9f2f57c31af8431
+          l3-node: ${{ matrix.test.type != 'regular' }}
+          no-l3-token-bridge: ${{ matrix.test.type == 'regular' }}
+          args: >-
+            ${{
+              (matrix.test.type == 'orbit-eth') && '--l3node --l3-token-bridge' ||
+              (matrix.test.type == 'orbit-custom-6dec' && '--l3-fee-token --l3-fee-token-decimals 6') ||
+              (matrix.test.type == 'orbit-custom-18dec' && '--l3-fee-token') ||
+              (matrix.test.type == 'orbit-custom-20dec' && '--l3-fee-token --l3-fee-token-decimals 20') ||
+              ''
+            }}
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@0da3c06ed8217b912deea9d8ee69630baed1737e # pin@v6.7.6
         with:
           start: yarn start
-          command: "yarn test:e2e${{ (matrix.test.type == 'cctp' && ':cctp') || (matrix.test.type == 'orbit' && ':orbit') || '' }} --browser chrome"
+          command: >-
+            ${{
+              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit' ||
+              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp') ||
+              'yarn test:e2e'
+            }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
@@ -113,15 +127,15 @@ jobs:
           PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
           NEXT_PUBLIC_IS_E2E_TEST: true
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
-          NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://127.0.0.1:8547
-          NEXT_PUBLIC_LOCAL_L3_RPC_URL: http://127.0.0.1:3347
+          NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1: http://127.0.0.1:8545
+          NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2: http://127.0.0.1:8547
+          NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3: http://127.0.0.1:3347
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ (matrix.test.type == 'cctp' && 'cctp') || (matrix.test.type == 'orbit' && 'l3') || 'regular'}}
+          name: e2e-artifacts-${{ github.sha }}-${{ matrix.test.name }}-${{ matrix.test.type }}
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots

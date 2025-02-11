@@ -11,26 +11,22 @@ import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
-import { useAppState } from '../../state'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { ExternalLink } from '../common/ExternalLink'
-import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
 import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
+import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 function MaxButton({
   className = '',
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
-  const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
+  const [selectedToken] = useSelectedToken()
 
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -38,9 +34,7 @@ function MaxButton({
   const maxButtonVisible = useMemo(() => {
     const nativeCurrencySourceBalance = nativeCurrencyBalances.sourceBalance
 
-    const tokenBalance = isDepositMode
-      ? selectedTokenBalances.parentBalance
-      : selectedTokenBalances.childBalance
+    const tokenBalance = selectedTokenBalances.sourceBalance
 
     if (selectedToken) {
       return tokenBalance && !tokenBalance.isZero()
@@ -49,9 +43,7 @@ function MaxButton({
     return nativeCurrencySourceBalance && !nativeCurrencySourceBalance.isZero()
   }, [
     nativeCurrencyBalances.sourceBalance,
-    isDepositMode,
-    selectedTokenBalances.parentBalance,
-    selectedTokenBalances.childBalance,
+    selectedTokenBalances.sourceBalance,
     selectedToken
   ])
 
@@ -80,21 +72,18 @@ function SourceChainTokenBalance({
   balanceOverride?: AmountInputOptions['balance']
   symbolOverride?: AmountInputOptions['symbol']
 }) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isDepositMode, childChainProvider } =
     useNetworksRelationship(networks)
+  const selectedTokenDecimals = useSelectedTokenDecimals()
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenBalance = isDepositMode
-    ? selectedTokenBalances.parentBalance
-    : selectedTokenBalances.childBalance
+  const tokenBalance = selectedTokenBalances.sourceBalance
 
   const balance =
     balanceOverride ??
@@ -103,7 +92,7 @@ function SourceChainTokenBalance({
   const formattedBalance =
     balance !== null
       ? formatAmount(balance, {
-          decimals: selectedToken?.decimals ?? nativeCurrency.decimals
+          decimals: selectedTokenDecimals
         })
       : null
 
@@ -156,9 +145,6 @@ function ErrorMessage({
 }: {
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
 }) {
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
-
   if (typeof errorMessage === 'undefined') {
     return null
   }
@@ -186,14 +172,7 @@ function ErrorMessage({
     case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
       return (
         <div className="text-sm text-brick">
-          <span>This token can&apos;t be bridged over.</span>{' '}
-          <button
-            className="arb-hover underline"
-            onClick={openTransferDisabledDialog}
-          >
-            Learn more
-          </button>
-          <span>.</span>
+          <span>This token can&apos;t be bridged over.</span>
         </div>
       )
   }

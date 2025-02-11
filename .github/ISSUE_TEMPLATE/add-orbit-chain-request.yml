@@ -28,10 +28,10 @@ body:
     attributes:
       label: Chain description
       description: |
-        A short chain description that will be visible in the networks dropdown. Please make sure this is no longer than 130 characters.
+        A short chain description that will be visible in the networks dropdown.
       placeholder: ex. An amazing chain that does amazing things.
     validations:
-      required: true
+      required: false
   - type: input
     id: brand-color
     attributes:
@@ -40,11 +40,13 @@ body:
       placeholder: ex. "#FFFFFF"
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: chain-logo
     attributes:
       label: Chain logo
-      description: Link to the chain logo file.
+      description: |
+        Please drag and drop your chain logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      placeholder: Drag and drop your chain logo image here...
     validations:
       required: true
   - type: input
@@ -63,11 +65,12 @@ body:
   - type: dropdown
     id: parent-chain-id
     attributes:
-      label: Parent Chain ID
+      label: Parent chain ID
       description: Select the parent chain for your Orbit chain.
       options:
         - "1"
         - "42161"
+        - "42170"
         - "421614"
         - "11155111"
         - "17000"
@@ -83,7 +86,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Fill out this section if you are using a native token other than ETH. If you are using ETH as your gas token you can leave this blank.
+        Fill out this section if you are using a native token other than ETH. 
+         ⚠️ IMPORTANT: If you are using ETH as your gas token you can leave this blank.
   - type: input
     id: native-token-address
     attributes:
@@ -95,21 +99,23 @@ body:
     id: native-token-name
     attributes:
       label: Native token name
-      placeholder: ex. Ether
+      placeholder: ex. My Custom Token
     validations:
       required: false
   - type: input
     id: native-token-symbol
     attributes:
       label: Native token symbol
-      placeholder: ex. ETH
+      placeholder: ex. MCT
     validations:
       required: false
-  - type: input
+  - type: textarea
     id: native-token-logo
     attributes:
       label: Native token logo
-      description: Link to the native token logo file.
+      description: |
+        Please drag and drop your native token logo image here. Supported formats: PNG, SVG, JPG, JPEG, WEBP. Images larger than 100KB will be resized.
+      placeholder: Drag and drop your native token logo image here (skip if using ETH)...
     validations:
       required: false
 
@@ -121,50 +127,20 @@ body:
     attributes:
       value: |
         Please fill out this section with your chain configuration details and contract addresses. As a reminder, you can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
-  - type: input
-    id: confirmPeriodBlocks
-    attributes:
-      label: confirmPeriodBlocks
-      placeholder: ex. 45818
-    validations:
-      required: true
 
   - type: markdown
     attributes:
       value: |
-        ## Rollup contract addresses
+        ## Rollup contract address
   - type: markdown
     attributes:
       value: |
         You can find this information under the `"coreContracts" : {...}` key.
   - type: input
-    id: bridge
-    attributes:
-      label: bridge
-    validations:
-      required: true    
-  - type: input
-    id: inbox
-    attributes:
-      label: inbox
-    validations:
-      required: true
-  - type: input
-    id: outbox
-    attributes:
-      label: outbox
-    validations:
-      required: true
-  - type: input
     id: rollup
     attributes:
       label: rollup
-    validations:
-      required: true
-  - type: input
-    id: sequencerInbox
-    attributes:
-      label: sequencerInbox
+      description: Please provide the address of the rollup contract. Other core contract addresses will be fetched automatically.
     validations:
       required: true
 
@@ -195,12 +171,6 @@ body:
     id: parent-multicall
     attributes:
       label: Parent MultiCall
-    validations:
-      required: true
-  - type: input
-    id: parent-proxy-admin
-    attributes:
-      label: Parent Proxy Admin
     validations:
       required: true
   - type: input
@@ -242,13 +212,7 @@ body:
   - type: input
     id: child-multicall
     attributes:
-      label: Child Multicall
-    validations:
-      required: true
-  - type: input
-    id: child-proxy-admin
-    attributes:
-      label: Child Proxy Admin
+      label: Child MultiCall
     validations:
       required: true
   - type: input
@@ -263,6 +227,24 @@ body:
       label: Child WETH Gateway
     validations:
       required: true
+
+  - type: dropdown
+    id: fast-withdrawal
+    attributes:
+      label: Fast Withdrawals active
+      description: Only select Yes if your chain has Fast Withdrawals enabled. We will show information in our UI that your chain has Fast Withdrawals implemented and that withdrawals will take less time than usual.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+  - type: input
+    id: fast-withdrawal-time
+    attributes:
+      label: Fast Withdrawals time in minutes
+      description: Only fill this if your chain has Fast Withdrawals enabled.
+      placeholder: ex. 1440
+    validations:
+      required: false
 
   - type: input
     id: launch-date

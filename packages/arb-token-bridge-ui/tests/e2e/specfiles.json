@@ -5,13 +5,13 @@
     "recordVideo": "false"
   },
   {
-    "name": "Deposit ETH",
-    "file": "tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}",
+    "name": "Deposit native token",
+    "file": "tests/e2e/specs/**/depositNativeToken.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"
   },
   {
-    "name": "Withdraw ETH",
-    "file": "tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}",
+    "name": "Withdraw native token",
+    "file": "tests/e2e/specs/**/withdrawNativeToken.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"
   },
   {
@@ -57,6 +57,11 @@
   {
     "name": "Switch network",
     "file": "tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}",
+    "recordVideo": "false"
+  },
+  {
+    "name": "URL query param",
+    "file": "tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"
   }
 ]

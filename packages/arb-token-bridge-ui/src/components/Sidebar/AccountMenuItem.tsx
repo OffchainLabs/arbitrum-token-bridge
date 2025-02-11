@@ -17,7 +17,6 @@ export const AccountMenuItem = () => {
     accountShort,
     ensName,
     ensAvatar,
-    openTransactionHistory,
     disconnect,
     udInfo,
     chain,
@@ -36,12 +35,6 @@ export const AccountMenuItem = () => {
         />
       }
     >
-      <MenuItem
-        title="Transactions"
-        Icon={<DocumentTextIcon className="h-[18px] w-[18px]" />}
-        onClick={openTransactionHistory}
-        isMobile
-      />
       {chain && (
         <MenuItem
           title="Explorer"

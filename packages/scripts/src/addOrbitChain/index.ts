@@ -6,8 +6,6 @@ import {
   handleImages,
   createAndValidateOrbitChain,
   updateAndValidateOrbitChainsList,
-  commitChangesAndCreatePR,
-  setOutputs,
 } from "./transforms";
 
 /**
@@ -31,19 +29,7 @@ export async function addOrbitChain(targetJsonPath: string): Promise<void> {
       nativeTokenLogoPath
     );
 
-    const updatedOrbitChainsList = await updateAndValidateOrbitChainsList(
-      orbitChain,
-      targetJsonPath
-    );
-
-    await commitChangesAndCreatePR(
-      branchName,
-      targetJsonPath,
-      updatedOrbitChainsList,
-      orbitChain
-    );
-
-    setOutputs(branchName, orbitChain, targetJsonPath);
+    await updateAndValidateOrbitChainsList(orbitChain, targetJsonPath);
   } catch (error) {
     core.setFailed(`Error in addOrbitChain: ${error}`);
     throw error;

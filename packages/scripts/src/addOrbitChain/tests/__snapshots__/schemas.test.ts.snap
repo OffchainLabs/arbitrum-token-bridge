@@ -25,15 +25,6 @@ exports[`Validation Functions > tokenBridgeSchema > should throw for invalid tok
     \\"expected\\": \\"string\\",
     \\"received\\": \\"undefined\\",
     \\"path\\": [
-      \\"parentProxyAdmin\\"
-    ],
-    \\"message\\": \\"Required\\"
-  },
-  {
-    \\"code\\": \\"invalid_type\\",
-    \\"expected\\": \\"string\\",
-    \\"received\\": \\"undefined\\",
-    \\"path\\": [
       \\"parentWeth\\"
     ],
     \\"message\\": \\"Required\\"
@@ -62,15 +53,6 @@ exports[`Validation Functions > tokenBridgeSchema > should throw for invalid tok
     \\"received\\": \\"undefined\\",
     \\"path\\": [
       \\"childErc20Gateway\\"
-    ],
-    \\"message\\": \\"Required\\"
-  },
-  {
-    \\"code\\": \\"invalid_type\\",
-    \\"expected\\": \\"string\\",
-    \\"received\\": \\"undefined\\",
-    \\"path\\": [
-      \\"childProxyAdmin\\"
     ],
     \\"message\\": \\"Required\\"
   },
@@ -108,14 +90,14 @@ exports[`Validation Functions > tokenBridgeSchema > should validate correct toke
   "childErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "childGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "childMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-  "childProxyAdmin": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "childProxyAdmin": "0x0000000000000000000000000000000000000000",
   "childWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "childWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentCustomGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentErc20Gateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentGatewayRouter": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentMultiCall": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-  "parentProxyAdmin": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+  "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
   "parentWeth": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   "parentWethGateway": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 }

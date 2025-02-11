@@ -4,11 +4,13 @@
 import { ethers } from 'ethers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import { ChainId, isNetwork } from '../util/networks'
+import { isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
+import { CommonAddress } from './CommonAddressUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -211,9 +213,48 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0xc24A365A870821EB83Fd216c9596eDD89479d8d7',
       l1Address: '0xCF67815ccE72E682Eb4429eCa46843bed81Ca739',
       l2Address: '0x34fb4148fdc1ab3054ac85d32de887c58538bb57'
+    },
+    {
+      symbol: 'mPendleOFT',
+      l2CustomAddr: '',
+      l1Address: '0x83e817E1574e2201a005EC0f7e700ED5606F555E',
+      l2Address: '0x87ABaD012da6DcD0438e36967FcaD54C9d64F86C'
+    },
+    {
+      symbol: 'Pepe',
+      l2CustomAddr: '',
+      l1Address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
+      l2Address: '0x35E6A59F786d9266c7961eA28c7b768B33959cbB'
+    },
+    {
+      symbol: 'cbBTC',
+      l2CustomAddr: '',
+      l1Address: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
+      l2Address: '0x4A605F93288e95db40cE72934b888641D9689a48'
+    },
+    {
+      symbol: 'NST',
+      l2CustomAddr: '',
+      l1Address: '0x70Bef3bB2f001dA2fDDb207dAe696cD9FAFf3f5d',
+      l2Address: '0xd5A1a674F0DA33A4147a8Cd96143E598e738c7FF'
     }
   ],
-  [ChainId.ArbitrumNova]: []
+  [ChainId.ArbitrumNova]: [],
+  // Plume
+  98865: [
+    {
+      symbol: 'USDC',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDC,
+      l2Address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+    },
+    {
+      symbol: 'USDT',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDT,
+      l2Address: '0x4ef0c9098563e2478bdf0cc32a10d24abaa46b1c'
+    }
+  ]
 }
 
 async function isLayerZeroToken(

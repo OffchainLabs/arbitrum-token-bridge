@@ -10,8 +10,9 @@ import { formatUnits, parseUnits } from 'ethers/lib/utils'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
+import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
@@ -19,39 +20,49 @@ import { contractAbi, contractByteCode } from './testErc20Token'
 import {
   checkForAssertions,
   generateActivityOnChains,
-  NetworkType,
   fundEth,
   setupCypressTasks,
   getCustomDestinationAddress,
   ERC20TokenSymbol,
   ERC20TokenDecimals,
-  ERC20TokenName
+  ERC20TokenName,
+  getNativeTokenDecimals
 } from './tests/support/common'
 
+import { registerLocalNetwork } from './src/util/networks'
 import {
   defaultL2Network,
   defaultL3Network,
-  registerLocalNetwork
-} from './src/util/networks'
+  defaultL3CustomGasTokenNetwork
+} from './src/util/networksNitroTestnode'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
+import { browserConfig } from './tests/e2e/browser.config'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
   : specFiles.map(file => file.file)
 
-const isOrbitTest = process.env.E2E_ORBIT == 'true'
+const isOrbitTest = [
+  process.env.E2E_ORBIT,
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
+].includes('true')
 const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
+const l3Network =
+  process.env.ORBIT_CUSTOM_GAS_TOKEN === 'true'
+    ? defaultL3CustomGasTokenNetwork
+    : defaultL3Network
+
 const l1WethGateway = isOrbitTest
-  ? defaultL3Network.tokenBridge!.parentWethGateway
+  ? l3Network.tokenBridge!.parentWethGateway
   : defaultL2Network.tokenBridge!.parentWethGateway
 
-const l1WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge!.parentWeth
+let l1WethAddress = isOrbitTest
+  ? l3Network.tokenBridge!.parentWeth
   : defaultL2Network.tokenBridge!.parentWeth
 
-const l2WethAddress = isOrbitTest
-  ? defaultL3Network.tokenBridge!.childWeth
+let l2WethAddress = isOrbitTest
+  ? l3Network.tokenBridge!.childWeth
   : defaultL2Network.tokenBridge!.childWeth
 
 export default defineConfig({
@@ -59,20 +70,31 @@ export default defineConfig({
   e2e: {
     async setupNodeEvents(on, config) {
       logsPrinter(on)
-      registerLocalNetwork()
+
+      await registerLocalNetwork()
+
+      const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+      const ethBridger = await EthBridger.fromProvider(childProvider)
+      const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       if (!ethRpcUrl && !isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 variable missing.'
+        )
       }
       if (!arbRpcUrl) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2 variable missing.'
+        )
       }
       if (!l3RpcUrl && isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_L3_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3 variable missing.'
+        )
       }
       if (!sepoliaRpcUrl) {
         throw new Error(
-          'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
+          'process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA variable missing.'
         )
       }
 
@@ -98,14 +120,64 @@ export default defineConfig({
 
       // Deploy and fund ERC20 to Parent and Child chains
       const l1ERC20Token = await deployERC20ToParentChain()
+
+      // Approve custom fee token if not ETH
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken({
+          signer: localWallet.connect(parentProvider),
+          erc20ParentAddress: l1ERC20Token.address
+        })
+        await approveCustomFeeToken({
+          signer: localWallet.connect(parentProvider),
+          erc20ParentAddress: erc20Bridger.nativeToken!
+        })
+        await ethBridger.approveGasToken({
+          parentSigner: localWallet.connect(parentProvider)
+        })
+      }
+      if (isCustomFeeToken) {
+        await fundUserWalletNativeCurrency()
+      }
+
       await fundErc20ToParentChain(l1ERC20Token)
-      await fundErc20ToChildChain(l1ERC20Token)
+      await fundErc20ToChildChain({
+        parentSigner: localWallet.connect(parentProvider),
+        parentErc20Address: l1ERC20Token.address,
+        amount: parseUnits('5', ERC20TokenDecimals),
+        isCustomFeeToken
+      })
       await approveErc20(l1ERC20Token)
 
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken({
+          signer: userWallet.connect(parentProvider),
+          erc20ParentAddress: erc20Bridger.nativeToken!
+        })
+        await ethBridger.approveGasToken({
+          parentSigner: userWallet.connect(parentProvider)
+        })
+        await erc20Bridger.approveGasToken({
+          parentSigner: userWallet.connect(parentProvider),
+          erc20ParentAddress: l1WethAddress
+        })
+      }
+
       // Wrap ETH to test WETH transactions and approve it's usage
-      await fundWeth('parentChain')
-      await fundWeth('childChain')
+      await fundWethOnParentChain()
       await approveWeth()
+      if (isCustomFeeToken) {
+        await approveCustomFeeToken({
+          signer: userWallet.connect(parentProvider),
+          erc20ParentAddress: l1WethAddress
+        })
+      }
+
+      await fundErc20ToChildChain({
+        parentSigner: userWallet.connect(parentProvider),
+        parentErc20Address: l1WethAddress,
+        amount: utils.parseEther('0.1'),
+        isCustomFeeToken
+      })
 
       // Generate activity on chains so that assertions get posted and claims can be made
       generateActivityOnChains({
@@ -114,7 +186,14 @@ export default defineConfig({
         wallet: localWallet
       })
       // Also keep watching assertions since they will act as a proof of activity and claims for withdrawals
-      checkForAssertions({ parentProvider, isOrbitTest })
+      checkForAssertions({
+        parentProvider,
+        testType: isCustomFeeToken
+          ? 'orbit-custom'
+          : process.env.E2E_ORBIT === 'true'
+          ? 'orbit-eth'
+          : 'regular'
+      })
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = isOrbitTest ? arbRpcUrl : ethRpcUrl
@@ -127,6 +206,12 @@ export default defineConfig({
       config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
+      config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
+      config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken
+      config.env.NATIVE_TOKEN_DECIMALS = await getNativeTokenDecimals({
+        parentProvider,
+        childProvider
+      })
 
       config.env.CUSTOM_DESTINATION_ADDRESS =
         await getCustomDestinationAddress()
@@ -148,7 +233,9 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts'
+    supportFile: 'tests/support/index.ts',
+    defaultCommandTimeout: 20_000,
+    browsers: [browserConfig]
   }
 })
 
@@ -167,19 +254,19 @@ const ethRpcUrl = (() => {
   // For consistency purpose, we would be using 'custom-localhost'
   // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
   // so we have to add a / to the end of the rpc url
-  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+  if (!process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1) {
     return MAINNET_INFURA_RPC_URL
   }
-  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
-    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  if (process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1
   }
-  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
+  return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 + '/'
 })()
 
-const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const l3RpcUrl = process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL
+const arbRpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2
+const l3RpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3
 const sepoliaRpcUrl =
-  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+  process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const parentProvider = new StaticJsonRpcProvider(
@@ -196,8 +283,64 @@ if (!process.env.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
 
-const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
+const localWallet = new Wallet(
+  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+    ? utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
+    : process.env.PRIVATE_KEY_CUSTOM
+)
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
+
+async function approveCustomFeeToken({
+  signer,
+  erc20ParentAddress,
+  amount
+}: {
+  signer: Wallet
+  erc20ParentAddress: string
+  amount?: BigNumber
+}) {
+  console.log('Approving custom fee token...')
+  const childErc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+
+  await childErc20Bridger.approveGasToken({
+    parentSigner: signer,
+    erc20ParentAddress,
+    amount
+  })
+}
+
+async function fundUserWalletNativeCurrency() {
+  const childEthBridger = await EthBridger.fromProvider(childProvider)
+  const decimals = await getNativeTokenDecimals({
+    parentProvider,
+    childProvider
+  })
+
+  const address = await userWallet.getAddress()
+
+  const tokenContract = TestERC20__factory.connect(
+    childEthBridger.nativeToken!,
+    localWallet.connect(parentProvider)
+  )
+
+  const userBalance = await tokenContract.balanceOf(address)
+  const shouldFund = userBalance.lt(utils.parseUnits('0.3', decimals))
+
+  if (!shouldFund) {
+    console.log(
+      `User wallet has enough custom native currency for testing, skip funding...`
+    )
+    return
+  }
+
+  console.log(`Funding native currency to user wallet on L2...`)
+
+  const tx = await tokenContract.transfer(
+    address,
+    utils.parseUnits('3', decimals)
+  )
+  await tx.wait()
+}
 
 async function deployERC20ToParentChain() {
   console.log('Deploying ERC20...')
@@ -219,6 +362,14 @@ async function deployERC20ToParentChain() {
   return l1TokenContract
 }
 
+function isNonZeroAddress(address: string | undefined) {
+  return (
+    typeof address === 'string' &&
+    address !== constants.AddressZero &&
+    utils.isAddress(address)
+  )
+}
+
 async function deployERC20ToChildChain(erc20L1Address: string) {
   const bridger = await Erc20Bridger.fromProvider(childProvider)
   const deploy = await bridger.deposit({
@@ -228,6 +379,15 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
     childProvider
   })
   await deploy.wait()
+
+  // store deployed weth address
+  if (erc20L1Address === l1WethAddress) {
+    l2WethAddress = await getL2ERC20Address({
+      erc20L1Address: l1WethAddress,
+      l1Provider: parentProvider,
+      l2Provider: childProvider
+    })
+  }
 }
 
 function getWethContract(
@@ -237,14 +397,10 @@ function getWethContract(
   return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 }
 
-async function fundWeth(networkType: NetworkType) {
-  console.log(`Funding WETH: ${networkType}...`)
-  const amount = networkType === 'parentChain' ? '0.2' : '0.1'
-  const address = networkType === 'parentChain' ? l1WethAddress : l2WethAddress
-  const provider =
-    networkType === 'parentChain' ? parentProvider : childProvider
-  const tx = await getWethContract(provider, address).deposit({
-    value: utils.parseEther(amount)
+async function fundWethOnParentChain() {
+  console.log(`Funding WETH...`)
+  const tx = await getWethContract(parentProvider, l1WethAddress).deposit({
+    value: utils.parseEther('0.3')
   })
   await tx.wait()
 }
@@ -278,27 +434,39 @@ async function fundErc20ToParentChain(l1ERC20Token: Contract) {
   await transferTx.wait()
 }
 
-async function fundErc20ToChildChain(l1ERC20Token: Contract) {
-  console.log('Funding ERC20 on Child Chain...')
-  // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
-  await deployERC20ToChildChain(l1ERC20Token.address)
+async function fundErc20ToChildChain({
+  parentErc20Address,
+  parentSigner,
+  amount,
+  isCustomFeeToken
+}: {
+  parentErc20Address: string
+  parentSigner: Wallet
+  amount: BigNumber
+  isCustomFeeToken: boolean
+}) {
+  // deploy any token that's not WETH
+  // only deploy WETH for custom fee token chains because it's not deployed there
+  if (parentErc20Address !== l1WethAddress || isCustomFeeToken) {
+    // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
+    await deployERC20ToChildChain(parentErc20Address)
+  }
+
   const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
-  const parentSigner = localWallet.connect(parentProvider)
 
   // approve the ERC20 token for spending
   const approvalTx = await erc20Bridger.approveToken({
-    erc20ParentAddress: l1ERC20Token.address,
+    erc20ParentAddress: parentErc20Address,
     parentSigner,
     amount: constants.MaxUint256
   })
   await approvalTx.wait()
 
-  // deposit the ERC20 token to L2 (fund the L2 account)
   const depositTx = await erc20Bridger.deposit({
     parentSigner,
     childProvider,
-    erc20ParentAddress: l1ERC20Token.address,
-    amount: parseUnits('5', ERC20TokenDecimals),
+    erc20ParentAddress: parentErc20Address,
+    amount,
     destinationAddress: userWallet.address
   })
   const depositRec = await depositTx.wait()

@@ -18,7 +18,7 @@ import {
   Transaction,
   TxnStatus,
   TeleporterTransaction
-} from '../../hooks/useTransactions'
+} from '../../types/Transactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   getL2ConfigForTeleport,
@@ -31,15 +31,12 @@ import {
   normalizeTimestamp
 } from '../../state/app/utils'
 
-export const updateAdditionalDepositData = async ({
-  depositTx,
-  parentProvider,
-  childProvider
-}: {
+export const updateAdditionalDepositData = async (
   depositTx: Transaction
-  parentProvider: Provider
-  childProvider: Provider
-}): Promise<Transaction | TeleporterTransaction> => {
+): Promise<Transaction | TeleporterTransaction> => {
+  const parentProvider = getProviderForChainId(depositTx.parentChainId)
+  const childProvider = getProviderForChainId(depositTx.childChainId)
+
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
 

@@ -22,7 +22,7 @@ function mockClassicDepositTransaction(
     childChainId: 42161,
     status: 'success',
     isClassic: true,
-    assetName: 'ETH',
+    assetName: Cypress.env('NATIVE_TOKEN_SYMBOL'),
     assetType: AssetType.ETH,
     sender: Cypress.env('ADDRESS'),
     l1NetworkID: '1',
@@ -44,13 +44,10 @@ describe('Read classic deposit messages', () => {
     window.localStorage.clear()
   })
 
-  context('User has classic ETH deposit transaction', () => {
-    it('can read successful ETH deposit', () => {
-      // log in to metamask
-      cy.login({
-        networkType: 'parentChain',
-        networkName: 'mainnet'
-      })
+  context('User has classic native token deposit transaction', () => {
+    it('can read successful native token deposit', () => {
+      cy.visit('/')
+
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
         JSON.stringify([
@@ -61,7 +58,13 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.openTransactionsPanel('settled')
+      // log in to metamask
+      cy.login({
+        networkType: 'parentChain',
+        networkName: 'mainnet'
+      })
+
+      cy.switchToTransactionHistoryTab('settled')
 
       const destinationTxHash =
         '0xd3ff2a70a115411e1ae4917351dca49281368684394d0dcac136fa08d9d9b436'
@@ -75,11 +78,8 @@ describe('Read classic deposit messages', () => {
 
   context('User has classic ERC-20 deposit transaction', () => {
     it('can read successful ERC-20 deposit', () => {
-      // log in to metamask
-      cy.login({
-        networkType: 'parentChain',
-        networkName: 'mainnet'
-      })
+      cy.visit('/')
+
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
         JSON.stringify([
@@ -92,7 +92,13 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.openTransactionsPanel('settled')
+      // log in to metamask
+      cy.login({
+        networkType: 'parentChain',
+        networkName: 'mainnet'
+      })
+
+      cy.switchToTransactionHistoryTab('settled')
 
       const destinationTxHash =
         '0x6cecd3bfc3ec73181c4ac0253d3f51e5aa8d26157ca7439ff9ab465de14a436f'

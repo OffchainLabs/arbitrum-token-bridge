@@ -4,10 +4,13 @@
 
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
-import { MultiCaller } from '@arbitrum/sdk'
+import { EthBridger, MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
-import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
-import { getChainIdFromProvider } from '../../src/token-bridge-sdk/utils'
+import {
+  defaultL2Network,
+  defaultL3Network,
+  defaultL3CustomGasTokenNetwork
+} from '../../src/util/networksNitroTestnode'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -54,15 +57,21 @@ export const getL1NetworkConfig = (): NetworkConfig => {
 
 export const getL2NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+  const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH'
+  const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
+
+  const l3Network = isCustomFeeToken
+    ? defaultL3CustomGasTokenNetwork
+    : defaultL3Network
 
   return {
     networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
-    symbol: 'ETH',
+    symbol: nativeTokenSymbol,
     isTestnet: true,
     multiCall: isOrbitTest
-      ? defaultL3Network.tokenBridge!.childMultiCall
+      ? l3Network.tokenBridge!.childMultiCall
       : defaultL2Network.tokenBridge!.childMultiCall
   }
 }
@@ -92,14 +101,17 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
 export const ERC20TokenName = 'Test Arbitrum Token'
 export const ERC20TokenSymbol = 'TESTARB'
 export const ERC20TokenDecimals = 18
-export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
+export const invalidTokenAddress = utils.computeAddress(utils.randomBytes(32))
 
-export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const moreThanZeroBalance = /0(\.\d+)/
+
+export function getZeroToLessThanOneToken(symbol: string) {
+  return new RegExp(`0(\\.\\d+)*( ${symbol})`)
+}
 
 export const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)
-  cy.findSelectTokenButton('ETH').click()
+  cy.findSelectTokenButton(Cypress.env('NATIVE_TOKEN_SYMBOL') ?? 'ETH').click()
 
   // open the Select Token popup
   cy.findByPlaceholderText(/Search by token name/i)
@@ -176,6 +188,7 @@ export const visitAfterSomeDelay = (
 ) => {
   cy.wait(15_000) // let all the race conditions settle, let UI load well first
   cy.visit(url, options)
+  cy.wait(15_000)
 }
 
 export const wait = (ms = 0): Promise<void> => {
@@ -208,20 +221,29 @@ export async function generateActivityOnChains({
   // whilst waiting for status we mine on both parentChain and childChain
   console.log('Generating activity on parentChain...')
   const minerParent = Wallet.createRandom().connect(parentProvider)
+
+  const decimals = await getNativeTokenDecimals({
+    parentProvider,
+    childProvider
+  })
+
   await fundEth({
     address: await minerParent.getAddress(),
     provider: parentProvider,
     sourceWallet: wallet,
-    networkType: 'parentChain'
+    networkType: 'parentChain',
+    amount: utils.parseUnits('0.2', decimals)
   })
 
   console.log('Generating activity on childChain...')
   const minerChild = Wallet.createRandom().connect(childProvider)
+
   await fundEth({
     address: await minerChild.getAddress(),
     provider: childProvider,
     sourceWallet: wallet,
-    networkType: 'childChain'
+    networkType: 'childChain',
+    amount: utils.parseEther('0.2')
   })
 
   await Promise.allSettled([keepMining(minerParent), keepMining(minerChild)])
@@ -229,23 +251,32 @@ export async function generateActivityOnChains({
 
 export async function checkForAssertions({
   parentProvider,
-  isOrbitTest
+  testType
 }: {
   parentProvider: Provider
-  isOrbitTest: boolean
+  testType: 'regular' | 'orbit-eth' | 'orbit-custom'
 }) {
   const abi = [
     'function latestConfirmed() public view returns (uint64)',
     'function latestNodeCreated() public view returns (uint64)'
   ]
 
-  const rollupAddress = isOrbitTest
-    ? defaultL3Network.ethBridge.rollup
-    : defaultL2Network.ethBridge.rollup
+  let rollupAddress: string
+
+  switch (testType) {
+    case 'orbit-eth':
+      rollupAddress = defaultL3Network.ethBridge.rollup
+      break
+    case 'orbit-custom':
+      rollupAddress = defaultL3CustomGasTokenNetwork.ethBridge.rollup
+      break
+    default:
+      rollupAddress = defaultL2Network.ethBridge.rollup
+  }
 
   const rollupContract = new ethers.Contract(rollupAddress, abi, parentProvider)
 
-  const parentChainId = await getChainIdFromProvider(parentProvider)
+  const parentChainId = (await parentProvider.getNetwork()).chainId
 
   try {
     while (true) {
@@ -271,13 +302,13 @@ export async function fundEth({
   provider,
   sourceWallet, // source wallet that will fund the `address`,
   networkType,
-  amount = utils.parseEther('2')
+  amount
 }: {
   address: string
   provider: Provider
   sourceWallet: Wallet
   networkType: NetworkType
-  amount?: BigNumber
+  amount: BigNumber
 }) {
   console.log(`Funding ETH ${address} on ${networkType}...`)
   const balance = await provider.getBalance(address)
@@ -327,4 +358,26 @@ export function setupCypressTasks(
       return walletConnectedToDapp
     }
   })
+}
+
+export async function getNativeTokenDecimals({
+  parentProvider,
+  childProvider
+}: {
+  parentProvider: Provider
+  childProvider: Provider
+}) {
+  const multiCaller = await MultiCaller.fromProvider(parentProvider)
+  const ethBridger = await EthBridger.fromProvider(childProvider)
+  const isCustomFeeToken = typeof ethBridger.nativeToken !== 'undefined'
+
+  const nativeToken = isCustomFeeToken
+    ? (
+        await multiCaller.getTokenData([ethBridger.nativeToken!], {
+          decimals: true
+        })
+      )[0]
+    : undefined
+
+  return nativeToken?.decimals ?? 18
 }

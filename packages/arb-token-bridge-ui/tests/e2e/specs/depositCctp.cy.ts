@@ -2,9 +2,8 @@
  * When user wants to bridge USDC through CCTP from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import { getZeroToLessThanOneToken } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
-import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -65,6 +64,7 @@ const confirmAndApproveCctpDeposit = () => {
 describe('Deposit USDC through CCTP', () => {
   // Happy Path
   const USDCAmountToSend = 0.0001
+  const zeroToLessThanOneETH = getZeroToLessThanOneToken('ETH')
 
   beforeEach(() => {
     cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
@@ -86,7 +86,7 @@ describe('Deposit USDC through CCTP', () => {
   })
 
   it('should initiate depositing USDC to the same address through CCTP successfully', () => {
-    cy.findMoveFundsButton().click()
+    cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpDeposit()
     cy.confirmSpending(USDCAmountToSend.toString())
@@ -113,7 +113,6 @@ describe('Deposit USDC through CCTP', () => {
 
   it('should claim deposit', () => {
     cy.claimCctp(0.00014, { accept: false })
-    cy.closeTransactionHistoryPanel()
     cy.claimCctp(0.00015, { accept: false })
   })
 
@@ -123,7 +122,7 @@ describe('Deposit USDC through CCTP', () => {
    */
   it.skip('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
     cy.fillCustomDestinationAddress()
-    cy.findMoveFundsButton().click()
+    cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
     confirmAndApproveCctpDeposit()
 
     cy.confirmSpending(USDCAmountToSend.toString())

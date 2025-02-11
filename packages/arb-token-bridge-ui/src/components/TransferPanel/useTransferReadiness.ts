@@ -3,7 +3,6 @@ import { useAccount } from 'wagmi'
 import { utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
-import { useAppState } from '../../state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -14,7 +13,6 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage,
   getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
@@ -27,6 +25,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
@@ -121,9 +120,7 @@ export type UseTransferReadinessResult = {
 
 export function useTransferReadiness(): UseTransferReadinessResult {
   const [{ amount, amount2 }] = useArbQueryParams()
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const {
     layout: { isTransferring }
   } = useAppContextState()
@@ -264,18 +261,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
     if (DISABLED_CHAIN_IDS.includes(childChain.id)) {
       return notReady()
-    }
-
-    // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
-    if (isSmartContractWallet && !selectedToken) {
-      return notReady({
-        errorMessages: {
-          inputAmount1:
-            getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
-              { asset: nativeCurrency.symbol }
-            )
-        }
-      })
     }
 
     // teleport transfers using SC wallets not enabled yet

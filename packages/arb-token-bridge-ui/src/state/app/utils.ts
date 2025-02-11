@@ -17,7 +17,7 @@ import {
   isTeleportTx,
   TeleporterTransaction,
   Transaction
-} from '../../hooks/useTransactions'
+} from '../../types/Transactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import {
   firstRetryableLegRequiresRedeem,
@@ -287,14 +287,6 @@ export function isCustomDestinationAddressTx(
     return false
   }
   return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
-}
-
-export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
-  return (
-    isWithdrawal(tx) &&
-    isPending(tx) &&
-    tx.status === outgoingStateToString[OutgoingMessageState.CONFIRMED]
-  )
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {

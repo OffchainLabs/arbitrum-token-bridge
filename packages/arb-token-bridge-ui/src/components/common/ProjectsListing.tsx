@@ -11,7 +11,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getChainQueryParamForChain } from '../../types/ChainQueryParam'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
-import { isTestingEnvironment } from '../../util/CommonUtils'
+import { isDevelopmentEnvironment } from '../../util/CommonUtils'
 
 const shuffleArray = (array: PortalProject[]) => {
   return array.sort(() => Math.random() - 0.5)
@@ -54,7 +54,7 @@ const fetchProjects = async (
   }
 
   if (isTestnetMode) {
-    return isTestingEnvironment ? generateTestnetProjects(chainId, 6) : [] // don't show any test projects in production
+    return isDevelopmentEnvironment ? generateTestnetProjects(chainId, 6) : [] // don't show any test projects in production
   }
 
   try {

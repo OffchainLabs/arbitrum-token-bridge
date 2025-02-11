@@ -5,7 +5,7 @@ import { ChildToParentMessageReader } from '@arbitrum/sdk'
  * Fetches initiated ETH withdrawals from event logs in range of [fromBlock, toBlock].
  *
  * @param query Query params
- * @param query.receiver Address that will receive the funds
+ * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2Provider Provider for the L2 network
@@ -22,9 +22,10 @@ export function fetchETHWithdrawalsFromEventLogs({
   l2Provider: Provider
 }) {
   if (typeof receiver === 'undefined') {
-    return []
+    return Promise.resolve([])
   }
-  // funds sent by this address
+
+  // funds received by this address
   return ChildToParentMessageReader.getChildToParentEvents(
     l2Provider,
     { fromBlock, toBlock },

@@ -52,7 +52,7 @@ export function Layout(props: LayoutProps) {
         aria-hidden
       />
       <div className="relative flex flex-col sm:min-h-screen">
-        <div className="flex flex-row">
+        <div className="relative flex flex-row">
           <AppSidebar />
 
           <main className="grow">

@@ -2,7 +2,6 @@ import { constants, utils } from 'ethers'
 import { useMemo } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'
 
-import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -18,6 +17,9 @@ import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
+import { useSelectedToken } from '../useSelectedToken'
+import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
+import { useOftV2FeeEstimates } from './useOftV2FeeEstimates'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -33,9 +35,7 @@ export type UseGasSummaryResult = {
 }
 
 export function useGasSummary(): UseGasSummaryResult {
-  const {
-    app: { selectedToken: token }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -58,23 +58,44 @@ export function useGasSummary(): UseGasSummaryResult {
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
 
-  const balance = useBalanceOnSourceChain(token)
+  const balance = useBalanceOnSourceChain(selectedToken)
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
       amount: amountBigNumber,
       sourceChainErc20Address: isDepositMode
-        ? token?.address
-        : isTokenArbitrumOneNativeUSDC(token?.address) ||
-          isTokenArbitrumSepoliaNativeUSDC(token?.address)
-        ? token?.address
-        : token?.l2Address,
+        ? selectedToken?.address
+        : isTokenArbitrumOneNativeUSDC(selectedToken?.address) ||
+          isTokenArbitrumSepoliaNativeUSDC(selectedToken?.address)
+        ? selectedToken?.address
+        : selectedToken?.l2Address,
       destinationChainErc20Address: isDepositMode
-        ? token?.l2Address
-        : token?.address
+        ? selectedToken?.l2Address
+        : selectedToken?.address
     })
 
+  const isOft = useIsOftV2Transfer()
+  const {
+    feeEstimates: oftFeeEstimates,
+    error: oftFeeEstimatesError,
+    isLoading: oftFeeSummaryLoading
+  } = useOftV2FeeEstimates({
+    sourceChainErc20Address: isDepositMode
+      ? selectedToken?.address
+      : selectedToken?.l2Address
+  })
+
   const estimatedParentChainGasFees = useMemo(() => {
+    if (isOft && oftFeeEstimates) {
+      return parseFloat(
+        utils.formatEther(
+          isDepositMode
+            ? oftFeeEstimates.sourceChainGasFee
+            : oftFeeEstimates.destinationChainGasFee
+        )
+      )
+    }
+
     if (!estimateGasResult?.estimatedParentChainGas) {
       return
     }
@@ -83,9 +104,25 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedParentChainGas.mul(parentChainGasPrice)
       )
     )
-  }, [estimateGasResult, parentChainGasPrice])
+  }, [
+    estimateGasResult,
+    parentChainGasPrice,
+    isOft,
+    oftFeeEstimates,
+    isDepositMode
+  ])
 
   const estimatedChildChainGasFees = useMemo(() => {
+    if (isOft && oftFeeEstimates) {
+      return parseFloat(
+        utils.formatEther(
+          isDepositMode
+            ? oftFeeEstimates.destinationChainGasFee
+            : oftFeeEstimates.sourceChainGasFee
+        )
+      )
+    }
+
     if (!estimateGasResult?.estimatedChildChainGas) {
       return
     }
@@ -114,13 +151,19 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedChildChainGas.mul(childChainGasPrice)
       )
     )
-  }, [childChainGasPrice, estimateGasResult, isDepositMode])
+  }, [
+    childChainGasPrice,
+    estimateGasResult,
+    isDepositMode,
+    oftFeeEstimates,
+    isOft
+  ])
 
   const gasSummary: UseGasSummaryResult = useMemo(() => {
     if (
       !isDepositMode &&
-      (isTokenArbitrumOneNativeUSDC(token?.address) ||
-        isTokenArbitrumSepoliaNativeUSDC(token?.address))
+      (isTokenArbitrumOneNativeUSDC(selectedToken?.address) ||
+        isTokenArbitrumSepoliaNativeUSDC(selectedToken?.address))
     ) {
       return {
         status: 'unavailable',
@@ -129,7 +172,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (balance === null) {
+    if (balance === null || oftFeeSummaryLoading) {
       return {
         status: 'loading',
         estimatedParentChainGasFees,
@@ -145,7 +188,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (gasEstimatesError) {
+    if (gasEstimatesError || oftFeeEstimatesError) {
       return {
         status: 'error',
         estimatedParentChainGasFees,
@@ -160,12 +203,14 @@ export function useGasSummary(): UseGasSummaryResult {
     }
   }, [
     isDepositMode,
-    token?.address,
+    selectedToken?.address,
     balance,
     amountBigNumber,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
-    gasEstimatesError
+    gasEstimatesError,
+    oftFeeEstimatesError,
+    oftFeeSummaryLoading
   ])
 
   return gasSummary

@@ -1,3 +1,4 @@
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
   getChildrenForNetwork,
@@ -8,26 +9,15 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { chainIdToInfuraUrl } from './infura'
-
-export enum ChainId {
-  // L1
-  Ethereum = 1,
-  // L1 Testnets
-  Local = 1337,
-  Sepolia = 11155111,
-  Holesky = 17000,
-  // L2
-  ArbitrumOne = 42161,
-  ArbitrumNova = 42170,
-  Base = 8453,
-  // L2 Testnets
-  ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346,
-  BaseSepolia = 84532,
-  // L3 Testnets
-  L3Local = 333333
-}
+import { fetchErc20Data } from './TokenUtils'
+import { orbitChains } from './orbitChainsList'
+import { ChainId } from '../types/ChainId'
+import { getRpcUrl } from './rpc/getRpcUrl'
+import {
+  defaultL2Network,
+  defaultL3Network,
+  defaultL3CustomGasTokenNetwork
+} from './networksNitroTestnode'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -104,7 +94,7 @@ export type ChainWithRpcUrl = ArbitrumNetwork & {
   slug?: string
 }
 
-export function getBaseChainIdByChainId({
+export function getBlockNumberReferenceChainIdByChainId({
   chainId
 }: {
   chainId: number
@@ -191,6 +181,7 @@ export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
   }
 
   const newCustomChains = [...getCustomChainsFromLocalStorage(), newCustomChain]
+
   localStorage.setItem(
     customChainLocalStorageKey,
     JSON.stringify(newCustomChains)
@@ -201,6 +192,7 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
   const newCustomChains = getCustomChainsFromLocalStorage().filter(
     chain => chain.chainId !== chainId
   )
+
   localStorage.setItem(
     customChainLocalStorageKey,
     JSON.stringify(newCustomChains)
@@ -216,35 +208,41 @@ export const supportedCustomOrbitParentChains = [
 ]
 
 export const rpcURLs: { [chainId: number]: string } = {
-  // L1
+  // L1 Mainnet
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-    fallback: chainIdToInfuraUrl(ChainId.Ethereum)
+    env: process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
+    fallback: getRpcUrl(ChainId.Ethereum)
   }),
-  // L1 Testnets
+  // L1 Testnet
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
-    fallback: chainIdToInfuraUrl(ChainId.Sepolia)
+    env: process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
+    fallback: getRpcUrl(ChainId.Sepolia)
   }),
-  [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
-  // L2
+  [ChainId.Holesky]: loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_RPC_URL_HOLESKY,
+    fallback: getRpcUrl(ChainId.Holesky)
+  }),
+  // L2 Mainnet
   [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.ArbitrumOne),
-    fallback: 'https://arb1.arbitrum.io/rpc'
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_ONE,
+    fallback: getRpcUrl(ChainId.ArbitrumOne)
   }),
-  [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
+  [ChainId.ArbitrumNova]: loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_NOVA,
+    fallback: getRpcUrl(ChainId.ArbitrumNova)
+  }),
   [ChainId.Base]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.Base),
-    fallback: 'https://mainnet.base.org'
+    env: process.env.NEXT_PUBLIC_RPC_URL_BASE,
+    fallback: getRpcUrl(ChainId.Base)
   }),
-  // L2 Testnets
+  // L2 Testnet
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
-    fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
+    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_SEPOLIA,
+    fallback: getRpcUrl(ChainId.ArbitrumSepolia)
   }),
   [ChainId.BaseSepolia]: loadEnvironmentVariableWithFallback({
-    env: chainIdToInfuraUrl(ChainId.BaseSepolia),
-    fallback: 'https://sepolia.base.org'
+    env: process.env.NEXT_PUBLIC_RPC_URL_BASE_SEPOLIA,
+    fallback: getRpcUrl(ChainId.BaseSepolia)
   })
 }
 
@@ -269,7 +267,9 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getL1BlockTime = (chainId: number) => {
-  const chain = getChainByChainId(getBaseChainIdByChainId({ chainId }))
+  const chain = getChainByChainId(
+    getBlockNumberReferenceChainIdByChainId({ chainId })
+  )
 
   if (!chain || !isBlockNumberReferenceNetwork(chain)) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
@@ -309,103 +309,60 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
 }
 
+export const l2UsdcGatewayAddresses: { [chainId: number]: string } = {
+  // PoP Apex
+  70700: '0x97e2b88b44946cd932fb85675412699723200987',
+  // Superposition
+  55244: '0xF70ae1Af7D49dA0f7D66Bb55469caC9da336181b'
+}
+
 const defaultL1Network: BlockNumberReferenceNetwork = {
   blockTime: 10,
   chainId: 1337,
   isTestnet: true
 }
 
-export const defaultL2Network: ArbitrumNetwork = {
-  chainId: 412346,
-  parentChainId: ChainId.Local,
-  confirmPeriodBlocks: 20,
-  ethBridge: {
-    bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
-    inbox: '0x9f8c1c641336A371031499e3c362e40d58d0f254',
-    outbox: '0x50143333b44Ea46255BEb67255C9Afd35551072F',
-    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
-      ? '0xE8A8F50F2a237D06D0087D14E690f6Ff0556259D'
-      : '0x46966d871d29e1772c2809459469f849d8AAb1A3',
-    sequencerInbox: '0x18d19C5d3E685f5be5b9C86E097f0E439285D216'
-  },
-  isCustom: true,
-  isTestnet: true,
-  name: 'Arbitrum Local',
-  retryableLifetimeSeconds: 604800,
-  tokenBridge: {
-    parentCustomGateway: '0x8407E6180dC009D20D26D4BABB4790C1d4E6D2aA',
-    parentErc20Gateway: '0x00D9fE1a2B67B8151aEdE8855c95E58D73FB4245',
-    parentGatewayRouter: '0x093AAa96CD4387A68FC0e24C60140938Dc812549',
-    parentMultiCall: '0x49117fC32930E324F2E9A7BeA588FFb26008b8eC',
-    parentProxyAdmin: '0x2A1f38c9097e7883570e0b02BFBE6869Cc25d8a3',
-    parentWeth: '0x7E32b54800705876d3b5cFbc7d9c226a211F7C1a',
-    parentWethGateway: '0xB8F48Ba39fCfB44d70F6008fe1bf4F3E744044AF',
-    childCustomGateway: '0x0B35cfE62314C3852A0942b5830c728353BD654F',
-    childErc20Gateway: '0x7424e3DAAAAcd867c85ceB75c1E00119F2ee5eb7',
-    childGatewayRouter: '0x32656396981868E925280FB772b3f806892cf4bF',
-    childMultiCall: '0x6B1E93aE298B64e8f5b9f43B65Dd8F1eaA6DD4c3',
-    childProxyAdmin: '0x9F95547ABB0FfC92b4E37b3124d1e8613d5aB74A',
-    childWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
-    childWethGateway: '0x67aE8014BD1A0c1Ed747715d22b3b3a188aC324B'
-  }
-}
-
-export const defaultL3Network: ArbitrumNetwork = {
-  chainId: 333333,
-  parentChainId: ChainId.ArbitrumLocal,
-  confirmPeriodBlocks: 20,
-  ethBridge: {
-    bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
-    inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
-    outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
-    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
-      ? '0xdeD540257498027B1De7DFD4fe6cc4CeC030F355'
-      : '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
-    sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
-  },
-  isCustom: true,
-  isTestnet: true,
-  name: 'L3 Local',
-  retryableLifetimeSeconds: 604800,
-  tokenBridge: {
-    parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
-    parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',
-    parentGatewayRouter: '0xfE03DBdf7A126994dBd749631D7fbaB58C618c58',
-    parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
-    parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
-    parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
-    parentWethGateway: '0x77603b0ea6a797C74Fa9ef11b5BdE04A4E03D550',
-    childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
-    childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',
-    childGatewayRouter: '0x8B6BC759226f8Fe687c8aD8Cc0DbF85E095e9297',
-    childMultiCall: '0x052B15c8Ff0544287AE689C4F2FC53A3905d7Db3',
-    childProxyAdmin: '0x36C56eC2CF3a3f53db9F01d0A5Ae84b36fb0A1e2',
-    childWeth: '0x582a8dBc77f665dF2c49Ce0a138978e9267dd968',
-    childWethGateway: '0xA6AB233B3c7bfd0399834897b5073974A3D467e2'
-  }
-}
-
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
   fallback: 'http://127.0.0.1:8545'
 })
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
   fallback: 'http://127.0.0.1:8547'
 })
 export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL,
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
   fallback: 'http://127.0.0.1:3347'
 })
 
-export function registerLocalNetwork() {
+export async function registerLocalNetwork() {
   try {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
     rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
     registerCustomArbitrumNetwork(defaultL2Network)
-    registerCustomArbitrumNetwork(defaultL3Network)
+
+    let isLocalCustomNativeToken = false
+
+    try {
+      const data = await fetchErc20Data({
+        address: defaultL3CustomGasTokenNetwork.nativeToken!,
+        provider: new StaticJsonRpcProvider(localL2NetworkRpcUrl)
+      })
+      if (data.symbol === 'TN') {
+        isLocalCustomNativeToken = true
+      }
+    } catch (e) {
+      // not the native token
+      isLocalCustomNativeToken = false
+    }
+
+    registerCustomArbitrumNetwork(
+      isLocalCustomNativeToken
+        ? defaultL3CustomGasTokenNetwork
+        : defaultL3Network
+    )
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
@@ -516,6 +473,16 @@ export function getSupportedChainIds({
     })
 }
 
+export function isAlchemyChain(chainId: number) {
+  const chain = orbitChains[chainId]
+
+  if (typeof chain === 'undefined') {
+    return false
+  }
+
+  return chain.rpcUrl.toLowerCase().includes('alchemy.com')
+}
+
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   // custom chain details need to be added to various objects to make it work with the UI
   //
@@ -541,7 +508,7 @@ function isBlockNumberReferenceNetwork(chain: {
 }
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
-  [ChainId.Ethereum]: [1380012617, 70700, 70701], // Rari, PopApex and PopBoss
+  [ChainId.Ethereum]: [1380012617, 70700, 70701, 55244], // Rari, PopApex, PopBoss, Superposition
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 

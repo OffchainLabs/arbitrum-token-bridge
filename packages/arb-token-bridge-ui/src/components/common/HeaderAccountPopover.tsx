@@ -4,8 +4,7 @@ import {
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  DocumentTextIcon
+  DocumentDuplicateIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import { useCopyToClipboard, useMedia } from 'react-use'
@@ -31,7 +30,6 @@ export function HeaderAccountPopover({
     accountShort,
     ensName,
     ensAvatar,
-    openTransactionHistory,
     disconnect,
     udInfo,
     chain,
@@ -130,17 +128,6 @@ export function HeaderAccountPopover({
           </div>
 
           <div className="flex w-full flex-col justify-between sm:flex-col sm:items-end sm:px-0">
-            {/* Transactions button */}
-            {isCorrectNetworkConnected && (
-              <button
-                className={headerItemsClassName}
-                onClick={openTransactionHistory}
-              >
-                <DocumentTextIcon className="h-3 w-3 text-white/60 sm:text-white" />
-                <span>Transactions</span>
-              </button>
-            )}
-
             {/* Explorer button */}
             {isCorrectNetworkConnected && chain && (
               <ExternalLink

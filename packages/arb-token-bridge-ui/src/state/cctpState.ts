@@ -5,12 +5,8 @@ import useSWRImmutable from 'swr/immutable'
 import { useInterval } from 'react-use'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
-import {
-  ChainId,
-  getL1BlockTime,
-  getNetworkName,
-  isNetwork
-} from '../util/networks'
+import { getL1BlockTime, getNetworkName, isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'

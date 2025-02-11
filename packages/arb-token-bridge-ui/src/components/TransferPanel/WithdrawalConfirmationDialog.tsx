@@ -8,16 +8,20 @@ import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
-import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
-import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
+import {
+  CONFIRMATION_PERIOD_ARTICLE_LINK,
+  FAST_WITHDRAWAL_DOCS_ARTICLE_LINK
+} from '../../constants'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { SecurityGuaranteed, SecurityNotGuaranteed } from './SecurityLabels'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
+import { getConfirmationTime } from '../../util/WithdrawalUtils'
 
 function getCalendarUrl(
   withdrawalDate: dayjs.Dayjs,
@@ -42,13 +46,13 @@ export function WithdrawalConfirmationDialog(
   const { childChain, childChainProvider, parentChain } =
     useNetworksRelationship(networks)
 
+  const { fastWithdrawalActive } = getConfirmationTime(childChain.id)
+
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const destinationNetworkName = getNetworkName(parentChain.id)
 
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   const nativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -58,14 +62,20 @@ export function WithdrawalConfirmationDialog(
     from: childChain.id,
     to: parentChain.id,
     tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
+    tokenAddress: selectedToken?.address,
     amount: props.amount
   })
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
+  const [checkbox3Checked, setCheckbox3Checked] = useState(false)
 
   const { isArbitrumOne } = isNetwork(childChain.id)
-  const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
+
+  const allCheckboxesChecked =
+    checkbox1Checked &&
+    checkbox2Checked &&
+    (fastWithdrawalActive ? checkbox3Checked : true)
 
   const estimatedConfirmationDate = getWithdrawalConfirmationDate({
     createdAt: null,
@@ -81,6 +91,7 @@ export function WithdrawalConfirmationDialog(
 
     setCheckbox1Checked(false)
     setCheckbox2Checked(false)
+    setCheckbox3Checked(false)
     setSelectedIndex(0)
   }
 
@@ -91,7 +102,7 @@ export function WithdrawalConfirmationDialog(
       className="max-w-[700px]"
       title={`Move funds to ${destinationNetworkName}`}
       actionButtonProps={{
-        disabled: !bothCheckboxesChecked,
+        disabled: !allCheckboxesChecked,
         hidden: isFastBridgesTab
       }}
     >
@@ -156,6 +167,29 @@ export function WithdrawalConfirmationDialog(
                   checked={checkbox2Checked}
                   onChange={setCheckbox2Checked}
                 />
+
+                {fastWithdrawalActive && (
+                  <Checkbox
+                    label={
+                      <span className="font-light">
+                        I understand that ~{confirmationPeriod} is an estimate,
+                        and it&apos;s possible the committee fails and it will
+                        default back to the 8 days.{' '}
+                        <ExternalLink
+                          href={FAST_WITHDRAWAL_DOCS_ARTICLE_LINK}
+                          className="underline"
+                          onClick={e => {
+                            e.stopPropagation()
+                          }}
+                        >
+                          Learn more.
+                        </ExternalLink>
+                      </span>
+                    }
+                    checked={checkbox3Checked}
+                    onChange={setCheckbox3Checked}
+                  />
+                )}
 
                 <div className="flex">
                   <SecurityGuaranteed />

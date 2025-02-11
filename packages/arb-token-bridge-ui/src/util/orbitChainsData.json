@@ -18,7 +18,6 @@
       "name": "Xai",
       "slug": "xai",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xb15A0826d65bE4c2fDd961b72636168ee70Af030",
         "parentErc20Gateway": "0xb591cE747CF19cF30e11d656EB94134F523A9e77",
@@ -45,7 +44,6 @@
         "nativeTokenData": {
           "name": "Xai",
           "symbol": "XAI",
-          "decimals": 18,
           "logoUrl": "/images/XaiLogo.svg"
         }
       }
@@ -67,7 +65,6 @@
       "name": "RARI Mainnet",
       "slug": "rari-mainnet",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x8bE956aB42274056ef4471BEb211b33e258b7324",
         "parentErc20Gateway": "0x46406c88285AD9BE2fB23D9aD96Cb578d824cAb6",
@@ -108,7 +105,6 @@
       "rpcUrl": "https://muster.alt.technology",
       "name": "Muster",
       "slug": "muster",
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": false,
       "tokenBridge": {
@@ -221,49 +217,6 @@
       }
     },
     {
-      "chainId": 12324,
-      "confirmPeriodBlocks": 7200,
-      "ethBridge": {
-        "bridge": "0x59E088d827CB7983Cd0CC64312E472D7cc8a4F44",
-        "inbox": "0x80de5c4ccDfb7b6a250A9588C2d80F62a2B7d13F",
-        "outbox": "0x1526DAacDAf3EE81E5ae087E0DA8677E8c677CE5",
-        "rollup": "0xb75A0a5812303cBB198d4f0BcA7CA38f17b8783e",
-        "sequencerInbox": "0xB9450b512Fd3454e9C1a2593C5DF9E71344b5653"
-      },
-      "explorerUrl": "https://explorer.l3x.com",
-      "rpcUrl": "https://rpc-mainnet.l3x.com",
-      "name": "L3X Network",
-      "slug": "l3x-network",
-      "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
-      "isCustom": true,
-      "isTestnet": false,
-      "tokenBridge": {
-        "parentCustomGateway": "0xec80A45ebadD945379f69e9A8929973BCb3E297D",
-        "parentErc20Gateway": "0x4fF3E70f30f0394Ad62428751Fe3858740595908",
-        "parentGatewayRouter": "0x817C8Da480bC6b42a5FA88A26e9eD8c0c03968Cf",
-        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
-        "parentWethGateway": "0x9bd7C6d040665E95a4FE70b61718abca2E3A62CD",
-        "childCustomGateway": "0x1AE90d0FBf03d1bb0685D4bAc5BCe4F4071cB0dc",
-        "childErc20Gateway": "0x76df9F5004F38aC74D0cE664027a1E718AA45E97",
-        "childGatewayRouter": "0x460E0a28a1DcE5a15811C3F5775D1e8fd0a08278",
-        "childMultiCall": "0xA9cfB51510b18300cf056d7e0b96925a1D11f424",
-        "childProxyAdmin": "0xFB027dBD2FBb343FD16D66a63a690B29D51D23AA",
-        "childWeth": "0xD3f8b9D33b159E8f5141d28880b216d31B00ee63",
-        "childWethGateway": "0x0fEf8843450b7c6a416C30D1E00cbc535Bb905b6"
-      },
-      "bridgeUiConfig": {
-        "color": "#3ABE7B",
-        "network": {
-          "name": "L3X Network",
-          "description": "Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network.",
-          "logo": "/images/L3XLogo.png"
-        }
-      }
-    },
-    {
       "chainId": 94524,
       "confirmPeriodBlocks": 40320,
       "ethBridge": {
@@ -280,7 +233,6 @@
       "name": "XCHAIN",
       "slug": "xchain",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xEFb1F8ae759c595907782e9bD45F119c9814b308",
         "parentErc20Gateway": "0xFFb821ca61e823a884D79226B0fcD7a99A4d48aa",
@@ -324,7 +276,6 @@
       "name": "Sanko",
       "slug": "sanko",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x5414Dc7c8DB4BeDbf3c772768aE1F5e984bdf47a",
         "parentErc20Gateway": "0xb4951c0C41CFceB0D195A95FE66280457A80a990",
@@ -351,7 +302,6 @@
         "nativeTokenData": {
           "name": "DMT",
           "symbol": "DMT",
-          "decimals": 18,
           "logoUrl": "/images/SankoLogo.png"
         }
       }
@@ -373,7 +323,6 @@
       "name": "Superposition",
       "slug": "superposition",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xacb51eA5b465692c889C36615a398BA14D42b619",
         "parentErc20Gateway": "0x62bEd4b862254789825Cd6F2352aa2b76B16145e",
@@ -416,7 +365,6 @@
       "name": "Mind Network",
       "slug": "mind-network",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xA6a623F64931Bcf1368B120e9Dc29254676D0D8E",
         "parentErc20Gateway": "0x281587c05DeA1a1ceCE83F6FFea23c5aFd287fb3",
@@ -460,7 +408,6 @@
       "name": "SX",
       "slug": "sx",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x54F4853fDfC80F6bA4e66a7946c2B9086B1dE45F",
         "parentErc20Gateway": "0xB4968C66BECc8fb4f73b50354301c1aDb2Abaa91",
@@ -487,9 +434,9 @@
         "nativeTokenData": {
           "name": "SX Network",
           "symbol": "SX",
-          "decimals": 18,
           "logoUrl": "/images/sxTokenLogo.png"
-        }
+        },
+        "fastWithdrawalTime": 43200000
       }
     },
     {
@@ -510,7 +457,6 @@
       "name": "ApeChain",
       "slug": "apechain",
       "parentChainId": 42161,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xEd543dA6fE33cceE50DC024b78C27959235D0ab0",
         "parentErc20Gateway": "0xB603a1C07A11945bFe4855347c88583e31b8ddB0",
@@ -537,7 +483,6 @@
         "nativeTokenData": {
           "name": "ApeCoin",
           "symbol": "APE",
-          "decimals": 18,
           "logoUrl": "/images/ApeTokenLogo.svg"
         }
       }
@@ -555,13 +500,11 @@
       "nativeToken": "0x9C7BEBa8F6eF6643aBd725e45a4E8387eF260649",
       "explorerUrl": "https://explorer.gravity.xyz",
       "rpcUrl": "https://rpc.gravity.xyz",
-      "isArbitrum": true,
       "isCustom": true,
       "isTestnet": false,
       "name": "Gravity Alpha",
       "slug": "gravity-alpha",
       "parentChainId": 1,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xa26Fd1c23634870303e42311E114D5cc8301Ed1E",
         "parentErc20Gateway": "0xb23988D9728EF147EAa02D602D7e067B6131A1bB",
@@ -588,8 +531,665 @@
         "nativeTokenData": {
           "name": "G",
           "symbol": "G",
-          "decimals": 18,
           "logoUrl": "/images/GravityAlpha_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 63157,
+      "confirmPeriodBlocks": 274908,
+      "ethBridge": {
+        "bridge": "0x9F904Fea0efF79708B37B99960e05900fE310A8E",
+        "inbox": "0x32AB85A3F0C702EbE74f73C5934b7Fb8452B492f",
+        "outbox": "0x7cF0a5D0211AC30365bA8C1cB8CFD4caF64b2D60",
+        "rollup": "0x58E3fe88b1E8a7e2D578000aCD9C6d5989FE9e09",
+        "sequencerInbox": "0x400f7c5DaC37aAEe3cE007e43Db54424414743f5"
+      },
+      "nativeToken": "0xcD2F22236DD9Dfe2356D7C543161D4d260FD9BcB",
+      "explorerUrl": "https://geist-mainnet.explorer.alchemy.com",
+      "rpcUrl": "https://geist-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Geist Mainnet",
+      "slug": "geist-mainnet",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0xb2F230EC2E6c29F631614E1343b5a20a8CB86D7b",
+        "parentErc20Gateway": "0xcCc3f0920fb4e12241475dfB2Bf33EB7E7FeFF05",
+        "parentGatewayRouter": "0xD570870a6b8bFda7baC6bD0c424B5E9674c990A2",
+        "parentMultiCall": "0xb444317D808b5cFfE66495920D40A35E7D247cC4",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xE281b9E84d52152D0C83B7AA18045057450c60E1",
+        "childErc20Gateway": "0x73031e600c05293c51Ccde9b4488f3DAd54982e0",
+        "childGatewayRouter": "0x8c34AFB2685a2B600498f81B50E4F145E1873b4E",
+        "childMultiCall": "0x67a910a43F74fA4aAc8Ffd9c120E2E7472945a89",
+        "childProxyAdmin": "0x25a7F575dD5C10a7FcCc4E3E3A49c85E0C76faa0",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#EB4A9D",
+        "network": {
+          "name": "Geist Mainnet",
+          "logo": "/images/GeistMainnetLogo.svg",
+          "description": ""
+        },
+        "nativeTokenData": {
+          "name": "Aavegotchi",
+          "symbol": "GHST",
+          "logoUrl": "/images/ghst.png"
+        }
+      }
+    },
+    {
+      "chainId": 10058111,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x37d3139024D017C2152849B154F2631E2F2C8560",
+        "inbox": "0x21092752C8BB70b8043379a00dCB9aCdA2302181",
+        "outbox": "0xb07b44B3D5C7df02905B9c156Ba44b5762f7b268",
+        "rollup": "0x49B3Bb2c0E54F548F17473d7669b14E009Da407c",
+        "sequencerInbox": "0x627C3Eac80782493B3a633F09C82F510ad710A2D"
+      },
+      "explorerUrl": "https://spotlight-mainnet.explorer.alchemy.com",
+      "rpcUrl": "https://spotlight-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Spotlight Mainnet",
+      "slug": "spotlight-mainnet",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x443E16416b49Ad675F7E4F00CbA3916F5564DEf3",
+        "parentErc20Gateway": "0xaB24881b11c1c7eb6b9C22288eDB12B67defCEb9",
+        "parentGatewayRouter": "0xf50201e8963A07cEF57f58C56C2349b10B487091",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        "parentWethGateway": "0x44a9a5C2416702BeDC562f8023f19Bc1D732bE94",
+        "childCustomGateway": "0x4aF09A0bD7657cC027D9F3592d092FdEF6D72895",
+        "childErc20Gateway": "0x88fe5E5D022871120F57463b2a979e7478435628",
+        "childGatewayRouter": "0x29c413c7e9f13fC6ee43D43A021A28319412FB90",
+        "childMultiCall": "0x0877A4e5265A8A0E84E60441E63361435d3edC00",
+        "childProxyAdmin": "0x1067df41b7fE8Ef5221eE514b0461f617311f3e5",
+        "childWeth": "0x0203A44796263b86f22Eb8F20C7A2FEc18eB4f53",
+        "childWethGateway": "0xbB5a4466199fc2C63be4749D42D4fb4cD6F890d7"
+      },
+      "bridgeUiConfig": {
+        "color": "#F3C34D",
+        "network": {
+          "name": "Spotlight Mainnet",
+          "logo": "/images/SpotlightLogo.svg",
+          "description": ""
+        }
+      }
+    },
+    {
+      "chainId": 41923,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x2F12c50b46adB01a4961AdDa5038c0974C7C78e8",
+        "inbox": "0x590044e628ea1B9C10a86738Cf7a7eeF52D031B8",
+        "outbox": "0x6339965Cb3002f5c746895e4eD895bd775dbfdf9",
+        "rollup": "0xBaE3B462a2A7fb758F66D91170514C10B14Ce914",
+        "sequencerInbox": "0xA3464bf0ed52cFe6676D3e34ab1F4DF53f193631"
+      },
+      "nativeToken": "0xf8173a39c56a554837C4C7f104153A005D284D11",
+      "explorerUrl": "https://educhain.blockscout.com",
+      "rpcUrl": "https://rpc.edu-chain.raas.gelato.cloud",
+      "isArbitrum": true,
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Edu Chain",
+      "slug": "edu-chain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0xDd7A9dEcBB0b16B37fE6777e245b18fC0aC63759",
+        "parentErc20Gateway": "0x419e439e5c0B839d6e31d7C438939EEE1A4f4184",
+        "parentGatewayRouter": "0xDa4ac9E9cB8Af8afBB2Df1ffe7b82efEA17ba0f6",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x79daC9c2deC3E4411a2cB2b0ecf654D27a4AFf0A",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xA9f18587F6dE8B1c89a4AdD2c953AB66eD532015",
+        "childErc20Gateway": "0x9E8f79EE5177aBDd76EDfC7D72c8Dc0F16955ae3",
+        "childGatewayRouter": "0xFd25B25576cC0d510F62C88A166F84b3e25208C7",
+        "childMultiCall": "0xB9199cA38F678bE120350d1baEE8a7b8eCd52A06",
+        "childProxyAdmin": "0x3Bb11Aa109cCe35aCB73B043cC51b76bCE5999d7",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#131BEB",
+        "network": {
+          "name": "Edu Chain",
+          "logo": "/images/EduChainLogo.png",
+          "description": "EDU Chain, developed by Open Campus, is the first blockchain for education, designed for consumer-facing education apps and on-chain education finance. It's a Layer 3 platform built on Arbitrum Orbit that’s home to dApps spanning learning, DeFi, education finance, AI, gaming, SocialFi, recruitment, and more."
+        },
+        "nativeTokenData": {
+          "name": "EDU",
+          "symbol": "EDU",
+          "logoUrl": "/images/EduChainTokenLogo.png"
+        },
+        "fastWithdrawalTime": 3600000
+      }
+    },
+    {
+      "chainId": 383353,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xA337997ab18164Dfe1e8A94E8D912e8d4e2ce173",
+        "inbox": "0x58e3F0ed71ac29501326aeE9564674E43812cc24",
+        "outbox": "0x9bAA9C2c313510D4f3CB2673b2f2603ED45d6eDd",
+        "rollup": "0xb9E6B5AcB523D431f6D136C56d371271456757E7",
+        "sequencerInbox": "0x714d792CB8BFB9F70Cde071904d8743280267ab2"
+      },
+      "nativeToken": "0x05AEa20947A9A376eF50218633BB0a5A05d40A0C",
+      "explorerUrl": "https://fetascan.xyz/",
+      "rpcUrl": "https://rpc.cheesechain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "CheeseChain",
+      "slug": "cheesechain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x762AE18EDA279709C106eC76d4b3985366D87C3F",
+        "parentErc20Gateway": "0x4D692d1B2E5Cef2A6092de572231D54D07691aA0",
+        "parentGatewayRouter": "0xA4BD9786c885EB99Cb6C6886d8f9CE8d96cE99F6",
+        "parentMultiCall": "0x909b042B88F587d745dBF52e2569545376f6eAA4",
+        "parentProxyAdmin": "0xB9b62DF4C8F4605E0772d05506203D7bd4d2F968",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x1Dd3e9AbA3A50D071C250356551c774B5F28B567",
+        "childErc20Gateway": "0x8737E402817e5B82B0ED43dC791e4E260e00c9d5",
+        "childGatewayRouter": "0x1E7090DCA131C7DE551becE4eCd2eBD5a37Aff0D",
+        "childMultiCall": "0x36528Af3c5Ef49fDbB87EcB87027c98DeeD57a00",
+        "childProxyAdmin": "0xe63cE9FeF9FC31FfcbD54D1aCfFEAcAf737e2626",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#E07800",
+        "network": {
+          "name": "CheeseChain",
+          "logo": "/images/CheeseChain_Logo.png",
+          "description": "CheeseChain is a user-first L3 changing the model for building in crypto."
+        },
+        "nativeTokenData": {
+          "name": "Cheese",
+          "symbol": "CHEESE",
+          "logoUrl": "/images/CheeseChain_NativeTokenLogo.jpg"
+        },
+        "fastWithdrawalTime": 900000
+      }
+    },
+    {
+      "chainId": 98865,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0xd53645c6b5e19b3CE2d00bA27d734dCC928FCC54",
+        "inbox": "0xC45276467BDb1a9D083010c7CA7Fe2d593a10d01",
+        "outbox": "0x4e3C79Bf30Fc3d4Cf975dE1596e7Fb9Bfd0bf192",
+        "rollup": "0x59EF2FBa6ED4366cb1C3F67f232aaf824B536AB9",
+        "sequencerInbox": "0x3fD761A6eFC2137F03f03Da3d46933dD2e6FF0BB"
+      },
+      "explorerUrl": "https://phoenix-explorer.plumenetwork.xyz/",
+      "rpcUrl": "https://phoenix-rpc.plumenetwork.xyz/FH7uok8YdCXHhBu4B18j632wpHogyMYan",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Plume",
+      "slug": "plume",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x7F78Bb34c2525d0a42989B0228376edE11611a6D",
+        "parentErc20Gateway": "0x54504F3F4304394BedE5420a565b79d41E3060BC",
+        "parentGatewayRouter": "0x5b4658BA87c2aB8A5555D402B0dc4a4Fa0546134",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "parentWethGateway": "0x82F584b8edfb05464163D7492c503D49a64FAD8d",
+        "childCustomGateway": "0x7175aEB9E6d3F655A88B9dfF749885aC0424b680",
+        "childErc20Gateway": "0x44891414f8341AdaD491f8834887e6175247afB1",
+        "childGatewayRouter": "0xd6b34ac21080906B948fA1109D43b9809A1e6F72",
+        "childMultiCall": "0x3FEbE2c44F4791747C8490d91e286b36cE3A494B",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x626613B473F7eF65747967017C11225436EFaEd7",
+        "childWethGateway": "0x773c2fA1F9c4E497f443c506C4dFB1174831A435"
+      },
+      "bridgeUiConfig": {
+        "color": "#F43B3A",
+        "network": {
+          "name": "Plume",
+          "logo": "/images/Plume_Logo.svg",
+          "description": "Bringing the real world onchain. Optimized for real world assets."
+        }
+      }
+    },
+    {
+      "chainId": 41455,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x41Ec9456AB918f2aBA81F38c03Eb0B93b78E84d9",
+        "inbox": "0x56D8EC76a421063e1907503aDd3794c395256AEb",
+        "outbox": "0x73bb50c32a3BD6A1032aa5cFeA048fBDA3D6aF6e",
+        "rollup": "0x1CA12290D954CFe022323b6A6Df92113ed6b1C98",
+        "sequencerInbox": "0xF75206c49c1694594E3e69252E519434f1579876"
+      },
+      "nativeToken": "0xdD0ae774F7E300CdAA4EA371cD55169665Ee6AFe",
+      "explorerUrl": "https://evm-explorer.alephzero.org/",
+      "rpcUrl": "https://rpc.alephzero.raas.gelato.cloud",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Aleph Zero EVM",
+      "slug": "aleph-zero-evm",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x1CA12290D954CFe022323b6A6Df92113ed6b1C98",
+        "parentErc20Gateway": "0xccaF21F002EAF230c9Fa810B34837a3739B70F7B",
+        "parentGatewayRouter": "0xeBb17f398ed30d02F2e8733e7c1e5cf566e17812",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x2f70c8E4B7e168869db1bA7c33DDeDC90A0618F8",
+        "childErc20Gateway": "0x2A5a79061b723BBF453ef7E07c583C750AFb9BD6",
+        "childGatewayRouter": "0xD296d45171B97720D3aBdb68B0232be01F1A9216",
+        "childMultiCall": "0xadA1e2BD204b976Da39699bd051264425c78D060",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#00EAC7",
+        "network": {
+          "name": "Aleph Zero EVM",
+          "logo": "/images/AlephZeroEVM_Logo.webp",
+          "description": "Aleph Zero EVM is a Layer 2 for DeFi, gaming, and enterprise solutions."
+        },
+        "nativeTokenData": {
+          "name": "AZERO",
+          "symbol": "AZERO",
+          "logoUrl": "/images/AlephZeroEVM_Logo.webp"
+        },
+        "fastWithdrawalTime": 21600000
+      }
+    },
+    {
+      "chainId": 111188,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x39D2EEcC8B55f46aE64789E2494dE777cDDeED03",
+        "inbox": "0xf538671ddd60eE54BdD6FBb0E309c491A7A2df11",
+        "outbox": "0x8592Ca44dE1D354A20F75160F5602E5933D33761",
+        "rollup": "0xc4F7B37bE2bBbcF07373F28c61b1A259dfe49d2a",
+        "sequencerInbox": "0x51C4a227D59E49E26Ea07D8e4E9Af163da4c87A0"
+      },
+      "nativeToken": "0xC0Cc5eA00cAe0894B441E3B5a3Bb57aa92F15421",
+      "explorerUrl": "https://explorer.re.al/",
+      "rpcUrl": "https://rpc.realforreal.gelato.digital/",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "re.al",
+      "slug": "re.al",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0xEe4718fa63683D0b716296C3fbc8334645B32882",
+        "parentErc20Gateway": "0xfC89B875970122E24C6C5ADd4Dea139443943ea7",
+        "parentGatewayRouter": "0x490f337Ac108b2a555183f5b5fd2ee84a7F45a18",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xE3B8dd8F9bD9700e9Af5bE6e3290E777E82Ad6E8",
+        "childErc20Gateway": "0x326FFa9E3836577C6C46b0aA5A5b223FB4a4067c",
+        "childGatewayRouter": "0xF0b66c2d7Abb3CbbD26463a971BF62d6c4eaDE34",
+        "childMultiCall": "0xE416f7c3B35c0bEdF2CBBb6357928612a9dB0BE1",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#1C122C",
+        "network": {
+          "name": "re.al",
+          "logo": "/images/re.al_Logo.png",
+          "description": "re.al is the DeFi-native L2 for tokenized RWAs, using off-chain yields to support deep onchain liquidity."
+        },
+        "nativeTokenData": {
+          "name": "re.al Ether",
+          "symbol": "reETH",
+          "decimals": 18,
+          "logoUrl": "/images/re.al_NativeTokenLogo.png"
+        },
+        "fastWithdrawalTime": 900000
+      }
+    },
+    {
+      "chainId": 88899,
+      "confirmPeriodBlocks": 274908,
+      "ethBridge": {
+        "bridge": "0x80b4c2dBEacFF9921cD456e5E1489919185b8a1d",
+        "inbox": "0x319a9c8be1CF9ECB16D29d6327A6Fa2e26Bf42BC",
+        "outbox": "0xd9AD042DCb18628a941C8868bf25e5eCf897E48c",
+        "rollup": "0xd6df93D93c2554412622C567965DA7B16929f0A5",
+        "sequencerInbox": "0x3A2898B10c88cb619635efdC027538D7Aa99BF79"
+      },
+      "nativeToken": "0xA6C6ea2e0140849bE02A3a34780CF61b766916c5",
+      "explorerUrl": "https://unite-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://unite-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Unite Mainnet",
+      "slug": "unite-mainnet",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0xeA2Ffb3BA907418a5a9A9Cdb90212c814230Ba5d",
+        "parentErc20Gateway": "0x03b9C7978143A3A360cb37101F2A3f7f1B0eE8e8",
+        "parentGatewayRouter": "0xbaD53A171A9D0785EC179b5C3eFd3d7083b8D3a7",
+        "parentMultiCall": "0xb444317D808b5cFfE66495920D40A35E7D247cC4",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xa123C9a36e7162686197B92800f62573E69FE379",
+        "childErc20Gateway": "0x012595d521139F2Df03F0666a09f08caC99C4b1B",
+        "childGatewayRouter": "0x3224F78EC97bB795D16D5954Aa9e408f882520B2",
+        "childMultiCall": "0x95FdfA72d6C87968da0f38ac17a847203838f56C",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#7aad00",
+        "network": {
+          "name": "Unite Mainnet",
+          "logo": "/images/unite-mainnet_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Unite",
+          "symbol": "UNITE",
+          "logoUrl": "/images/unite-mainnet_Logo.png"
+        }
+      }
+    },
+    {
+      "chainId": 149,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xa2ed3b6B4069295F5C89F60B61a196dE09741fb6",
+        "inbox": "0xBC0862181F93f2fef61Cd5Edd4C7D8C5cCDb76AE",
+        "outbox": "0x51229C00f364F40dF07C4e71de02e6D16Ffb1aEa",
+        "rollup": "0x1210118afD15EF90CA4f83cF65dc659876299e7A",
+        "sequencerInbox": "0xf80Ce375724AF270D23526B93c37E9B17A64bD8a"
+      },
+      "nativeToken": "0x7777778E9199FBC424b7494D55D26579c011E8c6",
+      "explorerUrl": "https://socialnetwork-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://socialnetwork-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Social Network",
+      "slug": "social-network",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0xE32125cE1A8fFf30B5c0bB164B7E81816CA626F6",
+        "parentErc20Gateway": "0xB2e209Af16f087D2c985fFcee64EcabEF10A149F",
+        "parentGatewayRouter": "0x7eAc61b1477906a94e35F5efFAC24305C1654A19",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xE00D3DBD78aE6D674bE410Eb4828611897579746",
+        "childErc20Gateway": "0x33888CC3084689e2929277488D6D4f20a90B83BB",
+        "childGatewayRouter": "0x5cCcde8552d6eb4f27313766fe4D590b4677fbF8",
+        "childMultiCall": "0x7Cab274d056ec9CdB4231B30a36D36FD789DF9C3",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#12266B",
+        "network": {
+          "name": "Social Network",
+          "logo": "/images/SocialMainnet_Logo.webp"
+        },
+        "nativeTokenData": {
+          "name": "Earth",
+          "symbol": "Earth"
+        }
+      }
+    },
+    {
+      "chainId": 140,
+      "confirmPeriodBlocks": 1081,
+      "ethBridge": {
+        "bridge": "0x77778b624B03D5D41FeC06641629BB3C98D94892",
+        "inbox": "0x1CB71Be210c6a0BE2b95B6FBD09b1a43Ae679f97",
+        "outbox": "0xf32E5481acde9E41cdD0EFAc6cDe3C7876cf65b3",
+        "rollup": "0xeD6F7916Da27b1A4680EB0C63aA3C768bCc10EDA",
+        "sequencerInbox": "0x7F17f54174c07F9213dc0EF9009c082542549A9C"
+      },
+      "nativeToken": "0x6e6C39CAC539Ab057d357d16d69Fd04d2b0fc38f",
+      "explorerUrl": "https://explorer.data-lake.co/",
+      "rpcUrl": "https://rpc.data-lake.co/",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Data Lake Mainnet",
+      "slug": "data-lake-mainnet",
+      "parentChainId": 42170,
+      "tokenBridge": {
+        "parentCustomGateway": "0xB6725767227Aa858b112a4E563a7D357eddbECEa",
+        "parentErc20Gateway": "0x1fbdB03f9fe57Cf0049e0F238984C7a9cf4D8ca1",
+        "parentGatewayRouter": "0x63a9cd1aF4d8E254470E32F9D11FA516fdCc4a14",
+        "parentMultiCall": "0x23d1171380e3cbAA161F6EB31e3A3c6B548A467a",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x0E13f3E7828925F31D3FE3e8Aa7343Cb95a78525",
+        "childErc20Gateway": "0x3b0825034A4F5b725990df6621EbE09C1ecb24dB",
+        "childGatewayRouter": "0x71e8d7eC6311Bbf7654E54115FD2c23d8C10Ff5f",
+        "childMultiCall": "0x8c4a651c207c63fd388574FeEcE51AAFD23f69a7",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#876D9C",
+        "network": {
+          "name": "Data Lake Mainnet",
+          "logo": "/images/DataLakeMainnet_Logo.png",
+          "description": "The Data Lake Chain is a pioneering Layer 3 blockchain designed to empower decentralized science (DeSci) and healthcare research. Built on Arbitrum Orbit, the Data Lake Chain is tailored for secure and compliant management of consents."
+        },
+        "nativeTokenData": {
+          "name": "Data Lake Token",
+          "symbol": "LAKE",
+          "logoUrl": "/images/DataLakeMainnet_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 51828,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0xd46AB997110a91C4CB6f4576ffE6769a3033622A",
+        "inbox": "0xF649EF414d5674851614615b3e3861E90a812379",
+        "outbox": "0x48a5c0942046753B8026b1dc074Dd22297A31340",
+        "rollup": "0xAa400A624190FFbD09F292d09C2Ed01704609C67",
+        "sequencerInbox": "0x6CBf221c8cc7E2B9De4bce3a5c75378591Bdf8Ea"
+      },
+      "nativeToken": "0x6a9896837021EA3eD83F623F655C119c54abE02c",
+      "explorerUrl": "https://scan.chainbounty.io/",
+      "rpcUrl": "https://rpc.chainbounty.io",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "ChainBounty",
+      "slug": "chainbounty",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x5113CD511cB1bBf6d5A2BbA7c6dBe1D37D5Bd55a",
+        "parentErc20Gateway": "0x81d8Bb220060Ba83653925c2a5D5c7060fD7729B",
+        "parentGatewayRouter": "0xa55090a934B9863Ae6E7a011a320693bEFd703BA",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x73b8CcD46942A25Ca18ad8f1a12Cf23D1887BbCC",
+        "childErc20Gateway": "0xda420F3473Fb58D50fc080F3C5221A4cb0dFD4DD",
+        "childGatewayRouter": "0xbDA34ce7668707d2f3fDecf7f346d3B9dE45a246",
+        "childMultiCall": "0x56B3516DbD7066FA2252B4C792A8aD3CD75f690c",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFBA68",
+        "network": {
+          "name": "ChainBounty",
+          "logo": "/images/ChainBounty_Logo.svg",
+          "description": "ChainBounty is a decentralized platform that helps solve security challenges in the crypto space. With collective intelligence and a fair reward system, anyone can join the fight against cybercrime."
+        },
+        "nativeTokenData": {
+          "name": "ChainBounty",
+          "symbol": "BOUNTY",
+          "logoUrl": "/images/ChainBounty_Logo.svg"
+        },
+        "fastWithdrawalTime": 3600000
+      }
+    },
+    {
+      "chainId": 668668,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x9be649C1C1D073536D55db83abA093E8558A962E",
+        "inbox": "0x1BEdFe383749b07A73370496E035c31Fd336509C",
+        "outbox": "0x09E2EF7161c89aAC723f817695629BEBd9914f41",
+        "rollup": "0x65DC757cd6A72332e37FD49382396b9aCee35462",
+        "sequencerInbox": "0xF759d5DD167072D470D08BF65Aef1aD3F8Efc947"
+      },
+      "nativeToken": "0xb8D4554538991977E49E4C5490B92CFE58EF5281",
+      "explorerUrl": "https://conwai.calderaexplorer.xyz/",
+      "rpcUrl": "https://conwai.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Conwai",
+      "slug": "conwai",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0xa69A708032931b5f9A79Ce0e7b976F759327a7bD",
+        "parentErc20Gateway": "0x86495D9c9E8Bd8E0b8F52bED8A90d43601d46C07",
+        "parentGatewayRouter": "0xe0a4b93C0f34b04358c8788e54A097D6769fD0eD",
+        "parentMultiCall": "0x411f8A148e448bBe75382d4FFABee0796484f3c6",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x39537559ADD8396CDed00849f611D0feE7A42122",
+        "childErc20Gateway": "0xc4BC8400fF5825a0DD0B5737fa1041Ae77CB5ff6",
+        "childGatewayRouter": "0xe0eFA3089D69ac76737712D925ED0D21e6EbD544",
+        "childMultiCall": "0xfCa388141231b858A8426f298ca77f771e9E3c3A",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#000000",
+        "network": {
+          "name": "Conwai",
+          "logo": "/images/Conwai_Logo.svg",
+          "description": "Layer 3 for the full AI lifecycle."
+        },
+        "nativeTokenData": {
+          "name": "Conwai",
+          "symbol": "CNW",
+          "logoUrl": "/images/Conwai_NativeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 92278,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0xaF25849aEb040bEab7a0c783fc6861d26aE49796",
+        "inbox": "0xc7b143E5E4Bf1893BA33007ecb3Db9c1092dab38",
+        "outbox": "0xA5b6E1DbA5c9037cCd2013D7dd7BD173AFc90d4c",
+        "rollup": "0xE18FD99F6C0eBEC7d01893E9f7Cf363EeF38F9B4",
+        "sequencerInbox": "0x21f9c31eD91612B48A8ae450Bdd0f19F8f5Bea40"
+      },
+      "nativeToken": "0xa4f63404b58C3efD9Db6D53352BD386fFa174e5A",
+      "explorerUrl": "https://explorer-miracle-chain-dqfxgxhidy.t.conduit.xyz/",
+      "rpcUrl": "https://rpc-miracle-chain-dqfxgxhidy.t.conduit.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Miracle Chain",
+      "slug": "miracle-chain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x7f8FBbDEAB9Dca3114809EE55ff465d770E0f839",
+        "parentErc20Gateway": "0x841C2f295fAd92eD08c52CD5304Ec5BC88962124",
+        "parentGatewayRouter": "0xb7dd0d29CB25D825aF320A09eA8Fc28A13E15F2B",
+        "parentMultiCall": "0xb7dd0d29CB25D825aF320A09eA8Fc28A13E15F2B",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x54A15cb513e07F6f28B983C91950c86B264d304e",
+        "childErc20Gateway": "0x7Ef6D4be278A4d87c940B17177dcB6DA1CF07593",
+        "childGatewayRouter": "0xf4Bd41665cc15a6e7240643ea6E45881de9831dA",
+        "childMultiCall": "0xA0b0aF7b5ABB99760A4B045b922518c8de7F4475",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#5d2f69",
+        "network": {
+          "name": "Miracle Chain",
+          "logo": "/images/MiracleChain_Logo.png",
+          "description": "Miracle Chain powers the MiraclePlay Universe, enabling cross-chain interactions, fostering collaboration among blockchain communities, and delivering a competitive, immersive gaming experience."
+        },
+        "nativeTokenData": {
+          "name": "Miracle Play",
+          "symbol": "MPT",
+          "logoUrl": "/images/MiracleChain_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 53456,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x113E7DC5e4A42b1bEe9DB0594f48EFdEa7b88eE0",
+        "inbox": "0x5b777fa9fBF1587509fe5b2Ab681af7Af890A5A3",
+        "outbox": "0x1B7b002b9430c6D59058beFa1f718A91fBe51ff0",
+        "rollup": "0x4BB5E86b2506C2E8537e50d2596D4af89Dd54307",
+        "sequencerInbox": "0xf5299083F7C234425f01CccDD9141e500011fffb"
+      },
+      "explorerUrl": "https://scan.birdlayer.xyz",
+      "rpcUrl": "https://rpc.birdlayer.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "BirdLayer",
+      "slug": "birdlayer",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x07a873c2372653615e2EA3D4405Aa19D2972Eb7C",
+        "parentErc20Gateway": "0x6111D7AAa83fbE979301C458fF8f07F1d2E30002",
+        "parentGatewayRouter": "0xf222cf6633f381B10D3b01793FC9bD3C07975800",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        "parentWethGateway": "0x8F6D27486eb773C7eEd27760D6aBd7355e0B64e9",
+        "childCustomGateway": "0xfEc33B9e6ce2bf63e6C545Ba356719a9F8EB472d",
+        "childErc20Gateway": "0x16D58745A9ad3Ea35b922CF71E65Fc98d0A37AE5",
+        "childGatewayRouter": "0xE4D8B01Eff656681c94C2a20A557A5e0872c523f",
+        "childMultiCall": "0x157c5776c948c5783213d1ba58b14ef8c15dfcC4",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x8d312E9A5C7edF5612C9e28C22593dA40d707720",
+        "childWethGateway": "0x27571468a8336d26E432A177e36E33Cf94D3DC8d"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFC804",
+        "network": {
+          "name": "BirdLayer",
+          "logo": "/images/BirdLayer_Logo.png",
+          "description": "Birdlayer - an Omni-Trading Layer3 platform using Arbitrum Orbit, connecting EVM and non-EVM ecosystems for seamless trading."
         }
       }
     }
@@ -611,7 +1211,6 @@
       "name": "Xai Testnet",
       "slug": "xai-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "isCustom": true,
       "isTestnet": true,
       "tokenBridge": {
@@ -640,7 +1239,6 @@
         "nativeTokenData": {
           "name": "Xai",
           "symbol": "sXAI",
-          "decimals": 18,
           "logoUrl": "/images/XaiLogo.svg"
         }
       }
@@ -663,7 +1261,6 @@
       "name": "DODOchain Testnet",
       "slug": "dodochain-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0xeCa856BE0041184eeda8F2c98896AC4693b168EA",
         "parentErc20Gateway": "0xf57F874845CD652e69f69f020A4d46F4e427bb43",
@@ -690,51 +1287,7 @@
         "nativeTokenData": {
           "name": "Berd",
           "symbol": "BERD",
-          "decimals": 18,
           "logoUrl": ""
-        }
-      }
-    },
-    {
-      "chainId": 12325,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0x98DBc5f9d4BB16A7c8C21e36789E673b6E0FDf37",
-        "inbox": "0xB0e78299F14b50d151a5eF92b6465bb807B6e56b",
-        "outbox": "0x243487a26284B17b70E8A183a7a1FeB5A6b00824",
-        "rollup": "0xce99C9E7566438a8311424aD0287EB0fDEAc55A2",
-        "sequencerInbox": "0xd598F60Ae694bE2aF9D6933aD9e9f7A431A2005E"
-      },
-      "explorerUrl": "https://explorer-testnet.l3x.com",
-      "rpcUrl": "https://rpc-testnet.l3x.com",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "L3X Network Testnet",
-      "slug": "l3x-network-testnet",
-      "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
-      "tokenBridge": {
-        "parentCustomGateway": "0x00eE97A18A85a58fbfddA2CCa2Bdb3B88d1068b3",
-        "parentErc20Gateway": "0xD2e9EA14CE4C61630a87bC652f5cD51deA7C66bA",
-        "parentGatewayRouter": "0x8D684F7fA0aE2a13e0a1FAa60699ee2db46505a8",
-        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
-        "parentWethGateway": "0xB001D0E3a43EbB820E82720a2Bd74f4C03a5b424",
-        "childCustomGateway": "0xcc3fa38D4a18474DF92107d328bF4A6F7C9fA29A",
-        "childErc20Gateway": "0x7aeD67245Db9b4E6bB26791b48E20aBbA9411EdD",
-        "childGatewayRouter": "0xF40E36d3043373Ce6F89abe3914d631135342C28",
-        "childMultiCall": "0xa8D4b59f0FB23CB785d360E73C7364dDB3e34A62",
-        "childProxyAdmin": "0xC381Ff423f37d42b0b9B84195D9C9C31eDc26e73",
-        "childWeth": "0x6793D074d3A410C803B8C2086E569883D6e928F1",
-        "childWethGateway": "0x4F24D0244B29d76ED1FBD3c8a9967b72b78B9DBd"
-      },
-      "bridgeUiConfig": {
-        "color": "#3ABE7B",
-        "network": {
-          "name": "L3X Network Testnet",
-          "logo": "/images/L3XLogo.png",
-          "description": "Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network."
         }
       }
     },
@@ -755,7 +1308,6 @@
       "name": "RARI Testnet",
       "slug": "rari-testnet",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x7EDA0d4c14Af6B0920F4e3C0F0cA18d18212fB0A",
         "parentErc20Gateway": "0x2c9Dd2b2cd55266e3b5c3C95840F3c037fbCb856",
@@ -782,56 +1334,6 @@
       }
     },
     {
-      "chainId": 1183,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0xCAeCF7c5c2769e250Ef69592dD470D40BC61D1f7",
-        "inbox": "0x44199D537Aa690bE3B4446602e0c66F2B992D51e",
-        "outbox": "0xAD6A8df458dBD6b440F50313C5d53E3C5b4734e9",
-        "rollup": "0x357717a0F9Ac8714A5995109Fba3BAd3b5f0954F",
-        "sequencerInbox": "0x146bCf344F949ad4c9Fcf339eb4415981aE21dF9"
-      },
-      "nativeToken": "0x566f8345F7bF45358FaB2802C19c60D691dE04e4",
-      "explorerUrl": "https://testnet.theatlas.tech",
-      "rpcUrl": "https://theatlas.tech",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Atlas Testnet",
-      "slug": "atlas-testnet",
-      "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
-      "tokenBridge": {
-        "parentCustomGateway": "0xE5A8943e36f93491f97A521447772fCF529533B5",
-        "parentErc20Gateway": "0xBc89C0A2CCA8A0e1583AA6d4e22B36E26661C78E",
-        "parentGatewayRouter": "0xc93fDF8327e04776fd184188bB4EC8521E5E96D7",
-        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x2c2Be954C9B79d9cA2CF145d9d6363F3c3784615",
-        "childErc20Gateway": "0xDfCD9f6154BEA2E98e8aE493f3Fec2E22De52D6a",
-        "childGatewayRouter": "0xBc63Ec54dA9Ee3B2b3D4cA5DE3622a3F85e0F219",
-        "childMultiCall": "0x54AFaf5Fd025A99708e73e52c317454bD52B1e77",
-        "childProxyAdmin": "0xE1C9a27C47bb9691bA5b4E35eb7617B39F6098B9",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#889B6F",
-        "network": {
-          "name": "Atlas Testnet",
-          "logo": "/images/AtlasLogo.png",
-          "description": "Aarc is the first modular layer for unified borderless dapps."
-        },
-        "nativeTokenData": {
-          "name": "Aarc",
-          "symbol": "AARC",
-          "decimals": 18,
-          "logoUrl": "/images/AtlasLogo.png"
-        }
-      }
-    },
-    {
       "chainId": 2730,
       "confirmPeriodBlocks": 64,
       "ethBridge": {
@@ -849,7 +1351,6 @@
       "name": "XR Sepolia",
       "slug": "xr-sepolia",
       "parentChainId": 421614,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x5F1ac3cd4553bA45fccF135d057795717b37B9Ef",
         "parentErc20Gateway": "0xd0CD7B9F4cB10B21abBfFA874F0d0ad1a41bD51C",
@@ -876,7 +1377,6 @@
         "nativeTokenData": {
           "name": "tXR",
           "symbol": "tXR",
-          "decimals": 18,
           "logoUrl": "/images/xrTokenLogo.png"
         }
       }
@@ -899,7 +1399,6 @@
       "name": "Polter Testnet",
       "slug": "polter-testnet",
       "parentChainId": 84532,
-      "retryableLifetimeSeconds": 604800,
       "tokenBridge": {
         "parentCustomGateway": "0x24e1e6375f0f0Eecd38266357cADE57cA3A348F3",
         "parentErc20Gateway": "0x9014E7244116b965F0D1059f80e2bD8169957117",
@@ -920,14 +1419,430 @@
         "color": "#03AB2A",
         "network": {
           "name": "Polter Testnet",
-          "logo": "/images/PolterTestnetLogo.png",
+          "logo": "/images/PolterTestnetLogo.webp",
           "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
         },
         "nativeTokenData": {
           "name": "Aavegotchi GHST Token",
           "symbol": "GHST",
-          "decimals": 18,
           "logoUrl": "/images/ghst.png"
+        }
+      }
+    },
+    {
+      "chainId": 749,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x57dfFb3C5446342B35217B76bA422d6aefe624c5",
+        "inbox": "0xb1118863AFdbEe5515C0D3a2522d642E65C0feA2",
+        "outbox": "0x41f72BdF0c63102052b4a22B92999f632bd1910f",
+        "rollup": "0x2Cd91ca21c843c7E1A06d122FdE5618E915685C4",
+        "sequencerInbox": "0x43ECa7bc80Dd5e6d0a26B3fe71F659d04074ad45"
+      },
+      "nativeToken": "0x79a1ca540e4b72280b8220e1fb6799cbca540bbd",
+      "explorerUrl": "https://socialnetwork-testnet.explorer.alchemy.com",
+      "rpcUrl": "https://socialnetwork-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Social Testnet",
+      "slug": "social-testnet",
+      "parentChainId": 17000,
+      "tokenBridge": {
+        "parentCustomGateway": "0xA44D215Af25B6C41aEB396470bD566e6Ff6aF883",
+        "parentErc20Gateway": "0xD2cC26a4134e9a4A265dE3F5F53EF200fbceCBa7",
+        "parentGatewayRouter": "0x6b08DFE55c4705F462CFA8055B2B38E66322D585",
+        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x850d2501E6Da6B105aFb689529497B7024776E78",
+        "childErc20Gateway": "0xe17851222aba0821EAfc4F0AE8fDf4d8827124fa",
+        "childGatewayRouter": "0x9A2e67eE268cE392A2D91D8fF87bac1D45980B98",
+        "childMultiCall": "0xc5DD7Dab959Eb221911a58dC469d769270C2De2F",
+        "childProxyAdmin": "0xe762728C1022dAe5D2d0f4a0317944B9d70B309C",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#12266B",
+        "network": {
+          "name": "Social Testnet",
+          "logo": "/images/SocialTestnetLogo.webp",
+          "description": ""
+        },
+        "nativeTokenData": {
+          "name": "social.network",
+          "symbol": "EARTH",
+          "logoUrl": ""
+        }
+      }
+    },
+    {
+      "chainId": 10058112,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x213Ee94CcA491114D5B0d0205bf39Cca3Cac8c0E",
+        "inbox": "0x697e423bE474d5F8Cfc137e25FA7126d78f739F0",
+        "outbox": "0x24fc7a378b414b3C696C534ecf46c9ec851B4Ced",
+        "rollup": "0x9aB882E957FE252eD5B51c2e563dE4d5aF7F403A",
+        "sequencerInbox": "0x82cCD1Ca341c0D182914D3523cF30e20eCB6500C"
+      },
+      "explorerUrl": "https://spotlight-sepolia.explorer.alchemy.com",
+      "rpcUrl": "https://spotlight-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Spotlight Sepolia",
+      "slug": "spotlight-sepolia",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2F3DfA444d5Fb39EF0DBa72C1bDE63b57Cb09CbE",
+        "parentErc20Gateway": "0x1e6db0611edE41aC803143150cA97DB669779554",
+        "parentGatewayRouter": "0x670208A92c54b6c2dfce8A2F8Dd987c7fB5F7412",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+        "parentWethGateway": "0xE6BbbF315D6F8bE7D80d7024f96dE5a9624eD7e2",
+        "childCustomGateway": "0x2f22b5A9506057DCEa319b8D91DC33e8Ab168922",
+        "childErc20Gateway": "0xcA3911f6Fd9AF0f32F5071C3358AD8Af0FDA7548",
+        "childGatewayRouter": "0x2C8A8631bdA3Bb10718B51A621863336E94aeC78",
+        "childMultiCall": "0x64088415e4b28355Dea0736aDfD537DD99cf74A5",
+        "childProxyAdmin": "0xf5025153F164168F80e87960939448636E1ceF5f",
+        "childWeth": "0x4F2A7641aBc8Fb1Df44Ab61C7d17F6cA7Bc6C529",
+        "childWethGateway": "0x8B81dA74fdcedD8384Da34Fe12cf89b6dE15e7cb"
+      },
+      "bridgeUiConfig": {
+        "color": "#F3C34D",
+        "network": {
+          "name": "Spotlight Sepolia",
+          "logo": "/images/SpotlightLogo.svg",
+          "description": ""
+        }
+      }
+    },
+    {
+      "chainId": 79479957,
+      "confirmPeriodBlocks": 25,
+      "ethBridge": {
+        "bridge": "0xC703f27438898BebE682D253185149cBeaC1621c",
+        "inbox": "0x46C42Cf5127ffd6dE2d9f231173C6d81E5010726",
+        "outbox": "0x5B8220489827Be74CeD6b7974C3a80d3ba8dbf91",
+        "rollup": "0x82332BE0ef83A2b7Df91DCDCF481c393455E0D31",
+        "sequencerInbox": "0x9555B5F427c7B1E69C35d3DE855D4F1BffBc593B"
+      },
+      "nativeToken": "0x9c5EB9723728123AF896089b902CB17B44Fd09e6",
+      "explorerUrl": "https://explorerl2.toronto.sx.technology",
+      "rpcUrl": "https://rpc.sx-rollup-testnet.t.raas.gelato.cloud",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "SX Toronto",
+      "slug": "sx-toronto",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2e4C4583a0A228d1A695365b1AE5C32e688ba4B6",
+        "parentErc20Gateway": "0xa66971304463c017F4D152685B1483cc63Fd116d",
+        "parentGatewayRouter": "0xEb362E3C9B081baE0024b34955a132B93D05047f",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8f10E93e92Ed34390E73fBdc0988230a72DC0597",
+        "childErc20Gateway": "0x015B81e0Ead225800cbb11cD95a7048F5E301771",
+        "childGatewayRouter": "0x650cD99b736173d8AB9aeF9f4b3B5DA8EE054adC",
+        "childMultiCall": "0xB1e5913C889727796B3e79712C2A27Be58a166cf",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#2196F3",
+        "network": {
+          "name": "SX Toronto",
+          "logo": "/images/SXToronto_Logo.png",
+          "description": "The testnet chain that powers SX Bet Toronto."
+        },
+        "nativeTokenData": {
+          "name": "SX Toronto Network",
+          "symbol": "SX",
+          "logoUrl": "/images/SXToronto_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 241320161,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0xC071180104924cC51922259a13B0d2DBF9646509",
+        "inbox": "0xd06d8E471F0EeB1bb516303EdE399d004Acb1615",
+        "outbox": "0xE401acFc336524955152b7260df47c3E23e4A54A",
+        "rollup": "0xcB7c934aB4F19753DFc466d05b3f1d94De909456",
+        "sequencerInbox": "0x0d3E3E08807E8Ad31d46B564C27e23eF48384C6E"
+      },
+      "nativeToken": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "explorerUrl": "https://xmtp-testnet.explorer.alchemy.com",
+      "rpcUrl": "https://xmtp-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "XMTP Sepolia",
+      "slug": "xmtp-sepolia",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0xA3F5d88d5B7F1bA64c56EDb7A57fa525bc5B6F8E",
+        "parentErc20Gateway": "0x2E27b16B1A4F873a05706FC7BeF0F0e0Fe4C2B57",
+        "parentGatewayRouter": "0xcb430A3272899Cc6D34E09A30D33766e55dc5DDB",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x72Cbe16822177CF1C338C3f1fCaFf04eb888A85A",
+        "childErc20Gateway": "0xb4d1252188Df5e674e4Ce4C80a6393e10dC88fC1",
+        "childGatewayRouter": "0x80AD3874da1D54163F4f794C343Efe33d901c460",
+        "childMultiCall": "0x186810A4286Fd7f14545b3964c9B34f79aC088eb",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#fc645b",
+        "network": {
+          "name": "XMTP Sepolia",
+          "logo": "/images/XMTPLogo.svg",
+          "description": ""
+        },
+        "nativeTokenData": {
+          "name": "USDC",
+          "symbol": "USDC",
+          "logoUrl": "/images/UsdcLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 888991,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0xA1AF96d8315DCa65F2ff6f8170Fa3e5dB0A6aD3C",
+        "inbox": "0xCA323c4C0A04109F303e3bfd879AEd5F49c9f0C4",
+        "outbox": "0x54a8712d8d5f8D3cD29737d06734eE493758B7cb",
+        "rollup": "0xB2Ff332B564DA65EDd2FDcbf298458837c732997",
+        "sequencerInbox": "0x0b172ba2776C08F6c3147ed2471A32EC4592812B"
+      },
+      "nativeToken": "0xf7a942db06a0cd6945ba4635c46e31c54ed175a4",
+      "explorerUrl": "https://unite-testnet.explorer.alchemy.com/",
+      "rpcUrl": "https://unite-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Unite Testnet",
+      "slug": "unite-testnet",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0xb7B03E20ca71c6036F8F841cCc213e7CaC3e9868",
+        "parentErc20Gateway": "0x98614745322365Ae378Db2A6319F873A4775398C",
+        "parentGatewayRouter": "0xA8f3C0d5eC3E9ACd3422cBf5f25c6C4e608c2499",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x01a902C5b160F0c786aDfc702799D25218d8A9B4",
+        "childErc20Gateway": "0xaABa25Ba10B9aFEf17D403B4038886e7FD743E83",
+        "childGatewayRouter": "0xdbAEDA962D2D201F65c06C81Dd5A0FC948FB3A20",
+        "childMultiCall": "0x7df4290268655542E0B39465820a39C4b091D77e",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#7aad00",
+        "network": {
+          "name": "Unite Testnet",
+          "logo": "/images/unite-testnet_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Unite",
+          "symbol": "UNITE",
+          "logoUrl": "/images/unite-testnet_Logo.png"
+        }
+      }
+    },
+    {
+      "chainId": 98864,
+      "confirmPeriodBlocks": 60,
+      "ethBridge": {
+        "bridge": "0xF3BE11Ead404740017e4839712Af28e3c0b5C202",
+        "inbox": "0xDe66d6a8BabE07f6838ea712e708BBD47837de52",
+        "outbox": "0xE8806C827217b9C1D9610b5334254Da4d143dF3D",
+        "rollup": "0x7404f23fc2189e090E2342FaaF7f20efa7bD366a",
+        "sequencerInbox": "0xDcAb173C5D846d686856A2D3300B8a64ba12130D"
+      },
+      "explorerUrl": "https://test-explorer.plumenetwork.xyz/",
+      "rpcUrl": "https://test-rpc.plumenetwork.xyz/",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Plume Devnet",
+      "slug": "plume-devnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0xa8168b76Aa023228CaA8Ef5110477cD6d02F1508",
+        "parentErc20Gateway": "0xD7A43a671c177Ed55D2B4bCaFc597Bb669Ce4B99",
+        "parentGatewayRouter": "0x0a4671a34D411868852be59cCa137D5f251dEe52",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+        "parentWethGateway": "0x8a3f580894fF2C51E202Da7712f5550533a956B1",
+        "childCustomGateway": "0xA7E44Ce807F488791c6Bc8877c9CA7b36c68B9C0",
+        "childErc20Gateway": "0xc9F79584303fDcb2cf5d147D7Dc79c38EA3BEC11",
+        "childGatewayRouter": "0x52a0A8a9A65F90E160940972A0de15491172db87",
+        "childMultiCall": "0xA569f0e5e284A45F6155cbc4C904ad3cae0a82b0",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x1738E5247c85f96c9D35FE55800557C5479b7063",
+        "childWethGateway": "0xc260574cD5F7469d9a840f85A6648F74b7Bd4097"
+      },
+      "bridgeUiConfig": {
+        "color": "#F43B3A",
+        "network": {
+          "name": "Plume Devnet",
+          "logo": "/images/PlumeDevnet_Logo.png",
+          "description": "Bringing the real world onchain. Optimized for real world assets."
+        }
+      }
+    },
+    {
+      "chainId": 5113,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x544ab136Eb7DEbc6ecFc409dBf48DaEC885A23c7",
+        "inbox": "0x3A7f7ac40f95F69C2067b93Ef981fEC474EbAd63",
+        "outbox": "0x33028bd56bc1dD69Af64f7161F75db28d7d178b8",
+        "rollup": "0x5bcc7b0def15cA7D9cDd17Cc7028d61Bc0C80b0d",
+        "sequencerInbox": "0x3a286C5AcBD24670f095DA0BE738eeF6B014c0D3"
+      },
+      "nativeToken": "0x9a0Ef1333681b357047282144dc06D7DAA1f76Ba",
+      "explorerUrl": "https://syndicate-exo.explorer.alchemy.com",
+      "rpcUrl": "https://syndicate-exo.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Syndicate Exo",
+      "slug": "syndicate-exo",
+      "parentChainId": 17000,
+      "tokenBridge": {
+        "parentCustomGateway": "0x9C8394A948FD0a85933d739694BeB5AD9D3c4423",
+        "parentErc20Gateway": "0x472790750901166E36c78E01f2984934D08e0303",
+        "parentGatewayRouter": "0xBCbEfd2e664D18368892D8C2Adc3c88DD15B20B4",
+        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8C117Dde85c41dE53B2e394E6adE09915Fc266Bf",
+        "childErc20Gateway": "0x4AF204Dd6c5a26783f8306D47E1F6919553E00D4",
+        "childGatewayRouter": "0x5079579759f4AA2AF1fbE0510309dd463B3e9e5C",
+        "childMultiCall": "0x9617F5611303F213E8871d9F81f375864644f517",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#e1e3d5",
+        "network": {
+          "name": "Syndicate Exo",
+          "logo": "/images/SyndicateExo_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Syndicate",
+          "symbol": "SYND",
+          "logoUrl": "/images/SyndicateExo_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 2426,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0x47d1Be0136781b3872B68759f2E8881bEF640a33",
+        "inbox": "0xf1eE942531646976a6117cF5473d9c0B0788ce59",
+        "outbox": "0xC5d79Afb36DBDE207dA328c5d7F6CDA25ee29f54",
+        "rollup": "0x6bC07A018ed6C61098C9CCb8582170bBE28c489C",
+        "sequencerInbox": "0x35897557265A1Cf268c23087959ffd9db6291441"
+      },
+      "nativeToken": "0xa111a06BDEbb8b1dAA79000F4B386A36E0AccE56",
+      "explorerUrl": "https://standard-testnet.explorer.alchemy.com",
+      "rpcUrl": "https://standard-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Standard Testnet",
+      "slug": "standard-testnet",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0x850600581Db23302e09cc008A929502bA6e70fEe",
+        "parentErc20Gateway": "0x02052d5373692ae096d8F0D9a35Fc7a58D474eA6",
+        "parentGatewayRouter": "0x655B508Cf9a3E992ce0e43FE3e61aEE3626113Cf",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xf30874aA4025AfBEe63cFb13695384d3be0E8e1c",
+        "childErc20Gateway": "0x60Ed3acc77F5B8C8425C99854569C921fd8E679a",
+        "childGatewayRouter": "0x028af2322E587e0470F2B41e74Eec501923a0747",
+        "childMultiCall": "0xc52B3849075653aDB8EB9385ac78D2513Ded0242",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#CCFF35",
+        "network": {
+          "name": "Standard Testnet",
+          "logo": "/images/StandardTestnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Standard",
+          "symbol": "STND",
+          "logoUrl": "/images/StandardTestnet_NativeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 9116,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x41852F68033cf31FECc9dd4222e1881758f2Dbd9",
+        "inbox": "0x07F9E388c57F6575920e39CF6dFFFC2ABe85df7a",
+        "outbox": "0xAF030552c3865b203Bcfa5585BEE8900B98a5a08",
+        "rollup": "0x68bBcca4049d6D6c29b3001caCcb9A45F24aEF64",
+        "sequencerInbox": "0x4353f6B198D2952f07E1405470023b58d8Ae7534"
+      },
+      "nativeToken": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+      "explorerUrl": "https://testnet.pivotalscan.org",
+      "rpcUrl": "https://testnet.pivotalprotocol.com",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Pivotal Testnet",
+      "slug": "pivotal-testnet",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0x78a19969C80a0d4e702af85E4514440053347dB7",
+        "parentErc20Gateway": "0x235519fb271982181F0B13B4ddD6d6c007A21957",
+        "parentGatewayRouter": "0xEb0fBE4545ff5856C9A9066234144B15eEF81706",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x5458EACA065B9E587590Ff8EAf023006640D2D3A",
+        "childErc20Gateway": "0x768206826933100bD0ef301b2471A9b8a83247e0",
+        "childGatewayRouter": "0xcFB5702f34a39ec9Bb2EcA94A4DbA4f0970FbCf4",
+        "childMultiCall": "0xE13c609644d3Ee9A04aa5eD04d09b4942dD81cba",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#573EF3",
+        "network": {
+          "name": "Pivotal Testnet",
+          "logo": "/images/PivotalTestnet_Logo.svg",
+          "description": "Pivotal is a Bitcoin Secured Network, secured by Babylon's Bitcoin Staking Protocol and built on Arbitrum Orbit."
+        },
+        "nativeTokenData": {
+          "name": "USDC",
+          "symbol": "USDC",
+          "logoUrl": "/images/UsdcLogo.svg"
         }
       }
     }

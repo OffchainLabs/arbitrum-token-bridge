@@ -43,7 +43,10 @@ function handleSwitchNetworkError(
   if (isUserRejectedError(error)) {
     return
   }
-  if (error.name === 'SwitchChainNotSupportedError') {
+  if (
+    error.name === 'SwitchChainNotSupportedError' ||
+    error.name === 'AddChainError'
+  ) {
     handleSwitchNetworkNotSupported(chainId, isSwitchingNetworkBeforeTx)
   } else {
     captureSentryErrorWithExtraData({

@@ -1,17 +1,36 @@
 import { Chain, sepolia as sepoliaDefault } from 'wagmi'
 
 import { ether } from '../../constants'
-import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
+import { NativeCurrencyBase } from '../../hooks/useNativeCurrency'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
   const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
+
+  let nativeCurrency: NativeCurrencyBase = nativeTokenData
+    ? {
+        ...nativeTokenData,
+        decimals: 18
+      }
+    : ether
+
+  if (chain.chainId === ChainId.L3Local) {
+    nativeCurrency = chain.nativeToken
+      ? {
+          name: 'testnode',
+          symbol: 'TN',
+          decimals: 18
+        }
+      : ether
+  }
 
   return {
     id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: nativeTokenData ?? ether,
+    nativeCurrency,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
