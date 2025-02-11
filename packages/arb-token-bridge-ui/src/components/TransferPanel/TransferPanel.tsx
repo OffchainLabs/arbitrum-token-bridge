@@ -9,6 +9,7 @@ import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
+import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
@@ -66,9 +67,7 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
-import { createTransferStateMachine } from '../../token-bridge-sdk/TransferStateMachineFactory'
-import { DefaultTransferContext } from '../../token-bridge-sdk/DefaultTransferStateMachine'
-import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
+import { executeTransfer } from '../../token-bridge-sdk/TransferManager'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -374,7 +373,7 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const context: DefaultTransferContext = {
+      const context = {
         amount: amountBigNumber,
         amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
         signer,
@@ -398,7 +397,7 @@ export function TransferPanel() {
         isBatchTransfer,
         nativeCurrencyDecimals: nativeCurrencyDecimalsOnSourceChain,
         isCctp: isCctpTransfer,
-        isOftTransfer: isOftTransfer,
+        isOftTransfer,
         // Callbacks for UI interactions
         onTokenApprovalNeeded: async () => {
           setIsCctp(isCctpTransfer) // Set CCTP state for the approval dialog
@@ -439,28 +438,22 @@ export function TransferPanel() {
         },
         onTrackEvent: (
           event: keyof AnalyticsEventMap,
-          data: AnalyticsEventMap[keyof AnalyticsEventMap]
+          data: AnalyticsEventMap[typeof event]
         ) => {
           trackEvent(event, {
             ...data,
             network: getNetworkName(childChain.id),
-            amount2: isBatchTransfer ? Number(amount2) : undefined
+            amount2: isBatchTransfer ? Number(amount2) : undefined,
+            isCustomDestinationTransfer: !!latestDestinationAddress.current,
+            parentChainErc20Address: selectedToken?.address
           })
         }
       }
 
-      const finalState = await createTransferStateMachine(context)
-
-      if (finalState.type === 'ERROR') {
-        throw finalState.error
-      }
-
-      if (!finalState.result) {
-        throw new Error('No transfer result')
-      }
+      const finalResult = await executeTransfer(context)
 
       // Handle successful transfer
-      onTxSubmit(finalState.result)
+      onTxSubmit(finalResult)
 
       if (isCctpTransfer) {
         setIsCctp(false)

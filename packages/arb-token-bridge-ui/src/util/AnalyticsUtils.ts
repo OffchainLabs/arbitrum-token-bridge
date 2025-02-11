@@ -2,23 +2,15 @@ import posthog from 'posthog-js'
 
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
 
-type AccountType = 'EOA' | 'Smart Contract'
-type AssetType = 'ETH' | 'ERC-20'
-type TransferDirection = 'Deposit' | 'Withdrawal' | 'Teleport'
-type FastBridgeName = `${FastBridgeNames}`
+export type AccountType = 'EOA' | 'Smart Contract'
+export type AssetType = 'ERC-20' | 'ETH'
+export type TransferDirection = 'Deposit' | 'Withdrawal' | 'Teleport'
+export type FastBridgeName = `${FastBridgeNames}`
 
 // TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
-export type ProviderName =
-  | 'MetaMask'
-  | 'Coinbase Wallet'
-  | 'Trust Wallet'
-  | 'WalletConnect'
-  | 'Safe' // not used yet
-  | 'Injected'
-  | 'Ledger'
-  | 'Other'
+export type ProviderName = 'MetaMask' | 'WalletConnect' | 'CoinbaseWallet'
 
-type AnalyticsEventMap = {
+export type AnalyticsEventMap = {
   'Transfer Button Click': {
     type: TransferDirection
     isCctpTransfer: boolean
