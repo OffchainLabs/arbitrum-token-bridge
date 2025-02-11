@@ -92,21 +92,17 @@ function getDestinationWithSanitizedQueryParams(
   return `/?${params.toString()}`
 }
 
-function addOrbitChainsToArbitrumSDK(): Promise<void> {
-  return new Promise(resolve => {
-    ;[...getOrbitChains(), ...getCustomChainsFromLocalStorage()].forEach(
-      chain => {
-        try {
-          registerCustomArbitrumNetwork(chain)
-          mapCustomChainToNetworkData(chain)
-        } catch (_) {
-          // already added
-        }
+function addOrbitChainsToArbitrumSDK() {
+  ;[...getOrbitChains(), ...getCustomChainsFromLocalStorage()].forEach(
+    chain => {
+      try {
+        registerCustomArbitrumNetwork(chain)
+        mapCustomChainToNetworkData(chain)
+      } catch (_) {
+        // already added
       }
-    )
-
-    resolve()
-  })
+    }
+  )
 }
 
 export async function getServerSideProps({
@@ -132,7 +128,7 @@ export async function getServerSideProps({
     await registerLocalNetwork()
   }
   // it's necessary to call this before sanitization to make sure all chains are registered
-  await addOrbitChainsToArbitrumSDK()
+  addOrbitChainsToArbitrumSDK()
 
   // sanitize the query params
   const sanitized = {
@@ -171,7 +167,7 @@ export default function Index() {
 
   useEffect(() => {
     async function loadChains() {
-      await addOrbitChainsToArbitrumSDK()
+      addOrbitChainsToArbitrumSDK()
       setChainsLoaded(true)
     }
 
