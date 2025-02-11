@@ -63,10 +63,10 @@
     "lint": "tsc && eslint 'src/**/*.{js,ts,tsx}'",
     "lint:fix": "tsc && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
-    "generateDenylist": "tsx --env-file=.env ./scripts/generateDenylist.ts",
-    "generateOpenGraphImages": "tsx --env-file=.env ./scripts/generateOpenGraphImages.tsx",
-    "generateCoreChainsToMonitor": "tsx --env-file=.env ./scripts/generateCoreChainsToMonitor.ts",
-    "generateOrbitChainsToMonitor": "tsx --env-file=.env ./scripts/generateOrbitChainsToMonitor.ts"
+    "generateDenylist": "env-cmd --silent --file .env tsx ./scripts/generateDenylist.ts",
+    "generateOpenGraphImages": "env-cmd --silent --file .env tsx ./scripts/generateOpenGraphImages.tsx",
+    "generateCoreChainsToMonitor": "env-cmd --silent --file .env tsx ./scripts/generateCoreChainsToMonitor.ts",
+    "generateOrbitChainsToMonitor": "env-cmd --silent --file .env tsx ./scripts/generateOrbitChainsToMonitor.ts"
   },
   "browserslist": {
     "production": [
