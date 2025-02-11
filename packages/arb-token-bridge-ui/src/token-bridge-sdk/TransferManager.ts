@@ -223,7 +223,7 @@ async function handleNativeCurrencyApproval(
   }
 }
 
-async function handleStandardBridgeTransfer(
+export async function handleStandardBridgeTransfer(
   context: TransferContext
 ): Promise<BridgeTransfer> {
   const {
@@ -280,17 +280,13 @@ async function handleStandardBridgeTransfer(
   })
 }
 
-export async function executeTransfer(
+export async function handleOftTransfer(
   context: TransferContext
 ): Promise<BridgeTransfer> {
-  await validateTransfer(context)
-
   const {
     sourceChainId,
     destinationChainId,
     sourceChainErc20Address,
-    isCctp,
-    isOftTransfer,
     amount,
     signer,
     destinationAddress,
@@ -298,46 +294,76 @@ export async function executeTransfer(
     destinationChainProvider
   } = context
 
+  if (!sourceChainErc20Address) {
+    throw new Error('Source chain ERC20 address is required for OFT transfer')
+  }
+
+  const oftConfig = getOftV2TransferConfig({
+    sourceChainId,
+    destinationChainId,
+    sourceChainErc20Address
+  })
+
+  if (!oftConfig.isValid) {
+    throw new Error('Invalid OFT configuration')
+  }
+
+  const oftTransferStarter = new OftV2TransferStarter({
+    sourceChainProvider,
+    destinationChainProvider,
+    sourceChainErc20Address
+  })
+
+  await handleTokenApproval(context, oftTransferStarter)
+
+  return oftTransferStarter.transfer({
+    amount,
+    signer,
+    destinationAddress
+  })
+}
+
+export async function handleCctpTransfer(
+  context: TransferContext
+): Promise<BridgeTransfer> {
+  const {
+    amount,
+    signer,
+    destinationAddress,
+    sourceChainProvider,
+    destinationChainProvider
+  } = context
+
+  const cctpTransferStarter = new CctpTransferStarter({
+    sourceChainProvider,
+    destinationChainProvider
+  })
+
+  await handleTokenApproval(context, cctpTransferStarter)
+  await handleCctpConfirmation(context)
+
+  return cctpTransferStarter.transfer({
+    amount,
+    signer,
+    destinationAddress
+  })
+}
+
+export async function executeTransfer(
+  context: TransferContext
+): Promise<BridgeTransfer> {
+  await validateTransfer(context)
+
+  const { isCctp, isOftTransfer } = context
+
   // Handle OFT transfers
-  if (isOftTransfer && sourceChainErc20Address) {
-    const oftConfig = getOftV2TransferConfig({
-      sourceChainId,
-      destinationChainId,
-      sourceChainErc20Address
-    })
-
-    if (oftConfig.isValid) {
-      const oftTransferStarter = new OftV2TransferStarter({
-        sourceChainProvider,
-        destinationChainProvider,
-        sourceChainErc20Address
-      })
-
-      await handleTokenApproval(context, oftTransferStarter)
-
-      return oftTransferStarter.transfer({
-        amount,
-        signer,
-        destinationAddress
-      })
-    }
+  if (isOftTransfer) {
+    return handleOftTransfer(context)
   }
 
   // Handle CCTP transfers
   if (isCctp) {
-    const cctpTransferStarter = new CctpTransferStarter({
-      sourceChainProvider,
-      destinationChainProvider
-    })
-
-    await handleTokenApproval(context, cctpTransferStarter)
-    await handleCctpConfirmation(context)
-
-    return cctpTransferStarter.transfer({
-      amount,
-      signer,
-      destinationAddress
-    })
+    return handleCctpTransfer(context)
   }
 
   // Handle standard bridge transfers
