@@ -81,9 +81,7 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
-import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
-import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
-import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { createTransferStateMachine } from '../../token-bridge-sdk/TransferStateMachineFactory'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -721,233 +719,68 @@ export function TransferPanel() {
       return
     }
 
-    const childChainName = getNetworkName(childChain.id)
-
     setTransferring(true)
 
     try {
-      const warningToken =
-        selectedToken && warningTokens[selectedToken.address.toLowerCase()]
-      if (warningToken) {
-        const description = getWarningTokenDescription(warningToken.type)
-        warningToast(
-          `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
-        )
-        return
-      }
-
-      const destinationChainId = latestNetworks.current.destinationChain.id
-
-      const sourceChainErc20Address = isDepositMode
-        ? selectedToken?.address
-        : selectedToken?.l2Address
-
-      const destinationChainErc20Address = isDepositMode
-        ? selectedToken?.l2Address
-        : selectedToken?.address
-
-      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
-        sourceChainId,
-        sourceChainErc20Address,
-        destinationChainId,
-        destinationChainErc20Address
-      })
-
-      const { isWithdrawal } = getBridgeTransferProperties({
-        sourceChainId,
-        sourceChainErc20Address,
-        destinationChainId
-      })
-
-      if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
-        /*
-        just a fail-safe - since our types allow for an optional `selectedToken?.l2Address`, we can theoretically end up with a case
-        where user is trying to make an ERC-20 withdrawal but passing `sourceChainErc20Address` as undefined, ending up with
-        the SDK to initialize wrongly and make an ETH withdrawal instead. To summarize:
-        - if it's a withdrawal
-        - if a token is selected
-        - but the token's address on the child chain is not found (ie. sourceChainErc20Address)
-      */
-        throw Error(
-          'Source chain token address not found for ERC-20 withdrawal.'
-        )
-      }
-
-      if (destinationAddressError) {
-        console.error(destinationAddressError)
-        return
-      }
-
-      const destinationAddress = latestDestinationAddress.current
-
-      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
-      if (
-        isSmartContractWallet &&
-        areSenderAndCustomDestinationAddressesEqual
-      ) {
-        const confirmation = await confirmCustomDestinationAddressForSCWallets()
-        if (!confirmation) return false
-      }
-
-      const isCustomNativeTokenAmount2 =
-        nativeCurrency.isCustom &&
-        isBatchTransferSupported &&
-        Number(amount2) > 0
-
-      const isNativeCurrencyApprovalRequired =
-        await bridgeTransferStarter.requiresNativeCurrencyApproval({
-          signer,
-          amount: amountBigNumber,
-          destinationAddress,
-          options: {
-            approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
-              : undefined
-          }
-        })
-
-      if (isNativeCurrencyApprovalRequired) {
-        // show native currency approval dialog
-        const userConfirmation = await customFeeTokenApproval()
-        if (!userConfirmation) return false
-
-        const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
-          signer,
-          amount: amountBigNumber,
-          destinationAddress,
-          options: {
-            approvalAmountIncrease: isCustomNativeTokenAmount2
-              ? utils.parseUnits(amount2, nativeCurrencyDecimalsOnSourceChain)
-              : undefined
-          }
-        })
-
-        if (approvalTx) {
-          await approvalTx.wait()
-        }
-      }
-
-      // checks for the selected token
-      if (selectedToken) {
-        const tokenAddress = selectedToken.address
-
-        // is selected token deployed on parent-chain?
-        if (!tokenAddress) Error('Token not deployed on source chain.')
-
-        // warning token handling
-        const warningToken =
-          selectedToken && warningTokens[selectedToken.address.toLowerCase()]
-        if (warningToken) {
-          const description = getWarningTokenDescription(warningToken.type)
-          warningToast(
-            `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
-          )
-          return
-        }
-
-        // token suspension handling
-        const isTokenSuspended = !(await isGatewayRegistered({
-          erc20ParentChainAddress: selectedToken.address,
-          parentChainProvider,
-          childChainProvider
-        }))
-        if (isTokenSuspended) {
-          warningToast(
-            'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
-          )
-          return
-        }
-
-        // if token is being bridged for first time, it will need to be registered in gateway
-        const userConfirmationForFirstTimeTokenBridging =
-          await firstTimeTokenBridgingConfirmation()
-        if (!userConfirmationForFirstTimeTokenBridging) {
-          throw Error('User declined bridging the token for the first time')
-        }
-      }
-
-      // if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
-      if (isWithdrawal && !isSmartContractWallet) {
-        const withdrawalConfirmation = await confirmWithdrawal()
-        if (!withdrawalConfirmation) return false
-      }
-
-      // token approval
-      if (selectedToken) {
-        const isTokenApprovalRequired =
-          await bridgeTransferStarter.requiresTokenApproval({
-            amount: amountBigNumber,
-            signer,
-            destinationAddress
-          })
-        if (isTokenApprovalRequired) {
-          const userConfirmation = await tokenAllowanceApproval()
-          if (!userConfirmation) return false
-
-          if (isSmartContractWallet && isWithdrawal) {
-            showDelayInSmartContractTransaction()
-          }
-          const approvalTx = await bridgeTransferStarter.approveToken({
-            signer,
-            amount: amountBigNumber
-          })
-
-          if (approvalTx) {
-            await approvalTx.wait()
-          }
-        }
-      }
-
-      // show a delay in case of SCW because tx is executed in an external app
-      if (isSmartContractWallet) {
-        showDelayInSmartContractTransaction()
-
-        trackEvent(
-          isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
-          {
-            tokenSymbol: selectedToken?.symbol,
-            assetType: 'ERC-20',
-            accountType: 'Smart Contract',
-            network: childChainName,
-            amount: Number(amount),
-            amount2: isBatchTransfer ? Number(amount2) : undefined
-          }
-        )
-      }
-
-      const overrides: TransferOverrides = {}
-
-      if (isBatchTransfer) {
-        // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
-        const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
-          amount: amountBigNumber,
-          signer,
-          destinationAddress
-        })) as DepositGasEstimates
-
-        if (!gasEstimates.estimatedChildChainSubmissionCost) {
-          errorToast('Failed to estimate deposit maxSubmissionCost')
-          throw 'Failed to estimate deposit maxSubmissionCost'
-        }
-
-        overrides.maxSubmissionCost = utils
-          // we are not scaling these to native decimals because arbitrum-sdk does it for us
-          .parseEther(amount2)
-          .add(gasEstimates.estimatedChildChainSubmissionCost)
-        overrides.excessFeeRefundAddress = destinationAddress
-      }
-
-      // finally, call the transfer function
-      const transfer = await bridgeTransferStarter.transfer({
+      const context = {
         amount: amountBigNumber,
+        amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
         signer,
-        destinationAddress,
-        overrides: Object.keys(overrides).length > 0 ? overrides : undefined
-      })
+        sourceChainProvider: latestNetworks.current.sourceChainProvider,
+        destinationChainProvider:
+          latestNetworks.current.destinationChainProvider,
+        destinationAddress: latestDestinationAddress.current,
+        sourceChainErc20Address: isDepositMode
+          ? selectedToken?.address
+          : selectedToken?.l2Address,
+        destinationChainErc20Address: isDepositMode
+          ? selectedToken?.l2Address
+          : selectedToken?.address,
+        isSmartContractWallet,
+        isTeleportMode,
+        isDepositMode,
+        walletAddress,
+        selectedToken,
+        sourceChainId: latestNetworks.current.sourceChain.id,
+        destinationChainId: latestNetworks.current.destinationChain.id,
+        //  callbacks for UI interactions
+        onTokenApprovalNeeded: async () => {
+          const confirmed = await tokenAllowanceApproval()
+          return confirmed
+        },
+        onNativeCurrencyApprovalNeeded: async () => {
+          const confirmed = await customFeeTokenApproval()
+          return confirmed
+        },
+        onWithdrawalConfirmationNeeded: async () => {
+          const confirmed = await confirmWithdrawal()
+          return confirmed
+        },
+        onCustomDestinationAddressConfirmationNeeded: async () => {
+          const confirmed = await confirmCustomDestinationAddressForSCWallets()
+          return confirmed
+        },
+        onFirstTimeTokenBridgingConfirmationNeeded: async () => {
+          const confirmed = await firstTimeTokenBridgingConfirmation()
+          return confirmed
+        },
+        onSmartContractWalletDelayNeeded: async () => {
+          await showDelayInSmartContractTransaction()
+        }
+      }
 
-      // transaction submitted callback
-      onTxSubmit(transfer)
+      const finalState = await createTransferStateMachine(context)
+
+      if (finalState.type === 'ERROR') {
+        throw finalState.error
+      }
+
+      if (!finalState.result) {
+        throw new Error('No transfer result')
+      }
+
+      // Handle successful transfer
+      onTxSubmit(finalState.result)
     } catch (error) {
       captureSentryErrorWithExtraData({
         error,
