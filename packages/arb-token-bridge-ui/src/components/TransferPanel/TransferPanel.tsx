@@ -14,7 +14,10 @@ import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
 } from './TokenDepositCheckDialog'
-import { TokenImportDialog } from './TokenImportDialog'
+import {
+  TokenImportDialog,
+  useTokenImportDialogStore
+} from './TokenImportDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -45,7 +48,6 @@ import {
   ImportTokenModalStatus,
   getWarningTokenDescription
 } from './TransferPanelUtils'
-import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -109,7 +111,6 @@ export function TransferPanel() {
 
   const {
     app: {
-      connectionState,
       arbTokenBridge: { token },
       warningTokens
     }
@@ -182,6 +183,7 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
+  const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
   const [
     customDestinationAddressConfirmationDialogProps,
     openCustomDestinationAddressConfirmationDialog
@@ -208,6 +210,14 @@ export function TransferPanel() {
     setShowProjectsListing(false)
   }, [childChain.id, parentChain.id])
 
+  useEffect(() => {
+    if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
+      return
+    }
+
+    openTokenImportDialog()
+  }, [importTokenModalStatus, openTokenImportDialog])
+
   function closeWithResetTokenImportDialog() {
     setSelectedToken(null)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
@@ -219,11 +229,6 @@ export function TransferPanel() {
     setAmount('')
     setAmount2('')
   }
-
-  useImportTokenModal({
-    importTokenModalStatus,
-    connectionState
-  })
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
