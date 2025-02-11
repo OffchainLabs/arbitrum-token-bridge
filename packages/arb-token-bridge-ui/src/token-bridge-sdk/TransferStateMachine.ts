@@ -1,9 +1,15 @@
-import { BigNumber, Signer } from 'ethers'
+import { BigNumber, Signer, utils } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import { BridgeTransfer, TransferOverrides } from './BridgeTransferStarter'
+import {
+  BridgeTransfer,
+  TransferOverrides,
+  BridgeTransferStarter
+} from './BridgeTransferStarter'
 import { BridgeTransferStarterFactory } from './BridgeTransferStarterFactory'
 import { getBridgeTransferProperties } from './utils'
 import { isGatewayRegistered } from '../util/TokenUtils'
+import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
+import { CctpTransferStarter } from './CctpTransferStarter'
 
 export type TransferContext = {
   amount: BigNumber
@@ -26,6 +32,13 @@ export type TransferContext = {
   }
   sourceChainId: number
   destinationChainId: number
+  isBatchTransfer?: boolean
+  nativeCurrencyDecimals?: number
+  // CCTP specific
+  isCctp?: boolean
+  // Internal state
+  bridgeTransferStarter?: BridgeTransferStarter
+  cctpTransferStarter?: CctpTransferStarter
   // Callbacks for UI interactions
   onTokenApprovalNeeded?: () => Promise<boolean>
   onNativeCurrencyApprovalNeeded?: () => Promise<boolean>
@@ -33,6 +46,10 @@ export type TransferContext = {
   onCustomDestinationAddressConfirmationNeeded?: () => Promise<boolean>
   onFirstTimeTokenBridgingConfirmationNeeded?: () => Promise<boolean>
   onSmartContractWalletDelayNeeded?: () => Promise<void>
+  onCctpDepositConfirmationNeeded?: () => Promise<'bridge-cctp-usd' | 'bridge-normal-usdce' | false>
+  onCctpWithdrawalConfirmationNeeded?: () => Promise<boolean>
+  // Event tracking
+  onTrackEvent?: (event: string, data: Record<string, unknown>) => void
 }
 
 export type TransferStateType =
@@ -41,7 +58,9 @@ export type TransferStateType =
   | 'CHECKING_APPROVALS'
   | 'WAITING_FOR_NATIVE_CURRENCY_APPROVAL'
   | 'WAITING_FOR_TOKEN_APPROVAL'
+  | 'CONFIRMING_CCTP_TRANSFER'
   | 'CONFIRMING_TRANSFER'
+  | 'EXECUTING_CCTP_TRANSFER'
   | 'EXECUTING_TRANSFER'
   | 'SUCCESS'
   | 'ERROR'
@@ -68,7 +87,8 @@ export const validateTransfer = async (
     selectedToken,
     isSmartContractWallet,
     isTeleportMode,
-    destinationAddress
+    destinationAddress,
+    isCctp
   } = context
 
   if (!signer) {
@@ -118,7 +138,16 @@ export const validateTransfer = async (
 
   return {
     type: 'CHECKING_APPROVALS',
-    context
+    context: {
+      ...context,
+      // Initialize CCTP transfer starter if needed
+      cctpTransferStarter: isCctp
+        ? new CctpTransferStarter({
+            sourceChainProvider: context.sourceChainProvider,
+            destinationChainProvider: context.destinationChainProvider
+          })
+        : undefined
+    }
   }
 }
 
@@ -128,6 +157,7 @@ export const checkApprovals = async (
   const { context } = state
   const {
     amount,
+    amount2,
     signer,
     sourceChainId,
     destinationChainId,
@@ -137,8 +167,31 @@ export const checkApprovals = async (
     selectedToken,
     isDepositMode,
     sourceChainProvider,
-    destinationChainProvider
+    destinationChainProvider,
+    isBatchTransfer,
+    nativeCurrencyDecimals,
+    isCctp,
+    cctpTransferStarter
   } = context
+
+  if (isCctp && cctpTransferStarter) {
+    const isTokenApprovalRequired = await cctpTransferStarter.requiresTokenApproval({
+      amount,
+      signer
+    })
+
+    if (isTokenApprovalRequired) {
+      return {
+        type: 'WAITING_FOR_TOKEN_APPROVAL',
+        context
+      }
+    }
+
+    return {
+      type: 'CONFIRMING_CCTP_TRANSFER',
+      context
+    }
+  }
 
   // Initialize bridge transfer starter
   const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
@@ -165,39 +218,69 @@ export const checkApprovals = async (
     }
   }
 
-  // Check native currency approval
-  const isNativeCurrencyApprovalRequired =
-    await bridgeTransferStarter.requiresNativeCurrencyApproval({
-      signer,
+  const overrides: TransferOverrides = {}
+
+  // Handle batch transfer gas estimates
+  if (isBatchTransfer && amount2) {
+    const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
       amount,
+      signer,
       destinationAddress
-    })
+    })) as DepositGasEstimates
+
+    if (!gasEstimates.estimatedChildChainSubmissionCost) {
+      return {
+        type: 'ERROR',
+        context,
+        error: new Error('Failed to estimate deposit maxSubmissionCost')
+      }
+    }
+
+    overrides.maxSubmissionCost = utils
+      .parseEther(amount2.toString())
+      .add(gasEstimates.estimatedChildChainSubmissionCost)
+    overrides.excessFeeRefundAddress = destinationAddress
+  }
+
+  // Check native currency approval
+  const isNativeCurrencyApprovalRequired = await bridgeTransferStarter.requiresNativeCurrencyApproval({
+    signer,
+    amount,
+    destinationAddress,
+    options: {
+      approvalAmountIncrease:
+        isBatchTransfer && amount2 && nativeCurrencyDecimals
+          ? utils.parseUnits(amount2.toString(), nativeCurrencyDecimals)
+          : undefined
+    }
+  })
 
   if (isNativeCurrencyApprovalRequired) {
     return {
       type: 'WAITING_FOR_NATIVE_CURRENCY_APPROVAL',
       context: {
         ...context,
-        bridgeTransferStarter
+        bridgeTransferStarter,
+        overrides
       }
     }
   }
 
   // Check token approval
   if (selectedToken) {
-    const isTokenApprovalRequired =
-      await bridgeTransferStarter.requiresTokenApproval({
-        amount,
-        signer,
-        destinationAddress
-      })
+    const isTokenApprovalRequired = await bridgeTransferStarter.requiresTokenApproval({
+      amount,
+      signer,
+      destinationAddress
+    })
 
     if (isTokenApprovalRequired) {
       return {
         type: 'WAITING_FOR_TOKEN_APPROVAL',
         context: {
           ...context,
-          bridgeTransferStarter
+          bridgeTransferStarter,
+          overrides
         }
       }
     }
@@ -207,7 +290,8 @@ export const checkApprovals = async (
     type: 'CONFIRMING_TRANSFER',
     context: {
       ...context,
-      bridgeTransferStarter
+      bridgeTransferStarter,
+      overrides
     }
   }
 }
@@ -271,16 +355,10 @@ export const handleTokenApproval = async (
     onTokenApprovalNeeded,
     isSmartContractWallet,
     onSmartContractWalletDelayNeeded,
-    bridgeTransferStarter
+    bridgeTransferStarter,
+    isCctp,
+    cctpTransferStarter
   } = context
-
-  if (!bridgeTransferStarter) {
-    return {
-      type: 'ERROR',
-      context,
-      error: new Error('Bridge transfer starter not initialized')
-    }
-  }
 
   // Get user confirmation
   if (onTokenApprovalNeeded) {
@@ -300,6 +378,30 @@ export const handleTokenApproval = async (
   }
 
   // Execute approval
+  if (isCctp && cctpTransferStarter) {
+    const approvalTx = await cctpTransferStarter.approveToken({
+      signer,
+      amount
+    })
+
+    if (approvalTx) {
+      await approvalTx.wait()
+    }
+
+    return {
+      type: 'CONFIRMING_CCTP_TRANSFER',
+      context
+    }
+  }
+
+  if (!bridgeTransferStarter) {
+    return {
+      type: 'ERROR',
+      context,
+      error: new Error('Bridge transfer starter not initialized')
+    }
+  }
+
   const approvalTx = await bridgeTransferStarter.approveToken({
     signer,
     amount
@@ -311,6 +413,73 @@ export const handleTokenApproval = async (
 
   return {
     type: 'CONFIRMING_TRANSFER',
+    context
+  }
+}
+
+export const confirmCctpTransfer = async (
+  state: TransferState
+): Promise<TransferState> => {
+  const { context } = state
+  const {
+    isDepositMode,
+    onCctpDepositConfirmationNeeded,
+    onCctpWithdrawalConfirmationNeeded,
+    isSmartContractWallet,
+    onCustomDestinationAddressConfirmationNeeded,
+    destinationAddress,
+    walletAddress
+  } = context
+
+  // Get CCTP transfer confirmation
+  if (isDepositMode && onCctpDepositConfirmationNeeded) {
+    const result = await onCctpDepositConfirmationNeeded()
+    if (!result) {
+      return {
+        type: 'ERROR',
+        context,
+        error: new Error('User rejected CCTP deposit')
+      }
+    }
+    if (result === 'bridge-normal-usdce') {
+      // Switch to normal bridge flow
+      return {
+        type: 'CHECKING_APPROVALS',
+        context: {
+          ...context,
+          isCctp: false
+        }
+      }
+    }
+  } else if (!isDepositMode && onCctpWithdrawalConfirmationNeeded) {
+    const confirmed = await onCctpWithdrawalConfirmationNeeded()
+    if (!confirmed) {
+      return {
+        type: 'ERROR',
+        context,
+        error: new Error('User rejected CCTP withdrawal')
+      }
+    }
+  }
+
+  // Get custom destination address confirmation if needed
+  if (
+    isSmartContractWallet &&
+    destinationAddress?.toLowerCase() === walletAddress?.toLowerCase() &&
+    onCustomDestinationAddressConfirmationNeeded
+  ) {
+    const confirmed = await onCustomDestinationAddressConfirmationNeeded()
+    if (!confirmed) {
+      return {
+        type: 'ERROR',
+        context,
+        error: new Error('User rejected custom destination address')
+      }
+    }
+  }
+
+  return {
+    type: 'EXECUTING_CCTP_TRANSFER',
     context
   }
 }
@@ -368,6 +537,58 @@ export const confirmTransfer = async (
   }
 }
 
+export const executeCctpTransfer = async (
+  state: TransferState
+): Promise<TransferState> => {
+  const { context } = state
+  const {
+    amount,
+    signer,
+    destinationAddress,
+    cctpTransferStarter,
+    isSmartContractWallet,
+    isDepositMode,
+    onTrackEvent,
+    onSmartContractWalletDelayNeeded
+  } = context
+
+  if (!cctpTransferStarter) {
+    return {
+      type: 'ERROR',
+      context,
+      error: new Error('CCTP transfer starter not initialized')
+    }
+  }
+
+  // Show delay for smart contract wallets
+  if (isSmartContractWallet && onSmartContractWalletDelayNeeded) {
+    await onSmartContractWalletDelayNeeded()
+  }
+
+  // Track event before executing transfer
+  if (onTrackEvent) {
+    onTrackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+      accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+      amount: amount.toString(),
+      complete: false,
+      version: 2
+    })
+  }
+
+  // Execute the transfer
+  const transfer = await cctpTransferStarter.transfer({
+    amount,
+    signer,
+    destinationAddress
+  })
+
+  return {
+    type: 'SUCCESS',
+    context,
+    result: transfer
+  }
+}
+
 export const executeTransfer = async (
   state: TransferState
 ): Promise<TransferState> => {
@@ -377,7 +598,12 @@ export const executeTransfer = async (
     signer,
     destinationAddress,
     bridgeTransferStarter,
-    overrides
+    overrides,
+    isSmartContractWallet,
+    isTeleportMode,
+    isDepositMode,
+    selectedToken,
+    onTrackEvent
   } = context
 
   if (!bridgeTransferStarter) {
@@ -386,6 +612,20 @@ export const executeTransfer = async (
       context,
       error: new Error('Bridge transfer starter not initialized')
     }
+  }
+
+  // Track event before executing transfer
+  if (onTrackEvent) {
+    onTrackEvent(
+      isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
+      {
+        tokenSymbol: selectedToken?.symbol,
+        assetType: selectedToken ? 'ERC-20' : 'ETH',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        amount: amount.toString(),
+        isCustomDestinationTransfer: !!destinationAddress
+      }
+    )
   }
 
   // Execute the transfer
@@ -404,18 +644,19 @@ export const executeTransfer = async (
 }
 
 // State transition map
-const stateTransitions: Record<TransferStateType, StateTransition | undefined> =
-  {
-    IDLE: validateTransfer,
-    VALIDATING: validateTransfer,
-    CHECKING_APPROVALS: checkApprovals,
-    WAITING_FOR_NATIVE_CURRENCY_APPROVAL: handleNativeCurrencyApproval,
-    WAITING_FOR_TOKEN_APPROVAL: handleTokenApproval,
-    CONFIRMING_TRANSFER: confirmTransfer,
-    EXECUTING_TRANSFER: executeTransfer,
-    SUCCESS: undefined,
-    ERROR: undefined
-  }
+const stateTransitions: Record<TransferStateType, StateTransition | undefined> = {
+  IDLE: validateTransfer,
+  VALIDATING: validateTransfer,
+  CHECKING_APPROVALS: checkApprovals,
+  WAITING_FOR_NATIVE_CURRENCY_APPROVAL: handleNativeCurrencyApproval,
+  WAITING_FOR_TOKEN_APPROVAL: handleTokenApproval,
+  CONFIRMING_CCTP_TRANSFER: confirmCctpTransfer,
+  CONFIRMING_TRANSFER: confirmTransfer,
+  EXECUTING_CCTP_TRANSFER: executeCctpTransfer,
+  EXECUTING_TRANSFER: executeTransfer,
+  SUCCESS: undefined,
+  ERROR: undefined
+}
 
 // Core state machine function
 export const runTransferStateMachine = async (
