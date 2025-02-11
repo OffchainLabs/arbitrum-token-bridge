@@ -1,6 +1,6 @@
 import { BigNumber, Signer, utils } from 'ethers'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
@@ -9,6 +9,7 @@ import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 async function fetcher([
   signer,
@@ -59,7 +60,7 @@ export function useGasEstimates({
   const [{ destinationAddress }] = useArbQueryParams()
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
-  const { data: signer } = useSigner()
+  const signer = useEthersSigner()
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
