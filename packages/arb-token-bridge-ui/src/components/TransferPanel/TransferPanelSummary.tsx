@@ -320,29 +320,38 @@ function ConfirmationTimeInfo({ chainId }: { chainId: number }) {
     confirmationTimeInReadableFormatShort,
     fastWithdrawalActive
   } = getConfirmationTime(chainId)
+  const [networks] = useNetworks()
+  const { isDepositMode } = useNetworksRelationship(networks)
+
   return (
     <>
       <span>Confirmation time:</span>
       <span className="flex flex-col items-end justify-end sm:flex-row">
-        <span className="hidden sm:inline">
-          ~{confirmationTimeInReadableFormat}
-        </span>
-        <span className="sm:hidden">
-          ~{confirmationTimeInReadableFormatShort}
+        <span className="flex items-center space-x-0.5">
+          <span className="hidden sm:inline">
+            ~{confirmationTimeInReadableFormat}
+          </span>
+          <span className="sm:hidden">
+            ~{confirmationTimeInReadableFormatShort}
+          </span>
+          <Tooltip
+            content={
+              fastWithdrawalActive
+                ? 'Fast Withdrawals rely on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
+                : `You will have to claim your ${
+                    isDepositMode ? 'deposit' : 'withdrawal'
+                  } on ${getNetworkName(
+                    networks.destinationChain.id
+                  )} in ~${confirmationTimeInReadableFormatShort}.`
+            }
+          >
+            <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
+          </Tooltip>
         </span>
         {fastWithdrawalActive && (
-          <div className="flex items-center">
-            <Tooltip
-              content={
-                'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
-              }
-            >
-              <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
-            </Tooltip>
-            <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
-              <Image src={LightningIcon} alt="Lightning Icon" />
-              <span className="font-normal">FAST</span>
-            </div>
+          <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
+            <Image src={LightningIcon} alt="Lightning Icon" />
+            <span className="font-normal">FAST</span>
           </div>
         )}
       </span>
