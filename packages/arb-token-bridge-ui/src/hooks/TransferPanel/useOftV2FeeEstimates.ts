@@ -1,25 +1,24 @@
 import { useMemo } from 'react'
-import { BigNumber, Signer } from 'ethers'
+import { BigNumber, constants, Signer } from 'ethers'
 import useSWR from 'swr'
 import { useAccount, useSigner } from 'wagmi'
+
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { useNetworks } from '../useNetworks'
 
 async function fetcher([
-  signer,
+  walletAddress,
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
-  walletAddress,
   isValidOftTransfer
 ]: [
-  signer: Signer,
+  walletAddress: string | undefined,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
-  walletAddress: string | undefined,
   isValidOftTransfer: boolean
 ]) {
   if (!isValidOftTransfer) {
@@ -32,8 +31,10 @@ async function fetcher([
   // Assuming minimal dust amount for gas estimates
   const amount = BigNumber.from(1)
 
+  const _walletAddress = walletAddress ?? constants.AddressZero
   const sourceChainProvider = getProviderForChainId(sourceChainId)
   const destinationChainProvider = getProviderForChainId(destinationChainId)
+  const signer = sourceChainProvider.getSigner(_walletAddress)
 
   const { estimatedSourceChainFee, estimatedDestinationChainFee } =
     await new OftV2TransferStarter({
@@ -56,7 +57,6 @@ export function useOftV2FeeEstimates({
 }: {
   sourceChainErc20Address?: string
 }) {
-  const { data: signer } = useSigner()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
 
@@ -72,16 +72,14 @@ export function useOftV2FeeEstimates({
   }, [sourceChainId, destinationChainId, sourceChainErc20Address])
 
   const { data: feeEstimates, error } = useSWR(
-    signer
-      ? ([
+       ([
           sourceChainId,
           destinationChainId,
           sourceChainErc20Address,
           walletAddress,
           isValidOftTransfer,
           'oftFeeEstimates'
-        ] as const)
-      : null,
+        ] as const),
     ([
       _sourceChainId,
       _destinationChainId,
@@ -89,15 +87,11 @@ export function useOftV2FeeEstimates({
       _walletAddress,
       _isValidOftTransfer
     ]) => {
-      const sourceProvider = getProviderForChainId(_sourceChainId)
-      const _signer = sourceProvider.getSigner(_walletAddress)
-
       return fetcher([
-        _signer,
+        _walletAddress,
         _sourceChainId,
         _destinationChainId,
         _sourceChainErc20Address,
-        _walletAddress,
         _isValidOftTransfer
       ])
     },
@@ -108,6 +102,14 @@ export function useOftV2FeeEstimates({
       errorRetryInterval: 5_000
     }
   )
+
+  if (typeof walletAddress === 'undefined') {
+    return { 
+      feeEstimates, 
+      isLoading: !error && !feeEstimates, 
+      error: 'walletNotConnected'
+    }
+  }
 
   return {
     feeEstimates,

@@ -82,7 +82,7 @@ export function getGasSummaryStatus({
 
   if (
     (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') ||
-    oftFeeEstimatesError
+    (oftFeeEstimatesError&& oftFeeEstimatesError !== 'walletNotConnected')
   ) {
     return 'error'
   }

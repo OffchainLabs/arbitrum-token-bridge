@@ -109,9 +109,9 @@ export function useGasEstimates({
     }
   )
 
-  if (typeof walletAddress === 'undefined') {
-    return { gasEstimates, error: 'walletNotConnected' }
-  }
+  // if (typeof walletAddress === 'undefined') {
+  //   return { gasEstimates, error: 'walletNotConnected' }
+  // }
 
   return { gasEstimates, error }
 }
