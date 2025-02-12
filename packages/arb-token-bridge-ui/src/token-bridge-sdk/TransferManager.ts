@@ -23,6 +23,7 @@ export type TransferContext = {
   isSmartContractWallet: boolean
   isTeleportMode: boolean
   isDepositMode: boolean
+  isWithdrawal: boolean
   walletAddress: string
   selectedToken?: ERC20BridgeToken
   sourceChainId: number
@@ -223,6 +224,44 @@ async function handleNativeCurrencyApproval(
   }
 }
 
+async function handleWithdrawalConfirmation(
+  context: TransferContext
+): Promise<void> {
+  const {
+    isWithdrawal,
+    isSmartContractWallet,
+    onWithdrawalConfirmationNeeded,
+    onCustomDestinationAddressConfirmationNeeded,
+    destinationAddress,
+    walletAddress
+  } = context
+
+  // Only show withdrawal confirmation for non-smart-contract wallets during withdrawals
+  if (
+    isWithdrawal &&
+    !isSmartContractWallet &&
+    onWithdrawalConfirmationNeeded
+  ) {
+    const confirmed = await onWithdrawalConfirmationNeeded()
+    if (!confirmed) {
+      throw new Error('User rejected withdrawal confirmation')
+    }
+  }
+
+  // For withdrawals, always check custom destination address confirmation for smart contract wallets
+  if (
+    isWithdrawal &&
+    isSmartContractWallet &&
+    destinationAddress?.toLowerCase() === walletAddress?.toLowerCase() &&
+    onCustomDestinationAddressConfirmationNeeded
+  ) {
+    const confirmed = await onCustomDestinationAddressConfirmationNeeded()
+    if (!confirmed) {
+      throw new Error('User rejected custom destination address')
+    }
+  }
+}
+
 export async function handleStandardBridgeTransfer(
   context: TransferContext
 ): Promise<BridgeTransfer> {
@@ -233,11 +272,14 @@ export async function handleStandardBridgeTransfer(
     destinationChainErc20Address,
     selectedToken,
     isDepositMode,
+    isWithdrawal,
     sourceChainProvider,
     destinationChainProvider,
     amount,
     signer,
-    destinationAddress
+    destinationAddress,
+    isSmartContractWallet,
+    onSmartContractWalletDelayNeeded
   } = context
 
   // Initialize bridge transfer starter
@@ -259,6 +301,18 @@ export async function handleStandardBridgeTransfer(
     if (isTokenSuspended) {
       throw new Error('Token deposits are currently suspended')
     }
+  }
+
+  // Handle withdrawal confirmation
+  await handleWithdrawalConfirmation(context)
+
+  // For smart contract wallets during withdrawals, show delay
+  if (
+    isWithdrawal &&
+    isSmartContractWallet &&
+    onSmartContractWalletDelayNeeded
+  ) {
+    await onSmartContractWalletDelayNeeded()
   }
 
   // Handle batch transfer gas estimates
@@ -291,7 +345,10 @@ export async function handleOftTransfer(
     signer,
     destinationAddress,
     sourceChainProvider,
-    destinationChainProvider
+    destinationChainProvider,
+    isSmartContractWallet,
+    onSmartContractWalletDelayNeeded,
+    isWithdrawal
   } = context
 
   if (!sourceChainErc20Address) {
@@ -314,6 +371,18 @@ export async function handleOftTransfer(
     sourceChainErc20Address
   })
 
+  // Handle withdrawal confirmation
+  await handleWithdrawalConfirmation(context)
+
+  // For smart contract wallets during withdrawals, show delay
+  if (
+    isWithdrawal &&
+    isSmartContractWallet &&
+    onSmartContractWalletDelayNeeded
+  ) {
+    await onSmartContractWalletDelayNeeded()
+  }
+
   await handleTokenApproval(context, oftTransferStarter)
 
   return oftTransferStarter.transfer({
@@ -331,7 +400,10 @@ export async function handleCctpTransfer(
     signer,
     destinationAddress,
     sourceChainProvider,
-    destinationChainProvider
+    destinationChainProvider,
+    isSmartContractWallet,
+    onSmartContractWalletDelayNeeded,
+    isWithdrawal
   } = context
 
   const cctpTransferStarter = new CctpTransferStarter({
@@ -341,6 +413,15 @@ export async function handleCctpTransfer(
 
   await handleTokenApproval(context, cctpTransferStarter)
   await handleCctpConfirmation(context)
+
+  // For smart contract wallets during withdrawals, show delay
+  if (
+    isWithdrawal &&
+    isSmartContractWallet &&
+    onSmartContractWalletDelayNeeded
+  ) {
+    await onSmartContractWalletDelayNeeded()
+  }
 
   return cctpTransferStarter.transfer({
     amount,
