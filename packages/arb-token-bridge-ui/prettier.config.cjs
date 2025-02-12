@@ -12,5 +12,6 @@ module.exports = {
   trailingComma: 'none',
 
   // Plugins
-  plugins: ['prettier-plugin-tailwindcss']
+  plugins: ['prettier-plugin-tailwindcss'],
+  tailwindConfig: require('./tailwind.config.mjs')
 }
