@@ -370,10 +370,6 @@ function TokensPanel({
   ])
 
   const storeNewToken = async () => {
-    if (!walletAddress) {
-      return
-    }
-
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -513,7 +509,6 @@ export function TokenSearch({
   className?: string
   close: () => void
 }) {
-  const { address: walletAddress } = useAccount()
   const { setAmount2 } = useSetInputAmount()
   const {
     app: {
@@ -560,10 +555,6 @@ export function TokenSearch({
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         setSelectedToken(_token.address)
-        return
-      }
-
-      if (!walletAddress) {
         return
       }
 
