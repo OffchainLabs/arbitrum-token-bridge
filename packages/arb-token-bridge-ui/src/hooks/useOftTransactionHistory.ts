@@ -336,11 +336,7 @@ export async function getUpdatedOftTransfer(
   const url = `${LAYERZERO_API_URL}/messages/tx/${tx.txId}`
   try {
     const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error('Failed to fetch updated OFT transfer')
-    }
     const message = (await response.json()).data[0] as LayerZeroMessage
-
     return {
       ...tx,
       status: getOftTransactionStatus(message),
@@ -350,7 +346,7 @@ export async function getUpdatedOftTransfer(
           : new Date(message.updated).getTime()
     }
   } catch (error) {
-    console.error('Error fetching updated OFT transfer:', error)
-    throw error
+    console.error('Error fetching updated OFT transfer for tx:', tx.txId, error)
+    return tx
   }
 }
