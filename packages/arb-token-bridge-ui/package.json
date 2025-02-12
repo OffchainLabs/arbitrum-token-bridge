@@ -85,6 +85,7 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
     "@synthetixio/synpress": "^4.0.5",
+    "@synthetixio/synpress-tsconfig": "^0.0.6",
     "@testing-library/cypress": "^10.0.3",
     "@testing-library/react": "^16.1.0",
     "@types/jest": "^29.5.1",

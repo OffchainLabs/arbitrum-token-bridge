@@ -75,10 +75,10 @@ describe('Withdraw USDC through CCTP', () => {
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending(USDCAmountToSend.toString())
+    cy.confirmSpending(USDCAmountToSend)
     // eslint-disable-next-line
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction({ gasConfig: 'aggressive' })
+    cy.confirmTransaction({ gasSetting: 'aggressive' })
     cy.findTransactionInTransactionHistory({
       amount: USDCAmountToSend,
       symbol: 'USDC'
@@ -89,13 +89,10 @@ describe('Withdraw USDC through CCTP', () => {
       }),
       { timeout: 120_000 }
     ).click()
-    cy.allowMetamaskToSwitchNetwork()
-    cy.rejectMetamaskTransaction()
-    cy.changeMetamaskNetwork('arbitrum-sepolia')
   })
 
   it('should claim deposit', () => {
-    cy.changeMetamaskNetwork('sepolia')
+    cy.switchNetwork('sepolia')
     cy.claimCctp(0.00012, { accept: true })
     cy.claimCctp(0.00013, { accept: true })
   })
@@ -112,11 +109,11 @@ describe('Withdraw USDC through CCTP', () => {
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
-    cy.confirmSpending(USDCAmountToSend.toString())
+    cy.confirmSpending(USDCAmountToSend)
 
     // eslint-disable-next-line
     cy.wait(10_000)
-    cy.confirmMetamaskTransaction(undefined)
+    cy.confirmTransaction(undefined)
     const txData = {
       amount: USDCAmountToSend,
       symbol: 'USDC'
@@ -125,7 +122,7 @@ describe('Withdraw USDC through CCTP', () => {
       duration: 'Less than a minute',
       ...txData
     })
-    cy.openTransactionDetails(txData)
+    cy.openTransactionHistoryDetails(txData)
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )
@@ -136,7 +133,5 @@ describe('Withdraw USDC through CCTP', () => {
       }),
       { timeout: 120_000 }
     ).click()
-    cy.allowMetamaskToSwitchNetwork()
-    cy.rejectMetamaskTransaction()
   })
 })

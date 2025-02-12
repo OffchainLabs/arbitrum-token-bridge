@@ -12,8 +12,8 @@ import {
 } from './../../support/common'
 
 describe('Login Account', () => {
-  let l1ETHbal
-  let l2ETHbal
+  let l1ETHbal: string
+  let l2ETHbal: string
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const nativeTokenDecimals = Cypress.env('NATIVE_TOKEN_DECIMALS')

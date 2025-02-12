@@ -8,10 +8,10 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { SelectorMatcherOptions } from '@testing-library/cypress'
+import { type SelectorMatcherOptions } from '@testing-library/cypress'
 import {
-  NetworkType,
-  NetworkName,
+  type NetworkType,
+  type NetworkName,
   startWebApp,
   getL1NetworkConfig,
   getL2NetworkConfig
@@ -25,7 +25,7 @@ function shouldChangeNetwork(networkName: NetworkName) {
   // TODO: remove this whenever fixed
   return cy
     .task('getCurrentNetworkName')
-    .then((currentNetworkName: NetworkName) => {
+    .then((currentNetworkName) => {
       return currentNetworkName !== networkName
     })
 }
@@ -44,7 +44,7 @@ export function login({
   // if networkName is not specified we connect to default network from config
   const network =
     networkType === 'parentChain' ? getL1NetworkConfig() : getL2NetworkConfig()
-  const networkNameWithDefault = networkName ?? network.networkName
+  const networkNameWithDefault = networkName ?? network.name
 
   function _startWebApp() {
     const sourceChain =
@@ -222,7 +222,7 @@ export function clickMoveFundsButton({
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
   if (shouldConfirmInMetamask) {
-    cy.confirmMetamaskTransaction()
+    cy.confirmTransaction()
   }
 }
 
@@ -251,7 +251,7 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
   }).should('be.visible')
 }
 
-export function openTransactionDetails({
+export function openTransactionHistoryDetails({
   amount,
   amount2,
   symbol,
@@ -343,14 +343,10 @@ export function findClaimButton(
  * shouldWaitForPopupClosure needs to be set to true for the test to pass
  */
 export function confirmSpending(
-  spendLimit: Parameters<
-    typeof cy.approveTokenPermission
-  >[0]['spendLimit']
+  spendLimit: number | 'max'
 ) {
-  cy.approveTokenPermission({
-    spendLimit})
-    cy.approveTokenPermission({
-      spendLimit})
+  cy.approveTokenPermission({spendLimit})
+  cy.approveTokenPermission({spendLimit})
 }
 
 export function claimCctp(amount: number, options: { accept: boolean }) {
@@ -364,11 +360,11 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   })
   cy.findClaimButton(formattedAmount, { timeout: 120_000 }).click()
   if (options.accept) {
-    cy.confirmMetamaskTransaction(undefined)
+    cy.confirmTransaction()
     cy.findByLabelText('show settled transactions').should('be.visible').click()
     cy.findByText(formattedAmount).should('be.visible')
   } else {
-    cy.rejectMetamaskTransaction()
+    cy.rejectTransaction()
   }
 }
 
@@ -391,7 +387,7 @@ Cypress.Commands.addAll({
   findSelectTokenButton,
   switchToTransferPanelTab,
   switchToTransactionHistoryTab,
-  openTransactionDetails,
+  openTransactionHistoryDetails,
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,

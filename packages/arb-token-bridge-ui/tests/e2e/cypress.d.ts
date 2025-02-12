@@ -16,7 +16,7 @@ import {
   findMoveFundsButton,
   clickMoveFundsButton,
   findSelectTokenButton,
-  openTransactionDetails,
+  openTransactionHistoryDetails,
   closeTransactionDetails,
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
@@ -64,7 +64,7 @@ declare global {
       findMoveFundsButton: typeof findMoveFundsButton
       clickMoveFundsButton: typeof clickMoveFundsButton
       findSelectTokenButton: typeof findSelectTokenButton
-      openTransactionDetails: typeof openTransactionDetails
+      openTransactionHistoryDetails: typeof openTransactionHistoryDetails
       closeTransactionDetails: typeof closeTransactionDetails
       switchToTransferPanelTab: typeof switchToTransferPanelTab
       switchToTransactionHistoryTab: typeof switchToTransactionHistoryTab

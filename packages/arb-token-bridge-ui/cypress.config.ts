@@ -227,7 +227,6 @@ export default defineConfig({
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
 
-      configureSynpressForMetaMask(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: true })
 
       config.browsers = [
@@ -237,11 +236,13 @@ export default defineConfig({
         }
       ]
 
+      configureSynpressForMetaMask(on, config)
+
       return config
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts',
+    supportFile: 'tests/support/e2e.ts',
     defaultCommandTimeout: 20_000
   }
 })

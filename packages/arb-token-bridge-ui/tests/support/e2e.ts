@@ -29,21 +29,15 @@ synpressCommandsForMetaMask();
 
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing
-  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'sepolia')
-    .task('getNetworkSetupComplete')
-    .then(complete => {
-      if (!complete) {
-        // L1
-        // only CI setup is required, Metamask already has localhost
-        if (Cypress.env('ETH_RPC_URL') !== 'http://localhost:8545') {
-          cy.addNetwork(getL1NetworkConfig())
-        }
+  // L1
+  // only CI setup is required, Metamask already has localhost
+  if (Cypress.env('ETH_RPC_URL') !== 'http://localhost:8545') {
+    cy.addNetwork(getL1NetworkConfig())
+  }
 
-        // L2
-        cy.addNetwork(getL2NetworkConfig())
-        cy.addNetwork(getL2TestnetNetworkConfig())
+  // L2
+  cy.addNetwork(getL2NetworkConfig())
+  cy.addNetwork(getL2TestnetNetworkConfig())
 
-        cy.task('setNetworkSetupComplete')
-      }
-    })
+  cy.task('setNetworkSetupComplete')
 })

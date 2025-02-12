@@ -1,16 +1,18 @@
 {
+  "extends": "@synthetixio/synpress-tsconfig/base.json",
   "compilerOptions": {
     "baseUrl": "../../../../",
     "types": [
       "cypress",
-      "./tests/e2e/cypress.d.ts",
+      "./cypress.d.ts",
       "@testing-library/cypress"
     ],
     "outDir": "./output",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "exactOptionalPropertyTypes": false
   },
-  "include": ["cypress.config.ts", "**/*.*"],
-  "exclude": ["node_modules"]
+  "include": ["../../../../cypress.config.ts", "../support/*.*", "**/*.*"],
+  "files": ["environment.d.ts"]
 }

@@ -65,7 +65,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     : defaultL3Network
 
   return {
-    networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
+    name: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
     symbol: nativeTokenSymbol,
@@ -89,7 +89,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
 
 export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'arbitrum-sepolia',
+    name: 'arbitrum-sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
     chainId: 421614,
     symbol: 'ETH',
@@ -149,7 +149,7 @@ export async function getInitialERC20Balance({
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
     balanceOf: { account: address }
   })
-  return tokenData.balance
+  return tokenData?.balance
 }
 
 export const acceptMetamaskAccess = () => {
