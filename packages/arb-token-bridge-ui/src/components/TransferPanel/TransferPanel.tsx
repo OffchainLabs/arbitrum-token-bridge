@@ -68,6 +68,7 @@ import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { executeTransfer } from '../../token-bridge-sdk/TransferManager'
+import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -380,6 +381,14 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
+      const { isWithdrawal } = getBridgeTransferProperties({
+        sourceChainId: latestNetworks.current.sourceChain.id,
+        destinationChainId: latestNetworks.current.destinationChain.id,
+        sourceChainErc20Address: isDepositMode
+          ? selectedToken?.address
+          : selectedToken?.l2Address
+      })
+
       const context = {
         amount: amountBigNumber,
         amount2: isBatchTransfer ? utils.parseEther(amount2) : undefined,
@@ -397,6 +406,7 @@ export function TransferPanel() {
         isSmartContractWallet,
         isTeleportMode,
         isDepositMode,
+        isWithdrawal,
         walletAddress,
         selectedToken: selectedToken ?? undefined,
         sourceChainId: latestNetworks.current.sourceChain.id,
