@@ -80,10 +80,7 @@ export function getGasSummaryStatus({
     return 'insufficientBalance'
   }
 
-  if (
-    (gasEstimatesError && gasEstimatesError !== 'walletNotConnected') ||
-    (oftFeeEstimatesError&& oftFeeEstimatesError !== 'walletNotConnected')
-  ) {
+  if (gasEstimatesError || oftFeeEstimatesError) {
     return 'error'
   }
 

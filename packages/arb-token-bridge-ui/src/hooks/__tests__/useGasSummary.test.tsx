@@ -113,20 +113,6 @@ describe('getGasSummaryStatus', () => {
     expect(result).toEqual('error')
   })
 
-  it('should return success if there is a wallet not connected error', async () => {
-    const result = getGasSummaryStatus({
-      selectedTokenAddress: '0x123',
-      gasEstimatesError: 'walletNotConnected',
-      amountBigNumber: BigNumber.from(100_000),
-      balance: BigNumber.from(100_000),
-      oftFeeSummaryLoading: false,
-      oftFeeEstimatesError: false,
-      sourceChainId: ChainId.ArbitrumOne,
-      destinationChainId: ChainId.Ethereum
-    })
-    expect(result).toEqual('success')
-  })
-
   it('should return unavailable if UI is withdrawal mode from Arbitrum One to Ethereum and selected token is Arbitrum One native USDC', async () => {
     const result = getGasSummaryStatus({
       selectedTokenAddress: CommonAddress.ArbitrumOne.USDC,

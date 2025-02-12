@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { BigNumber, constants, Signer } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
@@ -72,14 +72,14 @@ export function useOftV2FeeEstimates({
   }, [sourceChainId, destinationChainId, sourceChainErc20Address])
 
   const { data: feeEstimates, error } = useSWR(
-       ([
-          sourceChainId,
-          destinationChainId,
-          sourceChainErc20Address,
-          walletAddress,
-          isValidOftTransfer,
-          'oftFeeEstimates'
-        ] as const),
+    [
+      sourceChainId,
+      destinationChainId,
+      sourceChainErc20Address,
+      walletAddress,
+      isValidOftTransfer,
+      'oftFeeEstimates'
+    ] as const,
     ([
       _sourceChainId,
       _destinationChainId,
@@ -102,14 +102,6 @@ export function useOftV2FeeEstimates({
       errorRetryInterval: 5_000
     }
   )
-
-  if (typeof walletAddress === 'undefined') {
-    return { 
-      feeEstimates, 
-      isLoading: !error && !feeEstimates, 
-      error: 'walletNotConnected'
-    }
-  }
 
   return {
     feeEstimates,
