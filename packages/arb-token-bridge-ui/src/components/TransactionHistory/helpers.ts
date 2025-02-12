@@ -33,6 +33,7 @@ import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { isTeleportTx } from '../../types/Transactions'
+import { LayerZeroTransaction } from '../../hooks/useOftTransactionHistory'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -46,8 +47,11 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
   return (tx as MergedTransaction).isCctp === true
 }
 
-export function isOftTransfer(tx: Transfer): tx is MergedTransaction {
-  return (tx as MergedTransaction).isOft === true
+export function isOftTransfer(tx: Transfer): tx is LayerZeroTransaction {
+  return (
+    typeof (tx as LayerZeroTransaction).isOft !== 'undefined' &&
+    (tx as LayerZeroTransaction).isOft === true
+  )
 }
 
 export function isTxCompleted(tx: MergedTransaction): boolean {

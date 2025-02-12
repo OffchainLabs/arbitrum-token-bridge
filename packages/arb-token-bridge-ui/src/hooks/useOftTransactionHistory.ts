@@ -2,11 +2,12 @@ import { useCallback } from 'react'
 import useSWR from 'swr'
 import { AssetType } from './arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
-import { CommonAddress } from '../util/CommonAddressUtils'
 import { getChainIdFromEid } from '../token-bridge-sdk/oftUtils'
 import { isDepositMode } from '../util/isDepositMode'
 import { useAccount } from 'wagmi'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
+import { fetchErc20Data } from '../util/TokenUtils'
+import { ethers, utils } from 'ethers'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
@@ -18,6 +19,13 @@ export enum LayerZeroMessageStatus {
   PAYLOAD_STORED = 'PAYLOAD_STORED',
   BLOCKED = 'BLOCKED',
   CONFIRMING = 'CONFIRMING'
+}
+
+export type LayerZeroTransaction = Omit<
+  MergedTransaction,
+  'asset' | 'value' | 'tokenAddress'
+> & {
+  isOft: true
 }
 
 interface LayerZeroMessage {
@@ -164,7 +172,7 @@ function validateSourceAndDestinationChainIds(message: LayerZeroMessage) {
 
 function mapLayerZeroMessageToMergedTransaction(
   message: LayerZeroMessage
-): MergedTransaction {
+): LayerZeroTransaction {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
@@ -179,8 +187,8 @@ function mapLayerZeroMessageToMergedTransaction(
 
   return {
     isOft: true,
+    isCctp: false,
     sender: message.source.tx.from,
-    destination: undefined, // TODO:to be filled later
     direction: isDeposit ? 'deposit' : 'withdraw',
     status: getOftTransactionStatus(message),
     createdAt: new Date(message.created).getTime(),
@@ -189,14 +197,10 @@ function mapLayerZeroMessageToMergedTransaction(
         ? null
         : new Date(message.updated).getTime(),
     txId: message.source.tx.txHash,
-    asset: message.pathway.sender.name || 'USDT', // TODO: to be properly filled later
     assetType: AssetType.ERC20,
-    value: '0.00001', // TODO: fix this to be properly filled later
     uniqueId: null,
     isWithdrawal: false,
     blockNum: null,
-    tokenAddress: CommonAddress.Ethereum.USDT,
-    isCctp: false,
     childChainId: isDeposit ? destinationChainId : sourceChainId,
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
     sourceChainId,
@@ -204,26 +208,60 @@ function mapLayerZeroMessageToMergedTransaction(
   }
 }
 
-export async function updateAdditionalLayerZeroData(tx: MergedTransaction) {
+export async function updateAdditionalLayerZeroData(
+  tx: LayerZeroTransaction
+): Promise<MergedTransaction> {
   const { txId } = tx
+  const updatedTx = { ...tx }
 
   const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
-  const destinationChainProvider = getProviderForChainId(tx.destinationChainId)
 
+  // extract destination address
+  const sourceChainTx = await sourceChainProvider.getTransaction(txId)
+  const inputDataInterface = new ethers.utils.Interface([
+    'function send((uint32,bytes32,uint256,uint256,bytes,bytes,bytes), (uint256,uint256), address)'
+  ])
+  const decodedInputData = inputDataInterface.decodeFunctionData(
+    'send',
+    sourceChainTx.data
+  )
+  updatedTx.destination = utils.hexValue(decodedInputData[0][1])
+
+  // extract token and value
   const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
     txId
   )
+  const tokenAddress = sourceChainTxReceipt.logs[0]?.address
 
-  console.log('sourceChainTxReceipt', sourceChainTxReceipt)
-  //   const destinationChainTxReceipt = await destinationChainProvider.getTransactionReceipt(txId)
+  if (!tokenAddress) {
+    throw new Error('No token address found for OFT transaction')
+  }
 
-  debugger
+  const { symbol } = await fetchErc20Data({
+    address: tokenAddress,
+    provider: sourceChainProvider
+  })
+
+  const transferInterface = new ethers.utils.Interface([
+    'event Transfer(address indexed from, address indexed to, uint value)'
+  ])
+  const decodedTransferLogs = transferInterface.parseLog(
+    sourceChainTxReceipt.logs[0]!
+  )
+  const { decimals } = await fetchErc20Data({
+    address: tokenAddress,
+    provider: sourceChainProvider
+  })
 
   return {
-    ...tx,
-    blockNum: sourceChainTxReceipt.blockNumber,
-    tokenAddress: sourceChainTxReceipt.logs[0].address
-  }
+    ...updatedTx,
+    asset: symbol,
+    tokenAddress,
+    value: ethers.utils
+      .formatUnits(decodedTransferLogs.args.value, decimals)
+      .toString(),
+    blockNum: sourceChainTxReceipt.blockNumber
+  } as MergedTransaction
 }
 
 interface LayerZeroResponse {
@@ -256,8 +294,6 @@ export function useOftTransactionHistory({
       }
 
       const data: LayerZeroResponse = await response.json()
-
-      console.log('xxxx', data)
 
       return data.data
         .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
