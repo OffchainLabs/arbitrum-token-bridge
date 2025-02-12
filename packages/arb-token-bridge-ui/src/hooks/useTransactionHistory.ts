@@ -621,7 +621,7 @@ export const useTransactionHistory = (
           .map(transformTransaction)
       )
 
-      return txs.filter(tx => tx !== null)
+      return txs.filter(tx => tx !== null) as MergedTransaction[]
     },
     {
       revalidateOnFocus: false,
