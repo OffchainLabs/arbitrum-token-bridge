@@ -36,7 +36,7 @@ export function NativeCurrencyPrice({
   }
 
   return (
-    <span className="tabular-nums">
+    <span className="text-right tabular-nums">
       {showBrackets && '('}
       {formatUSD(ethToUSD(amount))}
       {showBrackets && ')'}

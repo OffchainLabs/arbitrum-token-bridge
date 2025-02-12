@@ -202,9 +202,8 @@ export function findGasFeeSummary(
   return cy
     .findByText('You will pay in gas fees:')
     .siblings()
-    .last()
-    .contains(amount)
-    .should('be.visible')
+    .eq(1)
+    .should('contain', amount)
 }
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
