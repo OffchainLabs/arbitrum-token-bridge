@@ -63,6 +63,7 @@ import {
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useArbQueryParams } from './useArbQueryParams'
 import {
+  getUpdatedOftTransfer,
   LayerZeroTransaction,
   updateAdditionalLayerZeroData,
   useOftTransactionHistory
@@ -758,6 +759,12 @@ export const useTransactionHistory = (
       if (isTeleportTx(tx)) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
         updateCachedTransaction(updatedTeleportTransfer)
+        return
+      }
+
+      if (isOftTransfer(tx)) {
+        const updatedOftTransfer = await getUpdatedOftTransfer(tx)
+        updateCachedTransaction(updatedOftTransfer)
         return
       }
 

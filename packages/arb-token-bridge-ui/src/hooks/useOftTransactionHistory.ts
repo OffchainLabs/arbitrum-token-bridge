@@ -8,6 +8,7 @@ import { useAccount } from 'wagmi'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { ethers, utils } from 'ethers'
+import { isNetwork } from '../util/networks'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
@@ -319,5 +320,37 @@ export function useOftTransactionHistory({
     transactions: data || [],
     error,
     isLoading
+  }
+}
+
+export async function getUpdatedOftTransfer(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  const isTestnetTransfer = [tx.sourceChainId, tx.destinationChainId].some(
+    chainId => isNetwork(chainId).isTestnet
+  )
+  const LAYERZERO_API_URL = isTestnetTransfer
+    ? LAYERZERO_API_URL_TESTNET
+    : LAYERZERO_API_URL_MAINNET
+
+  const url = `${LAYERZERO_API_URL}/messages/tx/${tx.txId}`
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error('Failed to fetch updated OFT transfer')
+    }
+    const message = (await response.json()).data[0] as LayerZeroMessage
+
+    return {
+      ...tx,
+      status: getOftTransactionStatus(message),
+      resolvedAt:
+        getOftTransactionStatus(message) === 'pending'
+          ? null
+          : new Date(message.updated).getTime()
+    }
+  } catch (error) {
+    console.error('Error fetching updated OFT transfer:', error)
+    throw error
   }
 }
