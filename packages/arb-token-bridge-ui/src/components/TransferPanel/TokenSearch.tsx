@@ -9,8 +9,8 @@ import { useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  addBridgeTokenListToBridge,
-  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
+  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID,
+  addBridgeTokenListToBridge
 } from '../../util/TokenListUtils'
 import {
   fetchErc20Data,
@@ -365,8 +365,8 @@ function TokensPanel({
     isParentChainArbitrumOne,
     isParentChainArbitrumSepolia,
     isOrbitChain,
-    nativeCurrency,
-    getBalance
+    getBalance,
+    nativeCurrency
   ])
 
   const storeNewToken = async () => {

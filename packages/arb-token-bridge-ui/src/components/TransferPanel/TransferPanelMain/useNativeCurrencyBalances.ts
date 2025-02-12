@@ -48,6 +48,7 @@ export function useNativeCurrencyBalances(): {
         : customFeeTokenParentBalance
     }
   }, [
+    isConnected,
     nativeCurrency,
     erc20ParentBalances,
     ethChildBalance,
