@@ -1,6 +1,8 @@
 import { defineWalletSetup } from '@synthetixio/synpress'
 import { MetaMask } from '@synthetixio/synpress/playwright'
-import 'dotenv/config'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: `.e2e.env` })
 
 const SEED_PHRASE = process.env.SEED_PHRASE
 const PASSWORD = process.env.WALLET_PASSWORD

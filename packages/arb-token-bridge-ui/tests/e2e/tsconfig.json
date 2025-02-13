@@ -7,7 +7,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "strict": true,
-    "exactOptionalPropertyTypes": false
+    "exactOptionalPropertyTypes": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
   },
   "include": [
     "../../../../cypress.config.ts",

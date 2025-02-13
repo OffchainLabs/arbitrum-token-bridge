@@ -9,7 +9,7 @@ import {
   getL1NetworkConfig,
   getL1NetworkName,
   getL2NetworkName
-} from './../../support/common'
+} from '../../support/common'
 
 describe('Login Account', () => {
   let l1ETHbal: string

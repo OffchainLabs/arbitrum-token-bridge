@@ -9,7 +9,7 @@ import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
 import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from '../types/ChainId'
-import orbitChainsData from './orbitChainsData.json'
+import orbitChainsData from './orbitChainsData.json' assert { type: 'json' }
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID =
   'SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID'
