@@ -16,7 +16,7 @@
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
-    "postinstall": "yarn install:chromium",
+    "postinstall": "yarn install:chrome",
     "install:chrome": "npx @puppeteer/browsers install chrome@$npm_package_config_chromeVersion --path $npm_package_config_chromePath",
     "test:e2e:build-wallet-cache": "yarn install:chrome && yarn workspace arb-token-bridge-ui synpress ./tests/wallet-setup/",
     "test:e2e": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn cypress run --browser chrome",
