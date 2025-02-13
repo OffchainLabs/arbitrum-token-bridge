@@ -7,7 +7,7 @@ type MockClassicDepositTransactionParams = {
   value: string
   assetType?: AssetType
   assetName?: string
-} 
+}
 
 function mockClassicDepositTransaction(
   params: MockClassicDepositTransactionParams

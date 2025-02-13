@@ -63,8 +63,8 @@ export function HeaderAccountPopover({
           'ui-open:bg-white/20 ui-not-open:bg-transparent ui-not-open:hover:bg-white/20',
           'sm:w-max sm:rounded sm:border sm:px-2 sm:py-1',
           isTestnet
-            ? 'sm:border-white sm:ui-not-open:bg-white/20'
-            : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10'
+            ? 'sm:ui-not-open:bg-white/20 sm:border-white'
+            : 'sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10 sm:border-gray-1'
         )}
         style={destinationChainStyle}
         role="button"

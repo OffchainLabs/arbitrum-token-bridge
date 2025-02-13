@@ -36,7 +36,8 @@ describe('Withdraw ERC20 Token', () => {
   // because it is cleared between each `it` cypress test
 
   Object.keys(withdrawalTestCases).forEach(tokenType => {
-    const testCase = withdrawalTestCases[tokenType as keyof typeof withdrawalTestCases]
+    const testCase =
+      withdrawalTestCases[tokenType as keyof typeof withdrawalTestCases]
     // Happy Path
     context(`User is on L2 and imports ${tokenType}`, () => {
       let l1ERC20bal: string, l2ERC20bal: string

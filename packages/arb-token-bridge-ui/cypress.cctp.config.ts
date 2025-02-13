@@ -252,6 +252,6 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/e2e.ts',
+    supportFile: 'tests/support/e2e.ts'
   }
 })

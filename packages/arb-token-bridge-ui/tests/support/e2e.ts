@@ -1,4 +1,4 @@
-import { synpressCommandsForMetaMask } from "@synthetixio/synpress/cypress/support";
+import { synpressCommandsForMetaMask } from '@synthetixio/synpress/cypress/support'
 
 import logCollector from 'cypress-terminal-report/src/installLogsCollector'
 
@@ -9,10 +9,10 @@ import {
 } from './common'
 import './commands'
 
-Cypress.on("uncaught:exception", () => {
+Cypress.on('uncaught:exception', () => {
   // failing the test
-  return false;
-});
+  return false
+})
 
 logCollector({
   collectTypes: [
@@ -25,7 +25,7 @@ logCollector({
   ]
 })
 
-synpressCommandsForMetaMask();
+synpressCommandsForMetaMask()
 
 before(() => {
   // connect to sepolia to avoid connecting to localhost twice and failing

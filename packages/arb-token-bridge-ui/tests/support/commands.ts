@@ -23,11 +23,9 @@ function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
   // issue has been raised with synpress and this is just a workaround
   // TODO: remove this whenever fixed
-  return cy
-    .task('getCurrentNetworkName')
-    .then((currentNetworkName) => {
-      return currentNetworkName !== networkName
-    })
+  return cy.task('getCurrentNetworkName').then(currentNetworkName => {
+    return currentNetworkName !== networkName
+  })
 }
 
 export function login({
@@ -342,11 +340,9 @@ export function findClaimButton(
  * We need to call it twice to confirm it.
  * shouldWaitForPopupClosure needs to be set to true for the test to pass
  */
-export function confirmSpending(
-  spendLimit: number | 'max'
-) {
-  cy.approveTokenPermission({spendLimit})
-  cy.approveTokenPermission({spendLimit})
+export function confirmSpending(spendLimit: number | 'max') {
+  cy.approveTokenPermission({ spendLimit })
+  cy.approveTokenPermission({ spendLimit })
 }
 
 export function claimCctp(amount: number, options: { accept: boolean }) {

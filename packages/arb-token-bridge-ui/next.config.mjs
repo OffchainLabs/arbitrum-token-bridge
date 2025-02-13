@@ -1,4 +1,4 @@
-// @ts-check type next.config.js
+// @ts-check type next.config.mjs
 
 /**
  * @type {import('next').NextConfig}

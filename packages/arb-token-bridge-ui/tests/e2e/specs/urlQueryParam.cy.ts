@@ -124,14 +124,14 @@ describe('User enters site with query params on URL', () => {
         // it's very hard to get the max amount separately
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-            cy.findAmountInput().should($el => {
-              const amount = parseFloat(String($el.val()))
-              expect(amount).to.be.gt(0)
-            }),
         cy.findAmountInput().should($el => {
           const amount = parseFloat(String($el.val()))
-          expect(amount).to.be.lt(Number(l1ETHbal) + Number(balanceBuffer))
-        })
+          expect(amount).to.be.gt(0)
+        }),
+          cy.findAmountInput().should($el => {
+            const amount = parseFloat(String($el.val()))
+            expect(amount).to.be.lt(Number(l1ETHbal) + Number(balanceBuffer))
+          })
       }
     )
     context('?amount=56 should set transfer panel amount to 56', () => {

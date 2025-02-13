@@ -16,6 +16,6 @@ export function getCommonSynpressConfig(shouldRecordVideo: boolean) {
     },
     defaultCommandTimeout: 30000,
     pageLoadTimeout: 30000,
-    requestTimeout: 30000,
+    requestTimeout: 30000
   } as const satisfies Cypress.ConfigOptions
 }
