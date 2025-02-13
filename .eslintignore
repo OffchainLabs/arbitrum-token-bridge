@@ -4,6 +4,7 @@ cypress.config.ts
 cypress.cctp.config.ts
 tailwind.config.ts
 additional.d.ts
+jest.config.ts
 
 packages/arb-token-bridge-ui/prettier.config.cjs
 packages/arb-token-bridge-ui/build/static/js/*.js
