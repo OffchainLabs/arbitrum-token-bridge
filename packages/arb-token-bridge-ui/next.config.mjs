@@ -1,10 +1,10 @@
-// @ts-check type next.config.js
+// @ts-check type next.config.mjs
 
 /**
  * @type {import('next').NextConfig}
  **/
 
-module.exports = {
+export default {
   distDir: 'build',
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
