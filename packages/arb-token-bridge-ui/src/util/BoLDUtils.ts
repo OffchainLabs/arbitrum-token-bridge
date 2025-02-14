@@ -1,4 +1,6 @@
+import dayjs from 'dayjs'
 import { ChainId } from '../types/ChainId'
+import { isNetwork } from './networks'
 
 const boldUpgrades: {
   [chainId: number]: {
@@ -41,6 +43,29 @@ export type BoldUpgradeInfo =
   | {
       status: BoldUpgradeStatus.Done
     }
+
+export function getBoldInfo({
+  createdAt,
+  withdrawalFromChainId
+}: {
+  createdAt: number
+  withdrawalFromChainId: number
+}): {
+  affected: boolean
+  upgradeTime: Date
+} {
+  const { isArbitrumOne, isArbitrumNova } = isNetwork(withdrawalFromChainId)
+
+  const affectedChain = isArbitrumOne || isArbitrumNova
+  const affectedPeriod =
+    dayjs(createdAt) >= dayjs('2025-02-05T14:00:00Z') &&
+    dayjs(createdAt) <= dayjs('2025-02-12T14:00:00Z')
+
+  return {
+    affected: affectedChain && affectedPeriod,
+    upgradeTime: new Date('2025-02-12T14:00:00Z')
+  }
+}
 
 export function getBoldUpgradeInfo(chainId: number): BoldUpgradeInfo {
   const upgrade = boldUpgrades[chainId]
