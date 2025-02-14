@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import { ChainId } from '../types/ChainId'
 import { isNetwork } from './networks'
 
@@ -58,8 +57,8 @@ export function getBoldInfo({
 
   const affectedChain = isArbitrumOne || isArbitrumNova
   const affectedPeriod =
-    dayjs(createdAt) >= dayjs('2025-02-05T14:00:00Z') &&
-    dayjs(createdAt) <= dayjs('2025-02-12T14:00:00Z')
+    new Date(createdAt) >= new Date('2025-02-05T14:00:00Z') &&
+    new Date(createdAt) <= new Date('2025-02-12T14:00:00Z')
 
   return {
     affected: affectedChain && affectedPeriod,
