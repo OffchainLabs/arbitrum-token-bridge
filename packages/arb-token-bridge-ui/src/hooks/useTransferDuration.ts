@@ -108,7 +108,9 @@ export function getWithdrawalConfirmationDate({
   createdAt: number | null
   withdrawalFromChainId: number
 }): Dayjs {
-  let { confirmationTimeInSeconds } = getConfirmationTime(withdrawalFromChainId)
+  const { confirmationTimeInSeconds } = getConfirmationTime(
+    withdrawalFromChainId
+  )
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   if (createdAt === null) {
