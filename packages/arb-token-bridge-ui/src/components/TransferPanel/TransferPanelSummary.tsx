@@ -22,7 +22,6 @@ import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
 import { TokenInfoTooltip } from './TokenInfoTooltip'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
-import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../../util/BoLDUtils'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftTransferDisclaimer } from './OftTransferDisclaimer'
 
@@ -216,10 +215,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isTestnet } = isNetwork(networks.destinationChain.id)
 
-  const boldUpgradeInfo = getBoldUpgradeInfo(networks.sourceChain.id)
-  const isAffectedByBoLDUpgrade =
-    boldUpgradeInfo.status === BoldUpgradeStatus.Scheduled ||
-    boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
+  const {
+    isArbitrumOne: isSourceChainArbitrumOne,
+    isArbitrumNova: isSourceChainArbitrumNova
+  } = isNetwork(networks.sourceChain.id)
+
+  const showBoldBanner =
+    // show banner until Feb 19 09:00 ET
+    new Date() < new Date('2025-02-19T14:00:00Z') &&
+    (isSourceChainArbitrumOne || isSourceChainArbitrumNova)
 
   const showUsdValueForGasFees =
     !isTestnet && !(childChainNativeCurrency.isCustom && !isDepositMode)
@@ -297,7 +301,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
       </div>
       {!isDepositMode &&
         !isOft &&
-        (isAffectedByBoLDUpgrade ? (
+        (showBoldBanner ? (
           <BoLDUpgradeWarning />
         ) : (
           <div
