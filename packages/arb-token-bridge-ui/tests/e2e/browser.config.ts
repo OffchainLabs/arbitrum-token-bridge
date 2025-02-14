@@ -1,5 +1,5 @@
 import { join, resolve } from 'path'
-import packageConfig from '../../../../package.json' assert { type: 'json' }
+import packageConfig from '../../../../package.json'
 
 const getBrowserPath = () => {
   const workspaceRoot = resolve(process.cwd(), '../..')

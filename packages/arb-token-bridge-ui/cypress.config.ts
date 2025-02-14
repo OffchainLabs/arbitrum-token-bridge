@@ -229,21 +229,13 @@ export default defineConfig({
 
       setupCypressTasks(on, { requiresNetworkSetup: true })
 
-      config.browsers = [
-        {
-          ...browserConfig,
-          family: 'chromium' // type issue if not added here
-        }
-      ]
-
-      configureSynpressForMetaMask(on, config)
-
-      return config
+      return configureSynpressForMetaMask(on, config)
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: 'tests/support/e2e.ts',
-    defaultCommandTimeout: 20_000
+    defaultCommandTimeout: 20_000,
+    defaultBrowser: 'chrome'
   }
 })
 
