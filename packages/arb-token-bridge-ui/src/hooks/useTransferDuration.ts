@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 
 import { MergedTransaction } from '../state/app/state'
@@ -107,11 +107,15 @@ export function getWithdrawalConfirmationDate({
 }: {
   createdAt: number | null
   withdrawalFromChainId: number
-}) {
-  // For new txs createdAt won't be defined yet, we default to the current time in that case
-  const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
-
+}): Dayjs {
   let { confirmationTimeInSeconds } = getConfirmationTime(withdrawalFromChainId)
+
+  // For new txs createdAt won't be defined yet, we default to the current time in that case
+  if (createdAt === null) {
+    return dayjs().add(confirmationTimeInSeconds, 'second')
+  }
+
+  const createdAtDate = dayjs(createdAt)
   const boldUpgradeInfo = getBoldUpgradeInfo(withdrawalFromChainId)
 
   // In case the BoLD upgrade is ongoing, and the tx was created during this time, we add the extra confirmation time
