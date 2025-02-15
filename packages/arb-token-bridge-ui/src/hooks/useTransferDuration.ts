@@ -5,7 +5,7 @@ import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
 import { isNetwork } from '../util/networks'
 import { getConfirmationTime } from '../util/WithdrawalUtils'
-import { getBoldInfo } from '../util/BoLDUtils'
+import { getBoldInfo, getDifferenceInSeconds } from '../util/BoLDUtils'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,
@@ -118,9 +118,17 @@ export function getWithdrawalConfirmationDate({
   }
 
   const boldInfo = getBoldInfo({ createdAt, withdrawalFromChainId })
-  // For txs affected by the BoLD upgrade, start counting from the upgrade time
+
   if (boldInfo.affected) {
-    return dayjs(boldInfo.upgradeTime).add(confirmationTimeInSeconds, 'second')
+    // Messages not confirmed at the time of the BoLD upgrade had their confirmation time reset and start again
+    const confirmationTimeBeforeResetInSeconds = getDifferenceInSeconds(
+      new Date(createdAt),
+      boldInfo.upgradeTime
+    )
+
+    return dayjs(createdAt)
+      .add(confirmationTimeBeforeResetInSeconds, 'second')
+      .add(confirmationTimeInSeconds, 'second')
   }
 
   // Add the confirmation time to createdAt

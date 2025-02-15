@@ -107,6 +107,6 @@ export function getBoldUpgradeInfo(chainId: number): BoldUpgradeInfo {
   }
 }
 
-function getDifferenceInSeconds(date1: Date, date2: Date): number {
+export function getDifferenceInSeconds(date1: Date, date2: Date): number {
   return Math.abs((date1.getTime() - date2.getTime()) / 1000)
 }
