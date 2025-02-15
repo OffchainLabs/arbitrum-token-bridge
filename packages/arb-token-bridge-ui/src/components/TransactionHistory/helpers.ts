@@ -33,6 +33,7 @@ import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { isTeleportTx } from '../../types/Transactions'
+import { LayerZeroTransaction } from '../../hooks/useOftTransactionHistory'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -46,9 +47,19 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
   return (tx as MergedTransaction).isCctp === true
 }
 
+export function isOftTransfer(tx: Transfer): tx is LayerZeroTransaction {
+  return (
+    typeof (tx as LayerZeroTransaction).isOft !== 'undefined' &&
+    (tx as LayerZeroTransaction).isOft === true
+  )
+}
+
 export function isTxCompleted(tx: MergedTransaction): boolean {
   if (tx.isCctp) {
     return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
+  }
+  if (tx.isOft && tx.status === 'success') {
+    return true
   }
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.L2_SUCCESS
@@ -63,6 +74,11 @@ export function isTxPending(tx: MergedTransaction) {
   ) {
     return true
   }
+
+  if (tx.isOft && tx.status === 'pending') {
+    return true
+  }
+
   if (isDeposit(tx)) {
     return (
       tx.depositStatus === DepositStatus.L1_PENDING ||
@@ -75,6 +91,9 @@ export function isTxPending(tx: MergedTransaction) {
 export function isTxClaimable(tx: MergedTransaction): boolean {
   if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
     return true
+  }
+  if (tx.isOft) {
+    return false
   }
   if (isDeposit(tx)) {
     return false
@@ -90,6 +109,10 @@ export function isTxExpired(tx: MergedTransaction): boolean {
 }
 
 export function isTxFailed(tx: MergedTransaction): boolean {
+  if (tx.isOft) {
+    return tx.status === 'failed'
+  }
+
   if (isDeposit(tx)) {
     if (!tx.depositStatus) {
       return false
