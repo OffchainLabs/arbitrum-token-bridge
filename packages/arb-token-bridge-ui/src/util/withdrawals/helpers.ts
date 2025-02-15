@@ -19,6 +19,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+import { getBoldInfo } from '../BoLDUtils'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -103,6 +104,13 @@ export async function getOutgoingMessageState(
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
+  }
+
+  const createdAt = event.timestamp.toNumber() * 1000
+  const boldInfo = getBoldInfo({ createdAt, withdrawalFromChainId: l2ChainID })
+
+  if (boldInfo.affected && new Date() < new Date('2025-02-19T14:00:00Z')) {
+    return OutgoingMessageState.UNCONFIRMED
   }
 
   const messageReader = new ChildToParentMessageReader(l1Provider, event)
