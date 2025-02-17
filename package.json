@@ -15,7 +15,6 @@
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
-    "postinstall": "yarn install:chrome",
     "test:e2e:build-wallet-cache": "yarn workspace arb-token-bridge-e2e synpress ./wallet-setup/",
     "test:e2e": "yarn workspace arb-token-bridge-e2e env-cmd --silent --file .e2e.env yarn cypress run --headed",
     "test:e2e:cctp": "yarn test:e2e --config cypress.cctp.config.ts",

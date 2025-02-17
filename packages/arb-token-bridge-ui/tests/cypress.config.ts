@@ -233,7 +233,8 @@ export default defineConfig({
     specPattern: tests,
     supportFile: './support/e2e.ts',
     defaultCommandTimeout: 20_000,
-    defaultBrowser: 'chrome'
+    defaultBrowser: 'chrome',
+    testIsolation: true
   }
 })
 
