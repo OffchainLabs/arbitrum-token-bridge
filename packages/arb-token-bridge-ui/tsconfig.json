@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "include": [
     "src",
-    "next.config.mjs",
+    "next.config.js",
     "next-env.d.ts",
     "additional.d.ts",
     ".next/types/**/*.ts",

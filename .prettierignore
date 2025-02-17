@@ -4,3 +4,4 @@
 **/dist
 .github/
 **/src/styles/
+**/.cache-synpress

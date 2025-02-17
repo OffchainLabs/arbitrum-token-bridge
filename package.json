@@ -1,7 +1,6 @@
 {
   "name": "arb-token-bridge-ui-mono",
   "private": true,
-  "type": "module",
   "license": "Apache-2.0",
   "version": "1.0.0",
   "description": "",
@@ -17,9 +16,8 @@
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
     "postinstall": "yarn install:chrome",
-    "install:chrome": "npx @puppeteer/browsers install chrome@$npm_package_config_chromeVersion --path $npm_package_config_chromePath",
-    "test:e2e:build-wallet-cache": "yarn workspace arb-token-bridge-ui synpress ./tests/wallet-setup/",
-    "test:e2e": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn cypress run --headed",
+    "test:e2e:build-wallet-cache": "yarn workspace arb-token-bridge-e2e synpress ./wallet-setup/",
+    "test:e2e": "yarn workspace arb-token-bridge-e2e env-cmd --silent --file .e2e.env yarn cypress run --headed",
     "test:e2e:cctp": "yarn test:e2e --config cypress.cctp.config.ts",
     "test:e2e:orbit": "E2E_ORBIT=true yarn test:e2e",
     "test:e2e:orbit:custom-gas-token": "E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn test:e2e"
@@ -33,7 +31,8 @@
   "keywords": [],
   "author": "",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/arb-token-bridge-ui/tests"
   ],
   "devDependencies": {
     "audit-ci": "^6.3.0"

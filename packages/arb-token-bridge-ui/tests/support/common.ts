@@ -5,12 +5,14 @@
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { EthBridger, MultiCaller } from '@arbitrum/sdk'
-import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import {
   defaultL2Network,
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
-} from '../../src/util/networksNitroTestnode'
+} from './networksNitroTestnode'
+
+export const MULTICALL_TESTNET_ADDRESS =
+  '0xcA11bde05977b3631167028862bE2a173976CA11'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -167,7 +169,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
     // ensures we don't test with the same state that could have caused the test to fail
     cy.reload(true)
   }
-  cy.connectToDapp()
+  cy.connectToApp()
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
       acceptMetamaskAccess()

@@ -1,10 +1,8 @@
 import { type ArbitrumNetwork } from '@arbitrum/sdk'
 
-import { ChainId } from '../types/ChainId'
-
 export const defaultL2Network: ArbitrumNetwork = {
   chainId: 412346,
-  parentChainId: ChainId.Local,
+  parentChainId: 1337,
   confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
@@ -38,7 +36,7 @@ export const defaultL2Network: ArbitrumNetwork = {
 
 export const defaultL3Network: ArbitrumNetwork = {
   chainId: 333333,
-  parentChainId: ChainId.ArbitrumLocal,
+  parentChainId: 412346,
   confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
@@ -72,7 +70,7 @@ export const defaultL3Network: ArbitrumNetwork = {
 
 export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
   chainId: 333333,
-  parentChainId: ChainId.ArbitrumLocal,
+  parentChainId: 412346,
   confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',

@@ -14,9 +14,9 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
-import { getL2ERC20Address } from './src/util/TokenUtils'
-import specFiles from './tests/e2e/specfiles.json' assert { type: 'json' }
-import { contractAbi, contractByteCode } from './testErc20Token'
+import { getL2ERC20Address } from './support/helpers'
+import specFiles from './e2e/specfiles.json' assert { type: 'json' }
+import { contractAbi, contractByteCode } from './support/testErc20Token'
 import {
   checkForAssertions,
   generateActivityOnChains,
@@ -27,16 +27,16 @@ import {
   ERC20TokenDecimals,
   ERC20TokenName,
   getNativeTokenDecimals
-} from './tests/support/common'
+} from './support/common'
 
-import { registerLocalNetwork } from './src/util/networks'
+import { registerLocalNetwork } from './support/helpers'
 import {
   defaultL2Network,
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
-} from './src/util/networksNitroTestnode'
-import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
-import { browserConfig } from './tests/e2e/browser.config'
+} from './support/networksNitroTestnode'
+import { getCommonSynpressConfig } from './e2e/getCommonSynpressConfig'
+// import { browserConfig } from './e2e/browser.config'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -233,7 +233,7 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/e2e.ts',
+    supportFile: './support/e2e.ts',
     defaultCommandTimeout: 20_000,
     defaultBrowser: 'chrome'
   }
