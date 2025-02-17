@@ -36,7 +36,6 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './support/networksNitroTestnode'
 import { getCommonSynpressConfig } from './e2e/getCommonSynpressConfig'
-// import { browserConfig } from './e2e/browser.config'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -204,7 +203,6 @@ export default defineConfig({
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
-      config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
       config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
       config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken

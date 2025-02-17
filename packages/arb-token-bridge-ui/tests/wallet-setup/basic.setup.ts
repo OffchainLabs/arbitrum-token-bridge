@@ -7,7 +7,7 @@ import {
   getL2TestnetNetworkConfig
 } from '../support/common'
 
-dotenv.config({ path: `.e2e.env` })
+dotenv.config({ path: `./.e2e.env` })
 
 const SEED_PHRASE =
   'test test test test test test test test test test test junk'
