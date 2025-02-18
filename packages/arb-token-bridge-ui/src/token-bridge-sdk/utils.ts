@@ -13,12 +13,7 @@ import {
   getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
-import { EnhancedProvider, ProviderOptions } from './EnhancedProvider'
-
-const defaultProviderOptions = {
-  enableBatching: false,
-  enableCaching: false
-}
+import { EnhancedProvider } from './EnhancedProvider'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -111,21 +106,53 @@ const providerInstanceCache: {
   // start with empty cache
 }
 
+const enableCaching = (chainId: number) => {
+  if (
+    isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('testnet')
+  ) {
+    return true
+  }
+
+  if (
+    !isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('mainnet')
+  ) {
+    return true
+  }
+
+  return false
+}
+
+const enableBatching = (chainId: number) => {
+  if (
+    isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_BATCH_RPC?.includes('testnet')
+  ) {
+    return true
+  }
+
+  if (
+    !isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_BATCH_RPC?.includes('mainnet')
+  ) {
+    return true
+  }
+
+  return false
+}
+
 /**
  * Creates a new provider instance with the specified options.
  */
-function createProvider(
-  chainId: ChainId,
-  options: ProviderOptions = defaultProviderOptions
-): StaticJsonRpcProvider {
+function createProvider(chainId: ChainId): StaticJsonRpcProvider {
   const rpcUrl = rpcURLs[chainId]
-  const { enableBatching, enableCaching } = options
 
-  // Only enable tx receipt caching for testnets by default
-  const shouldEnableCaching = enableCaching && isNetwork(chainId).isTestnet
+  const shouldEnableCaching = enableCaching(chainId)
+  const shouldEnableBatching = enableBatching(chainId)
 
   // Create appropriate provider based on options
-  if (enableBatching) {
+  if (shouldEnableBatching) {
     return new EnhancedProvider(rpcUrl, chainId, undefined, {
       enableCaching: shouldEnableCaching,
       enableBatching: true
@@ -140,17 +167,14 @@ function createProvider(
     : new StaticJsonRpcProvider(rpcUrl, chainId)
 }
 
-export function getProviderForChainId(
-  chainId: ChainId,
-  options: ProviderOptions = defaultProviderOptions
-): StaticJsonRpcProvider {
+export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   const cachedProvider = providerInstanceCache[chainId]
 
   if (typeof cachedProvider !== 'undefined') {
     return cachedProvider
   }
 
-  const provider = createProvider(chainId, options)
+  const provider = createProvider(chainId)
   providerInstanceCache[chainId] = provider
   return provider
 }
