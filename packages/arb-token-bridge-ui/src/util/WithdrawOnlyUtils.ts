@@ -194,50 +194,50 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8',
       l1Address: '0x0B7f0e51Cd1739D6C96982D55aD8fA634dd43A9C',
       l2Address: '0x6Ab317237cc72B2cdb54EcfcC180b61E00F7df76'
-    },
-    // LayerZero tokens
-    {
-      symbol: 'GSWIFT',
-      l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
-      l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
-      l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
-    },
-    {
-      symbol: 'ZRO',
-      l2CustomAddr: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
-      l1Address: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
-      l2Address: '0xd99f14023f6bde3142d339b6c069b2b711da7e37'
-    },
-    {
-      symbol: 'G3',
-      l2CustomAddr: '0xc24A365A870821EB83Fd216c9596eDD89479d8d7',
-      l1Address: '0xCF67815ccE72E682Eb4429eCa46843bed81Ca739',
-      l2Address: '0x34fb4148fdc1ab3054ac85d32de887c58538bb57'
-    },
-    {
-      symbol: 'mPendleOFT',
-      l2CustomAddr: '',
-      l1Address: '0x83e817E1574e2201a005EC0f7e700ED5606F555E',
-      l2Address: '0x87ABaD012da6DcD0438e36967FcaD54C9d64F86C'
-    },
-    {
-      symbol: 'Pepe',
-      l2CustomAddr: '',
-      l1Address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
-      l2Address: '0x35E6A59F786d9266c7961eA28c7b768B33959cbB'
-    },
-    {
-      symbol: 'cbBTC',
-      l2CustomAddr: '',
-      l1Address: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
-      l2Address: '0x4A605F93288e95db40cE72934b888641D9689a48'
-    },
-    {
-      symbol: 'NST',
-      l2CustomAddr: '',
-      l1Address: '0x70Bef3bB2f001dA2fDDb207dAe696cD9FAFf3f5d',
-      l2Address: '0xd5A1a674F0DA33A4147a8Cd96143E598e738c7FF'
     }
+    // // LayerZero tokens
+    // {
+    //   symbol: 'GSWIFT',
+    //   l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+    //   l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+    //   l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
+    // },
+    // {
+    //   symbol: 'ZRO',
+    //   l2CustomAddr: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+    //   l1Address: '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+    //   l2Address: '0xd99f14023f6bde3142d339b6c069b2b711da7e37'
+    // },
+    // {
+    //   symbol: 'G3',
+    //   l2CustomAddr: '0xc24A365A870821EB83Fd216c9596eDD89479d8d7',
+    //   l1Address: '0xCF67815ccE72E682Eb4429eCa46843bed81Ca739',
+    //   l2Address: '0x34fb4148fdc1ab3054ac85d32de887c58538bb57'
+    // },
+    // {
+    //   symbol: 'mPendleOFT',
+    //   l2CustomAddr: '',
+    //   l1Address: '0x83e817E1574e2201a005EC0f7e700ED5606F555E',
+    //   l2Address: '0x87ABaD012da6DcD0438e36967FcaD54C9d64F86C'
+    // },
+    // {
+    //   symbol: 'Pepe',
+    //   l2CustomAddr: '',
+    //   l1Address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
+    //   l2Address: '0x35E6A59F786d9266c7961eA28c7b768B33959cbB'
+    // },
+    // {
+    //   symbol: 'cbBTC',
+    //   l2CustomAddr: '',
+    //   l1Address: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
+    //   l2Address: '0x4A605F93288e95db40cE72934b888641D9689a48'
+    // },
+    // {
+    //   symbol: 'NST',
+    //   l2CustomAddr: '',
+    //   l1Address: '0x70Bef3bB2f001dA2fDDb207dAe696cD9FAFf3f5d',
+    //   l2Address: '0xd5A1a674F0DA33A4147a8Cd96143E598e738c7FF'
+    // }
   ],
   [ChainId.ArbitrumNova]: [],
   // Plume
@@ -257,29 +257,6 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   ]
 }
 
-async function isLayerZeroToken(
-  parentChainErc20Address: string,
-  parentChainId: number
-) {
-  const parentProvider = getProviderForChainId(parentChainId)
-
-  // https://github.com/LayerZero-Labs/LayerZero-v2/blob/592625b9e5967643853476445ffe0e777360b906/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol#L37
-  const layerZeroTokenOftContract = new ethers.Contract(
-    parentChainErc20Address,
-    [
-      'function oftVersion() external pure virtual returns (bytes4 interfaceId, uint64 version)'
-    ],
-    parentProvider
-  )
-
-  try {
-    const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
-    return !!_isLayerZeroToken
-  } catch (error) {
-    return false
-  }
-}
-
 /**
  *
  * @param erc20L1Address
@@ -287,11 +264,9 @@ async function isLayerZeroToken(
  */
 export async function isWithdrawOnlyToken({
   parentChainErc20Address,
-  parentChainId,
   childChainId
 }: {
   parentChainErc20Address: string
-  parentChainId: number
   childChainId: number
 }) {
   // disable USDC.e deposits for Orbit chains
@@ -308,10 +283,6 @@ export async function isWithdrawOnlyToken({
     .includes(parentChainErc20Address.toLowerCase())
 
   if (inWithdrawOnlyList) {
-    return true
-  }
-
-  if (await isLayerZeroToken(parentChainErc20Address, parentChainId)) {
     return true
   }
 

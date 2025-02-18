@@ -9,7 +9,7 @@ export const useIsOftV2Transfer = function () {
   const [networks] = useNetworks()
   const { isTeleportMode, isDepositMode } = useNetworksRelationship(networks)
 
-  const { data: isOft = false } = useSWRImmutable(
+  const { data: isOft = false, isLoading } = useSWRImmutable(
     // Only create cache key if we have all required params
     selectedToken && !isTeleportMode
       ? [
@@ -20,11 +20,13 @@ export const useIsOftV2Transfer = function () {
         ]
       : null,
     async ([_sourceChainErc20Address, _sourceChainId, _destinationChainId]) =>
-      getOftV2TransferConfig({
-        sourceChainId: _sourceChainId,
-        destinationChainId: _destinationChainId,
-        sourceChainErc20Address: _sourceChainErc20Address
-      }).isValid
+      (
+        await getOftV2TransferConfig({
+          sourceChainId: _sourceChainId,
+          destinationChainId: _destinationChainId,
+          sourceChainErc20Address: _sourceChainErc20Address
+        })
+      ).isValid
   )
 
   return isOft

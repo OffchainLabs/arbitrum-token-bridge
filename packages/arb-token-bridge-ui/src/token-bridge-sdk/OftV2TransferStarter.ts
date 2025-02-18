@@ -23,8 +23,8 @@ import { isNetwork } from '../util/networks'
 export class OftV2TransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oftV2'
   private isOftTransferValidated?: boolean
-  private oftAdapterAddress?: string
-  private oftAdapterContract?: ethers.Contract
+  private oftSpenderAddress?: string
+  private oftSpenderContract?: ethers.Contract
   private destLzEndpointId?: number
   private isSourceChainEthereum?: boolean
 
@@ -53,7 +53,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       this.destinationChainProvider.getNetwork().then(n => n.chainId)
     ])
 
-    const oftTransferConfig = getOftV2TransferConfig({
+    const oftTransferConfig = await getOftV2TransferConfig({
       sourceChainId,
       destinationChainId,
       sourceChainErc20Address: this.sourceChainErc20Address
@@ -66,35 +66,41 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
     this.isSourceChainEthereum = !!isNetwork(sourceChainId).isEthereumMainnet
     this.isOftTransferValidated = true
-    this.oftAdapterAddress = oftTransferConfig.sourceChainAdapterAddress
+
+    if (oftTransferConfig.isOftNativeToken) {
+      this.oftSpenderAddress = this.sourceChainErc20Address
+    } else {
+      this.oftSpenderAddress = oftTransferConfig.sourceChainAdapterAddress
+    }
+
     this.destLzEndpointId = oftTransferConfig.destinationChainLzEndpointId
   }
 
-  private getOftAdapterContractAddress(): string {
+  private getOftSpenderContractAddress(): string {
     if (!this.isOftTransferValidated) {
       throw Error('OFT transfer validation failed')
     }
-    return this.oftAdapterAddress!
+    return this.oftSpenderAddress!
   }
 
-  private getOftAdapterContract(
+  private getOftSpenderContract(
     providerOrSigner: Signer | Provider
   ): ethers.Contract {
     if (!this.isOftTransferValidated) {
       throw Error('OFT transfer validation failed')
     }
 
-    if (this.oftAdapterContract) {
-      return this.oftAdapterContract
+    if (this.oftSpenderContract) {
+      return this.oftSpenderContract
     }
 
-    const oftAdapterContract = new ethers.Contract(
-      this.getOftAdapterContractAddress(),
+    const oftSpenderContract = new ethers.Contract(
+      this.getOftSpenderContractAddress(),
       oftV2Abi,
       providerOrSigner
     )
-    this.oftAdapterContract = oftAdapterContract
-    return oftAdapterContract
+    this.oftSpenderContract = oftSpenderContract
+    return oftSpenderContract
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -119,7 +125,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     if (!this.isSourceChainEthereum) return false
 
     const address = await getAddressFromSigner(signer)
-    const spender = this.getOftAdapterContractAddress()
+    const spender = this.getOftSpenderContractAddress()
 
     const allowance = await fetchErc20Allowance({
       address: this.sourceChainErc20Address!,
@@ -141,7 +147,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     )
 
     return contract.estimateGas.approve(
-      this.oftAdapterAddress!,
+      this.oftSpenderAddress!,
       constants.MaxUint256, // Eth USDT will need MAX approval since that cannot be changed afterwards
       { from: address }
     )
@@ -149,7 +155,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
   public async approveToken({ signer }: ApproveTokenProps) {
     await this.validateOftTransfer()
-    const spender = this.getOftAdapterContractAddress()
+    const spender = this.getOftSpenderContractAddress()
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address!,
       signer
@@ -167,7 +173,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
-    const oftContract = this.getOftAdapterContract(signer)
+    const oftContract = this.getOftSpenderContract(signer)
 
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
@@ -191,7 +197,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
-    const oftContract = this.getOftAdapterContract(signer)
+    const oftContract = this.getOftSpenderContract(signer)
 
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,

@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { BigNumber } from 'ethers'
+import { getProviderForChainId } from './utils'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 const oftProtocolConfig: {
@@ -50,7 +51,7 @@ const oftProtocolConfig: {
   }
 }
 
-export function getOftV2TransferConfig({
+export async function getOftV2TransferConfig({
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address
@@ -58,36 +59,58 @@ export function getOftV2TransferConfig({
   sourceChainId: number
   destinationChainId: number
   sourceChainErc20Address?: string
-}):
+}): Promise<
   | { isValid: false }
   | {
       isValid: true
       sourceChainAdapterAddress: string
+      isOftNativeToken: false
       destinationChainLzEndpointId: number
-    } {
+    }
+  | {
+      isValid: true
+      isOftNativeToken: true
+      destinationChainLzEndpointId: number
+    }
+> {
   if (!sourceChainErc20Address) {
     return {
       isValid: false
     }
   }
+
   const sourceChainOftAdapterConfig =
     oftProtocolConfig[sourceChainId]?.adapterConfig?.[sourceChainErc20Address]
 
   const destinationChainLzEndpointId =
     oftProtocolConfig[destinationChainId]?.lzEndpointId
 
-  if (!sourceChainOftAdapterConfig || !destinationChainLzEndpointId) {
+  if (sourceChainOftAdapterConfig && destinationChainLzEndpointId) {
     return {
-      isValid: false
+      isValid: true,
+      sourceChainAdapterAddress: sourceChainOftAdapterConfig.oftAdapterEndpoint,
+      isOftNativeToken: false,
+      destinationChainLzEndpointId
+    }
+  }
+
+  if (
+    (await isLayerZeroToken(sourceChainErc20Address, sourceChainId)) &&
+    oftProtocolConfig[destinationChainId]?.lzEndpointId // destination chain has a valid lz endpoint id
+  ) {
+    return {
+      isValid: true,
+      isOftNativeToken: true,
+      destinationChainLzEndpointId:
+        oftProtocolConfig[destinationChainId]?.lzEndpointId
     }
   }
 
   return {
-    isValid: true,
-    sourceChainAdapterAddress: sourceChainOftAdapterConfig.oftAdapterEndpoint,
-    destinationChainLzEndpointId
+    isValid: false
   }
 }
+
 interface SendParam {
   dstEid: number
   to: string
@@ -136,5 +159,28 @@ export async function getOftV2Quote({
   return {
     nativeFee: quote.nativeFee.toString(),
     lzTokenFee: quote.lzTokenFee.toString()
+  }
+}
+
+export async function isLayerZeroToken(
+  parentChainErc20Address: string,
+  parentChainId: number
+) {
+  const parentProvider = getProviderForChainId(parentChainId)
+
+  // https://github.com/LayerZero-Labs/LayerZero-v2/blob/592625b9e5967643853476445ffe0e777360b906/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol#L37
+  const layerZeroTokenOftContract = new ethers.Contract(
+    parentChainErc20Address,
+    [
+      'function oftVersion() external pure virtual returns (bytes4 interfaceId, uint64 version)'
+    ],
+    parentProvider
+  )
+
+  try {
+    const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
+    return !!_isLayerZeroToken
+  } catch (error) {
+    return false
   }
 }

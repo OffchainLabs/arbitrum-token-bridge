@@ -1187,6 +1187,7 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
+        <span className="text-white">{'OFT Transfer: ' + isOftTransfer}</span>
         <TransferPanelMain />
         <AdvancedSettings />
         <TransferPanelSummary
