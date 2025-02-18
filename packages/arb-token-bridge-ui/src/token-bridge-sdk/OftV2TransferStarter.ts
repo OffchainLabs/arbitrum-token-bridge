@@ -27,6 +27,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
   private oftSpenderContract?: ethers.Contract
   private destLzEndpointId?: number
   private isSourceChainEthereum?: boolean
+  private isOftNativeToken?: boolean
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -68,8 +69,10 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     this.isOftTransferValidated = true
 
     if (oftTransferConfig.isOftNativeToken) {
+      this.isOftNativeToken = true
       this.oftSpenderAddress = this.sourceChainErc20Address
     } else {
+      this.isOftNativeToken = false
       this.oftSpenderAddress = oftTransferConfig.sourceChainAdapterAddress
     }
 
@@ -120,6 +123,9 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     signer
   }: RequiresTokenApprovalProps): Promise<boolean> {
     await this.validateOftTransfer()
+
+    // no approval needed for native OFT tokens
+    if (this.isOftNativeToken) return false
 
     // only Eth adapter will need token approval
     if (!this.isSourceChainEthereum) return false

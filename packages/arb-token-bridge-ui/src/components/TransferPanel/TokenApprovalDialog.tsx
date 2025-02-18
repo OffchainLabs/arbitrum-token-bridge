@@ -165,7 +165,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   useEffect(() => {
     const getContractAddress = async function () {
       if (isOft) {
-        const oftTransferConfig = getOftV2TransferConfig({
+        const oftTransferConfig = await getOftV2TransferConfig({
           sourceChainId: sourceChain.id,
           destinationChainId: destinationChain.id,
           sourceChainErc20Address: isDepositMode
@@ -177,7 +177,12 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           throw new Error('OFT transfer validation failed')
         }
 
-        setContractAddress(oftTransferConfig.sourceChainAdapterAddress)
+        if (oftTransferConfig.isOftNativeToken) {
+          setContractAddress(token?.address ?? '')
+        } else {
+          setContractAddress(oftTransferConfig.sourceChainAdapterAddress)
+        }
+
         return
       }
       if (isCctp) {

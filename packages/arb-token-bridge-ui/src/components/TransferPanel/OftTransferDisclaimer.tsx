@@ -1,7 +1,12 @@
 import Image from 'next/image'
 import { ExternalLink } from '../common/ExternalLink'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export const OftTransferDisclaimer = () => {
+  const [selectedToken] = useSelectedToken()
+
+  if (!selectedToken) return null
+
   return (
     <div className="flex w-full flex-col flex-nowrap gap-2 whitespace-nowrap rounded bg-white/10 p-2 text-sm font-light text-white lg:flex-row lg:items-center">
       <Image
@@ -12,7 +17,8 @@ export const OftTransferDisclaimer = () => {
         className="shrink-0"
       />
       <p>
-        USDT0 transfers are powered by LayerZero&apos;s OFT protocol.{' '}
+        {selectedToken.symbol} transfers are powered by LayerZero&apos;s OFT
+        protocol.{' '}
         <ExternalLink
           className="underline hover:opacity-70"
           href="https://mirror.xyz/tetherzero.eth/_6FNgGi0WHHQhA9qavZ4rlt-nV9ehVuJUHxQnSwOmbM"
