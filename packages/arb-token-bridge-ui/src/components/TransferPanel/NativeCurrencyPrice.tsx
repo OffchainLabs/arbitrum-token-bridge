@@ -1,15 +1,13 @@
 import { NativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useAppState } from '../../state'
 import { isNetwork } from '../../util/networks'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatUSD } from '../../util/NumberUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export function useIsBridgingEth(childChainNativeCurrency: NativeCurrency) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const isBridgingEth =
     selectedToken === null && !childChainNativeCurrency.isCustom
   return isBridgingEth
@@ -38,7 +36,7 @@ export function NativeCurrencyPrice({
   }
 
   return (
-    <span className="tabular-nums">
+    <span className="text-right tabular-nums">
       {showBrackets && '('}
       {formatUSD(ethToUSD(amount))}
       {showBrackets && ')'}

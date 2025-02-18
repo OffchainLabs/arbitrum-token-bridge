@@ -5,13 +5,13 @@ import Image from 'next/image'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { NetworkContainer } from '../TransferPanelMain'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useAppState } from '../../../state'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
 import { EstimatedGas } from '../EstimatedGas'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useDialog } from '../../common/Dialog'
 import {
   NetworkButton,
@@ -93,7 +93,7 @@ function BalanceRow({
         />
         <span>{symbol}</span>
       </div>
-      <div>
+      <div className="flex space-x-1">
         <span>Balance: </span>
         <span
           aria-label={`${symbol} balance amount on ${
@@ -112,15 +112,11 @@ function BalanceRow({
 }
 
 function BalancesContainer() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const { childChain, isDepositMode } = useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
+  const [selectedToken] = useSelectedToken()
 
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()

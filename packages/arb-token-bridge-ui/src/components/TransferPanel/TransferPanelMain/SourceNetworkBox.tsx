@@ -10,7 +10,6 @@ import {
   NetworkSelectionContainer
 } from '../../common/NetworkSelectionContainer'
 import { NetworkContainer } from '../TransferPanelMain'
-import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
@@ -21,6 +20,7 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -36,6 +36,7 @@ import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 
 function Amount2ToggleButton({
   onClick
@@ -82,9 +83,7 @@ export function SourceNetworkBox() {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
@@ -99,6 +98,8 @@ export function SourceNetworkBox() {
     useSourceChainNativeCurrencyDecimals()
 
   const isCctpTransfer = useIsCctpTransfer()
+
+  const isOft = useIsOftV2Transfer()
 
   const {
     network: { logo: networkLogo }
@@ -161,11 +162,10 @@ export function SourceNetworkBox() {
             )
           )
         : undefined,
-      logoSrc: nativeCurrency.logoUrl
+      logoSrc: null
     }),
     [
       nativeCurrency.symbol,
-      nativeCurrency.logoUrl,
       nativeCurrencyBalances.sourceBalance,
       nativeCurrencyDecimalsOnSourceChain
     ]
@@ -239,7 +239,7 @@ export function SourceNetworkBox() {
             </p>
           )}
 
-          {isDepositMode && selectedToken && (
+          {isDepositMode && selectedToken && !isOft && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have {nativeCurrency.symbol} in your{' '}
               {getNetworkName(childChain.id)} account, as you’ll need it to

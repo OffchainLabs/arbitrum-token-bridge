@@ -2,14 +2,16 @@ import { useInterval, useLatest } from 'react-use'
 import { useAccount } from 'wagmi'
 
 import { useAppState } from '../../state'
-import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 
 // Updates all balances periodically
 export function useBalanceUpdater() {
   const {
-    app: { arbTokenBridge, selectedToken }
+    app: { arbTokenBridge }
   } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const latestTokenBridge = useLatest(arbTokenBridge)
 

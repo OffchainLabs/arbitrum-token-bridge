@@ -75,16 +75,6 @@ export function login({
   })
 }
 
-// once all assertions are run, before test exit, make sure web-app is reset to original
-export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps()
-  cy.resetMetamaskAccount()
-  // resetMetamaskAccount doesn't seem to remove the connected network in CI
-  // changeMetamaskNetwork fails if already connected to the desired network
-  // as a workaround we switch to another network after all the tests
-  cy.changeMetamaskNetwork('sepolia')
-}
-
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
   cy.findByText(/Agree to Terms and Continue/i)
@@ -212,9 +202,8 @@ export function findGasFeeSummary(
   return cy
     .findByText('You will pay in gas fees:')
     .siblings()
-    .last()
-    .contains(amount)
-    .should('be.visible')
+    .eq(1)
+    .should('contain', amount)
 }
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -390,7 +379,6 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
 Cypress.Commands.addAll({
   connectToApp,
   login,
-  logout,
   selectTransactionsPanelTab,
   searchAndSelectToken,
   fillCustomDestinationAddress,

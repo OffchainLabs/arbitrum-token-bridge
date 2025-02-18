@@ -86,7 +86,7 @@ describe('Deposit USDC through CCTP', () => {
   })
 
   it('should initiate depositing USDC to the same address through CCTP successfully', () => {
-    cy.clickMoveFundsButton().click()
+    cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpDeposit()
     cy.confirmSpending(USDCAmountToSend.toString())
@@ -122,7 +122,7 @@ describe('Deposit USDC through CCTP', () => {
    */
   it.skip('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
     cy.fillCustomDestinationAddress()
-    cy.clickMoveFundsButton().click()
+    cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
     confirmAndApproveCctpDeposit()
 
     cy.confirmSpending(USDCAmountToSend.toString())

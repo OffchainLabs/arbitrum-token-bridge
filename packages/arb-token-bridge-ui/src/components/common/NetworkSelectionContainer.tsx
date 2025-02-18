@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { hex } from 'wcag-contrast'
 
 import { isNetwork, getNetworkName } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
@@ -32,6 +33,7 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
 
 type NetworkType = 'core' | 'more' | 'orbit'
@@ -128,8 +130,13 @@ export function NetworkButton({
     (isSmartContractWallet && type === 'source') ||
     isLoading
 
+  const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
+
+  const colorContrast = hex('#ffffff', backgroundColor)
+
   const buttonStyle = {
-    backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+    backgroundColor,
+    color: colorContrast >= 3 ? '#ffffff' : '#000000'
   }
 
   return (
@@ -404,6 +411,7 @@ export const NetworkSelectionContainer = (
   }
 ) => {
   const actions = useActions()
+  const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [, setQueryParams] = useArbQueryParams()
@@ -444,7 +452,7 @@ export const NetworkSelectionContainer = (
         destinationChainId: isSource ? networks.destinationChain.id : value.id
       })
 
-      actions.app.setSelectedToken(null)
+      setSelectedToken(null)
       setQueryParams({ destinationAddress: undefined })
 
       if (!isSmartContractWallet) {
@@ -455,7 +463,7 @@ export const NetworkSelectionContainer = (
       isSource,
       networks,
       setNetworks,
-      actions.app,
+      setSelectedToken,
       setQueryParams,
       setAdvancedSettingsCollapsed,
       openOneNovaTransferDialog,

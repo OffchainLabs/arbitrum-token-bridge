@@ -2,7 +2,6 @@ import { BigNumber } from 'ethers'
 import {
   ArbTokenBridge,
   AssetType,
-  ERC20BridgeToken,
   NodeBlockDeadlineStatus
 } from '../../hooks/arbTokenBridge.types'
 import {
@@ -11,7 +10,6 @@ import {
   L2ToL3MessageData,
   TxnType
 } from '../../types/Transactions'
-import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
 
@@ -85,8 +83,6 @@ export interface WarningTokens {
 export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
-  connectionState: number
-  selectedToken: ERC20BridgeToken | null
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
   arbTokenBridgeLoaded: boolean
@@ -95,10 +91,8 @@ export type AppState = {
 export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
-  connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
-  selectedToken: null,
   arbTokenBridgeLoaded: false
 }
 export const state: AppState = {
