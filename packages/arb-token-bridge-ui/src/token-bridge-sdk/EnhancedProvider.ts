@@ -24,7 +24,23 @@ class WebStorage implements Storage {
 }
 
 const localStorageKey = `arbitrum:bridge:tx-receipts-cache`
-const enableCaching = true
+const enableCaching = (chainId: number) => {
+  if (
+    isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('testnet')
+  ) {
+    return true
+  }
+
+  if (
+    !isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('mainnet')
+  ) {
+    return true
+  }
+
+  return false
+}
 
 const getCacheKey = (chainId: number | string, txHash: string) =>
   `${chainId}:${txHash}`.toLowerCase()
@@ -77,12 +93,7 @@ export const shouldCacheTxReceipt = (
   chainId: number,
   txReceipt: TransactionReceipt
 ): boolean => {
-  if (!enableCaching) return false
-
-  //   for now, only enable caching for testnets,
-  if (!isNetwork(chainId).isTestnet) {
-    return false
-  }
+  if (!enableCaching(chainId)) return false
 
   // Finality checks to avoid caching re-org'ed transactions
   if (
@@ -101,7 +112,7 @@ function getTxReceiptFromCache(
   chainId: number,
   txHash: string
 ) {
-  if (!enableCaching) return undefined
+  if (!enableCaching(chainId)) return undefined
 
   const cachedReceipts = JSON.parse(storage.getItem(localStorageKey) || '{}')
   const receipt = cachedReceipts[getCacheKey(chainId, txHash)]
