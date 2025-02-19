@@ -9,6 +9,14 @@
     // https://github.com/advisories/GHSA-h5c3-5r3r-rr8q
     // Octokit plugin-paginate-rest vulnerable to ReDoS
     // Only used in development scripts for GitHub API pagination
-    "GHSA-h5c3-5r3r-rr8q"
+    "GHSA-h5c3-5r3r-rr8q",
+    // https://github.com/advisories/GHSA-xx4v-prfh-6cgc
+    // Octokit request-error package vulnerable to ReDoS in authorization header processing
+    // Only used in development scripts for GitHub API error handling
+    "GHSA-xx4v-prfh-6cgc",
+    // https://github.com/advisories/GHSA-x4c5-c7rf-jjgv
+    // Octokit endpoint package vulnerable to ReDoS in preview header processing
+    // Only used in development scripts for GitHub API endpoint handling
+    "GHSA-x4c5-c7rf-jjgv"
   ]
 }
