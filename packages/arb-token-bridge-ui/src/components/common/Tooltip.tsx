@@ -1,10 +1,11 @@
-import Tippy from '@tippyjs/react'
+import Tippy, { type TippyProps } from '@tippyjs/react'
 
 export type TooltipProps = {
   show?: boolean
   children: React.ReactNode
   content?: React.ReactNode
   wrapperClassName?: string
+  tippyProps?: TippyProps
   theme?: 'light' | 'dark'
 }
 
@@ -12,7 +13,8 @@ export function Tooltip({
   show = true,
   content,
   wrapperClassName = 'w-max',
-  theme = 'light',
+  theme = 'dark',
+  tippyProps = {},
   children
 }: TooltipProps): JSX.Element | null {
   if (!content) {
@@ -24,7 +26,7 @@ export function Tooltip({
   }
 
   return (
-    <Tippy theme={theme} content={content}>
+    <Tippy {...tippyProps} theme={theme} content={content} arrow={false}>
       <div className={wrapperClassName}>{children}</div>
     </Tippy>
   )

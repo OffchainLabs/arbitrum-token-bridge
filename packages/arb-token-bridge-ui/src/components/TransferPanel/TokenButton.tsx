@@ -18,8 +18,7 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
-import { SafeImage } from '../common/SafeImage'
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
+import { TokenLogo } from './TokenLogo'
 import { Loader } from '../common/atoms/Loader'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -29,7 +28,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export type TokenButtonOptions = {
   symbol?: string
-  logoSrc?: string
+  logoSrc?: string | null
   disabled?: boolean
 }
 
@@ -45,9 +44,6 @@ export function TokenButton({
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
   const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
-
-  const tokensFromLists = useTokensFromLists()
-  const tokensFromUser = useTokensFromUser()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const isSelectedTokenEther = useIsSelectedTokenEther()
@@ -84,7 +80,7 @@ export function TokenButton({
     return isLoadingTokenLists
   }, [tokenFromSearchParams, isLoadingTokenLists])
 
-  const tokenLogoSrc = useMemo(() => {
+  const tokenLogoSrcOverride = useMemo(() => {
     if (typeof options?.logoSrc !== 'undefined') {
       return options.logoSrc || nativeCurrency.logoUrl
     }
@@ -93,22 +89,8 @@ export function TokenButton({
       return nativeCurrencyEther.logoUrl
     }
 
-    if (selectedToken) {
-      return (
-        tokensFromLists[selectedToken.address]?.logoURI ??
-        tokensFromUser[selectedToken.address]?.logoURI
-      )
-    }
-
-    return nativeCurrency.logoUrl
-  }, [
-    isSelectedTokenEther,
-    nativeCurrency.logoUrl,
-    options,
-    selectedToken,
-    tokensFromLists,
-    tokensFromUser
-  ])
+    return undefined
+  }, [isSelectedTokenEther, nativeCurrency.logoUrl, options])
 
   return (
     <>
@@ -126,12 +108,8 @@ export function TokenButton({
                   <Loader size="small" color="white" />
                 ) : (
                   <>
-                    <SafeImage
-                      src={tokenLogoSrc}
-                      alt={`${
-                        selectedToken?.symbol ?? nativeCurrency.symbol
-                      } logo`}
-                      className="h-5 w-5 shrink-0"
+                    <TokenLogo
+                      srcOverride={options?.logoSrc ?? tokenLogoSrcOverride}
                     />
                     <span className="text-xl font-light">{tokenSymbol}</span>
                     {!disabled && (

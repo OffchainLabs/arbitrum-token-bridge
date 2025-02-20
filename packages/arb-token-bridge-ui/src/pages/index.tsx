@@ -1,4 +1,4 @@
-import React, { ComponentType, useEffect } from 'react'
+import React, { ComponentType, useEffect, useState } from 'react'
 import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
 import { decodeString, encodeString } from 'use-query-params'
@@ -212,9 +212,16 @@ export async function getServerSideProps({
 }
 
 export default function Index() {
+  const [loaded, setLoaded] = useState(false)
+
   useEffect(() => {
     addOrbitChainsToArbitrumSDK()
+    setLoaded(true)
   }, [])
+
+  if (!loaded) {
+    return null
+  }
 
   return <App />
 }

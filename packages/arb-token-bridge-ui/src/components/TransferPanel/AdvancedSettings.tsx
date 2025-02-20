@@ -198,7 +198,7 @@ export const AdvancedSettings = () => {
           />
         )}
       </button>
-      <Transition isOpen={!advancedSettingsCollapsed}>
+      <Transition isOpen={!advancedSettingsCollapsed} className="w-full">
         <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
           <p className="text-sm font-light">
             {isEOA ? (

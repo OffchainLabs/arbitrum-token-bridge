@@ -13,7 +13,7 @@ type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
-export type TransferType = `${Asset}_${TxType}` | 'cctp'
+export type TransferType = `${Asset}_${TxType}` | 'cctp' | 'oftV2'
 
 export type MergedTransactionCctp = MergedTransaction & {
   messageBytes: Address | null
