@@ -90,7 +90,7 @@ describe('Withdraw native token', () => {
           cy.confirmMetamaskTransaction()
 
           cy.findTransactionInTransactionHistory({
-            duration: 'a few seconds',
+            duration: '~a few seconds',
             amount: ETHToWithdraw,
             symbol: nativeTokenSymbol
           })
@@ -180,7 +180,7 @@ describe('Withdraw native token', () => {
       }
 
       cy.findTransactionInTransactionHistory({
-        duration: 'a few seconds',
+        duration: '~a few seconds',
         ...txData
       })
       cy.openTransactionDetails(txData)
