@@ -20,7 +20,6 @@ import {
 } from './TokenImportDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
-import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
@@ -69,7 +68,6 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
@@ -77,7 +75,6 @@ import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
-import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper } from '../common/Dialog2'
@@ -85,6 +82,8 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
+import { Routes } from './Routes/Routes'
+import { useRouteStore } from './hooks/useRouteStore'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -153,10 +152,7 @@ export function TransferPanel() {
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-
-  const isCctpTransfer = useIsCctpTransfer()
-
-  const isOftTransfer = useIsOftV2Transfer()
+  const { selectedRoute, setSelectedRoute, clearRoute } = useRouteStore()
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -380,6 +376,7 @@ export function TransferPanel() {
   const showDelayedSmartContractTxRequest = () =>
     setTimeout(() => {
       setTransferring(false)
+      clearRoute()
       setShowSmartContractWalletTooltip(true)
     }, 3000)
 
@@ -587,10 +584,12 @@ export function TransferPanel() {
       switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
+      clearRoute()
     } catch (e) {
       //
     } finally {
       setTransferring(false)
+      clearRoute()
     }
   }
 
@@ -670,12 +669,6 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
-      const transfer = await oftTransferStarter.transfer({
-        amount: amountBigNumber,
-        signer,
-        destinationAddress
-      })
-
       trackEvent('OFT Transfer', {
         tokenSymbol: selectedToken.symbol,
         assetType: 'ERC-20',
@@ -708,6 +701,7 @@ export function TransferPanel() {
       )
     } finally {
       setTransferring(false)
+      clearRoute()
     }
   }
 
@@ -970,6 +964,7 @@ export function TransferPanel() {
       })
     } finally {
       setTransferring(false)
+      clearRoute()
     }
   }
 
@@ -1050,6 +1045,7 @@ export function TransferPanel() {
 
     switchToTransactionHistoryTab()
     setTransferring(false)
+    clearRoute()
     clearAmountInput()
 
     // for custom orbit pages, show Projects' listing after transfer
@@ -1078,7 +1074,7 @@ export function TransferPanel() {
         : isDepositMode
         ? 'Deposit'
         : 'Withdrawal',
-      isCctpTransfer,
+      isCctpTransfer: selectedRoute === 'cctp',
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
       accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -1093,12 +1089,12 @@ export function TransferPanel() {
     amount2,
     childChain.name,
     isBatchTransfer,
-    isCctpTransfer,
     isDepositMode,
     isSmartContractWallet,
     isTeleportMode,
     selectedToken,
-    isCustomDestinationTransfer
+    isCustomDestinationTransfer,
+    selectedRoute
   ])
 
   const moveFundsButtonOnClick = async () => {
@@ -1137,19 +1133,20 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     } finally {
       setTransferring(false)
+      clearRoute()
     }
 
     if (!isTransferAllowed) {
       return networkConnectionWarningToast()
     }
 
-    if (isOftTransfer) {
+    if (selectedRoute == 'layerzero') {
       return transferOft()
     }
-    if (isCctpTransfer) {
+    if (selectedRoute === 'cctp') {
       return transferCctp()
     }
-    if (isDepositMode && selectedToken) {
+    if (selectedRoute === 'arbitrum' && isDepositMode && selectedToken) {
       return depositToken()
     }
     return transfer()
@@ -1176,11 +1173,8 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
+        <Routes onRouteSelected={setSelectedRoute} />
         <AdvancedSettings />
-        <TransferPanelSummary
-          amount={parseFloat(amount)}
-          token={selectedToken}
-        />
 
         {isConnected ? (
           <MoveFundsButton onClick={moveFundsButtonOnClick} />
