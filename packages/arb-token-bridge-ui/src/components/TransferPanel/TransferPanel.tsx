@@ -6,7 +6,10 @@ import { useLatest } from 'react-use'
 import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
-import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
+import {
+  getArbitrumNetwork,
+  scaleFrom18DecimalsToNativeTokenDecimals
+} from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -84,6 +87,9 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { useIsSelectedTokenEther } from '../../hooks/useIsSelectedTokenEther'
+import { wrapEther } from './wrapEther'
+import { isExperimentalFeatureEnabled } from '../../util'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -108,6 +114,7 @@ export function TransferPanel() {
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
     useState(false)
+  const isSelectedTokenEther = useIsSelectedTokenEther()
 
   const {
     app: {
@@ -706,6 +713,92 @@ export function TransferPanel() {
     }
   }
 
+  const wrapAndDepositEther = async () => {
+    if (!signer) {
+      throw new Error(signerUndefinedError)
+    }
+    if (!isTransferAllowed) {
+      throw new Error(transferNotAllowedError)
+    }
+    // Just in case, will be removed
+    if (!isExperimentalFeatureEnabled('eth-custom-orbit')) {
+      throw new Error('This type of transfer is experimental only.')
+    }
+
+    const sourceChainId = latestNetworks.current.sourceChain.id
+    const destinationChainId = latestNetworks.current.destinationChain.id
+
+    setTransferring(true)
+
+    try {
+      await wrapEther({ signer, sourceChainId, amount })
+
+      const wethAddress =
+        getArbitrumNetwork(sourceChainId).tokenBridge?.childWeth
+
+      const bridgeTransferStarter = BridgeTransferStarterFactory.create({
+        sourceChainErc20Address: wethAddress,
+        sourceChainId,
+        destinationChainId
+      })
+
+      const isNativeCurrencyApprovalRequired =
+        await bridgeTransferStarter.requiresNativeCurrencyApproval({
+          signer,
+          amount: amountBigNumber,
+          destinationAddress
+        })
+
+      if (isNativeCurrencyApprovalRequired) {
+        // show native currency approval dialog
+        const userConfirmation = await customFeeTokenApproval()
+        if (!userConfirmation) return false
+
+        const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
+          signer,
+          amount: amountBigNumber,
+          destinationAddress
+        })
+
+        if (approvalTx) {
+          await approvalTx.wait()
+        }
+      }
+
+      const isTokenApprovalRequired =
+        await bridgeTransferStarter.requiresTokenApproval({
+          amount: amountBigNumber,
+          signer,
+          destinationAddress
+        })
+      if (isTokenApprovalRequired) {
+        const userConfirmation = await tokenAllowanceApproval()
+        if (!userConfirmation) return false
+
+        const approvalTx = await bridgeTransferStarter.approveToken({
+          signer,
+          amount: amountBigNumber
+        })
+
+        if (approvalTx) {
+          await approvalTx.wait()
+        }
+      }
+
+      await bridgeTransferStarter.transfer({
+        amount: amountBigNumber,
+        signer,
+        destinationAddress
+      })
+    } catch (error) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+    } finally {
+      setTransferring(false)
+    }
+  }
+
   const transfer = async () => {
     const sourceChainId = latestNetworks.current.sourceChain.id
 
@@ -1143,6 +1236,10 @@ export function TransferPanel() {
     }
     if (isCctpTransfer) {
       return transferCctp()
+    }
+    if (isDepositMode && nativeCurrency.isCustom && isSelectedTokenEther) {
+      // We cannot transfer ETH to a custom native currency chain. We need to wrap it first instead.
+      return wrapAndDepositEther()
     }
     if (isDepositMode && selectedToken) {
       return depositToken()
