@@ -1845,6 +1845,102 @@
           "logoUrl": "/images/UsdcLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 7080969,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xA2e0a93Adc142A94C0a0E4e80940298F9c59DeC9",
+        "inbox": "0x5AAa02fa6A405329CAe9b7F6D744f73CB20bFe2e",
+        "outbox": "0xDE34eC789e300229E6e419aa814452e413CDb69B",
+        "rollup": "0x1cb092BC61359fcade2d23B10e7C7A98a707B87F",
+        "sequencerInbox": "0x6018eDaA79B32eb75F95aE85C8158FAFd40CaC0d"
+      },
+      "nativeToken": "0x3523Fdf00Ed10B874F84fe0b677dE04151840353",
+      "explorerUrl": "https://humanity-testnet.explorer.alchemy.com/",
+      "rpcUrl": "https://humanity-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Humanity Testnet",
+      "slug": "humanity-testnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x5311Fdc9Ba0E6AcAa0cCF4CD3D1b1E47b9CD9ee8",
+        "parentErc20Gateway": "0x2D771595616748fA9f31D1434426fE1b0cd2C35b",
+        "parentGatewayRouter": "0x105b7c26707c0D048D8d885d31A3b550e7B6E162",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x074d9E1242e846e49d6d484949C0a8F40e1Abc71",
+        "childErc20Gateway": "0x58B964C4475cC8edfD6d205C497c9F6eE179DC3c",
+        "childGatewayRouter": "0x13D8B6d796CC2cdE2c28C9cC52E5328384c6fBB0",
+        "childMultiCall": "0x972DF56F632F81C175f8c0fBf8997431715c52C0",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#BA5400",
+        "network": {
+          "name": "Humanity Testnet",
+          "logo": "/images/HumanityTestnet_Logo.svg",
+          "description": "The world in the palm of your hands."
+        },
+        "nativeTokenData": {
+          "name": "tHP",
+          "symbol": "tHP",
+          "logoUrl": "/images/HumanityTestnet_NativeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 83868,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0x0a8E5C42e1b206F2af1EB078ff34BDD1A48e416f",
+        "inbox": "0xD7AB3BE775D0902bea284E3d3AC5AB3E76DE8503",
+        "outbox": "0x0911Fa4F33dEadAb1cA48BB89D5B0E4A01E86514",
+        "rollup": "0x7453881a4DAEc3fF59049a61646EEEa37790A168",
+        "sequencerInbox": "0x571926d253314d12a10b345f588c466357450819"
+      },
+      "nativeToken": "0x9c6051008f6894cb2a683face293f74b072733a4",
+      "explorerUrl": "https://xprotocol-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://xprotocol-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "X Protocol Sepolia",
+      "slug": "x-protocol-sepolia",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0x42fC7461B25F228472e3F5F79C5ACD6e4990cb59",
+        "parentErc20Gateway": "0xE65bD4bE880460BfF95eF3760ff26Ee81A99c803",
+        "parentGatewayRouter": "0xd994Ace73605b295527EECB2578A90eA9BFA883d",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x7D69f84eb63B812FAFE9C08811936C9960A05fA3",
+        "childErc20Gateway": "0xC0CEad1479259B28C286FECdc3d5b4dA69Cb013F",
+        "childGatewayRouter": "0xdf1F51673B11eE9D2f6d04Bf44aEf99713c915AA",
+        "childMultiCall": "0xbBc91014f8C9C0e8B7f4D57438D92ACA15A09F9c",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#ffbc0a",
+        "network": {
+          "name": "X Protocol Sepolia",
+          "logo": "/images/XProtocolSepolia_Logo.svg",
+          "description": "Near - Zero Gas Network."
+        },
+        "nativeTokenData": {
+          "name": "Kick",
+          "symbol": "KICK",
+          "logoUrl": "/images/XProtocolSepolia_Logo.svg"
+        }
+      }
     }
   ]
 }
