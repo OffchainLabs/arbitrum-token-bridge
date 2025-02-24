@@ -1888,8 +1888,8 @@
           "description": "The world in the palm of your hands."
         },
         "nativeTokenData": {
-          "name": "H",
-          "symbol": "H",
+          "name": "tHP",
+          "symbol": "tHP",
           "logoUrl": "/images/HumanityTestnet_NativeTokenLogo.svg"
         }
       }
