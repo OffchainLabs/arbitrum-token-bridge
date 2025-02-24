@@ -1,5 +1,5 @@
 import { getArbitrumNetwork } from '@arbitrum/sdk'
-import { BigNumber, ethers, Signer } from 'ethers'
+import { ethers, Signer } from 'ethers'
 
 const WETH_ABI = [
   {
@@ -25,29 +25,18 @@ export async function wrapEther({
   const wethAddress = getArbitrumNetwork(sourceChainId).tokenBridge?.childWeth
 
   if (!wethAddress) {
-    console.log('Weth address missing!')
-    return
+    throw new Error('Error wrapping ETH: No WETH address found.')
   }
 
   try {
-    // Create WETH contract instance
     const wethContract = new ethers.Contract(wethAddress, WETH_ABI, signer)
-
-    // Convert ETH amount to Wei
     const amountInWei = ethers.utils.parseEther(amount.toString())
 
-    // Call deposit function with ETH value
     const tx = await wethContract.deposit({
       value: amountInWei
     })
 
-    // Wait for transaction confirmation
-    const receipt = await tx.wait()
-
-    console.log(`Successfully wrapped ${amount} ETH to WETH`)
-    console.log(`Transaction hash: ${receipt.transactionHash}`)
-
-    return receipt
+    return tx.wait()
   } catch (error) {
     console.error('Error wrapping ETH:', error)
     throw error
