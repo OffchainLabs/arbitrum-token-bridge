@@ -12,6 +12,12 @@ body:
       value: |
         This form is used to submit a request to add an Orbit chain to the [Arbitrum bridge](https://bridge.arbitrum.io/). Please provide all the necessary config information. You can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
   - type: input
+    id: rass-provider
+    attributes:
+      label: Who is your RaaS Provider?
+    validations:
+      required: true
+  - type: input
     id: chain-id
     attributes:
       label: Chain ID
