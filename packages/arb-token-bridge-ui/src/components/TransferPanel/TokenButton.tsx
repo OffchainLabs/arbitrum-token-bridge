@@ -108,9 +108,7 @@ export function TokenButton({
                   <Loader size="small" color="white" />
                 ) : (
                   <>
-                    <TokenLogo
-                      srcOverride={options?.logoSrc ?? tokenLogoSrcOverride}
-                    />
+                    <TokenLogo srcOverride={tokenLogoSrcOverride} />
                     <span className="text-xl font-light">{tokenSymbol}</span>
                     {!disabled && (
                       <ChevronDownIcon
