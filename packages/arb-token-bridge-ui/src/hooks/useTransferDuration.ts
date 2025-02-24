@@ -135,7 +135,9 @@ export function getWithdrawalConfirmationDate({
   return dayjs(createdAt).add(confirmationTimeInSeconds, 'second')
 }
 
-function getWithdrawalDuration(tx: MergedTransaction) {
+export function getWithdrawalDuration(
+  tx: Pick<MergedTransaction, 'createdAt' | 'sourceChainId'>
+) {
   const confirmationDate = getWithdrawalConfirmationDate({
     createdAt: tx.createdAt,
     withdrawalFromChainId: tx.sourceChainId
