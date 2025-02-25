@@ -84,6 +84,7 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { CctpUiDriver, UiDriverStep } from '../../ui-driver/CctpUiDriver'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -401,6 +402,29 @@ export function TransferPanel() {
     return confirmed
   }
 
+  function executeStep(step: UiDriverStep) {
+    switch (step.type) {
+      case 'deposit_usdc.e':
+        return depositToken()
+
+      case 'dialog': {
+        if (step.dialog === 'cctp_deposit') {
+          return confirmUsdcDepositFromNormalOrCctpBridge()
+        }
+
+        if (step.dialog === 'cctp_withdrawal') {
+          return confirmUsdcWithdrawalForCctp()
+        }
+
+        if (step.dialog === 'custom_dest_addr_warn') {
+          return confirmCustomDestinationAddressForSCWallets()
+        }
+
+        return
+      }
+    }
+  }
+
   const transferCctp = async () => {
     if (!selectedToken) {
       return
@@ -420,31 +444,27 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
 
-      // show confirmation popup before cctp transfer
-      if (isDepositMode) {
-        const depositConfirmation =
-          await confirmUsdcDepositFromNormalOrCctpBridge()
+      const steps = CctpUiDriver.createSteps({
+        isDepositMode,
+        isSmartContractWallet,
+        walletAddress,
+        destinationAddress
+      })
 
-        if (!depositConfirmation) return false
+      let nextStep = await steps.next()
 
-        // if user selects usdc.e, redirect to our canonical transfer function
-        if (depositConfirmation === 'bridge-normal-usdce') {
-          await depositToken()
+      while (!nextStep.done) {
+        const step = nextStep.value
+
+        // special type for early return
+        if (step.type === 'return') {
           return
         }
-      } else {
-        const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
-        if (!withdrawalConfirmation) return
-      }
 
-      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
-      if (
-        isSmartContractWallet &&
-        areSenderAndCustomDestinationAddressesEqual
-      ) {
-        const confirmation = await confirmCustomDestinationAddressForSCWallets()
-        if (!confirmation) return false
+        // Execute step and pass back correctly typed result
+        const result = await executeStep(step)
+        // Pass result back into the generator
+        nextStep = await steps.next(result)
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
