@@ -10,6 +10,8 @@ import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { RouteType, SetRoute } from '../hooks/useRouteStore'
+import { SecurityGuaranteed } from '../SecurityLabels'
+import { TokenLogo } from '../TokenLogo'
 
 export type BadgeType = 'security-guaranteed'
 type Token = {
@@ -44,7 +46,7 @@ function getBridgeConfigFromType(type: RouteType) {
         height: 15
       }
     }
-    case 'layerzero': {
+    case 'oftV2': {
       return {
         name: 'LayerZero',
         icon: '/icons/layerzero.svg',
@@ -63,22 +65,10 @@ function getBridgeConfigFromType(type: RouteType) {
   }
 }
 
-function getBadgeProps(badgeType: BadgeType | undefined) {
-  if (!badgeType) {
-    return {
-      bgClassName: '',
-      textClassname: '',
-      text: ''
-    }
-  }
-
+function getBadge(badgeType: BadgeType) {
   switch (badgeType) {
     case 'security-guaranteed': {
-      return {
-        bgClassname: 'bg-lime-dark',
-        textClassname: 'text-lime',
-        text: 'Security guaranteed by Arbitrum'
-      }
+      return SecurityGuaranteed
     }
   }
 }
@@ -107,7 +97,6 @@ export function Route({
   const token = overrideToken || _token || childNativeCurrency
 
   const { name, icon, width, height } = getBridgeConfigFromType(type)
-  const { bgClassname, textClassname, text } = getBadgeProps(tag)
 
   return (
     <div
@@ -136,15 +125,7 @@ export function Route({
         <div className="flex flex-col">
           <span>You will receive:</span>
           <div className="flex items-center text-lg">
-            {'logoURI' in token ? (
-              <SafeImage
-                src={token.logoURI}
-                width={15}
-                height={15}
-                alt="bridge"
-                className="mr-1 rounded-full"
-              />
-            ) : null}
+            <TokenLogo srcOverride={'logoURI' in token ? token.logoURI : ''} />
             {formatAmount(BigNumber.from(amountReceived), {
               decimals: token.decimals,
               symbol: token.symbol
@@ -189,17 +170,9 @@ export function Route({
             <span className="ml-1">{bridge}</span>
           </div>
         </div>
-        {tag && (
-          <div
-            className={twMerge(
-              'absolute right-2 top-2 rounded-full px-3 py-2 text-xs',
-              bgClassname,
-              textClassname
-            )}
-          >
-            {text}
-          </div>
-        )}
+        {tag ? (
+          <div className="absolute right-2 top-2">{getBadge(tag)()}</div>
+        ) : null}
       </div>
     </div>
   )

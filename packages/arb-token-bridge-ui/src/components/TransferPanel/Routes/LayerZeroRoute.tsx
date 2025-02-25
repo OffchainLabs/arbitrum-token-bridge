@@ -38,7 +38,7 @@ export function LayerZeroRoute({
 
   return (
     <Route
-      type="layerzero"
+      type="oftV2"
       bridge={'LayerZero'}
       bridgeIconURI={'/icons/layerzero.svg'}
       durationMs={5 * 60 * 1_000} // 5 minutes in miliseconds
@@ -51,7 +51,7 @@ export function LayerZeroRoute({
       }
       gasToken={gasToken}
       onRouteSelected={onRouteSelected}
-      selected={selectedRoute === 'layerzero'}
+      selected={selectedRoute === 'oftV2'}
     />
   )
 }
