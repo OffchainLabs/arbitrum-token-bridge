@@ -9,7 +9,10 @@ export type UiDriverStepDialog = {
   dialog: Dialog
 }
 
-export type UiDriverStep = UiDriverStepDialog | { type: 'deposit_as_usdc.e' }
+export type UiDriverStep =
+  | UiDriverStepDialog
+  | { type: 'deposit_usdc.e' }
+  | { type: 'end' }
 
 export type UiDriverContext = {
   isDepositMode: boolean
@@ -21,12 +24,21 @@ export class CctpUiDriver {
     context: UiDriverContext
   ): AsyncGenerator<UiDriverStep, any, any> {
     if (context.isDepositMode) {
-      const userInput: boolean = yield {
-        type: 'dialog',
-        dialog: 'cctp_deposit'
-      }
+      const userInput: false | 'bridge-normal-usdce' | 'bridge-cctp-usd' =
+        yield {
+          type: 'dialog',
+          dialog: 'cctp_deposit'
+        }
 
       if (!userInput) {
+        return
+      }
+
+      if (userInput === 'bridge-normal-usdce') {
+        yield {
+          type: 'deposit_usdc.e'
+        }
+
         return
       }
     } else {
@@ -52,8 +64,7 @@ export class CctpUiDriver {
     }
 
     yield {
-      type: 'dialog',
-      dialog: 'test'
+      type: 'end'
     }
   }
 }

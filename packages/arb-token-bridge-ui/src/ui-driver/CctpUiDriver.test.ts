@@ -8,7 +8,7 @@ import {
 it(`
   isDepositMode=true
 
-  * dialog(cctp_withdrawal) -> user rejects
+  * dialog(cctp_deposit) -> user rejects
 `, async () => {
   const steps = CctpUiDriver.createSteps({
     isDepositMode: true
@@ -21,6 +21,55 @@ it(`
 
   const step2 = await (await steps.next()).value
   expect(step2).toBeUndefined()
+})
+
+it(`
+  isDepositMode=true
+
+  * dialog(cctp_deposit) -> user selects usdc.e
+`, async () => {
+  const steps = CctpUiDriver.createSteps({
+    isDepositMode: true
+  } as UiDriverContext)
+
+  const step1 = await (await steps.next()).value
+  expect(step1).toBeDefined()
+  expect((step1 as UiDriverStep).type).toEqual('dialog')
+  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_deposit')
+  const step1UserInput = 'bridge-normal-usdce'
+
+  const step2 = await (await steps.next(step1UserInput)).value
+  expect(step2).toBeDefined()
+  expect((step2 as UiDriverStep).type).toEqual('deposit_usdc.e')
+
+  const step3 = await (await steps.next()).value
+  expect(step3).toBeUndefined()
+})
+
+it(`
+  isDepositMode=true,isSmartContractWallet=true
+
+  * dialog(cctp_deposit)          -> user selects cctp
+  * dialog(custom_dest_addr_warn) -> user rejects
+`, async () => {
+  const steps = CctpUiDriver.createSteps({
+    isDepositMode: true,
+    isSmartContractWallet: true
+  })
+
+  const step1 = await (await steps.next()).value
+  expect(step1).toBeDefined()
+  expect((step1 as UiDriverStep).type).toEqual('dialog')
+  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_deposit')
+  const step1UserInput = 'bridge-cctp-usd'
+
+  const step2 = await (await steps.next(step1UserInput)).value
+  expect((step2 as UiDriverStep).type).toEqual('dialog')
+  expect((step2 as UiDriverStepDialog).dialog).toEqual('custom_dest_addr_warn')
+  const step2UserInput = false
+
+  const step3 = await (await steps.next(step2UserInput)).value
+  expect(step3).toBeUndefined()
 })
 
 it(`
@@ -92,6 +141,5 @@ it(`
   const step2UserInput = true
 
   const step3 = await (await steps.next(step2UserInput)).value
-  expect((step3 as UiDriverStep).type).toEqual('dialog')
-  expect((step3 as UiDriverStepDialog).dialog).toEqual('test')
+  expect((step3 as UiDriverStep).type).toEqual('end')
 })
