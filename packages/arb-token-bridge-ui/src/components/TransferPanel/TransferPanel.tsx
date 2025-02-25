@@ -23,7 +23,6 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
-import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
@@ -33,8 +32,6 @@ import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
-import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
-import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
@@ -84,6 +81,11 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { Routes } from './Routes/Routes'
+import { useRouteStore } from './hooks/useRouteStore'
+import { CctpUsdcWithdrawalConfirmationDialog } from './USDCWithdrawal/CctpUsdcWithdrawalConfirmationDialog'
+import { CctpUsdcDepositConfirmationDialog } from './USDCDeposit/CctpUsdcDepositConfirmationDialog'
+import { UsdcDepositConfirmationDialog } from './USDCDeposit/UsdcDepositConfirmationDialog'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -152,6 +154,7 @@ export function TransferPanel() {
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
+  const { selectedRoute, setSelectedRoute, clearRoute } = useRouteStore()
 
   const isCctpTransfer = useIsCctpTransfer()
 
@@ -174,19 +177,26 @@ export function TransferPanel() {
     useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
-  const [
-    usdcWithdrawalConfirmationDialogProps,
-    openUSDCWithdrawalConfirmationDialog
-  ] = useDialog()
+
   const [
     usdcDepositConfirmationDialogProps,
-    openUSDCDepositConfirmationDialog
+    openUsdcDepositConfirmationDialog
   ] = useDialog()
 
   const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
   const [
     customDestinationAddressConfirmationDialogProps,
     openCustomDestinationAddressConfirmationDialog
+  ] = useDialog()
+
+  const [
+    cctpUsdcWithdrawalConfirmationDialogProps,
+    openCctpUsdcWithdrawalConfirmationDialog
+  ] = useDialog()
+
+  const [
+    cctpUsdcDepositConfirmationDialogProps,
+    openCctpUsdcDepositConfirmationDialog
   ] = useDialog()
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
@@ -197,8 +207,6 @@ export function TransferPanel() {
     updateEthChildBalance
   } = useBalances()
 
-  const [isCctp, setIsCctp] = useState(false)
-
   const { destinationAddressError } = useDestinationAddressError()
 
   const [showProjectsListing, setShowProjectsListing] = useState(false)
@@ -208,7 +216,8 @@ export function TransferPanel() {
   useEffect(() => {
     // hide Project listing when networks are changed
     setShowProjectsListing(false)
-  }, [childChain.id, parentChain.id])
+    clearRoute()
+  }, [childChain.id, clearRoute, parentChain.id])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -302,33 +311,20 @@ export function TransferPanel() {
 
   const amountBigNumber = useAmountBigNumber()
 
-  const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
-    const waitForInput = openUSDCDepositConfirmationDialog()
-    const [confirmed, primaryButtonClicked] = await waitForInput()
-
-    // user declined to transfer altogether
-    if (!confirmed) {
-      return false
-    }
-
-    // user has selected normal bridge (USDC.e)
-    if (primaryButtonClicked === 'bridged') {
-      return 'bridge-normal-usdce'
-    }
-
-    // user wants to bridge to native usdc using Circle's CCTP on destination chain
-    return 'bridge-cctp-usd'
-  }
-
-  const confirmUsdcWithdrawalForCctp = async () => {
-    const waitForInput = openUSDCWithdrawalConfirmationDialog()
+  const confirmUsdcDeposit = async () => {
+    const waitForInput = openUsdcDepositConfirmationDialog()
     const [confirmed] = await waitForInput()
     return confirmed
   }
 
-  const tokenAllowanceApprovalCctp = async () => {
-    setIsCctp(true)
-    const waitForInput = openTokenApprovalDialog()
+  const confirmUsdcDepositForCctp = async () => {
+    const waitForInput = openCctpUsdcDepositConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const confirmUsdcWithdrawalForCctp = async () => {
+    const waitForInput = openCctpUsdcWithdrawalConfirmationDialog()
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -340,7 +336,6 @@ export function TransferPanel() {
   }
 
   const tokenAllowanceApproval = async () => {
-    setIsCctp(false)
     const waitForInput = openTokenApprovalDialog()
     const [confirmed] = await waitForInput()
     return confirmed
@@ -392,6 +387,7 @@ export function TransferPanel() {
   const showDelayedSmartContractTxRequest = () =>
     setTimeout(() => {
       setTransferring(false)
+      clearRoute()
       setShowSmartContractWalletTooltip(true)
     }, 3000)
 
@@ -422,16 +418,8 @@ export function TransferPanel() {
 
       // show confirmation popup before cctp transfer
       if (isDepositMode) {
-        const depositConfirmation =
-          await confirmUsdcDepositFromNormalOrCctpBridge()
-
-        if (!depositConfirmation) return false
-
-        // if user selects usdc.e, redirect to our canonical transfer function
-        if (depositConfirmation === 'bridge-normal-usdce') {
-          await depositToken()
-          return
-        }
+        const depositConfirmation = await confirmUsdcDepositForCctp()
+        if (!depositConfirmation) return
       } else {
         const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
         if (!withdrawalConfirmation) return
@@ -459,7 +447,7 @@ export function TransferPanel() {
         })
 
       if (isTokenApprovalRequired) {
-        const userConfirmation = await tokenAllowanceApprovalCctp()
+        const userConfirmation = await tokenAllowanceApproval()
         if (!userConfirmation) return false
 
         if (isSmartContractWallet) {
@@ -577,11 +565,12 @@ export function TransferPanel() {
       switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
+      clearRoute()
     } catch (e) {
       //
     } finally {
       setTransferring(false)
-      setIsCctp(false)
+      clearRoute()
     }
   }
 
@@ -595,8 +584,6 @@ export function TransferPanel() {
     if (!isTransferAllowed) {
       throw new Error(transferNotAllowedError)
     }
-
-    const destinationAddress = latestDestinationAddress.current
 
     setTransferring(true)
 
@@ -661,12 +648,6 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
-      const transfer = await oftTransferStarter.transfer({
-        amount: amountBigNumber,
-        signer,
-        destinationAddress
-      })
-
       trackEvent('OFT Transfer', {
         tokenSymbol: selectedToken.symbol,
         assetType: 'ERC-20',
@@ -699,6 +680,7 @@ export function TransferPanel() {
       )
     } finally {
       setTransferring(false)
+      clearRoute()
     }
   }
 
@@ -746,18 +728,23 @@ export function TransferPanel() {
         ? selectedToken?.l2Address
         : selectedToken?.address
 
-      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+      const bridgeTransferStarter = BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId,
         destinationChainErc20Address
       })
 
-      const { isWithdrawal } = getBridgeTransferProperties({
+      const { isWithdrawal, isDeposit } = getBridgeTransferProperties({
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId
       })
+
+      if (isDeposit && isTokenNativeUSDC(selectedToken?.address)) {
+        const depositConfirmation = await confirmUsdcDeposit()
+        if (!depositConfirmation) return
+      }
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
@@ -961,6 +948,7 @@ export function TransferPanel() {
       })
     } finally {
       setTransferring(false)
+      clearRoute()
     }
   }
 
@@ -1041,6 +1029,7 @@ export function TransferPanel() {
 
     switchToTransactionHistoryTab()
     setTransferring(false)
+    clearRoute()
     clearAmountInput()
 
     // for custom orbit pages, show Projects' listing after transfer
@@ -1069,7 +1058,7 @@ export function TransferPanel() {
         : isDepositMode
         ? 'Deposit'
         : 'Withdrawal',
-      isCctpTransfer,
+      isCctpTransfer: isCctpTransfer,
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
       accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -1080,15 +1069,15 @@ export function TransferPanel() {
       parentChainErc20Address: selectedToken?.address
     })
   }, [
-    amount,
-    amount2,
-    childChain.name,
-    isBatchTransfer,
-    isCctpTransfer,
-    isDepositMode,
-    isSmartContractWallet,
     isTeleportMode,
+    isDepositMode,
+    isCctpTransfer,
     selectedToken,
+    isSmartContractWallet,
+    childChain.name,
+    amount,
+    isBatchTransfer,
+    amount2,
     isCustomDestinationTransfer
   ])
 
@@ -1128,6 +1117,7 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     } finally {
       setTransferring(false)
+      clearRoute()
     }
 
     if (!isTransferAllowed) {
@@ -1140,7 +1130,7 @@ export function TransferPanel() {
     if (isCctpTransfer) {
       return transferCctp()
     }
-    if (isDepositMode && selectedToken) {
+    if (selectedRoute === 'arbitrum' && isDepositMode && selectedToken) {
       return depositToken()
     }
     return transfer()
@@ -1151,8 +1141,6 @@ export function TransferPanel() {
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
         token={selectedToken}
-        isCctp={isCctp}
-        isOft={isOftTransfer}
       />
 
       {nativeCurrency.isCustom && (
@@ -1167,15 +1155,15 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <USDCWithdrawalConfirmationDialog
-        {...usdcWithdrawalConfirmationDialogProps}
-        amount={amount}
+      <CctpUsdcWithdrawalConfirmationDialog
+        {...cctpUsdcWithdrawalConfirmationDialogProps}
       />
 
-      <USDCDepositConfirmationDialog
-        {...usdcDepositConfirmationDialogProps}
-        amount={amount}
+      <CctpUsdcDepositConfirmationDialog
+        {...cctpUsdcDepositConfirmationDialogProps}
       />
+
+      <UsdcDepositConfirmationDialog {...usdcDepositConfirmationDialogProps} />
 
       <CustomDestinationAddressConfirmationDialog
         {...customDestinationAddressConfirmationDialogProps}
@@ -1188,11 +1176,9 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
+        <Routes onRouteSelected={setSelectedRoute} />
         <AdvancedSettings />
-        <TransferPanelSummary
-          amount={parseFloat(amount)}
-          token={selectedToken}
-        />
+
         <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
         {isTokenAlreadyImported === false && tokenFromSearchParams && (
