@@ -9,14 +9,14 @@ import {
 import { formatUnits, parseUnits } from 'ethers/lib/utils'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import synpressPlugins from '@synthetixio/synpress/plugins'
+import { configureSynpressForMetaMask } from '@synthetixio/synpress/cypress'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
-import { getL2ERC20Address } from './src/util/TokenUtils'
-import specFiles from './tests/e2e/specfiles.json'
-import { contractAbi, contractByteCode } from './testErc20Token'
+import { getL2ERC20Address } from './support/helpers'
+import specFiles from './e2e/specfiles.json' assert { type: 'json' }
+import { contractAbi, contractByteCode } from './support/testErc20Token'
 import {
   checkForAssertions,
   generateActivityOnChains,
@@ -27,16 +27,15 @@ import {
   ERC20TokenDecimals,
   ERC20TokenName,
   getNativeTokenDecimals
-} from './tests/support/common'
+} from './support/common'
 
-import { registerLocalNetwork } from './src/util/networks'
+import { registerLocalNetwork } from './support/helpers'
 import {
   defaultL2Network,
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
-} from './src/util/networksNitroTestnode'
-import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
-import { browserConfig } from './tests/e2e/browser.config'
+} from './support/networksNitroTestnode'
+import { getCommonSynpressConfig } from './e2e/getCommonSynpressConfig'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -204,7 +203,6 @@ export default defineConfig({
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
-      config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
       config.env.NATIVE_TOKEN_SYMBOL = isCustomFeeToken ? 'TN' : 'ETH'
       config.env.NATIVE_TOKEN_ADDRESS = ethBridger.nativeToken
@@ -227,15 +225,16 @@ export default defineConfig({
       config.env.REDEEM_RETRYABLE_TEST_TX =
         await generateTestTxForRedeemRetryable()
 
-      synpressPlugins(on, config)
       setupCypressTasks(on, { requiresNetworkSetup: true })
-      return config
+
+      return configureSynpressForMetaMask(on, config)
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts',
+    supportFile: './support/e2e.ts',
     defaultCommandTimeout: 20_000,
-    browsers: [browserConfig]
+    defaultBrowser: 'chrome',
+    testIsolation: true
   }
 })
 
