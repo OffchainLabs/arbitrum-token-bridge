@@ -125,7 +125,7 @@ export function ArbitrumRoute({
    */
   const isUsdcTransfer = isTokenNativeUSDC(token?.address)
   const overrideToken = isDepositMode ? bridgedUsdcToken : nativeUsdcToken
-  const duration =
+  const durationMs =
     getDuration({
       isTestnet,
       isWithdrawal: !isDepositMode,
@@ -141,7 +141,7 @@ export function ArbitrumRoute({
       type="arbitrum"
       bridge={'Arbitrum Bridge'}
       bridgeIconURI={'/icons/arbitrum.svg'}
-      durationMs={duration}
+      durationMs={durationMs}
       amountReceived={amount.toString()}
       isLoadingGasEstimate={gasSummaryStatus === 'loading'}
       overrideToken={isUsdcTransfer ? overrideToken : undefined}
