@@ -12,6 +12,10 @@ import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { RouteType, SetRoute } from '../hooks/useRouteStore'
 import { SecurityGuaranteed } from '../SecurityLabels'
 import { TokenLogo } from '../TokenLogo'
+import { getConfirmationTime } from '../../../util/WithdrawalUtils'
+import { Tooltip } from '../../common/Tooltip'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import LightningIcon from '@/images/LightningIcon.svg'
 
 export type BadgeType = 'security-guaranteed'
 type Token = {
@@ -88,11 +92,16 @@ export function Route({
   selected
 }: RouteProps) {
   const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
+  const { childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const childNativeCurrency = useNativeCurrency({
     provider: childChainProvider
   })
   const [_token] = useSelectedToken()
+  const { fastWithdrawalActive } =
+    !isDepositMode && type !== 'oftV2'
+      ? getConfirmationTime(networks.sourceChain.id)
+      : { fastWithdrawalActive: false }
 
   const token = overrideToken || _token || childNativeCurrency
 
@@ -143,6 +152,21 @@ export function Route({
             <span className="ml-1">
               {dayjs().add(durationMs, 'millisecond').fromNow(true)}
             </span>
+            {fastWithdrawalActive && (
+              <div className="flex items-center">
+                <Tooltip
+                  content={
+                    'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
+                  }
+                >
+                  <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
+                </Tooltip>
+                <div className="ml-1 flex space-x-0.5 text-[#FFD000]">
+                  <Image src={LightningIcon} alt="Lightning Icon" />
+                  <span className="font-normal">FAST</span>
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex items-center">
             <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
