@@ -23,7 +23,6 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
-import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
@@ -84,6 +83,8 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { Routes } from './Routes/Routes'
+import { useRouteStore } from './hooks/useRouteStore'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -152,6 +153,7 @@ export function TransferPanel() {
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
+  const { selectedRoute, setSelectedRoute, clearRoute } = useRouteStore()
 
   const isCctpTransfer = useIsCctpTransfer()
 
@@ -392,6 +394,7 @@ export function TransferPanel() {
   const showDelayedSmartContractTxRequest = () =>
     setTimeout(() => {
       setTransferring(false)
+      clearRoute()
       setShowSmartContractWalletTooltip(true)
     }, 3000)
 
@@ -577,11 +580,13 @@ export function TransferPanel() {
       switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
+      clearRoute()
     } catch (e) {
       //
     } finally {
       setTransferring(false)
       setIsCctp(false)
+      clearRoute()
     }
   }
 
@@ -699,6 +704,7 @@ export function TransferPanel() {
       )
     } finally {
       setTransferring(false)
+      clearRoute()
     }
   }
 
@@ -961,6 +967,7 @@ export function TransferPanel() {
       })
     } finally {
       setTransferring(false)
+      clearRoute()
     }
   }
 
@@ -1041,6 +1048,7 @@ export function TransferPanel() {
 
     switchToTransactionHistoryTab()
     setTransferring(false)
+    clearRoute()
     clearAmountInput()
 
     // for custom orbit pages, show Projects' listing after transfer
@@ -1128,19 +1136,20 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     } finally {
       setTransferring(false)
+      clearRoute()
     }
 
     if (!isTransferAllowed) {
       return networkConnectionWarningToast()
     }
 
-    if (isOftTransfer) {
+    if (selectedRoute == 'layerzero') {
       return transferOft()
     }
-    if (isCctpTransfer) {
+    if (selectedRoute === 'cctp') {
       return transferCctp()
     }
-    if (isDepositMode && selectedToken) {
+    if (selectedRoute === 'arbitrum' && isDepositMode && selectedToken) {
       return depositToken()
     }
     return transfer()
@@ -1188,11 +1197,9 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
+        <Routes onRouteSelected={setSelectedRoute} />
         <AdvancedSettings />
-        <TransferPanelSummary
-          amount={parseFloat(amount)}
-          token={selectedToken}
-        />
+
         <MoveFundsButton onClick={moveFundsButtonOnClick} />
 
         {isTokenAlreadyImported === false && tokenFromSearchParams && (
