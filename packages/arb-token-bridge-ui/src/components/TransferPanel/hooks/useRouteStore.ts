@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type RouteType = 'arbitrum' | 'layerzero' | 'cctp'
+export type RouteType = 'arbitrum' | 'oftV2' | 'cctp'
 export type RouteContext = null
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
 interface RouteState {
