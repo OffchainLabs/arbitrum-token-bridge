@@ -40,7 +40,8 @@ import {
   getUpdatedWithdrawal,
   isCctpTransfer,
   isSameTransaction,
-  isTxPending
+  isTxPending,
+  isOftTransfer
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useAccountType } from './useAccountType'
@@ -61,6 +62,12 @@ import {
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useArbQueryParams } from './useArbQueryParams'
+import {
+  getUpdatedOftTransfer,
+  LayerZeroTransaction,
+  updateAdditionalLayerZeroData,
+  useOftTransactionHistory
+} from './useOftTransactionHistory'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -88,9 +95,14 @@ export type Transfer =
   | DepositOrWithdrawal
   | MergedTransaction
   | TeleportFromSubgraph
+  | LayerZeroTransaction
 
 function getTransactionTimestamp(tx: Transfer) {
   if (isCctpTransfer(tx)) {
+    return normalizeTimestamp(tx.createdAt ?? 0)
+  }
+
+  if (isOftTransfer(tx)) {
     return normalizeTimestamp(tx.createdAt ?? 0)
   }
 
@@ -144,55 +156,75 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
 }
 
-async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
-  // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
-  if (isTransferTeleportFromSubgraph(tx)) {
-    return await transformTeleportFromSubgraph(tx)
-  }
+async function transformTransaction(
+  tx: Transfer
+): Promise<MergedTransaction | null> {
+  // null in case of error
+  try {
+    // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
+    if (isTransferTeleportFromSubgraph(tx)) {
+      return await transformTeleportFromSubgraph(tx)
+    }
 
-  const parentProvider = getProviderForChainId(tx.parentChainId)
-  const childProvider = getProviderForChainId(tx.childChainId)
+    const parentProvider = getProviderForChainId(tx.parentChainId)
+    const childProvider = getProviderForChainId(tx.childChainId)
 
-  if (isCctpTransfer(tx)) {
-    return tx
-  }
+    if (isCctpTransfer(tx)) {
+      return tx
+    }
 
-  if (isDeposit(tx)) {
-    return transformDeposit(await updateAdditionalDepositData(tx))
-  }
+    if (isOftTransfer(tx)) {
+      return await updateAdditionalLayerZeroData(tx)
+    }
 
-  let withdrawal: L2ToL1EventResultPlus | undefined
+    if (isDeposit(tx)) {
+      return transformDeposit(await updateAdditionalDepositData(tx))
+    }
 
-  if (isWithdrawalFromSubgraph(tx)) {
-    withdrawal = await mapWithdrawalToL2ToL1EventResult({
-      withdrawal: tx,
-      l1Provider: parentProvider,
-      l2Provider: childProvider
-    })
-  } else {
-    if (isTokenWithdrawal(tx)) {
-      withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
-        result: tx,
+    let withdrawal: L2ToL1EventResultPlus | undefined
+
+    if (isWithdrawalFromSubgraph(tx)) {
+      withdrawal = await mapWithdrawalToL2ToL1EventResult({
+        withdrawal: tx,
         l1Provider: parentProvider,
         l2Provider: childProvider
       })
     } else {
-      withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
-        event: tx,
-        l1Provider: parentProvider,
-        l2Provider: childProvider
-      })
+      if (isTokenWithdrawal(tx)) {
+        withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
+          result: tx,
+          l1Provider: parentProvider,
+          l2Provider: childProvider
+        })
+      } else {
+        withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
+          event: tx,
+          l1Provider: parentProvider,
+          l2Provider: childProvider
+        })
+      }
     }
-  }
 
-  if (withdrawal) {
-    return transformWithdrawal(withdrawal)
-  }
+    if (withdrawal) {
+      return transformWithdrawal(withdrawal)
+    }
 
-  // Throw user friendly error in case we catch it and display in the UI.
-  throw new Error(
-    'An error has occurred while fetching a transaction. Please try again later or contact the support.'
-  )
+    console.error(
+      `An error has occurred while fetching a transaction ${getCacheKeyFromTransaction(
+        tx
+      )}. Please try again later or contact the support.`
+    )
+
+    return null
+  } catch (e) {
+    // Throw user friendly error in case we catch it and display in the UI.
+    console.error(
+      `An error has occurred while fetching a transaction ${getCacheKeyFromTransaction(
+        tx
+      )}. Please try again later or contact the support. ${e}`
+    )
+    return null
+  }
 }
 
 function getTxIdFromTransaction(tx: Transfer) {
@@ -200,7 +232,7 @@ function getTxIdFromTransaction(tx: Transfer) {
     return tx.transactionHash
   }
 
-  if (isCctpTransfer(tx)) {
+  if (isCctpTransfer(tx) || isOftTransfer(tx)) {
     return tx.txId
   }
   if (isDeposit(tx)) {
@@ -215,9 +247,7 @@ function getTxIdFromTransaction(tx: Transfer) {
   return tx.l2TxHash ?? tx.transactionHash
 }
 
-function getCacheKeyFromTransaction(
-  tx: Transaction | MergedTransaction | TeleportFromSubgraph | Withdrawal
-) {
+function getCacheKeyFromTransaction(tx: Transfer) {
   const txId = getTxIdFromTransaction(tx)
   if (!txId) {
     return undefined
@@ -326,6 +356,12 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     cctpTransfersMainnet.isLoadingWithdrawals ||
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
+
+  const { transactions: oftTransfers, isLoading: oftLoading } =
+    useOftTransactionHistory({
+      walletAddress: address,
+      isTestnet: isTestnetMode
+    })
 
   const { data: failedChainPairs, mutate: addFailedChainPair } =
     useSWRImmutable<ChainPair[]>(
@@ -462,12 +498,13 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const transactions = [
     ...deposits,
     ...withdrawals,
-    ...combinedCctpTransfers
+    ...combinedCctpTransfers,
+    ...oftTransfers
   ].flat()
 
   return {
     data: transactions,
-    loading: depositsLoading || withdrawalsLoading || cctpLoading,
+    loading: depositsLoading || withdrawalsLoading || cctpLoading || oftLoading,
     error: depositsError ?? withdrawalsError,
     failedChainPairs: failedChainPairs || []
   }
@@ -565,7 +602,7 @@ export const useTransactionHistory = (
     isLoading: isLoadingFirstPage
   } = useSWRInfinite(
     getCacheKey,
-    ([, , _page, _data]) => {
+    async ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
       const dataWithCache = [..._data, ...depositsFromCache]
@@ -579,11 +616,13 @@ export const useTransactionHistory = (
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
-      return Promise.all(
+      const txs = await Promise.all(
         dedupedTransactions
           .slice(startIndex, endIndex)
           .map(transformTransaction)
       )
+
+      return txs.filter(tx => tx !== null) as MergedTransaction[]
     },
     {
       revalidateOnFocus: false,
@@ -720,6 +759,12 @@ export const useTransactionHistory = (
       if (isTeleportTx(tx)) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
         updateCachedTransaction(updatedTeleportTransfer)
+        return
+      }
+
+      if (isOftTransfer(tx)) {
+        const updatedOftTransfer = await getUpdatedOftTransfer(tx)
+        updateCachedTransaction(updatedOftTransfer)
         return
       }
 
