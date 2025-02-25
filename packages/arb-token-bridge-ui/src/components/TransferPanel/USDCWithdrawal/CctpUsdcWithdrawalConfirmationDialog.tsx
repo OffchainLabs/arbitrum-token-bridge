@@ -29,6 +29,7 @@ export function CctpUsdcWithdrawalConfirmationDialog(props: UseDialogProps) {
             type: 'Withdrawal'
           })
         }
+        props.onClose(confirmed)
       }}
     >
       <div className="flex flex-col space-y-4 py-4">
