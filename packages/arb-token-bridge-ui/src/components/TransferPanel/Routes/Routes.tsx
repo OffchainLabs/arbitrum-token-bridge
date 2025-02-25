@@ -6,8 +6,10 @@ import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 import { RouteProps } from './Route'
 import { ArbitrumRoute } from './ArbitrumRoute'
 import { CctpRoute } from './CctpRoute'
-import { LayerZeroRoute } from './LayerZeroRoute'
+import { OftV2Route } from './OftV2Route'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
+import { useRouteStore } from '../hooks/useRouteStore'
+import React from 'react'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
@@ -27,49 +29,56 @@ function Wrapper({ children }: PropsWithChildren) {
  * Display no routes for:
  * - Arb1/ArbNova
  *
+ * We memo the component, so calling `setSelectedRoute` doesn't rerender and cause infinite loop
  */
-export function Routes({
-  onRouteSelected
-}: Pick<RouteProps, 'onRouteSelected'>) {
-  const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
-  const amount = useAmountBigNumber()
+export const Routes = React.memo(
+  ({ onRouteSelected }: Pick<RouteProps, 'onRouteSelected'>) => {
+    const [networks] = useNetworks()
+    const { isDepositMode } = useNetworksRelationship(networks)
+    const amount = useAmountBigNumber()
+    const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
+    const isCctpTransfer = useIsCctpTransfer()
+    const isOftV2Transfer = useIsOftV2Transfer()
 
-  const isCctpTransfer = useIsCctpTransfer()
-  const isOftV2Transfer = useIsOftV2Transfer()
+    console.log(setSelectedRoute)
+    if (amount.eq(0)) {
+      return
+    }
 
-  if (amount.eq(0)) {
-    return
-  }
-
-  if (isOftV2Transfer) {
-    return (
-      <Wrapper>
-        <LayerZeroRoute onRouteSelected={onRouteSelected} />
-      </Wrapper>
-    )
-  }
-
-  if (isCctpTransfer) {
-    if (isDepositMode) {
+    if (isOftV2Transfer) {
+      setSelectedRoute('oftV2')
       return (
         <Wrapper>
-          <CctpRoute onRouteSelected={onRouteSelected} />
-          <ArbitrumRoute onRouteSelected={onRouteSelected} />
+          <OftV2Route onRouteSelected={onRouteSelected} />
         </Wrapper>
       )
     }
 
+    if (isCctpTransfer) {
+      if (isDepositMode) {
+        return (
+          <Wrapper>
+            <CctpRoute onRouteSelected={onRouteSelected} />
+            <ArbitrumRoute onRouteSelected={onRouteSelected} />
+          </Wrapper>
+        )
+      }
+
+      setSelectedRoute('cctp')
+      return (
+        <Wrapper>
+          <CctpRoute onRouteSelected={onRouteSelected} />
+        </Wrapper>
+      )
+    }
+
+    setSelectedRoute('arbitrum')
     return (
       <Wrapper>
-        <CctpRoute onRouteSelected={onRouteSelected} />
+        <ArbitrumRoute onRouteSelected={onRouteSelected} />
       </Wrapper>
     )
   }
+)
 
-  return (
-    <Wrapper>
-      <ArbitrumRoute onRouteSelected={onRouteSelected} />
-    </Wrapper>
-  )
-}
+Routes.displayName = 'Routes'
