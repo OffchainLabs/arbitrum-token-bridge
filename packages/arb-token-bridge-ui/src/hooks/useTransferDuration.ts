@@ -135,14 +135,15 @@ export function getWithdrawalConfirmationDate({
   return dayjs(createdAt).add(confirmationTimeInSeconds, 'second')
 }
 
-export function getWithdrawalDuration(
-  tx: Pick<MergedTransaction, 'createdAt' | 'sourceChainId'>
-) {
+export function getWithdrawalDuration({
+  createdAt,
+  sourceChainId
+}: Pick<MergedTransaction, 'createdAt' | 'sourceChainId'>) {
   const confirmationDate = getWithdrawalConfirmationDate({
-    createdAt: tx.createdAt,
-    withdrawalFromChainId: tx.sourceChainId
+    createdAt: createdAt,
+    withdrawalFromChainId: sourceChainId
   })
-  return Math.max(confirmationDate.diff(tx.createdAt, 'minute'), 0)
+  return Math.max(confirmationDate.diff(createdAt, 'minute'), 0)
 }
 
 export function getStandardDepositDuration(testnet: boolean) {
