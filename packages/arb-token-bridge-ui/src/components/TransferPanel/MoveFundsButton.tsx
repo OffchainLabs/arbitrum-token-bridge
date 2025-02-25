@@ -25,9 +25,8 @@ export function MoveFundsButton({
   const { transferReady } = useTransferReadiness()
   const { selectedRoute } = useRouteStore()
   const isDisabled =
-    selectedRoute === undefined || isDepositMode
-      ? !transferReady.deposit
-      : !transferReady.withdrawal
+    selectedRoute === undefined ||
+    (isDepositMode ? !transferReady.deposit : !transferReady.withdrawal)
 
   return (
     <Button
