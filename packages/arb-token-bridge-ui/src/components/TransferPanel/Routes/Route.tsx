@@ -163,9 +163,9 @@ export function Route({
               {dayjs().add(durationMs, 'millisecond').fromNow(true)}
             </span>
           </div>
-          <div className="flex items-center" aria-label="Route gas">
+          <div className="flex items-center">
             <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
-            <span className="ml-1">
+            <span className="ml-1" aria-label="Route gas">
               {isLoadingGasEstimate ? (
                 <Loader size="small" color="white" />
               ) : gasCost ? (
