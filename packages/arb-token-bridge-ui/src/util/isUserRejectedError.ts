@@ -1,4 +1,4 @@
-import { UserRejectedRequestError } from 'wagmi'
+import { UserRejectedRequestError } from 'viem'
 
 /**
  * This should only be used to conditionally act on errors,

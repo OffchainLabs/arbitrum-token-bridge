@@ -14,15 +14,15 @@ import {
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
-  | 'custom-localhost'
-  | 'arbitrum-localhost'
-  | 'l3-localhost'
-  | 'arbitrum-sepolia'
-  | 'mainnet'
-  | 'sepolia'
+  | 'Ethereum Local'
+  | 'Arbitrum Local'
+  | 'L3 Local'
+  | 'Arbitrum Sepolia'
+  | 'Ethereum'
+  | 'Sepolia'
 
 type NetworkConfig = {
-  networkName: NetworkName
+  name: NetworkName
   rpcUrl: string
   chainId: number
   symbol: string
@@ -40,11 +40,17 @@ export const getL2NetworkName = () => {
   return isOrbitTest ? 'L3 Local' : 'Arbitrum Local'
 }
 
+export const getNetworkSlug = (network: 'parent' | 'child') => {
+  const networkName =
+    network === 'parent' ? getL1NetworkName() : getL2NetworkName()
+  return networkName.toLowerCase().replace(' ', '-')
+}
+
 export const getL1NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
-    networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
+    name: isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
@@ -65,7 +71,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     : defaultL3Network
 
   return {
-    networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
+    name: isOrbitTest ? 'L3 Local' : 'Arbitrum Local',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
     symbol: nativeTokenSymbol,
@@ -78,7 +84,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
 
 export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'sepolia',
+    name: 'Sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
     chainId: 11155111,
     symbol: 'ETH',
@@ -89,7 +95,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
 
 export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    networkName: 'arbitrum-sepolia',
+    name: 'Arbitrum Sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
     chainId: 421614,
     symbol: 'ETH',
@@ -173,9 +179,11 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
     // ensures we don't test with the same state that could have caused the test to fail
     cy.reload(true)
   }
-  cy.connectToApp()
+  cy.acceptTnC()
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
+      cy.findByText('Connect a Wallet').should('be.visible')
+      cy.findByText('MetaMask').should('be.visible').click()
       acceptMetamaskAccess()
       cy.task('setWalletConnectedToDapp')
     }
