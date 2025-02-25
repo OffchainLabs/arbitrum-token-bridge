@@ -12,14 +12,12 @@ export type UiDriverContext = {
 }
 
 export class CctpUiDriver {
-  static async createSteps(context: UiDriverContext): Promise<UiDriverStep[]> {
-    const steps: UiDriverStep[] = [
-      {
-        type: 'dialog',
-        dialog: context.isDepositMode ? 'cctp_deposit' : 'cctp_withdrawal'
-      }
-    ]
-
-    return steps
+  static async *createSteps(
+    context: UiDriverContext
+  ): AsyncGenerator<UiDriverStep> {
+    yield {
+      type: 'dialog',
+      dialog: context.isDepositMode ? 'cctp_deposit' : 'cctp_withdrawal'
+    }
   }
 }

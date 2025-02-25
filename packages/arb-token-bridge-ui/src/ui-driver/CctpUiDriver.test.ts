@@ -6,11 +6,11 @@ import {
 } from './CctpUiDriver'
 
 it('deposits', async () => {
-  const steps = await CctpUiDriver.createSteps({
+  const steps = CctpUiDriver.createSteps({
     isDepositMode: true
   } as UiDriverContext)
 
-  const step1 = steps[0]
+  const step1 = await (await steps.next()).value
 
   expect(step1).toBeDefined()
   expect((step1 as UiDriverStep).type).toEqual('dialog')
@@ -18,11 +18,11 @@ it('deposits', async () => {
 })
 
 it('withdrawals', async () => {
-  const steps = await CctpUiDriver.createSteps({
+  const steps = CctpUiDriver.createSteps({
     isDepositMode: false
   } as UiDriverContext)
 
-  const step1 = steps[0]
+  const step1 = await (await steps.next()).value
 
   expect(step1).toBeDefined()
   expect((step1 as UiDriverStep).type).toEqual('dialog')
