@@ -10,7 +10,7 @@ import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEs
 import { useRouteStore } from '../hooks/useRouteStore'
 
 // Only displayed during USDT transfers
-export function LayerZeroRoute({
+export function OftV2Route({
   onRouteSelected
 }: Pick<RouteProps, 'onRouteSelected'>) {
   const amount = useAmountBigNumber()
