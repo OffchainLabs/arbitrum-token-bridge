@@ -18,7 +18,7 @@ function Wrapper({ children }: PropsWithChildren) {
  *  - Mainnet/Arb1, Sepolia/ArbSepolia
  *  - Native USDC on Arbitrum, USDC on L1
  * Display layerzero:
- *  - Mainnet/Arb1, Sepolia/ArbSepolia
+ *  - Mainnet/Arb1
  *  - USDT0 on Arb
  * Display canonical route for every route except:
  *  - Native USDC on Arb1
