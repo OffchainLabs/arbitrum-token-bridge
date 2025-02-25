@@ -12,6 +12,15 @@ function expectDialog(step: any, dialog: Dialog) {
   expect((step as UiDriverStepDialog).dialog).toEqual(dialog)
 }
 
+function expectReturn(step: any) {
+  expect(step).toBeDefined()
+  expect((step as UiDriverStep).type).toEqual('return')
+}
+
+function expectDone(step: any) {
+  expect(step).toBeUndefined()
+}
+
 it(`
   isDepositMode=true
 
@@ -25,7 +34,7 @@ it(`
   expectDialog(step1, 'cctp_deposit')
 
   const step2 = await (await steps.next()).value
-  expect(step2).toBeUndefined()
+  expectReturn(step2)
 })
 
 it(`
@@ -46,7 +55,7 @@ it(`
   expect((step2 as UiDriverStep).type).toEqual('deposit_usdc.e')
 
   const step3 = await (await steps.next()).value
-  expect(step3).toBeUndefined()
+  expectReturn(step3)
 })
 
 it(`
@@ -70,7 +79,7 @@ it(`
   const step2UserInput = false
 
   const step3 = await (await steps.next(step2UserInput)).value
-  expect(step3).toBeUndefined()
+  expectReturn(step3)
 })
 
 it(`
@@ -94,7 +103,7 @@ it(`
   const step2UserInput = true
 
   const step3 = await (await steps.next(step2UserInput)).value
-  expect((step3 as UiDriverStep).type).toEqual('end')
+  expectDone(step3)
 })
 
 it(`
@@ -113,7 +122,7 @@ it(`
   const step1UserInput = false
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expect(step2).toBeUndefined()
+  expectReturn(step2)
 })
 
 it(`
@@ -137,7 +146,7 @@ it(`
   const step2UserInput = false
 
   const step3 = await (await steps.next(step2UserInput)).value
-  expect(step3).toBeUndefined()
+  expectReturn(step3)
 })
 
 it(`
@@ -161,5 +170,5 @@ it(`
   const step2UserInput = true
 
   const step3 = await (await steps.next(step2UserInput)).value
-  expect((step3 as UiDriverStep).type).toEqual('end')
+  expectDone(step3)
 })
