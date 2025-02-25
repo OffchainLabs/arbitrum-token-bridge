@@ -9,7 +9,7 @@ export type UiDriverStepDialog = {
   dialog: Dialog
 }
 
-export type UiDriverStep = UiDriverStepDialog
+export type UiDriverStep = UiDriverStepDialog | { type: 'deposit_as_usdc.e' }
 
 export type UiDriverContext = {
   isDepositMode: boolean
@@ -19,23 +19,34 @@ export type UiDriverContext = {
 export class CctpUiDriver {
   static async *createSteps(
     context: UiDriverContext
-  ): AsyncGenerator<UiDriverStep, void, boolean> {
-    const step1UserInput = yield {
-      type: 'dialog',
-      dialog: context.isDepositMode ? 'cctp_deposit' : 'cctp_withdrawal'
-    }
+  ): AsyncGenerator<UiDriverStep, any, any> {
+    if (context.isDepositMode) {
+      const userInput: boolean = yield {
+        type: 'dialog',
+        dialog: 'cctp_deposit'
+      }
 
-    if (!step1UserInput) {
-      return
+      if (!userInput) {
+        return
+      }
+    } else {
+      const userInput: boolean = yield {
+        type: 'dialog',
+        dialog: 'cctp_withdrawal'
+      }
+
+      if (!userInput) {
+        return
+      }
     }
 
     if (context.isSmartContractWallet) {
-      const step2UserInput = yield {
+      const userInput = yield {
         type: 'dialog',
         dialog: 'custom_dest_addr_warn'
       }
 
-      if (!step2UserInput) {
+      if (!userInput) {
         return
       }
     }
