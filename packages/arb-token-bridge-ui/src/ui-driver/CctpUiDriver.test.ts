@@ -1,9 +1,16 @@
 import {
   CctpUiDriver,
+  Dialog,
   UiDriverContext,
   UiDriverStep,
   UiDriverStepDialog
 } from './CctpUiDriver'
+
+function expectDialog(step: any, dialog: Dialog) {
+  expect(step).toBeDefined()
+  expect((step as UiDriverStep).type).toEqual('dialog')
+  expect((step as UiDriverStepDialog).dialog).toEqual(dialog)
+}
 
 it(`
   isDepositMode=true
@@ -15,9 +22,7 @@ it(`
   } as UiDriverContext)
 
   const step1 = await (await steps.next()).value
-  expect(step1).toBeDefined()
-  expect((step1 as UiDriverStep).type).toEqual('dialog')
-  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_deposit')
+  expectDialog(step1, 'cctp_deposit')
 
   const step2 = await (await steps.next()).value
   expect(step2).toBeUndefined()
@@ -33,9 +38,7 @@ it(`
   } as UiDriverContext)
 
   const step1 = await (await steps.next()).value
-  expect(step1).toBeDefined()
-  expect((step1 as UiDriverStep).type).toEqual('dialog')
-  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_deposit')
+  expectDialog(step1, 'cctp_deposit')
   const step1UserInput = 'bridge-normal-usdce'
 
   const step2 = await (await steps.next(step1UserInput)).value
@@ -58,14 +61,11 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expect(step1).toBeDefined()
-  expect((step1 as UiDriverStep).type).toEqual('dialog')
-  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_deposit')
+  expectDialog(step1, 'cctp_deposit')
   const step1UserInput = 'bridge-cctp-usd'
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expect((step2 as UiDriverStep).type).toEqual('dialog')
-  expect((step2 as UiDriverStepDialog).dialog).toEqual('custom_dest_addr_warn')
+  expectDialog(step2, 'custom_dest_addr_warn')
   const step2UserInput = false
 
   const step3 = await (await steps.next(step2UserInput)).value
@@ -83,9 +83,7 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expect(step1).toBeDefined()
-  expect((step1 as UiDriverStep).type).toEqual('dialog')
-  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_withdrawal')
+  expectDialog(step1, 'cctp_withdrawal')
   const step1UserInput = false
 
   const step2 = await (await steps.next(step1UserInput)).value
@@ -104,14 +102,11 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expect(step1).toBeDefined()
-  expect((step1 as UiDriverStep).type).toEqual('dialog')
-  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_withdrawal')
+  expectDialog(step1, 'cctp_withdrawal')
   const step1UserInput = true
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expect((step2 as UiDriverStep).type).toEqual('dialog')
-  expect((step2 as UiDriverStepDialog).dialog).toEqual('custom_dest_addr_warn')
+  expectDialog(step2, 'custom_dest_addr_warn')
   const step2UserInput = false
 
   const step3 = await (await steps.next(step2UserInput)).value
@@ -130,14 +125,11 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expect(step1).toBeDefined()
-  expect((step1 as UiDriverStep).type).toEqual('dialog')
-  expect((step1 as UiDriverStepDialog).dialog).toEqual('cctp_withdrawal')
+  expectDialog(step1, 'cctp_withdrawal')
   const step1UserInput = true
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expect((step2 as UiDriverStep).type).toEqual('dialog')
-  expect((step2 as UiDriverStepDialog).dialog).toEqual('custom_dest_addr_warn')
+  expectDialog(step2, 'custom_dest_addr_warn')
   const step2UserInput = true
 
   const step3 = await (await steps.next(step2UserInput)).value
