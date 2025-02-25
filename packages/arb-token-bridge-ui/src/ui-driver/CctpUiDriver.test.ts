@@ -15,7 +15,7 @@ function expectDialog(step: any, dialog: Dialog) {
 it(`
   isDepositMode=true
 
-  * dialog(cctp_deposit) -> user rejects
+  * dialog(cctp_deposit)          -> user rejects
 `, async () => {
   const steps = CctpUiDriver.createSteps({
     isDepositMode: true
@@ -31,7 +31,7 @@ it(`
 it(`
   isDepositMode=true
 
-  * dialog(cctp_deposit) -> user selects usdc.e
+  * dialog(cctp_deposit)          -> user selects usdc.e
 `, async () => {
   const steps = CctpUiDriver.createSteps({
     isDepositMode: true
@@ -50,7 +50,8 @@ it(`
 })
 
 it(`
-  isDepositMode=true,isSmartContractWallet=true
+  isDepositMode=true
+  isSmartContractWallet=true
 
   * dialog(cctp_deposit)          -> user selects cctp
   * dialog(custom_dest_addr_warn) -> user rejects
@@ -73,9 +74,34 @@ it(`
 })
 
 it(`
-  isDepositMode=false,isSmartContractWallet=false
+  isDepositMode=true
+  isSmartContractWallet=true
 
-  * dialog(cctp_withdrawal) -> user rejects
+  * dialog(cctp_deposit)          -> user selects cctp
+  * dialog(custom_dest_addr_warn) -> user confirms
+`, async () => {
+  const steps = CctpUiDriver.createSteps({
+    isDepositMode: true,
+    isSmartContractWallet: true
+  })
+
+  const step1 = await (await steps.next()).value
+  expectDialog(step1, 'cctp_deposit')
+  const step1UserInput = 'bridge-cctp-usd'
+
+  const step2 = await (await steps.next(step1UserInput)).value
+  expectDialog(step2, 'custom_dest_addr_warn')
+  const step2UserInput = true
+
+  const step3 = await (await steps.next(step2UserInput)).value
+  expect((step3 as UiDriverStep).type).toEqual('end')
+})
+
+it(`
+  isDepositMode=false
+  isSmartContractWallet=false
+
+  * dialog(cctp_withdrawal)       -> user rejects
 `, async () => {
   const steps = CctpUiDriver.createSteps({
     isDepositMode: false,
@@ -91,7 +117,8 @@ it(`
 })
 
 it(`
-  isDepositMode=false,isSmartContractWallet=true
+  isDepositMode=false
+  isSmartContractWallet=true
 
   * dialog(cctp_withdrawal)       -> user confirms
   * dialog(custom_dest_addr_warn) -> user rejects
@@ -114,7 +141,8 @@ it(`
 })
 
 it(`
-  isDepositMode=false,isSmartContractWallet=true
+  isDepositMode=false
+  isSmartContractWallet=true
 
   * dialog(cctp_withdrawal)       -> user confirms
   * dialog(custom_dest_addr_warn) -> user confirms
