@@ -1,12 +1,9 @@
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useCallback } from 'react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { ExternalLink } from '../common/ExternalLink'
-import { errorToast } from '../common/atoms/Toast'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { Button } from '../common/Button'
-import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 
 export function WelcomeDialog() {
   const [, setTosAccepted] = useLocalStorage<boolean>(
@@ -14,21 +11,9 @@ export function WelcomeDialog() {
     false
   )
 
-  const { openConnectModal } = useConnectModal()
-
   const closeHandler = useCallback(() => {
     setTosAccepted(true)
-
-    try {
-      openConnectModal?.()
-    } catch (error) {
-      errorToast('Failed to open up RainbowKit Connect Modal')
-      captureSentryErrorWithExtraData({
-        error,
-        originFunction: 'WelcomeDialog closeHandler'
-      })
-    }
-  }, [openConnectModal, setTosAccepted])
+  }, [setTosAccepted])
 
   return (
     <div className="mx-4 my-16 max-w-[380px] overflow-hidden rounded border border-gray-dark bg-gray-1 pt-3 text-white sm:mx-auto">
