@@ -1,17 +1,28 @@
+import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { Provider, TransactionRequest } from '@ethersproject/providers'
+import { BigNumber, Signer } from 'ethers'
+
 export type Dialog =
   | 'cctp_deposit'
   | 'cctp_withdrawal'
+  | 'cctp_allowance'
   | 'custom_dest_addr_warn'
-  | 'test'
 
 export type UiDriverStepDialog = {
   type: 'dialog'
   dialog: Dialog
 }
 
+export type UiDriverStepTransaction = {
+  type: 'tx'
+  txRequest: TransactionRequest
+}
+
 export type UiDriverStep =
   | UiDriverStepDialog
+  | UiDriverStepTransaction
   | { type: 'deposit_usdc.e' }
+  | { type: 'scw_delay' }
   | { type: 'return' }
 
 export type UiDriverContext = {
@@ -19,6 +30,10 @@ export type UiDriverContext = {
   isSmartContractWallet: boolean
   walletAddress?: string
   destinationAddress?: string
+  sourceChainProvider: Provider
+  destinationChainProvider: Provider
+  signer: Signer
+  amount: BigNumber
 }
 
 export class CctpUiDriver {
@@ -53,7 +68,7 @@ export class CctpUiDriver {
       // todo: add tests
       addressesEqual(context.walletAddress, context.destinationAddress)
     ) {
-      const userInput = yield {
+      const userInput: boolean = yield {
         type: 'dialog',
         dialog: 'custom_dest_addr_warn'
       }
@@ -61,6 +76,45 @@ export class CctpUiDriver {
       if (!userInput) {
         return yield { type: 'return' }
       }
+    }
+
+    const cctpTransferStarter = new CctpTransferStarter({
+      sourceChainProvider: context.sourceChainProvider,
+      destinationChainProvider: context.destinationChainProvider
+    })
+
+    const isTokenApprovalRequired =
+      await cctpTransferStarter.requiresTokenApproval({
+        amount: context.amount,
+        signer: context.signer
+      })
+
+    if (isTokenApprovalRequired) {
+      const userInput: boolean = yield {
+        type: 'dialog',
+        dialog: 'cctp_allowance'
+      }
+
+      if (!userInput) {
+        return yield { type: 'return' }
+      }
+
+      if (context.isSmartContractWallet) {
+        yield { type: 'scw_delay' }
+      }
+
+      yield {
+        type: 'tx',
+        txRequest:
+          await cctpTransferStarter.approveTokenPrepareTransactionRequest({
+            amount: context.amount,
+            signer: context.signer
+          })
+      }
+    }
+
+    if (context.isSmartContractWallet) {
+      yield { type: 'scw_delay' }
     }
   }
 }

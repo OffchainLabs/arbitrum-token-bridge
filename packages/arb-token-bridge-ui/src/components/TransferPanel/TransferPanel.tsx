@@ -402,8 +402,29 @@ export function TransferPanel() {
     return confirmed
   }
 
-  function executeStep(step: UiDriverStep) {
+  async function executeStep(step: UiDriverStep) {
+    console.log(step)
     switch (step.type) {
+      // todo: catch should stop further execution
+      case 'tx': {
+        try {
+          const tx = await signer!.sendTransaction(step.txRequest)
+          const txReceipt = await tx.wait()
+
+          return txReceipt
+        } catch (error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+
+          errorToast(`${(error as Error)?.message ?? error}`)
+          return
+        }
+      }
+
+      case 'scw_delay':
+        return showDelayedSmartContractTxRequest()
+
       case 'deposit_usdc.e':
         return depositToken()
 
@@ -414,6 +435,10 @@ export function TransferPanel() {
 
         if (step.dialog === 'cctp_withdrawal') {
           return confirmUsdcWithdrawalForCctp()
+        }
+
+        if (step.dialog === 'cctp_allowance') {
+          return tokenAllowanceApprovalCctp()
         }
 
         if (step.dialog === 'custom_dest_addr_warn') {
@@ -448,7 +473,11 @@ export function TransferPanel() {
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
-        destinationAddress
+        destinationAddress,
+        sourceChainProvider,
+        destinationChainProvider,
+        amount: amountBigNumber,
+        signer
       })
 
       let nextStep = await steps.next()
@@ -467,54 +496,14 @@ export function TransferPanel() {
         nextStep = await steps.next(result)
       }
 
-      const cctpTransferStarter = new CctpTransferStarter({
-        sourceChainProvider,
-        destinationChainProvider
-      })
-
-      const isTokenApprovalRequired =
-        await cctpTransferStarter.requiresTokenApproval({
-          amount: amountBigNumber,
-          signer
-        })
-
-      if (isTokenApprovalRequired) {
-        const userConfirmation = await tokenAllowanceApprovalCctp()
-        if (!userConfirmation) return false
-
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
-        try {
-          const tx = await cctpTransferStarter.approveToken({
-            signer,
-            amount: amountBigNumber
-          })
-
-          await tx.wait()
-        } catch (error) {
-          if (isUserRejectedError(error)) {
-            return
-          }
-          captureSentryErrorWithExtraData({
-            error,
-            originFunction: 'cctpTransferStarter.approveToken'
-          })
-          errorToast(
-            `USDC approval transaction failed: ${
-              (error as Error)?.message ?? error
-            }`
-          )
-          return
-        }
-      }
-
       let depositForBurnTx
 
       try {
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
+        const cctpTransferStarter = new CctpTransferStarter({
+          sourceChainProvider,
+          destinationChainProvider
+        })
+
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
           signer,
