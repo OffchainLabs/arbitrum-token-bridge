@@ -27,7 +27,10 @@ import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  useNativeCurrency,
+  nativeCurrencyEther
+} from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
 import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
@@ -37,6 +40,8 @@ import { Switch } from '../common/atoms/Switch'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { isExperimentalFeatureEnabled } from '../../util'
+import { ether } from '../../constants'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -158,11 +163,12 @@ function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
 }
 
 const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
+const ETH_IDENTIFIER = 'native_currency_eth'
 
 function TokensPanel({
   onTokenSelected
 }: {
-  onTokenSelected: (token: ERC20BridgeToken | null) => void
+  onTokenSelected: (parentErc20AddressOrKey: string | null) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
@@ -269,6 +275,14 @@ function TokensPanel({
       // Deduplicate addresses
       ...new Set(tokenAddresses)
     ]
+
+    // for custom gas tokens we add ETH to enable ETH deposits
+    if (nativeCurrency.isCustom && isDepositMode) {
+      if (isExperimentalFeatureEnabled('eth-custom-orbit')) {
+        tokens.push(ETH_IDENTIFIER)
+      }
+    }
+
     return tokens
       .filter(address => {
         // Derive the token object from the address string
@@ -304,6 +318,10 @@ function TokensPanel({
             return true
           }
 
+          if (address === ETH_IDENTIFIER) {
+            return true
+          }
+
           // Always show official ARB token except from or to Orbit chain
           if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
             return !isOrbitChain
@@ -316,6 +334,12 @@ function TokensPanel({
 
         if (address === NATIVE_CURRENCY_IDENTIFIER) {
           return `${nativeCurrency.name}${nativeCurrency.symbol}`
+            .toLowerCase()
+            .includes(tokenSearch)
+        }
+
+        if (address === ETH_IDENTIFIER) {
+          return `${ether.name}${ether.symbol}`
             .toLowerCase()
             .includes(tokenSearch)
         }
@@ -338,6 +362,14 @@ function TokensPanel({
 
         // Pin native currency to top
         if (address2 === NATIVE_CURRENCY_IDENTIFIER) {
+          return 1
+        }
+
+        if (address1 === ETH_IDENTIFIER) {
+          return -1
+        }
+
+        if (address2 === ETH_IDENTIFIER) {
           return 1
         }
 
@@ -447,6 +479,16 @@ function TokensPanel({
         )
       }
 
+      if (address === ETH_IDENTIFIER) {
+        return (
+          <TokenRow
+            key="TokenRowNativeCurrencyEther"
+            onTokenSelected={onTokenSelected}
+            token={nativeCurrencyEther}
+          />
+        )
+      }
+
       return (
         <TokenRow
           key={address}
@@ -521,19 +563,27 @@ export function TokenSearch({
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
-  async function selectToken(_token: ERC20BridgeToken | null) {
+  async function selectToken(parentErc20AddressOrKey: string | null) {
     close()
 
-    if (_token === null) {
+    if (parentErc20AddressOrKey === null) {
       setSelectedToken(null)
       return
     }
 
-    if (!_token.address) {
+    if (parentErc20AddressOrKey === 'eth') {
+      setSelectedToken('eth')
       return
     }
 
-    if (isTokenNativeUSDC(_token.address)) {
+    // we know it's an address now
+    const parentErc20Address = parentErc20AddressOrKey
+
+    if (!parentErc20Address) {
+      return
+    }
+
+    if (isTokenNativeUSDC(parentErc20Address)) {
       // not supported
       setAmount2('')
     }
@@ -543,29 +593,20 @@ export function TokenSearch({
         return
       }
 
-      const isL2NativeUSDC =
-        isTokenArbitrumOneNativeUSDC(_token.address) ||
-        isTokenArbitrumSepoliaNativeUSDC(_token.address)
-
-      if (isL2NativeUSDC) {
-        setSelectedToken(_token.address)
-        return
-      }
-
       // Token not added to the bridge, so we'll handle importing it
-      if (typeof bridgeTokens[_token.address] === 'undefined') {
-        setSelectedToken(_token.address)
+      if (typeof bridgeTokens[parentErc20Address] === 'undefined') {
+        setSelectedToken(parentErc20Address)
         return
       }
 
       const data = await fetchErc20Data({
-        address: _token.address,
+        address: parentErc20Address,
         provider: parentChainProvider
       })
 
       if (data) {
-        token.updateTokenData(_token.address)
-        setSelectedToken(_token.address)
+        token.updateTokenData(parentErc20Address)
+        setSelectedToken(parentErc20Address)
       }
     } catch (error: any) {
       console.warn(error)

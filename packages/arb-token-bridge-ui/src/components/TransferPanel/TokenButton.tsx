@@ -6,7 +6,10 @@ import { twMerge } from 'tailwind-merge'
 
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  nativeCurrencyEther,
+  useNativeCurrency
+} from '../../hooks/useNativeCurrency'
 import {
   onPopoverButtonClick,
   onPopoverClose,
@@ -19,6 +22,8 @@ import { TokenLogo } from './TokenLogo'
 import { Loader } from '../common/atoms/Loader'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useTokenLists } from '../../hooks/useTokenLists'
+import { useIsSelectedTokenEther } from '../../hooks/useIsSelectedTokenEther'
+import { ether } from '../../constants'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export type TokenButtonOptions = {
@@ -41,6 +46,7 @@ export function TokenButton({
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const isSelectedTokenEther = useIsSelectedTokenEther()
 
   const tokenSymbol = useMemo(() => {
     if (typeof options?.symbol !== 'undefined') {
@@ -48,14 +54,20 @@ export function TokenButton({
     }
 
     if (!selectedToken) {
-      return nativeCurrency.symbol
+      return isSelectedTokenEther ? ether.symbol : nativeCurrency.symbol
     }
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
       chainId: networks.sourceChain.id
     })
-  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol, options])
+  }, [
+    selectedToken,
+    networks.sourceChain.id,
+    nativeCurrency.symbol,
+    isSelectedTokenEther,
+    options
+  ])
 
   const isLoadingToken = useMemo(() => {
     // don't show loader if native currency is selected
@@ -67,6 +79,18 @@ export function TokenButton({
     }
     return isLoadingTokenLists
   }, [tokenFromSearchParams, isLoadingTokenLists])
+
+  const tokenLogoSrcOverride = useMemo(() => {
+    if (typeof options?.logoSrc !== 'undefined') {
+      return options.logoSrc || nativeCurrency.logoUrl
+    }
+
+    if (isSelectedTokenEther) {
+      return nativeCurrencyEther.logoUrl
+    }
+
+    return undefined
+  }, [isSelectedTokenEther, nativeCurrency.logoUrl, options])
 
   return (
     <>
@@ -84,7 +108,7 @@ export function TokenButton({
                   <Loader size="small" color="white" />
                 ) : (
                   <>
-                    <TokenLogo srcOverride={options?.logoSrc} />
+                    <TokenLogo srcOverride={tokenLogoSrcOverride} />
                     <span className="text-xl font-light">{tokenSymbol}</span>
                     {!disabled && (
                       <ChevronDownIcon

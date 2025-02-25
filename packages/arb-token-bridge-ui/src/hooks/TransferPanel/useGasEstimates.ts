@@ -9,6 +9,8 @@ import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
+import { useIsSelectedTokenEther } from '../useIsSelectedTokenEther'
+import { nativeCurrencyEther } from '../useNativeCurrency'
 
 async function fetcher([
   signer,
@@ -56,9 +58,12 @@ export function useGasEstimates({
 } {
   const [{ sourceChain, destinationChain }] = useNetworks()
   const [selectedToken] = useSelectedToken()
+  const isSelectedTokenEther = useIsSelectedTokenEther()
   const [{ destinationAddress }] = useArbQueryParams()
   const { address: walletAddress } = useAccount()
-  const balance = useBalanceOnSourceChain(selectedToken)
+  const balance = useBalanceOnSourceChain(
+    isSelectedTokenEther ? nativeCurrencyEther : selectedToken
+  )
   const { data: signer } = useSigner()
 
   const amountToTransfer =

@@ -410,7 +410,6 @@ export const NetworkSelectionContainer = (
     type: 'source' | 'destination'
   }
 ) => {
-  const actions = useActions()
   const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()

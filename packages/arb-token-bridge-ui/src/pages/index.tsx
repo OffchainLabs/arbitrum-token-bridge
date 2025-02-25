@@ -45,11 +45,47 @@ const App = dynamic(
   }
 )
 
+function sanitizeTokenQueryParams({
+  token,
+  sourceChainId,
+  destinationChainId
+}: {
+  token: string | null | undefined
+  sourceChainId: number | undefined
+  destinationChainId: number | undefined
+}) {
+  if (!token) {
+    return undefined
+  }
+
+  const orbitChains = getOrbitChains()
+
+  const sourceOrbitChain = orbitChains.find(
+    chain => chain.chainId === sourceChainId
+  )
+  const destinationOrbitChain = orbitChains.find(
+    chain => chain.chainId === destinationChainId
+  )
+
+  const isCustomNativeTokenChain =
+    (sourceOrbitChain && typeof sourceOrbitChain.nativeToken !== 'undefined') ||
+    (destinationOrbitChain &&
+      typeof destinationOrbitChain.nativeToken !== 'undefined')
+
+  // token=eth is not applicable to non custom native token chains so we just strip it for clarity and consistency
+  if (!isCustomNativeTokenChain && token === 'eth') {
+    return undefined
+  }
+
+  return token
+}
+
 function getDestinationWithSanitizedQueryParams(
   sanitized: {
     sourceChainId: number
     destinationChainId: number
     experiments: string | undefined
+    token: string | undefined
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -60,7 +96,8 @@ function getDestinationWithSanitizedQueryParams(
     if (
       key === 'sourceChain' ||
       key === 'destinationChain' ||
-      key === 'experiments'
+      key === 'experiments' ||
+      key === 'token'
     ) {
       continue
     }
@@ -76,6 +113,7 @@ function getDestinationWithSanitizedQueryParams(
   const encodedSource = encodeChainQueryParam(sanitized.sourceChainId)
   const encodedDestination = encodeChainQueryParam(sanitized.destinationChainId)
   const encodedExperiments = encodeString(sanitized.experiments)
+  const encodedToken = encodeString(sanitized.token)
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -87,6 +125,10 @@ function getDestinationWithSanitizedQueryParams(
 
   if (encodedExperiments) {
     params.set('experiments', encodedExperiments)
+  }
+
+  if (encodedToken) {
+    params.set('token', encodedToken)
   }
 
   return `/?${params.toString()}`
@@ -113,6 +155,7 @@ export async function getServerSideProps({
   const sourceChainId = decodeChainQueryParam(query.sourceChain)
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
   const experiments = decodeString(query.experiments)
+  const token = decodeString(query.token)
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -133,21 +176,27 @@ export async function getServerSideProps({
   // sanitize the query params
   const sanitized = {
     ...sanitizeQueryParams({ sourceChainId, destinationChainId }),
-    experiments: sanitizeExperimentalFeaturesQueryParam(experiments)
+    experiments: sanitizeExperimentalFeaturesQueryParam(experiments),
+    token: sanitizeTokenQueryParams({
+      token,
+      sourceChainId,
+      destinationChainId
+    })
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
   if (
     sourceChainId !== sanitized.sourceChainId ||
     destinationChainId !== sanitized.destinationChainId ||
-    experiments !== sanitized.experiments
+    experiments !== sanitized.experiments ||
+    token !== sanitized.token
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
-      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments} (before)`
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token} (before)`
     )
     console.log(
-      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments} (after)`
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token} (after)`
     )
     return {
       redirect: {
