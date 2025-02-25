@@ -200,9 +200,9 @@ export function findGasFeeSummary(
   amount: string | number | RegExp
 ): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy
-    .findByText('You will pay in gas fees:')
+    .findByLabelText('Route gas')
     .siblings()
-    .eq(1)
+    .last()
     .should('contain', amount)
 }
 
