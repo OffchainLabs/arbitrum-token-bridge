@@ -8,6 +8,7 @@ import { constants } from 'ethers'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
+import { useMemo } from 'react'
 
 const nativeUsdcToken = {
   decimals: 6,
@@ -22,6 +23,16 @@ export function CctpRoute() {
   const { isTestnet } = isNetwork(sourceChain.id)
   const selectedRoute = useRouteStore(state => state.selectedRoute)
 
+  const gasCost = useMemo(
+    () => [
+      {
+        gasCost: undefined,
+        gasToken: { ...ether, address: constants.AddressZero }
+      }
+    ],
+    []
+  )
+
   return (
     <Route
       type="cctp"
@@ -31,8 +42,7 @@ export function CctpRoute() {
       amountReceived={amount.toString()}
       overrideToken={nativeUsdcToken}
       isLoadingGasEstimate={false}
-      gasCost={undefined}
-      gasToken={{ ...ether, address: constants.AddressZero }}
+      gasCost={gasCost}
       selected={selectedRoute === 'cctp'}
     />
   )
