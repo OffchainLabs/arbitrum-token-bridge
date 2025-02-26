@@ -32,7 +32,7 @@ export type RouteProps = {
   /** Allow overrides of displayed token */
   overrideToken?: Token
   /** We might have multiple gas token, for example an ER20 deposit to XAI from Arb1 */
-  gasCost: RouteGas[]
+  gasCost: RouteGas[] | undefined
   bridge: string
   bridgeIconURI: string
   tag?: BadgeType
@@ -108,11 +108,11 @@ export const Route = React.memo(
       <div
         className={twMerge(
           'group cursor-pointer rounded border border-[#ffffff33] text-white transition-colors',
-          selected && 'border-white'
+          selected && 'border-[#5F7D5B]'
         )}
         onClick={() => setSelectedRoute(type)}
       >
-        <div className="bg-gray-8 flex items-center rounded-t px-4 py-2 text-xs">
+        <div className="bg-gray-8 flex items-center rounded-t py-2 pl-4 pr-2 text-xs">
           <Image
             src={icon}
             width={width}
@@ -121,6 +121,15 @@ export const Route = React.memo(
             className="mr-1"
           />
           Powered by {name}
+          {selected && (
+            <Image
+              src={'/icons/check.svg'}
+              width={18}
+              height={18}
+              alt="selected"
+              className="ml-auto"
+            />
+          )}
         </div>
         <div
           className={twMerge(
