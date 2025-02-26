@@ -23,16 +23,6 @@ export function CctpRoute() {
   const { isTestnet } = isNetwork(sourceChain.id)
   const selectedRoute = useRouteStore(state => state.selectedRoute)
 
-  const gasCost = useMemo(
-    () => [
-      {
-        gasCost: undefined,
-        gasToken: { ...ether, address: constants.AddressZero }
-      }
-    ],
-    []
-  )
-
   return (
     <Route
       type="cctp"
@@ -42,7 +32,7 @@ export function CctpRoute() {
       amountReceived={amount.toString()}
       overrideToken={nativeUsdcToken}
       isLoadingGasEstimate={false}
-      gasCost={gasCost}
+      gasCost={undefined}
       selected={selectedRoute === 'cctp'}
     />
   )
