@@ -428,6 +428,21 @@ export function TransferPanel() {
       case 'tx_add_pending':
         return addPendingTransaction(step.payload)
 
+      case 'open_tx_history':
+        switchToTransactionHistoryTab()
+        return
+
+      case 'start':
+        setTransferring(true)
+        return
+
+      case 'end': {
+        setTransferring(false)
+        setIsCctp(false)
+        clearAmountInput()
+        return
+      }
+
       case 'scw_delay':
         return showDelayedSmartContractTxRequest()
 
@@ -467,58 +482,36 @@ export function TransferPanel() {
       throw new Error(transferNotAllowedError)
     }
 
-    const destinationAddress = latestDestinationAddress.current
+    const steps = CctpUiDriver.createSteps({
+      isDepositMode,
+      isSmartContractWallet,
+      walletAddress,
+      destinationAddress: latestDestinationAddress.current,
+      sourceChain: networks.sourceChain,
+      sourceChainProvider: networks.sourceChainProvider,
+      destinationChain: networks.destinationChain,
+      destinationChainProvider: networks.destinationChainProvider,
+      amount,
+      amountBigNumber,
+      signer,
+      parentChain,
+      childChain
+    })
 
-    setTransferring(true)
+    let nextStep = await steps.next()
 
-    try {
-      const {
-        sourceChain,
-        sourceChainProvider,
-        destinationChain,
-        destinationChainProvider
-      } = networks
+    while (!nextStep.done) {
+      const step = nextStep.value
 
-      const steps = CctpUiDriver.createSteps({
-        isDepositMode,
-        isSmartContractWallet,
-        walletAddress,
-        destinationAddress,
-        sourceChain,
-        sourceChainProvider,
-        destinationChain,
-        destinationChainProvider,
-        amount,
-        amountBigNumber,
-        signer,
-        parentChain,
-        childChain
-      })
-
-      let nextStep = await steps.next()
-
-      while (!nextStep.done) {
-        const step = nextStep.value
-
-        // special type for early return
-        if (step.type === 'return') {
-          return
-        }
-
-        // Execute step and pass back correctly typed result
-        const result = await executeStep(step)
-        // Pass result back into the generator
-        nextStep = await steps.next(result)
+      // special type for early return
+      if (step.type === 'return') {
+        return
       }
 
-      switchToTransactionHistoryTab()
-      setTransferring(false)
-      clearAmountInput()
-    } catch (e) {
-      //
-    } finally {
-      setTransferring(false)
-      setIsCctp(false)
+      // Execute step and pass back correctly typed result
+      const result = await executeStep(step)
+      // Pass result back into the generator
+      nextStep = await steps.next(result)
     }
   }
 

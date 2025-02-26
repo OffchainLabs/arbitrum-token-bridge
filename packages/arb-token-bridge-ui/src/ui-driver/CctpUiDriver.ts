@@ -43,13 +43,16 @@ export type UiDriverStepAnalytics = {
 }
 
 export type UiDriverStep =
+  | { type: 'start' }
   | UiDriverStepDialog
   | UiDriverStepTransaction
   | UiDriverStepAnalytics
   | UiDriverStepAddPendingTransaction
+  | { type: 'open_tx_history' }
   | { type: 'deposit_usdc.e' }
   | { type: 'scw_delay' }
   | { type: 'return' }
+  | { type: 'end' }
 
 export type UiDriverContext = {
   isDepositMode: boolean
@@ -71,6 +74,8 @@ export class CctpUiDriver {
   static async *createSteps(
     context: UiDriverContext
   ): AsyncGenerator<UiDriverStep, any, any> {
+    yield { type: 'start' }
+
     if (context.isDepositMode) {
       const userInput: false | 'bridge-normal-usdce' | 'bridge-cctp-usd' =
         yield { type: 'dialog', dialog: 'cctp_deposit' }
@@ -178,6 +183,9 @@ export class CctpUiDriver {
       type: 'tx_add_pending',
       payload: createMergedTransaction(context, receipt.transactionHash)
     }
+
+    yield { type: 'open_tx_history' }
+    yield { type: 'end' }
   }
 }
 
