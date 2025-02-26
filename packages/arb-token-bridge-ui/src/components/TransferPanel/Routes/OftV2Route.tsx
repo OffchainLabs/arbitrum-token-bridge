@@ -8,6 +8,7 @@ import { ether } from '../../../constants'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEstimates'
 import { useRouteStore } from '../hooks/useRouteStore'
+import { useMemo } from 'react'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {
@@ -25,10 +26,19 @@ export function OftV2Route() {
       : selectedToken?.l2Address
   })
 
-  const gasToken =
-    'address' in sourceChainNativeCurrency
-      ? sourceChainNativeCurrency
-      : { ...ether, address: constants.AddressZero }
+  const gasCost = useMemo(() => {
+    return [
+      {
+        gasCost: feeEstimates?.sourceChainGasFee
+          ? feeEstimates.sourceChainGasFee.toString()
+          : undefined,
+        gasToken:
+          'address' in sourceChainNativeCurrency
+            ? sourceChainNativeCurrency
+            : { ...ether, address: constants.AddressZero }
+      }
+    ]
+  }, [feeEstimates?.sourceChainGasFee, sourceChainNativeCurrency])
 
   if (error) {
     return null
@@ -42,12 +52,7 @@ export function OftV2Route() {
       durationMs={5 * 60 * 1_000} // 5 minutes in miliseconds
       amountReceived={amount.toString()}
       isLoadingGasEstimate={isLoading}
-      gasCost={
-        feeEstimates?.sourceChainGasFee
-          ? feeEstimates.sourceChainGasFee.toString()
-          : undefined
-      }
-      gasToken={gasToken}
+      gasCost={gasCost}
       selected={selectedRoute === 'oftV2'}
     />
   )
