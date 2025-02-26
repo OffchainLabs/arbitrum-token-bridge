@@ -1,9 +1,8 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useEffect } from 'react'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
-import { RouteProps } from './Route'
 import { ArbitrumRoute } from './ArbitrumRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
@@ -13,6 +12,31 @@ import React from 'react'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
+}
+
+export function useSetSelectedRoute() {
+  const [networks] = useNetworks()
+  const amount = useAmountBigNumber()
+  const { isDepositMode } = useNetworksRelationship(networks)
+  const isCctpTransfer = useIsCctpTransfer()
+  const isOftV2Transfer = useIsOftV2Transfer()
+  const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
+
+  useEffect(() => {
+    if (amount.eq(0)) return
+
+    if (isOftV2Transfer) {
+      setSelectedRoute('oftV2')
+      return
+    }
+
+    if (isCctpTransfer) {
+      if (!isDepositMode) setSelectedRoute('cctp')
+      return
+    }
+
+    setSelectedRoute('arbitrum')
+  }, [amount, isOftV2Transfer, isCctpTransfer, isDepositMode, setSelectedRoute])
 }
 
 /**
@@ -31,54 +55,47 @@ function Wrapper({ children }: PropsWithChildren) {
  *
  * We memo the component, so calling `setSelectedRoute` doesn't rerender and cause infinite loop
  */
-export const Routes = React.memo(
-  ({ onRouteSelected }: Pick<RouteProps, 'onRouteSelected'>) => {
-    const [networks] = useNetworks()
-    const { isDepositMode } = useNetworksRelationship(networks)
-    const amount = useAmountBigNumber()
-    const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
-    const isCctpTransfer = useIsCctpTransfer()
-    const isOftV2Transfer = useIsOftV2Transfer()
+export const Routes = React.memo(() => {
+  const [networks] = useNetworks()
+  const { isDepositMode } = useNetworksRelationship(networks)
+  const amount = useAmountBigNumber()
+  const isCctpTransfer = useIsCctpTransfer()
+  const isOftV2Transfer = useIsOftV2Transfer()
 
-    console.log(setSelectedRoute)
-    if (amount.eq(0)) {
-      return
-    }
+  if (amount.eq(0)) {
+    return
+  }
 
-    if (isOftV2Transfer) {
-      setSelectedRoute('oftV2')
-      return (
-        <Wrapper>
-          <OftV2Route onRouteSelected={onRouteSelected} />
-        </Wrapper>
-      )
-    }
-
-    if (isCctpTransfer) {
-      if (isDepositMode) {
-        return (
-          <Wrapper>
-            <CctpRoute onRouteSelected={onRouteSelected} />
-            <ArbitrumRoute onRouteSelected={onRouteSelected} />
-          </Wrapper>
-        )
-      }
-
-      setSelectedRoute('cctp')
-      return (
-        <Wrapper>
-          <CctpRoute onRouteSelected={onRouteSelected} />
-        </Wrapper>
-      )
-    }
-
-    setSelectedRoute('arbitrum')
+  if (isOftV2Transfer) {
     return (
       <Wrapper>
-        <ArbitrumRoute onRouteSelected={onRouteSelected} />
+        <OftV2Route />
       </Wrapper>
     )
   }
-)
+
+  if (isCctpTransfer) {
+    if (isDepositMode) {
+      return (
+        <Wrapper>
+          <CctpRoute />
+          <ArbitrumRoute />
+        </Wrapper>
+      )
+    }
+
+    return (
+      <Wrapper>
+        <CctpRoute />
+      </Wrapper>
+    )
+  }
+
+  return (
+    <Wrapper>
+      <ArbitrumRoute />
+    </Wrapper>
+  )
+})
 
 Routes.displayName = 'Routes'
