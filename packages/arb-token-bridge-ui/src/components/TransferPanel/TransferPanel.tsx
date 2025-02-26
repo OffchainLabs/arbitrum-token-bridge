@@ -81,7 +81,7 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
-import { Routes } from './Routes/Routes'
+import { Routes, useSetSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { CctpUsdcWithdrawalConfirmationDialog } from './USDCWithdrawal/CctpUsdcWithdrawalConfirmationDialog'
 import { CctpUsdcDepositConfirmationDialog } from './USDCDeposit/CctpUsdcDepositConfirmationDialog'
@@ -238,6 +238,10 @@ export function TransferPanel() {
     setAmount('')
     setAmount2('')
   }
+
+  useEffect(() => {
+    clearRoute()
+  }, [selectedToken, clearRoute, networks])
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
@@ -573,6 +577,8 @@ export function TransferPanel() {
       clearRoute()
     }
   }
+
+  useSetSelectedRoute()
 
   const transferOft = async () => {
     if (!selectedToken) {
@@ -1117,7 +1123,6 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     } finally {
       setTransferring(false)
-      clearRoute()
     }
 
     if (!isTransferAllowed) {
@@ -1176,7 +1181,7 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
-        <Routes onRouteSelected={setSelectedRoute} />
+        <Routes />
         <AdvancedSettings />
 
         <MoveFundsButton onClick={moveFundsButtonOnClick} />

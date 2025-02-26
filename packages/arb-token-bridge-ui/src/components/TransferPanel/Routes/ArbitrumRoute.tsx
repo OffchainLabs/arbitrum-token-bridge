@@ -1,7 +1,7 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { constants, utils } from 'ethers'
-import { Route, RouteProps } from './Route'
+import { Route } from './Route'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
@@ -70,9 +70,7 @@ function getDuration({
   return getStandardDepositDuration(isTestnet)
 }
 
-export function ArbitrumRoute({
-  onRouteSelected
-}: Pick<RouteProps, 'onRouteSelected'>) {
+export function ArbitrumRoute() {
   const amount = useAmountBigNumber()
   const [networks] = useNetworks()
   const {
@@ -95,7 +93,7 @@ export function ArbitrumRoute({
   const parentChainNativeCurrency = useNativeCurrency({
     provider: parentChainProvider
   })
-  const { selectedRoute } = useRouteStore()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
 
   const estimatedTotalGasFees =
     gasSummaryStatus === 'loading' ||
@@ -157,7 +155,6 @@ export function ArbitrumRoute({
       }
       gasToken={gasToken}
       tag={'security-guaranteed'}
-      onRouteSelected={onRouteSelected}
       selected={selectedRoute === 'arbitrum'}
     />
   )
