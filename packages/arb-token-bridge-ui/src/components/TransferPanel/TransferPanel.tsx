@@ -80,7 +80,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
-import { Routes } from './Routes/Routes'
+import { Routes, useSetSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -150,7 +150,7 @@ export function TransferPanel() {
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-  const { selectedRoute, setSelectedRoute, clearRoute } = useRouteStore()
+  const { selectedRoute, clearRoute } = useRouteStore()
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -208,6 +208,10 @@ export function TransferPanel() {
     setAmount('')
     setAmount2('')
   }
+
+  useEffect(() => {
+    clearRoute()
+  }, [selectedToken, clearRoute, networks])
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
@@ -537,6 +541,8 @@ export function TransferPanel() {
       clearRoute()
     }
   }
+
+  useSetSelectedRoute()
 
   const transferOft = async () => {
     if (!selectedToken) {
@@ -1085,7 +1091,6 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     } finally {
       setTransferring(false)
-      clearRoute()
     }
 
     if (!isTransferAllowed) {
@@ -1115,7 +1120,7 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
-        <Routes onRouteSelected={setSelectedRoute} />
+        <Routes />
         <AdvancedSettings />
 
         {isConnected ? (
