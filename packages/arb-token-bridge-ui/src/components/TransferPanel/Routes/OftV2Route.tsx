@@ -1,7 +1,7 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { constants } from 'ethers'
-import { Route, RouteProps } from './Route'
+import { Route } from './Route'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { ether } from '../../../constants'
@@ -10,13 +10,11 @@ import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEs
 import { useRouteStore } from '../hooks/useRouteStore'
 
 // Only displayed during USDT transfers
-export function OftV2Route({
-  onRouteSelected
-}: Pick<RouteProps, 'onRouteSelected'>) {
+export function OftV2Route() {
   const amount = useAmountBigNumber()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
-  const { selectedRoute } = useRouteStore()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
   const [selectedToken] = useSelectedToken()
   const sourceChainNativeCurrency = useNativeCurrency({
     provider: networks.sourceChainProvider
@@ -50,7 +48,6 @@ export function OftV2Route({
           : undefined
       }
       gasToken={gasToken}
-      onRouteSelected={onRouteSelected}
       selected={selectedRoute === 'oftV2'}
     />
   )
