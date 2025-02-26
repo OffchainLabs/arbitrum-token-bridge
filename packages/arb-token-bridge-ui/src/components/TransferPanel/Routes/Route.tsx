@@ -9,7 +9,7 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { RouteType, SetRoute } from '../hooks/useRouteStore'
+import { RouteType, useRouteStore } from '../hooks/useRouteStore'
 import { SecurityGuaranteed } from '../SecurityLabels'
 import { TokenLogo } from '../TokenLogo'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
@@ -37,7 +37,6 @@ export type RouteProps = {
   bridgeIconURI: string
   tag?: BadgeType
   selected: boolean
-  onRouteSelected: SetRoute
 }
 
 function getBridgeConfigFromType(type: RouteType) {
@@ -88,7 +87,6 @@ export function Route({
   gasCost,
   gasToken,
   tag,
-  onRouteSelected,
   selected
 }: RouteProps) {
   const [networks] = useNetworks()
@@ -102,6 +100,7 @@ export function Route({
     !isDepositMode && type !== 'oftV2'
       ? getConfirmationTime(networks.sourceChain.id)
       : { fastWithdrawalActive: false }
+  const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
 
   const token = overrideToken || _token || childNativeCurrency
 
@@ -113,7 +112,7 @@ export function Route({
         'group cursor-pointer rounded border border-[#ffffff33] text-white transition-colors',
         selected && 'border-white'
       )}
-      onClick={() => onRouteSelected(type)}
+      onClick={() => setSelectedRoute(type)}
     >
       <div className="bg-gray-8 flex items-center rounded-t px-4 py-2 text-xs">
         <Image

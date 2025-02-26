@@ -1,5 +1,5 @@
 import { useNetworks } from '../../../hooks/useNetworks'
-import { Route, RouteProps } from './Route'
+import { Route } from './Route'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { ether } from '../../../constants'
 import { isNetwork } from '../../../util/networks'
@@ -16,13 +16,11 @@ const nativeUsdcToken = {
 }
 
 // Only displayed during USDC transfers (Mainnet/ArbOne)
-export function CctpRoute({
-  onRouteSelected
-}: Pick<RouteProps, 'onRouteSelected'>) {
+export function CctpRoute() {
   const amount = useAmountBigNumber()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
-  const { selectedRoute } = useRouteStore()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
 
   return (
     <Route
@@ -35,7 +33,6 @@ export function CctpRoute({
       isLoadingGasEstimate={false}
       gasCost={undefined}
       gasToken={{ ...ether, address: constants.AddressZero }}
-      onRouteSelected={onRouteSelected}
       selected={selectedRoute === 'cctp'}
     />
   )
