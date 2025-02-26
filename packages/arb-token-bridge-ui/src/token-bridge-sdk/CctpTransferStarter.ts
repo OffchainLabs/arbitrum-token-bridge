@@ -106,7 +106,11 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return undefined
   }
 
-  public async transfer({ signer, amount, destinationAddress }: TransferProps) {
+  public async transferPrepareTransactionRequest({
+    signer,
+    amount,
+    destinationAddress
+  }: TransferProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     const address = await getAddressFromSigner(signer)
@@ -149,7 +153,17 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
     })
 
-    const depositForBurnTx = await writeContract(config)
+    return config
+  }
+
+  public async transfer({ signer, amount, destinationAddress }: TransferProps) {
+    const depositForBurnTx = await writeContract(
+      await this.transferPrepareTransactionRequest({
+        signer,
+        amount,
+        destinationAddress
+      })
+    )
 
     return {
       transferType: this.transferType,

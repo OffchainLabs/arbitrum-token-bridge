@@ -1,6 +1,17 @@
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-import { Provider, TransactionRequest } from '@ethersproject/providers'
+import {
+  Provider,
+  TransactionReceipt,
+  TransactionRequest
+} from '@ethersproject/providers'
 import { BigNumber, Signer } from 'ethers'
+import { trackEvent } from '../util/AnalyticsUtils'
+import { DepositStatus, MergedTransaction } from '../state/app/state'
+import { AssetType } from '../hooks/arbTokenBridge.types'
+import dayjs from 'dayjs'
+import { Chain } from 'wagmi'
+import { getUsdcTokenAddressFromSourceChainId } from '../state/cctpState'
+import { getNetworkName } from '../util/networks'
 
 export type Dialog =
   | 'cctp_deposit'
@@ -18,9 +29,24 @@ export type UiDriverStepTransaction = {
   txRequest: TransactionRequest
 }
 
+export type UiDriverStepAddPendingTransaction = {
+  type: 'tx_add_pending'
+  payload: MergedTransaction
+}
+
+export type UiDriverStepAnalytics = {
+  type: 'analytics'
+  payload: {
+    event: Parameters<typeof trackEvent>[0]
+    properties?: Parameters<typeof trackEvent>[1]
+  }
+}
+
 export type UiDriverStep =
   | UiDriverStepDialog
   | UiDriverStepTransaction
+  | UiDriverStepAnalytics
+  | UiDriverStepAddPendingTransaction
   | { type: 'deposit_usdc.e' }
   | { type: 'scw_delay' }
   | { type: 'return' }
@@ -30,10 +56,15 @@ export type UiDriverContext = {
   isSmartContractWallet: boolean
   walletAddress?: string
   destinationAddress?: string
+  sourceChain: Chain
   sourceChainProvider: Provider
+  destinationChain: Chain
   destinationChainProvider: Provider
   signer: Signer
-  amount: BigNumber
+  amount: string
+  amountBigNumber: BigNumber
+  parentChain: Chain
+  childChain: Chain
 }
 
 export class CctpUiDriver {
@@ -85,7 +116,7 @@ export class CctpUiDriver {
 
     const isTokenApprovalRequired =
       await cctpTransferStarter.requiresTokenApproval({
-        amount: context.amount,
+        amount: context.amountBigNumber,
         signer: context.signer
       })
 
@@ -107,7 +138,7 @@ export class CctpUiDriver {
         type: 'tx',
         txRequest:
           await cctpTransferStarter.approveTokenPrepareTransactionRequest({
-            amount: context.amount,
+            amount: context.amountBigNumber,
             signer: context.signer
           })
       }
@@ -115,6 +146,37 @@ export class CctpUiDriver {
 
     if (context.isSmartContractWallet) {
       yield { type: 'scw_delay' }
+    }
+
+    const something =
+      await cctpTransferStarter.transferPrepareTransactionRequest({
+        amount: context.amountBigNumber,
+        signer: context.signer,
+        destinationAddress: context.destinationAddress
+      })
+
+    const receipt: TransactionReceipt = yield {
+      type: 'tx',
+      txRequest: something.request
+    }
+
+    yield {
+      type: 'analytics',
+      payload: {
+        event: context.isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal',
+        properties: {
+          accountType: context.isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: getNetworkName(context.childChain.id),
+          amount: Number(context.amount),
+          complete: false,
+          version: 2
+        }
+      }
+    }
+
+    yield {
+      type: 'tx_add_pending',
+      payload: createMergedTransaction(context, receipt.transactionHash)
     }
   }
 }
@@ -124,4 +186,48 @@ function addressesEqual(
   address2: string | undefined
 ) {
   return address1?.trim().toLowerCase() === address2?.trim().toLowerCase()
+}
+
+function createMergedTransaction(
+  {
+    isDepositMode,
+    walletAddress,
+    destinationAddress,
+    sourceChain,
+    destinationChain,
+    amount,
+    parentChain,
+    childChain
+  }: UiDriverContext,
+  depositForBurnTxHash: string
+): MergedTransaction {
+  return {
+    txId: depositForBurnTxHash,
+    asset: 'USDC',
+    assetType: AssetType.ERC20,
+    blockNum: null,
+    createdAt: dayjs().valueOf(),
+    direction: isDepositMode ? 'deposit' : 'withdraw',
+    isWithdrawal: !isDepositMode,
+    resolvedAt: null,
+    status: 'pending',
+    uniqueId: null,
+    value: amount,
+    depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
+    destination: destinationAddress ?? walletAddress,
+    sender: walletAddress,
+    isCctp: true,
+    tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
+    cctpData: {
+      sourceChainId: sourceChain.id,
+      attestationHash: null,
+      messageBytes: null,
+      receiveMessageTransactionHash: null,
+      receiveMessageTimestamp: null
+    },
+    parentChainId: parentChain.id,
+    childChainId: childChain.id,
+    sourceChainId: sourceChain.id,
+    destinationChainId: destinationChain.id
+  }
 }

@@ -422,6 +422,12 @@ export function TransferPanel() {
         }
       }
 
+      case 'analytics':
+        return trackEvent(step.payload.event, step.payload.properties)
+
+      case 'tx_add_pending':
+        return addPendingTransaction(step.payload)
+
       case 'scw_delay':
         return showDelayedSmartContractTxRequest()
 
@@ -466,18 +472,27 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const { sourceChainProvider, destinationChainProvider, sourceChain } =
-        networks
+      const {
+        sourceChain,
+        sourceChainProvider,
+        destinationChain,
+        destinationChainProvider
+      } = networks
 
       const steps = CctpUiDriver.createSteps({
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
         destinationAddress,
+        sourceChain,
         sourceChainProvider,
+        destinationChain,
         destinationChainProvider,
-        amount: amountBigNumber,
-        signer
+        amount,
+        amountBigNumber,
+        signer,
+        parentChain,
+        childChain
       })
 
       let nextStep = await steps.next()
@@ -496,93 +511,6 @@ export function TransferPanel() {
         nextStep = await steps.next(result)
       }
 
-      let depositForBurnTx
-
-      try {
-        const cctpTransferStarter = new CctpTransferStarter({
-          sourceChainProvider,
-          destinationChainProvider
-        })
-
-        const transfer = await cctpTransferStarter.transfer({
-          amount: amountBigNumber,
-          signer,
-          destinationAddress
-        })
-        depositForBurnTx = transfer.sourceChainTransaction
-      } catch (error) {
-        if (isUserRejectedError(error)) {
-          return
-        }
-        captureSentryErrorWithExtraData({
-          error,
-          originFunction: 'cctpTransferStarter.transfer'
-        })
-        errorToast(
-          `USDC ${
-            isDepositMode ? 'Deposit' : 'Withdrawal'
-          } transaction failed: ${(error as Error)?.message ?? error}`
-        )
-      }
-
-      const childChainName = getNetworkName(childChain.id)
-
-      if (isSmartContractWallet) {
-        // For SCW, we assume that the transaction went through
-        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: 'Smart Contract',
-          network: childChainName,
-          amount: Number(amount),
-          complete: false,
-          version: 2
-        })
-
-        return
-      }
-
-      if (!depositForBurnTx) {
-        return
-      }
-
-      trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-        accountType: 'EOA',
-        network: childChainName,
-        amount: Number(amount),
-        complete: false,
-        version: 2
-      })
-
-      const newTransfer: MergedTransaction = {
-        txId: depositForBurnTx.hash,
-        asset: 'USDC',
-        assetType: AssetType.ERC20,
-        blockNum: null,
-        createdAt: dayjs().valueOf(),
-        direction: isDepositMode ? 'deposit' : 'withdraw',
-        isWithdrawal: !isDepositMode,
-        resolvedAt: null,
-        status: 'pending',
-        uniqueId: null,
-        value: amount,
-        depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
-        destination: destinationAddress ?? walletAddress,
-        sender: walletAddress,
-        isCctp: true,
-        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
-        cctpData: {
-          sourceChainId: sourceChain.id,
-          attestationHash: null,
-          messageBytes: null,
-          receiveMessageTransactionHash: null,
-          receiveMessageTimestamp: null
-        },
-        parentChainId: parentChain.id,
-        childChainId: childChain.id,
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      }
-
-      addPendingTransaction(newTransfer)
       switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
