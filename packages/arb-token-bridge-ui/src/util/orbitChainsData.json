@@ -734,8 +734,8 @@
         "rollup": "0x59EF2FBa6ED4366cb1C3F67f232aaf824B536AB9",
         "sequencerInbox": "0x3fD761A6eFC2137F03f03Da3d46933dD2e6FF0BB"
       },
-      "explorerUrl": "https://phoenix-explorer.plumenetwork.xyz/",
-      "rpcUrl": "https://phoenix-rpc.plumenetwork.xyz/FH7uok8YdCXHhBu4B18j632wpHogyMYan",
+      "explorerUrl": "https://explorer.plumenetwork.xyz/",
+      "rpcUrl": "https://rpc.plumenetwork.xyz/",
       "isCustom": true,
       "isTestnet": false,
       "name": "Plume",
