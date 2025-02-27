@@ -13,7 +13,6 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
-import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
@@ -72,25 +71,12 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   useEffect(() => {
     // Any time one of those changes
     setTokenBridgeParams(null)
-    actions.app.setConnectionState(ConnectionState.LOADING)
+
     actions.app.reset()
     actions.app.setChainIds({
       l1NetworkChainId: parentChain.id,
       l2NetworkChainId: childChain.id
     })
-
-    if (
-      isDepositMode({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      })
-    ) {
-      console.info('Deposit mode detected:')
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
-      console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-    }
 
     setTokenBridgeParams({
       l1: {

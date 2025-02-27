@@ -18,7 +18,6 @@ import '@rainbow-me/rainbowkit/styles.css'
 import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
-import '../styles/purple.css'
 import {
   ChainKeyQueryParam,
   getChainForChainKeyQueryParam
