@@ -1,0 +1,16 @@
+{
+  "name": "arb-token-bridge-e2e",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@synthetixio/synpress": "^4.0.5",
+    "@synthetixio/synpress-tsconfig": "^0.0.6",
+    "@testing-library/cypress": "^10.0.3",
+    "cypress": "^14.0.2",
+    "cypress-terminal-report": "^5.3.10",
+    "playwright-core": "^1.50.1"
+  }
+}

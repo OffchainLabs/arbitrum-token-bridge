@@ -21,7 +21,7 @@ export function PendingDepositWarning() {
             page until the transaction succeeds.
           </p>
         </div>
-        <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 ui-open:rotate-90 ui-open:transform" />
+        <ChevronRightIcon className="ui-open:rotate-90 ui-open:transform ml-auto h-3 w-3 shrink-0" />
       </Disclosure.Button>
       <Disclosure.Panel className="flex flex-col gap-2 pl-4">
         <p>

@@ -6,6 +6,14 @@ module.exports = {
     "plugin:jest/recommended",
     "next",
   ],
+  overrides: [
+    {
+      files: ["*.config.js"],
+      env: {
+        node: true,
+      },
+    },
+  ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: ["./tsconfig.eslint.json", "./packages/*/tsconfig.json"],
