@@ -95,8 +95,8 @@ export const Route = React.memo(
       provider: childChainProvider
     })
     const [_token] = useSelectedToken()
-    const isBatchTransferSupported = useIsBatchTransferSupported()
     const [{ amount2 }] = useArbQueryParams()
+    const isBatchTransferSupported = useIsBatchTransferSupported()
 
     const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
 
@@ -149,7 +149,7 @@ export const Route = React.memo(
                   symbol: token.symbol
                 })}
               </div>
-              {isBatchTransferSupported && (
+              {isBatchTransferSupported && Number(amount2) > 0 && (
                 <div className="flew-row flex items-center gap-2">
                   <TokenLogo srcOverride={null} />
                   {formatAmount(BigNumber.from(amount2), {
