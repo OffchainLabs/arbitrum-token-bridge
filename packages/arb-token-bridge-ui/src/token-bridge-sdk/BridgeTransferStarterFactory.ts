@@ -3,12 +3,14 @@ import {
   BridgeTransferStarterPropsWithChainIds
 } from './BridgeTransferStarter'
 import { EthDepositStarter } from './EthDepositStarter'
+import { EthDepositStarterViem } from './EthDepositStarterViem'
 import { Erc20DepositStarter } from './Erc20DepositStarter'
 import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
 import { EthTeleportStarter } from './EthTeleportStarter'
 import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
+import { type PublicClient, type WalletClient } from 'viem'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -36,7 +38,12 @@ const cache: { [key: string]: BridgeTransferStarter } = {}
 
 export class BridgeTransferStarterFactory {
   public static create(
-    props: BridgeTransferStarterPropsWithChainIds
+    props: BridgeTransferStarterPropsWithChainIds & {
+      useViem?: boolean
+      sourcePublicClient?: PublicClient
+      destinationPublicClient?: PublicClient
+      walletClient?: WalletClient
+    }
   ): BridgeTransferStarter {
     const sourceChainProvider = getProviderForChainId(props.sourceChainId)
     const destinationChainProvider = getProviderForChainId(
@@ -76,6 +83,23 @@ export class BridgeTransferStarterFactory {
     if (isDeposit) {
       if (!isNativeCurrencyTransfer) {
         return withCache(cacheKey, new Erc20DepositStarter(initProps))
+      }
+      // Use Viem-based deposit starter if specified and all required clients are provided
+      if (
+        props.useViem &&
+        props.sourcePublicClient &&
+        props.destinationPublicClient &&
+        props.walletClient
+      ) {
+        return withCache(
+          cacheKey,
+          new EthDepositStarterViem(
+            props.sourcePublicClient,
+            props.destinationPublicClient,
+            props.walletClient,
+            initProps
+          )
+        )
       }
       return withCache(cacheKey, new EthDepositStarter(initProps))
     }
