@@ -1155,6 +1155,11 @@ export function TransferPanel() {
         />
       )}
 
+      <USDCWithdrawalConfirmationDialog
+        {...usdcWithdrawalConfirmationDialogProps}
+        amount={amount}
+      />
+
       <USDCDepositConfirmationDialog
         {...usdcDepositConfirmationDialogProps}
         amount={amount}
