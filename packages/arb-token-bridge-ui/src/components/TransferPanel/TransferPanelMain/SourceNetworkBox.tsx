@@ -36,6 +36,7 @@ import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 
 function Amount2ToggleButton({
   onClick
@@ -98,6 +99,8 @@ export function SourceNetworkBox() {
 
   const isCctpTransfer = useIsCctpTransfer()
 
+  const isOft = useIsOftV2Transfer()
+
   const {
     network: { logo: networkLogo }
   } = getBridgeUiConfigForChain(networks.sourceChain.id)
@@ -159,11 +162,10 @@ export function SourceNetworkBox() {
             )
           )
         : undefined,
-      logoSrc: nativeCurrency.logoUrl
+      logoSrc: null
     }),
     [
       nativeCurrency.symbol,
-      nativeCurrency.logoUrl,
       nativeCurrencyBalances.sourceBalance,
       nativeCurrencyDecimalsOnSourceChain
     ]
@@ -237,7 +239,7 @@ export function SourceNetworkBox() {
             </p>
           )}
 
-          {isDepositMode && selectedToken && (
+          {isDepositMode && selectedToken && !isOft && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have {nativeCurrency.symbol} in your{' '}
               {getNetworkName(childChain.id)} account, as you’ll need it to
