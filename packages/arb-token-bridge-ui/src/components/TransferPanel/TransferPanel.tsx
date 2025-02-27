@@ -20,8 +20,6 @@ import {
 } from './TokenImportDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
-import { TokenApprovalDialog } from './TokenApprovalDialog'
-import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
@@ -84,6 +82,7 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { useNewDialog, DialogWrapper } from '../common/NewDialog'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -167,12 +166,11 @@ export function TransferPanel() {
 
   const latestDestinationAddress = useLatest(destinationAddress)
 
+  const [dialogProps, openDialog] = useNewDialog()
+
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
-  const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
-    useDialog()
-  const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
   const [
     usdcWithdrawalConfirmationDialogProps,
@@ -328,7 +326,7 @@ export function TransferPanel() {
 
   const tokenAllowanceApprovalCctp = async () => {
     setIsCctp(true)
-    const waitForInput = openTokenApprovalDialog()
+    const waitForInput = openDialog('approve_token')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -341,7 +339,7 @@ export function TransferPanel() {
 
   const tokenAllowanceApproval = async () => {
     setIsCctp(false)
-    const waitForInput = openTokenApprovalDialog()
+    const waitForInput = openDialog('approve_token')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -383,8 +381,10 @@ export function TransferPanel() {
   }
 
   const confirmWithdrawal = async () => {
-    const waitForInput = openWithdrawalConfirmationDialog()
+    console.log('withdrawal')
+    const waitForInput = openDialog('withdrawal_confirmation')
     const [confirmed] = await waitForInput()
+    console.log({ confirmed })
     return confirmed
   }
 
@@ -1148,12 +1148,7 @@ export function TransferPanel() {
 
   return (
     <>
-      <TokenApprovalDialog
-        {...tokenApprovalDialogProps}
-        token={selectedToken}
-        isCctp={isCctp}
-        isOft={isOftTransfer}
-      />
+      <DialogWrapper {...dialogProps} />
 
       {nativeCurrency.isCustom && (
         <CustomFeeTokenApprovalDialog
@@ -1161,16 +1156,6 @@ export function TransferPanel() {
           customFeeToken={nativeCurrency}
         />
       )}
-
-      <WithdrawalConfirmationDialog
-        {...withdrawalConfirmationDialogProps}
-        amount={amount}
-      />
-
-      <USDCWithdrawalConfirmationDialog
-        {...usdcWithdrawalConfirmationDialogProps}
-        amount={amount}
-      />
 
       <USDCDepositConfirmationDialog
         {...usdcDepositConfirmationDialogProps}
