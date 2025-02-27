@@ -18,7 +18,8 @@ import {
 import {
   getAddressFromSigner,
   getChainIdFromProvider,
-  percentIncrease
+  percentIncrease,
+  validateSignerChainId
 } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
@@ -204,6 +205,13 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: sourceChainId
+    })
+
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -212,8 +220,6 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       await this.getDestinationChainErc20Address()
 
     const address = await getAddressFromSigner(signer)
-
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     const isSmartContractWallet = await addressIsSmartContract(
       address,
@@ -234,6 +240,25 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       destinationAddress: destinationAddress ?? address,
       amount
     })
+
+    const withdrawToAddress = request.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(withdrawToAddress, this.sourceChainProvider)) {
+      throw new Error(
+        `Child chain token gateway router address provided is not a smart contract address.`
+      )
+    }
+
+    const childGatewayRouterAddressForChain =
+      getArbitrumNetwork(
+        sourceChainId
+      ).tokenBridge?.childGatewayRouter.toLowerCase()
+
+    if (withdrawToAddress !== childGatewayRouterAddressForChain) {
+      throw new Error(
+        `Wrong token gateway router address on child chain. Expected ${childGatewayRouterAddressForChain}, got ${withdrawToAddress} instead.`
+      )
+    }
 
     const tx = await erc20Bridger.withdraw({
       ...request,
