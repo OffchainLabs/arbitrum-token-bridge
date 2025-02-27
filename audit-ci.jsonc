@@ -1,5 +1,16 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": []
+  "allowlist": [
+    // temp measure until npm cli fixes its registration issue
+    // see https://github.com/actions/toolkit/issues/1960#issuecomment-2682212538
+    //
+    // Octokit request package vulnerable to ReDoS
+    // Only used in development scripts for GitHub API interactions
+    "GHSA-rmvr-2pp2-xj38",
+    // https://github.com/advisories/GHSA-h5c3-5r3r-rr8q
+    // Octokit plugin-paginate-rest vulnerable to ReDoS
+    // Only used in development scripts for GitHub API pagination
+    "GHSA-h5c3-5r3r-rr8q"
+  ]
 }
