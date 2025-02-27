@@ -91,6 +91,9 @@ function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
   if (!tokenAddress) {
     return undefined
   }
+  if (tokenAddress.toLowerCase() === 'eth') {
+    return 'eth'
+  }
   if (utils.isAddress(tokenAddress)) {
     return tokenAddress
   }

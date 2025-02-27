@@ -6,6 +6,7 @@ import { ETHER_TOKEN_LOGO, ether } from '../constants'
 import { rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
+import { ERC20BridgeToken } from './arbTokenBridge.types'
 
 export type NativeCurrencyBase = {
   name: string
@@ -16,6 +17,7 @@ export type NativeCurrencyBase = {
 
 export type NativeCurrencyEther = NativeCurrencyBase & {
   isCustom: false
+  address: undefined
 }
 
 export type NativeCurrencyErc20 = NativeCurrencyBase & {
@@ -28,10 +30,21 @@ export type NativeCurrencyErc20 = NativeCurrencyBase & {
 
 export type NativeCurrency = NativeCurrencyEther | NativeCurrencyErc20
 
-const nativeCurrencyEther: NativeCurrencyEther = {
+export const nativeCurrencyEther: NativeCurrencyEther = {
   ...ether,
   logoUrl: ETHER_TOKEN_LOGO,
-  isCustom: false
+  isCustom: false,
+  address: undefined
+}
+
+export function isNativeCurrencyEther(
+  token: ERC20BridgeToken | NativeCurrencyEther | null
+): token is NativeCurrencyEther {
+  if (!token) {
+    return false
+  }
+
+  return typeof (token as ERC20BridgeToken).address === 'undefined'
 }
 
 export function useNativeCurrency({

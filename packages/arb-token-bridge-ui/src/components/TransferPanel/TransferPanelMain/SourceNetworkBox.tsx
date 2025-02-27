@@ -36,6 +36,8 @@ import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useIsSelectedTokenEther } from '../../../hooks/useIsSelectedTokenEther'
+import { useBalances } from '../../../hooks/useBalances'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 
 function Amount2ToggleButton({
@@ -93,9 +95,11 @@ export function SourceNetworkBox() {
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
+  const { ethParentBalance } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
+  const isSelectedTokenEther = useIsSelectedTokenEther()
 
   const isCctpTransfer = useIsCctpTransfer()
 
@@ -198,6 +202,12 @@ export function SourceNetworkBox() {
             maxAmount={maxAmount}
             isMaxAmount={isMaxAmount}
             decimals={decimals}
+            options={{
+              balance:
+                isSelectedTokenEther && isDepositMode && ethParentBalance
+                  ? Number(utils.formatEther(ethParentBalance))
+                  : undefined
+            }}
           />
 
           {isBatchTransferSupported && !isAmount2InputVisible && (
