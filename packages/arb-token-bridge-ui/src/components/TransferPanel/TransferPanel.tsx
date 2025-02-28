@@ -414,11 +414,11 @@ export function TransferPanel() {
           return txReceipt
         } catch (error) {
           if (isUserRejectedError(error)) {
-            return
+            return 'error'
           }
 
           errorToast(`${(error as Error)?.message ?? error}`)
-          return
+          return 'error'
         }
       }
 
@@ -487,10 +487,10 @@ export function TransferPanel() {
       isSmartContractWallet,
       walletAddress,
       destinationAddress: latestDestinationAddress.current,
-      sourceChain: networks.sourceChain,
-      sourceChainProvider: networks.sourceChainProvider,
-      destinationChain: networks.destinationChain,
-      destinationChainProvider: networks.destinationChainProvider,
+      sourceChain: latestNetworks.current.sourceChain,
+      sourceChainProvider: latestNetworks.current.sourceChainProvider,
+      destinationChain: latestNetworks.current.destinationChain,
+      destinationChainProvider: latestNetworks.current.destinationChainProvider,
       amount,
       amountBigNumber,
       signer,
@@ -503,16 +503,17 @@ export function TransferPanel() {
     while (!nextStep.done) {
       const step = nextStep.value
 
-      // special type for early return
-      if (step.type === 'return') {
-        return
-      }
-
       // Execute step and pass back correctly typed result
       const result = await executeStep(step)
+
+      if (result === 'error') {
+        steps.return({ type: 'end' })
+      }
       // Pass result back into the generator
       nextStep = await steps.next(result)
     }
+
+    setTransferring(false)
   }
 
   const transferOft = async () => {

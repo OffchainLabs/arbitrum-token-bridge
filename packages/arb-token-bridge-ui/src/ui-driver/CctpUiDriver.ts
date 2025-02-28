@@ -81,12 +81,12 @@ export class CctpUiDriver {
         yield { type: 'dialog', dialog: 'cctp_deposit' }
 
       if (!userInput) {
-        return yield { type: 'return' }
+        return
       }
 
       if (userInput === 'bridge-normal-usdce') {
         yield { type: 'deposit_usdc.e' }
-        return yield { type: 'return' }
+        return
       }
     } else {
       const userInput: boolean = yield {
@@ -95,7 +95,7 @@ export class CctpUiDriver {
       }
 
       if (!userInput) {
-        return yield { type: 'return' }
+        return
       }
     }
 
@@ -110,7 +110,7 @@ export class CctpUiDriver {
       }
 
       if (!userInput) {
-        return yield { type: 'return' }
+        return
       }
     }
 
@@ -132,7 +132,7 @@ export class CctpUiDriver {
       }
 
       if (!userInput) {
-        return yield { type: 'return' }
+        return
       }
 
       if (context.isSmartContractWallet) {
@@ -185,7 +185,7 @@ export class CctpUiDriver {
     }
 
     yield { type: 'open_tx_history' }
-    yield { type: 'end' }
+    return { type: 'end' }
   }
 }
 
