@@ -15,6 +15,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
 import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
+import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -35,7 +36,8 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 type DialogType =
   | 'approve_token'
   | 'import_token'
-  | 'deposit_token'
+  | 'deposit_token_new_token'
+  | 'deposit_token_user_added_token'
   | 'approve_custom_fee_token'
   | 'withdraw'
   | 'withdraw_usdc'
@@ -130,6 +132,15 @@ export function DialogWrapper(props: DialogProps) {
             commonProps.onClose(imported)
           }}
           tokenAddress={tokenFromSearchParams!}
+        />
+      )
+    case 'deposit_token_new_token':
+    case 'deposit_token_user_added_token':
+      return (
+        <TokenDepositCheckDialog
+          {...commonProps}
+          type={openedDialogType}
+          symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
         />
       )
     case 'approve_custom_fee_token':
