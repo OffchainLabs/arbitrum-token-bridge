@@ -31,8 +31,6 @@ import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
-import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
-import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
@@ -172,14 +170,6 @@ export function TransferPanel() {
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
     useDialog()
-  const [
-    usdcWithdrawalConfirmationDialogProps,
-    openUSDCWithdrawalConfirmationDialog
-  ] = useDialog()
-  const [
-    usdcDepositConfirmationDialogProps,
-    openUSDCDepositConfirmationDialog
-  ] = useDialog()
 
   const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
   const [
@@ -301,7 +291,7 @@ export function TransferPanel() {
   const amountBigNumber = useAmountBigNumber()
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
-    const waitForInput = openUSDCDepositConfirmationDialog()
+    const waitForInput = openDialog('usdc_deposit_confirmation')
     const [confirmed, primaryButtonClicked] = await waitForInput()
 
     // user declined to transfer altogether
@@ -319,7 +309,7 @@ export function TransferPanel() {
   }
 
   const confirmUsdcWithdrawalForCctp = async () => {
-    const waitForInput = openUSDCWithdrawalConfirmationDialog()
+    const waitForInput = openDialog('usdc_withdrawal_confirmation')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -1154,16 +1144,6 @@ export function TransferPanel() {
           customFeeToken={nativeCurrency}
         />
       )}
-
-      <USDCWithdrawalConfirmationDialog
-        {...usdcWithdrawalConfirmationDialogProps}
-        amount={amount}
-      />
-
-      <USDCDepositConfirmationDialog
-        {...usdcDepositConfirmationDialogProps}
-        amount={amount}
-      />
 
       <CustomDestinationAddressConfirmationDialog
         {...customDestinationAddressConfirmationDialogProps}

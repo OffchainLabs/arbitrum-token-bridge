@@ -6,6 +6,8 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsCctpTransfer } from '../TransferPanel/hooks/useIsCctpTransfer'
 import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirmationDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { USDCWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/USDCWithdrawalConfirmationDialog'
+import { USDCDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/USDCDepositConfirmationDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -23,7 +25,11 @@ type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
  */
 type UseDialogResult = [DialogProps, OpenDialogFunction]
 
-type DialogType = 'approve_token' | 'withdrawal_confirmation'
+type DialogType =
+  | 'approve_token'
+  | 'withdrawal_confirmation'
+  | 'usdc_withdrawal_confirmation'
+  | 'usdc_deposit_confirmation'
 
 export function useNewDialog(): UseDialogResult {
   const resolveRef =
@@ -96,6 +102,12 @@ export function DialogWrapper(props: DialogProps) {
       )
     case 'withdrawal_confirmation':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
+    case 'usdc_withdrawal_confirmation':
+      return (
+        <USDCWithdrawalConfirmationDialog {...commonProps} amount={amount} />
+      )
+    case 'usdc_deposit_confirmation':
+      return <USDCDepositConfirmationDialog {...commonProps} amount={amount} />
     default:
       return null
   }
