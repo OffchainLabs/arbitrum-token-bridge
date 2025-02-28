@@ -291,7 +291,7 @@ export function TransferPanel() {
   const amountBigNumber = useAmountBigNumber()
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
-    const waitForInput = openDialog('usdc_deposit_confirmation')
+    const waitForInput = openDialog('deposit_usdc')
     const [confirmed, primaryButtonClicked] = await waitForInput()
 
     // user declined to transfer altogether
@@ -309,7 +309,7 @@ export function TransferPanel() {
   }
 
   const confirmUsdcWithdrawalForCctp = async () => {
-    const waitForInput = openDialog('usdc_withdrawal_confirmation')
+    const waitForInput = openDialog('withdraw_usdc')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -371,7 +371,7 @@ export function TransferPanel() {
   }
 
   const confirmWithdrawal = async () => {
-    const waitForInput = openDialog('withdrawal_confirmation')
+    const waitForInput = openDialog('withdraw')
     const [confirmed] = await waitForInput()
     return confirmed
   }
