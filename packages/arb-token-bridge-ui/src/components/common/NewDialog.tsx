@@ -35,7 +35,6 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 type DialogType =
   | 'approve_token'
   | 'import_token'
-  | 'deposit_token'
   | 'approve_custom_fee_token'
   | 'withdraw'
   | 'withdraw_usdc'
