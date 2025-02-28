@@ -8,6 +8,11 @@ import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirm
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { USDCWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { USDCDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/USDCDepositConfirmationDialog'
+import { CustomFeeTokenApprovalDialog } from '../TransferPanel/CustomFeeTokenApprovalDialog'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useLatest } from 'react-use'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -27,6 +32,7 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 
 type DialogType =
   | 'approve_token'
+  | 'approve_custom_fee_token'
   | 'withdrawal_confirmation'
   | 'usdc_withdrawal_confirmation'
   | 'usdc_deposit_confirmation'
@@ -79,6 +85,12 @@ export function DialogWrapper(props: DialogProps) {
   const [selectedToken] = useSelectedToken()
   const isCctp = useIsCctpTransfer()
   const [{ amount }] = useArbQueryParams()
+  const [networks] = useNetworks()
+  const latestNetworks = useLatest(networks)
+  const {
+    current: { childChainProvider }
+  } = useLatest(useNetworksRelationship(latestNetworks.current))
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [isOpen, setIsOpen] = useState(false)
 
@@ -100,6 +112,16 @@ export function DialogWrapper(props: DialogProps) {
           isOft={isOftTransfer}
         />
       )
+    case 'approve_custom_fee_token':
+      if (nativeCurrency.isCustom) {
+        return (
+          <CustomFeeTokenApprovalDialog
+            {...commonProps}
+            customFeeToken={nativeCurrency}
+          />
+        )
+      }
+      return null
     case 'withdrawal_confirmation':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
     case 'usdc_withdrawal_confirmation':

@@ -31,7 +31,6 @@ import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
-import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -168,8 +167,6 @@ export function TransferPanel() {
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
-  const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
-    useDialog()
 
   const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
   const [
@@ -322,7 +319,7 @@ export function TransferPanel() {
   }
 
   const customFeeTokenApproval = async () => {
-    const waitForInput = openCustomFeeTokenApprovalDialog()
+    const waitForInput = openDialog('approve_custom_fee_token')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -1137,13 +1134,6 @@ export function TransferPanel() {
   return (
     <>
       <DialogWrapper {...dialogProps} />
-
-      {nativeCurrency.isCustom && (
-        <CustomFeeTokenApprovalDialog
-          {...customFeeTokenApprovalDialogProps}
-          customFeeToken={nativeCurrency}
-        />
-      )}
 
       <CustomDestinationAddressConfirmationDialog
         {...customDestinationAddressConfirmationDialogProps}
