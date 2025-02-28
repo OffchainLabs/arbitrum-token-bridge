@@ -20,6 +20,8 @@ describe('Login Account', () => {
   const isCustomFeeToken = nativeTokenSymbol !== 'ETH'
 
   before(() => {
+    cy.visit('/')
+
     if (isCustomFeeToken) {
       getInitialERC20Balance({
         tokenAddress: Cypress.env('NATIVE_TOKEN_ADDRESS'),

@@ -227,14 +227,16 @@ export default defineConfig({
 
       setupCypressTasks(on, { requiresNetworkSetup: true })
 
-      return configureSynpressForMetaMask(on, config)
+      configureSynpressForMetaMask(on, config, true)
+
+      return config
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: './support/e2e.ts',
     defaultCommandTimeout: 20_000,
     defaultBrowser: 'chrome',
-    testIsolation: true
+    testIsolation: false
   }
 })
 

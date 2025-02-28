@@ -6,8 +6,8 @@
   "type": "module",
   "devDependencies": {
     "@playwright/test": "^1.50.1",
-    "@synthetixio/synpress": "^4.0.5",
-    "@synthetixio/synpress-tsconfig": "^0.0.6",
+    "@synthetixio/synpress": "^4.0.8",
+    "@synthetixio/synpress-tsconfig": "^0.0.9",
     "@testing-library/cypress": "^10.0.3",
     "cypress": "^14.0.2",
     "cypress-terminal-report": "^5.3.10",

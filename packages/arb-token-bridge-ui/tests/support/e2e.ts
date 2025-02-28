@@ -36,7 +36,6 @@ if (!PRIVATE_KEY_USER) {
 const ETH_RPC_URL = process.env.ETH_RPC_URL
 
 before(() => {
-  cy.importWalletFromPrivateKey(PRIVATE_KEY_USER)
   // L1
   // only CI setup is required, Metamask already has localhost
   if (ETH_RPC_URL !== 'http://localhost:8545') {
@@ -48,6 +47,4 @@ before(() => {
   cy.addNetwork(getL2TestnetNetworkConfig())
 
   cy.task('setNetworkSetupComplete')
-
-  cy.visit('/')
 })
