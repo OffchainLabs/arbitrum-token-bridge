@@ -169,10 +169,6 @@ export function TransferPanel() {
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
 
   const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
-  const [
-    customDestinationAddressConfirmationDialogProps,
-    openCustomDestinationAddressConfirmationDialog
-  ] = useDialog()
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
@@ -381,7 +377,7 @@ export function TransferPanel() {
     }, 3000)
 
   const confirmCustomDestinationAddressForSCWallets = async () => {
-    const waitForInput = openCustomDestinationAddressConfirmationDialog()
+    const waitForInput = openDialog('scw_custom_destination_address')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -1134,10 +1130,6 @@ export function TransferPanel() {
   return (
     <>
       <DialogWrapper {...dialogProps} />
-
-      <CustomDestinationAddressConfirmationDialog
-        {...customDestinationAddressConfirmationDialogProps}
-      />
 
       <div
         className={twMerge(

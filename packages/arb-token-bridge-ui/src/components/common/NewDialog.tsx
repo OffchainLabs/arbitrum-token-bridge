@@ -13,6 +13,7 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useLatest } from 'react-use'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -36,6 +37,7 @@ type DialogType =
   | 'withdraw'
   | 'withdraw_usdc'
   | 'deposit_usdc'
+  | 'scw_custom_destination_address'
 
 export function useNewDialog(): UseDialogResult {
   const resolveRef =
@@ -130,6 +132,8 @@ export function DialogWrapper(props: DialogProps) {
       )
     case 'deposit_usdc':
       return <USDCDepositConfirmationDialog {...commonProps} amount={amount} />
+    case 'scw_custom_destination_address':
+      return <CustomDestinationAddressConfirmationDialog {...commonProps} />
     default:
       return null
   }
