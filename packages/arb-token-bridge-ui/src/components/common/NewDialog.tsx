@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLatest } from 'react-use'
 
 import { TokenApprovalDialog } from '../TransferPanel/TokenApprovalDialog'
 import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
@@ -10,10 +11,10 @@ import { USDCWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawa
 import { USDCDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/USDCDepositConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from '../TransferPanel/CustomFeeTokenApprovalDialog'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useLatest } from 'react-use'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
+import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -33,6 +34,8 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 
 type DialogType =
   | 'approve_token'
+  | 'import_token'
+  | 'deposit_token'
   | 'approve_custom_fee_token'
   | 'withdraw'
   | 'withdraw_usdc'
@@ -84,9 +87,9 @@ type DialogProps = {
 
 export function DialogWrapper(props: DialogProps) {
   const isOftTransfer = useIsOftV2Transfer()
-  const [selectedToken] = useSelectedToken()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const isCctp = useIsCctpTransfer()
-  const [{ amount }] = useArbQueryParams()
+  const [{ amount, token: tokenFromSearchParams }] = useArbQueryParams()
   const [networks] = useNetworks()
   const latestNetworks = useLatest(networks)
   const {
@@ -112,6 +115,21 @@ export function DialogWrapper(props: DialogProps) {
           token={selectedToken}
           isCctp={isCctp}
           isOft={isOftTransfer}
+        />
+      )
+    case 'import_token':
+      return (
+        <TokenImportDialog
+          {...commonProps}
+          onClose={imported => {
+            if (imported && tokenFromSearchParams) {
+              setSelectedToken(tokenFromSearchParams)
+            } else {
+              setSelectedToken(null)
+            }
+            commonProps.onClose(imported)
+          }}
+          tokenAddress={tokenFromSearchParams!}
         />
       )
     case 'approve_custom_fee_token':

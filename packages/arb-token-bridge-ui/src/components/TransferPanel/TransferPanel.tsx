@@ -14,13 +14,8 @@ import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
 } from './TokenDepositCheckDialog'
-import {
-  TokenImportDialog,
-  useTokenImportDialogStore
-} from './TokenImportDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
-import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -39,10 +34,7 @@ import {
   AssetType,
   DepositGasEstimates
 } from '../../hooks/arbTokenBridge.types'
-import {
-  ImportTokenModalStatus,
-  getWarningTokenDescription
-} from './TransferPanelUtils'
+import { getWarningTokenDescription } from './TransferPanelUtils'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -100,8 +92,6 @@ export function TransferPanel() {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
-  const [importTokenModalStatus, setImportTokenModalStatus] =
-    useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
     useState(false)
 
@@ -165,10 +155,7 @@ export function TransferPanel() {
 
   const [dialogProps, openDialog] = useNewDialog()
 
-  const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
-
-  const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
@@ -190,20 +177,6 @@ export function TransferPanel() {
     // hide Project listing when networks are changed
     setShowProjectsListing(false)
   }, [childChain.id, parentChain.id])
-
-  useEffect(() => {
-    if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
-      return
-    }
-
-    openTokenImportDialog()
-  }, [importTokenModalStatus, openTokenImportDialog])
-
-  function closeWithResetTokenImportDialog() {
-    setSelectedToken(null)
-    setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
-    tokenImportDialogProps.onClose(false)
-  }
 
   function clearAmountInput() {
     // clear amount input on transfer panel
@@ -244,6 +217,12 @@ export function TransferPanel() {
     tokensFromLists,
     tokensFromUser
   ])
+
+  useEffect(() => {
+    if (isTokenAlreadyImported === false && tokenFromSearchParams) {
+      openDialog('import_token')
+    }
+  }, [isTokenAlreadyImported, tokenFromSearchParams])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -1144,14 +1123,6 @@ export function TransferPanel() {
           token={selectedToken}
         />
         <MoveFundsButton onClick={moveFundsButtonOnClick} />
-
-        {isTokenAlreadyImported === false && tokenFromSearchParams && (
-          <TokenImportDialog
-            {...tokenImportDialogProps}
-            onClose={closeWithResetTokenImportDialog}
-            tokenAddress={tokenFromSearchParams}
-          />
-        )}
 
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}
