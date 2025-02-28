@@ -8,6 +8,12 @@ import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirm
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { USDCWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { USDCDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/USDCDepositConfirmationDialog'
+import { CustomFeeTokenApprovalDialog } from '../TransferPanel/CustomFeeTokenApprovalDialog'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useLatest } from 'react-use'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -27,9 +33,11 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 
 type DialogType =
   | 'approve_token'
+  | 'approve_custom_fee_token'
   | 'withdraw'
   | 'withdraw_usdc'
   | 'deposit_usdc'
+  | 'scw_custom_destination_address'
 
 export function useNewDialog(): UseDialogResult {
   const resolveRef =
@@ -79,6 +87,12 @@ export function DialogWrapper(props: DialogProps) {
   const [selectedToken] = useSelectedToken()
   const isCctp = useIsCctpTransfer()
   const [{ amount }] = useArbQueryParams()
+  const [networks] = useNetworks()
+  const latestNetworks = useLatest(networks)
+  const {
+    current: { childChainProvider }
+  } = useLatest(useNetworksRelationship(latestNetworks.current))
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [isOpen, setIsOpen] = useState(false)
 
@@ -100,6 +114,16 @@ export function DialogWrapper(props: DialogProps) {
           isOft={isOftTransfer}
         />
       )
+    case 'approve_custom_fee_token':
+      if (nativeCurrency.isCustom) {
+        return (
+          <CustomFeeTokenApprovalDialog
+            {...commonProps}
+            customFeeToken={nativeCurrency}
+          />
+        )
+      }
+      return null
     case 'withdraw':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
     case 'withdraw_usdc':
@@ -108,6 +132,8 @@ export function DialogWrapper(props: DialogProps) {
       )
     case 'deposit_usdc':
       return <USDCDepositConfirmationDialog {...commonProps} amount={amount} />
+    case 'scw_custom_destination_address':
+      return <CustomDestinationAddressConfirmationDialog {...commonProps} />
     default:
       return null
   }
