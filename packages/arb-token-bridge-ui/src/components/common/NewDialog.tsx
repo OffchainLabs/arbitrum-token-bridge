@@ -1,6 +1,5 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ButtonProps } from './Button'
 import { TokenApprovalDialog } from '../TransferPanel/TokenApprovalDialog'
 import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
@@ -27,32 +26,13 @@ export type OpenDialogFunction = (
 export type UseDialogProps = Pick<DialogProps, 'openedDialog' | 'onClose'>
 
 /**
- * Contains additional info about the dialog.
- */
-export type OtherDialogInfo = { didOpen: boolean }
-
-/**
  * Returns an array containing {@link UseDialogProps} and {@link OpenDialogFunction}.
  */
-export type UseDialogResult = [
-  UseDialogProps,
-  OpenDialogFunction,
-  OtherDialogInfo
-]
-
-/**
- * Initial parameters for the dialog.
- */
-type UseDialogParams = {
-  /**
-   * Whether the dialog should be open by default.
-   */
-  defaultIsOpen?: boolean
-}
+export type UseDialogResult = [UseDialogProps, OpenDialogFunction]
 
 type DialogType = 'approve_token' | 'withdrawal_confirmation'
 
-export function useNewDialog(params?: UseDialogParams): UseDialogResult {
+export function useNewDialog(): UseDialogResult {
   const resolveRef =
     useRef<
       (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
@@ -60,13 +40,10 @@ export function useNewDialog(params?: UseDialogParams): UseDialogResult {
 
   // Whether the dialog is currently open
   const [openedDialog, setOpenedDialog] = useState<DialogType | null>(null)
-  // Whether the dialog was ever open
-  const [didOpen, setDidOpen] = useState(params?.defaultIsOpen ?? false)
 
   const openDialog: OpenDialogFunction = useCallback(
     (dialogType: DialogType) => {
       setOpenedDialog(dialogType)
-      setDidOpen(true)
 
       return () => {
         return new Promise(resolve => {
@@ -88,20 +65,12 @@ export function useNewDialog(params?: UseDialogParams): UseDialogResult {
     []
   )
 
-  return [{ openedDialog, onClose: closeDialog }, openDialog, { didOpen }]
+  return [{ openedDialog, onClose: closeDialog }, openDialog]
 }
 
 type DialogProps = {
   openedDialog: DialogType | null
-  closeable?: boolean
-  title?: string | JSX.Element
-  initialFocus?: React.MutableRefObject<HTMLElement | null>
-  cancelButtonProps?: Partial<ButtonProps>
-  actionButtonProps?: Partial<ButtonProps>
-  actionButtonTitle?: string
-  isFooterHidden?: boolean
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
-  className?: string
 }
 
 export function DialogWrapper(props: DialogProps) {
@@ -110,19 +79,28 @@ export function DialogWrapper(props: DialogProps) {
   const isCctp = useIsCctpTransfer()
   const [{ amount }] = useArbQueryParams()
 
-  switch (props.openedDialog) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const { openedDialog } = props
+  const commonProps: DialogProps & { isOpen: boolean } = { ...props, isOpen }
+
+  // By doing this we enable fade in transition when dialog opens.
+  useEffect(() => {
+    setIsOpen(openedDialog !== null)
+  }, [openedDialog])
+
+  switch (openedDialog) {
     case 'approve_token':
       return (
         <TokenApprovalDialog
-          {...props}
-          isOpen
+          {...commonProps}
           token={selectedToken}
           isCctp={isCctp}
           isOft={isOftTransfer}
         />
       )
     case 'withdrawal_confirmation':
-      return <WithdrawalConfirmationDialog {...props} isOpen amount={amount} />
+      return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
     default:
       return null
   }
