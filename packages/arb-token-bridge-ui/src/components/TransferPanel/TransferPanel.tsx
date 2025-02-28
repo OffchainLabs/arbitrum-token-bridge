@@ -506,7 +506,8 @@ export function TransferPanel() {
       // Execute step and pass back correctly typed result
       const result = await executeStep(step)
 
-      if (result === 'error') {
+      // dialog cancelled or tx rejected/failed
+      if (result === false || result === 'error') {
         steps.return({ type: 'end' })
       }
       // Pass result back into the generator

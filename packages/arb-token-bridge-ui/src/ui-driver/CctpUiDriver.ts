@@ -76,27 +76,19 @@ export class CctpUiDriver {
   ): AsyncGenerator<UiDriverStep, any, any> {
     yield { type: 'start' }
 
+    let userInput: boolean | 'bridge-normal-usdce' | 'bridge-cctp-usd'
+
     if (context.isDepositMode) {
-      const userInput: false | 'bridge-normal-usdce' | 'bridge-cctp-usd' =
-        yield { type: 'dialog', dialog: 'cctp_deposit' }
-
-      if (!userInput) {
-        return
-      }
-
-      if (userInput === 'bridge-normal-usdce') {
-        yield { type: 'deposit_usdc.e' }
-        return
-      }
+      userInput = yield { type: 'dialog', dialog: 'cctp_deposit' }
     } else {
-      const userInput: boolean = yield {
+      userInput = yield {
         type: 'dialog',
         dialog: 'cctp_withdrawal'
       }
+    }
 
-      if (!userInput) {
-        return
-      }
+    if (userInput === 'bridge-normal-usdce') {
+      return yield { type: 'deposit_usdc.e' }
     }
 
     if (
@@ -104,13 +96,9 @@ export class CctpUiDriver {
       // todo: add tests
       addressesEqual(context.walletAddress, context.destinationAddress)
     ) {
-      const userInput: boolean = yield {
+      yield {
         type: 'dialog',
         dialog: 'custom_dest_addr_warn'
-      }
-
-      if (!userInput) {
-        return
       }
     }
 
@@ -126,13 +114,9 @@ export class CctpUiDriver {
       })
 
     if (isTokenApprovalRequired) {
-      const userInput: boolean = yield {
+      yield {
         type: 'dialog',
         dialog: 'cctp_allowance'
-      }
-
-      if (!userInput) {
-        return
       }
 
       if (context.isSmartContractWallet) {
