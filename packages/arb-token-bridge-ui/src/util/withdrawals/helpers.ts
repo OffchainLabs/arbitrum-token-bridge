@@ -6,6 +6,8 @@ import {
   ChildTransactionReceipt,
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
+import dayjs from 'dayjs'
+
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
 import { fetchErc20Data } from '../TokenUtils'
 import {
@@ -19,7 +21,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
-import { getBoldInfo } from '../BoLDUtils'
+import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -106,10 +108,12 @@ export async function getOutgoingMessageState(
     return OutgoingMessageState.EXECUTED
   }
 
-  const createdAt = event.timestamp.toNumber() * 1000
-  const boldInfo = getBoldInfo({ createdAt, withdrawalFromChainId: l2ChainID })
+  const confirmationDate = getWithdrawalConfirmationDate({
+    createdAt: event.timestamp.toNumber() * 1000,
+    withdrawalFromChainId: l2ChainID
+  })
 
-  if (boldInfo.affected && new Date() < new Date('2025-02-19T14:00:00Z')) {
+  if (dayjs() < confirmationDate) {
     return OutgoingMessageState.UNCONFIRMED
   }
 

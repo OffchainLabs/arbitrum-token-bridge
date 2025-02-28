@@ -90,7 +90,7 @@ describe('Withdraw native token', () => {
           cy.confirmTransaction()
 
           cy.findTransactionInTransactionHistory({
-            duration: 'an hour',
+            duration: 'Less than a minute',
             amount: ETHToWithdraw,
             symbol: nativeTokenSymbol
           })
@@ -180,7 +180,7 @@ describe('Withdraw native token', () => {
       }
 
       cy.findTransactionInTransactionHistory({
-        duration: 'an hour',
+        duration: 'Less than a minute',
         ...txData
       })
       cy.openTransactionHistoryDetails(txData)
