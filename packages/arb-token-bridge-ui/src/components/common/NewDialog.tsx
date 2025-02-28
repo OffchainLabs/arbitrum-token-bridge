@@ -16,19 +16,12 @@ type WaitForInputFunction = () => Promise<[boolean, unknown]>
 /**
  * Opens the dialog and returns a function which can be called to retreive a {@link WaitForInputFunction}.
  */
-export type OpenDialogFunction = (
-  dialogType: DialogType
-) => WaitForInputFunction
+type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
 
 /**
- * Contains two props, `isOpen` and `onClose`, which should be passed down to a Dialog component.
+ * Returns an array containing {@link DialogProps} and {@link OpenDialogFunction}.
  */
-export type UseDialogProps = Pick<DialogProps, 'openedDialog' | 'onClose'>
-
-/**
- * Returns an array containing {@link UseDialogProps} and {@link OpenDialogFunction}.
- */
-export type UseDialogResult = [UseDialogProps, OpenDialogFunction]
+type UseDialogResult = [DialogProps, OpenDialogFunction]
 
 type DialogType = 'approve_token' | 'withdrawal_confirmation'
 
@@ -39,11 +32,13 @@ export function useNewDialog(): UseDialogResult {
     >()
 
   // Whether the dialog is currently open
-  const [openedDialog, setOpenedDialog] = useState<DialogType | null>(null)
+  const [openedDialogType, setOpenedDialogType] = useState<DialogType | null>(
+    null
+  )
 
   const openDialog: OpenDialogFunction = useCallback(
     (dialogType: DialogType) => {
-      setOpenedDialog(dialogType)
+      setOpenedDialogType(dialogType)
 
       return () => {
         return new Promise(resolve => {
@@ -60,16 +55,16 @@ export function useNewDialog(): UseDialogResult {
         resolveRef.current([confirmed, onCloseData])
       }
 
-      setOpenedDialog(null)
+      setOpenedDialogType(null)
     },
     []
   )
 
-  return [{ openedDialog, onClose: closeDialog }, openDialog]
+  return [{ openedDialogType, onClose: closeDialog }, openDialog]
 }
 
 type DialogProps = {
-  openedDialog: DialogType | null
+  openedDialogType: DialogType | null
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
 }
 
@@ -81,15 +76,15 @@ export function DialogWrapper(props: DialogProps) {
 
   const [isOpen, setIsOpen] = useState(false)
 
-  const { openedDialog } = props
+  const { openedDialogType } = props
   const commonProps: DialogProps & { isOpen: boolean } = { ...props, isOpen }
 
   // By doing this we enable fade in transition when dialog opens.
   useEffect(() => {
-    setIsOpen(openedDialog !== null)
-  }, [openedDialog])
+    setIsOpen(openedDialogType !== null)
+  }, [openedDialogType])
 
-  switch (openedDialog) {
+  switch (openedDialogType) {
     case 'approve_token':
       return (
         <TokenApprovalDialog
