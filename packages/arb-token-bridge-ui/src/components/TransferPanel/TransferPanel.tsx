@@ -381,7 +381,7 @@ export function TransferPanel() {
   }
 
   const confirmWithdrawal = async () => {
-    const waitForInput = openDialog('withdrawal_confirmation')
+    const waitForInput = openDialog('withdraw')
     const [confirmed] = await waitForInput()
     return confirmed
   }

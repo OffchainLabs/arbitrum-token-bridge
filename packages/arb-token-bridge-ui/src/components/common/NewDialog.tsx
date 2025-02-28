@@ -23,7 +23,7 @@ type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
  */
 type UseDialogResult = [DialogProps, OpenDialogFunction]
 
-type DialogType = 'approve_token' | 'withdrawal_confirmation'
+type DialogType = 'approve_token' | 'withdraw'
 
 export function useNewDialog(): UseDialogResult {
   const resolveRef =
@@ -94,7 +94,7 @@ export function DialogWrapper(props: DialogProps) {
           isOft={isOftTransfer}
         />
       )
-    case 'withdrawal_confirmation':
+    case 'withdraw':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
     default:
       return null
