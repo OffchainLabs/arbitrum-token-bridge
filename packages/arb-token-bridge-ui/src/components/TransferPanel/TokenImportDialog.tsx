@@ -52,11 +52,12 @@ export const useTokenImportDialogStore = create<TokenImportDialogStore>(
   })
 )
 
-type TokenImportDialogProps = Omit<UseDialogProps, 'isOpen'> & {
+type TokenImportDialogProps = UseDialogProps & {
   tokenAddress: string
 }
 
 export function TokenImportDialog({
+  isOpen,
   onClose,
   tokenAddress
 }: TokenImportDialogProps): JSX.Element {
@@ -81,7 +82,6 @@ export function TokenImportDialog({
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
-  const { isOpen } = useTokenImportDialogStore()
   const [isDialogVisible, setIsDialogVisible] = useState(false)
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
@@ -280,9 +280,11 @@ export function TokenImportDialog({
       selectToken(tokenToImport!)
     } else {
       // Token is not added to the bridge, so we add it
-      storeNewToken(l1Address).catch(() => {
-        setStatus(ImportStatus.ERROR)
-      })
+      storeNewToken(l1Address)
+        .catch(() => {
+          setStatus(ImportStatus.ERROR)
+        })
+        .then(() => onClose(true))
     }
   }
 
