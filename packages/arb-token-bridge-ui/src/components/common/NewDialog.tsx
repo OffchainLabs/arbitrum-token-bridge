@@ -33,9 +33,9 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 type DialogType =
   | 'approve_token'
   | 'approve_custom_fee_token'
-  | 'withdrawal_confirmation'
-  | 'usdc_withdrawal_confirmation'
-  | 'usdc_deposit_confirmation'
+  | 'withdraw'
+  | 'withdraw_usdc'
+  | 'deposit_usdc'
 
 export function useNewDialog(): UseDialogResult {
   const resolveRef =
@@ -122,13 +122,13 @@ export function DialogWrapper(props: DialogProps) {
         )
       }
       return null
-    case 'withdrawal_confirmation':
+    case 'withdraw':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
-    case 'usdc_withdrawal_confirmation':
+    case 'withdraw_usdc':
       return (
         <USDCWithdrawalConfirmationDialog {...commonProps} amount={amount} />
       )
-    case 'usdc_deposit_confirmation':
+    case 'deposit_usdc':
       return <USDCDepositConfirmationDialog {...commonProps} amount={amount} />
     default:
       return null
