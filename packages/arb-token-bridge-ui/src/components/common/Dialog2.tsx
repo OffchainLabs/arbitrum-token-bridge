@@ -4,7 +4,6 @@ import { useLatest } from 'react-use'
 import { TokenApprovalDialog } from '../TransferPanel/TokenApprovalDialog'
 import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { useIsCctpTransfer } from '../TransferPanel/hooks/useIsCctpTransfer'
 import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirmationDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { USDCWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/USDCWithdrawalConfirmationDialog'
@@ -24,7 +23,7 @@ import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialo
 type WaitForInputFunction = () => Promise<[boolean, unknown]>
 
 /**
- * Opens the dialog and returns a function which can be called to retreive a {@link WaitForInputFunction}.
+ * Opens the dialog and returns a function which can be called to retrieve a {@link WaitForInputFunction}.
  */
 type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
 
@@ -35,10 +34,12 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 
 type DialogType =
   | 'approve_token'
+  | 'approve_cctp_usdc'
+  | 'approve_custom_fee_token'
   | 'import_token'
   | 'deposit_token_new_token'
   | 'deposit_token_user_added_token'
-  | 'approve_custom_fee_token'
+  | 'import_token'
   | 'withdraw'
   | 'withdraw_usdc'
   | 'deposit_usdc'
@@ -90,7 +91,6 @@ type DialogProps = {
 export function DialogWrapper(props: DialogProps) {
   const isOftTransfer = useIsOftV2Transfer()
   const [selectedToken, setSelectedToken] = useSelectedToken()
-  const isCctp = useIsCctpTransfer()
   const [{ amount, token: tokenFromSearchParams }] = useArbQueryParams()
   const [networks] = useNetworks()
   const latestNetworks = useLatest(networks)
@@ -111,11 +111,12 @@ export function DialogWrapper(props: DialogProps) {
 
   switch (openedDialogType) {
     case 'approve_token':
+    case 'approve_cctp_usdc':
       return (
         <TokenApprovalDialog
           {...commonProps}
           token={selectedToken}
-          isCctp={isCctp}
+          isCctp={openedDialogType === 'approve_cctp_usdc'}
           isOft={isOftTransfer}
         />
       )

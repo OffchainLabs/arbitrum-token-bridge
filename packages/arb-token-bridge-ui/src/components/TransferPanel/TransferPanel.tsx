@@ -157,8 +157,6 @@ export function TransferPanel() {
     updateEthChildBalance
   } = useBalances()
 
-  const [isCctp, setIsCctp] = useState(false)
-
   const { destinationAddressError } = useDestinationAddressError()
 
   const [showProjectsListing, setShowProjectsListing] = useState(false)
@@ -277,8 +275,7 @@ export function TransferPanel() {
   }
 
   const tokenAllowanceApprovalCctp = async () => {
-    setIsCctp(true)
-    const waitForInput = openDialog('approve_token')
+    const waitForInput = openDialog('approve_cctp_usdc')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -290,7 +287,6 @@ export function TransferPanel() {
   }
 
   const tokenAllowanceApproval = async () => {
-    setIsCctp(false)
     const waitForInput = openDialog('approve_token')
     const [confirmed] = await waitForInput()
     return confirmed
@@ -530,7 +526,6 @@ export function TransferPanel() {
       //
     } finally {
       setTransferring(false)
-      setIsCctp(false)
     }
   }
 
