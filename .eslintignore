@@ -1,9 +1,12 @@
 node_modules
 dist
-synpress.config.ts
+cypress.config.ts
+cypress.cctp.config.ts
 tailwind.config.js
+additional.d.ts
+jest.config.ts
+postcss.config.js
 
-packages/arb-token-bridge/craco.config.js
-packages/arb-token-bridge/prettier.config.js
-packages/arb-token-bridge/build/static/js/*.js
-packages/arb-token-bridge/tests/**/*.ts
+packages/arb-token-bridge-ui/prettier.config.js
+packages/arb-token-bridge-ui/build/static/js/*.js
+packages/arb-token-bridge-ui/tests/**/*.ts

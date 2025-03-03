@@ -4,7 +4,7 @@ module.exports = {
     './src/**/*.{js,ts,jsx,tsx}',
     '../../node_modules/@offchainlabs/cobalt/**/*.{js,ts,jsx,tsx}'
   ],
-  plugins: [require('@headlessui/tailwindcss')],
+  plugins: ['@headlessui/tailwindcss'],
   theme: {
     extend: {
       backgroundImage: {
