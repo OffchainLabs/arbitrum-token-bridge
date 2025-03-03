@@ -67,7 +67,7 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
-import { useNewDialog, DialogWrapper } from '../common/NewDialog'
+import { useDialog2, DialogWrapper } from '../common/Dialog2'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -147,7 +147,7 @@ export function TransferPanel() {
 
   const latestDestinationAddress = useLatest(destinationAddress)
 
-  const [dialogProps, openDialog] = useNewDialog()
+  const [dialogProps, openDialog] = useDialog2()
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 

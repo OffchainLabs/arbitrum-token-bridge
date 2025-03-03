@@ -44,7 +44,7 @@ type DialogType =
   | 'deposit_usdc'
   | 'scw_custom_destination_address'
 
-export function useNewDialog(): UseDialogResult {
+export function useDialog2(): UseDialogResult {
   const resolveRef =
     useRef<
       (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
