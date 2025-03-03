@@ -323,7 +323,7 @@ export function TransferPanel() {
   }
 
   const tokenAllowanceApprovalCctp = async () => {
-    const waitForInput = openDialog('approve_token', { isCctp: true })
+    const waitForInput = openDialog('approve_cctp_usdc')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -335,7 +335,7 @@ export function TransferPanel() {
   }
 
   const tokenAllowanceApproval = async () => {
-    const waitForInput = openDialog('approve_token', { isCctp: false })
+    const waitForInput = openDialog('approve_token')
     const [confirmed] = await waitForInput()
     return confirmed
   }

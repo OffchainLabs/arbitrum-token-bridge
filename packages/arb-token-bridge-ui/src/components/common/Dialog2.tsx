@@ -12,37 +12,17 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
  */
 type WaitForInputFunction = () => Promise<[boolean, unknown]>
 
-type HasParams<T extends DialogType> = T extends keyof DialogTypeParams
-  ? true
-  : false
-
-type ParamsType<T extends DialogType> = HasParams<T> extends true
-  ? T extends keyof DialogTypeParams
-    ? DialogTypeParams[T]
-    : never
-  : Record<string, unknown> | undefined
-
 /**
  * Opens the dialog and returns a function which can be called to retreive a {@link WaitForInputFunction}.
  */
-type OpenDialogFunction = <T extends DialogType>(
-  dialogType: T,
-  ...args: T extends keyof DialogTypeParams
-    ? [params: DialogTypeParams[T]]
-    : [params?: undefined]
-) => WaitForInputFunction
+type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
 
 /**
  * Returns an array containing {@link DialogProps} and {@link OpenDialogFunction}.
  */
 type UseDialogResult = [DialogProps, OpenDialogFunction]
 
-type DialogType = 'approve_token' | 'withdraw'
-
-// Add additional properties here
-type DialogTypeParams = {
-  approve_token: { isCctp: boolean }
-}
+type DialogType = 'approve_token' | 'approve_cctp_usdc' | 'withdraw'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef =
@@ -50,22 +30,14 @@ export function useDialog2(): UseDialogResult {
       (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
     >()
 
-  const [params, setParams] = useState<ParamsType<DialogType>>()
-
   // Whether the dialog is currently open
   const [openedDialogType, setOpenedDialogType] = useState<DialogType | null>(
     null
   )
 
   const openDialog: OpenDialogFunction = useCallback(
-    <T extends DialogType>(
-      dialogType: T,
-      ...args: T extends keyof DialogTypeParams
-        ? [params: DialogTypeParams[T]]
-        : [params?: Record<string, unknown>]
-    ) => {
+    (dialogType: DialogType) => {
       setOpenedDialogType(dialogType)
-      setParams(args[0])
 
       return () => {
         return new Promise(resolve => {
@@ -87,13 +59,12 @@ export function useDialog2(): UseDialogResult {
     []
   )
 
-  return [{ openedDialogType, onClose: closeDialog, params }, openDialog]
+  return [{ openedDialogType, onClose: closeDialog }, openDialog]
 }
 
-type DialogProps<T extends DialogType = DialogType> = {
-  openedDialogType: T | null
+type DialogProps = {
+  openedDialogType: DialogType | null
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
-  params: ParamsType<T>
 }
 
 export function DialogWrapper(props: DialogProps) {
@@ -113,13 +84,12 @@ export function DialogWrapper(props: DialogProps) {
 
   switch (openedDialogType) {
     case 'approve_token':
-      const approveTokenParams =
-        props.params as DialogTypeParams['approve_token']
+    case 'approve_cctp_usdc':
       return (
         <TokenApprovalDialog
           {...commonProps}
           token={selectedToken}
-          isCctp={approveTokenParams.isCctp}
+          isCctp={openedDialogType === 'approve_cctp_usdc'}
           isOft={isOftTransfer}
         />
       )
