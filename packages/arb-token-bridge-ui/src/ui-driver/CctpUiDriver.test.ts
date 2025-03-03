@@ -6,6 +6,8 @@ import {
   UiDriverStepDialog
 } from './CctpUiDriver'
 
+/* eslint-disable jest/valid-title */
+
 function expectDialog(step: any, dialog: Dialog) {
   expect(step).toBeDefined()
   expect((step as UiDriverStep).type).toEqual('dialog')
