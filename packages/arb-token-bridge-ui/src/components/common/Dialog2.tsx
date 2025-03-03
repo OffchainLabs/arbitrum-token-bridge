@@ -113,7 +113,8 @@ export function DialogWrapper(props: DialogProps) {
 
   switch (openedDialogType) {
     case 'approve_token':
-      const approveTokenParams = props.params as DialogTypeParams['approve_token']
+      const approveTokenParams =
+        props.params as DialogTypeParams['approve_token']
       return (
         <TokenApprovalDialog
           {...commonProps}
