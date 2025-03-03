@@ -26,15 +26,15 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from './NetworkImage'
-import { Dialog, UseDialogProps, useDialog } from './Dialog'
+import { Dialog, UseDialogProps } from './Dialog'
 import { useNetworks } from '../../hooks/useNetworks'
-import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
 import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
 import { useActions } from '../../state'
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
+import { DialogWrapper, useDialog2 } from './Dialog2'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -413,7 +413,7 @@ export const NetworkSelectionContainer = (
   const actions = useActions()
   const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
-  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+  const [dialogProps, openDialog] = useDialog2()
   const [, setQueryParams] = useArbQueryParams()
   const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
   const { isSmartContractWallet } = useAccountType()
@@ -433,7 +433,7 @@ export const NetworkSelectionContainer = (
       const pairedChain = isSource ? 'destinationChain' : 'sourceChain'
 
       if (shouldOpenOneNovaDialog([value.id, networks[pairedChain].id])) {
-        openOneNovaTransferDialog()
+        openDialog('one_nova_transfer')
         return
       }
 
@@ -466,7 +466,7 @@ export const NetworkSelectionContainer = (
       setSelectedToken,
       setQueryParams,
       setAdvancedSettingsCollapsed,
-      openOneNovaTransferDialog,
+      openDialog,
       isSmartContractWallet
     ]
   )
@@ -492,7 +492,7 @@ export const NetworkSelectionContainer = (
           </SearchPanel.MainPage>
         </SearchPanel>
       </Dialog>
-      <OneNovaTransferDialog {...oneNovaTransferDialogProps} />
+      <DialogWrapper {...dialogProps} />
     </>
   )
 }

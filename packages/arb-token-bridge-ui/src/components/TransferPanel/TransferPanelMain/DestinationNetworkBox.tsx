@@ -12,11 +12,7 @@ import { EstimatedGas } from '../EstimatedGas'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { useDialog } from '../../common/Dialog'
-import {
-  NetworkButton,
-  NetworkSelectionContainer
-} from '../../common/NetworkSelectionContainer'
+import { NetworkButton } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
@@ -28,6 +24,7 @@ import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { DialogWrapper, useDialog2 } from '../../common/Dialog2'
 
 function BalanceRow({
   parentErc20Address,
@@ -187,10 +184,7 @@ function BalancesContainer() {
 export function DestinationNetworkBox() {
   const [networks] = useNetworks()
   const [{ destinationAddress }] = useArbQueryParams()
-  const [
-    destinationNetworkSelectionDialogProps,
-    openDestinationNetworkSelectionDialog
-  ] = useDialog()
+  const [dialogProps, openDialog] = useDialog2()
   const {
     network: { logo: networkLogo }
   } = getBridgeUiConfigForChain(networks.destinationChain.id)
@@ -204,7 +198,7 @@ export function DestinationNetworkBox() {
         <div className="flex justify-between">
           <NetworkButton
             type="destination"
-            onClick={openDestinationNetworkSelectionDialog}
+            onClick={() => openDialog('destination_networks')}
           />
           <div className="relative h-[44px] w-[44px]">
             <Image
@@ -218,10 +212,7 @@ export function DestinationNetworkBox() {
         <BalancesContainer />
         <EstimatedGas chainType="destination" />
       </NetworkContainer>
-      <NetworkSelectionContainer
-        {...destinationNetworkSelectionDialogProps}
-        type="destination"
-      />
+      <DialogWrapper {...dialogProps} />
     </>
   )
 }
