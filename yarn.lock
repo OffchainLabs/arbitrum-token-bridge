@@ -1893,9 +1893,9 @@
   integrity sha512-rh3G3wDO8J9wSjfI436JUKzHIxq8NaiL0tVeB2aXmG6p/9859aUOAjA9pmSPNGGZxfwmaJ9ozOJImuNVJdpvbA==
 
 "@octokit/core@^5.0.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@octokit/core/-/core-5.1.1.tgz#7f28baf2c1dd310244ded4b10000d5e4e78fa953"
-  integrity sha512-jgj+fO06095dVYxBsgs0zF/fSi8mZ1esfz7hnIRA0TIN1JK7Blc1i3sr0kr/njJCzpS/P+7/wUWMWR16gxJ6VA==
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@octokit/core/-/core-5.2.0.tgz#ddbeaefc6b44a39834e1bb2e58a49a117672a7ea"
+  integrity sha512-1LFfa/qnMQvEOAdzlQymH0ulepxbxnCYAKJZfMci/5XJyIHWgEYnDmgnKakbTh7CH2tFQ5O60oYDvns4i9RAIg==
   dependencies:
     "@octokit/auth-token" "^4.0.0"
     "@octokit/graphql" "^7.1.0"
