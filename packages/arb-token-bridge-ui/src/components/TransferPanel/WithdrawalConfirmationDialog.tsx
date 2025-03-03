@@ -3,7 +3,7 @@ import { Tab } from '@headlessui/react'
 import dayjs from 'dayjs'
 import Image from 'next/image'
 
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, DialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { TabButton } from '../common/Tab'
@@ -40,7 +40,7 @@ function getCalendarUrl(
 }
 
 export function WithdrawalConfirmationDialog(
-  props: UseDialogProps & { amount: string }
+  props: DialogProps & { amount: string }
 ) {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain } =

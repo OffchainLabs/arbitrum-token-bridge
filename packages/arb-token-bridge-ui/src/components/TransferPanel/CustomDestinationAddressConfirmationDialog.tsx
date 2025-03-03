@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, DialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
@@ -8,9 +8,7 @@ import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { Checkbox } from '../common/Checkbox'
 
-export function CustomDestinationAddressConfirmationDialog(
-  props: UseDialogProps
-) {
+export function CustomDestinationAddressConfirmationDialog(props: DialogProps) {
   const [{ destinationAddress = '' }] = useArbQueryParams()
 
   const [networks] = useNetworks()

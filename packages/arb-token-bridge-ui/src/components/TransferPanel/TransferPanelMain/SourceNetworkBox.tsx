@@ -33,7 +33,7 @@ import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
-import { DialogWrapper, useDialog2 } from '../../common/Dialog2'
+import { DialogWrapper, useDialog } from '../../common/DialogWrapper'
 
 function Amount2ToggleButton({
   onClick
@@ -85,7 +85,7 @@ export function SourceNetworkBox() {
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
   const { maxAmount, maxAmount2 } = useMaxAmount()
-  const [dialogProps, openDialog] = useDialog2()
+  const [dialogProps, openDialog] = useDialog()
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()

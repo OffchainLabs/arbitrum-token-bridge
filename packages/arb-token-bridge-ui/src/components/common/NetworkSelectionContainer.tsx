@@ -26,7 +26,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from './NetworkImage'
-import { Dialog, UseDialogProps } from './Dialog'
+import { Dialog, DialogProps } from './Dialog'
 import { useNetworks } from '../../hooks/useNetworks'
 import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
 import { useActions } from '../../state'
@@ -34,7 +34,7 @@ import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useCha
 import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
-import { DialogWrapper, useDialog2 } from './Dialog2'
+import { DialogWrapper, useDialog } from './DialogWrapper'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -406,14 +406,14 @@ function NetworksPanel({
 }
 
 export const NetworkSelectionContainer = (
-  props: UseDialogProps & {
+  props: DialogProps & {
     type: 'source' | 'destination'
   }
 ) => {
   const actions = useActions()
   const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
-  const [dialogProps, openDialog] = useDialog2()
+  const [dialogProps, openDialog] = useDialog()
   const [, setQueryParams] = useArbQueryParams()
   const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
   const { isSmartContractWallet } = useAccountType()

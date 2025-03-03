@@ -32,7 +32,7 @@ type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
 /**
  * Returns an array containing {@link DialogProps} and {@link OpenDialogFunction}.
  */
-type UseDialogResult = [DialogProps, OpenDialogFunction]
+type UseDialogResult = [DialogWrapperProps, OpenDialogFunction]
 
 type DialogType =
   | 'approve_token'
@@ -50,7 +50,7 @@ type DialogType =
   | 'source_networks'
   | 'destination_networks'
 
-export function useDialog2(): UseDialogResult {
+export function useDialog(): UseDialogResult {
   const resolveRef =
     useRef<
       (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
@@ -88,12 +88,12 @@ export function useDialog2(): UseDialogResult {
   return [{ openedDialogType, onClose: closeDialog }, openDialog]
 }
 
-type DialogProps = {
+type DialogWrapperProps = {
   openedDialogType: DialogType | null
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
 }
 
-export function DialogWrapper(props: DialogProps) {
+export function DialogWrapper(props: DialogWrapperProps) {
   const isOftTransfer = useIsOftV2Transfer()
   const [selectedToken, setSelectedToken] = useSelectedToken()
   const [{ amount, token: tokenFromSearchParams }] = useArbQueryParams()
@@ -107,7 +107,10 @@ export function DialogWrapper(props: DialogProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const { openedDialogType } = props
-  const commonProps: DialogProps & { isOpen: boolean } = { ...props, isOpen }
+  const commonProps: DialogWrapperProps & { isOpen: boolean } = {
+    ...props,
+    isOpen
+  }
 
   // By doing this we enable fade in transition when dialog opens.
   useEffect(() => {
@@ -173,7 +176,8 @@ export function DialogWrapper(props: DialogProps) {
       return <OneNovaTransferDialog {...commonProps} />
     case 'source_networks':
     case 'destination_networks':
-      const type = openedDialogType === 'source_networks' ? 'source' : 'destination'
+      const type =
+        openedDialogType === 'source_networks' ? 'source' : 'destination'
       return <NetworkSelectionContainer {...commonProps} type={type} />
     default:
       return null

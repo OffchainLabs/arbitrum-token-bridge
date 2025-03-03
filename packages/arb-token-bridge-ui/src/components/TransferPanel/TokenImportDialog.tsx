@@ -10,7 +10,7 @@ import {
   isValidErc20
 } from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, DialogProps } from '../common/Dialog'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
@@ -52,7 +52,7 @@ export const useTokenImportDialogStore = create<TokenImportDialogStore>(
   })
 )
 
-type TokenImportDialogProps = UseDialogProps & {
+type TokenImportDialogProps = DialogProps & {
   tokenAddress: string
 }
 
