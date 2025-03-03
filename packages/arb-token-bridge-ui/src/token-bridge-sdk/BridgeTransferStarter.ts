@@ -43,7 +43,7 @@ export type BridgeTransferStarterPropsWithChainIds = {
   destinationChainErc20Address?: string
 }
 
-export type TransferEstimateGas = {
+export type TransferEstimateGasProps = {
   amount: BigNumber
   signer: Signer
   destinationAddress?: string
@@ -135,7 +135,7 @@ export abstract class BridgeTransferStarter {
   ): Promise<ContractTransaction | void>
 
   public abstract transferEstimateGas(
-    props: TransferEstimateGas
+    props: TransferEstimateGasProps
   ): Promise<GasEstimates | DepositGasEstimates | undefined>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
