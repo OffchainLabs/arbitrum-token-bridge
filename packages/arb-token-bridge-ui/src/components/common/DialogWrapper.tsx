@@ -88,7 +88,7 @@ export function useDialog(): UseDialogResult {
   return [{ openedDialogType, onClose: closeDialog }, openDialog]
 }
 
-export type DialogWrapperProps = {
+type DialogWrapperProps = {
   openedDialogType: DialogType | null
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
 }
