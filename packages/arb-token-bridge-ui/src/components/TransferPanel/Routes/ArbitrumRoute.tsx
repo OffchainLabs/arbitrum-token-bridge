@@ -77,7 +77,7 @@ function getDuration({
   return getStandardDepositDuration(isTestnet)
 }
 
-function useGasCostAndToken({
+function getGasCostAndToken({
   childChainNativeCurrency,
   parentChainNativeCurrency,
   gasSummaryStatus,
@@ -106,101 +106,86 @@ function useGasCostAndToken({
       ? undefined
       : estimatedParentChainGasFees + estimatedChildChainGasFees
 
-  const childChainNativeCurrencyWithAddress: Token = useMemo(() => {
-    if ('address' in childChainNativeCurrency) {
-      return childChainNativeCurrency
+  const childChainNativeCurrencyWithAddress: Token =
+    'address' in childChainNativeCurrency
+      ? childChainNativeCurrency
+      : { ...childChainNativeCurrency, address: constants.AddressZero }
+
+  const parentChainNativeCurrencyWithAddress: Token =
+    'address' in parentChainNativeCurrency
+      ? parentChainNativeCurrency
+      : { ...parentChainNativeCurrency, address: constants.AddressZero }
+
+  if (typeof estimatedTotalGasFees === 'undefined') {
+    return {
+      gasCost: null,
+      isLoading: true
     }
-    return { ...childChainNativeCurrency, address: constants.AddressZero }
-  }, [childChainNativeCurrency])
+  }
 
-  const parentChainNativeCurrencyWithAddress: Token = useMemo(() => {
-    if ('address' in parentChainNativeCurrency) {
-      return parentChainNativeCurrency
-    }
-    return { ...parentChainNativeCurrency, address: constants.AddressZero }
-  }, [parentChainNativeCurrency])
-
-  return useMemo(() => {
-    if (typeof estimatedTotalGasFees === 'undefined') {
-      return {
-        gasCost: null,
-        isLoading: true
-      }
-    }
-
-    /**
-     * Same Native Currencies between Parent and Child chains
-     * 1. ETH/ER20 deposit: L1->L2
-     * 2. ETH/ERC20 withdrawal: L2->L1
-     * 3. ETH/ER20 deposit: L2->L3 (ETH as gas token)
-     * 4. ETH/ERC20 withdrawal: L3 (ETH as gas token)->L2
-     *
-     * x ETH
-     */
-    if (sameNativeCurrency) {
-      return {
-        isLoading: false,
-        gasCost: [
-          {
-            gasCost: estimatedTotalGasFees,
-            gasToken: childChainNativeCurrencyWithAddress
-          }
-        ]
-      }
-    }
-
-    /** Different Native Currencies between Parent and Child chains
-     *
-     *  Custom gas token deposit: L2->Xai
-     *  x ETH
-     *
-     *  ERC20 deposit: L2->Xai
-     *  x ETH and x XAI
-     *
-     *  Custom gas token/ERC20 withdrawal: L3->L2
-     *  only show child chain native currency
-     *  x XAI
-     */
-    if (isDepositMode) {
-      const gasCost: { gasCost: number; gasToken: Token }[] = [
-        {
-          gasCost: estimatedParentChainGasFees!,
-          gasToken: parentChainNativeCurrencyWithAddress
-        }
-      ]
-
-      if (selectedToken) {
-        gasCost.push({
-          gasCost: estimatedChildChainGasFees!,
-          gasToken: childChainNativeCurrencyWithAddress
-        })
-      }
-
-      return {
-        gasCost,
-        isLoading: false
-      }
-    }
-
+  /**
+   * Same Native Currencies between Parent and Child chains
+   * 1. ETH/ER20 deposit: L1->L2
+   * 2. ETH/ERC20 withdrawal: L2->L1
+   * 3. ETH/ER20 deposit: L2->L3 (ETH as gas token)
+   * 4. ETH/ERC20 withdrawal: L3 (ETH as gas token)->L2
+   *
+   * x ETH
+   */
+  if (sameNativeCurrency) {
     return {
       isLoading: false,
       gasCost: [
         {
-          gasCost: estimatedChildChainGasFees!,
+          gasCost: estimatedTotalGasFees,
           gasToken: childChainNativeCurrencyWithAddress
         }
       ]
     }
-  }, [
-    childChainNativeCurrencyWithAddress,
-    estimatedChildChainGasFees,
-    estimatedParentChainGasFees,
-    estimatedTotalGasFees,
-    isDepositMode,
-    parentChainNativeCurrencyWithAddress,
-    sameNativeCurrency,
-    selectedToken
-  ])
+  }
+
+  /** Different Native Currencies between Parent and Child chains
+   *
+   *  Custom gas token deposit: L2->Xai
+   *  x ETH
+   *
+   *  ERC20 deposit: L2->Xai
+   *  x ETH and x XAI
+   *
+   *  Custom gas token/ERC20 withdrawal: L3->L2
+   *  only show child chain native currency
+   *  x XAI
+   */
+  if (isDepositMode) {
+    const gasCost: { gasCost: number; gasToken: Token }[] = [
+      {
+        gasCost: estimatedParentChainGasFees!,
+        gasToken: parentChainNativeCurrencyWithAddress
+      }
+    ]
+
+    if (selectedToken) {
+      gasCost.push({
+        gasCost: estimatedChildChainGasFees!,
+        gasToken: childChainNativeCurrencyWithAddress
+      })
+    }
+
+    return {
+      gasCost,
+      isLoading: false
+    }
+  }
+
+  return {
+    isLoading: false,
+    gasCost: [
+      {
+        gasCost: estimatedChildChainGasFees!,
+        gasToken: childChainNativeCurrencyWithAddress
+      }
+    ]
+  }
 }
 
 export function ArbitrumRoute() {
@@ -229,15 +214,27 @@ export function ArbitrumRoute() {
   const selectedRoute = useRouteStore(state => state.selectedRoute)
   const [selectedToken] = useSelectedToken()
 
-  const { gasCost, isLoading } = useGasCostAndToken({
-    childChainNativeCurrency,
-    parentChainNativeCurrency,
-    gasSummaryStatus,
-    estimatedChildChainGasFees,
-    estimatedParentChainGasFees,
-    isDepositMode,
-    selectedToken
-  })
+  const { gasCost, isLoading } = useMemo(
+    () =>
+      getGasCostAndToken({
+        childChainNativeCurrency,
+        parentChainNativeCurrency,
+        gasSummaryStatus,
+        estimatedChildChainGasFees,
+        estimatedParentChainGasFees,
+        isDepositMode,
+        selectedToken
+      }),
+    [
+      childChainNativeCurrency,
+      estimatedChildChainGasFees,
+      estimatedParentChainGasFees,
+      gasSummaryStatus,
+      isDepositMode,
+      parentChainNativeCurrency,
+      selectedToken
+    ]
+  )
 
   /**
    * For USDC:
