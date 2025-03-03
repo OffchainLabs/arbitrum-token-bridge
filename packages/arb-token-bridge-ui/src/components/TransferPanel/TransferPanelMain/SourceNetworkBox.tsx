@@ -5,10 +5,7 @@ import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'
 
 import { getNetworkName } from '../../../util/networks'
-import {
-  NetworkButton,
-  NetworkSelectionContainer
-} from '../../common/NetworkSelectionContainer'
+import { NetworkButton } from '../../common/NetworkSelectionContainer'
 import { NetworkContainer } from '../TransferPanelMain'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
@@ -27,7 +24,6 @@ import {
 } from '../../../hooks/useArbQueryParams'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
-import { useDialog } from '../../common/Dialog'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
@@ -37,6 +33,7 @@ import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
+import { DialogWrapper, useDialog2 } from '../../common/Dialog2'
 
 function Amount2ToggleButton({
   onClick
@@ -88,8 +85,7 @@ export function SourceNetworkBox() {
   const [{ amount, amount2 }] = useArbQueryParams()
   const { setAmount, setAmount2 } = useSetInputAmount()
   const { maxAmount, maxAmount2 } = useMaxAmount()
-  const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
-    useDialog()
+  const [dialogProps, openDialog] = useDialog2()
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
@@ -177,7 +173,7 @@ export function SourceNetworkBox() {
         <div className="flex justify-between">
           <NetworkButton
             type="source"
-            onClick={openSourceNetworkSelectionDialog}
+            onClick={() => openDialog('source_networks')}
           />
           <div className="relative h-[44px] w-[44px]">
             <Image
@@ -257,10 +253,7 @@ export function SourceNetworkBox() {
         </div>
         <EstimatedGas chainType="source" />
       </NetworkContainer>
-      <NetworkSelectionContainer
-        {...sourceNetworkSelectionDialogProps}
-        type="source"
-      />
+      <DialogWrapper {...dialogProps} />
     </>
   )
 }

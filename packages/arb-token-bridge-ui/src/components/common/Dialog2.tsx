@@ -15,6 +15,8 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
 import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
+import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
+import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -44,6 +46,9 @@ type DialogType =
   | 'withdraw_usdc'
   | 'deposit_usdc'
   | 'scw_custom_destination_address'
+  | 'one_nova_transfer'
+  | 'source_networks'
+  | 'destination_networks'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef =
@@ -164,6 +169,12 @@ export function DialogWrapper(props: DialogProps) {
       return <USDCDepositConfirmationDialog {...commonProps} amount={amount} />
     case 'scw_custom_destination_address':
       return <CustomDestinationAddressConfirmationDialog {...commonProps} />
+    case 'one_nova_transfer':
+      return <OneNovaTransferDialog {...commonProps} />
+    case 'source_networks':
+    case 'destination_networks':
+      const type = openedDialogType === 'source_networks' ? 'source' : 'destination'
+      return <NetworkSelectionContainer {...commonProps} type={type} />
     default:
       return null
   }
