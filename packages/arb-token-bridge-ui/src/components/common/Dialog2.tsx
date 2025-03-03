@@ -25,7 +25,7 @@ type UseDialogResult = [DialogProps, OpenDialogFunction]
 
 type DialogType = 'approve_token' | 'withdraw'
 
-export function useNewDialog(): UseDialogResult {
+export function useDialog2(): UseDialogResult {
   const resolveRef =
     useRef<
       (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
