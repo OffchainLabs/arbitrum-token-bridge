@@ -31,7 +31,7 @@ type DialogType =
   | 'withdraw_usdc'
   | 'deposit_usdc'
 
-export function useNewDialog(): UseDialogResult {
+export function useDialog2(): UseDialogResult {
   const resolveRef =
     useRef<
       (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
