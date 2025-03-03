@@ -107,12 +107,12 @@ export const Route = React.memo(
     return (
       <div
         className={twMerge(
-          'group cursor-pointer rounded border border-[#ffffff33] text-white transition-colors',
-          selected && 'border-[#5F7D5B]'
+          'group cursor-pointer rounded text-white ring-1 ring-[#ffffff33] transition-colors',
+          selected && 'ring-2 ring-[#5F7D5B]'
         )}
         onClick={() => setSelectedRoute(type)}
       >
-        <div className="bg-gray-8 flex items-center rounded-t py-2 pl-4 pr-2 text-xs">
+        <div className="bg-gray-8 flex min-h-8 items-center rounded-t py-2 pl-4 pr-2 text-xs">
           <Image
             src={icon}
             width={width}
