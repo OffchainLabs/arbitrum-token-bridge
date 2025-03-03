@@ -17,7 +17,7 @@ import {
   isNetwork
 } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
+import { USDCWithdrawalConfirmationDialogCheckbox } from './UsdcWithdrawalConfirmationDialogCheckbox'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
