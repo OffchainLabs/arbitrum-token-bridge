@@ -2,15 +2,20 @@ export type Dialog =
   | 'cctp_deposit'
   | 'cctp_withdrawal'
   | 'custom_dest_addr_warn'
-  | 'test'
 
-export type UiDriverStepDialog = {
+export type DialogResult<TDialog extends Dialog> = //
+  TDialog extends 'cctp_deposit'
+    ? false | 'bridge-normal-usdce' | 'bridge-cctp-usd'
+    : // other dialogs resolve to a boolean
+      boolean
+
+export type UiDriverStepDialog<TDialog extends Dialog = Dialog> = {
   type: 'dialog'
-  dialog: Dialog
+  dialog: TDialog
 }
 
-export type UiDriverStep =
-  | UiDriverStepDialog
+export type UiDriverStep<TDialog extends Dialog = Dialog> =
+  | UiDriverStepDialog<TDialog>
   | { type: 'deposit_usdc.e' }
   | { type: 'return' }
 
