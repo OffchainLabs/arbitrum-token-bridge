@@ -8,13 +8,13 @@ import {
 
 /* eslint-disable jest/valid-title */
 
-function expectDialog(step: any, dialog: Dialog) {
+function expectDialogStep(step: any, dialog: Dialog) {
   expect(step).toBeDefined()
   expect((step as UiDriverStep).type).toEqual('dialog')
   expect((step as UiDriverStepDialog).dialog).toEqual(dialog)
 }
 
-function expectReturn(step: any) {
+function expectReturnStep(step: any) {
   expect(step).toBeDefined()
   expect((step as UiDriverStep).type).toEqual('return')
 }
@@ -33,10 +33,10 @@ it(`
   } as UiDriverContext)
 
   const step1 = await (await steps.next()).value
-  expectDialog(step1, 'cctp_deposit')
+  expectDialogStep(step1, 'cctp_deposit')
 
   const step2 = await (await steps.next()).value
-  expectReturn(step2)
+  expectReturnStep(step2)
 })
 
 it(`
@@ -49,7 +49,7 @@ it(`
   } as UiDriverContext)
 
   const step1 = await (await steps.next()).value
-  expectDialog(step1, 'cctp_deposit')
+  expectDialogStep(step1, 'cctp_deposit')
   const step1UserInput = 'bridge-normal-usdce'
 
   const step2 = await (await steps.next(step1UserInput)).value
@@ -57,7 +57,7 @@ it(`
   expect((step2 as UiDriverStep).type).toEqual('deposit_usdc.e')
 
   const step3 = await (await steps.next()).value
-  expectReturn(step3)
+  expectReturnStep(step3)
 })
 
 it(`
@@ -73,15 +73,15 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expectDialog(step1, 'cctp_deposit')
+  expectDialogStep(step1, 'cctp_deposit')
   const step1UserInput = 'bridge-cctp-usd'
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expectDialog(step2, 'custom_dest_addr_warn')
+  expectDialogStep(step2, 'custom_dest_addr_warn')
   const step2UserInput = false
 
   const step3 = await (await steps.next(step2UserInput)).value
-  expectReturn(step3)
+  expectReturnStep(step3)
 })
 
 it(`
@@ -97,11 +97,11 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expectDialog(step1, 'cctp_deposit')
+  expectDialogStep(step1, 'cctp_deposit')
   const step1UserInput = 'bridge-cctp-usd'
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expectDialog(step2, 'custom_dest_addr_warn')
+  expectDialogStep(step2, 'custom_dest_addr_warn')
   const step2UserInput = true
 
   const step3 = await (await steps.next(step2UserInput)).value
@@ -120,11 +120,11 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expectDialog(step1, 'cctp_withdrawal')
+  expectDialogStep(step1, 'cctp_withdrawal')
   const step1UserInput = false
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expectReturn(step2)
+  expectReturnStep(step2)
 })
 
 it(`
@@ -140,15 +140,15 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expectDialog(step1, 'cctp_withdrawal')
+  expectDialogStep(step1, 'cctp_withdrawal')
   const step1UserInput = true
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expectDialog(step2, 'custom_dest_addr_warn')
+  expectDialogStep(step2, 'custom_dest_addr_warn')
   const step2UserInput = false
 
   const step3 = await (await steps.next(step2UserInput)).value
-  expectReturn(step3)
+  expectReturnStep(step3)
 })
 
 it(`
@@ -164,11 +164,11 @@ it(`
   })
 
   const step1 = await (await steps.next()).value
-  expectDialog(step1, 'cctp_withdrawal')
+  expectDialogStep(step1, 'cctp_withdrawal')
   const step1UserInput = true
 
   const step2 = await (await steps.next(step1UserInput)).value
-  expectDialog(step2, 'custom_dest_addr_warn')
+  expectDialogStep(step2, 'custom_dest_addr_warn')
   const step2UserInput = true
 
   const step3 = await (await steps.next(step2UserInput)).value
