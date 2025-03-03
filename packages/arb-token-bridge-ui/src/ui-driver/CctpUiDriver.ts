@@ -19,6 +19,18 @@ export type UiDriverStep<TDialog extends Dialog = Dialog> =
   | { type: 'deposit_usdc.e' }
   | { type: 'return' }
 
+export type UiDriverStepResult<TStep extends UiDriverStep> = //
+  TStep extends { type: 'dialog'; dialog: infer TDialog extends Dialog } //
+    ? DialogResult<TDialog>
+    : //
+    TStep extends { type: 'deposit_usdc.e' }
+    ? false | undefined
+    : //
+    TStep extends { type: 'return' }
+    ? void
+    : //
+      never
+
 export type UiDriverContext = {
   isDepositMode: boolean
   isSmartContractWallet: boolean
