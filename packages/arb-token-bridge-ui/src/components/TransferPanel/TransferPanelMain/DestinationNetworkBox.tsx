@@ -24,7 +24,7 @@ import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
-import { DialogWrapper, useDialog2 } from '../../common/Dialog2'
+import { DialogWrapper, useDialog } from '../../common/DialogWrapper'
 
 function BalanceRow({
   parentErc20Address,
@@ -184,7 +184,7 @@ function BalancesContainer() {
 export function DestinationNetworkBox() {
   const [networks] = useNetworks()
   const [{ destinationAddress }] = useArbQueryParams()
-  const [dialogProps, openDialog] = useDialog2()
+  const [dialogProps, openDialog] = useDialog()
   const {
     network: { logo: networkLogo }
   } = getBridgeUiConfigForChain(networks.destinationChain.id)

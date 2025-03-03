@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSigner } from 'wagmi'
 import { BigNumber, constants, utils } from 'ethers'
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, DialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
@@ -19,7 +19,7 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
-export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
+export type CustomFeeTokenApprovalDialogProps = DialogProps & {
   customFeeToken: NativeCurrencyErc20
 }
 

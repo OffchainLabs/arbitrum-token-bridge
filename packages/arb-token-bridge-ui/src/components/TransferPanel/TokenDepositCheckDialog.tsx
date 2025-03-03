@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, DialogProps } from '../common/Dialog'
 import { DOCS_DOMAIN } from '../../constants'
 import { NoteBox } from '../common/NoteBox'
 import { ExternalLink } from '../common/ExternalLink'
@@ -11,7 +11,7 @@ export type TokenDepositCheckDialogType =
   | 'deposit_token_user_added_token'
   | 'deposit_token_new_token'
 
-export type TokenDepositCheckDialogProps = UseDialogProps & {
+export type TokenDepositCheckDialogProps = DialogProps & {
   type: TokenDepositCheckDialogType
   symbol: string
 }

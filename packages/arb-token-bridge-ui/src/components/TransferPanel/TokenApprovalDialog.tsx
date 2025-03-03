@@ -3,7 +3,7 @@ import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
 import { useSigner } from 'wagmi'
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, DialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
@@ -29,7 +29,7 @@ import { NoteBox } from '../common/NoteBox'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 
-export type TokenApprovalDialogProps = UseDialogProps & {
+export type TokenApprovalDialogProps = DialogProps & {
   token: ERC20BridgeToken | null
   isCctp: boolean
   isOft: boolean

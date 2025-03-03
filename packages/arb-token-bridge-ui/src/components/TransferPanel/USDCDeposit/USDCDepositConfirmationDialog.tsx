@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Tab } from '@headlessui/react'
 
-import { Dialog, UseDialogProps } from '../../common/Dialog'
+import { Dialog, DialogProps } from '../../common/Dialog'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
@@ -30,7 +30,7 @@ import { SecurityGuaranteed, SecurityNotGuaranteed } from '../SecurityLabels'
 import { getUSDCAddresses } from '../../../state/cctpState'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
-type Props = UseDialogProps & {
+type Props = DialogProps & {
   amount: string
 }
 

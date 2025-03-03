@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { Tab } from '@headlessui/react'
 
-import { Dialog, UseDialogProps } from '../../common/Dialog'
+import { Dialog, DialogProps } from '../../common/Dialog'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
@@ -34,7 +34,7 @@ enum SelectedTabName {
 const defaultSelectedTabName: SelectedTabName = SelectedTabName.Cctp
 
 export function USDCWithdrawalConfirmationDialog(
-  props: UseDialogProps & { amount: string }
+  props: DialogProps & { amount: string }
 ) {
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
