@@ -1,5 +1,9 @@
 import { stepGeneratorForCctp } from './UiDriverCctp'
-import { expectStartStep, expectDialogStep } from './UiDriverTestUtils'
+import {
+  nextStep,
+  expectStepStart,
+  expectStepDialog
+} from './UiDriverTestUtils'
 
 it(`successfully returns steps for context:
 
@@ -11,11 +15,11 @@ it(`successfully returns steps for context:
     isSmartContractWallet: false
   })
 
-  const step1 = await (await generator.next()).value
-  expectStartStep(step1)
+  const step1 = await nextStep(generator)
+  expectStepStart(step1)
 
-  const step2 = await (await generator.next()).value
-  expectDialogStep(step2, 'cctp_deposit')
+  const step2 = await nextStep(generator)
+  expectStepDialog(step2, 'cctp_deposit')
 })
 
 it(`successfully returns steps for context:
@@ -28,9 +32,9 @@ it(`successfully returns steps for context:
     isSmartContractWallet: false
   })
 
-  const step1 = await (await generator.next()).value
-  expectStartStep(step1)
+  const step1 = await nextStep(generator)
+  expectStepStart(step1)
 
-  const step2 = await (await generator.next()).value
-  expectDialogStep(step2, 'cctp_withdrawal')
+  const step2 = await nextStep(generator)
+  expectStepDialog(step2, 'cctp_withdrawal')
 })
