@@ -110,9 +110,14 @@ export function useMaxAmount() {
     }
 
     if (nativeCurrency.isCustom) {
-      return String(
+      const amount =
         Number(nativeCurrencyMaxAmount) - estimatedChildChainGasFees * 1.4
-      )
+
+      // make sure it's always a positive number
+      // if it's negative, set it to user's balance to show insufficient for gas error
+      if (amount > 0) {
+        return String(amount)
+      }
     }
 
     return nativeCurrencyMaxAmount
