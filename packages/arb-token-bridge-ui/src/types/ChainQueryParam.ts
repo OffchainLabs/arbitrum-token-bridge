@@ -18,9 +18,9 @@ const chainQueryParams = [
   'base',
   'arbitrum-sepolia',
   'base-sepolia',
-  'ethereum-local',
-  'arbitrum-local',
-  'l3-local'
+  'nitro-testnode-l1',
+  'nitro-testnode-l2',
+  'nitro-testnode-l3'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
@@ -68,13 +68,13 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'base-sepolia'
 
     case ChainId.Local:
-      return 'ethereum-local'
+      return 'nitro-testnode-l1'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-local'
+      return 'nitro-testnode-l2'
 
     case ChainId.L3Local:
-      return 'l3-local'
+      return 'nitro-testnode-l3'
 
     default:
       const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -123,13 +123,13 @@ export function getChainForChainKeyQueryParam(
     case 'base-sepolia':
       return customChains.baseSepolia
 
-    case 'ethereum-local':
+    case 'nitro-testnode-l1':
       return customChains.localL1Network
 
-    case 'arbitrum-local':
+    case 'nitro-testnode-l2':
       return customChains.localL2Network
 
-    case 'l3-local':
+    case 'nitro-testnode-l3':
       return customChains.localL3Network
 
     default:

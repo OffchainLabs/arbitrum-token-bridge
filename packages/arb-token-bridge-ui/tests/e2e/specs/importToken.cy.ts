@@ -247,8 +247,8 @@ describe('Import token', () => {
 
         visitAfterSomeDelay('/', {
           qs: {
-            sourceChain: 'arbitrum-local',
-            destinationChain: 'l3-local',
+            sourceChain: 'nitro-testnode-l2',
+            destinationChain: 'nitro-testnode-l3',
             token: invalidTokenAddress
           }
         })

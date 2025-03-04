@@ -14,9 +14,9 @@ import {
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
-  | 'Ethereum Local'
-  | 'Arbitrum Local'
-  | 'L3 Local'
+  | 'Nitro Testnode L1'
+  | 'Nitro Testnode L2'
+  | 'Nitro Testnode L3'
   | 'Arbitrum Sepolia'
   | 'Ethereum'
   | 'Sepolia'
@@ -31,13 +31,11 @@ type NetworkConfig = {
 }
 
 export const getL1NetworkName = () => {
-  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  return isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local'
+  return getL1NetworkConfig().name
 }
 
 export const getL2NetworkName = () => {
-  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  return isOrbitTest ? 'L3 Local' : 'Arbitrum Local'
+  return getL2NetworkName().name
 }
 
 export const getNetworkSlug = (network: 'parent' | 'child') => {
@@ -50,7 +48,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
-    name: isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local',
+    name: isOrbitTest ? 'Nitro Testnode L2' : 'Nitro Testnode L1',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
@@ -71,7 +69,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     : defaultL3Network
 
   return {
-    name: isOrbitTest ? 'L3 Local' : 'Arbitrum Local',
+    name: isOrbitTest ? 'Nitro Testnode L3' : 'Nitro Testnode L2',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
     symbol: nativeTokenSymbol,

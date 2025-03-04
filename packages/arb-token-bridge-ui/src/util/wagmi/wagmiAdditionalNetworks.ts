@@ -164,7 +164,7 @@ export const base: Chain = {
  */
 export const localL1Network: Chain = {
   id: ChainId.Local,
-  name: 'Ethereum Local',
+  name: 'Nitro Testnode L1',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -184,7 +184,7 @@ export const localL1Network: Chain = {
  */
 export const localL2Network: Chain = {
   id: ChainId.ArbitrumLocal,
-  name: 'Arbitrum Local',
+  name: 'Nitro Testnode L2',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -204,7 +204,7 @@ export const localL2Network: Chain = {
  */
 export const localL3Network: Chain = {
   id: ChainId.L3Local,
-  name: 'L3 Local',
+  name: 'Nitro Testnode L3',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
