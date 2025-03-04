@@ -11,7 +11,11 @@ import {
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
 import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
-import { getChainIdFromProvider, getAddressFromSigner } from './utils'
+import {
+  getChainIdFromProvider,
+  getAddressFromSigner,
+  validateSignerChainId
+} from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 import { Address } from '../util/AddressUtils'
@@ -84,9 +88,13 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ signer, amount, destinationAddress }: TransferProps) {
+    const address = await getAddressFromSigner(signer)
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    const address = await getAddressFromSigner(signer)
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: sourceChainId
+    })
 
     // cctp has an upper limit for transfer
     const burnLimit = await fetchPerMessageBurnLimit({

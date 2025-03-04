@@ -5,8 +5,15 @@ import { getProviderForChainId } from '../token-bridge-sdk/utils'
 
 export type Address = `0x${string}`
 
-export async function addressIsSmartContract(address: string, chainId: number) {
-  const provider = getProviderForChainId(chainId)
+export async function addressIsSmartContract(
+  address: string,
+  chainIdOrProvider: number | Provider
+) {
+  const provider =
+    typeof chainIdOrProvider === 'number'
+      ? getProviderForChainId(chainIdOrProvider)
+      : chainIdOrProvider
+
   try {
     return (await provider.getCode(address)).length > 2
   } catch (_) {
