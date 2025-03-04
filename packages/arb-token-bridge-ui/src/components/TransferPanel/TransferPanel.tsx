@@ -84,6 +84,8 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
+import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -401,6 +403,21 @@ export function TransferPanel() {
     return confirmed
   }
 
+  const stepExecutor: UiDriverStepExecutor = async step => {
+    switch (step.type) {
+      case 'start': {
+        setTransferring(true)
+        return
+      }
+
+      case 'return': {
+        throw Error(
+          `[stepExecutor] "return" step should be handled outside the executor`
+        )
+      }
+    }
+  }
+
   const transferCctp = async () => {
     if (!selectedToken) {
       return
@@ -414,11 +431,14 @@ export function TransferPanel() {
 
     const destinationAddress = latestDestinationAddress.current
 
-    setTransferring(true)
-
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
+
+      await drive(stepGeneratorForCctp, stepExecutor, {
+        isDepositMode,
+        isSmartContractWallet
+      })
 
       // show confirmation popup before cctp transfer
       if (isDepositMode) {
