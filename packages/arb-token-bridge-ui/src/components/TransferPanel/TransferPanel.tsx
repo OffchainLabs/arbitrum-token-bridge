@@ -30,6 +30,8 @@ import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
+import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
+import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -166,6 +168,14 @@ export function TransferPanel() {
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
+  const [
+    usdcWithdrawalConfirmationDialogProps,
+    openUSDCWithdrawalConfirmationDialog
+  ] = useDialog()
+  const [
+    usdcDepositConfirmationDialogProps,
+    openUSDCDepositConfirmationDialog
+  ] = useDialog()
 
   const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
 
@@ -281,7 +291,7 @@ export function TransferPanel() {
   const amountBigNumber = useAmountBigNumber()
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
-    const waitForInput = openDialog('deposit_usdc')
+    const waitForInput = openUSDCDepositConfirmationDialog()
     const [confirmed, primaryButtonClicked] = await waitForInput()
 
     // user declined to transfer altogether
@@ -299,7 +309,7 @@ export function TransferPanel() {
   }
 
   const confirmUsdcWithdrawalForCctp = async () => {
-    const waitForInput = openDialog('withdraw_usdc')
+    const waitForInput = openUSDCWithdrawalConfirmationDialog()
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -1124,6 +1134,16 @@ export function TransferPanel() {
   return (
     <>
       <DialogWrapper {...dialogProps} />
+
+      <USDCWithdrawalConfirmationDialog
+        {...usdcWithdrawalConfirmationDialogProps}
+        amount={amount}
+      />
+
+      <USDCDepositConfirmationDialog
+        {...usdcDepositConfirmationDialogProps}
+        amount={amount}
+      />
 
       <div
         className={twMerge(

@@ -5,8 +5,6 @@ import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirmationDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { USDCWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/USDCWithdrawalConfirmationDialog'
-import { USDCDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/USDCDepositConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from '../TransferPanel/CustomFeeTokenApprovalDialog'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useLatest } from 'react-use'
@@ -35,8 +33,6 @@ type DialogType =
   | 'approve_cctp_usdc'
   | 'approve_custom_fee_token'
   | 'withdraw'
-  | 'withdraw_usdc'
-  | 'deposit_usdc'
   | 'scw_custom_destination_address'
 
 export function useDialog2(): UseDialogResult {
@@ -126,12 +122,6 @@ export function DialogWrapper(props: DialogProps) {
       return null
     case 'withdraw':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
-    case 'withdraw_usdc':
-      return (
-        <USDCWithdrawalConfirmationDialog {...commonProps} amount={amount} />
-      )
-    case 'deposit_usdc':
-      return <USDCDepositConfirmationDialog {...commonProps} amount={amount} />
     case 'scw_custom_destination_address':
       return <CustomDestinationAddressConfirmationDialog {...commonProps} />
     default:
