@@ -1,9 +1,9 @@
 import Image from 'next/image'
 import dayjs from 'dayjs'
 import { SafeImage } from '../../common/SafeImage'
-import { BigNumber } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { twMerge } from 'tailwind-merge'
-import { formatAmount } from '../../../util/NumberUtils'
+import { formatAmount, formatUSD } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
@@ -15,6 +15,12 @@ import { TokenLogo } from '../TokenLogo'
 import React from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+
+import { useETHPrice } from '../../../hooks/useETHPrice'
+import { isNetwork } from '../../../util/networks'
+import { Tooltip } from '../../common/Tooltip'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 
 export type BadgeType = 'security-guaranteed'
 export type Token = {
@@ -33,6 +39,7 @@ export type RouteProps = {
   overrideToken?: Token
   /** We might have multiple gas token, for example an ER20 deposit to XAI from Arb1 */
   gasCost: RouteGas[] | undefined
+  bridgeFee?: { fee: string | undefined; token: Token }
   bridge: string
   bridgeIconURI: string
   tag?: BadgeType
@@ -87,10 +94,12 @@ export const Route = React.memo(
     overrideToken,
     gasCost,
     tag,
-    selected
+    selected,
+    bridgeFee
   }: RouteProps) => {
     const [networks] = useNetworks()
-    const { childChainProvider } = useNetworksRelationship(networks)
+    const { childChainProvider, isDepositMode } =
+      useNetworksRelationship(networks)
     const childNativeCurrency = useNativeCurrency({
       provider: childChainProvider
     })
@@ -103,6 +112,18 @@ export const Route = React.memo(
     const token = overrideToken || _token || childNativeCurrency
 
     const { name, icon, width, height } = getBridgeConfigFromType(type)
+    const { isTestnet } = isNetwork(networks.sourceChain.id)
+    const { ethToUSD } = useETHPrice()
+    // Only display USD values for ETH
+    const showUsdValueForReceivedToken = !isTestnet && !('address' in token)
+
+    const { fastWithdrawalActive } = !isDepositMode
+      ? getConfirmationTime(networks.sourceChain.id)
+      : { fastWithdrawalActive: false }
+
+    const gasEth =
+      gasCost &&
+      gasCost.find(({ gasToken }) => gasToken.address === constants.AddressZero)
 
     return (
       <div
@@ -112,7 +133,12 @@ export const Route = React.memo(
         )}
         onClick={() => setSelectedRoute(type)}
       >
-        <div className="bg-gray-8 flex min-h-8 items-center rounded-t py-2 pl-4 pr-2 text-xs">
+        <div
+          className={twMerge(
+            'bg-gray-8 flex h-8 items-center rounded-t py-2 pl-4 pr-2 text-xs',
+            selected && 'bg-[#5F7D5B]'
+          )}
+        >
           <Image
             src={icon}
             width={width}
@@ -124,8 +150,8 @@ export const Route = React.memo(
           {selected && (
             <Image
               src={'/icons/check.svg'}
-              width={18}
-              height={18}
+              width={30}
+              height={30}
               alt="selected"
               className="ml-auto"
             />
@@ -133,34 +159,42 @@ export const Route = React.memo(
         </div>
         <div
           className={twMerge(
-            'relative flex rounded-b bg-[#303030] px-4 py-3 text-sm transition-colors group-hover:bg-[#474747]',
+            'relative flex gap-4 rounded-b bg-[#303030] px-4 py-3 text-sm transition-colors group-hover:bg-[#474747]',
             selected && 'bg-[#474747]'
           )}
         >
           <div className="flex flex-col">
             <span>You will receive:</span>
             <div className="flex flex-col text-lg">
-              <div className="flex flex-row items-center gap-2">
+              <div className="flex flex-row items-center gap-1">
                 <TokenLogo
-                  srcOverride={'logoURI' in token ? token.logoURI : ''}
+                  srcOverride={'logoURI' in token ? token.logoURI : null}
                 />
                 {formatAmount(BigNumber.from(amountReceived), {
                   decimals: token.decimals,
                   symbol: token.symbol
                 })}
+                <div className="text-sm">
+                  {showUsdValueForReceivedToken && (
+                    <div className="text-sm tabular-nums opacity-80">
+                      {formatUSD(
+                        ethToUSD(Number(utils.formatEther(amountReceived)))
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               {isBatchTransferSupported && Number(amount2) > 0 && (
-                <div className="flew-row flex items-center gap-2">
+                <div className="flew-row flex items-center gap-1">
                   <TokenLogo srcOverride={null} />
-                  {formatAmount(BigNumber.from(amount2), {
-                    decimals: 0,
+                  {formatAmount(Number(amount2), {
                     symbol: childNativeCurrency.symbol
                   })}
                 </div>
               )}
             </div>
           </div>
-          <div className="ml-6 flex flex-col justify-between gap-3">
+          <div className="flex flex-col justify-between gap-3">
             <div className="flex items-center">
               <Image
                 src="/icons/duration.svg"
@@ -171,26 +205,19 @@ export const Route = React.memo(
               <span className="ml-1">
                 {dayjs().add(durationMs, 'millisecond').fromNow(true)}
               </span>
+              {fastWithdrawalActive && (
+                <div className="flex items-center">
+                  <Tooltip
+                    content={
+                      'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
+                    }
+                  >
+                    <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
+                  </Tooltip>
+                </div>
+              )}
             </div>
-            <div className="flex items-center">
-              <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
-              <span className="ml-1">
-                {isLoadingGasEstimate ? (
-                  <Loader size="small" color="white" />
-                ) : gasCost ? (
-                  gasCost
-                    .map(({ gasCost, gasToken }) =>
-                      formatAmount(BigNumber.from(gasCost), {
-                        decimals: gasToken.decimals,
-                        symbol: gasToken.symbol
-                      })
-                    )
-                    .join(' and ')
-                ) : (
-                  'N/A'
-                )}
-              </span>
-            </div>
+
             <div className="flex items-center">
               <SafeImage
                 src={bridgeIconURI}
@@ -201,7 +228,64 @@ export const Route = React.memo(
               />
               <span className="ml-1">{bridge}</span>
             </div>
+
+            <Tooltip content={'The gas fees paid to operate the network'}>
+              <div className="flex items-center">
+                <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
+                <span className="ml-1">
+                  {isLoadingGasEstimate ? (
+                    <Loader size="small" color="white" />
+                  ) : gasCost ? (
+                    <div className="flex items-center gap-1">
+                      {gasCost
+                        .map(({ gasCost, gasToken }) =>
+                          formatAmount(BigNumber.from(gasCost), {
+                            decimals: gasToken.decimals,
+                            symbol: gasToken.symbol
+                          })
+                        )
+                        .join(' and ')}
+                      {gasEth && (
+                        <div className="text-sm tabular-nums opacity-80">
+                          {formatUSD(
+                            ethToUSD(
+                              Number(
+                                utils.formatEther(
+                                  BigNumber.from(gasEth.gasCost)
+                                )
+                              )
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    'N/A'
+                  )}
+                </span>
+              </div>
+            </Tooltip>
+
+            {bridgeFee && (
+              <Tooltip content={'The fee the bridge takes'}>
+                <div className="flex items-center">
+                  <Image
+                    src="/icons/bridge.svg"
+                    width={15}
+                    height={15}
+                    alt="bridge fee"
+                  />
+                  <span className="ml-1">
+                    {formatAmount(BigNumber.from(bridgeFee.fee), {
+                      decimals: bridgeFee.token.decimals,
+                      symbol: bridgeFee.token.symbol
+                    })}
+                  </span>
+                </div>
+              </Tooltip>
+            )}
           </div>
+
           {tag ? (
             <div className="absolute right-2 top-2">{getBadge(tag)()}</div>
           ) : null}
