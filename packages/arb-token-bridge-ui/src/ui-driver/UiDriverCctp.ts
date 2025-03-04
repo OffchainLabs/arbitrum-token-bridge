@@ -1,5 +1,5 @@
-import { UiDriverStepGenerator } from './UiDriver'
+import { step, UiDriverStepGenerator } from './UiDriver'
 
 export const stepGeneratorForCctp: UiDriverStepGenerator = async function* () {
-  yield { type: 'start' }
+  yield* step({ type: 'start' })
 }
