@@ -84,6 +84,7 @@ import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper } from '../common/Dialog2'
+import { addressesEqual } from '../../util/AddressUtils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -267,12 +268,10 @@ export function TransferPanel() {
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
 
-  const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
-    return (
-      destinationAddress?.trim().toLowerCase() ===
-      walletAddress?.trim().toLowerCase()
-    )
-  }, [destinationAddress, walletAddress])
+  const areSenderAndCustomDestinationAddressesEqual = useMemo(
+    () => addressesEqual(destinationAddress, walletAddress),
+    [destinationAddress, walletAddress]
+  )
 
   async function depositToken() {
     if (!selectedToken) {
