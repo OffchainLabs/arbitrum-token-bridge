@@ -35,7 +35,7 @@ export const getL1NetworkName = () => {
 }
 
 export const getL2NetworkName = () => {
-  return getL2NetworkName().name
+  return getL2NetworkConfig().name
 }
 
 export const getNetworkSlug = (network: 'parent' | 'child') => {
