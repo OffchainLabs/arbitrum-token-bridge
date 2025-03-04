@@ -288,8 +288,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           {isOft && (
             <NoteBox variant="warning">
               Note: USDT approvals for the LayerZero OFT contract must be set to
-              the maximum amount. Do not modify the approval amount, or the
-              transaction may fail.
+              the maximum amount. Please do not modify the approval amount, or
+              the transaction may fail.
             </NoteBox>
           )}
 
