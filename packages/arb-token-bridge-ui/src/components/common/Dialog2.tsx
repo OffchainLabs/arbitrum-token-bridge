@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLatest } from 'react-use'
 
 import { TokenApprovalDialog } from '../TransferPanel/TokenApprovalDialog'
 import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
@@ -7,7 +8,6 @@ import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirm
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { CustomFeeTokenApprovalDialog } from '../TransferPanel/CustomFeeTokenApprovalDialog'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useLatest } from 'react-use'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
