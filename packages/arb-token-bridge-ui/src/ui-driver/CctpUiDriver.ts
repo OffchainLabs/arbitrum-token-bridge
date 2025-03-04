@@ -21,15 +21,19 @@ export type UiDriverStep<TDialog extends Dialog = Dialog> =
 
 export type UiDriverStepResult<TStep extends UiDriverStep> = //
   TStep extends { type: 'dialog'; dialog: infer TDialog extends Dialog } //
-    ? DialogResult<TDialog>
+    ? Promise<DialogResult<TDialog>>
     : //
     TStep extends { type: 'deposit_usdc.e' }
-    ? false | undefined
+    ? Promise<false | undefined>
     : //
     TStep extends { type: 'return' }
     ? void
     : //
       never
+
+export type UiDriverStepExecutor<TStep extends UiDriverStep = UiDriverStep> = (
+  step: TStep
+) => UiDriverStepResult<TStep>
 
 export type UiDriverContext = {
   isDepositMode: boolean

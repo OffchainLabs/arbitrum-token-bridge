@@ -84,7 +84,11 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
-import { CctpUiDriver, UiDriverStep } from '../../ui-driver/CctpUiDriver'
+import {
+  CctpUiDriver,
+  UiDriverStep,
+  UiDriverStepExecutor
+} from '../../ui-driver/CctpUiDriver'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -402,7 +406,7 @@ export function TransferPanel() {
     return confirmed
   }
 
-  function executeStep(step: UiDriverStep) {
+  const executeStep: UiDriverStepExecutor = step => {
     switch (step.type) {
       case 'deposit_usdc.e':
         return depositToken()
