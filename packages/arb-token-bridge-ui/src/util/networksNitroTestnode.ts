@@ -17,7 +17,7 @@ export const defaultL2Network: ArbitrumNetwork = {
   },
   isCustom: true,
   isTestnet: true,
-  name: 'Arbitrum Local',
+  name: 'Nitro Testnode L2',
   tokenBridge: {
     parentCustomGateway: '0x8407E6180dC009D20D26D4BABB4790C1d4E6D2aA',
     parentErc20Gateway: '0x00D9fE1a2B67B8151aEdE8855c95E58D73FB4245',
@@ -51,7 +51,7 @@ export const defaultL3Network: ArbitrumNetwork = {
   },
   isCustom: true,
   isTestnet: true,
-  name: 'L3 Local',
+  name: 'Nitro Testnode L3',
   tokenBridge: {
     parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
     parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',
@@ -86,7 +86,7 @@ export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
   nativeToken: '0xE069078bA9ACCE4eeAE609d8754515Cf13dd6706',
   isCustom: true,
   isTestnet: true,
-  name: 'L3 Local',
+  name: 'Nitro Testnode L3',
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
     parentCustomGateway: '0xCe02eA568090ae7d5184B0a98df90f6aa69C1552',
