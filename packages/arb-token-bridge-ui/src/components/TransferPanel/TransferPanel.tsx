@@ -404,6 +404,10 @@ export function TransferPanel() {
   }
 
   const stepExecutor: UiDriverStepExecutor = async step => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(step)
+    }
+
     switch (step.type) {
       case 'start': {
         setTransferring(true)
