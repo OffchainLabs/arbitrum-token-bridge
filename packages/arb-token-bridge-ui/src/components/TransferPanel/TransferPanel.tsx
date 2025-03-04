@@ -84,11 +84,9 @@ import { useMainContentTabs } from '../MainContent/MainContent'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
-import {
-  CctpUiDriver,
-  UiDriverStep,
-  UiDriverStepExecutor
-} from '../../ui-driver/CctpUiDriver'
+
+import { UiDriverStepExecutor } from '../../ui-driver/UiDriver'
+import { CctpUiDriver } from '../../ui-driver/CctpUiDriver'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'

@@ -1,10 +1,10 @@
 import {
-  CctpUiDriver,
   Dialog,
   UiDriverContext,
   UiDriverStep,
   UiDriverStepDialog
-} from './CctpUiDriver'
+} from './UiDriver'
+import { CctpUiDriver } from './CctpUiDriver'
 
 /* eslint-disable jest/valid-title */
 
