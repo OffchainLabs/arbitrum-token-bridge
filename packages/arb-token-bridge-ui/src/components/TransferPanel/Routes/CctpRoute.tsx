@@ -1,14 +1,11 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { Route } from './Route'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
-import { ether } from '../../../constants'
 import { isNetwork } from '../../../util/networks'
-import { constants } from 'ethers'
 
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
-import { useMemo } from 'react'
 
 const nativeUsdcToken = {
   decimals: 6,
