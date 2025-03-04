@@ -38,6 +38,30 @@ export type UiDriverStepResult<TStep extends UiDriverStep> = //
     : //
       never
 
+export type UiDriverStepGenerator<TStep extends UiDriverStep = UiDriverStep> = (
+  context: UiDriverContext
+) => AsyncGenerator<TStep, void, UiDriverStepResult<TStep>>
+
 export type UiDriverStepExecutor<TStep extends UiDriverStep = UiDriverStep> = (
   step: TStep
 ) => UiDriverStepResult<TStep>
+
+export async function handleUiDriver<TStep extends UiDriverStep>(
+  generator: UiDriverStepGenerator<TStep>,
+  executor: UiDriverStepExecutor<TStep>,
+  context: UiDriverContext
+): Promise<void> {
+  const flow = generator(context)
+
+  let nextStep = await flow.next()
+
+  while (!nextStep.done) {
+    const step = nextStep.value
+
+    // Execute step and pass back correctly typed result
+    const result = await executor(step)
+
+    // Pass result back into the generator
+    nextStep = await flow.next(result)
+  }
+}

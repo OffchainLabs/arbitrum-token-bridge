@@ -85,7 +85,7 @@ import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 
-import { UiDriverStepExecutor } from '../../ui-driver/UiDriver'
+import { handleUiDriver, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { CctpUiDriver } from '../../ui-driver/CctpUiDriver'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -446,28 +446,12 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
 
-      const steps = CctpUiDriver.createSteps({
+      await handleUiDriver(CctpUiDriver.createSteps, executeStep, {
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
         destinationAddress
       })
-
-      let nextStep = await steps.next()
-
-      while (!nextStep.done) {
-        const step = nextStep.value
-
-        // special type for early return
-        if (step.type === 'return') {
-          return
-        }
-
-        // Execute step and pass back correctly typed result
-        const result = await executeStep(step)
-        // Pass result back into the generator
-        nextStep = await steps.next(result)
-      }
 
       const cctpTransferStarter = new CctpTransferStarter({
         sourceChainProvider,
