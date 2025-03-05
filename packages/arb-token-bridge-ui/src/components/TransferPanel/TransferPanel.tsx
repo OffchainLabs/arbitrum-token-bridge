@@ -412,6 +412,22 @@ export function TransferPanel() {
           `[stepExecutor] "return" step should be handled outside the executor`
         )
       }
+
+      case 'dialog': {
+        if (step.payload === 'cctp_deposit') {
+          return console.log('todo: cctp_deposit')
+        }
+
+        if (step.payload === 'cctp_withdrawal') {
+          return console.log('todo: cctp_withdrawal')
+        }
+
+        if (step.payload === 'scw_custom_destination_address_equal') {
+          return confirmCustomDestinationAddressForSCWallets()
+        }
+
+        throw Error(`[stepExecutor] unhandled dialog: ${step.payload}`)
+      }
     }
   }
 
