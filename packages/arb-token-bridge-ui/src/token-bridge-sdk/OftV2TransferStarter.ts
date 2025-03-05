@@ -240,22 +240,22 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       sendParams
     })
 
-    const gasEstimates = this.transferEstimateGas({
-      amount,
-      signer,
-      destinationAddress
-    })
+    // const gasEstimates = this.transferEstimateGas({
+    //   amount,
+    //   signer,
+    //   destinationAddress
+    // })
 
     /**
      * getOftV2Quote return both gas fee and layerzero fee
      * We substract gas estimate from the fee to get an estimate of the fee
      */
 
-    const sourceChainId = await signer.getChainId()
-    const isDepositMode =
-      sourceChainId === (await getChainIdFromProvider(this.sourceChainProvider))
+    // const sourceChainId = await signer.getChainId()
+    // const isDepositMode =
+    //   sourceChainId === (await getChainIdFromProvider(this.sourceChainProvider))
     return {
-      estimatedSourceChainFee: nativeFee.sub(gasEstimates),
+      estimatedSourceChainFee: nativeFee,
       estimatedDestinationChainFee: constants.Zero
     }
   }
