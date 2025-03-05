@@ -25,6 +25,7 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { Tooltip } from '../common/Tooltip'
+import { addressesEqual } from '../../util/AddressUtils'
 
 export function TransactionsTableRowAction({
   tx,
@@ -44,7 +45,7 @@ export function TransactionsTableRowAction({
   const isViewingAnotherAddress =
     connectedAddress &&
     searchedAddress &&
-    connectedAddress.toLowerCase() !== searchedAddress.toLowerCase()
+    !addressesEqual(connectedAddress, searchedAddress)
 
   const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
     erc20L1Address: tx.tokenAddress,
