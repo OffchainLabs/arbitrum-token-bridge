@@ -81,6 +81,9 @@ import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper } from '../common/Dialog2'
+import { addressesEqual } from '../../util/AddressUtils'
+import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
+import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -259,12 +262,10 @@ export function TransferPanel() {
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
 
-  const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
-    return (
-      destinationAddress?.trim().toLowerCase() ===
-      walletAddress?.trim().toLowerCase()
-    )
-  }, [destinationAddress, walletAddress])
+  const areSenderAndCustomDestinationAddressesEqual = useMemo(
+    () => addressesEqual(destinationAddress, walletAddress),
+    [destinationAddress, walletAddress]
+  )
 
   async function depositToken() {
     if (!selectedToken) {
@@ -387,6 +388,25 @@ export function TransferPanel() {
     return confirmed
   }
 
+  const stepExecutor: UiDriverStepExecutor = async step => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(step)
+    }
+
+    switch (step.type) {
+      case 'start': {
+        setTransferring(true)
+        return
+      }
+
+      case 'return': {
+        throw Error(
+          `[stepExecutor] "return" step should be handled outside the executor`
+        )
+      }
+    }
+  }
+
   const transferCctp = async () => {
     if (!selectedToken) {
       return
@@ -400,11 +420,14 @@ export function TransferPanel() {
 
     const destinationAddress = latestDestinationAddress.current
 
-    setTransferring(true)
-
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
+
+      await drive(stepGeneratorForCctp, stepExecutor, {
+        isDepositMode,
+        isSmartContractWallet
+      })
 
       // show confirmation popup before cctp transfer
       if (isDepositMode) {
