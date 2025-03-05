@@ -11,7 +11,7 @@ import {
   BridgeTransferStarterProps
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner } from './utils'
+import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import {
   getOftV2TransferConfig,
   buildSendParams,
@@ -220,7 +220,8 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
   public async transferEstimateFee({
     amount,
-    signer
+    signer,
+    destinationAddress
   }: TransferEstimateGasProps) {
     await this.validateOftTransfer()
 
@@ -239,8 +240,22 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       sendParams
     })
 
+    const gasEstimates = this.transferEstimateGas({
+      amount,
+      signer,
+      destinationAddress
+    })
+
+    /**
+     * getOftV2Quote return both gas fee and layerzero fee
+     * We substract gas estimate from the fee to get an estimate of the fee
+     */
+
+    const sourceChainId = await signer.getChainId()
+    const isDepositMode =
+      sourceChainId === (await getChainIdFromProvider(this.sourceChainProvider))
     return {
-      estimatedSourceChainFee: nativeFee,
+      estimatedSourceChainFee: nativeFee.sub(gasEstimates),
       estimatedDestinationChainFee: constants.Zero
     }
   }
