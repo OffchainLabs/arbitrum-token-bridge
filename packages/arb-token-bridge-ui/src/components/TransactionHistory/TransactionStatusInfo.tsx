@@ -9,6 +9,7 @@ import Image from 'next/image'
 import ArrowsIcon from '@/images/arrows.svg'
 
 import { useTransactionReminderInfo } from './useTransactionReminderInfo'
+import { useAccount } from 'wagmi'
 
 const Content = ({
   numClaimableTransactions,
@@ -88,12 +89,17 @@ export const TransactionStatusInfo = () => {
     numPendingTransactions,
     colorClassName
   } = useTransactionReminderInfo()
+  const { address } = useAccount()
 
   if (
     numClaimableTransactions === 0 &&
     numRetryablesToRedeem === 0 &&
     numPendingTransactions === 0
   ) {
+    return null
+  }
+
+  if (typeof address === 'undefined') {
     return null
   }
 

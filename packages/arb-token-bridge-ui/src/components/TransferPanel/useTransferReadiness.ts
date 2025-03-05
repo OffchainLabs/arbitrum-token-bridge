@@ -220,6 +220,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       }
     )
 
+    if (typeof walletAddress === 'undefined') {
+      // show gas estimation without wallet connection
+      return ready()
+    }
+
     const ethBalanceFloat = isDepositMode
       ? ethL1BalanceFloat
       : ethL2BalanceFloat

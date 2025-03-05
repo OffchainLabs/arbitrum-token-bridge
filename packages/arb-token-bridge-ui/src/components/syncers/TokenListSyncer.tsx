@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
@@ -15,7 +14,6 @@ const TokenListSyncer = (): JSX.Element => {
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
 
@@ -23,27 +21,24 @@ const TokenListSyncer = (): JSX.Element => {
     if (!arbTokenBridgeLoaded) {
       return
     }
-
-    if (!walletAddress) {
-      return
-    }
-
     const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
       // Always load the Arbitrum Token token list
       if (bridgeTokenList.isArbitrumTokenTokenList) {
         return true
       }
-
       return (
         bridgeTokenList.originChainID === childChain.id &&
         bridgeTokenList.isDefault
       )
     })
-
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [walletAddress, childChain.id, arbTokenBridgeLoaded])
+  }, [
+    // arbTokenBridge.token is not a memoized object, adding it here would cause infinite loop
+    childChain.id,
+    arbTokenBridgeLoaded
+  ])
 
   return <></>
 }
