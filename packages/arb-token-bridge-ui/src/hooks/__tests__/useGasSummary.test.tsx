@@ -72,29 +72,17 @@ describe('getGasSummaryStatus', () => {
     }
 
     it('should return error if there is an OFT fee estimate error', async () => {
-      const result = getGasSummaryStatus({
-        ...mockedGasSummaryParams,
-        oftFeeSummaryLoading: false,
-        oftFeeEstimatesError: true
-      })
+      const result = getGasSummaryStatus(mockedGasSummaryParams)
       expect(result).toEqual('error')
     })
 
     it('should return success if there is not an OFT fee estimate error', async () => {
-      const result = getGasSummaryStatus({
-        ...mockedGasSummaryParams,
-        oftFeeSummaryLoading: false,
-        oftFeeEstimatesError: false
-      })
+      const result = getGasSummaryStatus(mockedGasSummaryParams)
       expect(result).toEqual('success')
     })
 
     it('should return loading if OFT fee summary is loading', async () => {
-      const result = getGasSummaryStatus({
-        ...mockedGasSummaryParams,
-        oftFeeSummaryLoading: true,
-        oftFeeEstimatesError: false
-      })
+      const result = getGasSummaryStatus(mockedGasSummaryParams)
       expect(result).toEqual('loading')
     })
   })
@@ -105,8 +93,6 @@ describe('getGasSummaryStatus', () => {
       gasEstimatesError: new Error('cannot estimate gas'),
       amountBigNumber: BigNumber.from(100_000),
       balance: BigNumber.from(100_000),
-      oftFeeSummaryLoading: false,
-      oftFeeEstimatesError: false,
       sourceChainId: ChainId.ArbitrumOne,
       destinationChainId: ChainId.Ethereum
     })
@@ -119,8 +105,6 @@ describe('getGasSummaryStatus', () => {
       gasEstimatesError: 'walletNotConnected',
       amountBigNumber: BigNumber.from(100_000),
       balance: BigNumber.from(100_000),
-      oftFeeSummaryLoading: false,
-      oftFeeEstimatesError: false,
       sourceChainId: ChainId.ArbitrumOne,
       destinationChainId: ChainId.Ethereum
     })
@@ -133,8 +117,6 @@ describe('getGasSummaryStatus', () => {
       gasEstimatesError: 'walletNotConnected',
       amountBigNumber: BigNumber.from(100_000),
       balance: BigNumber.from(100_000),
-      oftFeeSummaryLoading: false,
-      oftFeeEstimatesError: false,
       sourceChainId: ChainId.ArbitrumSepolia,
       destinationChainId: ChainId.Sepolia
     })
