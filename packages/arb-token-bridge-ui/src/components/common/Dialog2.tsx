@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useLatest } from 'react-use'
 
 import { TokenApprovalDialog } from '../TransferPanel/TokenApprovalDialog'
 import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
@@ -83,10 +82,7 @@ export function DialogWrapper(props: DialogProps) {
   const [selectedToken] = useSelectedToken()
   const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
-  const latestNetworks = useLatest(networks)
-  const {
-    current: { childChainProvider }
-  } = useLatest(useNetworksRelationship(latestNetworks.current))
+  const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [isOpen, setIsOpen] = useState(false)
