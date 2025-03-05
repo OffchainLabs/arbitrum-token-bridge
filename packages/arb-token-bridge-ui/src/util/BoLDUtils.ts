@@ -1,4 +1,5 @@
 import { ChainId } from '../types/ChainId'
+import { isNetwork } from './networks'
 
 const boldUpgrades: {
   [chainId: number]: {
@@ -42,6 +43,29 @@ export type BoldUpgradeInfo =
       status: BoldUpgradeStatus.Done
     }
 
+export function getBoldInfo({
+  createdAt,
+  withdrawalFromChainId
+}: {
+  createdAt: number
+  withdrawalFromChainId: number
+}): {
+  affected: boolean
+  upgradeTime: Date
+} {
+  const { isArbitrumOne, isArbitrumNova } = isNetwork(withdrawalFromChainId)
+
+  const affectedChain = isArbitrumOne || isArbitrumNova
+  const affectedPeriod =
+    new Date(createdAt) >= new Date('2025-02-05T14:00:00Z') &&
+    new Date(createdAt) <= new Date('2025-02-12T14:00:00Z')
+
+  return {
+    affected: affectedChain && affectedPeriod,
+    upgradeTime: new Date('2025-02-12T14:00:00Z')
+  }
+}
+
 export function getBoldUpgradeInfo(chainId: number): BoldUpgradeInfo {
   const upgrade = boldUpgrades[chainId]
 
@@ -83,6 +107,6 @@ export function getBoldUpgradeInfo(chainId: number): BoldUpgradeInfo {
   }
 }
 
-function getDifferenceInSeconds(date1: Date, date2: Date): number {
+export function getDifferenceInSeconds(date1: Date, date2: Date): number {
   return Math.abs((date1.getTime() - date2.getTime()) / 1000)
 }

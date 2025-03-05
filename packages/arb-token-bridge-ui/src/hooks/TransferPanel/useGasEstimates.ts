@@ -82,7 +82,7 @@ export function useGasEstimates({
       sanitizedDestinationAddress,
       walletAddress,
       'gasEstimates'
-    ],
+    ] as const,
     ([
       _sourceChainId,
       _destinationChainId,

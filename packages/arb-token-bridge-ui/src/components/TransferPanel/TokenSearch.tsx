@@ -37,6 +37,7 @@ import { Switch } from '../common/atoms/Switch'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { addressesEqual } from '../../util/AddressUtils'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -292,7 +293,7 @@ function TokensPanel({
         // If the token on the list is used as a custom fee token, we remove the duplicate
         if (
           nativeCurrency.isCustom &&
-          address.toLowerCase() === nativeCurrency.address.toLowerCase()
+          addressesEqual(address, nativeCurrency.address)
         ) {
           return false
         }
@@ -509,7 +510,6 @@ export function TokenSearch({
   className?: string
   close: () => void
 }) {
-  const { address: walletAddress } = useAccount()
   const { setAmount2 } = useSetInputAmount()
   const {
     app: {

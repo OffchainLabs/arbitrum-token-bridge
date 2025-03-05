@@ -4,7 +4,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
-  TransferEstimateGas,
+  TransferEstimateGasProps,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
@@ -68,7 +68,10 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    signer
+  }: TransferEstimateGasProps) {
     const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
