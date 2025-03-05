@@ -2,6 +2,9 @@ import { ethers } from 'ethers'
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { BigNumber } from 'ethers'
+import { Address } from 'wagmi'
+import { ReadContractResult, readContract } from '@wagmi/core'
+import { oftV2Abi } from './oftV2Abi'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 const oftProtocolConfig: {
@@ -90,17 +93,12 @@ export function getOftV2TransferConfig({
 }
 interface SendParam {
   dstEid: number
-  to: string
-  amountLD: string
-  minAmountLD: string
-  extraOptions: string
-  composeMsg: string
-  oftCmd: string
-}
-
-interface QuoteResult {
-  nativeFee: string
-  lzTokenFee: string
+  to: Address
+  amountLD: BigNumber
+  minAmountLD: BigNumber
+  extraOptions: `0x${string}`
+  composeMsg: `0x${string}`
+  oftCmd: `0x${string}`
 }
 
 export function buildSendParams({
@@ -116,25 +114,31 @@ export function buildSendParams({
 }): SendParam {
   return {
     dstEid,
-    to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
-    amountLD: amount.toString(),
-    minAmountLD: amount.toString(),
+    to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32) as Address,
+    amountLD: amount,
+    minAmountLD: amount,
     extraOptions: '0x',
     composeMsg: '0x',
     oftCmd: '0x'
   }
 }
 
+type QuoteResult = ReadContractResult<typeof oftV2Abi, 'quoteSend'>
 export async function getOftV2Quote({
-  contract,
+  address,
   sendParams
 }: {
-  contract: ethers.Contract
+  address: Address
   sendParams: SendParam
 }): Promise<QuoteResult> {
-  const quote = await contract.quoteSend(sendParams, false)
+  const quote = await readContract({
+    address,
+    abi: oftV2Abi,
+    functionName: 'quoteSend',
+    args: [sendParams, false]
+  })
   return {
-    nativeFee: quote.nativeFee.toString(),
-    lzTokenFee: quote.lzTokenFee.toString()
+    nativeFee: quote.nativeFee,
+    lzTokenFee: quote.lzTokenFee
   }
 }

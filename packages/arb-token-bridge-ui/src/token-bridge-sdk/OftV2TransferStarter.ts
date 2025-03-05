@@ -1,4 +1,4 @@
-import { constants, ethers, Signer } from 'ethers'
+import { BigNumber, constants, Contract, ethers, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -17,8 +17,46 @@ import {
   buildSendParams,
   getOftV2Quote
 } from './oftUtils'
-import oftV2Abi from './oftV2Abi.json'
+import { oftV2Abi } from './oftV2Abi'
 import { isNetwork } from '../util/networks'
+import { Address, prepareWriteContract, writeContract } from '@wagmi/core'
+
+async function prepareTransferConfig({
+  signer,
+  oftContract,
+  destLzEndpointId,
+  amount,
+  destinationAddress
+}: {
+  signer: Signer
+  oftContract: Contract
+  destLzEndpointId: number
+  amount: BigNumber
+  destinationAddress?: string
+}) {
+  const address = await getAddressFromSigner(signer)
+
+  const sendParams = buildSendParams({
+    dstEid: destLzEndpointId,
+    address,
+    amount,
+    destinationAddress
+  })
+  const quoteFee = await getOftV2Quote({
+    sendParams,
+    address: oftContract.address as Address
+  })
+
+  return prepareWriteContract({
+    address: oftContract.address as Address,
+    abi: oftV2Abi,
+    functionName: 'send',
+    args: [sendParams, quoteFee, address as Address],
+    overrides: {
+      value: quoteFee.nativeFee
+    }
+  })
+}
 
 export class OftV2TransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oftV2'
@@ -131,7 +169,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     return allowance.lt(amount)
   }
 
-  public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
+  public async approveTokenEstimateGas({ signer }: ApproveTokenProps) {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
@@ -158,9 +196,26 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     return contract.functions.approve(spender, constants.MaxUint256) // Eth USDT will need MAX approval since that cannot be changed afterwards
   }
 
-  // for OFT, we don't have functions for gas estimates, `sendQuote` method tells us the fees directly
-  public async transferEstimateGas() {
-    return undefined
+  public async transferEstimateGas({
+    amount,
+    signer,
+    destinationAddress
+  }: TransferEstimateGasProps) {
+    await this.validateOftTransfer()
+
+    const oftContract = this.getOftAdapterContract(signer)
+    const config = await prepareTransferConfig({
+      signer,
+      oftContract,
+      amount,
+      destLzEndpointId: this.destLzEndpointId!,
+      destinationAddress
+    })
+
+    return {
+      estimatedParentChainGas: await signer.estimateGas(config),
+      estimatedChildChainGas: constants.Zero
+    }
   }
 
   public async transferEstimateFee({
@@ -180,7 +235,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
     // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
     const { nativeFee } = await getOftV2Quote({
-      contract: oftContract,
+      address: oftContract.address as Address,
       sendParams
     })
 
@@ -193,30 +248,15 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     await this.validateOftTransfer()
 
-    const address = await getAddressFromSigner(signer)
     const oftContract = this.getOftAdapterContract(signer)
-
-    const sendParams = buildSendParams({
-      dstEid: this.destLzEndpointId!,
-      address,
+    const config = await prepareTransferConfig({
+      signer,
+      oftContract,
       amount,
-      destinationAddress
+      destLzEndpointId: this.destLzEndpointId!
     })
 
-    const { nativeFee, lzTokenFee } = await getOftV2Quote({
-      contract: oftContract,
-      sendParams
-    })
-
-    const sendTx = await oftContract.send(
-      sendParams,
-      {
-        nativeFee: nativeFee,
-        lzTokenFee: lzTokenFee
-      },
-      address,
-      { value: nativeFee }
-    )
+    const sendTx = await writeContract(config)
 
     return {
       transferType: this.transferType,
