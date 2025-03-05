@@ -1,9 +1,5 @@
 import { stepGeneratorForCctp } from './UiDriverCctp'
-import {
-  nextStep,
-  expectStepStart,
-  expectStepDialog
-} from './UiDriverTestUtils'
+import { nextStep, expectStep } from './UiDriverTestUtils'
 
 it(`successfully returns steps for context:
 
@@ -16,10 +12,16 @@ it(`successfully returns steps for context:
   })
 
   const step1 = await nextStep(generator)
-  expectStepStart(step1)
+  expectStep(step1).hasType('start')
 
   const step2 = await nextStep(generator)
-  expectStepDialog(step2, 'cctp_deposit')
+  expectStep(step2).hasType('dialog').hasPayload('cctp_deposit')
+
+  const step3 = await nextStep(generator, [false])
+  expectStep(step3).hasType('return')
+
+  const step4 = await nextStep(generator)
+  expectStep(step4).doesNotExist()
 })
 
 it(`successfully returns steps for context:
@@ -33,8 +35,14 @@ it(`successfully returns steps for context:
   })
 
   const step1 = await nextStep(generator)
-  expectStepStart(step1)
+  expectStep(step1).hasType('start')
 
   const step2 = await nextStep(generator)
-  expectStepDialog(step2, 'cctp_withdrawal')
+  expectStep(step2).hasType('dialog').hasPayload('cctp_withdrawal')
+
+  const step3 = await nextStep(generator, [false])
+  expectStep(step3).hasType('return')
+
+  const step4 = await nextStep(generator)
+  expectStep(step4).doesNotExist()
 })

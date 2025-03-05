@@ -1,18 +1,33 @@
-import { Dialog, UiDriverStep, UiDriverStepResultFor } from './UiDriver'
+import { UiDriverStep, UiDriverStepResultFor } from './UiDriver'
 
 export async function nextStep<TStep extends UiDriverStep>(
-  generator: AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep>>
+  generator: AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep>>,
+  nextStepInputs: [] | [UiDriverStepResultFor<TStep>] = []
 ) {
-  return (await generator.next()).value
+  return (await generator.next(...nextStepInputs)).value
 }
 
-export function expectStepStart(step: UiDriverStep | void) {
-  expect(step).toBeDefined()
-  expect(step!.type).toEqual('start')
-}
+export function expectStep<TStep extends UiDriverStep>(step: TStep | void) {
+  return {
+    hasType<TStepType extends TStep['type']>(expectedStepType: TStepType) {
+      expect(step).toBeDefined()
+      expect(step!.type).toBe(expectedStepType)
+      return expectStep(step as Extract<TStep, { type: TStepType }>)
+    },
 
-export function expectStepDialog(step: UiDriverStep | void, dialog: Dialog) {
-  expect(step).toBeDefined()
-  expect(step!.type).toEqual('dialog')
-  expect((step as { payload: Dialog }).payload).toEqual(dialog)
+    hasPayload<TExpected extends Extract<TStep, { payload: any }>['payload']>(
+      expectedStepPayload: TExpected
+    ) {
+      if (!('payload' in step!)) {
+        throw new Error(`Step of type "${step!.type}" does not have a payload.`)
+      }
+
+      expect(step.payload).toBe(expectedStepPayload)
+      return this
+    },
+
+    doesNotExist() {
+      expect(step).toBeUndefined()
+    }
+  }
 }
