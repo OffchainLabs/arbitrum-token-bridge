@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useLatest } from 'react-use'
 
 import { TokenApprovalDialog } from '../TransferPanel/TokenApprovalDialog'
 import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirmationDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { USDCWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/USDCWithdrawalConfirmationDialog'
-import { USDCDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/USDCDepositConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from '../TransferPanel/CustomFeeTokenApprovalDialog'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -37,8 +34,6 @@ type DialogType =
   | 'approve_custom_fee_token'
   | 'import_token'
   | 'withdraw'
-  | 'withdraw_usdc'
-  | 'deposit_usdc'
   | 'scw_custom_destination_address'
 
 export function useDialog2(): UseDialogResult {
@@ -89,10 +84,7 @@ export function DialogWrapper(props: DialogProps) {
   const [selectedToken, setSelectedToken] = useSelectedToken()
   const [{ amount, token: tokenFromSearchParams }] = useArbQueryParams()
   const [networks] = useNetworks()
-  const latestNetworks = useLatest(networks)
-  const {
-    current: { childChainProvider }
-  } = useLatest(useNetworksRelationship(latestNetworks.current))
+  const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [isOpen, setIsOpen] = useState(false)
@@ -143,12 +135,6 @@ export function DialogWrapper(props: DialogProps) {
       return null
     case 'withdraw':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
-    case 'withdraw_usdc':
-      return (
-        <USDCWithdrawalConfirmationDialog {...commonProps} amount={amount} />
-      )
-    case 'deposit_usdc':
-      return <USDCDepositConfirmationDialog {...commonProps} amount={amount} />
     case 'scw_custom_destination_address':
       return <CustomDestinationAddressConfirmationDialog {...commonProps} />
     default:

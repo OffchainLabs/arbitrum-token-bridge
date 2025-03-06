@@ -26,6 +26,8 @@ import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
+import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
+import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -72,6 +74,9 @@ import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper } from '../common/Dialog2'
+import { addressesEqual } from '../../util/AddressUtils'
+import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
+import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -157,6 +162,15 @@ export function TransferPanel() {
 
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
 
+  const [
+    usdcWithdrawalConfirmationDialogProps,
+    openUSDCWithdrawalConfirmationDialog
+  ] = useDialog()
+  const [
+    usdcDepositConfirmationDialogProps,
+    openUSDCDepositConfirmationDialog
+  ] = useDialog()
+
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
   const {
@@ -229,12 +243,10 @@ export function TransferPanel() {
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
 
-  const areSenderAndCustomDestinationAddressesEqual = useMemo(() => {
-    return (
-      destinationAddress?.trim().toLowerCase() ===
-      walletAddress?.trim().toLowerCase()
-    )
-  }, [destinationAddress, walletAddress])
+  const areSenderAndCustomDestinationAddressesEqual = useMemo(
+    () => addressesEqual(destinationAddress, walletAddress),
+    [destinationAddress, walletAddress]
+  )
 
   async function depositToken() {
     if (!selectedToken) {
@@ -261,7 +273,7 @@ export function TransferPanel() {
   const amountBigNumber = useAmountBigNumber()
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
-    const waitForInput = openDialog('deposit_usdc')
+    const waitForInput = openUSDCDepositConfirmationDialog()
     const [confirmed, primaryButtonClicked] = await waitForInput()
 
     // user declined to transfer altogether
@@ -279,7 +291,7 @@ export function TransferPanel() {
   }
 
   const confirmUsdcWithdrawalForCctp = async () => {
-    const waitForInput = openDialog('withdraw_usdc')
+    const waitForInput = openUSDCWithdrawalConfirmationDialog()
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -357,6 +369,25 @@ export function TransferPanel() {
     return confirmed
   }
 
+  const stepExecutor: UiDriverStepExecutor = async step => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(step)
+    }
+
+    switch (step.type) {
+      case 'start': {
+        setTransferring(true)
+        return
+      }
+
+      case 'return': {
+        throw Error(
+          `[stepExecutor] "return" step should be handled outside the executor`
+        )
+      }
+    }
+  }
+
   const transferCctp = async () => {
     if (!selectedToken) {
       return
@@ -370,11 +401,14 @@ export function TransferPanel() {
 
     const destinationAddress = latestDestinationAddress.current
 
-    setTransferring(true)
-
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
+
+      await drive(stepGeneratorForCctp, stepExecutor, {
+        isDepositMode,
+        isSmartContractWallet
+      })
 
       // show confirmation popup before cctp transfer
       if (isDepositMode) {
@@ -1104,6 +1138,16 @@ export function TransferPanel() {
   return (
     <>
       <DialogWrapper {...dialogProps} />
+
+      <USDCWithdrawalConfirmationDialog
+        {...usdcWithdrawalConfirmationDialogProps}
+        amount={amount}
+      />
+
+      <USDCDepositConfirmationDialog
+        {...usdcDepositConfirmationDialogProps}
+        amount={amount}
+      />
 
       <div
         className={twMerge(
