@@ -20,7 +20,6 @@ import {
 } from './TokenImportDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
-import { CustomDestinationAddressConfirmationDialog } from './CustomDestinationAddressConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -33,7 +32,6 @@ import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
-import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -173,8 +171,6 @@ export function TransferPanel() {
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
-  const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
-    useDialog()
   const [
     usdcWithdrawalConfirmationDialogProps,
     openUSDCWithdrawalConfirmationDialog
@@ -185,10 +181,6 @@ export function TransferPanel() {
   ] = useDialog()
 
   const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
-  const [
-    customDestinationAddressConfirmationDialogProps,
-    openCustomDestinationAddressConfirmationDialog
-  ] = useDialog()
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
@@ -330,7 +322,7 @@ export function TransferPanel() {
   }
 
   const customFeeTokenApproval = async () => {
-    const waitForInput = openCustomFeeTokenApprovalDialog()
+    const waitForInput = openDialog('approve_custom_fee_token')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -391,7 +383,7 @@ export function TransferPanel() {
     }, 3000)
 
   const confirmCustomDestinationAddressForSCWallets = async () => {
-    const waitForInput = openCustomDestinationAddressConfirmationDialog()
+    const waitForInput = openDialog('scw_custom_destination_address')
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -1166,13 +1158,6 @@ export function TransferPanel() {
     <>
       <DialogWrapper {...dialogProps} />
 
-      {nativeCurrency.isCustom && (
-        <CustomFeeTokenApprovalDialog
-          {...customFeeTokenApprovalDialogProps}
-          customFeeToken={nativeCurrency}
-        />
-      )}
-
       <USDCWithdrawalConfirmationDialog
         {...usdcWithdrawalConfirmationDialogProps}
         amount={amount}
@@ -1181,10 +1166,6 @@ export function TransferPanel() {
       <USDCDepositConfirmationDialog
         {...usdcDepositConfirmationDialogProps}
         amount={amount}
-      />
-
-      <CustomDestinationAddressConfirmationDialog
-        {...customDestinationAddressConfirmationDialogProps}
       />
 
       <div
