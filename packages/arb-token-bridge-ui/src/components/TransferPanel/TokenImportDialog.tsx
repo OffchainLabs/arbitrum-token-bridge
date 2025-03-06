@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
-import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useAppState } from '../../state'
@@ -38,20 +37,6 @@ type TokenListSearchResult =
       token: ERC20BridgeToken
       status: ImportStatus
     }
-
-type TokenImportDialogStore = {
-  isOpen: boolean
-  openDialog: () => void
-  closeDialog: () => void
-}
-
-export const useTokenImportDialogStore = create<TokenImportDialogStore>(
-  set => ({
-    isOpen: false,
-    openDialog: () => set({ isOpen: true }),
-    closeDialog: () => set({ isOpen: false })
-  })
-)
 
 type TokenImportDialogProps = UseDialogProps & {
   tokenAddress: string
