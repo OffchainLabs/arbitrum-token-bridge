@@ -109,20 +109,19 @@ export function DialogWrapper(props: DialogProps) {
         />
       )
     case 'import_token':
-      return (
-        <TokenImportDialog
-          {...commonProps}
-          onClose={imported => {
-            if (imported && tokenFromSearchParams) {
-              setSelectedToken(tokenFromSearchParams)
-            } else {
-              setSelectedToken(null)
-            }
-            commonProps.onClose(imported)
-          }}
-          tokenAddress={tokenFromSearchParams!}
-        />
-      )
+      if (tokenFromSearchParams) {
+        return (
+          <TokenImportDialog
+            {...commonProps}
+            onClose={imported => {
+              setSelectedToken(imported ? tokenFromSearchParams : null)
+              commonProps.onClose(imported)
+            }}
+            tokenAddress={tokenFromSearchParams}
+          />
+        )
+      }
+      return null
     case 'approve_custom_fee_token':
       if (nativeCurrency.isCustom) {
         return (

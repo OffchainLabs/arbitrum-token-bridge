@@ -106,7 +106,7 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const [selectedToken, setSelectedToken] = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -234,7 +234,7 @@ export function TransferPanel() {
     if (isTokenAlreadyImported === false && tokenFromSearchParams) {
       openDialog('import_token')
     }
-  }, [isTokenAlreadyImported, tokenFromSearchParams])
+  }, [isTokenAlreadyImported, tokenFromSearchParams, openDialog])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
