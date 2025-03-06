@@ -23,6 +23,7 @@ import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
+import { addressesEqual } from '../../util/AddressUtils'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -223,8 +224,7 @@ export const filterTransactions = (
     const txL1NetworkID = tx.l1NetworkID
     const txL2NetworkID = tx.l2NetworkID
 
-    const isSenderWallet =
-      txSender.toLowerCase() === walletAddress.toLowerCase()
+    const isSenderWallet = addressesEqual(txSender, walletAddress)
     const matchesL1 = txL1NetworkID === String(l1ChainId)
 
     // The `l2NetworkID` field was added later, so not all transactions will have it
@@ -286,7 +286,7 @@ export function isCustomDestinationAddressTx(
   if (!tx.sender || !tx.destination) {
     return false
   }
-  return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+  return !addressesEqual(tx.sender, tx.destination)
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
