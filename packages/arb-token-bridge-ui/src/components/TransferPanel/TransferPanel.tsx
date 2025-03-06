@@ -1168,19 +1168,27 @@ export function TransferPanel() {
         amount={amount}
       />
 
+      <div className="text-white">
+        <iframe
+          src="https://bridge.arbitrum.io/"
+          height={'500px'}
+          width={'100%'}
+        />
+      </div>
+
       <div
         className={twMerge(
           'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
           'sm:rounded sm:border'
         )}
       >
-        <TransferPanelMain />
+        {/* <TransferPanelMain />
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}
           token={selectedToken}
         />
-        <MoveFundsButton onClick={moveFundsButtonOnClick} />
+        <MoveFundsButton onClick={moveFundsButtonOnClick} /> */}
 
         {isTokenAlreadyImported === false && tokenFromSearchParams && (
           <TokenImportDialog
