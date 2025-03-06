@@ -738,8 +738,8 @@
       "rpcUrl": "https://rpc.plumenetwork.xyz/",
       "isCustom": true,
       "isTestnet": false,
-      "name": "Plume",
-      "slug": "plume",
+      "name": "Plume Legacy",
+      "slug": "plume-legacy",
       "parentChainId": 1,
       "tokenBridge": {
         "parentCustomGateway": "0x7F78Bb34c2525d0a42989B0228376edE11611a6D",
@@ -760,9 +760,9 @@
       "bridgeUiConfig": {
         "color": "#F43B3A",
         "network": {
-          "name": "Plume",
+          "name": "Plume Legacy",
           "logo": "/images/Plume_Logo.svg",
-          "description": "Bringing the real world onchain. Optimized for real world assets."
+          "description": "(Legacy) Bringing the real world onchain. Optimized for real world assets."
         }
       }
     },

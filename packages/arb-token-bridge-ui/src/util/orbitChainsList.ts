@@ -1,5 +1,6 @@
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainId } from '../types/ChainId'
+import { addressesEqual } from './AddressUtils'
 import { isE2eTestingEnvironment } from './CommonUtils'
 import { ChainWithRpcUrl } from './networks'
 import orbitChainsData from './orbitChainsData.json'
@@ -83,7 +84,7 @@ export function getInboxAddressFromOrbitChainId(chainId: number) {
 }
 
 export function getChainIdFromInboxAddress(inboxAddress: string) {
-  return getOrbitChains().find(
-    chain => chain.ethBridge.inbox.toLowerCase() === inboxAddress.toLowerCase()
+  return getOrbitChains().find(chain =>
+    addressesEqual(chain.ethBridge.inbox, inboxAddress)
   )?.chainId
 }
