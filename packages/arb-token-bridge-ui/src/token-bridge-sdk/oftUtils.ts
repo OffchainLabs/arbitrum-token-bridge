@@ -110,7 +110,7 @@ export function buildSendParams({
   dstEid: number
   address: string
   amount: BigNumber
-  destinationAddress?: string
+  destinationAddress: string | undefined
 }): SendParam {
   return {
     dstEid,
