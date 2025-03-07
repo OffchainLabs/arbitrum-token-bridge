@@ -20,6 +20,7 @@ import {
 import { oftV2Abi } from './oftV2Abi'
 import { isNetwork } from '../util/networks'
 import { Address, prepareWriteContract, writeContract } from '@wagmi/core'
+import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
 
 async function prepareTransferConfig({
   signer,
@@ -50,6 +51,7 @@ async function prepareTransferConfig({
   return prepareWriteContract({
     address: oftContract.address as Address,
     abi: oftV2Abi,
+    signer,
     functionName: 'send',
     args: [sendParams, quoteFee, address as Address],
     overrides: {
@@ -212,9 +214,18 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       destinationAddress
     })
 
+    const isDepositMode = isDepositModeUtil({
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
+      destinationChainId: await getChainIdFromProvider(
+        this.destinationChainProvider
+      )
+    })
+
+    const gasEstimate = await signer.estimateGas(config.request)
+
     return {
-      estimatedParentChainGas: await signer.estimateGas(config),
-      estimatedChildChainGas: constants.Zero
+      estimatedParentChainGas: isDepositMode ? gasEstimate : constants.Zero,
+      estimatedChildChainGas: isDepositMode ? constants.Zero : gasEstimate
     }
   }
 
@@ -231,7 +242,8 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
       address,
-      amount
+      amount,
+      destinationAddress
     })
 
     // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
@@ -240,22 +252,29 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       sendParams
     })
 
-    // const gasEstimates = this.transferEstimateGas({
-    //   amount,
-    //   signer,
-    //   destinationAddress
-    // })
+    const gasEstimates = await this.transferEstimateGas({
+      amount,
+      signer,
+      destinationAddress
+    })
 
     /**
      * getOftV2Quote return both gas fee and layerzero fee
      * We substract gas estimate from the fee to get an estimate of the fee
      */
+    const isDepositMode = isDepositModeUtil({
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
+      destinationChainId: await getChainIdFromProvider(
+        this.destinationChainProvider
+      )
+    })
 
-    // const sourceChainId = await signer.getChainId()
-    // const isDepositMode =
-    //   sourceChainId === (await getChainIdFromProvider(this.sourceChainProvider))
     return {
-      estimatedSourceChainFee: nativeFee,
+      estimatedSourceChainFee: nativeFee.sub(
+        isDepositMode
+          ? gasEstimates.estimatedParentChainGas
+          : gasEstimates.estimatedChildChainGas
+      ),
       estimatedDestinationChainFee: constants.Zero
     }
   }
@@ -268,7 +287,8 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       signer,
       oftContract,
       amount,
-      destLzEndpointId: this.destLzEndpointId!
+      destLzEndpointId: this.destLzEndpointId!,
+      destinationAddress
     })
 
     const sendTx = await writeContract(config)
