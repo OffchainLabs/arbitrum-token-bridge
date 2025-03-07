@@ -1192,6 +1192,54 @@
           "description": "Birdlayer - an Omni-Trading Layer3 platform using Arbitrum Orbit, connecting EVM and non-EVM ecosystems for seamless trading."
         }
       }
+    },
+    {
+      "chainId": 98866,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x35381f63091926750F43b2A7401B083263aDEF83",
+        "inbox": "0x943fc691242291B74B105e8D19bd9E5DC2fcBa1D",
+        "outbox": "0x7e4627bC114Fcd12ba912103279FD2858E644E71",
+        "rollup": "0x35c60Cc77b0A8bf6F938B11bd3E9D319a876c2aC",
+        "sequencerInbox": "0x85eC1b9138a8b9659A51e2b51bb0861901040b59"
+      },
+      "nativeToken": "0x4C1746A800D224393fE2470C70A35717eD4eA5F1",
+      "explorerUrl": "https://phoenix-explorer.plumenetwork.xyz/",
+      "rpcUrl": "https://phoenix-rpc.plumenetwork.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Plume Mainnet",
+      "slug": "plume-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2053fcB0AC660d8B6769dDD9d02031EDa103F440",
+        "parentErc20Gateway": "0xE2C902BC61296531e556962ffC81A082b82f5F28",
+        "parentGatewayRouter": "0x17551CBD1ed02768b00D5Bd198c2D86a4c7ee43d",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xB9F9A04c11C0cCdb9d20bBc95929032B82b52D20",
+        "childErc20Gateway": "0x3955A911411cfae01c8B6Fd0D57c08DfE4428e38",
+        "childGatewayRouter": "0xEFE6F45507C24Bb85Fa25d417fe7d43763b9dE3d",
+        "childMultiCall": "0x73613BfF05CdF95d849A8280B21a01B6D5397644",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FF3D00",
+        "network": {
+          "name": "Plume Mainnet",
+          "logo": "/images/PlumeMainnet_Logo.svg",
+          "description": "Plume Network is the first full-stack L1 RWA Chain and ecosystem purpose-built for RWAfi, enabling the rapid adoption and demand-driven integration of real world assets. With 180+ projects building on the network, Plume offers a composable, EVM-compatible environment for onboarding and managing diverse real world assets. Coupled with an end-to-end tokenization engine and a network of financial infrastructure partners, Plume simplifies asset onboarding and enables seamless DeFi integration for RWAs so anyone can tokenize real world assets, distribute them globally, and make them useful for native crypto users."
+        },
+        "nativeTokenData": {
+          "name": "Plume",
+          "symbol": "PLUME",
+          "logoUrl": "/images/PlumeMainnet_NativeTokenLogo.png"
+        }
+      }
     }
   ],
   "testnet": [
