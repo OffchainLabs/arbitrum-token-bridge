@@ -75,6 +75,7 @@ export interface Transaction extends TransactionBase {
 }
 
 export interface TeleporterTransaction extends Transaction {
+  l1ToL2MsgData: ParentToChildMessageData
   l2ToL3MsgData: L2ToL3MessageData
 }
 
