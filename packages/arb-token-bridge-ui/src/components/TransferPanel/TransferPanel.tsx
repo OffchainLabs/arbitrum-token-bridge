@@ -620,6 +620,12 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
+      await oftTransferStarter.transfer({
+        amount: amountBigNumber,
+        signer,
+        destinationAddress
+      })
+
       trackEvent('OFT Transfer', {
         tokenSymbol: selectedToken.symbol,
         assetType: 'ERC-20',
