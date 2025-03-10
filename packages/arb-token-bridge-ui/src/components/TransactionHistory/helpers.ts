@@ -528,7 +528,7 @@ export async function getUpdatedTeleportTransfer(
     ...tx,
     status,
     timestampResolved,
-    l1ToL2MsgData,
+    l1ToL2MsgData, // note: in contrast to general deposits which use `parentToChildMsgData`, Teleport transfers still follow L1/L2/L3 terminology, so we have `l1ToL2MsgData` and `l2ToL3MsgData`
     l2ToL3MsgData
   }
 
