@@ -24,7 +24,8 @@ import { OftTransactionHistoryDisclaimer } from './OftTransactionHistoryDisclaim
 function useTransactionHistoryUpdater() {
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
 
-  const transactionHistoryProps = useTransactionHistory(sanitizedAddress, {
+  const transactionHistoryProps = useTransactionHistory({
+    address: sanitizedAddress,
     runFetcher: true
   })
 

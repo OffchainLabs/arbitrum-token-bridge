@@ -23,7 +23,9 @@ export function useRedeemRetryable(
   address: Address | undefined
 ): UseRedeemRetryableResult {
   const { data: signer } = useSigner({ chainId: tx.destinationChainId })
-  const { updatePendingTransaction } = useTransactionHistory(address)
+  const { updatePendingTransaction } = useTransactionHistory({
+    address
+  })
 
   const destinationNetworkName = getNetworkName(tx.destinationChainId)
 

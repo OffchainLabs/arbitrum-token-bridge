@@ -18,6 +18,7 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { isTokenDeposit } from '../../state/app/utils'
 import {
   ChainPair,
+  TransactionHistoryLoadingStates,
   UseTransactionHistoryResult
 } from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
@@ -28,6 +29,7 @@ import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { Loader } from '../common/atoms/Loader'
 
 export const BatchTransferNativeTokenTooltip = ({
   children,
@@ -134,6 +136,24 @@ type TransactionHistoryTableProps = UseTransactionHistoryResult & {
   oldestTxTimeAgoString: string
 }
 
+function loadingStateToTooltip(loadingState: TransactionHistoryLoadingStates) {
+  let text
+
+  if (loadingState.core) {
+    text = 'Core Chains'
+  }
+
+  if (loadingState.orbit) {
+    text = 'Orbit Chains'
+  }
+
+  if (!text) {
+    return null
+  }
+
+  return <span>We are still loading history for {text}.</span>
+}
+
 export const TransactionHistoryTable = (
   props: TransactionHistoryTableProps
 ) => {
@@ -153,7 +173,7 @@ export const TransactionHistoryTable = (
   const isTxHistoryEmpty = transactions.length === 0
   const isPendingTab = selectedTabIndex === 0
 
-  const paused = !loading && !completed
+  const paused = !loading.any && !completed
 
   const contentWrapperRef = useRef<HTMLDivElement | null>(null)
   const tableRef = useRef<Table | null>(null)
@@ -194,7 +214,7 @@ export const TransactionHistoryTable = (
   if (isTxHistoryEmpty) {
     return (
       <EmptyTransactionHistory
-        loading={loading}
+        loading={loading.any}
         isError={typeof error !== 'undefined'}
         paused={paused}
         resume={resume}
@@ -214,7 +234,7 @@ export const TransactionHistoryTable = (
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
       >
-        {loading ? (
+        {loading.core ? (
           <div className="flex h-[28px] items-center space-x-2">
             <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
             <HistoryLoader />
@@ -222,6 +242,11 @@ export const TransactionHistoryTable = (
         ) : (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center justify-start space-x-1">
+              {loading.any && (
+                <Tooltip content={loadingStateToTooltip(loading)}>
+                  <Loader size="small" color="white" />
+                </Tooltip>
+              )}
               <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
               <span className="text-xs">
                 Showing {transactions.length}{' '}

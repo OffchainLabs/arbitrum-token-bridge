@@ -7,7 +7,9 @@ import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar
 
 export function useTransactionReminderInfo() {
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
-  const { transactions } = useTransactionHistory(sanitizedAddress)
+  const { transactions } = useTransactionHistory({
+    address: sanitizedAddress
+  })
 
   const {
     numClaimableTransactions,

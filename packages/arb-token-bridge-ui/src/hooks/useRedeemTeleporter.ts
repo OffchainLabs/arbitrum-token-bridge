@@ -160,7 +160,7 @@ export function useRedeemTeleporter(
   const { data: signer } = useSigner({
     chainId: chainIdForRedeemingRetryable
   })
-  const { updatePendingTransaction } = useTransactionHistory(address)
+  const { updatePendingTransaction } = useTransactionHistory({ address })
 
   const redeemerNetworkName = getNetworkName(chainIdForRedeemingRetryable)
 

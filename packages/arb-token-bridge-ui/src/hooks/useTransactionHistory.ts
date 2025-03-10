@@ -62,7 +62,7 @@ import {
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useArbQueryParams } from './useArbQueryParams'
 
-export type UseTransactionHistoryResult = {
+type UsePartialTransactionHistoryResult = {
   transactions: MergedTransaction[]
   loading: boolean
   completed: boolean
@@ -70,7 +70,6 @@ export type UseTransactionHistoryResult = {
   failedChainPairs: ChainPair[]
   pause: () => void
   resume: () => void
-  addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
 }
 
@@ -113,13 +112,30 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
   return getTransactionTimestamp(a) > getTransactionTimestamp(b) ? -1 : 1
 }
 
-function getMultiChainFetchList(): ChainPair[] {
+export function getMultiChainFetchList({
+  core = true,
+  orbit = true
+}: {
+  core?: boolean
+  orbit?: boolean
+} = {}): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
     const childChainIds = getChildChainIds(chain)
 
-    const isParentChain = childChainIds.length > 0
+    const filteredChildChainIds = childChainIds.filter(chainId => {
+      const isOrbitChain = isNetwork(chainId).isOrbitChain
+      if (core && !isOrbitChain) {
+        return true
+      }
+      if (orbit && isOrbitChain) {
+        return true
+      }
+      return false
+    })
+
+    const isParentChain = filteredChildChainIds.length > 0
 
     if (!isParentChain) {
       // Skip non-parent chains
@@ -127,7 +143,7 @@ function getMultiChainFetchList(): ChainPair[] {
     }
 
     // For each destination chain, map to an array of ChainPair objects
-    return childChainIds.map(childChainId => ({
+    return filteredChildChainIds.map(childChainId => ({
       parentChainId: chain.chainId,
       childChainId: childChainId
     }))
@@ -235,7 +251,10 @@ function dedupeTransactions(txs: Transfer[]) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
+const useTransactionHistoryWithoutStatuses = (
+  address: Address | undefined,
+  { forChains, ready }: { forChains: ChainPair[]; ready: boolean }
+) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -246,7 +265,16 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   // We need this because of Smart Contract Wallets
   const cctpTypeToFetch = useCallback(
     (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (isLoadingAccountType || !chain || !isTxHistoryEnabled) {
+      if (
+        typeof forChains.find(
+          c =>
+            c.parentChainId === chainPair.parentChainId &&
+            c.childChainId === chainPair.childChainId
+        ) === 'undefined'
+      ) {
+        return undefined
+      }
+      if (isLoadingAccountType || !chain || !isTxHistoryEnabled || !ready) {
         return undefined
       }
       if (isSmartContractWallet) {
@@ -341,7 +369,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
       return Promise.all(
-        getMultiChainFetchList()
+        forChains
           .filter(chainPair => {
             if (isSmartContractWallet) {
               // only fetch txs from the connected network
@@ -434,14 +462,22 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   )
 
   const shouldFetch =
-    address && chain && !isLoadingAccountType && isTxHistoryEnabled
+    ready && address && chain && !isLoadingAccountType && isTxHistoryEnabled
 
   const {
     data: depositsData,
     error: depositsError,
     isLoading: depositsLoading
   } = useSWRImmutable(
-    shouldFetch ? ['tx_list', 'deposits', address, isTestnetMode] : null,
+    shouldFetch
+      ? [
+          'tx_list',
+          'deposits',
+          address,
+          isTestnetMode,
+          JSON.stringify(forChains)
+        ]
+      : null,
     () => fetcher('deposits')
   )
 
@@ -450,7 +486,15 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     error: withdrawalsError,
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
-    shouldFetch ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
+    shouldFetch
+      ? [
+          'tx_list',
+          'withdrawals',
+          address,
+          isTestnetMode,
+          JSON.stringify(forChains)
+        ]
+      : null,
     () => fetcher('withdrawals')
   )
 
@@ -473,15 +517,27 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   }
 }
 
+type UsePartialTransactionHistoryProps = {
+  address: Address | undefined
+  // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
+  runFetcher?: boolean
+  fetchFor?: {
+    chains: ChainPair[]
+  }
+  ready?: boolean
+}
+
 /**
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
  */
-export const useTransactionHistory = (
-  address: Address | undefined,
-  // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
-  { runFetcher = false } = {}
-): UseTransactionHistoryResult => {
+const usePartialTransactionHistory = (
+  props: UsePartialTransactionHistoryProps
+): UsePartialTransactionHistoryResult => {
+  const ready = typeof props.ready === 'undefined' ? true : props.ready
+  const forChains = props.fetchFor?.chains || getMultiChainFetchList()
+  const { address, runFetcher } = props
+
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -501,7 +557,7 @@ export const useTransactionHistory = (
     loading: isLoadingTxsWithoutStatus,
     error,
     failedChainPairs
-  } = useTransactionHistoryWithoutStatuses(address)
+  } = useTransactionHistoryWithoutStatuses(address, { forChains, ready })
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -512,11 +568,14 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
+      return ready &&
+        address &&
+        !isLoadingTxsWithoutStatus &&
+        !isLoadingAccountType
         ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
+    [ready, address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -526,7 +585,7 @@ export const useTransactionHistory = (
     return getDepositsWithoutStatusesFromCache(address)
       .filter(tx => isNetwork(tx.parentChainId).isTestnet === isTestnetMode)
       .filter(tx => {
-        const chainPairExists = getMultiChainFetchList().some(chainPair => {
+        const chainPairExists = forChains.some(chainPair => {
           return (
             chainPair.parentChainId === tx.parentChainId &&
             chainPair.childChainId === tx.childChainId
@@ -610,60 +669,18 @@ export const useTransactionHistory = (
     typeof txPages !== 'undefined' &&
     data.length === txPages.flat().length
 
-  // transfers initiated by the user during the current session
-  // we store it separately as there are a lot of side effects when mutating SWRInfinite
-  const { data: newTransactionsData, mutate: mutateNewTransactionsData } =
-    useSWRImmutable<MergedTransaction[]>(
-      address ? ['new_tx_list', address] : null
-    )
-
   const transactions: MergedTransaction[] = useMemo(() => {
-    const txs = [...(newTransactionsData || []), ...(txPages || [])].flat()
+    const txs = (txPages || []).flat()
     // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
     return txs.filter(tx =>
       [tx.sender?.toLowerCase(), tx.destination?.toLowerCase()].includes(
         address?.toLowerCase()
       )
     )
-  }, [newTransactionsData, txPages, address])
-
-  const addPendingTransaction = useCallback(
-    (tx: MergedTransaction) => {
-      if (!isTxPending(tx)) {
-        return
-      }
-
-      mutateNewTransactionsData(currentNewTransactions => {
-        if (!currentNewTransactions) {
-          return [tx]
-        }
-
-        return [tx, ...currentNewTransactions]
-      })
-    },
-    [mutateNewTransactionsData]
-  )
+  }, [txPages, address])
 
   const updateCachedTransaction = useCallback(
     (newTx: MergedTransaction) => {
-      // check if tx is a new transaction initiated by the user, and update it
-      const foundInNewTransactions =
-        typeof newTransactionsData?.find(oldTx =>
-          isSameTransaction(oldTx, newTx)
-        ) !== 'undefined'
-
-      if (foundInNewTransactions) {
-        // replace the existing tx with the new tx
-        mutateNewTransactionsData(txs =>
-          txs?.map(oldTx => {
-            return { ...(isSameTransaction(oldTx, newTx) ? newTx : oldTx) }
-          })
-        )
-        return
-      }
-
-      // tx not found in the new user initiated transaction list
-      // look in the paginated historical data
       mutateTxPages(prevTxPages => {
         if (!prevTxPages) {
           return
@@ -706,7 +723,7 @@ export const useTransactionHistory = (
         return newTxPages
       }, false)
     },
-    [mutateNewTransactionsData, mutateTxPages, newTransactionsData]
+    [mutateTxPages]
   )
 
   const updatePendingTransaction = useCallback(
@@ -839,14 +856,13 @@ export const useTransactionHistory = (
 
   if (isLoadingTxsWithoutStatus || error) {
     return {
-      transactions: newTransactionsData || [],
+      transactions: [],
       loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],
       completed: true,
       pause,
       resume,
-      addPendingTransaction,
       updatePendingTransaction
     }
   }
@@ -859,6 +875,132 @@ export const useTransactionHistory = (
     failedChainPairs,
     pause,
     resume,
+    updatePendingTransaction
+  }
+}
+
+const useCurrentSessionTransactions = (address: Address | undefined) => {
+  const { data: currentSessionTransactions, mutate } = useSWRImmutable<
+    MergedTransaction[]
+  >(address ? [address, 'current_session_transactions'] : null)
+
+  const addPendingTransaction = useCallback(
+    (tx: MergedTransaction) => {
+      if (!isTxPending(tx)) {
+        return
+      }
+
+      mutate(transactions => {
+        if (!transactions) {
+          return [tx]
+        }
+
+        return [tx, ...transactions]
+      })
+    },
+    [mutate]
+  )
+
+  return {
+    currentSessionTransactions: currentSessionTransactions || [],
+    addPendingTransaction
+  }
+}
+
+type UseTransactionHistoryProps = Omit<
+  UsePartialTransactionHistoryProps,
+  'forChains' | 'ready'
+>
+
+export type TransactionHistoryLoadingStates = {
+  any: boolean
+  core: boolean
+  orbit: boolean
+}
+
+export type UseTransactionHistoryResult = Omit<
+  UsePartialTransactionHistoryResult,
+  'loading'
+> & {
+  addPendingTransaction: (tx: MergedTransaction) => void
+  loading: TransactionHistoryLoadingStates
+}
+
+export const useTransactionHistory = (
+  props: UseTransactionHistoryProps
+): UseTransactionHistoryResult => {
+  const { currentSessionTransactions, addPendingTransaction } =
+    useCurrentSessionTransactions(props.address)
+
+  const {
+    transactions: coreTransactions,
+    completed: coreHistoryCompleted,
+    loading: coreHistoryLoading,
+    ...restCoreResults
+  } = usePartialTransactionHistory({
+    ...props,
+    fetchFor: {
+      chains: getMultiChainFetchList({ core: true, orbit: false })
+    },
+    ready: true
+  })
+
+  const {
+    transactions: orbitTransactions,
+    completed: orbitHistoryCompleted,
+    loading: orbitHistoryLoading,
+    ...restOrbitResults
+  } = usePartialTransactionHistory({
+    ...props,
+    fetchFor: {
+      chains: getMultiChainFetchList({ core: false, orbit: true })
+    },
+    ready: coreHistoryCompleted
+  })
+
+  const completed = coreHistoryCompleted && orbitHistoryCompleted
+
+  const error = restCoreResults.error || restOrbitResults.error
+
+  const failedChainPairs = [
+    ...new Set([
+      ...(restCoreResults.failedChainPairs || []),
+      ...(restOrbitResults.failedChainPairs || [])
+    ])
+  ]
+
+  const updatePendingTransaction = useCallback(
+    async (tx: MergedTransaction) => {
+      await restCoreResults.updatePendingTransaction(tx)
+      await restOrbitResults.updatePendingTransaction(tx)
+    },
+    [restCoreResults, restOrbitResults]
+  )
+
+  const rest = useMemo(() => {
+    // Return all remaining relevant props, returns props for the currently loaded data
+    // Because we need its pause/resume methods etc
+    if (coreHistoryCompleted) {
+      return restOrbitResults
+    }
+    return restCoreResults
+  }, [coreHistoryCompleted, restOrbitResults, restCoreResults])
+
+  return {
+    ...rest,
+    transactions: [
+      ...currentSessionTransactions,
+      ...coreTransactions,
+      ...orbitTransactions
+    ].sort(sortByTimestampDescending),
+    loading: {
+      any: coreHistoryLoading || orbitHistoryLoading,
+      core: coreHistoryLoading,
+      orbit: orbitHistoryLoading
+    },
+    completed,
+    error,
+    failedChainPairs,
     addPendingTransaction,
     updatePendingTransaction
   }

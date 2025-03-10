@@ -151,7 +151,9 @@ export function TransferPanel() {
 
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
-  const { addPendingTransaction } = useTransactionHistory(walletAddress)
+  const { addPendingTransaction } = useTransactionHistory({
+    address: walletAddress
+  })
 
   const isCctpTransfer = useIsCctpTransfer()
 
