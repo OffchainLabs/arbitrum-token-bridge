@@ -37,6 +37,7 @@ export function UsdcDepositConfirmationDialog(props: UseDialogProps) {
             type: 'Deposit'
           })
         }
+        props.onClose(confirmed)
       }}
     >
       <div className="flex flex-col space-y-4 py-4">
