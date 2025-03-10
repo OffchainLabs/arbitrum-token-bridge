@@ -63,8 +63,8 @@ export const getDepositStatus = (
   }
 
   if (isTeleportTx(tx)) {
-    // note: in contrast to general deposits which use `parentToChildMsgData`
-    // teleport transfers still follow L1/L2/L3 terminology, so we have `l1ToL2MsgData` and `l2ToL3MsgData`
+    /** note: in contrast to general deposits which use `parentToChildMsgData`,
+     * Teleport transfers still follow L1/L2/L3 terminology, so we have `l1ToL2MsgData` and `l2ToL3MsgData` */
 
     const { l1ToL2MsgData, l2ToL3MsgData } = tx
 
