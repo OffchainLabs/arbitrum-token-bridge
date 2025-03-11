@@ -1,4 +1,10 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import React, {
+  FormEventHandler,
+  useMemo,
+  useState,
+  useCallback,
+  useEffect
+} from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
@@ -34,7 +40,7 @@ import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Switch } from '../common/atoms/Switch'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { getUsdcToken, useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { addressesEqual } from '../../util/AddressUtils'
@@ -172,8 +178,13 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const {
     ethParentBalance,
     erc20ParentBalances,
@@ -187,6 +198,8 @@ function TokensPanel({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const {
+    isEthereumMainnet: isParentChainEthereumMainnet,
+    isSepolia: isParentChainSepolia,
     isArbitrumOne: isParentChainArbitrumOne,
     isArbitrumSepolia: isParentChainArbitrumSepolia
   } = isNetwork(parentChain.id)
@@ -199,6 +212,7 @@ function TokensPanel({
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
+  const [usdcToken, setUsdcToken] = useState<ERC20BridgeToken | null>(null)
 
   const getBalance = useCallback(
     (address: string) => {
@@ -240,6 +254,53 @@ function TokensPanel({
       isDepositMode
     ]
   )
+
+  const usdcParentAddress = useMemo(() => {
+    if (isParentChainEthereumMainnet) {
+      return CommonAddress.Ethereum.USDC
+    }
+    if (isParentChainSepolia) {
+      return CommonAddress.Sepolia.USDC
+    }
+    if (isParentChainArbitrumOne) {
+      return CommonAddress.ArbitrumOne.USDC
+    }
+    if (isParentChainArbitrumSepolia) {
+      return CommonAddress.ArbitrumSepolia.USDC
+    }
+  }, [
+    isParentChainEthereumMainnet,
+    isParentChainSepolia,
+    isParentChainArbitrumOne,
+    isParentChainArbitrumSepolia
+  ])
+
+  useEffect(() => {
+    async function _getUsdcToken() {
+      console.log({ usdcParentAddress })
+      if (!usdcParentAddress) {
+        return
+      }
+
+      const token = await getUsdcToken({
+        tokenAddress: usdcParentAddress,
+        parentProvider: parentChainProvider,
+        childProvider: childChainProvider
+      })
+
+      console.log('fetched token: ', token)
+
+      setUsdcToken(token)
+    }
+
+    _getUsdcToken()
+  }, [
+    usdcParentAddress,
+    getUsdcToken,
+    setUsdcToken,
+    parentChainProvider,
+    childChainProvider
+  ])
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
@@ -430,10 +491,12 @@ function TokensPanel({
       const address = tokensToShow[virtualizedProps.index]
       let token: ERC20BridgeToken | null = null
 
-      if (isTokenArbitrumOneNativeUSDC(address)) {
-        token = ARB_ONE_NATIVE_USDC_TOKEN
-      } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
-        token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+      if (
+        isTokenArbitrumOneNativeUSDC(address) ||
+        isTokenArbitrumSepoliaNativeUSDC(address)
+      ) {
+        console.log({ usdcToken })
+        token = usdcToken
       } else if (address) {
         token = tokensFromLists[address] || tokensFromUser[address] || null
       }
@@ -457,7 +520,7 @@ function TokensPanel({
         />
       )
     },
-    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected]
+    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected, usdcToken]
   )
 
   const AddButton = useMemo(
