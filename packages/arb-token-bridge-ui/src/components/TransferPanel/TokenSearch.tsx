@@ -277,7 +277,6 @@ function TokensPanel({
 
   useEffect(() => {
     async function _getUsdcToken() {
-      console.log({ usdcParentAddress })
       if (!usdcParentAddress) {
         return
       }
@@ -287,8 +286,6 @@ function TokensPanel({
         parentProvider: parentChainProvider,
         childProvider: childChainProvider
       })
-
-      console.log('fetched token: ', token)
 
       setUsdcToken(token)
     }
@@ -495,7 +492,6 @@ function TokensPanel({
         isTokenArbitrumOneNativeUSDC(address) ||
         isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
-        console.log({ usdcToken })
         token = usdcToken
       } else if (address) {
         token = tokensFromLists[address] || tokensFromUser[address] || null
