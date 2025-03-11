@@ -1,15 +1,10 @@
-import React, {
-  FormEventHandler,
-  useMemo,
-  useState,
-  useCallback,
-  useEffect
-} from 'react'
+import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { twMerge } from 'tailwind-merge'
+import useSWRImmutable from 'swr/immutable'
 
 import { useAppState } from '../../state'
 import {
@@ -44,6 +39,7 @@ import { getUsdcToken, useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { addressesEqual } from '../../util/AddressUtils'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -212,7 +208,6 @@ function TokensPanel({
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
-  const [usdcToken, setUsdcToken] = useState<ERC20BridgeToken | null>(null)
 
   const getBalance = useCallback(
     (address: string) => {
@@ -275,29 +270,22 @@ function TokensPanel({
     isParentChainArbitrumSepolia
   ])
 
-  useEffect(() => {
-    async function _getUsdcToken() {
-      if (!usdcParentAddress) {
-        return
-      }
-
-      const token = await getUsdcToken({
-        tokenAddress: usdcParentAddress,
-        parentProvider: parentChainProvider,
-        childProvider: childChainProvider
+  const { data: usdcToken = null } = useSWRImmutable(
+    usdcParentAddress
+      ? ([
+          usdcParentAddress,
+          parentChain.id,
+          childChain.id,
+          'token_search_usdc_token'
+        ] as const)
+      : null,
+    ([_usdcParentAddress, _parentChainId, _childChainId]) =>
+      getUsdcToken({
+        tokenAddress: _usdcParentAddress,
+        parentProvider: getProviderForChainId(_parentChainId),
+        childProvider: getProviderForChainId(_childChainId)
       })
-
-      setUsdcToken(token)
-    }
-
-    _getUsdcToken()
-  }, [
-    usdcParentAddress,
-    getUsdcToken,
-    setUsdcToken,
-    parentChainProvider,
-    childChainProvider
-  ])
+  )
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
