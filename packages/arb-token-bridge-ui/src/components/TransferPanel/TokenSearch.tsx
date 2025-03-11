@@ -174,13 +174,8 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
   const {
     ethParentBalance,
     erc20ParentBalances,
