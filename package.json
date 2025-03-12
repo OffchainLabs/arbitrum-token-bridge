@@ -32,7 +32,8 @@
     "@octokit/graphql/@octokit/request": "8.4.1",
     "@actions/github/@octokit/plugin-paginate-rest": "9.2.2",
     "**/react-syntax-highlighter/prismjs": "1.30.0",
-    "**/react-syntax-highlighter/refractor/prismjs": "1.30.0"
+    "**/react-syntax-highlighter/refractor/prismjs": "1.30.0",
+    "**/@babel/runtime": "7.26.10"
   },
   "keywords": [],
   "author": "",
