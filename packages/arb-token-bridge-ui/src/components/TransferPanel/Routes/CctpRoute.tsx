@@ -1,5 +1,5 @@
 import { useNetworks } from '../../../hooks/useNetworks'
-import { Route } from './Route'
+import { Route, Token } from './Route'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { isNetwork } from '../../../util/networks'
 
@@ -7,10 +7,12 @@ import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
 
-const nativeUsdcToken = {
+const nativeUsdcToken: Token = {
   decimals: 6,
   address: CommonAddress.Ethereum.USDC,
-  symbol: 'USDC'
+  symbol: 'USDC',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
 }
 
 // Only displayed during USDC transfers (Mainnet/ArbOne)
