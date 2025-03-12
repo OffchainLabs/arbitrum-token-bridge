@@ -235,7 +235,10 @@ export const Route = React.memo(
                   {isLoadingGasEstimate ? (
                     <Loader size="small" color="white" />
                   ) : gasCost ? (
-                    <div className="flex items-center gap-1">
+                    <div
+                      className="flex items-center gap-1"
+                      aria-label="Route gas"
+                    >
                       {gasCost
                         .map(({ gasCost, gasToken }) =>
                           formatAmount(BigNumber.from(gasCost), {
