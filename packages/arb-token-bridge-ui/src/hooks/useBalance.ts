@@ -9,7 +9,6 @@ import useSWR, {
 import { MultiCaller } from '@arbitrum/sdk'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
-import { onErrorRetry } from '../util/fetchUtils'
 
 type Erc20Balances = {
   [address: string]: BigNumber | undefined
@@ -115,11 +114,9 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
       refreshInterval: 15_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
-      errorRetryInterval: 3_000,
-      onErrorRetry: onErrorRetry()
+      errorRetryInterval: 3_000
     }
   )
-
   const { data: dataErc20 = null, mutate: mutateErc20 } = useSWR(
     queryKey('erc20'),
     ([_walletAddressLowercased, _chainId]) =>
@@ -132,7 +129,6 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 3_000,
-      onErrorRetry: onErrorRetry(),
       use: [merge]
     }
   )
