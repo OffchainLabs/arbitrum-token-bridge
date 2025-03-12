@@ -25,23 +25,22 @@ import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
-const commonUsdcToken = {
+const commonUsdcToken: Token = {
   decimals: 6,
-  address: CommonAddress.Ethereum.USDC
+  address: CommonAddress.Ethereum.USDC,
+  symbol: 'placeholder',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
 }
 
-const bridgedUsdcToken = {
+const bridgedUsdcToken: Token = {
   ...commonUsdcToken,
-  name: 'Bridged USDC',
-  symbol: 'USDC.e',
-  l2Address: CommonAddress.ArbitrumOne['USDC.e']
+  symbol: 'USDC.e'
 }
 
-const nativeUsdcToken = {
+const nativeUsdcToken: Token = {
   ...commonUsdcToken,
-  name: 'USDC',
-  symbol: 'USDC',
-  l2Address: CommonAddress.ArbitrumOne.USDC
+  symbol: 'USDC'
 }
 
 function getDuration({
