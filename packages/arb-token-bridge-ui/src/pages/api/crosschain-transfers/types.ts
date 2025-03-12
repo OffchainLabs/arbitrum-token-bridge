@@ -28,8 +28,8 @@ export type CrosschainTransfersQuote = {
   toToken: string
   fromAmount: string
   toAmount: string
-  fromChainId: string
-  toChainId: string
+  fromChainId: number
+  toChainId: number
   fromAddress: string
   toAddress: string
   spenderAddress: string
