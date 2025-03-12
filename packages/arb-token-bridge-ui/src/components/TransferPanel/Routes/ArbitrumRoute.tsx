@@ -2,7 +2,6 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { constants, utils } from 'ethers'
 import { Route, Token } from './Route'
-import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import {
   UseGasSummaryResult,
   useGasSummary
@@ -24,24 +23,24 @@ import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
-const commonUsdcToken = {
+const commonUsdcToken: Token = {
   decimals: 6,
-  address: CommonAddress.Ethereum.USDC
+  address: CommonAddress.Ethereum.USDC,
+  symbol: 'placeholder',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
 }
 
-const bridgedUsdcToken = {
+const bridgedUsdcToken: Token = {
   ...commonUsdcToken,
-  name: 'Bridged USDC',
-  symbol: 'USDC.e',
-  l2Address: CommonAddress.ArbitrumOne['USDC.e']
+  symbol: 'USDC.e'
 }
 
-const nativeUsdcToken = {
+const nativeUsdcToken: Token = {
   ...commonUsdcToken,
-  name: 'USDC',
-  symbol: 'USDC',
-  l2Address: CommonAddress.ArbitrumOne.USDC
+  symbol: 'USDC'
 }
 
 function getDuration({
@@ -189,7 +188,7 @@ function getGasCostAndToken({
 }
 
 export function ArbitrumRoute() {
-  const amount = useAmountBigNumber()
+  const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -267,7 +266,10 @@ export function ArbitrumRoute() {
         gasCost && gasCost.length > 0
           ? gasCost.map(({ gasCost, gasToken }) => ({
               gasCost: utils
-                .parseUnits(gasCost.toFixed(18), gasToken.decimals)
+                .parseUnits(
+                  gasCost.toFixed(childChainNativeCurrency.decimals),
+                  gasToken.decimals
+                )
                 .toString(),
               gasToken
             }))
