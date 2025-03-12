@@ -100,26 +100,81 @@ export const getBridger = async ({
     : Erc20Bridger.fromProvider(destinationChainProvider)
 }
 
-const getProviderForChainCache: {
+const providerInstanceCache: {
   [chainId: number]: StaticJsonRpcProvider
 } = {
   // start with empty cache
 }
 
-function createProviderWithCache(chainId: ChainId) {
+const enableCaching = (chainId: number) => {
+  if (
+    isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('testnet')
+  ) {
+    return true
+  }
+
+  if (
+    !isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('mainnet')
+  ) {
+    return true
+  }
+
+  return false
+}
+
+const enableBatching = (chainId: number) => {
+  if (
+    isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_BATCH_RPC?.includes('testnet')
+  ) {
+    return true
+  }
+
+  if (
+    !isNetwork(chainId).isTestnet &&
+    process.env.NEXT_PUBLIC_PROVIDER_BATCH_RPC?.includes('mainnet')
+  ) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Creates a new provider instance with the specified options.
+ */
+function createProvider(chainId: ChainId): StaticJsonRpcProvider {
   const rpcUrl = rpcURLs[chainId]
 
-  const provider = new EnhancedProvider(rpcUrl, chainId)
-  getProviderForChainCache[chainId] = provider
-  return provider
+  const shouldEnableCaching = enableCaching(chainId)
+  const shouldEnableBatching = enableBatching(chainId)
+
+  // Create appropriate provider based on options
+  if (shouldEnableBatching) {
+    return new EnhancedProvider(rpcUrl, chainId, undefined, {
+      enableCaching: shouldEnableCaching,
+      enableBatching: true
+    })
+  }
+
+  return shouldEnableCaching
+    ? new EnhancedProvider(rpcUrl, chainId, undefined, {
+        enableCaching: true,
+        enableBatching: false
+      })
+    : new StaticJsonRpcProvider(rpcUrl, chainId)
 }
 
 export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
-  const cachedProvider = getProviderForChainCache[chainId]
+  const cachedProvider = providerInstanceCache[chainId]
 
   if (typeof cachedProvider !== 'undefined') {
     return cachedProvider
   }
 
-  return createProviderWithCache(chainId)
+  const provider = createProvider(chainId)
+  providerInstanceCache[chainId] = provider
+  return provider
 }
