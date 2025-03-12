@@ -121,7 +121,9 @@ export const Route = React.memo(
       ? getConfirmationTime(networks.sourceChain.id)
       : { fastWithdrawalActive: false }
 
+    /* Only show USD values if gas is paid in ETH and we're not on testnet */
     const gasEth =
+      !isTestnet &&
       gasCost &&
       gasCost.find(({ gasToken }) => gasToken.address === constants.AddressZero)
 
