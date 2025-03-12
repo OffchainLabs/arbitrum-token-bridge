@@ -5,7 +5,6 @@ export type QueryParams = {
   toToken: string
   fromChainId: string
   toChainId: string
-  amount: string
   fromAddress: string
   toAddress: string
   fromAmount: string
