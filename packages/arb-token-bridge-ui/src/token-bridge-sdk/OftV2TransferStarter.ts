@@ -1,4 +1,4 @@
-import { constants, ethers, Signer } from 'ethers'
+import { BigNumber, constants, Contract, ethers, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -11,14 +11,54 @@ import {
   BridgeTransferStarterProps
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner } from './utils'
+import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import {
   getOftV2TransferConfig,
   buildSendParams,
   getOftV2Quote
 } from './oftUtils'
-import oftV2Abi from './oftV2Abi.json'
+import { oftV2Abi } from './oftV2Abi'
 import { isNetwork } from '../util/networks'
+import { Address, prepareWriteContract, writeContract } from '@wagmi/core'
+import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
+
+async function prepareTransferConfig({
+  signer,
+  oftContract,
+  destLzEndpointId,
+  amount,
+  destinationAddress
+}: {
+  signer: Signer
+  oftContract: Contract
+  destLzEndpointId: number
+  amount: BigNumber
+  destinationAddress?: string
+}) {
+  const address = await getAddressFromSigner(signer)
+
+  const sendParams = buildSendParams({
+    dstEid: destLzEndpointId,
+    address,
+    amount,
+    destinationAddress
+  })
+  const quoteFee = await getOftV2Quote({
+    sendParams,
+    address: oftContract.address as Address
+  })
+
+  return prepareWriteContract({
+    address: oftContract.address as Address,
+    abi: oftV2Abi,
+    signer,
+    functionName: 'send',
+    args: [sendParams, quoteFee, address as Address],
+    overrides: {
+      value: quoteFee.nativeFee
+    }
+  })
+}
 
 export class OftV2TransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oftV2'
@@ -131,7 +171,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     return allowance.lt(amount)
   }
 
-  public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
+  public async approveTokenEstimateGas({ signer }: ApproveTokenProps) {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
@@ -158,39 +198,42 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     return contract.functions.approve(spender, constants.MaxUint256) // Eth USDT will need MAX approval since that cannot be changed afterwards
   }
 
-  // for OFT, we don't have functions for gas estimates, `sendQuote` method tells us the fees directly
-  public async transferEstimateGas() {
-    return undefined
+  public async transferEstimateGas({
+    amount,
+    signer,
+    destinationAddress
+  }: TransferEstimateGasProps) {
+    await this.validateOftTransfer()
+
+    const oftContract = this.getOftAdapterContract(signer)
+    const config = await prepareTransferConfig({
+      signer,
+      oftContract,
+      amount,
+      destLzEndpointId: this.destLzEndpointId!,
+      destinationAddress
+    })
+
+    const isDepositMode = isDepositModeUtil({
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
+      destinationChainId: await getChainIdFromProvider(
+        this.destinationChainProvider
+      )
+    })
+
+    const gasEstimate = await signer.estimateGas(config.request)
+
+    return {
+      estimatedParentChainGas: isDepositMode ? gasEstimate : constants.Zero,
+      estimatedChildChainGas: isDepositMode ? constants.Zero : gasEstimate
+    }
   }
 
   public async transferEstimateFee({
     amount,
-    signer
+    signer,
+    destinationAddress
   }: TransferEstimateGasProps) {
-    await this.validateOftTransfer()
-
-    const address = await getAddressFromSigner(signer)
-    const oftContract = this.getOftAdapterContract(signer)
-
-    const sendParams = buildSendParams({
-      dstEid: this.destLzEndpointId!,
-      address,
-      amount
-    })
-
-    // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
-    const { nativeFee } = await getOftV2Quote({
-      contract: oftContract,
-      sendParams
-    })
-
-    return {
-      estimatedSourceChainFee: nativeFee,
-      estimatedDestinationChainFee: constants.Zero
-    }
-  }
-
-  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
@@ -203,20 +246,52 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       destinationAddress
     })
 
-    const { nativeFee, lzTokenFee } = await getOftV2Quote({
-      contract: oftContract,
+    // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
+    const { nativeFee } = await getOftV2Quote({
+      address: oftContract.address as Address,
       sendParams
     })
 
-    const sendTx = await oftContract.send(
-      sendParams,
-      {
-        nativeFee: nativeFee,
-        lzTokenFee: lzTokenFee
-      },
-      address,
-      { value: nativeFee }
-    )
+    const gasEstimates = await this.transferEstimateGas({
+      amount,
+      signer,
+      destinationAddress
+    })
+
+    /**
+     * getOftV2Quote return both gas fee and layerzero fee
+     * We substract gas estimate from the fee to get an estimate of the fee
+     */
+    const isDepositMode = isDepositModeUtil({
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
+      destinationChainId: await getChainIdFromProvider(
+        this.destinationChainProvider
+      )
+    })
+
+    return {
+      estimatedSourceChainFee: nativeFee.sub(
+        isDepositMode
+          ? gasEstimates.estimatedParentChainGas
+          : gasEstimates.estimatedChildChainGas
+      ),
+      estimatedDestinationChainFee: constants.Zero
+    }
+  }
+
+  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+    await this.validateOftTransfer()
+
+    const oftContract = this.getOftAdapterContract(signer)
+    const config = await prepareTransferConfig({
+      signer,
+      oftContract,
+      amount,
+      destLzEndpointId: this.destLzEndpointId!,
+      destinationAddress
+    })
+
+    const sendTx = await writeContract(config)
 
     return {
       transferType: this.transferType,
