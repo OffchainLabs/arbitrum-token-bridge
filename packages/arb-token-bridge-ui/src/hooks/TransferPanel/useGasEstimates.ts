@@ -9,7 +9,6 @@ import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
-import { onErrorRetry } from '../../util/fetchUtils'
 
 async function fetcher([
   walletAddress,
@@ -106,8 +105,7 @@ export function useGasEstimates({
       refreshInterval: 30_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
-      errorRetryInterval: 5_000,
-      onErrorRetry: onErrorRetry()
+      errorRetryInterval: 5_000
     }
   )
 
