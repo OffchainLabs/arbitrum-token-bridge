@@ -6,10 +6,8 @@ import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
-import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions } from '../../state'
@@ -18,7 +16,6 @@ import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
-import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
@@ -26,7 +23,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
-import { isDepositMode } from '../../util/isDepositMode'
 
 declare global {
   interface Window {
@@ -112,16 +108,6 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 function AppContent() {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
-
-  if (!tosAccepted) {
-    return (
-      <>
-        <Header />
-        <WelcomeDialog />
-      </>
-    )
-  }
 
   if (address && isBlocked) {
     return (

@@ -1187,13 +1187,26 @@ export function TransferPanel() {
           {isConnected ? (
             <MoveFundsButton onClick={moveFundsButtonOnClick} />
           ) : (
-            <Button
-              variant="primary"
-              onClick={openConnectModal}
-              className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
-            >
-              <span className="block w-[360px] truncate">Connect Wallet</span>
-            </Button>
+            <div className="flex flex-col">
+              <Button
+                variant="primary"
+                onClick={openConnectModal}
+                className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
+              >
+                <span className="block w-[360px] truncate">Connect Wallet</span>
+              </Button>
+              <p className="py-2 text-center text-xs text-white/80">
+                Note: By connecting your wallet to the Arbitrum Bridge, you
+                agree to abide by the{' '}
+                <ExternalLink
+                  href="https://arbitrum.io/tos"
+                  className="arb-hover underline"
+                >
+                  terms of service
+                </ExternalLink>
+                .
+              </p>
+            </div>
           )}
         </div>
 
