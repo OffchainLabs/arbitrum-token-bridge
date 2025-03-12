@@ -132,15 +132,19 @@ type LifiCrossTransfersQuotesResponse =
       data: CrosschainTransfersQuoteWithLifiData
     }
 
+export type LifiParams = QueryParams & {
+  slippage?: string
+  order: Order
+  denyBridges?: string | string[]
+  denyExchanges?: string | string[]
+}
+
 /** Extending the standard NextJs request with fast bridge transfer params */
-export type NextApiRequestWithFastBridgeParams = NextApiRequest & {
-  query: QueryParams & {
-    slippage?: string
-    order: Order
-  }
+export type NextApiRequestWithLifiParams = NextApiRequest & {
+  query: LifiParams
 }
 export default async function handler(
-  req: NextApiRequestWithFastBridgeParams,
+  req: NextApiRequestWithLifiParams,
   res: NextApiResponse<LifiCrossTransfersQuotesResponse>
 ) {
   const {
