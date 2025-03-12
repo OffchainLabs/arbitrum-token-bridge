@@ -5,7 +5,8 @@ import {
   QuoteRequest,
   TransactionRequest as LiFiTransactionRequest,
   GasCost,
-  FeeCost
+  FeeCost,
+  StepToolDetails
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { CrosschainTransfersQuote, QueryParams } from './types'
@@ -33,6 +34,7 @@ export type CrosschainTransfersQuoteWithLifiData = CrosschainTransfersQuote & {
   lifiData: {
     order: Order
     transactionRequest: TransactionRequest
+    tool: StepToolDetails
   }
 }
 
@@ -110,7 +112,8 @@ function parseQuoteToCrosschainTransfersQuoteWithLifiData({
     spenderAddress: quote.estimate.approvalAddress,
     lifiData: {
       order,
-      transactionRequest: quote.transactionRequest
+      transactionRequest: quote.transactionRequest,
+      tool: quote.toolDetails
     }
   }
 }
