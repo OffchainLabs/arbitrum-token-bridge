@@ -8,6 +8,7 @@ import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
+import { useEmbedMode } from '../../hooks/useEmbedMode'
 
 enum MainContentTabs {
   Bridge = 0,
@@ -35,6 +36,12 @@ export function MainContent() {
   const { selectedTab, setSelectedTab } = useMainContentTabs()
 
   useBalanceUpdater()
+
+  const embedMode = useEmbedMode()
+
+  if (embedMode) {
+    return <TransferPanel />
+  }
 
   return (
     <>

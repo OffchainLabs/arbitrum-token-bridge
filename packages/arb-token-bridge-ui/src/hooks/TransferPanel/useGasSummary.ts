@@ -24,6 +24,7 @@ import {
 import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useAccount } from 'wagmi'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -94,9 +95,16 @@ export function useGasSummary(): UseGasSummaryResult {
     useNetworksRelationship(networks)
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
+  const { isConnected } = useAccount()
+
   const decimals = useSelectedTokenDecimals()
 
   const amountBigNumber = useMemo(() => {
+    // if embedded and wallet is not connected yet, show gas estimation for zero amount
+    if (!isConnected) {
+      return constants.Zero
+    }
+
     if (isNaN(Number(debouncedAmount))) {
       return constants.Zero
     }
@@ -105,7 +113,7 @@ export function useGasSummary(): UseGasSummaryResult {
     const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
 
     return utils.parseUnits(correctDecimalsAmount, decimals)
-  }, [debouncedAmount, decimals])
+  }, [debouncedAmount, decimals, isConnected])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })

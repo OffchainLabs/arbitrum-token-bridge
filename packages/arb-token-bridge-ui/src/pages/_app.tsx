@@ -162,6 +162,10 @@ export default function App({ Component, pageProps, router }: AppProps) {
   const destinationChainSlug = (router.query.destinationChain?.toString() ??
     'arbitrum-one') as ChainKeyQueryParam
 
+  const embedMode =
+    router.query.embedMode?.toString() === '1' ||
+    router.query.embedMode?.toString() === 'true'
+
   let sourceChainInfo
   let destinationChainInfo
 
@@ -188,7 +192,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
         {/* title must be here because it doesn't render if it's in DynamicMetaData */}
         <title>{siteTitle}</title>
       </Head>
-      <Layout>
+      <Layout embedMode={embedMode}>
         <Component {...pageProps} />
       </Layout>
     </>

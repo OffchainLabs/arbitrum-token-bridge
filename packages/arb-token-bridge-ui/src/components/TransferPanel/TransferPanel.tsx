@@ -3,10 +3,11 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount, useNetwork, useSigner } from 'wagmi'
+import { useAccount, useDisconnect, useNetwork, useSigner } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
+import { PowerIcon } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -86,6 +87,7 @@ import { useDialog2, DialogWrapper } from '../common/Dialog2'
 import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
+import { useEmbedMode } from '../../hooks/useEmbedMode'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -140,6 +142,7 @@ export function TransferPanel() {
   } = useLatest(useNetworksRelationship(latestNetworks.current))
   const { isLoading: isLoadingTokenLists } = useTokenLists(childChain.id)
   const isBatchTransferSupported = useIsBatchTransferSupported()
+  const embedMode = useEmbedMode()
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
 
@@ -168,6 +171,9 @@ export function TransferPanel() {
   const { setAmount, setAmount2 } = useSetInputAmount()
 
   const { openConnectModal } = useConnectModal()
+
+  const { disconnect } = useDisconnect()
+
   const latestDestinationAddress = useLatest(destinationAddress)
 
   const [dialogProps, openDialog] = useDialog2()
@@ -586,7 +592,7 @@ export function TransferPanel() {
       }
 
       addPendingTransaction(newTransfer)
-      switchToTransactionHistoryTab()
+      if (!embedMode) switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
     } catch (e) {
@@ -688,7 +694,7 @@ export function TransferPanel() {
         destinationChain: getNetworkName(networks.destinationChain.id)
       })
 
-      switchToTransactionHistoryTab()
+      if (!embedMode) switchToTransactionHistoryTab()
       clearAmountInput()
 
       setTimeout(() => {
@@ -1050,7 +1056,7 @@ export function TransferPanel() {
       )
     }
 
-    switchToTransactionHistoryTab()
+    if (!embedMode) switchToTransactionHistoryTab()
     setTransferring(false)
     clearAmountInput()
 
@@ -1174,7 +1180,8 @@ export function TransferPanel() {
       <div
         className={twMerge(
           'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
-          'sm:rounded sm:border'
+          'sm:rounded sm:border',
+          embedMode && 'border-none'
         )}
       >
         <TransferPanelMain />
@@ -1185,27 +1192,53 @@ export function TransferPanel() {
         />
         <div className="transfer-panel-stats">
           {isConnected ? (
-            <MoveFundsButton onClick={moveFundsButtonOnClick} />
+            <div className="flex flex-row items-center justify-between gap-2">
+              <MoveFundsButton onClick={moveFundsButtonOnClick} />
+
+              {embedMode && (
+                <Button
+                  variant="primary"
+                  className="h-[60px] w-10 border border-white/5 bg-white/10 py-3 text-xs"
+                  onClick={() => disconnect()}
+                >
+                  <PowerIcon className="h-5 w-5 text-white/80" />
+                </Button>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col">
-              <Button
-                variant="primary"
-                onClick={openConnectModal}
-                className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
+              <Tippy
+                placement="bottom"
+                maxWidth="400px"
+                interactive={true}
+                duration={[100, 1000]}
+                theme="orange"
+                content={
+                  <div className="p-1 px-2 text-center text-sm">
+                    By connecting your wallet to the Arbitrum Bridge, you agree
+                    to Arbitrum&apos;s{' '}
+                    <ExternalLink
+                      href="https://arbitrum.io/tos"
+                      className="arb-hover underline"
+                    >
+                      terms of service
+                    </ExternalLink>
+                    .
+                  </div>
+                }
               >
-                <span className="block w-[360px] truncate">Connect Wallet</span>
-              </Button>
-              <p className="py-2 text-center text-xs text-white/80">
-                Note: By connecting your wallet to the Arbitrum Bridge, you
-                agree to abide by the{' '}
-                <ExternalLink
-                  href="https://arbitrum.io/tos"
-                  className="arb-hover underline"
+                <Button
+                  variant="primary"
+                  onClick={openConnectModal}
+                  className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
                 >
-                  terms of service
-                </ExternalLink>
-                .
-              </p>
+                  <span className="block w-[360px] truncate">
+                    {embedMode
+                      ? 'Connect to Arbitrum Bridge'
+                      : 'Connect Wallet'}
+                  </span>
+                </Button>
+              </Tippy>
             </div>
           )}
         </div>
@@ -1231,6 +1264,7 @@ export function TransferPanel() {
             onClickOutside={() => setShowSmartContractWalletTooltip(false)}
             theme="orange"
             visible={showSmartContractWalletTooltip}
+            appendTo={() => document.body}
             content={
               <div className="flex flex-col">
                 <span>

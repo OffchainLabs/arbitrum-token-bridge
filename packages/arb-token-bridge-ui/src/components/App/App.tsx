@@ -23,6 +23,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
+import { useEmbedMode } from '../../hooks/useEmbedMode'
 
 declare global {
   interface Window {
@@ -108,6 +109,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 function AppContent() {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
+  const embedMode = useEmbedMode()
 
   if (address && isBlocked) {
     return (
@@ -126,9 +128,11 @@ function AppContent() {
 
   return (
     <>
-      <Header>
-        <HeaderAccountOrConnectWalletButton />
-      </Header>
+      {!embedMode && (
+        <Header>
+          <HeaderAccountOrConnectWalletButton />
+        </Header>
+      )}
       <TokenListSyncer />
       <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />

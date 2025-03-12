@@ -21,6 +21,7 @@ import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useAccount } from 'wagmi'
 
 function MaxButton({
   className = '',
@@ -206,6 +207,7 @@ export const TransferPanelMainInput = React.memo(
     ...rest
   }: TransferPanelMainInputProps) => {
     const [localValue, setLocalValue] = useState(value)
+    const { isConnected } = useAccount()
 
     useEffect(() => {
       /**
@@ -256,7 +258,7 @@ export const TransferPanelMainInput = React.memo(
         <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
           <div
             className={twMerge(
-              'flex grow flex-row items-center justify-center'
+              'flex min-h-[80px] grow flex-row items-center justify-center'
             )}
           >
             <TransferPanelInputField
@@ -266,13 +268,15 @@ export const TransferPanelMainInput = React.memo(
             />
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
-              <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-                <SourceChainTokenBalance
-                  balanceOverride={options?.balance}
-                  symbolOverride={options?.symbol}
-                />
-                <MaxButton onClick={handleMaxButtonClick} />
-              </div>
+              {isConnected && (
+                <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                  <SourceChainTokenBalance
+                    balanceOverride={options?.balance}
+                    symbolOverride={options?.symbol}
+                  />
+                  <MaxButton onClick={handleMaxButtonClick} />
+                </div>
+              )}
             </div>
           </div>
         </div>
