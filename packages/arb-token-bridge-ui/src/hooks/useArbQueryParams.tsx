@@ -53,7 +53,8 @@ export const useArbQueryParams = () => {
     destinationAddress: withDefault(StringParam, undefined),
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
-    txHistory: withDefault(BooleanParam, true) // enable/disable tx history
+    txHistory: withDefault(BooleanParam, true), // enable/disable tx history
+    embedMode: withDefault(BooleanParam, false)
   })
 }
 

@@ -28,6 +28,7 @@ import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { useAccount } from 'wagmi'
 
 function BalanceRow({
   parentErc20Address,
@@ -38,6 +39,7 @@ function BalanceRow({
   balance: string | undefined
   symbolOverride?: string
 }) {
+  const { isConnected } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -82,6 +84,11 @@ function BalanceRow({
     tokensFromLists,
     tokensFromUser
   ])
+
+  // dont show balance if not connected
+  if (!isConnected) {
+    return null
+  }
 
   return (
     <div className="flex justify-between py-3 text-sm">
