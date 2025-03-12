@@ -2,7 +2,6 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { constants, utils } from 'ethers'
 import { Route, Token } from './Route'
-import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import {
   UseGasSummaryResult,
   useGasSummary
@@ -24,6 +23,7 @@ import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 const commonUsdcToken: Token = {
   decimals: 6,
@@ -188,7 +188,7 @@ function getGasCostAndToken({
 }
 
 export function ArbitrumRoute() {
-  const amount = useAmountBigNumber()
+  const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -266,7 +266,10 @@ export function ArbitrumRoute() {
         gasCost && gasCost.length > 0
           ? gasCost.map(({ gasCost, gasToken }) => ({
               gasCost: utils
-                .parseUnits(gasCost.toFixed(18), gasToken.decimals)
+                .parseUnits(
+                  gasCost.toFixed(childChainNativeCurrency.decimals),
+                  gasToken.decimals
+                )
                 .toString(),
               gasToken
             }))

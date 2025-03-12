@@ -172,10 +172,7 @@ export const Route = React.memo(
                 <TokenLogo
                   srcOverride={'logoURI' in token ? token.logoURI : null}
                 />
-                {formatAmount(BigNumber.from(amountReceived), {
-                  decimals: token.decimals,
-                  symbol: token.symbol
-                })}
+                {formatAmount(Number(amountReceived))} {token.symbol}
                 <div className="text-sm">
                   {showUsdValueForReceivedToken && (
                     <div className="text-sm tabular-nums opacity-80">
