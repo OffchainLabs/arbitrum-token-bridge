@@ -528,6 +528,17 @@ type UsePartialTransactionHistoryProps = {
   ready?: boolean
 }
 
+function isReady({
+  previousStep
+}: {
+  previousStep: UsePartialTransactionHistoryResult
+}) {
+  if (previousStep.completed) {
+    return true
+  }
+  return previousStep.transactions.length > 0 && !previousStep.loading
+}
+
 /**
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
@@ -939,11 +950,11 @@ export const useTransactionHistory = (
       chains: getMultiChainFetchList({ core: false, orbit: true })
     },
     stepName: 'Orbit Chains',
-    ready: !step1.loading
+    ready: isReady({ previousStep: step1 })
   })
 
   // To add new step:
-  // 1. const step{X} = usePartialTransactionHistory({ ..., ready: step{X - 1}.loading })
+  // 1. const step{X} = usePartialTransactionHistory({ ..., ready: isReady({ previousStep: step{X - 1} }) })
   // 2. stepResults = [..., step{X}]
 
   const stepResults = [step1, step2]
