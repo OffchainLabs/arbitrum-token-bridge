@@ -84,6 +84,7 @@ import { useDialog2, DialogWrapper } from '../common/Dialog2'
 import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
+import { printLog } from '../../util/CommonUtils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -389,9 +390,7 @@ export function TransferPanel() {
   }
 
   const stepExecutor: UiDriverStepExecutor = async step => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(step)
-    }
+    printLog(step)
 
     switch (step.type) {
       case 'start': {
