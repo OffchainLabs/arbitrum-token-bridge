@@ -926,7 +926,6 @@ type UseTransactionHistoryProps = Omit<
 
 export type UseTransactionHistoryResult = UsePartialTransactionHistoryResult & {
   addPendingTransaction: (tx: MergedTransaction) => void
-  stepsLoadingStates: boolean[]
 }
 
 export const useTransactionHistory = (
@@ -975,10 +974,6 @@ export const useTransactionHistory = (
     return [...new Set([...stepResults.map(r => r.failedChainPairs)].flat())]
   }, [stepResults])
 
-  const stepsLoadingStates = useMemo(() => {
-    return stepResults.map(r => r.loading)
-  }, [stepResults])
-
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) =>
       stepResults.forEach(r => r.updatePendingTransaction(tx)),
@@ -1014,7 +1009,6 @@ export const useTransactionHistory = (
     transactions,
     completed,
     loading,
-    stepsLoadingStates,
     error,
     failedChainPairs,
     addPendingTransaction,
