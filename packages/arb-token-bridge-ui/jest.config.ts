@@ -7,7 +7,8 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   preset: 'ts-jest',
   transform: {
-    '^.+\\.(ts|tsx)?$': 'ts-jest'
+    '^.+\\.(ts|tsx)?$': 'ts-jest',
+    '^.+\\.(js|jsx)$': ['babel-jest', { configFile: './babel.config.jest.js' }]
   },
   testEnvironment: 'jsdom',
   setupFiles: ['<rootDir>/setupTests.ts'],
@@ -27,7 +28,8 @@ const transformNodeModules = [
   // wagmi
   '@wagmi',
   'wagmi',
-  '@rainbow-me/rainbowkit'
+  '@rainbow-me/rainbowkit',
+  '@uidotdev/usehooks'
 ]
 
 module.exports = async function () {
