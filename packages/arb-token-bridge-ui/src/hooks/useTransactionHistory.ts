@@ -68,9 +68,9 @@ type UsePartialTransactionHistoryResult = {
   completed: boolean
   error: unknown
   failedChainPairs: ChainPair[]
-  pause: () => void
   resume: () => void
   updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
+  stepName: string | undefined
 }
 
 export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
@@ -521,8 +521,9 @@ type UsePartialTransactionHistoryProps = {
   address: Address | undefined
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   runFetcher?: boolean
+  stepName: string
   fetchFor?: {
-    chains: ChainPair[]
+    chains?: ChainPair[]
   }
   ready?: boolean
 }
@@ -860,10 +861,10 @@ const usePartialTransactionHistory = (
       loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],
-      completed: true,
-      pause,
+      completed: !isLoadingTxsWithoutStatus,
       resume,
-      updatePendingTransaction
+      updatePendingTransaction,
+      stepName: props.stepName
     }
   }
 
@@ -873,9 +874,9 @@ const usePartialTransactionHistory = (
     completed,
     error: txPagesError ?? error,
     failedChainPairs,
-    pause,
     resume,
-    updatePendingTransaction
+    updatePendingTransaction,
+    stepName: props.stepName
   }
 }
 
@@ -909,21 +910,12 @@ const useCurrentSessionTransactions = (address: Address | undefined) => {
 
 type UseTransactionHistoryProps = Omit<
   UsePartialTransactionHistoryProps,
-  'forChains' | 'ready'
+  'forChains' | 'ready' | 'stepName'
 >
 
-export type TransactionHistoryLoadingStates = {
-  any: boolean
-  core: boolean
-  orbit: boolean
-}
-
-export type UseTransactionHistoryResult = Omit<
-  UsePartialTransactionHistoryResult,
-  'loading'
-> & {
+export type UseTransactionHistoryResult = UsePartialTransactionHistoryResult & {
   addPendingTransaction: (tx: MergedTransaction) => void
-  loading: TransactionHistoryLoadingStates
+  stepsLoadingStates: boolean[]
 }
 
 export const useTransactionHistory = (
@@ -932,76 +924,90 @@ export const useTransactionHistory = (
   const { currentSessionTransactions, addPendingTransaction } =
     useCurrentSessionTransactions(props.address)
 
-  const {
-    transactions: coreTransactions,
-    completed: coreHistoryCompleted,
-    loading: coreHistoryLoading,
-    ...restCoreResults
-  } = usePartialTransactionHistory({
+  const step1 = usePartialTransactionHistory({
     ...props,
     fetchFor: {
       chains: getMultiChainFetchList({ core: true, orbit: false })
     },
+    stepName: 'Core Chains',
     ready: true
   })
 
-  const {
-    transactions: orbitTransactions,
-    completed: orbitHistoryCompleted,
-    loading: orbitHistoryLoading,
-    ...restOrbitResults
-  } = usePartialTransactionHistory({
+  const step2 = usePartialTransactionHistory({
     ...props,
     fetchFor: {
       chains: getMultiChainFetchList({ core: false, orbit: true })
     },
-    ready: coreHistoryCompleted
+    stepName: 'Orbit Chains',
+    ready: !step1.loading
   })
 
-  const completed = coreHistoryCompleted && orbitHistoryCompleted
+  // To add new step:
+  // 1. const step{X} = usePartialTransactionHistory({ ..., ready: step{X - 1}.loading })
+  // 2. stepResults = [..., step{X}]
 
-  const error = restCoreResults.error || restOrbitResults.error
+  const stepResults = [step1, step2]
 
-  const failedChainPairs = [
-    ...new Set([
-      ...(restCoreResults.failedChainPairs || []),
-      ...(restOrbitResults.failedChainPairs || [])
-    ])
-  ]
+  const completed = useMemo(() => {
+    return stepResults.every(r => r.completed)
+  }, [stepResults])
+
+  const loading = useMemo(() => {
+    return stepResults.some(r => r.loading)
+  }, [stepResults])
+
+  const error = useMemo(() => {
+    return stepResults.filter(r => typeof r.error !== 'undefined')[0]?.error
+  }, [stepResults])
+
+  const failedChainPairs = useMemo(() => {
+    return [...new Set([...stepResults.map(r => r.failedChainPairs)].flat())]
+  }, [stepResults])
+
+  const stepsLoadingStates = useMemo(() => {
+    return stepResults.map(r => r.loading)
+  }, [stepResults])
 
   const updatePendingTransaction = useCallback(
-    async (tx: MergedTransaction) => {
-      await restCoreResults.updatePendingTransaction(tx)
-      await restOrbitResults.updatePendingTransaction(tx)
-    },
-    [restCoreResults, restOrbitResults]
+    async (tx: MergedTransaction) =>
+      stepResults.forEach(r => r.updatePendingTransaction(tx)),
+    [stepResults]
   )
 
-  const rest = useMemo(() => {
-    // Return all remaining relevant props, returns props for the currently loaded data
-    // Because we need its pause/resume methods etc
-    if (coreHistoryCompleted) {
-      return restOrbitResults
-    }
-    return restCoreResults
-  }, [coreHistoryCompleted, restOrbitResults, restCoreResults])
+  const resume = useCallback(
+    () => stepResults.forEach(r => r.resume()),
+    [stepResults]
+  )
+
+  const transactions = useMemo(() => {
+    return Array.from(
+      new Map(
+        [
+          ...currentSessionTransactions,
+          ...stepResults.map(r => r.transactions).flat()
+        ].map(tx => [`${tx.parentChainId}-${tx.txId.toLowerCase()}`, tx])
+      ).values()
+    )
+  }, [stepResults])
+
+  const latestStep = useMemo(() => {
+    return (
+      stepResults.filter(r => !r.completed)[0] ||
+      // if everything is fetched, get the last step
+      stepResults[stepResults.length - 1]!
+    )
+  }, [stepResults])
 
   return {
-    ...rest,
-    transactions: [
-      ...currentSessionTransactions,
-      ...coreTransactions,
-      ...orbitTransactions
-    ].sort(sortByTimestampDescending),
-    loading: {
-      any: coreHistoryLoading || orbitHistoryLoading,
-      core: coreHistoryLoading,
-      orbit: orbitHistoryLoading
-    },
+    ...latestStep,
+    transactions,
     completed,
+    loading,
+    stepsLoadingStates,
     error,
     failedChainPairs,
     addPendingTransaction,
-    updatePendingTransaction
+    updatePendingTransaction,
+    resume
   }
 }
