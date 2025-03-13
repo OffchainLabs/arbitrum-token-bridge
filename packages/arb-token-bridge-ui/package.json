@@ -46,8 +46,8 @@
     "swr": "^2.3.0",
     "tailwind-merge": "^2.5.5",
     "use-query-params": "^2.2.1",
-    "viem": "^2.23.5",
-    "wagmi": "^2.14.12",
+    "viem": "^2.23.10",
+    "wagmi": "^2.14.13",
     "wcag-contrast": "^3.0.0",
     "zod": "^3.24.1",
     "zustand": "^4.3.9"
