@@ -176,9 +176,7 @@ export const Route = React.memo(
                 <div className="text-sm">
                   {showUsdValueForReceivedToken && (
                     <div className="text-sm tabular-nums opacity-80">
-                      {formatUSD(
-                        ethToUSD(Number(utils.formatEther(amountReceived)))
-                      )}
+                      {formatUSD(ethToUSD(Number(amountReceived)))}
                     </div>
                   )}
                 </div>
