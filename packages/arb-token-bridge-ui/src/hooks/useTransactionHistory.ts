@@ -50,7 +50,7 @@ import {
 } from '../util/SubgraphUtils'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { Address } from '../util/AddressUtils'
+import { Address, addressesEqual } from '../util/AddressUtils'
 import {
   TeleportFromSubgraph,
   fetchTeleports
@@ -253,7 +253,15 @@ function dedupeTransactions(txs: Transfer[]) {
  */
 const useTransactionHistoryWithoutStatuses = (
   address: Address | undefined,
-  { forChains, ready }: { forChains: ChainPair[]; ready: boolean }
+  {
+    forChains,
+    direction,
+    ready
+  }: {
+    forChains: ChainPair[]
+    direction: 'sender' | 'receiver' | 'both'
+    ready: boolean
+  }
 ) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
@@ -389,17 +397,21 @@ const useTransactionHistoryWithoutStatuses = (
             const isConnectedToParentChain =
               chainPair.parentChainId === chain.id
 
-            const includeSentTxs = shouldIncludeSentTxs({
-              type,
-              isSmartContractWallet,
-              isConnectedToParentChain
-            })
+            const includeSentTxs =
+              (direction === 'sender' || direction === 'both') &&
+              shouldIncludeSentTxs({
+                type,
+                isSmartContractWallet,
+                isConnectedToParentChain
+              })
 
-            const includeReceivedTxs = shouldIncludeReceivedTxs({
-              type,
-              isSmartContractWallet,
-              isConnectedToParentChain
-            })
+            const includeReceivedTxs =
+              (direction === 'receiver' || direction === 'both') &&
+              shouldIncludeReceivedTxs({
+                type,
+                isSmartContractWallet,
+                isConnectedToParentChain
+              })
             try {
               // early check for fetching teleport
               if (
@@ -524,6 +536,7 @@ type UsePartialTransactionHistoryProps = {
   stepName: string
   fetchFor?: {
     chains?: ChainPair[]
+    direction?: 'sender' | 'receiver' | 'both'
   }
   ready?: boolean
 }
@@ -537,6 +550,7 @@ const usePartialTransactionHistory = (
 ): UsePartialTransactionHistoryResult => {
   const ready = typeof props.ready === 'undefined' ? true : props.ready
   const forChains = props.fetchFor?.chains || getMultiChainFetchList()
+  const direction = props.fetchFor?.direction || 'both'
   const { address, runFetcher } = props
 
   const [isTestnetMode] = useIsTestnetMode()
@@ -558,7 +572,11 @@ const usePartialTransactionHistory = (
     loading: isLoadingTxsWithoutStatus,
     error,
     failedChainPairs
-  } = useTransactionHistoryWithoutStatuses(address, { forChains, ready })
+  } = useTransactionHistoryWithoutStatuses(address, {
+    forChains,
+    direction,
+    ready
+  })
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -585,6 +603,15 @@ const usePartialTransactionHistory = (
     }
     return getDepositsWithoutStatusesFromCache(address)
       .filter(tx => isNetwork(tx.parentChainId).isTestnet === isTestnetMode)
+      .filter(tx => {
+        if (direction === 'both') {
+          return true
+        }
+        if (direction === 'sender') {
+          return addressesEqual(tx.sender, address)
+        }
+        return addressesEqual(tx.destination, address)
+      })
       .filter(tx => {
         const chainPairExists = forChains.some(chainPair => {
           return (
@@ -908,6 +935,17 @@ const useCurrentSessionTransactions = (address: Address | undefined) => {
   }
 }
 
+function isReady({
+  previousStep
+}: {
+  previousStep: UsePartialTransactionHistoryResult
+}) {
+  if (previousStep.completed) {
+    return true
+  }
+  return previousStep.transactions.length > 0 && !previousStep.loading
+}
+
 type UseTransactionHistoryProps = Omit<
   UsePartialTransactionHistoryProps,
   'forChains' | 'ready' | 'stepName'
@@ -927,26 +965,48 @@ export const useTransactionHistory = (
   const step1 = usePartialTransactionHistory({
     ...props,
     fetchFor: {
-      chains: getMultiChainFetchList({ core: true, orbit: false })
+      chains: getMultiChainFetchList({ core: true, orbit: false }),
+      direction: 'sender'
     },
-    stepName: 'Core Chains',
+    stepName: 'Core Chains (outgoing)',
     ready: true
   })
 
   const step2 = usePartialTransactionHistory({
     ...props,
     fetchFor: {
-      chains: getMultiChainFetchList({ core: false, orbit: true })
+      chains: getMultiChainFetchList({ core: true, orbit: false }),
+      direction: 'receiver'
     },
-    stepName: 'Orbit Chains',
-    ready: !step1.loading
+    stepName: 'Core Chains (incoming)',
+    ready: isReady({ previousStep: step1 })
+  })
+
+  const step3 = usePartialTransactionHistory({
+    ...props,
+    fetchFor: {
+      chains: getMultiChainFetchList({ core: false, orbit: true }),
+      direction: 'sender'
+    },
+    stepName: 'Orbit Chains (outgoing)',
+    ready: isReady({ previousStep: step2 })
+  })
+
+  const step4 = usePartialTransactionHistory({
+    ...props,
+    fetchFor: {
+      chains: getMultiChainFetchList({ core: false, orbit: true }),
+      direction: 'receiver'
+    },
+    stepName: 'Orbit Chains (incoming)',
+    ready: isReady({ previousStep: step3 })
   })
 
   // To add new step:
-  // 1. const step{X} = usePartialTransactionHistory({ ..., ready: step{X - 1}.loading })
+  // 1. const step{X} = usePartialTransactionHistory({ ..., ready: isReady({ previousStep: step{X - 1} }) })
   // 2. stepResults = [..., step{X}]
 
-  const stepResults = [step1, step2]
+  const stepResults = [step1, step2, step3, step4]
 
   const completed = useMemo(() => {
     return stepResults.every(r => r.completed)
