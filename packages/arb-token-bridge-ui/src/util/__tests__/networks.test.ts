@@ -30,7 +30,7 @@ beforeAll(() => {
     },
     isCustom: true,
     isTestnet: true,
-    name: 'Arbitrum Local',
+    name: 'Nitro Testnode L2',
     parentChainId: 1337,
     tokenBridge: {
       parentCustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',

@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Address } from 'wagmi'
+import { Address } from 'viem'
 import useSWRImmutable from 'swr/immutable'
 
 import { CommonAddress } from '../../util/CommonAddressUtils'
