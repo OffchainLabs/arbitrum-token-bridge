@@ -26,8 +26,14 @@ export type CrosschainTransfersQuote = {
   }
   fromToken: string
   toToken: string
-  fromAmount: string
-  toAmount: string
+  fromAmount: {
+    amount: string
+    token: Token
+  }
+  toAmount: {
+    amount: string
+    token: Token
+  }
   fromChainId: number
   toChainId: number
   fromAddress: string

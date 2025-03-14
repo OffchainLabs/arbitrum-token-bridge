@@ -72,7 +72,6 @@ function sumFee(feeCosts: FeeCost[] | undefined) {
 
 function parseQuoteToCrosschainTransfersQuoteWithLifiData({
   quote,
-  fromAmount,
   fromAddress,
   toAddress,
   fromChainId,
@@ -82,7 +81,6 @@ function parseQuoteToCrosschainTransfersQuoteWithLifiData({
   order
 }: {
   quote: LiFiStep & { transactionRequest: TransactionRequest }
-  fromAmount: string
   fromAddress: string
   toAddress: string
   fromChainId: string
@@ -94,17 +92,27 @@ function parseQuoteToCrosschainTransfersQuoteWithLifiData({
   return {
     durationMs: quote.estimate.executionDuration,
     gas: {
+      /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: sumGasCosts(quote.estimate.gasCosts),
       token: quote.estimate.gasCosts![0]!.token
     },
     fee: {
+      /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: sumFee(quote.estimate.feeCosts),
       token: quote.estimate.feeCosts![0]!.token
     },
     fromToken,
     toToken,
-    fromAmount,
-    toAmount: quote.estimate.toAmount,
+    fromAmount: {
+      /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
+      amount: quote.action.fromAmount,
+      token: quote.action.fromToken
+    },
+    toAmount: {
+      /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
+      amount: quote.estimate.toAmount,
+      token: quote.action.toToken
+    },
     fromAddress,
     toAddress,
     fromChainId: Number(fromChainId),
@@ -283,7 +291,6 @@ export default async function handler(
           ...quote,
           transactionRequest
         },
-        fromAmount,
         fromAddress,
         toAddress,
         fromChainId,
