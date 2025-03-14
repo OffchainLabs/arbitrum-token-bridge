@@ -28,6 +28,7 @@ import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { Loader } from '../common/atoms/Loader'
 
 export const BatchTransferNativeTokenTooltip = ({
   children,
@@ -145,7 +146,8 @@ export const TransactionHistoryTable = (
     failedChainPairs,
     resume,
     selectedTabIndex,
-    oldestTxTimeAgoString
+    oldestTxTimeAgoString,
+    stepName
   } = props
 
   const TABLE_HEADER_HEIGHT = 52
@@ -214,7 +216,7 @@ export const TransactionHistoryTable = (
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
       >
-        {loading ? (
+        {transactions.length === 0 && loading ? (
           <div className="flex h-[28px] items-center space-x-2">
             <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
             <HistoryLoader />
@@ -222,6 +224,18 @@ export const TransactionHistoryTable = (
         ) : (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center justify-start space-x-1">
+              {loading &&
+                (stepName ? (
+                  <Tooltip
+                    content={
+                      <span>Loading transactions for {stepName}...</span>
+                    }
+                  >
+                    <Loader size="small" color="white" />
+                  </Tooltip>
+                ) : (
+                  <Loader size="small" color="white" />
+                ))}
               <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
               <span className="text-xs">
                 Showing {transactions.length}{' '}
@@ -230,7 +244,7 @@ export const TransactionHistoryTable = (
               </span>
             </div>
 
-            {!completed && <LoadMoreButton onClick={resume} />}
+            {!completed && !loading && <LoadMoreButton onClick={resume} />}
           </div>
         )}
         <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
