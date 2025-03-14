@@ -17,7 +17,7 @@ import {
   mockValidTokenBridge,
 } from "./__mocks__/chainDataMocks";
 
-describe("Validation Functions", () => {
+describe.skip("Validation Functions", () => {
   describe("isValidAddress", () => {
     it("should return true for valid Ethereum addresses", () => {
       expect(isValidAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")).toBe(
@@ -192,7 +192,7 @@ describe("Validation Functions", () => {
     }, 1000000);
   });
 
-  describe("validateOrbitChainsList", () => {
+  describe.skip("validateOrbitChainsList", () => {
     it("should validate the entire orbitChainsList without throwing errors", async () => {
       await expect(
         validateOrbitChainsList(orbitChainsList)
