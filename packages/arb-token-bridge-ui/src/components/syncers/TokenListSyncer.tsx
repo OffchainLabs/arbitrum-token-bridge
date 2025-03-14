@@ -21,6 +21,7 @@ const TokenListSyncer = (): JSX.Element => {
     if (!arbTokenBridgeLoaded) {
       return
     }
+
     const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
       // Always load the Arbitrum Token token list
       if (bridgeTokenList.isArbitrumTokenTokenList) {

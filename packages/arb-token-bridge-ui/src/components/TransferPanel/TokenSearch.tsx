@@ -475,7 +475,13 @@ function TokensPanel({
         isTokenArbitrumOneNativeUSDC(address) ||
         isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
-        token = usdcToken
+        if (isOrbitChain) {
+          token = usdcToken
+        } else {
+          token = isTokenArbitrumOneNativeUSDC(address)
+            ? ARB_ONE_NATIVE_USDC_TOKEN
+            : ARB_SEPOLIA_NATIVE_USDC_TOKEN
+        }
       } else if (address) {
         token = tokensFromLists[address] || tokensFromUser[address] || null
       }
