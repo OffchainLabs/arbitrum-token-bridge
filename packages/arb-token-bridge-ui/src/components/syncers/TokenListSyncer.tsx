@@ -27,11 +27,13 @@ const TokenListSyncer = (): JSX.Element => {
       if (bridgeTokenList.isArbitrumTokenTokenList) {
         return true
       }
+
       return (
         bridgeTokenList.originChainID === childChain.id &&
         bridgeTokenList.isDefault
       )
     })
+
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
