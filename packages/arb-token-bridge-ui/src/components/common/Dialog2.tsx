@@ -10,6 +10,7 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
+import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -31,6 +32,7 @@ type DialogType =
   | 'approve_token'
   | 'approve_cctp_usdc'
   | 'approve_custom_fee_token'
+  | 'import_token'
   | 'withdraw'
   | 'scw_custom_destination_address'
 
@@ -79,8 +81,8 @@ type DialogProps = {
 
 export function DialogWrapper(props: DialogProps) {
   const isOftTransfer = useIsOftV2Transfer()
-  const [selectedToken] = useSelectedToken()
-  const [{ amount }] = useArbQueryParams()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
+  const [{ amount, token: tokenFromSearchParams }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -106,6 +108,20 @@ export function DialogWrapper(props: DialogProps) {
           isOft={isOftTransfer}
         />
       )
+    case 'import_token':
+      if (tokenFromSearchParams) {
+        return (
+          <TokenImportDialog
+            {...commonProps}
+            onClose={imported => {
+              setSelectedToken(imported ? tokenFromSearchParams : null)
+              commonProps.onClose(imported)
+            }}
+            tokenAddress={tokenFromSearchParams}
+          />
+        )
+      }
+      return null
     case 'approve_custom_fee_token':
       if (nativeCurrency.isCustom) {
         return (
