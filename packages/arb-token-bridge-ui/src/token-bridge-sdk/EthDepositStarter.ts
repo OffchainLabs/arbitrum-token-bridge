@@ -1,5 +1,6 @@
 import {
   EthBridger,
+  getArbitrumNetwork,
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
 import { BigNumber, Signer } from 'ethers'
@@ -12,9 +13,14 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { getAddressFromSigner, percentIncrease } from './utils'
+import {
+  getAddressFromSigner,
+  percentIncrease,
+  validateSignerChainId
+} from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
+import { addressIsSmartContract } from '../util/AddressUtils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
 import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
 
@@ -164,8 +170,16 @@ export class EthDepositStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
+    const destinationChainId = (
+      await this.destinationChainProvider.getNetwork()
+    ).chainId
 
     const isCustomDestinationAddress = !!destinationAddress
+
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
 
     const depositRequest = isCustomDestinationAddress
       ? await ethBridger.getDepositToRequest({
@@ -180,6 +194,21 @@ export class EthDepositStarter extends BridgeTransferStarter {
           amount,
           from: address
         })
+
+    const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(depositToAddress, this.sourceChainProvider)) {
+      throw new Error(`Inbox address provided is not a smart contract address.`)
+    }
+
+    const inboxAddressForChain =
+      getArbitrumNetwork(destinationChainId).ethBridge.inbox.toLowerCase()
+
+    if (depositToAddress !== inboxAddressForChain) {
+      throw new Error(
+        `Wrong inbox address for destination chain. Expected ${inboxAddressForChain}, got ${depositToAddress} instead.`
+      )
+    }
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest
