@@ -1,11 +1,19 @@
+export type Dialog =
+  | 'cctp_deposit' //
+  | 'cctp_withdrawal'
+  | 'scw_custom_destination_address_equal'
+
 export type UiDriverContext = {
   isDepositMode: boolean
   isSmartContractWallet: boolean
+  walletAddress?: string
+  destinationAddress?: string
 }
 
 export type UiDriverStep =
   | { type: 'start' } //
   | { type: 'return' }
+  | { type: 'dialog'; payload: Dialog }
 
 export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
   TStep extends { type: 'start' }
@@ -13,6 +21,9 @@ export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
     : //
     TStep extends { type: 'return' }
     ? void
+    : //
+    TStep extends { type: 'dialog' }
+    ? boolean
     : //
       never
 
