@@ -75,6 +75,9 @@ export function TransactionHistorySearchBar() {
         <Tooltip
           content="Search any wallet address to view transactions and claim withdrawals for them. The funds will arrive at the destination wallet address specified by the original withdrawal transaction."
           wrapperClassName="h-full w-full"
+          tippyProps={{
+            hideOnClick: false
+          }}
         >
           <input
             type="text"
