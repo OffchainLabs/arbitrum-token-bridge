@@ -26,7 +26,14 @@
     "**/@walletconnect/ethereum-provider": "2.13.1",
     "**/@ethersproject/providers/ws": "7.5.10",
     "**/@synthetixio/synpress/ws": "8.17.1",
-    "**/elliptic": "6.6.0"
+    "**/elliptic": "6.6.1",
+    "@octokit/core/@octokit/request-error": "5.1.1",
+    "@octokit/core/@octokit/request": "8.4.1",
+    "@octokit/graphql/@octokit/request": "8.4.1",
+    "@actions/github/@octokit/plugin-paginate-rest": "9.2.2",
+    "**/react-syntax-highlighter/prismjs": "1.30.0",
+    "**/react-syntax-highlighter/refractor/prismjs": "1.30.0",
+    "**/@babel/runtime": "7.26.10"
   },
   "keywords": [],
   "author": "",

@@ -5,6 +5,13 @@ import { getProviderForChainId } from '../token-bridge-sdk/utils'
 
 export type Address = `0x${string}`
 
+export function addressesEqual(
+  address1: string | undefined,
+  address2: string | undefined
+) {
+  return address1?.trim().toLowerCase() === address2?.trim().toLowerCase()
+}
+
 export async function addressIsSmartContract(
   address: string,
   chainIdOrProvider: number | Provider
@@ -13,7 +20,6 @@ export async function addressIsSmartContract(
     typeof chainIdOrProvider === 'number'
       ? getProviderForChainId(chainIdOrProvider)
       : chainIdOrProvider
-
   try {
     return (await provider.getCode(address)).length > 2
   } catch (_) {

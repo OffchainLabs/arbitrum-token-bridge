@@ -9,7 +9,7 @@ import {
   ApproveNativeCurrencyProps,
   BridgeTransferStarter,
   RequiresNativeCurrencyApprovalProps,
-  TransferEstimateGas,
+  TransferEstimateGasProps,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
@@ -155,7 +155,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     amount,
     signer,
     destinationAddress
-  }: TransferEstimateGas) {
+  }: TransferEstimateGasProps) {
     const address = await getAddressFromSigner(signer)
 
     return depositEthEstimateGas({

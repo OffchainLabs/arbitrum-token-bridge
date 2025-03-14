@@ -113,7 +113,7 @@ export const l1L2RetryableRequiresRedeem = (
   tx: TeleporterMergedTransaction
 ) => {
   return (
-    tx.parentToChildMsgData?.status ===
+    tx.l1ToL2MsgData?.status ===
     ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )
 }
