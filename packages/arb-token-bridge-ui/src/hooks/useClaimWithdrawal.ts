@@ -31,9 +31,9 @@ export function useClaimWithdrawal(
   const { address } = useAccount()
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
   const { data: signer } = useSigner({ chainId: tx.parentChainId })
-  const { updatePendingTransaction } = useTransactionHistory(
-    sanitizedAddress ?? address
-  )
+  const { updatePendingTransaction } = useTransactionHistory({
+    address: sanitizedAddress ?? address
+  })
   const [isClaiming, setIsClaiming] = useState(false)
 
   const claim = useCallback(async () => {

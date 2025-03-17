@@ -48,7 +48,9 @@ export const TransactionsTableDetails = () => {
   const { sanitizedAddress } = useTransactionHistoryAddressStore()
   const { tx: txFromStore, isOpen, close, reset } = useTxDetailsStore()
   const { ethToUSD } = useETHPrice()
-  const { transactions } = useTransactionHistory(sanitizedAddress)
+  const { transactions } = useTransactionHistory({
+    address: sanitizedAddress
+  })
 
   const tx = useMemo(() => {
     if (!txFromStore) {
