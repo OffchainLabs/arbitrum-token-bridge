@@ -206,13 +206,6 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const oftContract = this.getOftAdapterContract(signer)
-    const config = await prepareTransferConfig({
-      signer,
-      oftContract,
-      amount,
-      destLzEndpointId: this.destLzEndpointId!,
-      destinationAddress
-    })
 
     const isDepositMode = isDepositModeUtil({
       sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
@@ -221,6 +214,47 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       )
     })
 
+    if (!this.sourceChainErc20Address) {
+      throw Error('OFT token address not found')
+    }
+
+    const allowance = await fetchErc20Allowance({
+      address: this.sourceChainErc20Address,
+      provider: this.sourceChainProvider,
+      owner: await signer.getAddress(),
+      spender: oftContract.address
+    })
+    if (allowance.lt(amount)) {
+      /**
+       * Default to hardcoded values based on sample of transactions:
+       *
+       * Arb1:
+       * https://arbiscan.io/tx/0xced6a1a14d42678f35c689756063021e27799e00a671522d09207d582184180c
+       * https://arbiscan.io/tx/0xb4bc8435131ffc489cd60060cd1eabdcb866cf38ffe9f1a09a818d515691d087
+       * https://arbiscan.io/tx/0x8ca579c757c36a66c5080524f215888b37e28d5ac00ed57ccd2248d6652eb72e
+       *
+       * Mainnet:
+       * https://etherscan.io/tx/0xbd2f476acb0d78817a8222da1fdcd3409aeb82b72b8e393780e1867c4bf5d010
+       * https://etherscan.io/tx/0xd8093e91850c50517b808510c30918cc79e32768c561d5f3dbfdb1398cd954ce
+       * https://etherscan.io/tx/0x3836f1f76333853e69ed975f412afdb7337cb3c4ced636bcdb8dfebc720b75a4
+       * https://etherscan.io/tx/0xe1d717d5063bf55742af9aef7a5600dcd8c0bd2553deca25e52e7bb2a48e65b6
+       */
+      const gasEstimate = isDepositMode
+        ? BigNumber.from(600_000)
+        : BigNumber.from(360_000)
+      return {
+        estimatedParentChainGas: isDepositMode ? gasEstimate : constants.Zero,
+        estimatedChildChainGas: isDepositMode ? constants.Zero : gasEstimate
+      }
+    }
+
+    const config = await prepareTransferConfig({
+      signer,
+      oftContract,
+      amount,
+      destLzEndpointId: this.destLzEndpointId!,
+      destinationAddress
+    })
     const gasEstimate = await signer.estimateGas(config.request)
 
     return {
