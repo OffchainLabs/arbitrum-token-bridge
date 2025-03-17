@@ -15,6 +15,8 @@ body:
     id: raas-provider
     attributes:
       label: Who is your RaaS Provider?
+      description: |
+        Please note that we only support Orbit chains that are run by RaaS due to infrastructure requirement and security concerns.
     validations:
       required: true
   - type: input
