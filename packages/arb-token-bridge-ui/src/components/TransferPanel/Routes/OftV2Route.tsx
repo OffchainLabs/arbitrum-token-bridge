@@ -2,17 +2,17 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { constants } from 'ethers'
 import { Route } from './Route'
-import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { ether } from '../../../constants'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEstimates'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {
-  const amount = useAmountBigNumber()
+  const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
   const { selectedRoute, setSelectedRoute } = useRouteStore()

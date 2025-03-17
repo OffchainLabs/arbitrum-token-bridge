@@ -1,11 +1,11 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { Route, Token } from './Route'
-import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { isNetwork } from '../../../util/networks'
 
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 const nativeUsdcToken: Token = {
   decimals: 6,
@@ -17,7 +17,7 @@ const nativeUsdcToken: Token = {
 
 // Only displayed during USDC transfers (Mainnet/ArbOne)
 export function CctpRoute() {
-  const amount = useAmountBigNumber()
+  const [{ amount }] = useArbQueryParams()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
   const { selectedRoute, setSelectedRoute } = useRouteStore()
