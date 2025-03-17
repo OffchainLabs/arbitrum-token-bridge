@@ -1,7 +1,7 @@
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 
-import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 import { Transaction } from '../../../src/types/Transactions'
+import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 
 type MockClassicDepositTransactionParams = {
   txID: string
@@ -10,7 +10,7 @@ type MockClassicDepositTransactionParams = {
 
 function mockClassicDepositTransaction(
   params: MockClassicDepositTransactionParams
-) {
+): Transaction {
   const dateNow = new Date()
   const dateYearAgo = new Date(dateNow.setFullYear(dateNow.getFullYear() - 1))
 

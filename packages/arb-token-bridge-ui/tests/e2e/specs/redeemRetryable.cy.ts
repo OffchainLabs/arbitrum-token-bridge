@@ -1,10 +1,10 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
+import { Transaction } from '../../../src/types/Transactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 import {
   getInitialERC20Balance,
   getL2NetworkConfig
 } from '../../support/common'
-import { Transaction } from '../../../src/types/Transactions'
 
 const wethAmountToDeposit = 0.001
 
