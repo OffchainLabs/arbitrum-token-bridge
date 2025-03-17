@@ -135,7 +135,7 @@ describe('Withdraw ERC20 Token', () => {
           cy.confirmMetamaskTransaction()
 
           cy.findTransactionInTransactionHistory({
-            duration: 'an hour',
+            duration: 'Less than a minute',
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
           })
@@ -253,7 +253,7 @@ describe('Withdraw ERC20 Token', () => {
             symbol: testCase.symbol
           }
           cy.findTransactionInTransactionHistory({
-            duration: 'an hour',
+            duration: 'Less than a minute',
             ...txData
           })
           cy.openTransactionDetails(txData)

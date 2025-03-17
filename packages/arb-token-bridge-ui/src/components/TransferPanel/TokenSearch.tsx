@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useAccount } from 'wagmi'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { twMerge } from 'tailwind-merge'
+import useSWRImmutable from 'swr/immutable'
 
 import { useAppState } from '../../state'
 import {
@@ -34,9 +35,11 @@ import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Switch } from '../common/atoms/Switch'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { getUsdcToken, useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { addressesEqual } from '../../util/AddressUtils'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -186,6 +189,8 @@ function TokensPanel({
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const {
+    isEthereumMainnet: isParentChainEthereumMainnet,
+    isSepolia: isParentChainSepolia,
     isArbitrumOne: isParentChainArbitrumOne,
     isArbitrumSepolia: isParentChainArbitrumSepolia
   } = isNetwork(parentChain.id)
@@ -240,6 +245,43 @@ function TokensPanel({
     ]
   )
 
+  const usdcParentAddress = useMemo(() => {
+    if (isParentChainEthereumMainnet) {
+      return CommonAddress.Ethereum.USDC
+    }
+    if (isParentChainSepolia) {
+      return CommonAddress.Sepolia.USDC
+    }
+    if (isParentChainArbitrumOne) {
+      return CommonAddress.ArbitrumOne.USDC
+    }
+    if (isParentChainArbitrumSepolia) {
+      return CommonAddress.ArbitrumSepolia.USDC
+    }
+  }, [
+    isParentChainEthereumMainnet,
+    isParentChainSepolia,
+    isParentChainArbitrumOne,
+    isParentChainArbitrumSepolia
+  ])
+
+  const { data: usdcToken = null } = useSWRImmutable(
+    usdcParentAddress
+      ? ([
+          usdcParentAddress,
+          parentChain.id,
+          childChain.id,
+          'token_search_usdc_token'
+        ] as const)
+      : null,
+    ([_usdcParentAddress, _parentChainId, _childChainId]) =>
+      getUsdcToken({
+        tokenAddress: _usdcParentAddress,
+        parentProvider: getProviderForChainId(_parentChainId),
+        childProvider: getProviderForChainId(_childChainId)
+      })
+  )
+
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
     const tokenAddresses = [
@@ -292,7 +334,7 @@ function TokensPanel({
         // If the token on the list is used as a custom fee token, we remove the duplicate
         if (
           nativeCurrency.isCustom &&
-          address.toLowerCase() === nativeCurrency.address.toLowerCase()
+          addressesEqual(address, nativeCurrency.address)
         ) {
           return false
         }
@@ -370,10 +412,6 @@ function TokensPanel({
   ])
 
   const storeNewToken = async () => {
-    if (!walletAddress) {
-      return
-    }
-
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -433,10 +471,17 @@ function TokensPanel({
       const address = tokensToShow[virtualizedProps.index]
       let token: ERC20BridgeToken | null = null
 
-      if (isTokenArbitrumOneNativeUSDC(address)) {
-        token = ARB_ONE_NATIVE_USDC_TOKEN
-      } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
-        token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+      if (
+        isTokenArbitrumOneNativeUSDC(address) ||
+        isTokenArbitrumSepoliaNativeUSDC(address)
+      ) {
+        if (isOrbitChain) {
+          token = usdcToken
+        } else {
+          token = isTokenArbitrumOneNativeUSDC(address)
+            ? ARB_ONE_NATIVE_USDC_TOKEN
+            : ARB_SEPOLIA_NATIVE_USDC_TOKEN
+        }
       } else if (address) {
         token = tokensFromLists[address] || tokensFromUser[address] || null
       }
@@ -460,7 +505,7 @@ function TokensPanel({
         />
       )
     },
-    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected]
+    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected, usdcToken]
   )
 
   const AddButton = useMemo(
@@ -513,7 +558,6 @@ export function TokenSearch({
   className?: string
   close: () => void
 }) {
-  const { address: walletAddress } = useAccount()
   const { setAmount2 } = useSetInputAmount()
   const {
     app: {
@@ -560,10 +604,6 @@ export function TokenSearch({
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         setSelectedToken(_token.address)
-        return
-      }
-
-      if (!walletAddress) {
         return
       }
 

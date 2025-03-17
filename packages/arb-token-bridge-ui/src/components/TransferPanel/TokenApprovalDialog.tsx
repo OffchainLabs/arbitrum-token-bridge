@@ -288,7 +288,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           {token?.symbol ?? 'a specific token'}.
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2">
+          {isOft && (
+            <NoteBox variant="warning">
+              Note: USDT approvals for the LayerZero OFT contract must be set to
+              the maximum amount. Please do not modify the approval amount, or
+              the transaction may fail.
+            </NoteBox>
+          )}
+
           <NoteBox>
             After approval, you&apos;ll see a second prompt in your wallet for
             the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
