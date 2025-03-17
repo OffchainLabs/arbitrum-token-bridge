@@ -431,7 +431,7 @@ export function TransferPanel() {
         networks
 
       await drive(stepGeneratorForCctp, stepExecutor, {
-        isDepositMode,
+        isDepositMode: transferMode === 'deposit',
         isSmartContractWallet
       })
 
