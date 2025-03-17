@@ -13,7 +13,7 @@ export function Tooltip({
   show = true,
   content,
   wrapperClassName = 'w-max',
-  theme = 'light',
+  theme = 'dark',
   tippyProps = {},
   children
 }: TooltipProps): JSX.Element | null {
@@ -26,7 +26,7 @@ export function Tooltip({
   }
 
   return (
-    <Tippy {...tippyProps} theme={theme} content={content}>
+    <Tippy {...tippyProps} theme={theme} content={content} arrow={false}>
       <div className={wrapperClassName}>{children}</div>
     </Tippy>
   )

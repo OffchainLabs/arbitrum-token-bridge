@@ -19,6 +19,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { addressesEqual } from '../../util/AddressUtils'
 
 enum ImportStatus {
   LOADING,
@@ -235,7 +236,7 @@ export function TokenImportDialog({
     }
 
     // Listen for the token to be added to the bridge so we can automatically select it
-    if (foundToken.address !== selectedToken?.address) {
+    if (!addressesEqual(foundToken.address, selectedToken?.address)) {
       onClose(true)
       selectToken(foundToken)
     }

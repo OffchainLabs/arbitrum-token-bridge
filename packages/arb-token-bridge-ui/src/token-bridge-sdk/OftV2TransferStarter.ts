@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   BridgeTransferStarter,
-  TransferEstimateGas,
+  TransferEstimateGasProps,
   TransferProps,
   TransferType,
   ApproveTokenProps,
@@ -163,7 +163,10 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     return undefined
   }
 
-  public async transferEstimateFee({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateFee({
+    amount,
+    signer
+  }: TransferEstimateGasProps) {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)

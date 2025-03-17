@@ -28,6 +28,7 @@ import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { getTransferMode } from '../../util/getTransferMode'
+import { addressesEqual } from '../../util/AddressUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -146,20 +147,18 @@ export function NetworkContainer({
   bgLogoHeight?: number
   children: React.ReactNode
 }) {
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
   const { color } = getBridgeUiConfigForChain(network.id)
 
-  const walletAddressLowercased = address?.toLowerCase()
-
   const showCustomAddressBanner = useMemo(() => {
-    if (!customAddress || !walletAddressLowercased) {
+    if (!customAddress || !walletAddress) {
       return false
     }
-    if (customAddress === walletAddressLowercased) {
+    if (addressesEqual(customAddress, walletAddress)) {
       return false
     }
     return utils.isAddress(customAddress)
-  }, [customAddress, walletAddressLowercased])
+  }, [customAddress, walletAddress])
 
   return (
     <div>

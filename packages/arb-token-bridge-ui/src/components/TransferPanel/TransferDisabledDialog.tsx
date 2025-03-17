@@ -14,6 +14,7 @@ import { getTransferMode } from '../../util/getTransferMode'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { addressesEqual } from '../../util/AddressUtils'
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
@@ -52,7 +53,10 @@ export function TransferDisabledDialog() {
   const shouldShowDialog = useMemo(() => {
     if (
       !selectedToken ||
-      selectedToken.address === selectedTokenAddressLocalValue
+      addressesEqual(
+        selectedToken.address,
+        selectedTokenAddressLocalValue ?? undefined
+      )
     ) {
       return false
     }
@@ -98,17 +102,20 @@ export function TransferDisabledDialog() {
     : null
 
   const isGHO =
+    selectedToken &&
     networks.destinationChain.id === ChainId.ArbitrumOne &&
-    selectedToken?.address.toLowerCase() ===
-      withdrawOnlyTokens[ChainId.ArbitrumOne]
-        ?.find(_token => _token.symbol === 'GHO')
-        ?.l1Address.toLowerCase()
+    addressesEqual(
+      selectedToken.address,
+      withdrawOnlyTokens[ChainId.ArbitrumOne]?.find(
+        _token => _token.symbol === 'GHO'
+      )?.l1Address
+    )
 
   useEffect(() => {
     if (
       selectedTokenAddressLocalValue &&
       (!selectedToken ||
-        selectedToken.address !== selectedTokenAddressLocalValue)
+        !addressesEqual(selectedToken.address, selectedTokenAddressLocalValue))
     ) {
       setSelectedTokenAddressLocalValue(null)
     }

@@ -10,6 +10,7 @@ import {
   isTokenArbitrumSepoliaNativeUSDC
 } from '../util/TokenUtils'
 import { getTransferMode } from '../util/getTransferMode'
+import { isNetwork } from '../util/networks'
 
 /**
  * Balance of the child chain's native currency or ERC20 token
@@ -28,6 +29,10 @@ export function useBalanceOnSourceChain(
     sourceChainId,
     destinationChainId
   })
+  const [networks] = useNetworks()
+  const { isOrbitChain: isSourceOrbitChain } = isNetwork(
+    networks.sourceChain.id
+  )
 
   const {
     erc20: [erc20SourceChainBalances]
@@ -55,7 +60,10 @@ export function useBalanceOnSourceChain(
     isTokenArbitrumOneNativeUSDC(tokenAddressLowercased) ||
     isTokenArbitrumSepoliaNativeUSDC(tokenAddressLowercased)
   ) {
-    return erc20SourceChainBalances[tokenAddressLowercased] ?? constants.Zero
+    // because we read parent chain address, make sure we don't read Orbit chain's address if it's the source chain
+    if (!isSourceOrbitChain) {
+      return erc20SourceChainBalances[tokenAddressLowercased] ?? constants.Zero
+    }
   }
 
   const tokenChildChainAddress = token.l2Address?.toLowerCase()
