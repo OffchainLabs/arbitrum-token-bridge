@@ -1,5 +1,4 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { Transaction } from '../../../src/hooks/useTransactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 import {
   getInitialERC20Balance,
@@ -8,7 +7,7 @@ import {
 
 const wethAmountToDeposit = 0.001
 
-function mockErc20RedeemDepositTransaction(): Transaction {
+function mockErc20RedeemDepositTransaction() {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
