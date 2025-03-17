@@ -127,6 +127,11 @@ export const Route = React.memo(
       gasCost &&
       gasCost.find(({ gasToken }) => gasToken.address === constants.AddressZero)
 
+    const showUSDValueForBridgeFee =
+      !isTestnet &&
+      bridgeFee &&
+      bridgeFee.token.address === constants.AddressZero
+
     return (
       <div
         className={twMerge(
@@ -268,19 +273,30 @@ export const Route = React.memo(
 
             {bridgeFee && (
               <Tooltip content={'The fee the bridge takes'}>
-                <div className="flex items-center">
+                <div className="flex items-center gap-1">
                   <Image
                     src="/icons/bridge.svg"
                     width={15}
                     height={15}
                     alt="bridge fee"
                   />
-                  <span className="ml-1">
+                  <span>
                     {formatAmount(BigNumber.from(bridgeFee.fee), {
                       decimals: bridgeFee.token.decimals,
                       symbol: bridgeFee.token.symbol
                     })}
                   </span>
+                  {showUSDValueForBridgeFee && (
+                    <div className="text-sm tabular-nums opacity-80">
+                      {formatUSD(
+                        ethToUSD(
+                          Number(
+                            utils.formatEther(BigNumber.from(bridgeFee.fee))
+                          )
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
               </Tooltip>
             )}
