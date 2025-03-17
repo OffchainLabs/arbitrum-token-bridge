@@ -25,7 +25,7 @@
     "boring-avatars": "^1.7.0",
     "cheerio": "^1.0.0-rc.12",
     "dayjs": "^1.11.13",
-    "ethers": "^5.6.0",
+    "ethers": "^5.8.0",
     "exponential-backoff": "^3.1.1",
     "graphql": "^16.9.0",
     "lodash-es": "^4.17.21",
