@@ -1,13 +1,12 @@
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
+import { Transaction } from '../../../src/types/Transactions'
 
 type MockClassicDepositTransactionParams = {
   txID: string
   value: string
-  assetType?: AssetType
-  assetName?: string
-}
+} & Partial<Transaction>
 
 function mockClassicDepositTransaction(
   params: MockClassicDepositTransactionParams

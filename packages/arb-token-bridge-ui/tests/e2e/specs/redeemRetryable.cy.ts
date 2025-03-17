@@ -4,10 +4,11 @@ import {
   getInitialERC20Balance,
   getL2NetworkConfig
 } from '../../support/common'
+import { Transaction } from '../../../src/types/Transactions'
 
 const wethAmountToDeposit = 0.001
 
-function mockErc20RedeemDepositTransaction() {
+function mockErc20RedeemDepositTransaction(): Transaction {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
