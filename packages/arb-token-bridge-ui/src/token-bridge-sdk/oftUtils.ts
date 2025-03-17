@@ -126,15 +126,18 @@ export function buildSendParams({
 type QuoteResult = ReadContractResult<typeof oftV2Abi, 'quoteSend'>
 export async function getOftV2Quote({
   address,
-  sendParams
+  sendParams,
+  chainId
 }: {
   address: Address
   sendParams: SendParam
+  chainId: number
 }): Promise<QuoteResult> {
   const quote = await readContract({
     address,
     abi: oftV2Abi,
     functionName: 'quoteSend',
+    chainId,
     args: [sendParams, false]
   })
   return {
