@@ -27,13 +27,15 @@ async function prepareTransferConfig({
   oftContract,
   destLzEndpointId,
   amount,
-  destinationAddress
+  destinationAddress,
+  sourceChainId
 }: {
   signer: Signer
   oftContract: Contract
   destLzEndpointId: number
   amount: BigNumber
   destinationAddress?: string
+  sourceChainId: number
 }) {
   const address = await getAddressFromSigner(signer)
 
@@ -45,7 +47,8 @@ async function prepareTransferConfig({
   })
   const quoteFee = await getOftV2Quote({
     sendParams,
-    address: oftContract.address as Address
+    address: oftContract.address as Address,
+    chainId: sourceChainId
   })
 
   return prepareWriteContract({
@@ -253,7 +256,8 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       oftContract,
       amount,
       destLzEndpointId: this.destLzEndpointId!,
-      destinationAddress
+      destinationAddress,
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider)
     })
     const gasEstimate = await signer.estimateGas(config.request)
 
@@ -283,9 +287,11 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
     const { nativeFee } = await getOftV2Quote({
       address: oftContract.address as Address,
-      sendParams
+      sendParams,
+      chainId: await getChainIdFromProvider(this.sourceChainProvider)
     })
 
+    console.log(nativeFee)
     return {
       estimatedSourceChainFee: nativeFee,
       estimatedDestinationChainFee: constants.Zero
@@ -301,7 +307,8 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       oftContract,
       amount,
       destLzEndpointId: this.destLzEndpointId!,
-      destinationAddress
+      destinationAddress,
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider)
     })
 
     const sendTx = await writeContract(config)
