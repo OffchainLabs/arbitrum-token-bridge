@@ -90,7 +90,7 @@ function parseQuoteToCrosschainTransfersQuoteWithLifiData({
   order: Order
 }): CrosschainTransfersQuoteWithLifiData {
   return {
-    durationMs: quote.estimate.executionDuration,
+    durationMs: quote.estimate.executionDuration * 1_000,
     gas: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: sumGasCosts(quote.estimate.gasCosts),
