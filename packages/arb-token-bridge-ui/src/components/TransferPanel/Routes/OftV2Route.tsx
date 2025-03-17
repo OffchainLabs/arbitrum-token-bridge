@@ -15,7 +15,7 @@ export function OftV2Route() {
   const amount = useAmountBigNumber()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
-  const selectedRoute = useRouteStore(state => state.selectedRoute)
+  const { selectedRoute, setSelectedRoute } = useRouteStore()
   const [selectedToken] = useSelectedToken()
   const sourceChainNativeCurrency = useNativeCurrency({
     provider: networks.sourceChainProvider
@@ -54,6 +54,7 @@ export function OftV2Route() {
       isLoadingGasEstimate={isLoading}
       gasCost={gasCost}
       selected={selectedRoute === 'oftV2'}
+      onSelectedRouteClick={setSelectedRoute}
     />
   )
 }

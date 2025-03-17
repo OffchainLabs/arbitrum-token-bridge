@@ -20,7 +20,7 @@ export function CctpRoute() {
   const amount = useAmountBigNumber()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
-  const selectedRoute = useRouteStore(state => state.selectedRoute)
+  const { selectedRoute, setSelectedRoute } = useRouteStore()
 
   return (
     <Route
@@ -33,6 +33,7 @@ export function CctpRoute() {
       isLoadingGasEstimate={false}
       gasCost={undefined}
       selected={selectedRoute === 'cctp'}
+      onSelectedRouteClick={setSelectedRoute}
     />
   )
 }

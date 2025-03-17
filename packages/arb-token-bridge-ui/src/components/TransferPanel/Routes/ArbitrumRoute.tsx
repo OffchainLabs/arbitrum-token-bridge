@@ -210,7 +210,7 @@ export function ArbitrumRoute() {
   })
   const { isTestnet, isOrbitChain } = isNetwork(childChain.id)
 
-  const selectedRoute = useRouteStore(state => state.selectedRoute)
+  const { selectedRoute, setSelectedRoute } = useRouteStore()
   const [selectedToken] = useSelectedToken()
 
   const { gasCost, isLoading } = useMemo(
@@ -275,6 +275,7 @@ export function ArbitrumRoute() {
             }))
           : []
       }
+      onSelectedRouteClick={setSelectedRoute}
       tag={'security-guaranteed'}
       selected={selectedRoute === 'arbitrum'}
     />

@@ -9,7 +9,7 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { RouteType, useRouteStore } from '../hooks/useRouteStore'
+import { RouteType, SetRoute } from '../hooks/useRouteStore'
 import { SecurityGuaranteed } from '../SecurityLabels'
 import { TokenLogo } from '../TokenLogo'
 import React from 'react'
@@ -44,6 +44,7 @@ export type RouteProps = {
   bridgeIconURI: string
   tag?: BadgeType
   selected: boolean
+  onSelectedRouteClick: SetRoute
 }
 
 function getBridgeConfigFromType(type: RouteType) {
@@ -95,7 +96,8 @@ export const Route = React.memo(
     gasCost,
     tag,
     selected,
-    bridgeFee
+    bridgeFee,
+    onSelectedRouteClick
   }: RouteProps) => {
     const [networks] = useNetworks()
     const { childChainProvider, isDepositMode } =
@@ -106,8 +108,6 @@ export const Route = React.memo(
     const [_token] = useSelectedToken()
     const [{ amount2 }] = useArbQueryParams()
     const isBatchTransferSupported = useIsBatchTransferSupported()
-
-    const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
 
     const token = overrideToken || _token || childNativeCurrency
 
@@ -133,7 +133,7 @@ export const Route = React.memo(
           'group cursor-pointer rounded text-white ring-1 ring-[#ffffff33] transition-colors',
           selected && 'ring-2 ring-[#5F7D5B]'
         )}
-        onClick={() => setSelectedRoute(type)}
+        onClick={() => onSelectedRouteClick(type)}
       >
         <div
           className={twMerge(
