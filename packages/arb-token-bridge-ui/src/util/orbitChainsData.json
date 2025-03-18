@@ -1630,8 +1630,8 @@
       "rpcUrl": "https://test-rpc.plumenetwork.xyz/",
       "isCustom": true,
       "isTestnet": true,
-      "name": "Plume Devnet",
-      "slug": "plume-devnet",
+      "name": "Plume Devnet (Legacy)",
+      "slug": "plume-devnet-legacy",
       "parentChainId": 11155111,
       "tokenBridge": {
         "parentCustomGateway": "0xa8168b76Aa023228CaA8Ef5110477cD6d02F1508",
@@ -1652,9 +1652,9 @@
       "bridgeUiConfig": {
         "color": "#F43B3A",
         "network": {
-          "name": "Plume Devnet",
+          "name": "Plume Devnet (Legacy)",
           "logo": "/images/PlumeDevnet_Logo.png",
-          "description": "Bringing the real world onchain. Optimized for real world assets."
+          "description": "(Legacy) Bringing the real world onchain. Optimized for real world assets."
         }
       }
     },
