@@ -10,6 +10,7 @@ import {
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { CrosschainTransfersQuote, QueryParams } from './types'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
 
 export enum Order {
   /**
@@ -70,7 +71,7 @@ function sumFee(feeCosts: FeeCost[] | undefined) {
   ).toString()
 }
 
-function parseQuoteToCrosschainTransfersQuoteWithLifiData({
+function parseLifiQuoteToCrosschainTransfersQuoteWithLifiData({
   quote,
   fromAddress,
   toAddress,
@@ -200,10 +201,34 @@ export default async function handler(
       return
     }
 
+    const allowedSourceTokens = [
+      CommonAddress.ArbitrumOne.USDC,
+      constants.AddressZero
+    ]
+    if (!allowedSourceTokens.includes(fromToken)) {
+      res.status(400).send({
+        message: 'fromToken is not one of the allowed tokens: USDC, ETH',
+        data: null
+      })
+      return
+    }
+
     if (!toToken || !utils.isAddress(toToken)) {
       res
         .status(400)
         .send({ message: 'toToken is not a valid address', data: null })
+      return
+    }
+
+    const allowedDestinationToken = [
+      CommonAddress.Ethereum.USDC,
+      constants.AddressZero
+    ]
+    if (!allowedDestinationToken.includes(toToken)) {
+      res.status(400).send({
+        message: 'toToken is not one of the allowed tokens: USDC, ETH',
+        data: null
+      })
       return
     }
 
@@ -286,7 +311,7 @@ export default async function handler(
 
     const transactionRequest = quote.transactionRequest
     res.status(200).json({
-      data: parseQuoteToCrosschainTransfersQuoteWithLifiData({
+      data: parseLifiQuoteToCrosschainTransfersQuoteWithLifiData({
         quote: {
           ...quote,
           transactionRequest
