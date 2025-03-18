@@ -138,10 +138,7 @@ describe('useTransactionHistory', () => {
         () => {
           expect(result.current.completed).toBe(true)
           expect(result.current.loading).toBe(false)
-          // we don't want to assert for TRANSACTIONS_COUNT here, even though it's the same thing
-          // otherwise we could face false-positives if the data changes
-          // if this happens for any reason, we will address the broken tests
-          expect(result.current.transactions.length).toBe(37)
+          expect(result.current.transactions.length).toBe(TRANSACTIONS_COUNT)
           expect(result.current.error).toBe(undefined)
         },
         { timeout: 100_000 }
