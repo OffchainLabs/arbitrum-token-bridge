@@ -1,6 +1,6 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { BigNumber, constants } from 'ethers'
+import { constants, utils } from 'ethers'
 import { Route } from './Route'
 import { ether } from '../../../constants'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
@@ -18,11 +18,12 @@ export function OftV2Route() {
   const { selectedRoute, setSelectedRoute } = useRouteStore()
   const [selectedToken] = useSelectedToken()
 
-  const { feeEstimates, error } = useOftV2FeeEstimates({
-    sourceChainErc20Address: isDepositMode
-      ? selectedToken?.address
-      : selectedToken?.l2Address
-  })
+  const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
+    useOftV2FeeEstimates({
+      sourceChainErc20Address: isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address
+    })
   const { estimatedChildChainGasFees, estimatedParentChainGasFees, status } =
     useGasSummary()
 
@@ -38,12 +39,12 @@ export function OftV2Route() {
     return [
       {
         gasCost: isDepositMode
-          ? BigNumber.from(
-              (estimatedParentChainGasFees * 1e18).toString()
-            ).toString()
-          : BigNumber.from(
-              (estimatedChildChainGasFees * 1e18).toString()
-            ).toString(),
+          ? utils
+              .parseUnits(estimatedParentChainGasFees.toString(), 18)
+              .toString()
+          : utils
+              .parseUnits(estimatedChildChainGasFees.toString(), 18)
+              .toString(),
         gasToken: { ...ether, address: constants.AddressZero }
       }
     ]
@@ -55,17 +56,17 @@ export function OftV2Route() {
   ])
 
   const bridgeFee = useMemo(() => {
-    if (!feeEstimates?.sourceChainGasFee) {
+    if (!oftFeeEstimates?.sourceChainGasFee) {
       return undefined
     }
 
     return {
-      fee: feeEstimates.sourceChainGasFee.toString(),
+      fee: oftFeeEstimates.sourceChainGasFee.toString(),
       token: { ...ether, address: constants.AddressZero }
     }
-  }, [feeEstimates?.sourceChainGasFee])
+  }, [oftFeeEstimates?.sourceChainGasFee])
 
-  if (error) {
+  if (oftFeeEstimatesError) {
     return null
   }
 
