@@ -241,10 +241,12 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
        * https://etherscan.io/tx/0xd8093e91850c50517b808510c30918cc79e32768c561d5f3dbfdb1398cd954ce
        * https://etherscan.io/tx/0x3836f1f76333853e69ed975f412afdb7337cb3c4ced636bcdb8dfebc720b75a4
        * https://etherscan.io/tx/0xe1d717d5063bf55742af9aef7a5600dcd8c0bd2553deca25e52e7bb2a48e65b6
+       *
+       * We add a buffer of 30% to be safe
        */
       const gasEstimate = isDepositMode
-        ? BigNumber.from(600_000)
-        : BigNumber.from(360_000)
+        ? BigNumber.from(600_000 * 1.3)
+        : BigNumber.from(360_000 * 1.3)
       return {
         estimatedParentChainGas: isDepositMode ? gasEstimate : constants.Zero,
         estimatedChildChainGas: isDepositMode ? constants.Zero : gasEstimate
@@ -291,7 +293,6 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       chainId: await getChainIdFromProvider(this.sourceChainProvider)
     })
 
-    console.log(nativeFee)
     return {
       estimatedSourceChainFee: nativeFee,
       estimatedDestinationChainFee: constants.Zero
