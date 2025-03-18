@@ -166,7 +166,10 @@ describe('useTransactionHistory', () => {
 
     await waitFor(
       () => {
+        expect(result.current.completed).toBe(false)
+        expect(result.current.loading).toBe(false)
         expect(result.current.transactions.length).toBe(4)
+        expect(result.current.error).toBe(undefined)
       },
       { timeout: 20_000 }
     )
@@ -181,7 +184,10 @@ describe('useTransactionHistory', () => {
 
     await waitFor(
       () => {
+        expect(result.current.completed).toBe(false)
+        expect(result.current.loading).toBe(true)
         expect(result.current.transactions.length).toBe(1)
+        expect(result.current.error).toBe(undefined)
       },
       { timeout: 20_000 }
     )
