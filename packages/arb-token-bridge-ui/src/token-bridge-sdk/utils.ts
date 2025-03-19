@@ -107,39 +107,21 @@ const providerInstanceCache: {
 }
 
 const enableCaching = (chainId: number) => {
-  if (
-    isNetwork(chainId).isTestnet &&
-    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('testnet')
-  ) {
-    return true
-  }
+  const txReceiptsCachingEnabledConfig =
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS || 'testnet,mainnet' // default to 'testnet,mainnet' if not set
 
-  if (
-    !isNetwork(chainId).isTestnet &&
-    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS?.includes('mainnet')
-  ) {
-    return true
-  }
-
-  return false
+  return txReceiptsCachingEnabledConfig.includes(
+    isNetwork(chainId).isTestnet ? 'testnet' : 'mainnet'
+  )
 }
 
 const enableBatching = (chainId: number) => {
-  if (
-    isNetwork(chainId).isTestnet &&
-    process.env.NEXT_PUBLIC_PROVIDER_BATCH_RPC?.includes('testnet')
-  ) {
-    return true
-  }
+  const rpcRequestBatchingEnabledConfig =
+    process.env.NEXT_PUBLIC_PROVIDER_BATCH_RPC || 'testnet' // default to 'testnet' if not set
 
-  if (
-    !isNetwork(chainId).isTestnet &&
-    process.env.NEXT_PUBLIC_PROVIDER_BATCH_RPC?.includes('mainnet')
-  ) {
-    return true
-  }
-
-  return false
+  return rpcRequestBatchingEnabledConfig.includes(
+    isNetwork(chainId).isTestnet ? 'testnet' : 'mainnet'
+  )
 }
 
 /**

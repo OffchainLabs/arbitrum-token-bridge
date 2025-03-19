@@ -90,11 +90,6 @@ export const shouldCacheTxReceipt = (
 ): boolean => {
   if (!options.enableCaching) return false
 
-  // for now, only enable caching for testnets
-  if (!isNetwork(chainId).isTestnet) {
-    return false
-  }
-
   // Finality checks to avoid caching re-org'ed transactions
   if (
     (chainId === ChainId.Ethereum && txReceipt.confirmations < 65) ||
