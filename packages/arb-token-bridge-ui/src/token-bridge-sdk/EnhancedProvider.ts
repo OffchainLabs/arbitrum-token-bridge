@@ -8,7 +8,6 @@ import {
 import { BigNumber, version } from 'ethers'
 import { ChainId } from '../types/ChainId'
 import { ConnectionInfo, defineReadOnly } from 'ethers/lib/utils.js'
-import { isNetwork } from '../util/networks'
 
 import { Logger } from '@ethersproject/logger'
 const logger = new Logger(version)
