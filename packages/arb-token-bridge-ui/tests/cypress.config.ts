@@ -382,7 +382,7 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
   await deploy.wait()
 
   // store deployed weth address
-  if (erc20L1Address === l1WethAddress) {
+  if (addressesEqual(erc20L1Address, l1WethAddress)) {
     l2WethAddress = await getL2ERC20Address({
       erc20L1Address: l1WethAddress,
       l1Provider: parentProvider,
@@ -448,7 +448,7 @@ async function fundErc20ToChildChain({
 }) {
   // deploy any token that's not WETH
   // only deploy WETH for custom fee token chains because it's not deployed there
-  if (parentErc20Address !== l1WethAddress || isCustomFeeToken) {
+  if (!addressesEqual(parentErc20Address, l1WethAddress) || isCustomFeeToken) {
     // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
     await deployERC20ToChildChain(parentErc20Address)
   }
