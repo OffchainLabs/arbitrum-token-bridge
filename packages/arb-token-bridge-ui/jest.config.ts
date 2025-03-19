@@ -1,10 +1,11 @@
 import nextJest from 'next/jest'
+import type { Config } from 'jest'
 
 const createJestConfig = nextJest({
   dir: './'
 })
 
-const customJestConfig = {
+const customJestConfig: Config = {
   preset: 'ts-jest',
   transform: {
     '^.+\\.(ts|tsx)?$': 'ts-jest',
@@ -31,7 +32,7 @@ const transformNodeModules = [
   '@uidotdev/usehooks'
 ]
 
-module.exports = async function () {
+export default async () => {
   const config = await createJestConfig(customJestConfig)()
 
   return {
