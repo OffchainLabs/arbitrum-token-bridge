@@ -53,7 +53,7 @@ export const confirmAndApproveCctpWithdrawal = () => {
 
 describe('Withdraw USDC through CCTP', () => {
   beforeEach(() => {
-    cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
+    cy.login({ networkType: 'childChain', networkName: 'Arbitrum Sepolia' })
     cy.findSourceChainButton('Arbitrum Sepolia')
     cy.findDestinationChainButton('Sepolia')
     cy.findSelectTokenButton('ETH')
@@ -91,11 +91,11 @@ describe('Withdraw USDC through CCTP', () => {
     ).click()
     cy.allowMetamaskToSwitchNetwork()
     cy.rejectMetamaskTransaction()
-    cy.changeMetamaskNetwork('arbitrum-sepolia')
+    cy.changeMetamaskNetwork('Arbitrum Sepolia')
   })
 
   it('should claim deposit', () => {
-    cy.changeMetamaskNetwork('sepolia')
+    cy.changeMetamaskNetwork('Sepolia')
     cy.claimCctp(0.00012, { accept: true })
     cy.claimCctp(0.00013, { accept: true })
   })
