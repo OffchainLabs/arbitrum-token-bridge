@@ -15,7 +15,7 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './support/helpers'
-import specFiles from './e2e/specfiles.json' assert { type: 'json' }
+import specFiles from './e2e/specfiles'
 import { contractAbi, contractByteCode } from './support/testErc20Token'
 import {
   checkForAssertions,

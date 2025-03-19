@@ -1,4 +1,4 @@
-[
+export default [
   {
     "name": "Login and balance check",
     "file": "./e2e/specs/**/login.cy.{js,jsx,ts,tsx}",
