@@ -26,7 +26,7 @@ class WebStorage implements Storage {
 const localStorageKey = `arbitrum:bridge:tx-receipts-cache`
 const enableCaching = (chainId: number) => {
   const txReceiptsCachingEnabledConfig =
-    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS ?? 'testnet,mainnet' // default to 'testnet,mainnet' if not set
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS || 'testnet,mainnet' // default to 'testnet,mainnet' if not set
 
   if (
     isNetwork(chainId).isTestnet &&
