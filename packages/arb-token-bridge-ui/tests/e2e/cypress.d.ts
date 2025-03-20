@@ -25,7 +25,8 @@ import {
   confirmSpending,
   claimCctp,
   switchToTransferPanelTab,
-  switchToTransactionHistoryTab
+  switchToTransactionHistoryTab,
+  selectRoute
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -73,6 +74,7 @@ declare global {
       findClaimButton: typeof findClaimButton
       confirmSpending: typeof confirmSpending
       claimCctp: typeof claimCctp
+      selectRoute: typeof selectRoute
     }
   }
 }

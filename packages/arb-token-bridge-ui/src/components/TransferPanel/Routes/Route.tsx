@@ -145,6 +145,7 @@ export const Route = React.memo(
           selected && 'ring-2 ring-[#5F7D5B]'
         )}
         onClick={() => onSelectedRouteClick(type)}
+        aria-label={`Route ${type}`}
       >
         <div
           className={twMerge(
