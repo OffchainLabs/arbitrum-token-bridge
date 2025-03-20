@@ -1,5 +1,6 @@
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 
+import { Transaction } from '../../../src/types/Transactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 
 type MockClassicDepositTransactionParams = {
