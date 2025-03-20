@@ -48,7 +48,6 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import {
   BridgeTransfer,
@@ -74,7 +73,6 @@ import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
-import { Button } from '../common/Button'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
@@ -86,6 +84,7 @@ import { useDialog2, DialogWrapper } from '../common/Dialog2'
 import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
+import { ConnectWalletButton } from './ConnectWalletButton'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -167,7 +166,6 @@ export function TransferPanel() {
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
-  const { openConnectModal } = useConnectModal()
   const latestDestinationAddress = useLatest(destinationAddress)
 
   const [dialogProps, openDialog] = useDialog2()
@@ -1183,19 +1181,12 @@ export function TransferPanel() {
           amount={parseFloat(amount)}
           token={selectedToken}
         />
-        <div className="transfer-panel-stats">
-          {isConnected ? (
-            <MoveFundsButton onClick={moveFundsButtonOnClick} />
-          ) : (
-            <Button
-              variant="primary"
-              onClick={openConnectModal}
-              className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
-            >
-              <span className="block w-[360px] truncate">Connect Wallet</span>
-            </Button>
-          )}
-        </div>
+
+        {isConnected ? (
+          <MoveFundsButton onClick={moveFundsButtonOnClick} />
+        ) : (
+          <ConnectWalletButton />
+        )}
 
         {isTokenAlreadyImported === false && tokenFromSearchParams && (
           <TokenImportDialog
