@@ -84,6 +84,7 @@ import { useDialog2, DialogWrapper } from '../common/Dialog2'
 import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
+import { ConnectWalletButton } from './ConnectWalletButton'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -116,7 +117,7 @@ export function TransferPanel() {
     }
   } = useAppState()
   const [selectedToken, setSelectedToken] = useSelectedToken()
-  const { address: walletAddress } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
@@ -1180,7 +1181,12 @@ export function TransferPanel() {
           amount={parseFloat(amount)}
           token={selectedToken}
         />
-        <MoveFundsButton onClick={moveFundsButtonOnClick} />
+
+        {isConnected ? (
+          <MoveFundsButton onClick={moveFundsButtonOnClick} />
+        ) : (
+          <ConnectWalletButton />
+        )}
 
         {isTokenAlreadyImported === false && tokenFromSearchParams && (
           <TokenImportDialog
