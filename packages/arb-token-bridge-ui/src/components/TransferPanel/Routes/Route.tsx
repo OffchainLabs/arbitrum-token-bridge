@@ -19,7 +19,8 @@ import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsB
 import { useETHPrice } from '../../../hooks/useETHPrice'
 import { isNetwork } from '../../../util/networks'
 import { Tooltip } from '../../common/Tooltip'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 
 export type BadgeType = 'security-guaranteed'
@@ -154,15 +155,7 @@ export const Route = React.memo(
             className="mr-1"
           />
           Powered by {name}
-          {selected && (
-            <Image
-              src={'/icons/check.svg'}
-              width={30}
-              height={30}
-              alt="selected"
-              className="ml-auto"
-            />
-          )}
+          {selected && <CheckCircleIcon width={22} className="ml-auto" />}
         </div>
         <div
           className={twMerge(
@@ -198,12 +191,7 @@ export const Route = React.memo(
           </div>
           <div className="flex flex-col justify-between gap-3">
             <div className="flex items-center">
-              <Image
-                src="/icons/duration.svg"
-                width={15}
-                height={15}
-                alt="duration"
-              />
+              <ClockIcon width={18} height={18} className="-ml-[1px]" />
               <span className="ml-1">
                 {dayjs().add(durationMs, 'millisecond').fromNow(true)}
               </span>
