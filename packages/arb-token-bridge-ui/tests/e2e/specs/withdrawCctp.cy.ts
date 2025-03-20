@@ -7,15 +7,6 @@ import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
-  cy.findByRole('tab', {
-    name: 'Native USDC',
-    selected: true
-  }).should('exist')
-  cy.findByRole('tab', {
-    name: 'Native USDC (Third Party Bridge)',
-    selected: false
-  }).should('exist')
-
   // By default, confirm button is disabled
   cy.findByRole('button', {
     name: /Continue/i
@@ -72,6 +63,7 @@ describe('Withdraw USDC through CCTP', () => {
       'be.visible'
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
+    cy.selectRoute('cctp')
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
@@ -109,6 +101,7 @@ describe('Withdraw USDC through CCTP', () => {
     )
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
     cy.fillCustomDestinationAddress()
+    cy.selectRoute('cctp')
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()

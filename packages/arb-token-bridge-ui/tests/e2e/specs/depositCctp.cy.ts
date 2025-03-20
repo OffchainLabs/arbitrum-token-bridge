@@ -7,19 +7,6 @@ import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
-  cy.findByRole('tab', {
-    name: 'Native USDC',
-    selected: true
-  }).should('exist')
-  cy.findByRole('tab', {
-    name: 'Native USDC (Third Party Bridge)',
-    selected: false
-  }).should('exist')
-  cy.findByRole('tab', {
-    name: 'Wrapped USDC (USDC.e)',
-    selected: false
-  }).should('exist')
-
   // By default, confirm button is disabled
   cy.findByRole('button', {
     name: /Continue/i
@@ -86,6 +73,7 @@ describe('Deposit USDC through CCTP', () => {
   })
 
   it('should initiate depositing USDC to the same address through CCTP successfully', () => {
+    cy.selectRoute('cctp')
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpDeposit()
@@ -122,6 +110,7 @@ describe('Deposit USDC through CCTP', () => {
    */
   it.skip('should initiate depositing USDC to custom destination address through CCTP successfully', () => {
     cy.fillCustomDestinationAddress()
+    cy.selectRoute('cctp')
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
     confirmAndApproveCctpDeposit()
 
