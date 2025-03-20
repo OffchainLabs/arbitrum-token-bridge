@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, Dispatch } from 'react'
+import { createContext, useContext, useReducer, Dispatch, useMemo } from 'react'
 
 type AppContextState = {
   layout: {

@@ -80,6 +80,7 @@ import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
+import React from 'react'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -96,7 +97,7 @@ const networkConnectionWarningToast = () =>
     { autoClose: false }
   )
 
-export function TransferPanel() {
+export const TransferPanel = React.memo(() => {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
@@ -1192,4 +1193,6 @@ export function TransferPanel() {
       {showProjectsListing && <ProjectsListing />}
     </>
   )
-}
+})
+
+TransferPanel.displayName = 'TransferPanel'

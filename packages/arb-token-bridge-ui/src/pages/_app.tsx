@@ -1,3 +1,4 @@
+import { scan } from 'react-scan'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import * as Sentry from '@sentry/react'
@@ -23,6 +24,7 @@ import {
 } from '../types/ChainQueryParam'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { isNetwork } from '../util/networks'
+import { useEffect } from 'react'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
@@ -164,6 +166,12 @@ function DynamicMetaData({
 }
 
 export default function App({ Component, pageProps, router }: AppProps) {
+  useEffect(() => {
+    // Make sure to run React Scan after hydration
+    scan({
+      enabled: true
+    })
+  }, [])
   const sourceChainSlug = (router.query.sourceChain?.toString() ??
     'ethereum') as ChainKeyQueryParam
   const destinationChainSlug = (router.query.destinationChain?.toString() ??
