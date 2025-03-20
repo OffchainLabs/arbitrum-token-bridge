@@ -11,9 +11,9 @@ import {
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Batch Deposit', () => {
-  let parentNativeTokenBalance,
-    parentErc20Balance,
-    childNativeTokenBalance,
+  let parentNativeTokenBalance: string,
+    parentErc20Balance: string,
+    childNativeTokenBalance: string,
     childErc20Balance: string
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
@@ -243,7 +243,7 @@ describe('Batch Deposit', () => {
         ...txData,
         duration: depositTime
       })
-      cy.openTransactionDetails(txData)
+      cy.openTransactionHistoryDetails(txData)
       cy.findTransactionDetailsCustomDestinationAddress(
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
@@ -259,7 +259,7 @@ describe('Batch Deposit', () => {
         duration: 'a few seconds ago',
         ...txData
       })
-      cy.openTransactionDetails(txData)
+      cy.openTransactionHistoryDetails(txData)
       cy.findTransactionDetailsCustomDestinationAddress(
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
