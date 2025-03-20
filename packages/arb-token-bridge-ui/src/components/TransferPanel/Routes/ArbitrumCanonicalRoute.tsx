@@ -187,7 +187,7 @@ function getGasCostAndToken({
   }
 }
 
-export function ArbitrumRoute() {
+export function ArbitrumCanonicalRoute() {
   const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const {

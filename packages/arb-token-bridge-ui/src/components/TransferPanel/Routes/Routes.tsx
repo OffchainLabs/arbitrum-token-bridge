@@ -3,7 +3,7 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
-import { ArbitrumRoute } from './ArbitrumRoute'
+import { ArbitrumCanonicalRoute } from './ArbitrumCanonicalRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
@@ -79,7 +79,7 @@ export const Routes = React.memo(() => {
       return (
         <Wrapper>
           <CctpRoute />
-          <ArbitrumRoute />
+          <ArbitrumCanonicalRoute />
         </Wrapper>
       )
     }
@@ -93,7 +93,7 @@ export const Routes = React.memo(() => {
 
   return (
     <Wrapper>
-      <ArbitrumRoute />
+      <ArbitrumCanonicalRoute />
     </Wrapper>
   )
 })
