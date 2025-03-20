@@ -59,9 +59,7 @@ describe('Withdraw USDC through CCTP', () => {
     const USDCAmountToSend = 0.0001
     cy.typeAmount(USDCAmountToSend)
 
-    cy.findByText('Gas estimates are not available for this action.').should(
-      'be.visible'
-    )
+    cy.findGasFeeSummary('N/A')
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
     cy.selectRoute('cctp')
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
@@ -96,9 +94,7 @@ describe('Withdraw USDC through CCTP', () => {
     const USDCAmountToSend = 0.00011
     cy.typeAmount(USDCAmountToSend)
 
-    cy.findByText('Gas estimates are not available for this action.').should(
-      'be.visible'
-    )
+    cy.findGasFeeSummary('N/A')
     cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
     cy.fillCustomDestinationAddress()
     cy.selectRoute('cctp')

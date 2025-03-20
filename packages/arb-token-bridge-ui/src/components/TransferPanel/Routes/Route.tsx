@@ -228,14 +228,11 @@ export const Route = React.memo(
             <Tooltip content={'The gas fees paid to operate the network'}>
               <div className="flex items-center">
                 <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
-                <span className="ml-1">
+                <span className="ml-1" aria-label="Route gas">
                   {isLoadingGasEstimate ? (
                     <Loader size="small" color="white" />
                   ) : gasCost ? (
-                    <div
-                      className="flex items-center gap-1"
-                      aria-label="Route gas"
-                    >
+                    <div className="flex items-center gap-1">
                       {gasCost
                         .map(({ gasCost, gasToken }) =>
                           formatAmount(BigNumber.from(gasCost), {
