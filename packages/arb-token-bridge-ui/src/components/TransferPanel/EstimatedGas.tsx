@@ -71,6 +71,7 @@ export function EstimatedGas({
     provider: parentChainProvider
   })
   const isSourceChain = chainType === 'source'
+  const isDestinationChain = chainType === 'destination'
   const isParentChain = isSourceChain
     ? networks.sourceChain.id === parentChain.id
     : networks.destinationChain.id === parentChain.id
@@ -98,6 +99,10 @@ export function EstimatedGas({
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
+    if (isOft && isDestinationChain) {
+      return 0
+    }
+
     if (
       !isDepositMode &&
       !isParentChain &&
@@ -110,10 +115,12 @@ export function EstimatedGas({
       ? estimatedParentChainGasFees
       : estimatedChildChainGasFees
   }, [
-    estimatedParentChainGasFees,
-    estimatedChildChainGasFees,
+    isOft,
+    isDestinationChain,
     isDepositMode,
-    isParentChain
+    isParentChain,
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
   ])
 
   const layerGasFeeTooltipContent = useMemo(
