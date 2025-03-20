@@ -51,6 +51,13 @@ export function isSupportedChainId(
   ].includes(chainId)
 }
 
+const cache: Record<
+  string,
+  {
+    sourceChainId: number
+    destinationChainId: number
+  }
+> = {}
 export function sanitizeQueryParams({
   sourceChainId,
   destinationChainId
@@ -61,16 +68,21 @@ export function sanitizeQueryParams({
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
+  const key = `${sourceChainId}-${destinationChainId}`
+  if (cache[key]) {
+    return cache[key]
+  }
+
   if (
     (!sourceChainId && !destinationChainId) ||
     (!isSupportedChainId(sourceChainId) &&
       !isSupportedChainId(destinationChainId))
   ) {
-    return {
+    // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
+    return (cache[key] = {
       sourceChainId: ChainId.Ethereum,
       destinationChainId: ChainId.ArbitrumOne
-    }
+    })
   }
 
   // destinationChainId is valid and sourceChainId is undefined
@@ -81,13 +93,16 @@ export function sanitizeQueryParams({
     const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
 
     if (typeof defaultSourceChainId === 'undefined') {
-      return {
+      return (cache[key] = {
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
-      }
+      })
     }
 
-    return { sourceChainId: defaultSourceChainId, destinationChainId }
+    return (cache[key] = {
+      sourceChainId: defaultSourceChainId,
+      destinationChainId
+    })
   }
 
   // sourceChainId is valid and destinationChainId is undefined
@@ -98,31 +113,31 @@ export function sanitizeQueryParams({
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
 
     if (typeof defaultDestinationChainId === 'undefined') {
-      return {
+      return (cache[key] = {
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
-      }
+      })
     }
 
-    return {
+    return (cache[key] = {
       sourceChainId: sourceChainId,
       destinationChainId: defaultDestinationChainId
-    }
+    })
   }
 
   // destinationChainId is not a partner of sourceChainId
   if (!getDestinationChainIds(sourceChainId!).includes(destinationChainId!)) {
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!)
-    return {
+    return (cache[key] = {
       sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!
-    }
+    })
   }
 
-  return {
+  return (cache[key] = {
     sourceChainId: sourceChainId!,
     destinationChainId: destinationChainId!
-  }
+  })
 }
 
 export type UseNetworksState = {
