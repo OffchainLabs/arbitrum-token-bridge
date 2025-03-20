@@ -1630,8 +1630,8 @@
       "rpcUrl": "https://test-rpc.plumenetwork.xyz/",
       "isCustom": true,
       "isTestnet": true,
-      "name": "Plume Devnet",
-      "slug": "plume-devnet",
+      "name": "Plume Devnet (Legacy)",
+      "slug": "plume-devnet-legacy",
       "parentChainId": 11155111,
       "tokenBridge": {
         "parentCustomGateway": "0xa8168b76Aa023228CaA8Ef5110477cD6d02F1508",
@@ -1652,9 +1652,9 @@
       "bridgeUiConfig": {
         "color": "#F43B3A",
         "network": {
-          "name": "Plume Devnet",
+          "name": "Plume Devnet (Legacy)",
           "logo": "/images/PlumeDevnet_Logo.png",
-          "description": "Bringing the real world onchain. Optimized for real world assets."
+          "description": "(Legacy) Bringing the real world onchain. Optimized for real world assets."
         }
       }
     },
@@ -1893,6 +1893,54 @@
           "name": "Kick",
           "symbol": "KICK",
           "logoUrl": "/images/XProtocolSepolia_Logo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 98867,
+      "confirmPeriodBlocks": 60,
+      "ethBridge": {
+        "bridge": "0xC55b89c17d7a35877FA4ea818fea2a70d5765f1c",
+        "inbox": "0xb48cdff890199f5De31514024B95F8664F8Af222",
+        "outbox": "0x3F6e2Ee3406b18b7F5ce3D0447d3aD8fbc807744",
+        "rollup": "0x76268c4a75D1bE588356569acbfE03366d9eDCbD",
+        "sequencerInbox": "0xbCa991f1831bE1F1E7e5576d5F84A645e70F3E4d"
+      },
+      "nativeToken": "0x4C1746A800D224393fE2470C70A35717eD4eA5F1",
+      "explorerUrl": "https://testnet-explorer.plumenetwork.xyz",
+      "rpcUrl": "https://testnet-rpc.plumenetwork.xyz",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Plume Testnet",
+      "slug": "plume-testnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x00a9bBD46f51BCe24540246464266d4b21Cd82A0",
+        "parentErc20Gateway": "0xB57388059e3e2C13a6cb9E551dA6B5D80dCf8a47",
+        "parentGatewayRouter": "0xF06D7785E023FFdE5E0daAFc40d268c2DD6bB1eD",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8EC0C8CAc02964ab523636F2705e4AD5575D2616",
+        "childErc20Gateway": "0x53b1F1590Fc5E51d2620f17c49E236DE85482384",
+        "childGatewayRouter": "0x77510dC7fbB7a9861d233404794f6446d4BbFdc7",
+        "childMultiCall": "0x3db1bB2Dc478bFF895bc8ac7C806bA5676B629eD",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FF3D00",
+        "network": {
+          "name": "Plume Testnet",
+          "logo": "/images/PlumeTestnet_Logo.svg",
+          "description": "Plume Network is the first full-stack L1 RWA Chain and ecosystem purpose-built for RWAfi, enabling the rapid adoption and demand-driven integration of real world assets. With 180+ projects building on the network, Plume offers a composable, EVM-compatible environment for onboarding and managing diverse real world assets. Coupled with an end-to-end tokenization engine and a network of financial infrastructure partners, Plume simplifies asset onboarding and enables seamless DeFi integration for RWAs so anyone can tokenize real world assets, distribute them globally, and make them useful for native crypto users."
+        },
+        "nativeTokenData": {
+          "name": "Plume",
+          "symbol": "PLUME",
+          "logoUrl": "/images/PlumeTestnet_NativeTokenLogo.png"
         }
       }
     }
