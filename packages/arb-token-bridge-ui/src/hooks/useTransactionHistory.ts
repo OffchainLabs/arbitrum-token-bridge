@@ -367,11 +367,13 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               isConnectedToParentChain
             })
 
-            const includeReceivedTxs = shouldIncludeReceivedTxs({
-              type,
-              isSmartContractWallet,
-              isConnectedToParentChain
-            })
+            const includeReceivedTxs =
+              isNetwork(chainPair.childChainId).isCoreChain &&
+              shouldIncludeReceivedTxs({
+                type,
+                isSmartContractWallet,
+                isConnectedToParentChain
+              })
             try {
               // early check for fetching teleport
               if (
