@@ -843,7 +843,7 @@ export const useTransactionHistory = (
       loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],
-      completed: true,
+      completed: !isLoadingTxsWithoutStatus,
       pause,
       resume,
       addPendingTransaction,
