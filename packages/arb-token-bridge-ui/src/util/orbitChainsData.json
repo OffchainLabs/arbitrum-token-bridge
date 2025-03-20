@@ -1943,6 +1943,52 @@
           "logoUrl": "/images/PlumeTestnet_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 905905,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x8dE39e75fC6E415dD3761339eA512A7550E70B4b",
+        "inbox": "0x5ae4ceed2797288669eB003E7c24D48A2882D319",
+        "outbox": "0xf625af7a01479DCd65D1686B95F4aA2dd1984Ec3",
+        "rollup": "0x0FE7Bd483a45491BFD7D13851e03c45d0661d9BC",
+        "sequencerInbox": "0xA661704f9E841af0f79322c1542cEE68B7736eD3"
+      },
+      "nativeToken": "0x12630f88b4ac181bad45089ba1d0d5dbed708083",
+      "explorerUrl": "https://openloot-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://openloot-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "OpenLoot Sepolia",
+      "slug": "openloot-sepolia",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0xE305C5bEBF1971C42183500dc4034a64D8afa5e8",
+        "parentErc20Gateway": "0x81172d0855b54FeFb2048F36b3cD55e1F7a87c6e",
+        "parentGatewayRouter": "0xD14d6F31a6f67714fD5B1f1C23BAf316781F9B75",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8Dfe9813504B1A5dB8DF670086bC7D75398F3db5",
+        "childErc20Gateway": "0x1190609B568f2f634F13eDD3FA3A0aB2FA1E4bd0",
+        "childGatewayRouter": "0xf8F8E4FdE93C21f9EF1Fa3c6F72bbb6C6f866593",
+        "childMultiCall": "0x3c23Fe6E20DbA2b8edEE1f9550F176F5959187e5",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#e67d22",
+        "network": {
+          "name": "OpenLoot Sepolia",
+          "logo": "/images/OpenLootSepolia_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Openloot",
+          "symbol": "OL"
+        }
+      }
     }
   ]
 }
