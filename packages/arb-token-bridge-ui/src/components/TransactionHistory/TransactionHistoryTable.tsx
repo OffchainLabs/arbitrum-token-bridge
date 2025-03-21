@@ -96,12 +96,12 @@ export const HistoryLoader = () => {
   return <span className="animate-pulse">Loading transactions...</span>
 }
 
-const FailedChainPairsTooltip = ({
-  failedChainPairs
+const ErroredChainsTooltip = ({
+  erroredChains
 }: {
-  failedChainPairs: ChainPair[]
+  erroredChains: ChainPair[]
 }) => {
-  if (failedChainPairs.length === 0) {
+  if (erroredChains.length === 0) {
     return null
   }
 
@@ -113,7 +113,7 @@ const FailedChainPairsTooltip = ({
             We were unable to fetch data for the following chain pairs:
           </span>
           <ul className="flex list-disc flex-col pl-4">
-            {failedChainPairs.map(pair => (
+            {erroredChains.map(pair => (
               <li key={`${pair.parentChainId}-${pair.childChainId}`}>
                 <b>{getNetworkName(pair.parentChainId)}</b>
                 {' <> '}
@@ -142,7 +142,7 @@ export const TransactionHistoryTable = (
     loading,
     completed,
     error,
-    failedChainPairs,
+    erroredChains,
     resume,
     selectedTabIndex,
     oldestTxTimeAgoString
@@ -216,13 +216,13 @@ export const TransactionHistoryTable = (
       >
         {loading ? (
           <div className="flex h-[28px] items-center space-x-2">
-            <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+            <ErroredChainsTooltip erroredChains={erroredChains} />
             <HistoryLoader />
           </div>
         ) : (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center justify-start space-x-1">
-              <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+              <ErroredChainsTooltip erroredChains={erroredChains} />
               <span className="text-xs">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
