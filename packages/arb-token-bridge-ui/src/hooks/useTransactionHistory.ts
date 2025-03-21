@@ -67,11 +67,18 @@ export type UseTransactionHistoryResult = {
   loading: boolean
   completed: boolean
   error: unknown
-  failedChainPairs: ChainPair[]
+  erroredChains: ChainPair[]
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
+}
+
+type UseRawTransactionHistoryResult = {
+  rawTransactions: Transfer[]
+  loading: boolean
+  error: unknown
+  erroredChains: ChainPair[]
 }
 
 export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
@@ -235,7 +242,9 @@ function dedupeTransactions(txs: Transfer[]) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
+const useRawTransactionHistory = (
+  address: Address | undefined
+): UseRawTransactionHistoryResult => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -327,10 +336,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
 
-  const { data: failedChainPairs, mutate: addFailedChainPair } =
-    useSWRImmutable<ChainPair[]>(
-      address ? ['failed_chain_pairs', address] : null
-    )
+  const { data: erroredChains = [], mutate: addErroredChain } = useSWRImmutable<
+    ChainPair[]
+  >(address ? ['errored_chains_raw_transaction_history', address] : null)
 
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
@@ -407,22 +415,22 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 pageSize: 1000
               })
             } catch {
-              addFailedChainPair(prevFailedChainPairs => {
-                if (!prevFailedChainPairs) {
+              addErroredChain(prevErroredChains => {
+                if (!prevErroredChains) {
                   return [chainPair]
                 }
                 if (
-                  typeof prevFailedChainPairs.find(
-                    prevPair =>
-                      prevPair.parentChainId === chainPair.parentChainId &&
-                      prevPair.childChainId === chainPair.childChainId
+                  typeof prevErroredChains.find(
+                    prev =>
+                      prev.parentChainId === chainPair.parentChainId &&
+                      prev.childChainId === chainPair.childChainId
                   ) !== 'undefined'
                 ) {
                   // already added
-                  return prevFailedChainPairs
+                  return prevErroredChains
                 }
 
-                return [...prevFailedChainPairs, chainPair]
+                return [...prevErroredChains, chainPair]
               })
 
               return []
@@ -430,7 +438,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
           })
       )
     },
-    [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
+    [address, isTestnetMode, addErroredChain, isSmartContractWallet, chain]
   )
 
   const shouldFetch =
@@ -459,17 +467,17 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const withdrawals = (withdrawalsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
-  const transactions = [
+  const rawTransactions = [
     ...deposits,
     ...withdrawals,
     ...combinedCctpTransfers
   ].flat()
 
   return {
-    data: transactions,
+    rawTransactions,
     loading: depositsLoading || withdrawalsLoading || cctpLoading,
     error: depositsError ?? withdrawalsError,
-    failedChainPairs: failedChainPairs || []
+    erroredChains
   }
 }
 
@@ -497,11 +505,11 @@ export const useTransactionHistory = (
   const [pauseCount, setPauseCount] = useState(0)
 
   const {
-    data,
-    loading: isLoadingTxsWithoutStatus,
-    error,
-    failedChainPairs
-  } = useTransactionHistoryWithoutStatuses(address)
+    rawTransactions,
+    loading: rawTransactionsLoading,
+    error: rawTransactionsError,
+    erroredChains: rawTransactionsErroredChains
+  } = useRawTransactionHistory(address)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -512,11 +520,11 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
-        ? (['complete_tx_list', address, pageNumber, data] as const)
+      return address && !rawTransactionsLoading && !isLoadingAccountType
+        ? (['complete_tx_list', address, pageNumber, rawTransactions] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
+    [address, rawTransactionsLoading, rawTransactions, isLoadingAccountType]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -556,11 +564,11 @@ export const useTransactionHistory = (
   ])
 
   const {
-    data: txPages,
-    error: txPagesError,
+    data: loadedPages = [],
+    error: loadedPagesError,
     size: page,
     setSize: setPage,
-    mutate: mutateTxPages,
+    mutate: mutateLoadedPages,
     isValidating,
     isLoading: isLoadingFirstPage
   } = useSWRInfinite(
@@ -598,34 +606,36 @@ export const useTransactionHistory = (
     }
   )
 
+  const loadedTransactions = useMemo(() => loadedPages.flat(), [loadedPages])
+
   // based on an example from SWR
   // https://swr.vercel.app/examples/infinite-loading
   const isLoadingMore =
     page > 0 &&
-    typeof txPages !== 'undefined' &&
-    typeof txPages[page - 1] === 'undefined'
+    typeof loadedPages !== 'undefined' &&
+    typeof loadedPages[page - 1] === 'undefined'
 
   const completed =
     !isLoadingFirstPage &&
-    typeof txPages !== 'undefined' &&
-    data.length === txPages.flat().length
+    typeof loadedPages !== 'undefined' &&
+    rawTransactions.length === loadedTransactions.length
 
   // transfers initiated by the user during the current session
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
-  const { data: newTransactionsData, mutate: mutateNewTransactionsData } =
+  const { data: newTransactionsData = [], mutate: mutateNewTransactionsData } =
     useSWRImmutable<MergedTransaction[]>(
       address ? ['new_tx_list', address] : null
     )
 
   const transactions: MergedTransaction[] = useMemo(() => {
-    const txs = [...(newTransactionsData || []), ...(txPages || [])].flat()
+    const allTransactions = [...newTransactionsData, ...loadedTransactions]
     // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
-    return txs.filter(tx =>
+    return allTransactions.filter(tx =>
       [tx.sender?.toLowerCase(), tx.destination?.toLowerCase()].includes(
         address?.toLowerCase()
       )
     )
-  }, [newTransactionsData, txPages, address])
+  }, [newTransactionsData, loadedTransactions, address])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -664,8 +674,8 @@ export const useTransactionHistory = (
 
       // tx not found in the new user initiated transaction list
       // look in the paginated historical data
-      mutateTxPages(prevTxPages => {
-        if (!prevTxPages) {
+      mutateLoadedPages(prevLoadedPages => {
+        if (!prevLoadedPages) {
           return
         }
 
@@ -673,22 +683,22 @@ export const useTransactionHistory = (
 
         // search cache for the tx to update
         while (
-          !prevTxPages[pageNumberToUpdate]?.find(oldTx =>
+          !prevLoadedPages[pageNumberToUpdate]?.find(oldTx =>
             isSameTransaction(oldTx, newTx)
           )
         ) {
           pageNumberToUpdate++
 
-          if (pageNumberToUpdate > prevTxPages.length) {
+          if (pageNumberToUpdate > prevLoadedPages.length) {
             // tx not found
-            return prevTxPages
+            return prevLoadedPages
           }
         }
 
-        const oldPageToUpdate = prevTxPages[pageNumberToUpdate]
+        const oldPageToUpdate = prevLoadedPages[pageNumberToUpdate]
 
         if (!oldPageToUpdate) {
-          return prevTxPages
+          return prevLoadedPages
         }
 
         // replace the old tx with the new tx
@@ -698,15 +708,15 @@ export const useTransactionHistory = (
 
         // all old pages including the new updated page
         const newTxPages = [
-          ...prevTxPages.slice(0, pageNumberToUpdate),
+          ...prevLoadedPages.slice(0, pageNumberToUpdate),
           updatedPage,
-          ...prevTxPages.slice(pageNumberToUpdate + 1)
+          ...prevLoadedPages.slice(pageNumberToUpdate + 1)
         ]
 
         return newTxPages
       }, false)
     },
-    [mutateNewTransactionsData, mutateTxPages, newTransactionsData]
+    [mutateNewTransactionsData, mutateLoadedPages, newTransactionsData]
   )
 
   const updatePendingTransaction = useCallback(
@@ -767,12 +777,12 @@ export const useTransactionHistory = (
   }, [connector, runFetcher, setPage])
 
   useEffect(() => {
-    if (!txPages || !fetching || !runFetcher || isValidating) {
+    if (!loadedPages || !fetching || !runFetcher || isValidating) {
       return
     }
 
-    const firstPage = txPages[0]
-    const lastPage = txPages[txPages.length - 1]
+    const firstPage = loadedPages[0]
+    const lastPage = loadedPages[loadedPages.length - 1]
 
     if (!firstPage || !lastPage) {
       return
@@ -805,28 +815,36 @@ export const useTransactionHistory = (
     }
 
     // make sure we don't over-fetch
-    if (page === txPages.length) {
+    if (page === loadedPages.length) {
       setPage(prevPage => prevPage + 1)
     }
-  }, [txPages, setPage, page, pauseCount, fetching, runFetcher, isValidating])
+  }, [
+    loadedPages,
+    setPage,
+    page,
+    pauseCount,
+    fetching,
+    runFetcher,
+    isValidating
+  ])
 
   useEffect(() => {
-    if (typeof error !== 'undefined') {
-      console.warn(error)
+    if (typeof rawTransactionsError !== 'undefined') {
+      console.warn(rawTransactionsError)
       captureSentryErrorWithExtraData({
-        error,
-        originFunction: 'useTransactionHistoryWithoutStatuses'
+        error: rawTransactionsError,
+        originFunction: 'useRawTransactionHistory'
       })
     }
 
-    if (typeof txPagesError !== 'undefined') {
-      console.warn(txPagesError)
+    if (typeof loadedPagesError !== 'undefined') {
+      console.warn(loadedPagesError)
       captureSentryErrorWithExtraData({
-        error: txPagesError,
+        error: loadedPagesError,
         originFunction: 'useTransactionHistory'
       })
     }
-  }, [error, txPagesError])
+  }, [rawTransactionsError, loadedPagesError])
 
   function pause() {
     setFetching(false)
@@ -837,13 +855,13 @@ export const useTransactionHistory = (
     setPage(prevPage => prevPage + 1)
   }
 
-  if (isLoadingTxsWithoutStatus || error) {
+  if (rawTransactionsLoading || rawTransactionsError) {
     return {
       transactions: newTransactionsData || [],
-      loading: isLoadingTxsWithoutStatus,
-      error,
-      failedChainPairs: [],
-      completed: true,
+      loading: rawTransactionsLoading,
+      error: rawTransactionsError,
+      erroredChains: [],
+      completed: !rawTransactionsLoading,
       pause,
       resume,
       addPendingTransaction,
@@ -855,8 +873,9 @@ export const useTransactionHistory = (
     transactions,
     loading: isLoadingFirstPage || isLoadingMore,
     completed,
-    error: txPagesError ?? error,
-    failedChainPairs,
+    error: loadedPagesError ?? rawTransactionsError,
+    // TODO: also include loadedPagesErroredChains
+    erroredChains: rawTransactionsErroredChains,
     pause,
     resume,
     addPendingTransaction,
