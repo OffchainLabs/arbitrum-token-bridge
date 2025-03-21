@@ -30,6 +30,7 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { addressesEqual } from '../../util/AddressUtils'
+import { MergedTransaction } from '../../state/app/state'
 
 const DetailsBox = ({
   children,
@@ -41,6 +42,41 @@ const DetailsBox = ({
         <h4 className="mb-2 text-xs uppercase text-white/60">{header}</h4>
       )}
       {children}
+    </div>
+  )
+}
+
+const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
+  let protocolLogo, protocolName, protocolDescription
+
+  if (tx.isOft) {
+    protocolLogo = LayerZeroIcon
+    protocolName = 'LayerZero OFT'
+    protocolDescription = '(Omnichain Fungible Token)'
+  } else if (tx.isCctp) {
+    protocolLogo = CctpLogoColor
+    protocolName = 'CCTP'
+    protocolDescription = '(Cross-Chain Transfer Protocol)'
+  } else {
+    protocolLogo = ArbitrumLogo
+    protocolName = "Arbitrum's native bridge"
+    protocolDescription = ''
+  }
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Image
+        alt="Bridge logo"
+        className="h-4 w-4 shrink-0"
+        src={protocolLogo}
+        width={16}
+        height={16}
+      />
+
+      <span>
+        {protocolName}{' '}
+        <span className="text-white/70">{protocolDescription}</span>
+      </span>
     </div>
   )
 }
@@ -207,39 +243,7 @@ export const TransactionsTableDetails = () => {
                 </DetailsBox>
 
                 <DetailsBox header="Bridge">
-                  <div className="flex items-center space-x-2">
-                    <Image
-                      alt="Bridge logo"
-                      className="h-4 w-4 shrink-0"
-                      src={
-                        tx.isOft
-                          ? LayerZeroIcon
-                          : tx.isCctp
-                          ? CctpLogoColor
-                          : ArbitrumLogo
-                      }
-                      width={16}
-                      height={16}
-                    />
-
-                    {tx.isOft ? (
-                      <span>
-                        LayerZero OFT{' '}
-                        <span className="text-white/70">
-                          (Omnichain Fungible Token)
-                        </span>
-                      </span>
-                    ) : tx.isCctp ? (
-                      <span>
-                        CCTP{' '}
-                        <span className="text-white/70">
-                          (Cross-Chain Transfer Protocol)
-                        </span>
-                      </span>
-                    ) : (
-                      <span>Arbitrum&apos;s native bridge</span>
-                    )}
-                  </div>
+                  <ProtocolNameAndLogo tx={tx} />
                 </DetailsBox>
 
                 {(isDifferentSourceAddress ||

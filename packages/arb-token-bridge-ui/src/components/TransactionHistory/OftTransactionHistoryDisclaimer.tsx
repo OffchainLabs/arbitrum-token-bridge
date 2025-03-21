@@ -62,9 +62,10 @@ export function OftTransactionHistoryDisclaimer() {
       </p>
       <p className="text-xs">
         Transaction History for USDT/USDT0 Transfers (between Mainnet and
-        Arbitrum One) made with LayerZero OFT protocol cannot be shown for
+        Arbitrum One) made with LayerZero OFT protocol cannot be shown for{' '}
         <b>Smart-contract wallets</b>. In the meantime, please use other tools
-        to track your transactions, if any. We apologize for the inconvenience.
+        like block-explorers (Etherscan and Arbiscan) to track your
+        transactions. We apologize for the inconvenience.
       </p>
     </div>
   )

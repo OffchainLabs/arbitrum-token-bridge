@@ -22,6 +22,10 @@ export enum LayerZeroMessageStatus {
   CONFIRMING = 'CONFIRMING'
 }
 
+/*
+ * LayerZero API returns `LayerZeroTransaction` without `asset` and `value`.
+ * `updateAdditionalLayerZeroData()` fills these gaps, returning `MergedTransaction` for tx history.
+ */
 export type LayerZeroTransaction = Omit<
   MergedTransaction,
   'asset' | 'value' | 'tokenAddress'
@@ -164,11 +168,7 @@ function validateSourceAndDestinationChainIds(message: LayerZeroMessage) {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
-  if (!sourceChainId || !destinationChainId) {
-    return false
-  }
-
-  return true
+  return sourceChainId && destinationChainId
 }
 
 function mapLayerZeroMessageToMergedTransaction(
