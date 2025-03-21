@@ -16,7 +16,7 @@ import {
   fetchTokenWithdrawalsFromEventLogsSequentially
 } from './fetchTokenWithdrawalsFromEventLogsSequentially'
 import { backOff, wait } from '../ExponentialBackoffUtils'
-import { isAlchemyChain } from '../networks'
+import { isAlchemyChain, isNetwork } from '../networks'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 import { fetchL2Gateways } from '../fetchL2Gateways'
 import { constants } from 'ethers'
@@ -73,6 +73,8 @@ export async function fetchWithdrawals({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
+  const { isOrbitChain } = isNetwork(l2ChainID)
+
   if (!fromBlock) {
     fromBlock = 0
   }
@@ -114,7 +116,9 @@ export async function fetchWithdrawals({
   }
 
   const gateways = await getGateways(l2Provider)
-  const senderNonce = await getNonce(sender, { provider: l2Provider })
+  const senderNonce = await backOff(() =>
+    getNonce(sender, { provider: l2Provider })
+  )
 
   const queries: Query[] = []
 
@@ -141,6 +145,12 @@ export async function fetchWithdrawals({
       // for other chains, fetch in parallel
       queries.push({ sender, gateways: allGateways })
     }
+  }
+
+  // we only fetch if there's activity on the chain because we don't care about txs incoming from a different address
+  // but we still need receiver for eth withdrawals
+  if (isOrbitChain && senderNonce === 0) {
+    return []
   }
 
   if (isAlchemy) {
