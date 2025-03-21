@@ -36,6 +36,7 @@ module.exports = async function () {
 
   return {
     ...config,
+    testEnvironment: 'jest-fixed-jsdom',
     transformIgnorePatterns: [
       `node_modules/(?!(${transformNodeModules.join('|')})/)`,
       '^.+\\.module\\.(css|sass|scss)$'
