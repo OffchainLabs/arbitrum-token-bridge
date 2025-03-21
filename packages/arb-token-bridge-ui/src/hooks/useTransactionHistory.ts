@@ -26,9 +26,9 @@ import {
   isTokenWithdrawal,
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
-  mapWithdrawalToL2ToL1EventResult
+  mapWithdrawalFromSubgraphToL2ToL1EventResult
 } from '../util/withdrawals/helpers'
-import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
+import { WithdrawalFromSubgraph } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import {
@@ -79,7 +79,7 @@ export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
 export type Deposit = Transaction
 
 export type Withdrawal =
-  | FetchWithdrawalsFromSubgraphResult
+  | WithdrawalFromSubgraph
   | WithdrawalInitiated
   | EthWithdrawal
 
@@ -136,7 +136,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
-): tx is FetchWithdrawalsFromSubgraphResult {
+): tx is WithdrawalFromSubgraph {
   return tx.source === 'subgraph'
 }
 
@@ -164,7 +164,7 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   let withdrawal: L2ToL1EventResultPlus | undefined
 
   if (isWithdrawalFromSubgraph(tx)) {
-    withdrawal = await mapWithdrawalToL2ToL1EventResult({
+    withdrawal = await mapWithdrawalFromSubgraphToL2ToL1EventResult({
       withdrawal: tx,
       l1Provider: parentProvider,
       l2Provider: childProvider
