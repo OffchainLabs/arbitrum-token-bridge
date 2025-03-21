@@ -709,12 +709,8 @@ export function TransferPanel() {
           uniqueId: null,
           isWithdrawal: false,
           blockNum: null,
-          childChainId: isDepositMode
-            ? networks.destinationChain.id
-            : networks.sourceChain.id,
-          parentChainId: isDepositMode
-            ? networks.sourceChain.id
-            : networks.destinationChain.id,
+          childChainId: childChain.id,
+          parentChainId: parentChain.id,
           sourceChainId: networks.sourceChain.id,
           destinationChainId: networks.destinationChain.id,
           asset: selectedToken.symbol,

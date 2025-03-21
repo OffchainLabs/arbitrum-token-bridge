@@ -58,8 +58,8 @@ export function isTxCompleted(tx: MergedTransaction): boolean {
   if (tx.isCctp) {
     return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
   }
-  if (tx.isOft && tx.status === 'success') {
-    return true
+  if (tx.isOft) {
+    return tx.status === 'success'
   }
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.L2_SUCCESS
@@ -75,8 +75,8 @@ export function isTxPending(tx: MergedTransaction) {
     return true
   }
 
-  if (tx.isOft && tx.status === 'pending') {
-    return true
+  if (tx.isOft) {
+    return tx.status === 'pending'
   }
 
   if (isDeposit(tx)) {
@@ -440,7 +440,7 @@ export async function getUpdatedRetryableDeposit(
 export async function getUpdatedWithdrawal(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  if (!isTxPending(tx) || !tx.isWithdrawal || tx.isCctp) {
+  if (!isTxPending(tx) || !tx.isWithdrawal || tx.isCctp || isOftTransfer(tx)) {
     return tx
   }
 
