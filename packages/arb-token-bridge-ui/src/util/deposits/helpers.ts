@@ -99,7 +99,7 @@ export const updateAdditionalDepositData = async (
       ...depositTx,
       status,
       timestampResolved,
-      parentToChildMsgData: l1ToL2MsgData,
+      l1ToL2MsgData,
       l2ToL3MsgData
     }
   }

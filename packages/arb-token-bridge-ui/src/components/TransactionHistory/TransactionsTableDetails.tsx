@@ -29,6 +29,7 @@ import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
+import { addressesEqual } from '../../util/AddressUtils'
 
 const DetailsBox = ({
   children,
@@ -79,8 +80,7 @@ export const TransactionsTableDetails = () => {
   const showPriceInUsd =
     !isNetwork(tx.parentChainId).isTestnet && tx.asset === ether.symbol
 
-  const isDifferentSourceAddress =
-    sanitizedAddress.toLowerCase() !== tx.sender?.toLowerCase()
+  const isDifferentSourceAddress = !addressesEqual(sanitizedAddress, tx.sender)
   const isDifferentDestinationAddress = isCustomDestinationAddressTx({
     sender: sanitizedAddress,
     destination: tx.destination

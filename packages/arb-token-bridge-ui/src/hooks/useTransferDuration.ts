@@ -1,11 +1,11 @@
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 
 import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
 import { isNetwork } from '../util/networks'
 import { getConfirmationTime } from '../util/WithdrawalUtils'
-import { BoldUpgradeStatus, getBoldUpgradeInfo } from '../util/BoLDUtils'
+import { getBoldInfo, getDifferenceInSeconds } from '../util/BoLDUtils'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,
@@ -118,23 +118,32 @@ export function getWithdrawalConfirmationDate({
 }: {
   createdAt: number | null
   withdrawalFromChainId: number
-}) {
+}): Dayjs {
+  const { confirmationTimeInSeconds } = getConfirmationTime(
+    withdrawalFromChainId
+  )
+
   // For new txs createdAt won't be defined yet, we default to the current time in that case
-  const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
-
-  let { confirmationTimeInSeconds } = getConfirmationTime(withdrawalFromChainId)
-  const boldUpgradeInfo = getBoldUpgradeInfo(withdrawalFromChainId)
-
-  // In case the BoLD upgrade is ongoing, and the tx was created during this time, we add the extra confirmation time
-  if (boldUpgradeInfo.status === BoldUpgradeStatus.InProgress) {
-    const isDuringBold = createdAtDate >= dayjs(boldUpgradeInfo.dateStart)
-
-    if (isDuringBold) {
-      confirmationTimeInSeconds += boldUpgradeInfo.secondsRemaining
-    }
+  if (createdAt === null) {
+    return dayjs().add(confirmationTimeInSeconds, 'second')
   }
 
-  return createdAtDate.add(confirmationTimeInSeconds, 'second')
+  const boldInfo = getBoldInfo({ createdAt, withdrawalFromChainId })
+
+  if (boldInfo.affected) {
+    // Messages not confirmed at the time of the BoLD upgrade had their confirmation time reset and start again
+    const confirmationTimeBeforeResetInSeconds = getDifferenceInSeconds(
+      new Date(createdAt),
+      boldInfo.upgradeTime
+    )
+
+    return dayjs(createdAt)
+      .add(confirmationTimeBeforeResetInSeconds, 'second')
+      .add(confirmationTimeInSeconds, 'second')
+  }
+
+  // Add the confirmation time to createdAt
+  return dayjs(createdAt).add(confirmationTimeInSeconds, 'second')
 }
 
 function getWithdrawalDuration(tx: MergedTransaction) {
