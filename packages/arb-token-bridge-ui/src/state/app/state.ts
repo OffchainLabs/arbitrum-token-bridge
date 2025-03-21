@@ -60,6 +60,9 @@ export interface MergedTransaction {
   parentChainId: number
   sourceChainId: number
   destinationChainId: number
+  oftData?: {
+    destinationTxHash?: string | null
+  }
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
     attestationHash?: Address | null

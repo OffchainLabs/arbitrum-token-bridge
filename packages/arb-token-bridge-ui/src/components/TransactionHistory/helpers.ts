@@ -606,6 +606,10 @@ export function getTxRemainingTimeInMinutes(tx: MergedTransaction) {
 }
 
 export function getDestinationNetworkTxId(tx: MergedTransaction) {
+  if (tx.isOft) {
+    return tx.oftData?.destinationTxHash
+  }
+
   if (tx.isCctp) {
     return tx.cctpData?.receiveMessageTransactionHash
   }

@@ -186,6 +186,8 @@ function mapLayerZeroMessageToMergedTransaction(
     destinationChainId
   })
 
+  const destinationTxHash = message.destination?.tx?.txHash || null
+
   return {
     isOft: true,
     isCctp: false,
@@ -205,7 +207,10 @@ function mapLayerZeroMessageToMergedTransaction(
     childChainId: isDeposit ? destinationChainId : sourceChainId,
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
     sourceChainId,
-    destinationChainId
+    destinationChainId,
+    oftData: {
+      destinationTxHash
+    }
   }
 }
 
@@ -337,13 +342,18 @@ export async function getUpdatedOftTransfer(
   try {
     const response = await fetch(url)
     const message = (await response.json()).data[0] as LayerZeroMessage
+    const status = getOftTransactionStatus(message)
+
+    const destinationTxHash = message.destination?.tx?.txHash || null
+
     return {
       ...tx,
-      status: getOftTransactionStatus(message),
+      status,
       resolvedAt:
-        getOftTransactionStatus(message) === 'pending'
-          ? null
-          : new Date(message.updated).getTime()
+        status === 'pending' ? null : new Date(message.updated).getTime(),
+      oftData: {
+        destinationTxHash
+      }
     }
   } catch (error) {
     console.error('Error fetching updated OFT transfer for tx:', tx.txId, error)
