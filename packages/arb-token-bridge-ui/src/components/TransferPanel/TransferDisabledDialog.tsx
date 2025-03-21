@@ -7,18 +7,22 @@ import { ExternalLink } from '../common/ExternalLink'
 import { getNetworkName } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
+import { getTransferMode } from '../../util/getTransferMode'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { addressesEqual } from '../../util/AddressUtils'
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
-  const { isDepositMode, isTeleportMode, parentChain, childChain } =
-    useNetworksRelationship(networks)
+  const { parentChain, childChain } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const [selectedToken, setSelectedToken] = useSelectedToken()
   // for tracking local state and prevent flickering with async URL params updating
   const [selectedTokenAddressLocalValue, setSelectedTokenAddressLocalValue] =
@@ -35,7 +39,7 @@ export function TransferDisabledDialog() {
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {
-      if (!isTeleportMode) {
+      if (transferMode !== 'teleport') {
         return
       }
       const { l2ChainId } = await getL2ConfigForTeleport({
@@ -44,7 +48,7 @@ export function TransferDisabledDialog() {
       setL2ChainIdForTeleport(l2ChainId)
     }
     updateL2ChainIdForTeleport()
-  }, [isTeleportMode, networks.destinationChainProvider])
+  }, [transferMode, networks.destinationChainProvider])
 
   const shouldShowDialog = useMemo(() => {
     if (
@@ -62,7 +66,7 @@ export function TransferDisabledDialog() {
     }
 
     if (
-      isTeleportMode &&
+      transferMode === 'teleport' &&
       !isTeleportEnabledToken(
         selectedToken.address,
         parentChain.id,
@@ -73,7 +77,7 @@ export function TransferDisabledDialog() {
     }
 
     if (
-      isDepositMode &&
+      (transferMode === 'deposit' || transferMode === 'teleport') &&
       isSelectedTokenWithdrawOnly &&
       !isSelectedTokenWithdrawOnlyLoading
     ) {
@@ -83,10 +87,9 @@ export function TransferDisabledDialog() {
     return false
   }, [
     childChain.id,
-    isDepositMode,
+    transferMode,
     isSelectedTokenWithdrawOnly,
     isSelectedTokenWithdrawOnlyLoading,
-    isTeleportMode,
     parentChain.id,
     selectedToken,
     selectedTokenAddressLocalValue
@@ -135,7 +138,7 @@ export function TransferDisabledDialog() {
       onClose={onClose}
     >
       <div className="flex flex-col space-y-4 py-4">
-        {isTeleportMode ? (
+        {transferMode === 'teleport' ? (
           // teleport transfer disabled content if token is not in the allowlist
           <>
             <p>

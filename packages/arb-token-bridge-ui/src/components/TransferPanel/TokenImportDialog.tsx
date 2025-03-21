@@ -243,6 +243,7 @@ export function TokenImportDialog({
   }, [
     isL1AddressLoading,
     tokenAddress,
+    selectedToken?.address,
     isOpen,
     l1Address,
     onClose,

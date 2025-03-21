@@ -21,6 +21,7 @@ import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { getTransferMode } from '../../util/getTransferMode'
 
 function MaxButton({
   className = '',
@@ -74,8 +75,11 @@ function SourceChainTokenBalance({
 }) {
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const { isDepositMode, childChainProvider } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const selectedTokenDecimals = useSelectedTokenDecimals()
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -106,7 +110,9 @@ function SourceChainTokenBalance({
         <span
           className="whitespace-nowrap text-sm text-white"
           aria-label={`${symbol} balance amount on ${
-            isDepositMode ? 'parentChain' : 'childChain'
+            transferMode === 'deposit' || transferMode === 'teleport'
+              ? 'parentChain'
+              : 'childChain'
           }`}
         >
           {formattedBalance}

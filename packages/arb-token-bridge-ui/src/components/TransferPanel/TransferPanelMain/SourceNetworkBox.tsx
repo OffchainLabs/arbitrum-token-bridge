@@ -36,6 +36,7 @@ import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { getTransferMode } from '../../../util/getTransferMode'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 
 function Amount2ToggleButton({
@@ -81,8 +82,11 @@ export function SourceNetworkBox() {
     useAmount2InputVisibility()
 
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const [selectedToken] = useSelectedToken()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [{ amount, amount2 }] = useArbQueryParams()
@@ -239,21 +243,23 @@ export function SourceNetworkBox() {
             </p>
           )}
 
-          {isDepositMode && selectedToken && !isOft && (
-            <p className="mt-1 text-xs font-light text-white">
-              Make sure you have {nativeCurrency.symbol} in your{' '}
-              {getNetworkName(childChain.id)} account, as you’ll need it to
-              power transactions.
-              <br />
-              <ExternalLink
-                href={ETH_BALANCE_ARTICLE_LINK}
-                className="arb-hover underline"
-              >
-                Learn more
-              </ExternalLink>
-              .
-            </p>
-          )}
+          {(transferMode === 'deposit' || transferMode === 'teleport') &&
+            selectedToken &&
+            !isOft && (
+              <p className="mt-1 text-xs font-light text-white">
+                Make sure you have {nativeCurrency.symbol} in your{' '}
+                {getNetworkName(childChain.id)} account, as you’ll need it to
+                power transactions.
+                <br />
+                <ExternalLink
+                  href={ETH_BALANCE_ARTICLE_LINK}
+                  className="arb-hover underline"
+                >
+                  Learn more
+                </ExternalLink>
+                .
+              </p>
+            )}
         </div>
         <EstimatedGas chainType="source" />
       </NetworkContainer>

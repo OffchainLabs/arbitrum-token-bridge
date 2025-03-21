@@ -27,6 +27,7 @@ import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { getTransferMode } from '../../util/getTransferMode'
 import { addressesEqual } from '../../util/AddressUtils'
 
 export function SwitchNetworksButton(
@@ -185,8 +186,11 @@ export function NetworkContainer({
 
 export function TransferPanelMain() {
   const [networks] = useNetworks()
-  const { childChainProvider, isTeleportMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [selectedToken] = useSelectedToken()
@@ -223,7 +227,8 @@ export function TransferPanelMain() {
     }
 
     if (
-      !isTeleportMode &&
+      transferMode !== 'teleport' &&
+      transferMode !== 'unsupported' &&
       (isTokenMainnetUSDC(selectedToken.address) ||
         isTokenSepoliaUSDC(selectedToken.address) ||
         isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
@@ -243,7 +248,7 @@ export function TransferPanelMain() {
     updateErc20ChildBalances,
     destinationAddressOrWalletAddress,
     updateUsdcBalances,
-    isTeleportMode
+    transferMode
   ])
 
   useUpdateUSDCTokenData()

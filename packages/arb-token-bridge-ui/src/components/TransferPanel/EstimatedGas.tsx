@@ -13,6 +13,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { getTransferMode } from '../../util/getTransferMode'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 
@@ -57,13 +58,8 @@ export function EstimatedGas({
 }) {
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
   })
@@ -85,6 +81,10 @@ export function EstimatedGas({
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
   )
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const isOft = useIsOftV2Transfer()
 
@@ -95,11 +95,9 @@ export function EstimatedGas({
     networks.destinationChain.id
   ).isArbitrumSepolia
 
-  const isWithdrawalParentChain = !isDepositMode && isParentChain
-
   const estimatedGasFee = useMemo(() => {
     if (
-      !isDepositMode &&
+      transferMode === 'withdrawal' &&
       !isParentChain &&
       typeof estimatedParentChainGasFees !== 'undefined' &&
       typeof estimatedChildChainGasFees !== 'undefined'
@@ -112,7 +110,7 @@ export function EstimatedGas({
   }, [
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
-    isDepositMode,
+    transferMode,
     isParentChain
   ])
 
@@ -124,7 +122,7 @@ export function EstimatedGas({
     [isSourceChain, networks.sourceChain.id, networks.destinationChain.id]
   )
 
-  if (isWithdrawalParentChain && !isOft) {
+  if (transferMode === 'withdrawal' && isParentChain && !isOft) {
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
   }
 
