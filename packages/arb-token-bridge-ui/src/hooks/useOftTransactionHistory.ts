@@ -13,15 +13,14 @@ import { isNetwork } from '../util/networks'
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
 
-export enum LayerZeroMessageStatus {
-  INFLIGHT = 'INFLIGHT',
-  DELIVERED = 'DELIVERED',
-  FAILED = 'FAILED',
-  PAYLOAD_STORED = 'PAYLOAD_STORED',
-  BLOCKED = 'BLOCKED',
-  CONFIRMING = 'CONFIRMING'
-}
-
+export const LayerZeroMessageStatus = {
+  INFLIGHT: 'pending',
+  CONFIRMING: 'pending',
+  PAYLOAD_STORED: 'pending',
+  DELIVERED: 'success',
+  FAILED: 'failed',
+  BLOCKED: 'failed'
+} as const
 /*
  * LayerZero API returns `LayerZeroTransaction` without `asset` and `value`.
  * `updateAdditionalLayerZeroData()` fills these gaps, returning `MergedTransaction` for tx history.
@@ -150,18 +149,11 @@ interface LayerZeroMessage {
 }
 
 const getOftTransactionStatus = (message: LayerZeroMessage) => {
-  switch (message.status.name) {
-    case LayerZeroMessageStatus.INFLIGHT ||
-      LayerZeroMessageStatus.CONFIRMING ||
-      LayerZeroMessageStatus.PAYLOAD_STORED:
-      return 'pending'
-    case LayerZeroMessageStatus.DELIVERED:
-      return 'success'
-    case LayerZeroMessageStatus.FAILED || LayerZeroMessageStatus.BLOCKED:
-      return 'failed'
-    default:
-      return 'pending'
-  }
+  return (
+    LayerZeroMessageStatus[
+      message.status.name as keyof typeof LayerZeroMessageStatus
+    ] ?? 'pending'
+  )
 }
 
 function validateSourceAndDestinationChainIds(message: LayerZeroMessage) {
@@ -199,10 +191,10 @@ function mapLayerZeroMessageToMergedTransaction(
       getOftTransactionStatus(message) === 'pending'
         ? null
         : new Date(message.updated).getTime(),
-    txId: message.source.tx.txHash,
+    txId: message.source.tx.txHash.toLowerCase(),
     assetType: AssetType.ERC20,
     uniqueId: null,
-    isWithdrawal: false,
+    isWithdrawal: !isDeposit,
     blockNum: null,
     childChainId: isDeposit ? destinationChainId : sourceChainId,
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
@@ -226,7 +218,8 @@ export async function updateAdditionalLayerZeroData(
   const sourceChainTx = await sourceChainProvider.getTransaction(txId)
   const inputDataInterface = new ethers.utils.Interface([
     'function send((uint32,bytes32,uint256,uint256,bytes,bytes,bytes), (uint256,uint256), address)'
-  ])
+  ]) // interface for OFT send() function (check /token-bridge-sdk/oftV2Abi.json)
+
   const decodedInputData = inputDataInterface.decodeFunctionData(
     'send',
     sourceChainTx.data
