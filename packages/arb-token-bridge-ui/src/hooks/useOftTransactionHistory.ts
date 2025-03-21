@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
 import { getChainIdFromEid } from '../token-bridge-sdk/oftUtils'
@@ -301,17 +301,13 @@ export function useOftTransactionHistory({
     [walletAddressToFetch]
   )
 
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading } = useSWRImmutable(
     walletAddressToFetch
       ? `${
           isTestnet ? LAYERZERO_API_URL_TESTNET : LAYERZERO_API_URL_MAINNET
         }/messages/wallet/${walletAddressToFetch}`
       : null,
-    fetcher,
-    {
-      refreshInterval: 30000, // Refresh every 30 seconds
-      revalidateOnFocus: true
-    }
+    fetcher
   )
 
   return {
