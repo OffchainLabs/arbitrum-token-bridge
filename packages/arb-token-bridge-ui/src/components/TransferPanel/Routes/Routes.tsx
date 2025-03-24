@@ -6,9 +6,9 @@ import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 import { ArbitrumCanonicalRoute } from './ArbitrumCanonicalRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
-import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import React from 'react'
 import { useRouteStore } from '../hooks/useRouteStore'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
@@ -16,14 +16,14 @@ function Wrapper({ children }: PropsWithChildren) {
 
 export function useSetSelectedRoute() {
   const [networks] = useNetworks()
-  const amount = useAmountBigNumber()
+  const [{ amount }] = useArbQueryParams()
   const { isDepositMode } = useNetworksRelationship(networks)
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
   const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
 
   useEffect(() => {
-    if (amount.eq(0)) return
+    if (amount === '0') return
 
     if (isOftV2Transfer) {
       setSelectedRoute('oftV2')
@@ -58,11 +58,11 @@ export function useSetSelectedRoute() {
 export const Routes = React.memo(() => {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
-  const amount = useAmountBigNumber()
+  const [{ amount }] = useArbQueryParams()
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
 
-  if (amount.eq(0)) {
+  if (amount === '0') {
     return
   }
 
