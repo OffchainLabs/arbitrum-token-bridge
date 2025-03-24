@@ -80,7 +80,7 @@ export const useSelectedToken = () => {
 
   return [
     usdcToken ||
-    tokensFromUser[tokenFromSearchParams] ||
+      tokensFromUser[tokenFromSearchParams] ||
       tokensFromLists[tokenFromSearchParams] ||
       null,
     setSelectedToken
