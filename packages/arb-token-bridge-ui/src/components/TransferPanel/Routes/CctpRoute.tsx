@@ -7,7 +7,7 @@ import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useMemo } from 'react'
-
+import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
 export function CctpRoute() {
   const [{ amount }] = useArbQueryParams()
   const [{ sourceChain }] = useNetworks()
@@ -17,14 +17,12 @@ export function CctpRoute() {
   const nativeUsdcToken: Token = useMemo(
     () => ({
       decimals: 6,
-      address: isTestnet
-        ? CommonAddress.Sepolia.USDC
-        : CommonAddress.Ethereum.USDC,
+      address: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
       symbol: 'USDC',
       logoURI:
         'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
     }),
-    [isTestnet]
+    [sourceChain.id]
   )
 
   return (
