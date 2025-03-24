@@ -9,6 +9,7 @@ import { OftV2Route } from './OftV2Route'
 import React from 'react'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
@@ -21,6 +22,7 @@ export function useSetSelectedRoute() {
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
   const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
+  const [selectedToken] = useSelectedToken()
 
   useEffect(() => {
     if (amount === '0') return
@@ -36,7 +38,14 @@ export function useSetSelectedRoute() {
     }
 
     setSelectedRoute('arbitrum')
-  }, [amount, isOftV2Transfer, isCctpTransfer, isDepositMode, setSelectedRoute])
+  }, [
+    amount,
+    isOftV2Transfer,
+    isCctpTransfer,
+    isDepositMode,
+    setSelectedRoute,
+    selectedToken
+  ])
 }
 
 /**

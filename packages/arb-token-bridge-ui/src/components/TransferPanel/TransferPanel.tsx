@@ -186,7 +186,7 @@ export function TransferPanel() {
   useEffect(() => {
     // hide Project listing when networks are changed
     setShowProjectsListing(false)
-  }, [childChain.id, clearRoute, parentChain.id])
+  }, [childChain.id, parentChain.id])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
