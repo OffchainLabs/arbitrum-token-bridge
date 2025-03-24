@@ -186,7 +186,6 @@ export function TransferPanel() {
   useEffect(() => {
     // hide Project listing when networks are changed
     setShowProjectsListing(false)
-    clearRoute()
   }, [childChain.id, clearRoute, parentChain.id])
 
   useEffect(() => {
@@ -211,7 +210,7 @@ export function TransferPanel() {
 
   useEffect(() => {
     clearRoute()
-  }, [selectedToken, clearRoute, networks])
+  }, [selectedToken, clearRoute])
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
