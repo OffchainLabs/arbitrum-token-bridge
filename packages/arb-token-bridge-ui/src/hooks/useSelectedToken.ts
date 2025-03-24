@@ -79,9 +79,9 @@ export const useSelectedToken = () => {
   }
 
   return [
+    usdcToken ||
     tokensFromUser[tokenFromSearchParams] ||
       tokensFromLists[tokenFromSearchParams] ||
-      usdcToken ||
       null,
     setSelectedToken
   ] as const
@@ -116,8 +116,10 @@ export async function getUsdcToken({
     isArbitrumSepolia: isParentChainArbitrumSepolia
   } = isNetwork(parentChainId)
 
+  console.log({ tokenAddress })
   // Ethereum Mainnet USDC
   if (isTokenMainnetUSDC(tokenAddress) && isParentChainEthereumMainnet) {
+    console.log('token 1')
     return {
       ...commonUSDC,
       address: CommonAddress.Ethereum.USDC,

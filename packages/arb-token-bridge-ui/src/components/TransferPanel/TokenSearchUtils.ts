@@ -9,8 +9,6 @@ import { useTokenLists } from '../../hooks/useTokenLists'
 import { TokenListWithId } from '../../util/TokenListUtils'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../hooks/useNetworks'
-import { isTokenMainnetUSDC, isTokenSepoliaUSDC } from '../../util/TokenUtils'
-import { isNetwork } from '../../util/networks'
 
 export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
   const [networks] = useNetworks()
@@ -107,19 +105,11 @@ function tokenListsToSearchableTokenStorage(
               return
             }
 
-            const isMainnetUsdc =
-              isNetwork(Number(l1ChainId)).isEthereumMainnet &&
-              isTokenMainnetUSDC(addressOnL1)
-            const isSepoliaUsdc =
-              isNetwork(Number(l1ChainId)).isSepolia &&
-              isTokenSepoliaUSDC(addressOnL1)
-            const isMainnetOrSepoliaUsdc = isMainnetUsdc || isSepoliaUsdc
-
             if (typeof acc[addressOnL1] === 'undefined') {
               // Token is not on the list yet
               acc[addressOnL1] = {
-                name: isMainnetOrSepoliaUsdc ? 'USD Coin' : token.name,
-                symbol: isMainnetOrSepoliaUsdc ? 'USDC' : token.symbol,
+                name: token.name,
+                symbol: token.symbol,
                 type: TokenType.ERC20,
                 logoURI: token.logoURI,
                 address: addressOnL1,
