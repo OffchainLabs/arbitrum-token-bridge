@@ -127,7 +127,10 @@ export const searchAndSelectToken = ({
 
 export const fillCustomDestinationAddress = () => {
   // click on advanced settings
-  cy.findByLabelText('advanced settings').should('be.visible').click()
+  cy.findByLabelText('advanced settings')
+    .scrollIntoView()
+    .should('be.visible')
+    .click()
 
   // unlock custom destination address input
   cy.findByLabelText('Custom destination input lock')
