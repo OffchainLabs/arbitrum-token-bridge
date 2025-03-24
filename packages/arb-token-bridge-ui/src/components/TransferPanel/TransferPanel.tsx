@@ -335,7 +335,6 @@ export function TransferPanel() {
   const showDelayedSmartContractTxRequest = () =>
     setTimeout(() => {
       setTransferring(false)
-      clearRoute()
       setShowSmartContractWalletTooltip(true)
     }, 3000)
 
@@ -535,10 +534,8 @@ export function TransferPanel() {
       clearAmountInput()
       clearRoute()
     } catch (e) {
-      //
     } finally {
       setTransferring(false)
-      clearRoute()
     }
   }
 
@@ -642,6 +639,7 @@ export function TransferPanel() {
       setTimeout(() => {
         highlightOftTransactionHistoryDisclaimer()
       }, 100)
+      clearRoute()
     } catch (error) {
       if (isUserRejectedError(error)) {
         return
@@ -658,7 +656,6 @@ export function TransferPanel() {
       )
     } finally {
       setTransferring(false)
-      clearRoute()
     }
   }
 
@@ -928,7 +925,6 @@ export function TransferPanel() {
       })
     } finally {
       setTransferring(false)
-      clearRoute()
     }
   }
 
