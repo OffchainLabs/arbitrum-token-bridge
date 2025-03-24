@@ -6,21 +6,26 @@ import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useMemo } from 'react'
 
-const nativeUsdcToken: Token = {
-  decimals: 6,
-  address: CommonAddress.Ethereum.USDC,
-  symbol: 'USDC',
-  logoURI:
-    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
-}
-
-// Only displayed during USDC transfers (Mainnet/ArbOne)
 export function CctpRoute() {
   const [{ amount }] = useArbQueryParams()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
   const { selectedRoute, setSelectedRoute } = useRouteStore()
+
+  const nativeUsdcToken: Token = useMemo(
+    () => ({
+      decimals: 6,
+      address: isTestnet
+        ? CommonAddress.Sepolia.USDC
+        : CommonAddress.Ethereum.USDC,
+      symbol: 'USDC',
+      logoURI:
+        'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
+    }),
+    [isTestnet]
+  )
 
   return (
     <Route

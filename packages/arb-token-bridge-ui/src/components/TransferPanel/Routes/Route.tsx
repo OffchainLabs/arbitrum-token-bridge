@@ -10,7 +10,6 @@ import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { RouteType, SetRoute } from '../hooks/useRouteStore'
-import { SecurityGuaranteed } from '../SecurityLabels'
 import { TokenLogo } from '../TokenLogo'
 import React from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
@@ -80,7 +79,13 @@ function getBridgeConfigFromType(type: RouteType) {
 function getBadge(badgeType: BadgeType) {
   switch (badgeType) {
     case 'security-guaranteed': {
-      return SecurityGuaranteed
+      return (
+        <div className="flex">
+          <div className="flex h-fit items-center space-x-1 rounded-full bg-lime-dark p-2 text-xs text-lime">
+            <span>Security guaranteed by Arbitrum</span>
+          </div>
+        </div>
+      )
     }
   }
 }
@@ -291,7 +296,7 @@ export const Route = React.memo(
           </div>
 
           {tag ? (
-            <div className="absolute right-2 top-2">{getBadge(tag)()}</div>
+            <div className="absolute right-2 top-2">{getBadge(tag)}</div>
           ) : null}
         </div>
       </div>
