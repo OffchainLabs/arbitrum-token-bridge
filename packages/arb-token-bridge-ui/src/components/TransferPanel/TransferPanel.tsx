@@ -80,7 +80,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
-import { Routes, useSetSelectedRoute } from './Routes/Routes'
+import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -211,6 +211,7 @@ export function TransferPanel() {
   useEffect(() => {
     clearRoute()
   }, [selectedToken, clearRoute])
+  useDefaultSelectedRoute()
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
@@ -537,8 +538,6 @@ export function TransferPanel() {
       setTransferring(false)
     }
   }
-
-  useSetSelectedRoute()
 
   const transferOft = async () => {
     if (!selectedToken) {

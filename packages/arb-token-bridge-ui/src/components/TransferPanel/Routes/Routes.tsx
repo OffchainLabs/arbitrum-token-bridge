@@ -15,7 +15,7 @@ function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
 }
 
-export function useSetSelectedRoute() {
+export function useDefaultSelectedRoute() {
   const [networks] = useNetworks()
   const [{ amount }] = useArbQueryParams()
   const { isDepositMode } = useNetworksRelationship(networks)
