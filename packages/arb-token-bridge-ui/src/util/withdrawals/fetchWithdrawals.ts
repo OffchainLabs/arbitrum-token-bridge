@@ -73,7 +73,7 @@ export async function fetchWithdrawals({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
-  const { isOrbitChain } = isNetwork(l2ChainID)
+  const { isOrbitChain, isCoreChain } = isNetwork(l2ChainID)
 
   if (!fromBlock) {
     fromBlock = 0
@@ -147,33 +147,35 @@ export async function fetchWithdrawals({
     }
   }
 
-  // we only fetch if there's activity on the chain because we don't care about txs incoming from a different address
-  // but we still need receiver for eth withdrawals
-  if (isOrbitChain && senderNonce === 0) {
-    return []
+  /// receiver queries; only add if nonce > 0 for orbit chains
+  const fetchReceivedTransactions =
+    isCoreChain || (isOrbitChain && senderNonce > 0)
+
+  if (fetchReceivedTransactions) {
+    if (isAlchemy) {
+      // for alchemy, fetch sequentially
+      queries.push({ receiver, gateways: [gateways.standardGateway] })
+      queries.push({ receiver, gateways: [gateways.wethGateway] })
+      queries.push({ receiver, gateways: [gateways.customGateway] })
+      queries.push({ receiver, gateways: gateways.otherGateways })
+    } else {
+      // for other chains, fetch in parallel
+      queries.push({ receiver, gateways: allGateways })
+    }
   }
 
-  if (isAlchemy) {
-    // for alchemy, fetch sequentially
-    queries.push({ receiver, gateways: [gateways.standardGateway] })
-    queries.push({ receiver, gateways: [gateways.wethGateway] })
-    queries.push({ receiver, gateways: [gateways.customGateway] })
-    queries.push({ receiver, gateways: gateways.otherGateways })
-  } else {
-    // for other chains, fetch in parallel
-    queries.push({ receiver, gateways: allGateways })
-  }
-
-  const ethWithdrawalsFromEventLogs = await backOff(() =>
-    fetchETHWithdrawalsFromEventLogs({
-      receiver,
-      // not sure why eslint is treating "toBlock" as "number | undefined" here
-      // even though typescript recognizes it as "number"
-      fromBlock: toBlock ?? 0 + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider
-    })
-  )
+  const ethWithdrawalsFromEventLogs = fetchReceivedTransactions
+    ? await backOff(() =>
+        fetchETHWithdrawalsFromEventLogs({
+          receiver,
+          // not sure why eslint is treating "toBlock" as "number | undefined" here
+          // even though typescript recognizes it as "number"
+          fromBlock: toBlock ?? 0 + 1,
+          toBlock: 'latest',
+          l2Provider: l2Provider
+        })
+      )
+    : []
 
   await wait(delayMs)
 
