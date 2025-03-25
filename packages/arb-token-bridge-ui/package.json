@@ -28,7 +28,7 @@
     "exponential-backoff": "^3.1.1",
     "graphql": "^16.9.0",
     "lodash-es": "^4.17.21",
-    "next": "^14.2.22",
+    "next": "^14.2.25",
     "next-query-params": "^5.0.0",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
