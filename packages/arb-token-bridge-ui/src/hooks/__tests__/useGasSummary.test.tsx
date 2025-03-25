@@ -19,8 +19,6 @@ describe('getGasSummaryStatus', () => {
       estimatedParentChainGasFees: 0,
       estimatedChildChainGasFees: 0,
       gasEstimatesError: null,
-      oftFeeSummaryLoading: false,
-      oftFeeEstimatesError: false,
       sourceChainId: ChainId.ArbitrumOne,
       destinationChainId: ChainId.Ethereum
     }
@@ -57,33 +55,6 @@ describe('getGasSummaryStatus', () => {
         balance: null
       })
       expect(result2).toEqual('loading')
-    })
-  })
-
-  describe('given the following oft conditions', () => {
-    const mockedGasSummaryParams = {
-      selectedTokenAddress: '0x123',
-      isDepositMode: true,
-      gasEstimatesError: null,
-      amountBigNumber: BigNumber.from(100_000),
-      balance: BigNumber.from(100_000),
-      sourceChainId: ChainId.ArbitrumOne,
-      destinationChainId: ChainId.Ethereum
-    }
-
-    it('should return error if there is an OFT fee estimate error', async () => {
-      const result = getGasSummaryStatus(mockedGasSummaryParams)
-      expect(result).toEqual('error')
-    })
-
-    it('should return success if there is not an OFT fee estimate error', async () => {
-      const result = getGasSummaryStatus(mockedGasSummaryParams)
-      expect(result).toEqual('success')
-    })
-
-    it('should return loading if OFT fee summary is loading', async () => {
-      const result = getGasSummaryStatus(mockedGasSummaryParams)
-      expect(result).toEqual('loading')
     })
   })
 
