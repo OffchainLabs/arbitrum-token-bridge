@@ -20,6 +20,7 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
 import LightningIcon from '@/images/LightningIcon.svg'
+import { getTransferMode } from '../../util/getTransferMode'
 import { TokenInfoTooltip } from './TokenInfoTooltip'
 import { BoLDUpgradeWarning } from './BoLDUpgradeWarning'
 import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
@@ -54,8 +55,12 @@ function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
   } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
+  const { childChainProvider, parentChainProvider } =
     useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -130,7 +135,7 @@ function TotalGasFees({ showUsdcValue }: { showUsdcValue: boolean }) {
    *  only show child chain native currency
    *  x XAI
    */
-  if (isDepositMode) {
+  if (transferMode === 'deposit' || transferMode === 'teleport') {
     return (
       <>
         <span className="text-right tabular-nums">
@@ -200,8 +205,11 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const { status: gasSummaryStatus } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -226,7 +234,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     (isSourceChainArbitrumOne || isSourceChainArbitrumNova)
 
   const showUsdValueForGasFees =
-    !isTestnet && !(childChainNativeCurrency.isCustom && !isDepositMode)
+    !isTestnet &&
+    !(childChainNativeCurrency.isCustom && transferMode === 'withdrawal')
 
   const showUsdValueForReceivedToken =
     isBridgingEth && !isBatchTransferSupported && !Number(amount2) && !isTestnet
@@ -299,7 +308,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </div>
       </div>
-      {!isDepositMode &&
+      {transferMode === 'withdrawal' &&
         !isOft &&
         (showBoldBanner ? (
           <BoLDUpgradeWarning />

@@ -26,6 +26,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
 import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { getTransferMode } from '../../../util/getTransferMode'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
@@ -39,9 +40,12 @@ function BalanceRow({
   symbolOverride?: string
 }) {
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
@@ -97,7 +101,9 @@ function BalanceRow({
         <span>Balance: </span>
         <span
           aria-label={`${symbol} balance amount on ${
-            isDepositMode ? 'childChain' : 'parentChain'
+            transferMode === 'deposit' || transferMode === 'teleport'
+              ? 'childChain'
+              : 'parentChain'
           }`}
         >
           {balance ? (
@@ -113,7 +119,11 @@ function BalanceRow({
 
 function BalancesContainer() {
   const [networks] = useNetworks()
-  const { childChain, isDepositMode } = useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
+  const transferMode = getTransferMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
   const [selectedToken] = useSelectedToken()
@@ -134,7 +144,7 @@ function BalancesContainer() {
       className="rounded px-3 text-white [&>*+*]:border-t [&>*+*]:border-gray-600"
       style={{ backgroundColor: '#00000050' }}
     >
-      {isCctpTransfer && isDepositMode && (
+      {isCctpTransfer && transferMode === 'deposit' && (
         <BalanceRow
           parentErc20Address={
             isArbitrumOne

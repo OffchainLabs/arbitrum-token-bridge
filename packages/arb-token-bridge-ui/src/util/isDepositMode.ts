@@ -1,4 +1,5 @@
 import { isNetwork } from '../util/networks'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
 
 export function isDepositMode({
   sourceChainId,
@@ -8,17 +9,13 @@ export function isDepositMode({
   destinationChainId: number
 }) {
   const {
-    isEthereumMainnetOrTestnet: isSourceChainEthereum,
-    isArbitrum: isSourceChainArbitrum,
-    isBase: isSourceChainBase
-  } = isNetwork(sourceChainId)
-  const { isOrbitChain: isDestinationChainOrbit } =
-    isNetwork(destinationChainId)
+    isEthereumMainnetOrTestnet: isDestinationChainEthereumMainnetOrTestnet
+  } = isNetwork(destinationChainId)
 
-  const isDepositMode =
-    isSourceChainEthereum ||
-    isSourceChainBase ||
-    (isSourceChainArbitrum && isDestinationChainOrbit)
+  if (isDestinationChainEthereumMainnetOrTestnet) {
+    return false
+  }
 
-  return isDepositMode
+  const destinationChain = getArbitrumNetwork(destinationChainId)
+  return destinationChain.parentChainId === sourceChainId
 }
