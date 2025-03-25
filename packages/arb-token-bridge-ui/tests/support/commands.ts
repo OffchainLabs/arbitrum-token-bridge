@@ -375,6 +375,10 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   }
 }
 
+export function selectRoute(type: 'arbitrum' | 'oftV2' | 'cctp') {
+  cy.findByLabelText(`Route ${type}`).should('be.visible').click()
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -400,5 +404,6 @@ Cypress.Commands.addAll({
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
   confirmSpending,
-  claimCctp
+  claimCctp,
+  selectRoute
 })
