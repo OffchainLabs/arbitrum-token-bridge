@@ -1,14 +1,14 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { constants } from 'ethers'
+import { constants, utils } from 'ethers'
 import { Route } from './Route'
-import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { ether } from '../../../constants'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEstimates'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {
@@ -17,30 +17,56 @@ export function OftV2Route() {
   const { isDepositMode } = useNetworksRelationship(networks)
   const { selectedRoute, setSelectedRoute } = useRouteStore()
   const [selectedToken] = useSelectedToken()
-  const sourceChainNativeCurrency = useNativeCurrency({
-    provider: networks.sourceChainProvider
-  })
-  const { feeEstimates, error, isLoading } = useOftV2FeeEstimates({
-    sourceChainErc20Address: isDepositMode
-      ? selectedToken?.address
-      : selectedToken?.l2Address
-  })
+
+  const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
+    useOftV2FeeEstimates({
+      sourceChainErc20Address: isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address
+    })
+  const { estimatedChildChainGasFees, estimatedParentChainGasFees, status } =
+    useGasSummary()
 
   const gasCost = useMemo(() => {
+    if (
+      status !== 'success' ||
+      typeof estimatedParentChainGasFees !== 'number' ||
+      typeof estimatedChildChainGasFees !== 'number'
+    ) {
+      return undefined
+    }
+
     return [
       {
-        gasCost: feeEstimates?.sourceChainGasFee
-          ? feeEstimates.sourceChainGasFee.toString()
-          : undefined,
-        gasToken:
-          'address' in sourceChainNativeCurrency
-            ? sourceChainNativeCurrency
-            : { ...ether, address: constants.AddressZero }
+        gasCost: isDepositMode
+          ? utils
+              .parseUnits(estimatedParentChainGasFees.toString(), 18)
+              .toString()
+          : utils
+              .parseUnits(estimatedChildChainGasFees.toString(), 18)
+              .toString(),
+        gasToken: { ...ether, address: constants.AddressZero }
       }
     ]
-  }, [feeEstimates?.sourceChainGasFee, sourceChainNativeCurrency])
+  }, [
+    status,
+    isDepositMode,
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
+  ])
 
-  if (error) {
+  const bridgeFee = useMemo(() => {
+    if (!oftFeeEstimates?.sourceChainGasFee) {
+      return undefined
+    }
+
+    return {
+      fee: oftFeeEstimates.sourceChainGasFee.toString(),
+      token: { ...ether, address: constants.AddressZero }
+    }
+  }, [oftFeeEstimates?.sourceChainGasFee])
+
+  if (oftFeeEstimatesError) {
     return null
   }
 
@@ -51,8 +77,9 @@ export function OftV2Route() {
       bridgeIconURI={'/icons/layerzero.svg'}
       durationMs={5 * 60 * 1_000} // 5 minutes in miliseconds
       amountReceived={amount.toString()}
-      isLoadingGasEstimate={isLoading}
+      isLoadingGasEstimate={status === 'loading'}
       gasCost={gasCost}
+      bridgeFee={bridgeFee}
       selected={selectedRoute === 'oftV2'}
       onSelectedRouteClick={setSelectedRoute}
     />
