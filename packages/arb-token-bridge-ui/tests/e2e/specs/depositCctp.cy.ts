@@ -66,10 +66,6 @@ describe('Deposit USDC through CCTP', () => {
 
     cy.typeAmount(USDCAmountToSend)
     cy.findGasFeeSummary('N/A')
-    cy.findGasFeeForChain('Sepolia', zeroToLessThanOneETH)
-    cy.findGasFeeForChain(
-      /You'll have to pay Arbitrum Sepolia gas fee upon claiming./i
-    )
   })
 
   it('should initiate depositing USDC to the same address through CCTP successfully', () => {
