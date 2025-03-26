@@ -1,3 +1,5 @@
+import { Config, simulateContract, writeContract } from '@wagmi/core'
+import { Address } from 'viem'
 import { BigNumber, constants, Contract, ethers, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -19,7 +21,6 @@ import {
 } from './oftUtils'
 import { oftV2Abi } from './oftV2Abi'
 import { isNetwork } from '../util/networks'
-import { Address, prepareWriteContract, writeContract } from '@wagmi/core'
 import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
 
 async function prepareTransferConfig({
@@ -28,7 +29,8 @@ async function prepareTransferConfig({
   destLzEndpointId,
   amount,
   destinationAddress,
-  sourceChainId
+  sourceChainId,
+  wagmiConfig
 }: {
   signer: Signer
   oftContract: Contract
@@ -36,6 +38,7 @@ async function prepareTransferConfig({
   amount: BigNumber
   destinationAddress?: string
   sourceChainId: number
+  wagmiConfig: Config
 }) {
   const address = await getAddressFromSigner(signer)
 
@@ -51,7 +54,7 @@ async function prepareTransferConfig({
     chainId: sourceChainId
   })
 
-  return prepareWriteContract({
+  return simulateContract(wagmiConfig, {
     address: oftContract.address as Address,
     abi: oftV2Abi,
     signer,
@@ -253,7 +256,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       }
     }
 
-    const config = await prepareTransferConfig({
+    const { request } = await prepareTransferConfig({
       signer,
       oftContract,
       amount,
@@ -261,7 +264,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       destinationAddress,
       sourceChainId: await getChainIdFromProvider(this.sourceChainProvider)
     })
-    const gasEstimate = await signer.estimateGas(config.request)
+    const gasEstimate = await signer.estimateGas(request)
 
     return {
       estimatedParentChainGas: isDepositMode ? gasEstimate : constants.Zero,
@@ -299,26 +302,32 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     }
   }
 
-  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+  public async transfer({
+    amount,
+    signer,
+    destinationAddress,
+    wagmiConfig
+  }: TransferProps & { wagmiConfig: Config }) {
     await this.validateOftTransfer()
 
     const oftContract = this.getOftAdapterContract(signer)
-    const config = await prepareTransferConfig({
+    const { request } = await prepareTransferConfig({
       signer,
       oftContract,
       amount,
       destLzEndpointId: this.destLzEndpointId!,
       destinationAddress,
-      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider)
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
+      wagmiConfig
     })
 
-    const sendTx = await writeContract(config)
+    const sendTx = await writeContract(wagmiConfig, request)
 
     return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: sendTx,
+      sourceChainTransaction: { hash: sendTx },
       destinationChainProvider: this.destinationChainProvider
     }
   }

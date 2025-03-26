@@ -619,7 +619,8 @@ export function TransferPanel() {
       await oftTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
-        destinationAddress
+        destinationAddress,
+        wagmiConfig
       })
 
       trackEvent('OFT Transfer', {
