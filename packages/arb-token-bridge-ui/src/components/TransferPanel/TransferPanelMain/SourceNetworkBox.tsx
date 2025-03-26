@@ -18,7 +18,6 @@ import {
   USDC_LEARN_MORE_LINK
 } from '../../../constants'
 import { ExternalLink } from '../../common/ExternalLink'
-import { EstimatedGas } from '../EstimatedGas'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import {
@@ -255,7 +254,6 @@ export function SourceNetworkBox() {
             </p>
           )}
         </div>
-        <EstimatedGas chainType="source" />
       </NetworkContainer>
       <NetworkSelectionContainer
         {...sourceNetworkSelectionDialogProps}

@@ -8,7 +8,6 @@ import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useBalances } from '../../../hooks/useBalances'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
-import { EstimatedGas } from '../EstimatedGas'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
@@ -216,7 +215,6 @@ export function DestinationNetworkBox() {
           </div>
         </div>
         <BalancesContainer />
-        <EstimatedGas chainType="destination" />
       </NetworkContainer>
       <NetworkSelectionContainer
         {...destinationNetworkSelectionDialogProps}
