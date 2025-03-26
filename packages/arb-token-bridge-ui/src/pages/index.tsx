@@ -3,6 +3,7 @@ import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
 import { decodeString, encodeString } from 'use-query-params'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
+import { constants } from 'ethers'
 
 import { Loader } from '../components/common/atoms/Loader'
 import {
@@ -45,11 +46,41 @@ const App = dynamic(
   }
 )
 
+const sanitizeTokenQueryParam = ({
+  token,
+  destinationChainId
+}: {
+  token: string | null | undefined
+  destinationChainId: number | undefined
+}) => {
+  if (!token) {
+    return undefined
+  }
+
+  const orbitChain = getOrbitChains().find(
+    chain => chain.chainId === destinationChainId
+  )
+
+  const isOrbitChainWithCustomGasToken =
+    typeof orbitChain !== 'undefined' &&
+    typeof orbitChain.nativeToken !== 'undefined' &&
+    orbitChain.nativeToken !== constants.AddressZero
+
+  // token=eth doesn't need to be set if ETH is the native gas token
+  // we strip it for clarity
+  if (token.toLowerCase() === 'eth' && !isOrbitChainWithCustomGasToken) {
+    return undefined
+  }
+
+  return token
+}
+
 function getDestinationWithSanitizedQueryParams(
   sanitized: {
     sourceChainId: number
     destinationChainId: number
     experiments: string | undefined
+    token: string | undefined
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -60,7 +91,8 @@ function getDestinationWithSanitizedQueryParams(
     if (
       key === 'sourceChain' ||
       key === 'destinationChain' ||
-      key === 'experiments'
+      key === 'experiments' ||
+      key === 'token'
     ) {
       continue
     }
@@ -76,6 +108,7 @@ function getDestinationWithSanitizedQueryParams(
   const encodedSource = encodeChainQueryParam(sanitized.sourceChainId)
   const encodedDestination = encodeChainQueryParam(sanitized.destinationChainId)
   const encodedExperiments = encodeString(sanitized.experiments)
+  const encodedToken = encodeString(sanitized.token)
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -87,6 +120,10 @@ function getDestinationWithSanitizedQueryParams(
 
   if (encodedExperiments) {
     params.set('experiments', encodedExperiments)
+  }
+
+  if (encodedToken) {
+    params.set('token', encodedToken)
   }
 
   return `/?${params.toString()}`
@@ -113,6 +150,7 @@ export async function getServerSideProps({
   const sourceChainId = decodeChainQueryParam(query.sourceChain)
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
   const experiments = decodeString(query.experiments)
+  const token = decodeString(query.token)
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -133,21 +171,23 @@ export async function getServerSideProps({
   // sanitize the query params
   const sanitized = {
     ...sanitizeQueryParams({ sourceChainId, destinationChainId }),
-    experiments: sanitizeExperimentalFeaturesQueryParam(experiments)
+    experiments: sanitizeExperimentalFeaturesQueryParam(experiments),
+    token: sanitizeTokenQueryParam({ token, destinationChainId })
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
   if (
     sourceChainId !== sanitized.sourceChainId ||
     destinationChainId !== sanitized.destinationChainId ||
-    experiments !== sanitized.experiments
+    experiments !== sanitized.experiments ||
+    token !== sanitized.token
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
-      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments} (before)`
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token} (before)`
     )
     console.log(
-      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments} (after)`
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token} (after)`
     )
     return {
       redirect: {
