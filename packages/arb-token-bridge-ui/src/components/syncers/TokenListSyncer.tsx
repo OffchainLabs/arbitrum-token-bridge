@@ -42,7 +42,12 @@ const TokenListSyncer = (): JSX.Element => {
         childChainId: childChain.id
       })
     })
-  }, [childChain.id, arbTokenBridgeLoaded, parentChain.id])
+  }, [
+    // arbTokenBridge.token is not a memoized object, adding it here would cause infinite loop
+    childChain.id,
+    arbTokenBridgeLoaded,
+    parentChain.id
+  ])
 
   return <></>
 }

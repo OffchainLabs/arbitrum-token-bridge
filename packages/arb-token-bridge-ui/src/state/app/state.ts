@@ -10,7 +10,6 @@ import {
   L2ToL3MessageData,
   TxnType
 } from '../../types/Transactions'
-import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
 
@@ -70,6 +69,8 @@ export interface MergedTransaction {
 }
 
 export interface TeleporterMergedTransaction extends MergedTransaction {
+  /** note: in contrast to general deposits which use `parentToChildMsgData`,
+   * Teleport transfers still follow L1/L2/L3 terminology, so we have `l1ToL2MsgData` and `l2ToL3MsgData` */
   l1ToL2MsgData?: ParentToChildMessageData
   l2ToL3MsgData: L2ToL3MessageData
 }
@@ -84,7 +85,6 @@ export interface WarningTokens {
 export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
-  connectionState: number
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
   arbTokenBridgeLoaded: boolean
@@ -93,7 +93,6 @@ export type AppState = {
 export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
-  connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
   arbTokenBridgeLoaded: false

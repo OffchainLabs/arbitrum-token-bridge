@@ -119,8 +119,6 @@ describe('Batch Deposit', () => {
       cy.typeAmount(ERC20AmountToSend)
       cy.typeAmount2(nativeCurrencyAmountToSend)
       cy.findGasFeeSummary(zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     })
 
     const txData = {
@@ -226,8 +224,6 @@ describe('Batch Deposit', () => {
       cy.typeAmount(ERC20AmountToSend)
       cy.typeAmount2(nativeCurrencyAmountToSend)
       cy.findGasFeeSummary(zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     })
 
     const txData = {

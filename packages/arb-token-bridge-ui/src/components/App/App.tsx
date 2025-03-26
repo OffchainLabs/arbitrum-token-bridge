@@ -13,7 +13,6 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
-import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
@@ -22,8 +21,7 @@ import { config, useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { Header } from '../common/Header'
-import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
+import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
 import { getNetworkName } from '../../util/networks'
 import {
   ArbQueryParamProvider,
@@ -35,7 +33,6 @@ import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
@@ -72,25 +69,12 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   useEffect(() => {
     // Any time one of those changes
     setTokenBridgeParams(null)
-    actions.app.setConnectionState(ConnectionState.LOADING)
+
     actions.app.reset()
     actions.app.setChainIds({
       l1NetworkChainId: parentChain.id,
       l2NetworkChainId: childChain.id
     })
-
-    if (
-      isDepositMode({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      })
-    ) {
-      console.info('Deposit mode detected:')
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
-      console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-    }
 
     setTokenBridgeParams({
       l1: {
@@ -159,7 +143,7 @@ function AppContent() {
     return (
       <>
         <Header>
-          <HeaderConnectWalletButton />
+          <HeaderAccountOrConnectWalletButton />
         </Header>
 
         <div className="flex flex-col items-start gap-4 px-6 pb-8 pt-12 text-white">
@@ -190,7 +174,7 @@ function AppContent() {
   return (
     <>
       <Header>
-        <HeaderAccountPopover />
+        <HeaderAccountOrConnectWalletButton />
       </Header>
       <TokenListSyncer />
       <ArbTokenBridgeStoreSyncWrapper />

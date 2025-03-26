@@ -6,19 +6,20 @@ import {
   ChildTransactionReceipt,
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
+import dayjs from 'dayjs'
+
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
   L2ToL1EventResultPlus,
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -103,6 +104,15 @@ export async function getOutgoingMessageState(
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
+  }
+
+  const confirmationDate = getWithdrawalConfirmationDate({
+    createdAt: event.timestamp.toNumber() * 1000,
+    withdrawalFromChainId: l2ChainID
+  })
+
+  if (dayjs() < confirmationDate) {
+    return OutgoingMessageState.UNCONFIRMED
   }
 
   const messageReader = new ChildToParentMessageReader(l1Provider, event)

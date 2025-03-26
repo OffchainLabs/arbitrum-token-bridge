@@ -79,9 +79,9 @@ export const useSelectedToken = () => {
   }
 
   return [
-    tokensFromUser[tokenFromSearchParams] ||
+    usdcToken ||
+      tokensFromUser[tokenFromSearchParams] ||
       tokensFromLists[tokenFromSearchParams] ||
-      usdcToken ||
       null,
     setSelectedToken
   ] as const
@@ -97,7 +97,7 @@ function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
   return undefined
 }
 
-async function getUsdcToken({
+export async function getUsdcToken({
   tokenAddress,
   parentProvider,
   childProvider

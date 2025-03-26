@@ -90,16 +90,6 @@ describe('Withdraw ERC20 Token', () => {
         context('should show summary', () => {
           cy.typeAmount(ERC20AmountToSend)
           cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-          cy.findGasFeeForChain(
-            getL2NetworkName(),
-            zeroToLessThanOneNativeToken
-          )
-          cy.findGasFeeForChain(
-            new RegExp(
-              `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-              'i'
-            )
-          )
         })
 
         context('should show clickable withdraw button', () => {
@@ -135,7 +125,7 @@ describe('Withdraw ERC20 Token', () => {
           cy.confirmMetamaskTransaction()
 
           cy.findTransactionInTransactionHistory({
-            duration: 'an hour',
+            duration: 'Less than a minute',
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
           })
@@ -201,16 +191,6 @@ describe('Withdraw ERC20 Token', () => {
         context('should show summary', () => {
           cy.typeAmount(ERC20AmountToSend)
           cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-          cy.findGasFeeForChain(
-            getL2NetworkName(),
-            zeroToLessThanOneNativeToken
-          )
-          cy.findGasFeeForChain(
-            new RegExp(
-              `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-              'i'
-            )
-          )
         })
 
         context('should fill custom destination address successfully', () => {
@@ -253,7 +233,7 @@ describe('Withdraw ERC20 Token', () => {
             symbol: testCase.symbol
           }
           cy.findTransactionInTransactionHistory({
-            duration: 'an hour',
+            duration: 'Less than a minute',
             ...txData
           })
           cy.openTransactionDetails(txData)

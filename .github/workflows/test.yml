@@ -7,8 +7,6 @@ on:
       - opened
       - edited
       - synchronize
-  push:
-    branches: ["master"]
   workflow_dispatch:
   merge_group:
 
@@ -109,35 +107,3 @@ jobs:
         if: needs.e2e-tests.result != 'success' && needs.e2e-tests.result != 'skipped'
         run: exit 1
 
-  test-scripts:
-    name: "Test Scripts"
-    runs-on: ubuntu-latest
-    needs: [check-files]
-    if: needs.check-files.outputs.run_tests == 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@main
-
-      - name: Run scripts tests
-        run: yarn workspace scripts test
-
-  validate-orbit-chains-data:
-    name: "Validate Orbit Chains Data"
-    runs-on: ubuntu-latest
-    needs: [check-files]
-    if: needs.check-files.outputs.run_tests == 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install node_modules
-        uses: OffchainLabs/actions/node-modules/install@main
-   
-      - name: Build
-        run: yarn workspace scripts build
-
-      - name: Validate orbitChainsData.json
-        run: yarn workspace scripts validate-orbit-chains-data ../arb-token-bridge-ui/src/util/orbitChainsData.json

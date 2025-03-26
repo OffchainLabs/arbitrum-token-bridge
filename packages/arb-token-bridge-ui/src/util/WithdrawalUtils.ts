@@ -6,6 +6,7 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
+import { ChainId } from '../types/ChainId'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
@@ -15,7 +16,6 @@ import {
   getConfirmPeriodBlocks,
   getL1BlockTime
 } from './networks'
-import { BoldUpgradeStatus, getBoldUpgradeInfo } from './BoLDUtils'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -159,18 +159,16 @@ export function getConfirmationTime(chainId: number) {
     const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId(
       { chainId }
     )
-    confirmationTimeInSeconds =
-      getL1BlockTime(blockNumberReferenceChainId) *
-        getConfirmPeriodBlocks(chainId) +
-      CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
 
-    const boldUpgradeInfo = getBoldUpgradeInfo(chainId)
-    const boldUpgradeSecondsRemaining =
-      boldUpgradeInfo.status === BoldUpgradeStatus.InProgress
-        ? boldUpgradeInfo.secondsRemaining
-        : 0
-
-    confirmationTimeInSeconds += boldUpgradeSecondsRemaining
+    // Local chain has instant confirmation time (in E2Es), so we hardcode it here
+    if (blockNumberReferenceChainId === ChainId.Local) {
+      confirmationTimeInSeconds = 0
+    } else {
+      confirmationTimeInSeconds =
+        getL1BlockTime(blockNumberReferenceChainId) *
+          getConfirmPeriodBlocks(chainId) +
+        CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
+    }
   }
 
   const confirmationTimeInReadableFormat = formatDuration(

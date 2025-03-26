@@ -1,4 +1,3 @@
-import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
 import { create } from 'zustand'
@@ -20,6 +19,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { addressesEqual } from '../../util/AddressUtils'
 
 enum ImportStatus {
   LOADING,
@@ -61,7 +61,6 @@ export function TokenImportDialog({
   onClose,
   tokenAddress
 }: TokenImportDialogProps): JSX.Element {
-  const { address: walletAddress } = useAccount()
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token }
@@ -114,7 +113,7 @@ export function TokenImportDialog({
   }, [status])
 
   const getL1TokenDataFromL1Address = useCallback(async () => {
-    if (!l1Address || !walletAddress) {
+    if (!l1Address) {
       return
     }
 
@@ -125,7 +124,7 @@ export function TokenImportDialog({
     }
 
     return fetchErc20Data(erc20Params)
-  }, [parentChainProvider, walletAddress, l1Address])
+  }, [parentChainProvider, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
@@ -237,7 +236,7 @@ export function TokenImportDialog({
     }
 
     // Listen for the token to be added to the bridge so we can automatically select it
-    if (foundToken.address !== selectedToken?.address) {
+    if (!addressesEqual(foundToken.address, selectedToken?.address)) {
       onClose(true)
       selectToken(foundToken)
     }

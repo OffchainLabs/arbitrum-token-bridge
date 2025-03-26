@@ -1,6 +1,14 @@
 import { BigNumber, utils } from 'ethers'
 
 export function formatUSD(value: number) {
+  if (value === 0) {
+    return `$0.00`
+  }
+
+  if (value > 0 && value < 0.01) {
+    return `< $0.01`
+  }
+
   const formattedValue = value.toLocaleString(undefined, {
     minimumFractionDigits: Number.isInteger(value) ? undefined : 2,
     maximumFractionDigits: 2

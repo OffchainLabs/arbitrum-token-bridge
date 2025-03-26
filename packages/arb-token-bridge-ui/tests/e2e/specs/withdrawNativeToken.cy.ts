@@ -45,16 +45,6 @@ describe('Withdraw native token', () => {
           cy.login({ networkType: 'childChain' })
           cy.typeAmount(ETHToWithdraw)
           cy.findGasFeeSummary(zeroToLessThanOneNativeToken)
-          cy.findGasFeeForChain(
-            getL2NetworkName(),
-            zeroToLessThanOneNativeToken
-          )
-          cy.findGasFeeForChain(
-            new RegExp(
-              `You'll have to pay ${getL1NetworkName()} gas fee upon claiming.`,
-              'i'
-            )
-          )
         })
 
         it('should show withdrawal confirmation and withdraw', () => {
@@ -90,7 +80,7 @@ describe('Withdraw native token', () => {
           cy.confirmMetamaskTransaction()
 
           cy.findTransactionInTransactionHistory({
-            duration: 'an hour',
+            duration: 'Less than a minute',
             amount: ETHToWithdraw,
             symbol: nativeTokenSymbol
           })
@@ -180,7 +170,7 @@ describe('Withdraw native token', () => {
       }
 
       cy.findTransactionInTransactionHistory({
-        duration: 'an hour',
+        duration: 'Less than a minute',
         ...txData
       })
       cy.openTransactionDetails(txData)
