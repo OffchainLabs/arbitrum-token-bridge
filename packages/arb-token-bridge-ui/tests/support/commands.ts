@@ -127,7 +127,10 @@ export const searchAndSelectToken = ({
 
 export const fillCustomDestinationAddress = () => {
   // click on advanced settings
-  cy.findByLabelText('advanced settings').should('be.visible').click()
+  cy.findByLabelText('advanced settings')
+    .scrollIntoView()
+    .should('be.visible')
+    .click()
 
   // unlock custom destination address input
   cy.findByLabelText('Custom destination input lock')
@@ -180,30 +183,10 @@ export function findDestinationChainButton(
   )
 }
 
-export function findGasFeeForChain(
-  label: string | RegExp,
-  amount?: string | number | RegExp
-): Cypress.Chainable<JQuery<HTMLElement>> {
-  if (amount) {
-    return cy
-      .findByText(`${label} gas fee`)
-      .parent()
-      .siblings()
-      .contains(amount)
-      .should('be.visible')
-  }
-
-  return cy.findByText(label).should('be.visible')
-}
-
 export function findGasFeeSummary(
   amount: string | number | RegExp
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy
-    .findByText('You will pay in gas fees:')
-    .siblings()
-    .eq(1)
-    .should('contain', amount)
+  return cy.findByLabelText('Route gas').should('contain', amount)
 }
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -376,6 +359,10 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   }
 }
 
+export function selectRoute(type: 'arbitrum' | 'oftV2' | 'cctp') {
+  cy.findByLabelText(`Route ${type}`).should('be.visible').click()
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -388,7 +375,6 @@ Cypress.Commands.addAll({
   findAmount2Input,
   findSourceChainButton,
   findDestinationChainButton,
-  findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
   clickMoveFundsButton,
@@ -401,5 +387,6 @@ Cypress.Commands.addAll({
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
   confirmSpending,
-  claimCctp
+  claimCctp,
+  selectRoute
 })

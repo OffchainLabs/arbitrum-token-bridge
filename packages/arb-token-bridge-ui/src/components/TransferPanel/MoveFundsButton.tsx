@@ -8,6 +8,7 @@ import { useTransferReadiness } from './useTransferReadiness'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getNetworkName } from '../../util/networks'
+import { useRouteStore } from './hooks/useRouteStore'
 
 export function MoveFundsButton({
   onClick
@@ -22,14 +23,16 @@ export function MoveFundsButton({
   )
   const { isSmartContractWallet } = useAccountType()
   const { transferReady } = useTransferReadiness()
+  const { selectedRoute } = useRouteStore()
+  const isDisabled =
+    selectedRoute === undefined ||
+    (isDepositMode ? !transferReady.deposit : !transferReady.withdrawal)
 
   return (
     <Button
       variant="primary"
       loading={isTransferring}
-      disabled={
-        isDepositMode ? !transferReady.deposit : !transferReady.withdrawal
-      }
+      disabled={isDisabled}
       onClick={onClick}
       style={{
         borderColor: destinationChainUIcolor,
