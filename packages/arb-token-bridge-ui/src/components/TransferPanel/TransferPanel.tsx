@@ -20,7 +20,6 @@ import {
 } from './TokenImportDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
-import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
@@ -30,8 +29,6 @@ import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
-import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
-import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -69,7 +66,6 @@ import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatc
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { normalizeTimestamp } from '../../state/app/utils'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { useIsCctpTransfer } from './hooks/useIsCctpTransfer'
 import { ExternalLink } from '../common/ExternalLink'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
@@ -78,13 +74,15 @@ import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useMainContentTabs } from '../MainContent/MainContent'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
-import { useIsOftV2Transfer } from './hooks/useIsOftV2Transfer'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
-import { useDialog2, DialogWrapper } from '../common/Dialog2'
+import { useDialog2, DialogWrapper, DialogType } from '../common/Dialog2'
 import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
+import { ConnectWalletButton } from './ConnectWalletButton'
+import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
+import { useRouteStore } from './hooks/useRouteStore'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -116,7 +114,7 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const { address: walletAddress, chain } = useAccount()
+  const { address: walletAddress, chain, isConnected } = useAccount()
   const [selectedToken, setSelectedToken] = useSelectedToken()
   const { switchChainAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -152,10 +150,7 @@ export function TransferPanel() {
   const { setTransferring } = useAppContextActions()
   const { switchToTransactionHistoryTab } = useMainContentTabs()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-
-  const isCctpTransfer = useIsCctpTransfer()
-
-  const isOftTransfer = useIsOftV2Transfer()
+  const { selectedRoute, clearRoute } = useRouteStore()
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -171,14 +166,6 @@ export function TransferPanel() {
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
-  const [
-    usdcWithdrawalConfirmationDialogProps,
-    openUSDCWithdrawalConfirmationDialog
-  ] = useDialog()
-  const [
-    usdcDepositConfirmationDialogProps,
-    openUSDCDepositConfirmationDialog
-  ] = useDialog()
 
   const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
 
@@ -220,6 +207,11 @@ export function TransferPanel() {
     setAmount('')
     setAmount2('')
   }
+
+  useEffect(() => {
+    clearRoute()
+  }, [selectedToken, clearRoute])
+  useDefaultSelectedRoute()
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
@@ -291,44 +283,8 @@ export function TransferPanel() {
 
   const amountBigNumber = useAmountBigNumber()
 
-  const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
-    const waitForInput = openUSDCDepositConfirmationDialog()
-    const [confirmed, primaryButtonClicked] = await waitForInput()
-
-    // user declined to transfer altogether
-    if (!confirmed) {
-      return false
-    }
-
-    // user has selected normal bridge (USDC.e)
-    if (primaryButtonClicked === 'bridged') {
-      return 'bridge-normal-usdce'
-    }
-
-    // user wants to bridge to native usdc using Circle's CCTP on destination chain
-    return 'bridge-cctp-usd'
-  }
-
-  const confirmUsdcWithdrawalForCctp = async () => {
-    const waitForInput = openUSDCWithdrawalConfirmationDialog()
-    const [confirmed] = await waitForInput()
-    return confirmed
-  }
-
-  const tokenAllowanceApprovalCctp = async () => {
-    const waitForInput = openDialog('approve_cctp_usdc')
-    const [confirmed] = await waitForInput()
-    return confirmed
-  }
-
-  const customFeeTokenApproval = async () => {
-    const waitForInput = openDialog('approve_custom_fee_token')
-    const [confirmed] = await waitForInput()
-    return confirmed
-  }
-
-  const tokenAllowanceApproval = async () => {
-    const waitForInput = openDialog('approve_token')
+  const confirmDialog = async (dialogType: DialogType) => {
+    const waitForInput = openDialog(dialogType)
     const [confirmed] = await waitForInput()
     return confirmed
   }
@@ -382,12 +338,6 @@ export function TransferPanel() {
       setShowSmartContractWalletTooltip(true)
     }, 3000)
 
-  const confirmCustomDestinationAddressForSCWallets = async () => {
-    const waitForInput = openDialog('scw_custom_destination_address')
-    const [confirmed] = await waitForInput()
-    return confirmed
-  }
-
   const stepExecutor: UiDriverStepExecutor = async step => {
     if (process.env.NODE_ENV === 'development') {
       console.log(step)
@@ -431,18 +381,12 @@ export function TransferPanel() {
 
       // show confirmation popup before cctp transfer
       if (isDepositMode) {
-        const depositConfirmation =
-          await confirmUsdcDepositFromNormalOrCctpBridge()
-
-        if (!depositConfirmation) return false
-
-        // if user selects usdc.e, redirect to our canonical transfer function
-        if (depositConfirmation === 'bridge-normal-usdce') {
-          await depositToken()
-          return
-        }
+        const depositConfirmation = await confirmDialog('confirm_cctp_deposit')
+        if (!depositConfirmation) return
       } else {
-        const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
+        const withdrawalConfirmation = await confirmDialog(
+          'confirm_cctp_withdrawal'
+        )
         if (!withdrawalConfirmation) return
       }
 
@@ -452,7 +396,9 @@ export function TransferPanel() {
         isSmartContractWallet &&
         areSenderAndCustomDestinationAddressesEqual
       ) {
-        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        const confirmation = await confirmDialog(
+          'scw_custom_destination_address'
+        )
         if (!confirmation) return false
       }
 
@@ -468,7 +414,7 @@ export function TransferPanel() {
         })
 
       if (isTokenApprovalRequired) {
-        const userConfirmation = await tokenAllowanceApprovalCctp()
+        const userConfirmation = await confirmDialog('approve_token')
         if (!userConfirmation) return false
 
         if (isSmartContractWallet) {
@@ -587,8 +533,8 @@ export function TransferPanel() {
       switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
+      clearRoute()
     } catch (e) {
-      //
     } finally {
       setTransferring(false)
     }
@@ -605,8 +551,6 @@ export function TransferPanel() {
       throw new Error(transferNotAllowedError)
     }
 
-    const destinationAddress = latestDestinationAddress.current
-
     setTransferring(true)
 
     try {
@@ -617,7 +561,9 @@ export function TransferPanel() {
         isSmartContractWallet &&
         areSenderAndCustomDestinationAddressesEqual
       ) {
-        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        const confirmation = await confirmDialog(
+          'scw_custom_destination_address'
+        )
         if (!confirmation) return false
       }
 
@@ -636,7 +582,7 @@ export function TransferPanel() {
         })
 
       if (isTokenApprovalRequired) {
-        const userConfirmation = await tokenAllowanceApproval()
+        const userConfirmation = await confirmDialog('approve_token')
         if (!userConfirmation) return false
 
         if (isSmartContractWallet) {
@@ -670,7 +616,7 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
-      const transfer = await oftTransferStarter.transfer({
+      await oftTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
         destinationAddress
@@ -692,6 +638,7 @@ export function TransferPanel() {
       setTimeout(() => {
         highlightOftTransactionHistoryDisclaimer()
       }, 100)
+      clearRoute()
     } catch (error) {
       if (isUserRejectedError(error)) {
         return
@@ -755,18 +702,23 @@ export function TransferPanel() {
         ? selectedToken?.l2Address
         : selectedToken?.address
 
-      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+      const bridgeTransferStarter = BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId,
         destinationChainErc20Address
       })
 
-      const { isWithdrawal } = getBridgeTransferProperties({
+      const { isWithdrawal, isDeposit } = getBridgeTransferProperties({
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId
       })
+
+      if (isDeposit && isTokenNativeUSDC(selectedToken?.address)) {
+        const depositConfirmation = await confirmDialog('confirm_usdc_deposit')
+        if (!depositConfirmation) return
+      }
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /*
@@ -795,7 +747,9 @@ export function TransferPanel() {
         isSmartContractWallet &&
         areSenderAndCustomDestinationAddressesEqual
       ) {
-        const confirmation = await confirmCustomDestinationAddressForSCWallets()
+        const confirmation = await confirmDialog(
+          'scw_custom_destination_address'
+        )
         if (!confirmation) return false
       }
 
@@ -818,7 +772,7 @@ export function TransferPanel() {
 
       if (isNativeCurrencyApprovalRequired) {
         // show native currency approval dialog
-        const userConfirmation = await customFeeTokenApproval()
+        const userConfirmation = await confirmDialog('approve_custom_fee_token')
         if (!userConfirmation) return false
 
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
@@ -891,7 +845,7 @@ export function TransferPanel() {
             destinationAddress
           })
         if (isTokenApprovalRequired) {
-          const userConfirmation = await tokenAllowanceApproval()
+          const userConfirmation = await confirmDialog('approve_token')
           if (!userConfirmation) return false
 
           if (isSmartContractWallet && isWithdrawal) {
@@ -1050,6 +1004,7 @@ export function TransferPanel() {
 
     switchToTransactionHistoryTab()
     setTransferring(false)
+    clearRoute()
     clearAmountInput()
 
     // for custom orbit pages, show Projects' listing after transfer
@@ -1078,7 +1033,7 @@ export function TransferPanel() {
         : isDepositMode
         ? 'Deposit'
         : 'Withdrawal',
-      isCctpTransfer,
+      isCctpTransfer: selectedRoute === 'cctp',
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
       accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -1093,12 +1048,12 @@ export function TransferPanel() {
     amount2,
     childChain.name,
     isBatchTransfer,
-    isCctpTransfer,
     isDepositMode,
     isSmartContractWallet,
     isTeleportMode,
     selectedToken,
-    isCustomDestinationTransfer
+    isCustomDestinationTransfer,
+    selectedRoute
   ])
 
   const moveFundsButtonOnClick = async () => {
@@ -1143,13 +1098,13 @@ export function TransferPanel() {
       return networkConnectionWarningToast()
     }
 
-    if (isOftTransfer) {
+    if (selectedRoute == 'oftV2') {
       return transferOft()
     }
-    if (isCctpTransfer) {
+    if (selectedRoute === 'cctp') {
       return transferCctp()
     }
-    if (isDepositMode && selectedToken) {
+    if (selectedRoute === 'arbitrum' && isDepositMode && selectedToken) {
       return depositToken()
     }
     return transfer()
@@ -1159,16 +1114,6 @@ export function TransferPanel() {
     <>
       <DialogWrapper {...dialogProps} />
 
-      <USDCWithdrawalConfirmationDialog
-        {...usdcWithdrawalConfirmationDialogProps}
-        amount={amount}
-      />
-
-      <USDCDepositConfirmationDialog
-        {...usdcDepositConfirmationDialogProps}
-        amount={amount}
-      />
-
       <div
         className={twMerge(
           'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
@@ -1176,12 +1121,14 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
+        <Routes />
         <AdvancedSettings />
-        <TransferPanelSummary
-          amount={parseFloat(amount)}
-          token={selectedToken}
-        />
-        <MoveFundsButton onClick={moveFundsButtonOnClick} />
+
+        {isConnected ? (
+          <MoveFundsButton onClick={moveFundsButtonOnClick} />
+        ) : (
+          <ConnectWalletButton />
+        )}
 
         {isTokenAlreadyImported === false && tokenFromSearchParams && (
           <TokenImportDialog

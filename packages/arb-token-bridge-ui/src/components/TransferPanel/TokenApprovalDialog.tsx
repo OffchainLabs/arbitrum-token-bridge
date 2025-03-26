@@ -28,16 +28,15 @@ import { NoteBox } from '../common/NoteBox'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
+import { useRouteStore } from './hooks/useRouteStore'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
-  isCctp: boolean
-  isOft: boolean
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { address: walletAddress } = useAccount()
-  const { isOpen, token, isCctp, isOft } = props
+  const { isOpen, token } = props
 
   const { ethToUSD } = useETHPrice()
 
@@ -60,6 +59,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
   const signer = useEthersSigner({ chainId })
+  const { selectedRoute } = useRouteStore()
+  const isCctp = selectedRoute === 'cctp'
+  const isOft = selectedRoute === 'oftV2'
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
@@ -144,7 +146,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
     getEstimatedGas()
   }, [
-    isCctp,
     isOpen,
     isDepositMode,
     isTestnet,
@@ -157,6 +158,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     destinationChain,
     destinationChainProvider,
     chainId,
+    isCctp,
     isOft
   ])
 

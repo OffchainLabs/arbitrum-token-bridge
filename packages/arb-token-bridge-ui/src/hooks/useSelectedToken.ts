@@ -79,9 +79,9 @@ export const useSelectedToken = () => {
   }
 
   return [
-    tokensFromUser[tokenFromSearchParams] ||
+    usdcToken ||
+      tokensFromUser[tokenFromSearchParams] ||
       tokensFromLists[tokenFromSearchParams] ||
-      usdcToken ||
       null,
     setSelectedToken
   ] as const
