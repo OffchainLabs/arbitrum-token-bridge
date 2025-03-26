@@ -1,9 +1,9 @@
-import { ethers } from 'ethers'
+import { ethers, BigNumber } from 'ethers'
+import { Address } from 'viem'
+import { Config, type ReadContractReturnType, readContract } from '@wagmi/core'
+
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
-import { BigNumber } from 'ethers'
-import { Address } from 'wagmi'
-import { ReadContractResult, readContract } from '@wagmi/core'
 import { oftV2Abi } from './oftV2Abi'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
@@ -94,8 +94,8 @@ export function getOftV2TransferConfig({
 interface SendParam {
   dstEid: number
   to: Address
-  amountLD: BigNumber
-  minAmountLD: BigNumber
+  amountLD: bigint
+  minAmountLD: bigint
   extraOptions: `0x${string}`
   composeMsg: `0x${string}`
   oftCmd: `0x${string}`
@@ -115,30 +115,44 @@ export function buildSendParams({
   return {
     dstEid,
     to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32) as Address,
-    amountLD: amount,
-    minAmountLD: amount,
+    amountLD: amount.toBigInt(),
+    minAmountLD: amount.toBigInt(),
     extraOptions: '0x',
     composeMsg: '0x',
     oftCmd: '0x'
   }
 }
 
-type QuoteResult = ReadContractResult<typeof oftV2Abi, 'quoteSend'>
+type QuoteResult = ReadContractReturnType<typeof oftV2Abi, 'quoteSend'>
 export async function getOftV2Quote({
   address,
   sendParams,
-  chainId
+  chainId,
+  wagmiConfig
 }: {
   address: Address
   sendParams: SendParam
   chainId: number
+  wagmiConfig: Config
 }): Promise<QuoteResult> {
-  const quote = await readContract({
+  const quote = await readContract(wagmiConfig, {
     address,
     abi: oftV2Abi,
     functionName: 'quoteSend',
     chainId,
-    args: [sendParams, false]
+    args: [
+      // wagmi typing being weird that it doesn't recognize SendParams as a valid type
+      sendParams as {
+        dstEid: number
+        to: `0x${string}`
+        amountLD: bigint
+        minAmountLD: bigint
+        extraOptions: `0x${string}`
+        composeMsg: `0x${string}`
+        oftCmd: `0x${string}`
+      },
+      false
+    ]
   })
   return {
     nativeFee: quote.nativeFee,
