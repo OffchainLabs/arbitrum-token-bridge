@@ -22,7 +22,10 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "typeRoots": ["./node_modules/@types", "./tests/types"]
   },
   "exclude": ["node_modules"]
 }

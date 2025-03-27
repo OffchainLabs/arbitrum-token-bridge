@@ -9,7 +9,14 @@
     "strict": true,
     "exactOptionalPropertyTypes": false,
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "paths": {
+      "@synthetixio/synpress/cypress": [
+        "node_modules/@synthetixio/synpress/cypress"
+      ]
+    }
   },
   "include": [
     "./cypress.config.ts",

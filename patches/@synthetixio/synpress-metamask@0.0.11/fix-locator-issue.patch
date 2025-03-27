@@ -1,0 +1,15 @@
+diff --git a/dist/cypress/index.js b/dist/cypress/index.js
+index 9ed6c3d..3c7b9a7 100644
+--- a/dist/cypress/index.js
++++ b/dist/cypress/index.js
+@@ -615,7 +615,9 @@ const addNetwork2 = async (network, password, publicNetwork, index) => {
+     await switchToMetamaskIfNotActive();
+     await unlock(password);
+     const homePagePage = homePage();
+-    const networkSwitcherButtonLocator = homePagePage.locator(homePage.networkSwitcher);
++    const networkSwitcherButtonLocator = homePagePage.networkSwitcher
++      ? homePagePage.locator(homePage.networkSwitcher)
++      : null;
+     if (networkSwitcherButtonLocator) {
+         await networkSwitcherButtonLocator.click();
+         const addNetworkButtonLocator = homePagePage.locator(

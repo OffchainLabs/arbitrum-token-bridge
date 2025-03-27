@@ -25,17 +25,13 @@ logCollector({
   ]
 })
 
+// Register Synpress v4 commands
 synpressCommandsForMetaMask()
 
-const PRIVATE_KEY_USER = Cypress.env('PRIVATE_KEY')
-
-if (!PRIVATE_KEY_USER) {
-  throw new Error('PRIVATE_KEY_USER must be set in .e2e.env')
-}
-
-const ETH_RPC_URL = process.env.ETH_RPC_URL
-
+// In Synpress v4, this is setup via network configs in the before hook
 before(() => {
+  const ETH_RPC_URL = Cypress.env('ETH_RPC_URL')
+
   // L1
   // only CI setup is required, Metamask already has localhost
   if (ETH_RPC_URL !== 'http://localhost:8545') {

@@ -15,7 +15,6 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './support/helpers'
-import specFiles from './e2e/specfiles'
 import { contractAbi, contractByteCode } from './support/testErc20Token'
 import {
   checkForAssertions,
@@ -36,10 +35,27 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './support/networksNitroTestnode'
 import { getCommonSynpressConfig } from './e2e/getCommonSynpressConfig'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+// Define the interface for spec file objects
+interface SpecFile {
+  file: string
+}
+
+// In ES modules, use fileURLToPath instead of __dirname
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Read JSON file manually
+const specFilesPath = path.join(__dirname, 'e2e', 'specfiles.json')
+const specFilesContent = fs.readFileSync(specFilesPath, 'utf8')
+const specFiles = JSON.parse(specFilesContent) as SpecFile[]
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
-  : specFiles.map(file => file.file)
+  : specFiles.map((file: SpecFile) => file.file)
 
 const isOrbitTest = [
   process.env.E2E_ORBIT,
@@ -227,15 +243,12 @@ export default defineConfig({
 
       setupCypressTasks(on, { requiresNetworkSetup: true })
 
-      configureSynpressForMetaMask(on, config, true)
-
-      return config
+      // Use Synpress v4 configuration
+      return configureSynpressForMetaMask(on, config, true)
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: './support/e2e.ts',
-    defaultCommandTimeout: 20_000,
-    defaultBrowser: 'chrome',
     testIsolation: false
   }
 })
@@ -382,7 +395,7 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
   await deploy.wait()
 
   // store deployed weth address
-  if (addressesEqual(erc20L1Address, l1WethAddress)) {
+  if (erc20L1Address === l1WethAddress) {
     l2WethAddress = await getL2ERC20Address({
       erc20L1Address: l1WethAddress,
       l1Provider: parentProvider,
@@ -448,7 +461,7 @@ async function fundErc20ToChildChain({
 }) {
   // deploy any token that's not WETH
   // only deploy WETH for custom fee token chains because it's not deployed there
-  if (!addressesEqual(parentErc20Address, l1WethAddress) || isCustomFeeToken) {
+  if (parentErc20Address !== l1WethAddress || isCustomFeeToken) {
     // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
     await deployERC20ToChildChain(parentErc20Address)
   }

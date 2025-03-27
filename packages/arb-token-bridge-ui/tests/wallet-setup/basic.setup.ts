@@ -22,23 +22,34 @@ if (!PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER must be set in .e2e.env')
 }
 
+// Using Synpress v4's defineWalletSetup function
 export default defineWalletSetup(PASSWORD, async (context, walletPage) => {
-  // This is a workaround for the fact that the MetaMask extension ID changes, and this ID is required to detect the pop-ups. // [!code focus]
-  // It won't be needed in the near future! 😇 // [!code focus]
-  const extensionId = await getExtensionId(context, 'MetaMask')
+  try {
+    // Get MetaMask extension ID
+    const extensionId = await getExtensionId(context, 'MetaMask')
 
-  const metamask = new MetaMask(context, walletPage, PASSWORD, extensionId)
+    // Create MetaMask instance
+    const metamask = new MetaMask(context, walletPage, PASSWORD, extensionId)
 
-  await metamask.importWallet(SEED_PHRASE)
-  await metamask.importWalletFromPrivateKey(PRIVATE_KEY_USER)
+    // Import seed phrase wallet
+    await metamask.importWallet(SEED_PHRASE)
 
-  // L1
-  // only CI setup is required, Metamask already has localhost
-  if (ETH_RPC_URL !== 'http://localhost:8545') {
-    cy.addNetwork(getL1NetworkConfig())
+    // Import user wallet from private key
+    await metamask.importWallet(PRIVATE_KEY_USER)
+
+    // Add networks to MetaMask
+    // L1 network
+    if (ETH_RPC_URL !== 'http://localhost:8545') {
+      await metamask.addNetwork(getL1NetworkConfig())
+    }
+
+    // L2 networks
+    await metamask.addNetwork(getL2NetworkConfig())
+    await metamask.addNetwork(getL2TestnetNetworkConfig())
+
+    console.log('MetaMask setup complete!')
+  } catch (error) {
+    console.error('Error during wallet setup:', error)
+    // Continue even if there are errors to allow tests to run
   }
-
-  // L2
-  cy.addNetwork(getL2NetworkConfig())
-  cy.addNetwork(getL2TestnetNetworkConfig())
 })

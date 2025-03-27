@@ -15,8 +15,8 @@
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
-    "test:e2e:build-wallet-cache": "yarn workspace arb-token-bridge-e2e synpress ./wallet-setup/",
-    "test:e2e": "yarn workspace arb-token-bridge-e2e env-cmd --silent --file .e2e.env yarn cypress run --headed --browser chrome",
+    "test:e2e:build-wallet-cache": "synpress build-wallet-cache packages/arb-token-bridge-ui/tests/wallet-setup/basic.setup.ts",
+    "test:e2e": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env cypress run --headed --browser chrome",
     "test:e2e:cctp": "yarn test:e2e --config cypress.cctp.config.ts",
     "test:e2e:orbit": "E2E_ORBIT=true yarn test:e2e",
     "test:e2e:orbit:custom-gas-token": "E2E_ORBIT_CUSTOM_GAS_TOKEN=true yarn test:e2e"
@@ -43,5 +43,6 @@
   "config": {
     "chromeVersion": "128.0.6613.137",
     "chromePath": "node_modules/.cache/synpress"
-  }
+  },
+  "dependencies": {}
 }
