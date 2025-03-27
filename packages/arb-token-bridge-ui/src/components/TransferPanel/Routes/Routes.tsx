@@ -25,7 +25,7 @@ export function useDefaultSelectedRoute() {
   const [selectedToken] = useSelectedToken()
 
   useEffect(() => {
-    if (amount === '0') return
+    if (Number(amount) === 0) return
 
     if (isOftV2Transfer) {
       setSelectedRoute('oftV2')
@@ -71,7 +71,7 @@ export const Routes = React.memo(() => {
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
 
-  if (amount === '0') {
+  if (Number(amount) === 0) {
     return
   }
 
