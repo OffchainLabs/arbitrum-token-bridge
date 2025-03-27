@@ -234,9 +234,9 @@ describe('sanitizeQueryParams', () => {
     })
   })
   describe('when `token=eth` is defined', () => {
-    it('should be kept it if the destination chain is an Orbit chain with custom gas token', () => {
-      const xaiChainId = 660279
+    const xaiChainId = 660279
 
+    it('should be kept it if the destination chain is an Orbit chain with custom gas token', () => {
       const result = sanitizeTokenQueryParam({
         destinationChainId: xaiChainId,
         token: 'eth'
@@ -245,8 +245,6 @@ describe('sanitizeQueryParams', () => {
     })
 
     it('should be case insensitive', () => {
-      const xaiChainId = 660279
-
       const result = sanitizeTokenQueryParam({
         destinationChainId: xaiChainId,
         token: 'eTH'
