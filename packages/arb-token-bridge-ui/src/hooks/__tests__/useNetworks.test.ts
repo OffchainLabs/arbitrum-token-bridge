@@ -6,7 +6,6 @@ import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'
-import { sanitizeTokenQueryParam } from '../../pages'
 
 describe('sanitizeQueryParams', () => {
   let localStorageGetItemMock: jest.Mock
@@ -231,33 +230,6 @@ describe('sanitizeQueryParams', () => {
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
       })
-    })
-  })
-  describe('when `token=eth` is defined', () => {
-    const xaiChainId = 660279
-
-    it('should be kept if the destination chain is an Orbit chain with custom gas token', () => {
-      const result = sanitizeTokenQueryParam({
-        destinationChainId: xaiChainId,
-        token: 'eth'
-      })
-      expect(result).toEqual('eth')
-    })
-
-    it('should be case insensitive', () => {
-      const result = sanitizeTokenQueryParam({
-        destinationChainId: xaiChainId,
-        token: 'eTH'
-      })
-      expect(result).toEqual('eth')
-    })
-
-    it('should be stripped if the destination chain is a chain with ETH as the gas token', () => {
-      const result = sanitizeTokenQueryParam({
-        destinationChainId: ChainId.ArbitrumOne,
-        token: 'eth'
-      })
-      expect(result).toBeUndefined()
     })
   })
 })
