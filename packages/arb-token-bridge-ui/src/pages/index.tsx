@@ -11,7 +11,7 @@ import {
   mapCustomChainToNetworkData,
   registerLocalNetwork
 } from '../util/networks'
-import { getOrbitChains } from '../util/orbitChainsList'
+import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
@@ -46,20 +46,23 @@ const App = dynamic(
   }
 )
 
-const sanitizeTokenQueryParam = ({
+export const sanitizeTokenQueryParam = ({
   token,
   destinationChainId
 }: {
   token: string | null | undefined
   destinationChainId: number | undefined
 }) => {
-  if (!token) {
+  const tokenLowercased = token?.toLowerCase()
+
+  if (!tokenLowercased) {
     return undefined
   }
+  if (!destinationChainId) {
+    return tokenLowercased
+  }
 
-  const orbitChain = getOrbitChains().find(
-    chain => chain.chainId === destinationChainId
-  )
+  const orbitChain = orbitChains[destinationChainId]
 
   const isOrbitChainWithCustomGasToken =
     typeof orbitChain !== 'undefined' &&
@@ -68,11 +71,11 @@ const sanitizeTokenQueryParam = ({
 
   // token=eth doesn't need to be set if ETH is the native gas token
   // we strip it for clarity
-  if (token.toLowerCase() === 'eth' && !isOrbitChainWithCustomGasToken) {
+  if (tokenLowercased === 'eth' && !isOrbitChainWithCustomGasToken) {
     return undefined
   }
 
-  return token
+  return tokenLowercased
 }
 
 function getDestinationWithSanitizedQueryParams(
