@@ -45,7 +45,8 @@
           "name": "Xai",
           "symbol": "XAI",
           "logoUrl": "/images/XaiLogo.svg"
-        }
+        },
+        "fastWithdrawalTime": 900000
       }
     },
     {
