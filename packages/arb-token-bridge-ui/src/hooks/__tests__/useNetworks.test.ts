@@ -236,7 +236,7 @@ describe('sanitizeQueryParams', () => {
   describe('when `token=eth` is defined', () => {
     const xaiChainId = 660279
 
-    it('should be kept it if the destination chain is an Orbit chain with custom gas token', () => {
+    it('should be kept if the destination chain is an Orbit chain with custom gas token', () => {
       const result = sanitizeTokenQueryParam({
         destinationChainId: xaiChainId,
         token: 'eth'
@@ -252,7 +252,7 @@ describe('sanitizeQueryParams', () => {
       expect(result).toEqual('eth')
     })
 
-    it('should be stripped it if the destination chain is a chain with ETH as the gas token', () => {
+    it('should be stripped if the destination chain is a chain with ETH as the gas token', () => {
       const result = sanitizeTokenQueryParam({
         destinationChainId: ChainId.ArbitrumOne,
         token: 'eth'
