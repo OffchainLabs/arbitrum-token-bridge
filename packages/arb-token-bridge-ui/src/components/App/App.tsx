@@ -33,7 +33,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
-import { isDepositMode } from '../../util/isDepositMode'
+import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 
 declare global {
   interface Window {
@@ -110,7 +110,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     return null
   }
 
-  return <></>
+  return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
 function AppContent() {
