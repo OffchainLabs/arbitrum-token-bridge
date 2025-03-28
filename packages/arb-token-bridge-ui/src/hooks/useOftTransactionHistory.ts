@@ -171,14 +171,18 @@ function validateSourceAndDestinationChainIds(message: LayerZeroMessage) {
   return sourceChainId && destinationChainId
 }
 
-function mapLayerZeroMessageToMergedTransaction(
+function mapLayerZeroMessageToLayerZeroTransaction(
   message: LayerZeroMessage
 ): LayerZeroTransaction {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
-  if (!sourceChainId || !destinationChainId) {
-    throw new Error('Invalid chain ids')
+  if (!sourceChainId) {
+    throw new Error(`Invalid source chain ID: ${sourceChainId}`)
+  }
+
+  if (!destinationChainId) {
+    throw new Error(`Invalid destination chain ID: ${destinationChainId}`)
   }
 
   const isDeposit = isDepositMode({
@@ -264,7 +268,7 @@ export async function updateAdditionalLayerZeroData(
       .formatUnits(decodedTransferLogs.args.value, decimals)
       .toString(),
     blockNum: sourceChainTxReceipt.blockNumber
-  } as MergedTransaction
+  }
 }
 
 interface LayerZeroResponse {
@@ -289,8 +293,6 @@ export function useOftTransactionHistory({
 
   const fetcher = useCallback(
     async (url: string) => {
-      if (!walletAddressToFetch) return null
-
       const response = await fetch(url)
       if (!response.ok) {
         throw new Error('Failed to fetch OFT transaction history')
@@ -300,7 +302,7 @@ export function useOftTransactionHistory({
 
       return data.data
         .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
-        .map(mapLayerZeroMessageToMergedTransaction)
+        .map(mapLayerZeroMessageToLayerZeroTransaction)
     },
     [walletAddressToFetch]
   )
@@ -324,9 +326,8 @@ export function useOftTransactionHistory({
 export async function getUpdatedOftTransfer(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  const isTestnetTransfer = [tx.sourceChainId, tx.destinationChainId].some(
-    chainId => isNetwork(chainId).isTestnet
-  )
+  const isTestnetTransfer = isNetwork(tx.sourceChainId).isTestnet
+
   const LAYERZERO_API_URL = isTestnetTransfer
     ? LAYERZERO_API_URL_TESTNET
     : LAYERZERO_API_URL_MAINNET

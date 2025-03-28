@@ -586,7 +586,7 @@ export const useTransactionHistory = (
     isLoading: isLoadingFirstPage
   } = useSWRInfinite(
     getCacheKey,
-    async ([, , _page, _data]) => {
+    ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
       const dataWithCache = [..._data, ...depositsFromCache]
@@ -600,13 +600,11 @@ export const useTransactionHistory = (
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
-      const txs = await Promise.all(
+      return Promise.all(
         dedupedTransactions
           .slice(startIndex, endIndex)
           .map(transformTransaction)
       )
-
-      return txs.filter(tx => tx !== null) as MergedTransaction[]
     },
     {
       revalidateOnFocus: false,
