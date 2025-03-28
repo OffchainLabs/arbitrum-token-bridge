@@ -24,6 +24,7 @@ import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { shallow } from 'zustand/shallow'
 
 const commonUsdcToken: Token = {
   decimals: 6,
@@ -210,7 +211,13 @@ export function ArbitrumCanonicalRoute() {
   })
   const { isTestnet, isOrbitChain } = isNetwork(childChain.id)
 
-  const { selectedRoute, setSelectedRoute } = useRouteStore()
+  const { selectedRoute, setSelectedRoute } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      setSelectedRoute: state.setSelectedRoute
+    }),
+    shallow
+  )
   const [selectedToken] = useSelectedToken()
 
   const { gasCost, isLoading } = useMemo(

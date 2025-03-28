@@ -161,7 +161,9 @@ export const TransactionsTableDetailsSteps = ({
   tx: MergedTransaction
 }) => {
   const { approximateDurationInMinutes } = useTransferDuration(tx)
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
 
   const { sourceChainId } = tx
 

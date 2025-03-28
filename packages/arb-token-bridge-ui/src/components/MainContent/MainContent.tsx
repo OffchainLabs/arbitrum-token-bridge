@@ -32,7 +32,10 @@ export const useMainContentTabs = create<MainContentTabStore>(set => ({
 export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-  const { selectedTab, setSelectedTab } = useMainContentTabs()
+  const { selectedTab, setSelectedTab } = useMainContentTabs(state => ({
+    selectedTab: state.selectedTab,
+    setSelectedTab: state.setSelectedTab
+  }))
 
   useBalanceUpdater()
 
