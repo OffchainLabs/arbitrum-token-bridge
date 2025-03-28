@@ -6,7 +6,9 @@ import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 export function useTransactionReminderInfo() {
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
   const { transactions } = useTransactionHistory(sanitizedAddress)
 
   const {

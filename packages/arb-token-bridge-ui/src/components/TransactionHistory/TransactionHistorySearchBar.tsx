@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { shallow } from 'zustand/shallow'
 import { isAddress } from 'ethers/lib/utils'
 import { Address, useAccount } from 'wagmi'
 import { useCallback, useEffect } from 'react'
@@ -38,7 +39,15 @@ export const useTransactionHistoryAddressStore =
 
 export function TransactionHistorySearchBar() {
   const { address, setAddress, setSanitizedAddress, setSearchError } =
-    useTransactionHistoryAddressStore()
+    useTransactionHistoryAddressStore(
+      state => ({
+        address: state.address,
+        setAddress: state.setAddress,
+        setSanitizedAddress: state.setSanitizedAddress,
+        setSearchError: state.setSearchError
+      }),
+      shallow
+    )
   const { address: connectedAddress } = useAccount()
 
   useEffect(() => {
