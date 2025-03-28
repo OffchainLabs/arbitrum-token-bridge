@@ -48,10 +48,7 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
 }
 
 export function isOftTransfer(tx: Transfer): tx is LayerZeroTransaction {
-  return (
-    typeof (tx as LayerZeroTransaction).isOft !== 'undefined' &&
-    (tx as LayerZeroTransaction).isOft === true
-  )
+  return 'isOft' in tx && tx.isOft === true
 }
 
 export function isTxCompleted(tx: MergedTransaction): boolean {

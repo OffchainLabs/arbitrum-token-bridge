@@ -75,7 +75,9 @@ const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
 
       <span>
         {protocolName}{' '}
-        <span className="text-white/70">{protocolDescription}</span>
+        {protocolDescription && (
+          <span className="text-white/70">{protocolDescription}</span>
+        )}
       </span>
     </div>
   )

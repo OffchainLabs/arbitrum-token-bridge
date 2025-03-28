@@ -7,8 +7,9 @@ import { isDepositMode } from '../util/isDepositMode'
 import { useAccount } from 'wagmi'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
-import { ethers, utils } from 'ethers'
+import { decodeFunctionData, formatUnits, toHex } from 'viem'
 import { isNetwork } from '../util/networks'
+import { oftV2Abi } from '../token-bridge-sdk/oftV2Abi'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
@@ -32,6 +33,12 @@ export type LayerZeroTransaction = Omit<
   isOft: true
 }
 
+/**
+ * Response of LayerZero API for a wallet address
+ *
+ * Example of this can be found at: https://scan.layerzero-api.com/v1/swagger > /messages/wallet/{srcAddress}
+ * eg: https://scan.layerzero-api.com/v1/messages/wallet/0x0000000000000000000000000000000000000000
+ */
 interface LayerZeroMessage {
   pathway: {
     srcEid: number
@@ -216,15 +223,14 @@ export async function updateAdditionalLayerZeroData(
 
   // extract destination address
   const sourceChainTx = await sourceChainProvider.getTransaction(txId)
-  const inputDataInterface = new ethers.utils.Interface([
-    'function send((uint32,bytes32,uint256,uint256,bytes,bytes,bytes), (uint256,uint256), address)'
-  ]) // interface for OFT send() function (check /token-bridge-sdk/oftV2Abi.json)
-
-  const decodedInputData = inputDataInterface.decodeFunctionData(
-    'send',
-    sourceChainTx.data
-  )
-  updatedTx.destination = utils.hexValue(decodedInputData[0][1])
+  const decodedInputData = decodeFunctionData({
+    abi: oftV2Abi,
+    data: sourceChainTx.data as `0x${string}`
+  })
+  if (decodedInputData.functionName !== 'send') {
+    throw new Error('Expected `send()` function in ABI')
+  }
+  updatedTx.destination = toHex(decodedInputData.args[0].to)
 
   // extract token and value
   const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
@@ -241,12 +247,27 @@ export async function updateAdditionalLayerZeroData(
     provider: sourceChainProvider
   })
 
-  const transferInterface = new ethers.utils.Interface([
-    'event Transfer(address indexed from, address indexed to, uint value)'
-  ])
-  const decodedTransferLogs = transferInterface.parseLog(
-    sourceChainTxReceipt.logs[0]!
-  )
+  const transferLog = sourceChainTxReceipt.logs[0]
+  if (!transferLog) {
+    throw new Error('No transfer log found')
+  }
+
+  const transferInterface = {
+    name: 'Transfer',
+    inputs: [
+      { name: 'from', type: 'address', indexed: true },
+      { name: 'to', type: 'address', indexed: true },
+      { name: 'value', type: 'uint256' }
+    ]
+  }
+  const decodedTransferLogs = decodeFunctionData({
+    abi: [transferInterface],
+    data: transferLog.data as `0x${string}`
+  })
+  if (!decodedTransferLogs.args || !('value' in decodedTransferLogs.args)) {
+    throw new Error('Invalid transfer log data')
+  }
+
   const { decimals } = await fetchErc20Data({
     address: tokenAddress,
     provider: sourceChainProvider
@@ -256,9 +277,7 @@ export async function updateAdditionalLayerZeroData(
     ...updatedTx,
     asset: symbol,
     tokenAddress,
-    value: ethers.utils
-      .formatUnits(decodedTransferLogs.args.value, decimals)
-      .toString(),
+    value: formatUnits(decodedTransferLogs.args.value as bigint, decimals),
     blockNum: sourceChainTxReceipt.blockNumber
   } as MergedTransaction
 }
