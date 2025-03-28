@@ -1,18 +1,33 @@
-import { IContext } from 'overmind'
-import { createActionsHook, createStateHook } from 'overmind-react'
-import { namespaced } from 'overmind/config'
+import { useAppStore } from './app/state'
+import type { AppState } from './app/state'
 
-import * as app from './app'
+// For backwards compatibility with previous Overmind state
+export const useAppState = () => {
+  const store = useAppStore()
+  return {
+    app: {
+      arbTokenBridge: store.arbTokenBridge,
+      warningTokens: store.warningTokens,
+      l1NetworkChainId: store.l1NetworkChainId,
+      l2NetworkChainId: store.l2NetworkChainId,
+      arbTokenBridgeLoaded: store.arbTokenBridgeLoaded
+    }
+  }
+}
 
-export const config = namespaced({
-  app: app.config
-})
+export const useActions = () => {
+  const store = useAppStore()
+  return {
+    app: {
+      setChainIds: store.setChainIds,
+      reset: store.reset,
+      setWarningTokens: store.setWarningTokens,
+      setArbTokenBridgeLoaded: store.setArbTokenBridgeLoaded,
+      setArbTokenBridge: store.setArbTokenBridge
+    }
+  }
+}
 
-export type Context = IContext<{
-  state: typeof config.state
-  actions: typeof config.actions
-  effects: typeof config.effects
-}>
-
-export const useAppState = createStateHook<Context>()
-export const useActions = createActionsHook<Context>()
+// Internal Zustand hooks
+export const useAppStateInternal = () => useAppStore()
+export const useActionsInternal = () => useAppStore()
