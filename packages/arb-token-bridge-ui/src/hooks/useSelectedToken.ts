@@ -118,8 +118,7 @@ export async function getUsdcToken({
 
   const {
     isArbitrumOne: isChildArbitrumOne,
-    isArbitrumSepolia: isChildArbitrumSepolia,
-    isOrbitChain
+    isArbitrumSepolia: isChildArbitrumSepolia
   } = isNetwork(childChainId)
 
   // Ethereum Mainnet USDC
@@ -179,15 +178,13 @@ export async function getUsdcToken({
   ) {
     let childChainUsdcAddress
     try {
-      childChainUsdcAddress = isOrbitChain
-        ? (
-            await getL2ERC20Address({
-              erc20L1Address: tokenAddress,
-              l1Provider: parentProvider,
-              l2Provider: childProvider
-            })
-          ).toLowerCase()
-        : undefined
+      childChainUsdcAddress = (
+        await getL2ERC20Address({
+          erc20L1Address: tokenAddress,
+          l1Provider: parentProvider,
+          l2Provider: childProvider
+        })
+      ).toLowerCase()
     } catch {
       // could be never bridged before
     }
