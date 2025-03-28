@@ -269,11 +269,7 @@ export async function updateAdditionalLayerZeroData(
 
 interface LayerZeroResponse {
   data: LayerZeroMessage[]
-  pagination: {
-    total: number
-    page: number
-    size: number
-  }
+  nextToken: 'string'
 }
 
 export function useOftTransactionHistory({
