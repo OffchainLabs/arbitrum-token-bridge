@@ -23,7 +23,7 @@ export function MoveFundsButton({
   )
   const { isSmartContractWallet } = useAccountType()
   const { transferReady } = useTransferReadiness()
-  const { selectedRoute } = useRouteStore()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
   const isDisabled =
     selectedRoute === undefined ||
     (isDepositMode ? !transferReady.deposit : !transferReady.withdrawal)
