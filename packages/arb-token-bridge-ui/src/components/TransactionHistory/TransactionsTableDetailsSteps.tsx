@@ -34,6 +34,10 @@ import {
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
+  if (tx.isOft) {
+    return false
+  }
+
   return tx.isCctp || tx.isWithdrawal
 }
 

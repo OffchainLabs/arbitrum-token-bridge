@@ -225,6 +225,7 @@ export function isBatchTransfer(tx: MergedTransaction) {
   return (
     !tx.isCctp &&
     !tx.isWithdrawal &&
+    !tx.isOft &&
     tx.assetType === AssetType.ERC20 &&
     typeof tx.value2 !== 'undefined' &&
     Number(tx.value2) > 0

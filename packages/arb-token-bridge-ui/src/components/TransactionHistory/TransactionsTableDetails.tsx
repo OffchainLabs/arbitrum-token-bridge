@@ -6,6 +6,7 @@ import Image from 'next/image'
 import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
+import LayerZeroIcon from '@/images/LayerZeroIcon.png'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
@@ -29,6 +30,7 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { addressesEqual } from '../../util/AddressUtils'
+import { MergedTransaction } from '../../state/app/state'
 
 const DetailsBox = ({
   children,
@@ -40,6 +42,43 @@ const DetailsBox = ({
         <h4 className="mb-2 text-xs uppercase text-white/60">{header}</h4>
       )}
       {children}
+    </div>
+  )
+}
+
+const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
+  let protocolLogo, protocolName, protocolDescription
+
+  if (tx.isOft) {
+    protocolLogo = LayerZeroIcon
+    protocolName = 'LayerZero OFT'
+    protocolDescription = '(Omnichain Fungible Token)'
+  } else if (tx.isCctp) {
+    protocolLogo = CctpLogoColor
+    protocolName = 'CCTP'
+    protocolDescription = '(Cross-Chain Transfer Protocol)'
+  } else {
+    protocolLogo = ArbitrumLogo
+    protocolName = "Arbitrum's native bridge"
+    protocolDescription = ''
+  }
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Image
+        alt="Bridge logo"
+        className="h-4 w-4 shrink-0"
+        src={protocolLogo}
+        width={16}
+        height={16}
+      />
+
+      <span>
+        {protocolName}{' '}
+        {protocolDescription && (
+          <span className="text-white/70">{protocolDescription}</span>
+        )}
+      </span>
     </div>
   )
 }
@@ -206,25 +245,7 @@ export const TransactionsTableDetails = () => {
                 </DetailsBox>
 
                 <DetailsBox header="Bridge">
-                  <div className="flex space-x-2">
-                    <Image
-                      alt="Bridge logo"
-                      src={tx.isCctp ? CctpLogoColor : ArbitrumLogo}
-                      width={16}
-                      height={16}
-                    />
-
-                    {tx.isCctp ? (
-                      <span>
-                        CCTP{' '}
-                        <span className="text-white/70">
-                          (Cross-Chain Transfer Protocol)
-                        </span>
-                      </span>
-                    ) : (
-                      <span>Arbitrum&apos;s native bridge</span>
-                    )}
-                  </div>
+                  <ProtocolNameAndLogo tx={tx} />
                 </DetailsBox>
 
                 {(isDifferentSourceAddress ||
