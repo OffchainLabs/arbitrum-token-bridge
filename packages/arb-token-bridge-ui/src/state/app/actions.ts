@@ -1,36 +1,26 @@
 import { ArbTokenBridge } from '../../hooks/arbTokenBridge.types'
-import { Context } from '..'
 import { WarningTokens } from './state'
 import { useAppStore } from './state'
 
-export const setChainIds = (
-  { state }: Context,
-  payload: { l1NetworkChainId: number; l2NetworkChainId: number }
-) => {
+export const setChainIds = (payload: {
+  l1NetworkChainId: number
+  l2NetworkChainId: number
+}) => {
   useAppStore.getState().setChainIds(payload)
 }
 
-export const reset = ({ state }: Context) => {
+export const reset = () => {
   useAppStore.getState().reset()
 }
 
-export const setWarningTokens = (
-  { state }: Context,
-  warningTokens: WarningTokens
-) => {
+export const setWarningTokens = (warningTokens: WarningTokens) => {
   useAppStore.getState().setWarningTokens(warningTokens)
 }
 
-export const setArbTokenBridgeLoaded = (
-  { state }: Context,
-  loaded: boolean
-) => {
+export const setArbTokenBridgeLoaded = (loaded: boolean) => {
   useAppStore.getState().setArbTokenBridgeLoaded(loaded)
 }
 
-export const setArbTokenBridge = (
-  { state, actions }: Context,
-  atb: ArbTokenBridge
-) => {
+export const setArbTokenBridge = (atb: ArbTokenBridge) => {
   useAppStore.getState().setArbTokenBridge(atb)
 }
