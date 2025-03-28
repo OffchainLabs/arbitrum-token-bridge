@@ -26,9 +26,9 @@ import {
   isTokenWithdrawal,
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
-  mapWithdrawalToL2ToL1EventResult
+  mapWithdrawalFromSubgraphToL2ToL1EventResult
 } from '../util/withdrawals/helpers'
-import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
+import { WithdrawalFromSubgraph } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import {
@@ -86,7 +86,7 @@ export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
 export type Deposit = Transaction
 
 export type Withdrawal =
-  | FetchWithdrawalsFromSubgraphResult
+  | WithdrawalFromSubgraph
   | WithdrawalInitiated
   | EthWithdrawal
 
@@ -148,7 +148,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
-): tx is FetchWithdrawalsFromSubgraphResult {
+): tx is WithdrawalFromSubgraph {
   return tx.source === 'subgraph'
 }
 
@@ -156,75 +156,59 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
 }
 
-async function transformTransaction(
-  tx: Transfer
-): Promise<MergedTransaction | null> {
-  // null in case of error
-  try {
-    // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
-    if (isTransferTeleportFromSubgraph(tx)) {
-      return await transformTeleportFromSubgraph(tx)
-    }
+async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
+  // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
+  if (isTransferTeleportFromSubgraph(tx)) {
+    return await transformTeleportFromSubgraph(tx)
+  }
 
-    const parentProvider = getProviderForChainId(tx.parentChainId)
-    const childProvider = getProviderForChainId(tx.childChainId)
+  const parentProvider = getProviderForChainId(tx.parentChainId)
+  const childProvider = getProviderForChainId(tx.childChainId)
 
-    if (isCctpTransfer(tx)) {
-      return tx
-    }
+  if (isCctpTransfer(tx)) {
+    return tx
+  }
 
-    if (isOftTransfer(tx)) {
-      return await updateAdditionalLayerZeroData(tx)
-    }
+  if (isOftTransfer(tx)) {
+    return await updateAdditionalLayerZeroData(tx)
+  }
 
-    if (isDeposit(tx)) {
-      return transformDeposit(await updateAdditionalDepositData(tx))
-    }
+  if (isDeposit(tx)) {
+    return transformDeposit(await updateAdditionalDepositData(tx))
+  }
 
-    let withdrawal: L2ToL1EventResultPlus | undefined
+  let withdrawal: L2ToL1EventResultPlus | undefined
 
-    if (isWithdrawalFromSubgraph(tx)) {
-      withdrawal = await mapWithdrawalToL2ToL1EventResult({
-        withdrawal: tx,
+  if (isWithdrawalFromSubgraph(tx)) {
+    withdrawal = await mapWithdrawalFromSubgraphToL2ToL1EventResult({
+      withdrawal: tx,
+      l1Provider: parentProvider,
+      l2Provider: childProvider
+    })
+  } else {
+    if (isTokenWithdrawal(tx)) {
+      withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
+        result: tx,
         l1Provider: parentProvider,
         l2Provider: childProvider
       })
     } else {
-      if (isTokenWithdrawal(tx)) {
-        withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
-          result: tx,
-          l1Provider: parentProvider,
-          l2Provider: childProvider
-        })
-      } else {
-        withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
-          event: tx,
-          l1Provider: parentProvider,
-          l2Provider: childProvider
-        })
-      }
+      withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
+        event: tx,
+        l1Provider: parentProvider,
+        l2Provider: childProvider
+      })
     }
-
-    if (withdrawal) {
-      return transformWithdrawal(withdrawal)
-    }
-
-    console.error(
-      `An error has occurred while fetching a transaction ${getCacheKeyFromTransaction(
-        tx
-      )}. Please try again later or contact the support.`
-    )
-
-    return null
-  } catch (e) {
-    // Throw user friendly error in case we catch it and display in the UI.
-    console.error(
-      `An error has occurred while fetching a transaction ${getCacheKeyFromTransaction(
-        tx
-      )}. Please try again later or contact the support. ${e}`
-    )
-    return null
   }
+
+  if (withdrawal) {
+    return transformWithdrawal(withdrawal)
+  }
+
+  // Throw user friendly error in case we catch it and display in the UI.
+  throw new Error(
+    'An error has occurred while fetching a transaction. Please try again later or contact the support.'
+  )
 }
 
 function getTxIdFromTransaction(tx: Transfer) {
