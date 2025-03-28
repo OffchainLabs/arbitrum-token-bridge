@@ -9,7 +9,7 @@ import {
   StepToolDetails
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
-import { CrosschainTransfersQuote, QueryParams } from './types'
+import { CrosschainTransfersQuoteBase, QueryParams } from './types'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 
 export enum Order {
@@ -31,8 +31,15 @@ export type TransactionRequest = Required<
     'value' | 'to' | 'data' | 'from' | 'chainId' | 'gasPrice' | 'gasLimit'
   >
 >
-export type CrosschainTransfersQuoteWithLifiData = CrosschainTransfersQuote & {
-  lifiData: {
+
+export type LifiData = {
+  order: Order
+  transactionRequest: TransactionRequest
+  tool: StepToolDetails
+}
+export interface LifiCrosschainTransfersQuote
+  extends CrosschainTransfersQuoteBase {
+  protocolData: {
     order: Order
     transactionRequest: TransactionRequest
     tool: StepToolDetails
@@ -89,8 +96,9 @@ function parseLifiQuoteToCrosschainTransfersQuoteWithLifiData({
   fromToken: string
   toToken: string
   order: Order
-}): CrosschainTransfersQuoteWithLifiData {
+}): LifiCrosschainTransfersQuote {
   return {
+    type: 'lifi',
     durationMs: quote.estimate.executionDuration * 1_000,
     gas: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
@@ -119,7 +127,7 @@ function parseLifiQuoteToCrosschainTransfersQuoteWithLifiData({
     fromChainId: Number(fromChainId),
     toChainId: Number(toChainId),
     spenderAddress: quote.estimate.approvalAddress,
-    lifiData: {
+    protocolData: {
       order,
       transactionRequest: quote.transactionRequest,
       tool: quote.toolDetails
@@ -138,7 +146,7 @@ type LifiCrossTransfersQuotesResponse =
       data: null
     }
   | {
-      data: CrosschainTransfersQuoteWithLifiData
+      data: LifiCrosschainTransfersQuote
     }
 
 export type LifiParams = QueryParams & {
