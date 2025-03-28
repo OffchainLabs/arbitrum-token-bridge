@@ -1,12 +1,10 @@
-import { useCallback } from 'react'
 import { ethers, utils } from 'ethers'
-import { decodeFunctionData, formatUnits, decodeEventLog } from 'viem'
+import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
 import { getChainIdFromEid } from '../token-bridge-sdk/oftUtils'
 import { isDepositMode } from '../util/isDepositMode'
-import { useAccount } from 'wagmi'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { isNetwork } from '../util/networks'
@@ -23,8 +21,9 @@ export const LayerZeroMessageStatus = {
   FAILED: 'failed',
   BLOCKED: 'failed'
 } as const
+
 /*
- * LayerZero API returns `LayerZeroTransaction` without `asset` and `value`.
+ * LayerZero API returns LayerZeroTransaction` without `asset` and `value`.
  * `updateAdditionalLayerZeroData()` fills these gaps, returning `MergedTransaction` for tx history.
  */
 export type LayerZeroTransaction = Omit<
@@ -228,15 +227,12 @@ export async function updateAdditionalLayerZeroData(
 
   // extract destination address
   const sourceChainTx = await sourceChainProvider.getTransaction(txId)
-  const decodedInputData = decodeFunctionData({
-    abi: oftV2Abi,
-    data: sourceChainTx.data as `0x${string}`
-  })
-  if (decodedInputData.functionName !== 'send') {
-    throw new Error('Expected `send()` function in ABI')
-  }
-
-  updatedTx.destination = utils.hexValue(decodedInputData.args[0].to)
+  const oftInterface = new ethers.utils.Interface(oftV2Abi)
+  const decodedInputData = oftInterface.decodeFunctionData(
+    'send',
+    sourceChainTx.data
+  )
+  updatedTx.destination = utils.hexValue(decodedInputData[0][1])
 
   // extract token and value
   const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
