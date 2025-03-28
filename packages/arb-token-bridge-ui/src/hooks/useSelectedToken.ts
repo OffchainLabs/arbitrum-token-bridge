@@ -116,13 +116,17 @@ export async function getUsdcToken({
     isArbitrumSepolia: isParentChainArbitrumSepolia
   } = isNetwork(parentChainId)
 
-  const { isOrbitChain } = isNetwork(childChainId)
+  const {
+    isArbitrumOne: isChildArbitrumOne,
+    isArbitrumSepolia: isChildArbitrumSepolia,
+    isOrbitChain
+  } = isNetwork(childChainId)
 
   // Ethereum Mainnet USDC
   if (
     isTokenMainnetUSDC(tokenAddress) &&
     isParentChainEthereumMainnet &&
-    !isOrbitChain
+    isChildArbitrumOne
   ) {
     return {
       ...commonUSDC,
@@ -135,7 +139,7 @@ export async function getUsdcToken({
   if (
     isTokenSepoliaUSDC(tokenAddress) &&
     isParentChainSepolia &&
-    !isOrbitChain
+    isChildArbitrumSepolia
   ) {
     return {
       ...commonUSDC,
