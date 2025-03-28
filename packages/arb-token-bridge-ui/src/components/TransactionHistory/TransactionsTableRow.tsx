@@ -126,7 +126,7 @@ export function TransactionsTableRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { open: openTxDetails } = useTxDetailsStore()
+  const openTxDetails = useTxDetailsStore(state => state.open)
   const childProvider = getProviderForChainId(tx.childChainId)
   const nativeCurrency = useNativeCurrency({ provider: childProvider })
 

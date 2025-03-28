@@ -82,7 +82,7 @@ export function TokenImportDialog({
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
-  const { isOpen } = useTokenImportDialogStore()
+  const isOpen = useTokenImportDialogStore(state => state.isOpen)
   const [isDialogVisible, setIsDialogVisible] = useState(false)
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,

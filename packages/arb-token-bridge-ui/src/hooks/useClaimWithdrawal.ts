@@ -29,7 +29,9 @@ export function useClaimWithdrawal(
     app: { arbTokenBridge }
   } = useAppState()
   const { address } = useAccount()
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
   const { data: signer } = useSigner({ chainId: tx.parentChainId })
   const { updatePendingTransaction } = useTransactionHistory(
     sanitizedAddress ?? address
