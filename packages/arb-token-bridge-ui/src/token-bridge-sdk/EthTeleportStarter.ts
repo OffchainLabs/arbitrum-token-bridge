@@ -9,7 +9,12 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { getL2ConfigForTeleport } from './teleport'
-import { getAddressFromSigner, percentIncrease } from './utils'
+import {
+  getAddressFromSigner,
+  percentIncrease,
+  validateSignerChainId
+} from './utils'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
@@ -110,6 +115,11 @@ export class EthTeleportStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer }: TransferProps) {
     const address = await getAddressFromSigner(signer)
 
+    await validateSignerChainId({
+      signer,
+      sourceChainIdOrProvider: this.sourceChainProvider
+    })
+
     const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
@@ -122,6 +132,21 @@ export class EthTeleportStarter extends BridgeTransferStarter {
       l2Provider,
       l3Provider: this.destinationChainProvider
     })
+
+    const depositToAddress = depositRequest.txRequest.to.toLowerCase()
+
+    if (!addressIsSmartContract(depositToAddress, this.sourceChainProvider)) {
+      throw new Error(`Inbox address provided is not a smart contract address.`)
+    }
+
+    const inboxAddressForChain =
+      l1l3Bridger.l2Network.ethBridge.inbox.toLowerCase()
+
+    if (depositToAddress !== inboxAddressForChain) {
+      throw new Error(
+        `Wrong inbox address for teleporter transfer to destination chain. Expected ${inboxAddressForChain}, got ${depositToAddress} instead.`
+      )
+    }
 
     const tx = await l1l3Bridger.deposit({
       ...depositRequest,

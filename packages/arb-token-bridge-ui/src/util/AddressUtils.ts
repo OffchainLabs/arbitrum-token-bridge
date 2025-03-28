@@ -12,8 +12,14 @@ export function addressesEqual(
   return address1?.trim().toLowerCase() === address2?.trim().toLowerCase()
 }
 
-export async function addressIsSmartContract(address: string, chainId: number) {
-  const provider = getProviderForChainId(chainId)
+export async function addressIsSmartContract(
+  address: string,
+  chainIdOrProvider: number | Provider
+) {
+  const provider =
+    typeof chainIdOrProvider === 'number'
+      ? getProviderForChainId(chainIdOrProvider)
+      : chainIdOrProvider
   try {
     return (await provider.getCode(address)).length > 2
   } catch (_) {
