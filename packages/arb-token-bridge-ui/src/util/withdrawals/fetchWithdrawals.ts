@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
 import {
-  FetchWithdrawalsFromSubgraphResult,
+  WithdrawalFromSubgraph,
   fetchWithdrawalsFromSubgraph
 } from './fetchWithdrawalsFromSubgraph'
 import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
@@ -16,7 +16,7 @@ import {
   fetchTokenWithdrawalsFromEventLogsSequentially
 } from './fetchTokenWithdrawalsFromEventLogsSequentially'
 import { backOff, wait } from '../ExponentialBackoffUtils'
-import { isAlchemyChain } from '../networks'
+import { isAlchemyChain, isNetwork } from '../networks'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
 import { fetchL2Gateways } from '../fetchL2Gateways'
 import { constants } from 'ethers'
@@ -73,6 +73,8 @@ export async function fetchWithdrawals({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
+  const { isOrbitChain, isCoreChain } = isNetwork(l2ChainID)
+
   if (!fromBlock) {
     fromBlock = 0
   }
@@ -87,7 +89,7 @@ export async function fetchWithdrawals({
     toBlock = latestSubgraphBlockNumber
   }
 
-  let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
+  let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
   try {
     withdrawalsFromSubgraph = (
       await fetchWithdrawalsFromSubgraph({
@@ -114,7 +116,9 @@ export async function fetchWithdrawals({
   }
 
   const gateways = await getGateways(l2Provider)
-  const senderNonce = await getNonce(sender, { provider: l2Provider })
+  const senderNonce = await backOff(() =>
+    getNonce(sender, { provider: l2Provider })
+  )
 
   const queries: Query[] = []
 
@@ -143,27 +147,35 @@ export async function fetchWithdrawals({
     }
   }
 
-  if (isAlchemy) {
-    // for alchemy, fetch sequentially
-    queries.push({ receiver, gateways: [gateways.standardGateway] })
-    queries.push({ receiver, gateways: [gateways.wethGateway] })
-    queries.push({ receiver, gateways: [gateways.customGateway] })
-    queries.push({ receiver, gateways: gateways.otherGateways })
-  } else {
-    // for other chains, fetch in parallel
-    queries.push({ receiver, gateways: allGateways })
+  /// receiver queries; only add if nonce > 0 for orbit chains
+  const fetchReceivedTransactions =
+    isCoreChain || (isOrbitChain && senderNonce > 0)
+
+  if (fetchReceivedTransactions) {
+    if (isAlchemy) {
+      // for alchemy, fetch sequentially
+      queries.push({ receiver, gateways: [gateways.standardGateway] })
+      queries.push({ receiver, gateways: [gateways.wethGateway] })
+      queries.push({ receiver, gateways: [gateways.customGateway] })
+      queries.push({ receiver, gateways: gateways.otherGateways })
+    } else {
+      // for other chains, fetch in parallel
+      queries.push({ receiver, gateways: allGateways })
+    }
   }
 
-  const ethWithdrawalsFromEventLogs = await backOff(() =>
-    fetchETHWithdrawalsFromEventLogs({
-      receiver,
-      // not sure why eslint is treating "toBlock" as "number | undefined" here
-      // even though typescript recognizes it as "number"
-      fromBlock: toBlock ?? 0 + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider
-    })
-  )
+  const ethWithdrawalsFromEventLogs = fetchReceivedTransactions
+    ? await backOff(() =>
+        fetchETHWithdrawalsFromEventLogs({
+          receiver,
+          // not sure why eslint is treating "toBlock" as "number | undefined" here
+          // even though typescript recognizes it as "number"
+          fromBlock: toBlock ?? 0 + 1,
+          toBlock: 'latest',
+          l2Provider: l2Provider
+        })
+      )
+    : []
 
   await wait(delayMs)
 
