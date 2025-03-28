@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { utils } from 'ethers'
-import { decodeFunctionData, formatUnits } from 'viem'
+import { ethers, utils } from 'ethers'
+import { decodeFunctionData, formatUnits, decodeEventLog } from 'viem'
 import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
@@ -244,42 +244,25 @@ export async function updateAdditionalLayerZeroData(
     throw new Error('No token address found for OFT transaction')
   }
 
-  const { symbol } = await fetchErc20Data({
+  const { symbol, decimals } = await fetchErc20Data({
     address: tokenAddress,
     provider: sourceChainProvider
   })
 
-  const transferLog = sourceChainTxReceipt.logs[0]
-  if (!transferLog) {
-    throw new Error('No transfer log found')
-  }
-
-  const transferInterface = {
-    name: 'Transfer',
-    inputs: [
-      { name: 'from', type: 'address', indexed: true },
-      { name: 'to', type: 'address', indexed: true },
-      { name: 'value', type: 'uint256' }
-    ]
-  }
-  const decodedTransferLogs = decodeFunctionData({
-    abi: [transferInterface],
-    data: transferLog.data as `0x${string}`
-  })
-  if (!decodedTransferLogs.args || !('value' in decodedTransferLogs.args)) {
-    throw new Error('Invalid transfer log data')
-  }
-
-  const { decimals } = await fetchErc20Data({
-    address: tokenAddress,
-    provider: sourceChainProvider
-  })
+  const transferInterface = new ethers.utils.Interface([
+    'event Transfer(address indexed from, address indexed to, uint value)'
+  ])
+  const decodedTransferLogs = transferInterface.parseLog(
+    sourceChainTxReceipt.logs[0]!
+  )
 
   return {
     ...updatedTx,
     asset: symbol,
     tokenAddress,
-    value: formatUnits(decodedTransferLogs.args.value as bigint, decimals),
+    value: ethers.utils
+      .formatUnits(decodedTransferLogs.args.value, decimals)
+      .toString(),
     blockNum: sourceChainTxReceipt.blockNumber
   } as MergedTransaction
 }
