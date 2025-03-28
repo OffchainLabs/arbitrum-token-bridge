@@ -17,6 +17,7 @@ import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
+import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
 import { getNetworkName } from '../../util/networks'
@@ -33,7 +34,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
-import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 
 declare global {
   interface Window {

@@ -1,5 +1,4 @@
 import { useAppStore } from './app/state'
-import type { AppState } from './app/state'
 
 // For backwards compatibility with previous Overmind state
 export const useAppState = () => {
@@ -27,7 +26,3 @@ export const useActions = () => {
     }
   }
 }
-
-// Internal Zustand hooks
-export const useAppStateInternal = () => useAppStore()
-export const useActionsInternal = () => useAppStore()
