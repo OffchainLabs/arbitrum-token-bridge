@@ -40,6 +40,10 @@ export function getRpcUrl(
         return 'https://nova.arbitrum.io/rpc'
       }
 
+      if (chainId === ChainId.ArbitrumOne) {
+        return 'https://arb1.arbitrum.io/rpc'
+      }
+
       return getInfuraRpcUrl(chainId, rpcProviderKey)
     }
 
