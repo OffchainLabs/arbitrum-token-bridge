@@ -291,21 +291,18 @@ export function useOftTransactionHistory({
 
   const walletAddressToFetch = walletAddress ?? address
 
-  const fetcher = useCallback(
-    async (url: string) => {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error('Failed to fetch OFT transaction history')
-      }
+  const fetcher = async (url: string) => {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error('Failed to fetch OFT transaction history')
+    }
 
-      const data: LayerZeroResponse = await response.json()
+    const data: LayerZeroResponse = await response.json()
 
-      return data.data
-        .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
-        .map(mapLayerZeroMessageToLayerZeroTransaction)
-    },
-    [walletAddressToFetch]
-  )
+    return data.data
+      .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
+      .map(mapLayerZeroMessageToLayerZeroTransaction)
+  }
 
   const { data, error, isLoading } = useSWRImmutable(
     walletAddressToFetch
