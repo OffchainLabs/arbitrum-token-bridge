@@ -12,6 +12,7 @@ import {
 } from '../../types/Transactions'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
+import { create } from 'zustand'
 
 export enum DepositStatus {
   L1_PENDING = 1,
@@ -97,6 +98,45 @@ export const defaultState: AppState = {
   l2NetworkChainId: null,
   arbTokenBridgeLoaded: false
 }
-export const state: AppState = {
-  ...defaultState
+
+interface AppStore extends AppState {
+  setChainIds: (payload: {
+    l1NetworkChainId: number
+    l2NetworkChainId: number
+  }) => void
+  reset: () => void
+  setWarningTokens: (warningTokens: WarningTokens) => void
+  setArbTokenBridgeLoaded: (loaded: boolean) => void
+  setArbTokenBridge: (atb: ArbTokenBridge) => void
 }
+
+export const useAppStore = create<AppStore>((set, get) => ({
+  ...defaultState,
+  setChainIds: payload => {
+    set({
+      l1NetworkChainId: payload.l1NetworkChainId,
+      l2NetworkChainId: payload.l2NetworkChainId
+    })
+  },
+  reset: () => {
+    set({
+      arbTokenBridge: {} as ArbTokenBridge,
+      arbTokenBridgeLoaded: false
+    })
+  },
+  setWarningTokens: warningTokens => {
+    set({ warningTokens })
+  },
+  setArbTokenBridgeLoaded: loaded => {
+    set({ arbTokenBridgeLoaded: loaded })
+  },
+  setArbTokenBridge: atb => {
+    set({ arbTokenBridge: atb })
+    if (atb && !get().arbTokenBridgeLoaded) {
+      set({ arbTokenBridgeLoaded: true })
+    }
+  }
+}))
+
+// For backwards compatibility with previous Overmind state
+export const state = defaultState
