@@ -21,12 +21,13 @@ export async function getChildUsdcAddress({
     isEthereumMainnet: isParentEthereumMainnet,
     isSepolia: isParentSepolia
   } = isNetwork(parentChainId)
+  const { isOrbitChain } = isNetwork(childChainId)
 
-  if (isParentEthereumMainnet) {
+  if (isParentEthereumMainnet && !isOrbitChain) {
     return CommonAddress.ArbitrumOne.USDC
   }
 
-  if (isParentSepolia) {
+  if (isParentSepolia && !isOrbitChain) {
     return CommonAddress.ArbitrumSepolia.USDC
   }
 

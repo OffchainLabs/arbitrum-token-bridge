@@ -116,8 +116,14 @@ export async function getUsdcToken({
     isArbitrumSepolia: isParentChainArbitrumSepolia
   } = isNetwork(parentChainId)
 
+  const { isOrbitChain } = isNetwork(childChainId)
+
   // Ethereum Mainnet USDC
-  if (isTokenMainnetUSDC(tokenAddress) && isParentChainEthereumMainnet) {
+  if (
+    isTokenMainnetUSDC(tokenAddress) &&
+    isParentChainEthereumMainnet &&
+    !isOrbitChain
+  ) {
     return {
       ...commonUSDC,
       address: CommonAddress.Ethereum.USDC,
@@ -126,7 +132,11 @@ export async function getUsdcToken({
   }
 
   // Ethereum Sepolia USDC
-  if (isTokenSepoliaUSDC(tokenAddress) && isParentChainSepolia) {
+  if (
+    isTokenSepoliaUSDC(tokenAddress) &&
+    isParentChainSepolia &&
+    !isOrbitChain
+  ) {
     return {
       ...commonUSDC,
       address: CommonAddress.Sepolia.USDC,
@@ -159,11 +169,13 @@ export async function getUsdcToken({
   if (
     (isTokenArbitrumOneNativeUSDC(tokenAddress) && isParentChainArbitrumOne) ||
     (isTokenArbitrumSepoliaNativeUSDC(tokenAddress) &&
-      isParentChainArbitrumSepolia)
+      isParentChainArbitrumSepolia) ||
+    (isTokenMainnetUSDC(tokenAddress) && isParentChainEthereumMainnet) ||
+    (isTokenSepoliaUSDC(tokenAddress) && isParentChainSepolia)
   ) {
     let childChainUsdcAddress
     try {
-      childChainUsdcAddress = isNetwork(childChainId).isOrbitChain
+      childChainUsdcAddress = isOrbitChain
         ? (
             await getL2ERC20Address({
               erc20L1Address: tokenAddress,
