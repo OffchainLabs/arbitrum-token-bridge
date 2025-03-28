@@ -1,4 +1,6 @@
 import { useCallback } from 'react'
+import { utils } from 'ethers'
+import { decodeFunctionData, formatUnits } from 'viem'
 import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
@@ -7,7 +9,6 @@ import { isDepositMode } from '../util/isDepositMode'
 import { useAccount } from 'wagmi'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
-import { decodeFunctionData, formatUnits, toHex } from 'viem'
 import { isNetwork } from '../util/networks'
 import { oftV2Abi } from '../token-bridge-sdk/oftV2Abi'
 
@@ -230,7 +231,8 @@ export async function updateAdditionalLayerZeroData(
   if (decodedInputData.functionName !== 'send') {
     throw new Error('Expected `send()` function in ABI')
   }
-  updatedTx.destination = toHex(decodedInputData.args[0].to)
+
+  updatedTx.destination = utils.hexValue(decodedInputData.args[0].to)
 
   // extract token and value
   const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
