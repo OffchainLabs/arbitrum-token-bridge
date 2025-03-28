@@ -81,7 +81,8 @@ export const ArbitrumStats = () => {
           {getNetworkName(parentChain.id)}
         </span>
         <span>
-          Block: {currentL1BlockNumber ? currentL1BlockNumber : 'Loading...'}
+          Block:{' '}
+          {currentL1BlockNumber ? String(currentL1BlockNumber) : 'Loading...'}
         </span>
         <span>
           Gas price:{' '}
@@ -107,7 +108,8 @@ export const ArbitrumStats = () => {
           {getNetworkName(childChain.id)}
         </span>
         <span>
-          Block: {currentL2BlockNumber ? currentL2BlockNumber : 'Loading...'}
+          Block:{' '}
+          {currentL2BlockNumber ? String(currentL2BlockNumber) : 'Loading...'}
         </span>
         <span>
           Gas price:{' '}

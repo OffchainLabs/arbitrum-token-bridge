@@ -28,6 +28,7 @@ const transformNodeModules = [
   // wagmi
   '@wagmi',
   'wagmi',
+  '@rainbow-me/rainbowkit',
   '@uidotdev/usehooks'
 ]
 
