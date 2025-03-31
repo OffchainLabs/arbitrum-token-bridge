@@ -17,7 +17,6 @@ export type Token = Pick<
 
 /** This interface is meant to be extended by the different API, it's not meant to be consummed by the bridge  */
 export interface CrosschainTransfersQuoteBase {
-  type: 'lifi'
   durationMs: number
   gas: {
     amount: string
