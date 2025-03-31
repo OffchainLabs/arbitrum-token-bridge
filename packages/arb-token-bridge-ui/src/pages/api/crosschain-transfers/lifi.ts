@@ -39,6 +39,7 @@ export type LifiData = {
 }
 export interface LifiCrosschainTransfersQuote
   extends CrosschainTransfersQuoteBase {
+  type: 'lifi'
   protocolData: {
     order: Order
     transactionRequest: TransactionRequest
