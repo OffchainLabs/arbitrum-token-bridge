@@ -1,10 +1,11 @@
 module.exports = {
-  plugins: ["@typescript-eslint", "jest"],
+  plugins: ["@typescript-eslint", "jest", "zustand-rules"],
   extends: [
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
     "plugin:jest/recommended",
     "next",
+    "plugin:zustand-rules/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
