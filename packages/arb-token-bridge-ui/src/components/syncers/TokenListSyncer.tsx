@@ -1,4 +1,4 @@
-import useSWRImmutable from 'swr/immutable'
+import { useEffect } from 'react'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
@@ -17,26 +17,31 @@ const TokenListSyncer = (): JSX.Element => {
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
 
-  useSWRImmutable(
-    arbTokenBridgeLoaded ? [childChain.id, 'TokenListSyncer'] : null,
-    ([_childChainId]) => {
-      const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
-        // Always load the Arbitrum Token token list
-        if (bridgeTokenList.isArbitrumTokenTokenList) {
-          return true
-        }
-
-        return (
-          bridgeTokenList.originChainID === _childChainId &&
-          bridgeTokenList.isDefault
-        )
-      })
-
-      tokenListsToSet.forEach(bridgeTokenList => {
-        addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
-      })
+  useEffect(() => {
+    if (!arbTokenBridgeLoaded) {
+      return
     }
-  )
+
+    const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
+      // Always load the Arbitrum Token token list
+      if (bridgeTokenList.isArbitrumTokenTokenList) {
+        return true
+      }
+
+      return (
+        bridgeTokenList.originChainID === childChain.id &&
+        bridgeTokenList.isDefault
+      )
+    })
+
+    tokenListsToSet.forEach(bridgeTokenList => {
+      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+    })
+  }, [
+    // arbTokenBridge.token is not a memoized object, adding it here would cause infinite loop
+    childChain.id,
+    arbTokenBridgeLoaded
+  ])
 
   return <></>
 }
