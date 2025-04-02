@@ -32,7 +32,7 @@ export function useBalances() {
 
   const {
     eth: [ethParentBalance, updateEthParentBalance],
-    erc20: [_erc20ParentBalances, updateErc20ParentBalances]
+    erc20: [, updateErc20ParentBalances]
   } = useBalance({
     chainId: parentChain.id,
     walletAddress: parentWalletAddress
@@ -40,7 +40,7 @@ export function useBalances() {
 
   const {
     eth: [ethChildBalance, updateEthChildBalance],
-    erc20: [_erc20ChildBalances, updateErc20ChildBalances]
+    erc20: [, updateErc20ChildBalances]
   } = useBalance({
     chainId: childChain.id,
     walletAddress: childWalletAddress
@@ -91,11 +91,11 @@ export function useBalances() {
     () => ({
       ethParentBalance,
       updateEthParentBalance,
-      erc20ParentBalances: erc20ParentBalances || {},
+      erc20ParentBalances,
       updateErc20ParentBalances,
       ethChildBalance,
       updateEthChildBalance,
-      erc20ChildBalances: erc20ChildBalances || {},
+      erc20ChildBalances,
       updateErc20ChildBalances
     }),
     [
