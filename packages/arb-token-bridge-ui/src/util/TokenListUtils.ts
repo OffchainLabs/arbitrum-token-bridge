@@ -182,9 +182,7 @@ export const addBridgeTokenListToBridge = (
     ({ isValid, data: tokenList }) => {
       if (!isValid) return
 
-      if (typeof arbTokenBridge.bridgeTokens === 'undefined') {
-        arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
-      }
+      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
     }
   )
 }
