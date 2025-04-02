@@ -49,7 +49,7 @@ export function useBalances() {
   const { data: erc20ParentBalances = {} } = useSWR(
     typeof bridgeTokens !== 'undefined'
       ? [
-          childWalletAddress,
+          parentWalletAddress,
           bridgeTokens,
           parentChain.id,
           'useBalances',
@@ -58,10 +58,7 @@ export function useBalances() {
       : null,
     ([_parentWalletAddress, _bridgeTokens]) => {
       const parentAddresses = Object.keys(_bridgeTokens)
-
-      updateErc20ChildBalances(parentAddresses)
-
-      return _erc20ParentBalances
+      return updateErc20ParentBalances(parentAddresses)
     },
     {
       refreshInterval: 10_000
@@ -83,9 +80,7 @@ export function useBalances() {
         .map(t => t?.l2Address)
         .filter(Boolean) as string[]
 
-      updateErc20ChildBalances(childAddresses)
-
-      return _erc20ChildBalances
+      return updateErc20ChildBalances(childAddresses)
     },
     {
       refreshInterval: 10_000
