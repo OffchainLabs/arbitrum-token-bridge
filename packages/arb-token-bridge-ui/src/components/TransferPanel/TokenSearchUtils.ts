@@ -17,7 +17,7 @@ export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
   const { data: tokenLists = [] } = useTokenLists(childChain.id)
 
   const { data = {} } = useSWRImmutable(
-    [tokenLists, parentChain.id, childChain.id, 'useTokensFromLists'] as const,
+    [tokenLists, parentChain.id, childChain.id, 'useTokensFromLists'],
     ([_tokenLists, _parentChainId, _childChainId]) =>
       tokenListsToSearchableTokenStorage(
         _tokenLists,
