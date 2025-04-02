@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import useSWRImmutable from 'swr/immutable'
 import { useAppState } from '../../state'
 import {
   ContractStorage,
@@ -15,13 +16,17 @@ export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { data: tokenLists = [] } = useTokenLists(childChain.id)
 
-  return useMemo(() => {
-    return tokenListsToSearchableTokenStorage(
-      tokenLists,
-      String(parentChain.id),
-      String(childChain.id)
-    )
-  }, [tokenLists, parentChain.id, childChain.id])
+  const { data = {} } = useSWRImmutable(
+    [tokenLists, parentChain.id, childChain.id, 'useTokensFromLists'] as const,
+    ([_tokenLists, _parentChainId, _childChainId]) =>
+      tokenListsToSearchableTokenStorage(
+        _tokenLists,
+        String(_parentChainId),
+        String(_childChainId)
+      )
+  )
+
+  return data
 }
 
 export function useTokensFromUser(): ContractStorage<ERC20BridgeToken> {
