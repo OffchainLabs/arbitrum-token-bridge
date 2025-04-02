@@ -186,6 +186,7 @@ export const addBridgeTokenListToBridge = (
     }
   )
 }
+
 export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
   isValid: boolean
   data: TokenList | undefined
