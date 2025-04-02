@@ -8,11 +8,18 @@ import { useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useMemo } from 'react'
 import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
+import shallow from 'zustand/shallow'
 export function CctpRoute() {
   const [{ amount }] = useArbQueryParams()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
-  const { selectedRoute, setSelectedRoute } = useRouteStore()
+  const { selectedRoute, setSelectedRoute } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      setSelectedRoute: state.setSelectedRoute
+    }),
+    shallow
+  )
 
   const nativeUsdcToken: Token = useMemo(
     () => ({

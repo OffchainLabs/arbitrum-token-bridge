@@ -22,7 +22,9 @@ import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar
 import { OftTransactionHistoryDisclaimer } from './OftTransactionHistoryDisclaimer'
 
 function useTransactionHistoryUpdater() {
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
 
   const transactionHistoryProps = useTransactionHistory(sanitizedAddress, {
     runFetcher: true
@@ -51,7 +53,9 @@ const tabClasses =
 export function TransactionHistorySearchResults() {
   const props = useTransactionHistoryUpdater()
   const { transactions } = props
-  const { searchError } = useTransactionHistoryAddressStore()
+  const searchError = useTransactionHistoryAddressStore(
+    state => state.searchError
+  )
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
