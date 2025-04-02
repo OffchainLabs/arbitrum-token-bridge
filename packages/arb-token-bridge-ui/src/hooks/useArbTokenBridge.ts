@@ -280,9 +280,6 @@ export const useArbTokenBridge = (
         tokenToAdd.listIds = new Set([...oldListIds, listId])
       }
 
-      updateErc20L1Balance(l1Addresses)
-      updateErc20L2Balance(l2Addresses)
-
       return {
         ...oldBridgeTokens,
         ...bridgeTokensToAdd

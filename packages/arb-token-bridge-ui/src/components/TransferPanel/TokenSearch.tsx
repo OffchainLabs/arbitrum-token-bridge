@@ -1,7 +1,6 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
-import { useAccount } from 'wagmi'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { twMerge } from 'tailwind-merge'
 import useSWRImmutable from 'swr/immutable'
@@ -167,7 +166,6 @@ function TokensPanel({
 }: {
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
-  const { address: walletAddress } = useAccount()
   const {
     app: {
       arbTokenBridge: { token, bridgeTokens }
@@ -181,10 +179,7 @@ function TokensPanel({
     erc20ParentBalances,
     ethChildBalance,
     erc20ChildBalances
-  } = useBalances({
-    parentWalletAddress: walletAddress,
-    childWalletAddress: walletAddress
-  })
+  } = useBalances()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 

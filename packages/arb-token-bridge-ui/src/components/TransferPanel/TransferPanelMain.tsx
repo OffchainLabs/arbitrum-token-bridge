@@ -1,32 +1,18 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
-import { isAddress } from 'ethers/lib/utils'
 
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
-import {
-  isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  isTokenSepoliaUSDC,
-  isTokenMainnetUSDC
-} from '../../util/TokenUtils'
-import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { addressesEqual } from '../../util/AddressUtils'
 
 export function SwitchNetworksButton(
@@ -184,70 +170,6 @@ export function NetworkContainer({
 }
 
 export function TransferPanelMain() {
-  const [networks] = useNetworks()
-  const { childChainProvider, isTeleportMode } =
-    useNetworksRelationship(networks)
-
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const [selectedToken] = useSelectedToken()
-
-  const { address: walletAddress } = useAccount()
-
-  const [{ destinationAddress }] = useArbQueryParams()
-
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-
-  const { updateErc20ParentBalances, updateErc20ChildBalances } = useBalances()
-
-  const { updateUsdcBalances } = useUpdateUsdcBalances({
-    walletAddress:
-      destinationAddressOrWalletAddress &&
-      isAddress(destinationAddressOrWalletAddress)
-        ? destinationAddressOrWalletAddress
-        : undefined
-  })
-
-  useEffect(() => {
-    if (nativeCurrency.isCustom) {
-      updateErc20ParentBalances([nativeCurrency.address])
-    }
-  }, [nativeCurrency, updateErc20ParentBalances])
-
-  useEffect(() => {
-    if (
-      !selectedToken ||
-      !destinationAddressOrWalletAddress ||
-      !utils.isAddress(destinationAddressOrWalletAddress)
-    ) {
-      return
-    }
-
-    if (
-      !isTeleportMode &&
-      (isTokenMainnetUSDC(selectedToken.address) ||
-        isTokenSepoliaUSDC(selectedToken.address) ||
-        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
-    ) {
-      updateUsdcBalances()
-      return
-    }
-
-    updateErc20ParentBalances([selectedToken.address])
-    if (selectedToken.l2Address) {
-      updateErc20ChildBalances([selectedToken.l2Address])
-    }
-  }, [
-    selectedToken,
-    updateErc20ParentBalances,
-    updateErc20ChildBalances,
-    destinationAddressOrWalletAddress,
-    updateUsdcBalances,
-    isTeleportMode
-  ])
-
-  useUpdateUSDCTokenData()
-
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
       <SourceNetworkBox />
