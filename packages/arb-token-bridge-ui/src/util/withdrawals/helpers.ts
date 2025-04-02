@@ -20,6 +20,7 @@ import {
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
+import { addToLocalStorageObjectSequentially } from '../CommonUtils'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -94,13 +95,15 @@ export async function getOutgoingMessageState(
   l2Provider: Provider,
   l2ChainID: number
 ) {
+  const localStorageKey = 'arbitrum:bridge:executed-messages'
+
   const cacheKey = getExecutedMessagesCacheKey({
     event,
     l2ChainId: l2ChainID
   })
 
   const executedMessagesCache = JSON.parse(
-    localStorage.getItem('arbitrum:bridge:executed-messages') || '{}'
+    localStorage.getItem(localStorageKey) || '{}'
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
@@ -118,7 +121,16 @@ export async function getOutgoingMessageState(
   const messageReader = new ChildToParentMessageReader(l1Provider, event)
 
   try {
-    return await messageReader.status(l2Provider)
+    const status = await messageReader.status(l2Provider)
+
+    if (status === OutgoingMessageState.EXECUTED) {
+      addToLocalStorageObjectSequentially({
+        localStorageKey,
+        localStorageValue: { [cacheKey]: true }
+      })
+    }
+
+    return status
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
   }
