@@ -5,7 +5,6 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:jest/recommended",
     "next",
-    "plugin:zustand-rules/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -34,5 +33,8 @@ module.exports = {
         "ts-check": "allow-with-description",
       },
     ],
+    "zustand-rules/use-store-selectors": "error",
+    "zustand-rules/no-state-mutation": "error",
+    "zustand-rules/enforce-use-setstate": "error",
   },
 };
