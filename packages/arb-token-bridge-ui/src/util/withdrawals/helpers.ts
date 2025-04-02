@@ -20,6 +20,7 @@ import {
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
+import { addToLocalStorageObjectSequentially } from '../CommonUtils'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -122,13 +123,10 @@ export async function getOutgoingMessageState(
     const status = await messageReader.status(l2Provider)
 
     if (status === OutgoingMessageState.EXECUTED) {
-      localStorage.setItem(
+      addToLocalStorageObjectSequentially({
         localStorageKey,
-        JSON.stringify({
-          ...executedMessagesCache,
-          [cacheKey]: true
-        })
-      )
+        localStorageValue: { [cacheKey]: true }
+      })
     }
 
     return status
