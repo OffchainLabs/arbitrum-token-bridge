@@ -98,9 +98,10 @@ export async function getOutgoingMessageState(
     event,
     l2ChainId: l2ChainID
   })
+  const localStorageKey = 'arbitrum:bridge:executed-messages'
 
   const executedMessagesCache = JSON.parse(
-    localStorage.getItem('arbitrum:bridge:executed-messages') || '{}'
+    localStorage.getItem(localStorageKey) || '{}'
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
@@ -118,7 +119,19 @@ export async function getOutgoingMessageState(
   const messageReader = new ChildToParentMessageReader(l1Provider, event)
 
   try {
-    return await messageReader.status(l2Provider)
+    const status = await messageReader.status(l2Provider)
+
+    if (status === OutgoingMessageState.EXECUTED) {
+      localStorage.setItem(
+        localStorageKey,
+        JSON.stringify({
+          ...executedMessagesCache,
+          [cacheKey]: true
+        })
+      )
+    }
+
+    return status
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
   }
