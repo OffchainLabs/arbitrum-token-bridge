@@ -302,7 +302,10 @@ export function useOftTransactionHistory({
           isTestnet ? LAYERZERO_API_URL_TESTNET : LAYERZERO_API_URL_MAINNET
         }/messages/wallet/${walletAddress}`
       : null,
-    fetcher
+    fetcher,
+    {
+      shouldRetryOnError: false
+    }
   )
 
   return {
