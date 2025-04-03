@@ -285,6 +285,12 @@ export function useOftTransactionHistory({
 }) {
   const fetcher = async (url: string) => {
     const response = await fetch(url)
+
+    // LayerZero API returns 404 if no transactions are found
+    if (response.status === 404) {
+      return []
+    }
+
     if (!response.ok) {
       throw new Error('Failed to fetch OFT transaction history')
     }
@@ -302,7 +308,10 @@ export function useOftTransactionHistory({
           isTestnet ? LAYERZERO_API_URL_TESTNET : LAYERZERO_API_URL_MAINNET
         }/messages/wallet/${walletAddress}`
       : null,
-    fetcher
+    fetcher,
+    {
+      errorRetryCount: 2
+    }
   )
 
   return {
