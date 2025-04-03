@@ -310,13 +310,7 @@ export function useOftTransactionHistory({
       : null,
     fetcher,
     {
-      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        // don't retry on 404 (LayerZero API returns 404 if no transactions are found)
-        if (error.status === 404 || retryCount >= 2) return
-
-        // else, retry on error as usual
-        setTimeout(() => revalidate({ retryCount }), 5_000)
-      }
+      errorRetryCount: 2
     }
   )
 
