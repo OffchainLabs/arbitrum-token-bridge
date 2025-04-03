@@ -285,6 +285,12 @@ export function useOftTransactionHistory({
 }) {
   const fetcher = async (url: string) => {
     const response = await fetch(url)
+
+    // LayerZero API returns 404 if no transactions are found
+    if (response.status === 404) {
+      return []
+    }
+
     if (!response.ok) {
       throw new Error('Failed to fetch OFT transaction history')
     }
@@ -305,8 +311,10 @@ export function useOftTransactionHistory({
     fetcher,
     {
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        if (error.status === 404) return // don't retry on 404 (LayerZero API returns 404 if no transactions are found)
+        // don't retry on 404 (LayerZero API returns 404 if no transactions are found)
+        if (error.status === 404 || retryCount >= 2) return
 
+        // else, retry on error as usual
         setTimeout(() => revalidate({ retryCount }), 10000)
       }
     }
