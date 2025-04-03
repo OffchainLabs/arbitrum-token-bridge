@@ -162,11 +162,16 @@ const getOftTransactionStatus = (message: LayerZeroMessage) => {
   )
 }
 
-function validateSourceAndDestinationChainIds(message: LayerZeroMessage) {
+/**
+ * Validate a LayerZero tx received from LzScan API: check source and destination chain ids, and double check that protocol is USDT0 (to filter out Lifi transfers routed through LayerZero)
+ */
+function validateLayerZeroMessage(message: LayerZeroMessage) {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
-  return sourceChainId && destinationChainId
+  const isProtocolUsdt0 = message.pathway?.sender?.id === 'usdt0'
+
+  return sourceChainId && destinationChainId && isProtocolUsdt0
 }
 
 function mapLayerZeroMessageToLayerZeroTransaction(
@@ -287,7 +292,7 @@ export function useOftTransactionHistory({
     const layerZeroResponse: LayerZeroResponse = await response.json()
 
     return layerZeroResponse.data
-      .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
+      .filter(validateLayerZeroMessage) // filter out transactions that don't have Arbitrum supported chain ids, and USDT0 protocol
       .map(mapLayerZeroMessageToLayerZeroTransaction)
   }
 
