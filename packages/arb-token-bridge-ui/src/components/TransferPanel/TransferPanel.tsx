@@ -615,7 +615,7 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
-      await oftTransferStarter.transfer({
+      const transfer = await oftTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
         destinationAddress
@@ -634,9 +634,36 @@ export function TransferPanel() {
       switchToTransactionHistoryTab()
       clearAmountInput()
 
-      setTimeout(() => {
-        highlightOftTransactionHistoryDisclaimer()
-      }, 100)
+      if (isSmartContractWallet) {
+        // show the warning in case of SCW since we don't cannot show OFT tx history
+        setTimeout(() => {
+          highlightOftTransactionHistoryDisclaimer()
+        }, 100)
+      } else {
+        // for EOA, show the transaction in tx history
+        addPendingTransaction({
+          isOft: true,
+          isCctp: false,
+          sender: walletAddress,
+          direction: isDepositMode ? 'deposit' : 'withdraw',
+          status: 'pending',
+          createdAt: dayjs().valueOf(),
+          resolvedAt: null,
+          txId: transfer.sourceChainTransaction.hash.toLowerCase(),
+          assetType: AssetType.ERC20,
+          uniqueId: null,
+          isWithdrawal: !isDepositMode,
+          blockNum: null,
+          childChainId: childChain.id,
+          parentChainId: parentChain.id,
+          sourceChainId: networks.sourceChain.id,
+          destinationChainId: networks.destinationChain.id,
+          asset: selectedToken.symbol,
+          value: amount,
+          tokenAddress: selectedToken.address
+        })
+      }
+
       clearRoute()
     } catch (error) {
       if (isUserRejectedError(error)) {
