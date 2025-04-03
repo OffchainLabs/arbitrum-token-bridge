@@ -45,7 +45,7 @@ export const useTransferDuration = (
 ): UseTransferDurationResult => {
   const { estimatedMinutesLeftCctp } = useRemainingTimeCctp(tx)
 
-  const { sourceChainId, destinationChainId, isCctp, childChainId } = tx
+  const { sourceChainId, destinationChainId, isCctp, childChainId, isOft } = tx
   const { isTestnet, isOrbitChain } = isNetwork(childChainId)
 
   const standardDepositDuration = getStandardDepositDuration(isTestnet)
@@ -68,6 +68,17 @@ export const useTransferDuration = (
     return {
       approximateDurationInMinutes: cctpTransferDuration,
       estimatedMinutesLeft: estimatedMinutesLeftCctp
+    }
+  }
+
+  if (isOft) {
+    const OFT_TRANSFER_DURATION_MINUTES = 5
+    return {
+      approximateDurationInMinutes: OFT_TRANSFER_DURATION_MINUTES,
+      estimatedMinutesLeft: getRemainingMinutes({
+        createdAt: tx.createdAt,
+        totalDuration: OFT_TRANSFER_DURATION_MINUTES
+      })
     }
   }
 
@@ -135,12 +146,15 @@ export function getWithdrawalConfirmationDate({
   return dayjs(createdAt).add(confirmationTimeInSeconds, 'second')
 }
 
-function getWithdrawalDuration(tx: MergedTransaction) {
+export function getWithdrawalDuration({
+  createdAt,
+  sourceChainId
+}: Pick<MergedTransaction, 'createdAt' | 'sourceChainId'>) {
   const confirmationDate = getWithdrawalConfirmationDate({
-    createdAt: tx.createdAt,
-    withdrawalFromChainId: tx.sourceChainId
+    createdAt: createdAt,
+    withdrawalFromChainId: sourceChainId
   })
-  return Math.max(confirmationDate.diff(tx.createdAt, 'minute'), 0)
+  return Math.max(confirmationDate.diff(createdAt, 'minute'), 0)
 }
 
 export function getStandardDepositDuration(testnet: boolean) {

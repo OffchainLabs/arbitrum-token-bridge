@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 
-import { FetchWithdrawalsFromSubgraphResult } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
+import { WithdrawalFromSubgraph } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import {
   getL2SubgraphClient,
   getSourceFromSubgraphClient
@@ -23,7 +23,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
 
 type WithdrawalResponse = {
   meta?: { source: string | null }
-  data: FetchWithdrawalsFromSubgraphResult[]
+  data: WithdrawalFromSubgraph[]
   message?: string // in case of any error
 }
 
@@ -133,7 +133,7 @@ export default async function handler(
     }`
     })
 
-    const transactions: FetchWithdrawalsFromSubgraphResult[] =
+    const transactions: WithdrawalFromSubgraph[] =
       subgraphResult.data.withdrawals.map((eventData: any) => {
         const {
           id,

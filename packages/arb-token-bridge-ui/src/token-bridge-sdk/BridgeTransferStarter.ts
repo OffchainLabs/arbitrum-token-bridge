@@ -61,6 +61,11 @@ export type TransferProps = {
   overrides?: TransferOverrides
 }
 
+export type TransferEstimateGasResult =
+  | GasEstimates
+  | DepositGasEstimates
+  | undefined
+
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
   signer: Signer
@@ -136,7 +141,7 @@ export abstract class BridgeTransferStarter {
 
   public abstract transferEstimateGas(
     props: TransferEstimateGasProps
-  ): Promise<GasEstimates | DepositGasEstimates | undefined>
+  ): Promise<TransferEstimateGasResult>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
 }
