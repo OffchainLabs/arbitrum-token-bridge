@@ -315,7 +315,7 @@ export function useOftTransactionHistory({
         if (error.status === 404 || retryCount >= 2) return
 
         // else, retry on error as usual
-        setTimeout(() => revalidate({ retryCount }), 10000)
+        setTimeout(() => revalidate({ retryCount }), 5_000)
       }
     }
   )
