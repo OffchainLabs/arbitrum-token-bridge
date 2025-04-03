@@ -117,7 +117,7 @@
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.11",
-    "satori": "^0.12.0",
+    "satori": "^0.12.2",
     "start-server-and-test": "^2.0.9",
     "tailwindcss": "^3.4.16",
     "ts-jest": "^29.2.5",
