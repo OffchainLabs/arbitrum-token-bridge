@@ -11818,10 +11818,10 @@ negotiator@0.6.3:
   resolved "https://registry.npmjs.org/negotiator/-/negotiator-0.6.3.tgz"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-next-query-params@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/next-query-params/-/next-query-params-5.0.0.tgz"
-  integrity sha512-Zm9nc0QgrTMaQwGdbICcTDaYS4oRcXo628Ye6JQGdp/9JzlhzDpzcGRqciK0S62yAyE3b5ozFpgzY0gDUEbLtw==
+next-query-params@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/next-query-params/-/next-query-params-5.1.0.tgz#4a013c001b87474188e581aa70298c0be3fa3152"
+  integrity sha512-sSdMLXdC6CExNNJgbpzeFEZvhR/i1LRYvh8IF4QvuZa5eZ4DSmxMNFQ2qXOd56wQkALOPGWd4vl9+d1L/XS0PQ==
   dependencies:
     tslib "^2.0.3"
 
