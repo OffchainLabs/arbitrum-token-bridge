@@ -5,6 +5,7 @@ import { ChainId } from '../../types/ChainId'
 import { useBalance } from '../../hooks/useBalance'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { useAccountType } from '../../hooks/useAccountType'
+import { ExternalLink } from '../common/ExternalLink'
 
 export const highlightOftTransactionHistoryDisclaimer = () => {
   const element = document.getElementById('usdt0-tx-history-disclaimer')
@@ -64,8 +65,10 @@ export function OftTransactionHistoryDisclaimer() {
         Transaction History for USDT/USDT0 Transfers (between Mainnet and
         Arbitrum One) made with LayerZero OFT protocol cannot be shown for{' '}
         <b>Smart-contract wallets</b>. In the meantime, please use other tools
-        like block-explorers (Etherscan and Arbiscan) to track your
-        transactions. We apologize for the inconvenience.
+        like block explorers (
+        <ExternalLink href="https://etherscan.io/">Etherscan</ExternalLink> and{' '}
+        <ExternalLink href="https://arbiscan.io/">Arbiscan</ExternalLink>) to
+        track your transactions. We apologize for the inconvenience.
       </p>
     </div>
   )

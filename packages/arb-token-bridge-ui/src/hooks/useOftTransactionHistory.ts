@@ -1,5 +1,4 @@
 import { ethers, utils } from 'ethers'
-import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
@@ -279,28 +278,24 @@ export function useOftTransactionHistory({
   walletAddress?: string
   isTestnet: boolean
 }) {
-  const { address } = useAccount()
-
-  const walletAddressToFetch = walletAddress ?? address
-
   const fetcher = async (url: string) => {
     const response = await fetch(url)
     if (!response.ok) {
       throw new Error('Failed to fetch OFT transaction history')
     }
 
-    const data: LayerZeroResponse = await response.json()
+    const layerZeroResponse: LayerZeroResponse = await response.json()
 
-    return data.data
+    return layerZeroResponse.data
       .filter(validateSourceAndDestinationChainIds) // filter out transactions that don't have Arbitrum supported chain ids
       .map(mapLayerZeroMessageToLayerZeroTransaction)
   }
 
   const { data, error, isLoading } = useSWRImmutable(
-    walletAddressToFetch
+    walletAddress
       ? `${
           isTestnet ? LAYERZERO_API_URL_TESTNET : LAYERZERO_API_URL_MAINNET
-        }/messages/wallet/${walletAddressToFetch}`
+        }/messages/wallet/${walletAddress}`
       : null,
     fetcher
   )
