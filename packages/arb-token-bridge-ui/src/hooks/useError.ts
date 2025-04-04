@@ -13,6 +13,8 @@ export type ErrorCategory =
   | 'token_transfer'
   | 'contract_interaction'
   | 'contract_validation'
+  | 'claim'
+  | 'allowance_check'
   | 'network_request'
   | 'network_response'
   | 'transaction_preparation'
@@ -44,7 +46,6 @@ export interface HandleErrorParams {
  * A unified hook acting as a Sentry logging facilitator.
  */
 export function useError() {
-  const { address } = useAccount()
   const [networks] = useNetworks()
 
   // Helper to gather common context data for Sentry
@@ -66,7 +67,7 @@ export function useError() {
         typeof window !== 'undefined' ? window.location.pathname : 'unknown',
       urlQuery: JSON.stringify(urlParams).substring(0, 200)
     }
-  }, [address, networks])
+  }, [networks])
 
   /**
    * Logs error details directly to Sentry based on caller-provided parameters.
@@ -77,10 +78,8 @@ export function useError() {
     mergedData: Record<string, any>,
     level: Sentry.SeverityLevel
   ) => {
-    // Check Sentry enable flag
-    if (process.env.NEXT_PUBLIC_SENTRY_ENABLED === 'false') {
-      if (process.env.NODE_ENV === 'development')
-        console.log('Sentry logging is disabled.')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Sentry logging is disabled.')
       return
     }
 
