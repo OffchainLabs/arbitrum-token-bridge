@@ -115,7 +115,7 @@
     "patch-package": "^8.0.0",
     "postcss": "^8.5.3",
     "postinstall-postinstall": "^2.1.0",
-    "prettier": "^2.7.1",
+    "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "satori": "^0.12.2",
     "start-server-and-test": "^2.0.11",
