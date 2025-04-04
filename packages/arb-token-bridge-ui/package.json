@@ -43,7 +43,7 @@
     "react-virtualized": "^9.22.6",
     "sharp": "^0.33.5",
     "swr": "^2.3.3",
-    "tailwind-merge": "^2.5.5",
+    "tailwind-merge": "^3.1.0",
     "use-query-params": "^2.2.1",
     "wagmi": "^0.12.18",
     "wcag-contrast": "^3.0.0",
