@@ -11,10 +11,10 @@ export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
   TStep extends { type: 'start' }
     ? void
     : //
-    TStep extends { type: 'return' }
-    ? void
-    : //
-      never
+      TStep extends { type: 'return' }
+      ? void
+      : //
+        never
 
 export type UiDriverStepGenerator<TStep extends UiDriverStep = UiDriverStep> = (
   context: UiDriverContext
