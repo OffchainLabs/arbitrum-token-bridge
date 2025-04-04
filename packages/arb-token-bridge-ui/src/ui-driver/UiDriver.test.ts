@@ -4,6 +4,7 @@ import {
   UiDriverStepExecutor,
   drive
 } from './UiDriver'
+import { it, expect } from 'vitest'
 
 it('successfully does step execution', async () => {
   let counter = 0
