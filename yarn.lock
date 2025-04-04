@@ -12855,15 +12855,15 @@ postcss@^8.5.3:
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
-posthog-js@^1.200.0:
-  version "1.200.0"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.200.0.tgz#46e89f85dc7ac7536ac3ce15b182ad3cec6ae9db"
-  integrity sha512-NuS9PF8whpxdG084XHzb/jE4WNRw7doej5fKzlTarzynbcblKiYbP/g9SMWCYcCAA63srIQzNOhbiaYDY7+y1A==
+posthog-js@^1.234.8:
+  version "1.234.8"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.234.8.tgz#4c4538fb48cc85ad38a32195bded8c9ed6f35dac"
+  integrity sha512-25E1HMPeyqtb+YumT6JeL6ppfoDyh9d1LLEgnFQVotyjn1SpvjrRpqscPyQjAtyFkq+upDyHksFAvZmdHPd7wg==
   dependencies:
     core-js "^3.38.1"
     fflate "^0.4.8"
     preact "^10.19.3"
-    web-vitals "^4.2.0"
+    web-vitals "^4.2.4"
 
 postinstall-postinstall@^2.1.0:
   version "2.1.0"
@@ -15874,7 +15874,7 @@ wcag-contrast@^3.0.0:
   dependencies:
     relative-luminance "^2.0.0"
 
-web-vitals@^4.2.0:
+web-vitals@^4.2.4:
   version "4.2.4"
   resolved "https://registry.yarnpkg.com/web-vitals/-/web-vitals-4.2.4.tgz#1d20bc8590a37769bd0902b289550936069184b7"
   integrity sha512-r4DIlprAGwJ7YM11VZp4R884m0Vmgr6EAKe3P+kO0PPj3Unqyvv59rczf6UiGcb9Z8QxZVcqKNwv/g0WNdWwsw==
