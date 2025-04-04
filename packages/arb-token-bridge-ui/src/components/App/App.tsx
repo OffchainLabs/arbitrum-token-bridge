@@ -9,15 +9,13 @@ import {
 } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
-import { createOvermind, Overmind } from 'overmind'
-import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
-import { config, useActions } from '../../state'
+import { useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
@@ -36,7 +34,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
-import { isDepositMode } from '../../util/isDepositMode'
 
 declare global {
   interface Window {
@@ -297,23 +294,19 @@ function ConnectedChainSyncer() {
 }
 
 export default function App() {
-  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-
   return (
-    <Provider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
-            <ConnectedChainSyncer />
-            <AppContextProvider>
-              <AppContent />
-            </AppContextProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
-      </ArbQueryParamProvider>
-    </Provider>
+    <ArbQueryParamProvider>
+      <WagmiConfig {...wagmiConfigProps}>
+        <RainbowKitProvider
+          theme={rainbowkitTheme}
+          {...rainbowKitProviderProps}
+        >
+          <ConnectedChainSyncer />
+          <AppContextProvider>
+            <AppContent />
+          </AppContextProvider>
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </ArbQueryParamProvider>
   )
 }

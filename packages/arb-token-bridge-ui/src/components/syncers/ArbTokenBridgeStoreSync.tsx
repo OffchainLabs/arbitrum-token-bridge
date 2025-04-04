@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   useArbTokenBridge,
   TokenBridgeParams
@@ -14,10 +14,17 @@ export function ArbTokenBridgeStoreSync({
 }): JSX.Element {
   const actions = useActions()
   const arbTokenBridge = useArbTokenBridge(tokenBridgeParams)
+  const arbTokenBridgeKey = JSON.stringify(arbTokenBridge)
+  const memoizedArbTokenBridge = useMemo(
+    () => arbTokenBridge,
+    [arbTokenBridgeKey]
+  )
 
   useEffect(() => {
-    actions.app.setArbTokenBridge(arbTokenBridge)
-  }, [arbTokenBridge])
+    if (arbTokenBridge) {
+      actions.app.setArbTokenBridge(arbTokenBridge)
+    }
+  }, [memoizedArbTokenBridge])
 
   return <></>
 }
