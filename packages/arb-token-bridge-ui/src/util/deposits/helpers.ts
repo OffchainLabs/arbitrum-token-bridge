@@ -30,6 +30,9 @@ import {
   isCustomDestinationAddressTx,
   normalizeTimestamp
 } from '../../state/app/utils'
+import { addToLocalStorageObjectSequentially } from '../CommonUtils'
+
+type DepositCompletionTimestampsLocalStorage = { [key: string]: string }
 
 export const updateAdditionalDepositData = async (
   depositTx: Transaction
@@ -249,6 +252,41 @@ const getRetryableFee = async ({
   return utils.formatEther(gasUsed)
 }
 
+const depositCompletionTimestampsLocalStorageKey =
+  'arbitrum:bridge:deposit-completion-timestamps'
+
+const getDepositCompletionTimestampFromCache = ({
+  txID,
+  childChainId
+}: Pick<Transaction, 'txID' | 'childChainId'>): string | undefined => {
+  const depositCompletionTimestamps = JSON.parse(
+    localStorage.getItem(depositCompletionTimestampsLocalStorageKey) || '{}'
+  ) as DepositCompletionTimestampsLocalStorage
+
+  const localStorageTransactionKey = `${childChainId}-${txID}`
+
+  return depositCompletionTimestamps[localStorageTransactionKey]
+}
+
+const setDepositCompletionTimestampFromCache = ({
+  txID,
+  childChainId,
+  timestamp
+}: Pick<Transaction, 'txID' | 'childChainId'> & {
+  timestamp: string | undefined
+}) => {
+  if (!timestamp) {
+    return
+  }
+
+  const localStorageTransactionKey = `${childChainId}-${txID}`
+
+  addToLocalStorageObjectSequentially({
+    localStorageKey: depositCompletionTimestampsLocalStorageKey,
+    localStorageValue: { [localStorageTransactionKey]: timestamp }
+  })
+}
+
 const updateETHDepositStatusData = async ({
   depositTx,
   ethDepositMessage,
@@ -261,23 +299,39 @@ const updateETHDepositStatusData = async ({
   childProvider: Provider
 }): Promise<Transaction> => {
   // from the eth-deposit-message, extract more things like retryableCreationTxID, status, etc
-
   if (!ethDepositMessage) return depositTx
 
-  const status = await ethDepositMessage.status()
+  const timestampResolvedFromCache =
+    getDepositCompletionTimestampFromCache(depositTx)
+
+  const status =
+    typeof timestampResolvedFromCache !== 'undefined'
+      ? EthDepositMessageStatus.DEPOSITED
+      : await ethDepositMessage.status()
   const isDeposited = status === EthDepositMessageStatus.DEPOSITED
 
   const retryableCreationTxID = ethDepositMessage.childTxHash
 
-  const childBlockNum = isDeposited
-    ? (await childProvider.getTransaction(retryableCreationTxID)).blockNumber
-    : null
+  let timestampResolved
 
-  const timestampResolved = childBlockNum
-    ? normalizeTimestamp(
-        (await childProvider.getBlock(childBlockNum)).timestamp
-      )
-    : null
+  if (typeof timestampResolvedFromCache !== 'undefined') {
+    timestampResolved = timestampResolvedFromCache
+  } else {
+    const childBlockNum = isDeposited
+      ? (await childProvider.getTransaction(retryableCreationTxID)).blockNumber
+      : null
+
+    timestampResolved = childBlockNum
+      ? normalizeTimestamp(
+          (await childProvider.getBlock(childBlockNum)).timestamp
+        )
+      : null
+
+    setDepositCompletionTimestampFromCache({
+      ...depositTx,
+      timestamp: String(timestampResolved)
+    })
+  }
 
   // return the data to populate on UI
   const updatedDepositTx: Transaction = {
@@ -331,6 +385,9 @@ const updateTokenDepositStatusData = async ({
 
   if (!parentToChildMsg) return updatedDepositTx
 
+  const timestampResolvedFromCache =
+    getDepositCompletionTimestampFromCache(depositTx)
+
   // get the status data of `parentToChildMsg`, if it is redeemed - `getSuccessfulRedeem` also returns its l2TxReceipt
   const res = await parentToChildMsg.getSuccessfulRedeem()
 
@@ -349,16 +406,30 @@ const updateTokenDepositStatusData = async ({
   const isDeposited =
     parentToChildMsgData.status === ParentToChildMessageStatus.REDEEMED
 
-  const childBlockNum = isDeposited
-    ? (await childProvider.getTransaction(parentToChildMsg.retryableCreationId))
-        .blockNumber
-    : null
+  let timestampResolved
 
-  const timestampResolved = childBlockNum
-    ? normalizeTimestamp(
-        (await childProvider.getBlock(childBlockNum)).timestamp
-      )
-    : null
+  if (typeof timestampResolvedFromCache !== 'undefined') {
+    timestampResolved = timestampResolvedFromCache
+  } else {
+    const childBlockNum = isDeposited
+      ? (
+          await childProvider.getTransaction(
+            parentToChildMsg.retryableCreationId
+          )
+        ).blockNumber
+      : null
+
+    timestampResolved = childBlockNum
+      ? normalizeTimestamp(
+          (await childProvider.getBlock(childBlockNum)).timestamp
+        )
+      : null
+
+    setDepositCompletionTimestampFromCache({
+      ...depositTx,
+      timestamp: String(timestampResolved)
+    })
+  }
 
   const completeDepositTx: Transaction = {
     ...updatedDepositTx,
@@ -391,7 +462,13 @@ const updateClassicDepositStatusData = async ({
     timestampCreated
   }
 
-  const status = await parentToChildMsg.status()
+  const timestampResolvedFromCache =
+    getDepositCompletionTimestampFromCache(depositTx)
+
+  const status =
+    typeof timestampResolvedFromCache !== 'undefined'
+      ? ParentToChildMessageStatus.REDEEMED
+      : await parentToChildMsg.status()
 
   const isCompletedEthDeposit =
     !isRetryableDeposit &&
@@ -416,13 +493,24 @@ const updateClassicDepositStatusData = async ({
     retryableCreationTxID: parentToChildMsg.retryableCreationId
   }
 
-  const l2BlockNum = childTxId
-    ? (await childProvider.getTransaction(childTxId)).blockNumber
-    : null
+  let timestampResolved
 
-  const timestampResolved = l2BlockNum
-    ? normalizeTimestamp((await childProvider.getBlock(l2BlockNum)).timestamp)
-    : null
+  if (typeof timestampResolvedFromCache !== 'undefined') {
+    timestampResolved = timestampResolvedFromCache
+  } else {
+    const l2BlockNum = childTxId
+      ? (await childProvider.getTransaction(childTxId)).blockNumber
+      : null
+
+    timestampResolved = l2BlockNum
+      ? normalizeTimestamp((await childProvider.getBlock(l2BlockNum)).timestamp)
+      : null
+
+    setDepositCompletionTimestampFromCache({
+      ...depositTx,
+      timestamp: String(timestampResolved)
+    })
+  }
 
   const completeDepositTx: Transaction = {
     ...updatedDepositTx,
