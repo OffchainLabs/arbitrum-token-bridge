@@ -82,7 +82,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.26.8",
+    "@babel/preset-env": "^7.26.9",
     "@next/eslint-plugin-next": "^13.1.5",
     "@synthetixio/synpress": "3.7.3",
     "@testing-library/react": "^16.1.0",
