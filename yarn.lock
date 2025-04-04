@@ -3025,10 +3025,10 @@
     qrcode "1.5.0"
     react-remove-scroll "2.5.4"
 
-"@rehooks/local-storage@^2.4.4":
-  version "2.4.4"
-  resolved "https://registry.npmjs.org/@rehooks/local-storage/-/local-storage-2.4.4.tgz"
-  integrity sha512-zE+kfOkG59n/1UTxdmbwktIosclr67Nlbf2MzUJ9mNtCSypVscNHeD1qT6JCSo5Pjj8DO893IKWNLJqKKzDL/Q==
+"@rehooks/local-storage@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.4.5.tgz#92c773ce623e168274557499679582cd32749f77"
+  integrity sha512-3Q4KtiUBaKoIDRK72BWfAy50ul6hbw29f/M7tyCzlMe2FbSsiQNok0WGeBLaYj4T2PJ7JMSJlSbUGY8RNsImmw==
 
 "@rollup/rollup-android-arm-eabi@4.22.4":
   version "4.22.4"

@@ -12,7 +12,7 @@
     "@heroicons/react": "^2.2.0",
     "@offchainlabs/cobalt": "^0.3.12",
     "@rainbow-me/rainbowkit": "^0.12.16",
-    "@rehooks/local-storage": "^2.4.4",
+    "@rehooks/local-storage": "^2.4.5",
     "@sentry/react": "^8.33.1",
     "@tippyjs/react": "^4.2.6",
     "@uidotdev/usehooks": "^2.4.1",
