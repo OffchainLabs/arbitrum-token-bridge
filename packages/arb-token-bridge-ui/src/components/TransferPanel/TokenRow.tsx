@@ -7,10 +7,7 @@ import {
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
-import {
-  listIdsToNames,
-  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
-} from '../../util/TokenListUtils'
+import { listIdsToNames } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   isTokenArbitrumOneNativeUSDC,
@@ -18,6 +15,7 @@ import {
   sanitizeTokenName,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
+import { isArbitrumToken as isArbitrumTokenCheck } from '../../util/ArbTokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
@@ -155,13 +153,7 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
 
   const balance = useBalanceOnSourceChain(token)
 
-  const isArbitrumToken = useMemo(() => {
-    if (!token) {
-      return false
-    }
-
-    return token.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)
-  }, [token])
+  const isArbitrumToken = isArbitrumTokenCheck(token)
 
   const isPotentialFakeArbitrumToken = useMemo(() => {
     if (!token || isArbitrumToken) {
@@ -169,8 +161,8 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
     }
 
     return (
-      token.name.toLowerCase().startsWith('arb') ||
-      token.symbol.toLowerCase().startsWith('arb')
+      token.name.toLowerCase().startsWith('arbitrum') ||
+      token.symbol.toLowerCase() === 'arb'
     )
   }, [token, isArbitrumToken])
 
@@ -228,6 +220,8 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
     isTokenArbitrumOneNativeUSDC(token?.address) ||
     isTokenArbitrumSepoliaNativeUSDC(token?.address)
 
+  const isArbitrumToken = isArbitrumTokenCheck(token)
+
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
     if (typeof bridgeTokens === 'undefined') {
@@ -242,8 +236,12 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
       return true
     }
 
-    return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [bridgeTokens, isArbitrumNativeUSDC, token])
+    if (isArbitrumToken) {
+      return true
+    }
+
+    return typeof bridgeTokens[token.address.toLowerCase()] !== 'undefined'
+  }, [bridgeTokens, isArbitrumNativeUSDC, isArbitrumToken, token])
 
   const decimals = useMemo(() => {
     if (token) {
