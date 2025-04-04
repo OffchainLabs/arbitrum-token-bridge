@@ -7,7 +7,6 @@ import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
-import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
 
 enum MainContentTabs {
   Bridge = 0,
@@ -33,8 +32,6 @@ export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
   const { selectedTab, setSelectedTab } = useMainContentTabs()
-
-  useBalanceUpdater()
 
   return (
     <>
