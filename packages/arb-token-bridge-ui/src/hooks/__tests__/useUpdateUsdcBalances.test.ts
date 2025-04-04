@@ -46,7 +46,7 @@ describe('getParentUsdcAddress', () => {
   })
 })
 
-describe.skip('getChildUsdcAddress', () => {
+describe.sequential('getChildUsdcAddress', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
