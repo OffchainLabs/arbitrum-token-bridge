@@ -1,4 +1,12 @@
-import { vi, describe, beforeAll, it, expect } from 'vitest'
+import {
+  vi,
+  describe,
+  beforeAll,
+  afterAll,
+  it,
+  expect,
+  MockInstance
+} from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
@@ -6,7 +14,7 @@ import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'
 
 describe('sanitizeQueryParams', () => {
-  let localStorageGetItemMock: typeof vi.mock
+  let localStorageGetItemMock: MockInstance<(key: string) => string | null>
 
   beforeAll(() => {
     const mockedOrbitChain_1 = createMockOrbitChain({
@@ -22,23 +30,26 @@ describe('sanitizeQueryParams', () => {
       parentChainId: ChainId.ArbitrumNova
     })
 
-    localStorageGetItemMock = global.Storage.prototype.getItem = vi.fn(key => {
-      if (key === customChainLocalStorageKey) {
-        return JSON.stringify([
-          mockedOrbitChain_1,
-          mockedOrbitChain_2,
-          mockedOrbitChain_3
-        ])
-      }
-      return null
-    })
+    localStorageGetItemMock = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation((key: string) => {
+        if (key === customChainLocalStorageKey) {
+          return JSON.stringify([
+            mockedOrbitChain_1,
+            mockedOrbitChain_2,
+            mockedOrbitChain_3
+          ])
+        }
+        return null
+      })
+
     registerCustomArbitrumNetwork(mockedOrbitChain_1)
     registerCustomArbitrumNetwork(mockedOrbitChain_2)
     registerCustomArbitrumNetwork(mockedOrbitChain_3)
   })
 
   afterAll(() => {
-    localStorageGetItemMock.mockReset()
+    localStorageGetItemMock
   })
 
   describe('when `destinationChainId` is valid and `sourceChainId` is valid', () => {
