@@ -8,6 +8,7 @@ import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
+import { useEffect } from 'react'
 
 enum MainContentTabs {
   Bridge = 0,
