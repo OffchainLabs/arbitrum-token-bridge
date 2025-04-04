@@ -13172,10 +13172,10 @@ query-string@^6.13.5:
     split-on-first "^1.0.0"
     strict-uri-encode "^2.0.0"
 
-query-string@^8.1.0:
-  version "8.1.0"
-  resolved "https://registry.npmjs.org/query-string/-/query-string-8.1.0.tgz"
-  integrity sha512-BFQeWxJOZxZGix7y+SByG3F36dA0AbTy9o6pSmKFcFz7DAj0re9Frkty3saBn3nHo3D0oZJ/+rx3r8H8r8Jbpw==
+query-string@^9.1.1:
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-9.1.1.tgz#dbfebb4196aeb2919915f2b2b81b91b965cf03a0"
+  integrity sha512-MWkCOVIcJP9QSKU52Ngow6bsAWAPlPK2MludXvcrS2bGZSl+T1qX9MZvRIkqUIkGLJquMJHWfsT6eRqUpp4aWg==
   dependencies:
     decode-uri-component "^0.4.1"
     filter-obj "^5.1.0"

@@ -33,7 +33,7 @@
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
     "posthog-js": "^1.200.0",
-    "query-string": "^8.1.0",
+    "query-string": "^9.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-loader-spinner": "^5.4.5",
