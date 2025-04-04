@@ -5,7 +5,7 @@ import {
 } from '../CCTP/useUpdateUsdcBalances'
 import { getL2ERC20Address } from '../../util/TokenUtils'
 import { ChainId } from '../../types/ChainId'
-import { vi } from 'vitest'
+import { vi, describe, it, expect } from 'vitest'
 
 vi.mock('../../util/TokenUtils', () => ({
   getL2ERC20Address: vi.fn()

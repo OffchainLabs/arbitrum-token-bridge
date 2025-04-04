@@ -2,7 +2,7 @@ import { BigNumber, constants } from 'ethers'
 import { getGasSummaryStatus } from '../TransferPanel/useGasSummary'
 import { ChainId } from '../../types/ChainId'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { vi } from 'vitest'
+import { vi, describe, it, expect } from 'vitest'
 
 vi.mock('../TransferPanel/useSelectedTokenDecimals', () => ({
   useSelectedTokenDecimals: vi.fn().mockReturnValue(18)

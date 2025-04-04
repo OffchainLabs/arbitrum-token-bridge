@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
-import { RenderHookResult, act, renderHook } from '@testing-library/react'
+import { describe, beforeAll, it, expect } from 'vitest'
+import { renderHook } from '@testing-library/react'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { MergedTransaction } from '../../state/app/state'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
