@@ -1,6 +1,4 @@
-/**
- * @jest-environment jsdom
- */
+import { vi } from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
@@ -8,7 +6,7 @@ import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'
 
 describe('sanitizeQueryParams', () => {
-  let localStorageGetItemMock: jest.Mock
+  let localStorageGetItemMock: typeof vi.mock
 
   beforeAll(() => {
     const mockedOrbitChain_1 = createMockOrbitChain({
@@ -24,18 +22,16 @@ describe('sanitizeQueryParams', () => {
       parentChainId: ChainId.ArbitrumNova
     })
 
-    localStorageGetItemMock = global.Storage.prototype.getItem = jest.fn(
-      key => {
-        if (key === customChainLocalStorageKey) {
-          return JSON.stringify([
-            mockedOrbitChain_1,
-            mockedOrbitChain_2,
-            mockedOrbitChain_3
-          ])
-        }
-        return null
+    localStorageGetItemMock = global.Storage.prototype.getItem = vi.fn(key => {
+      if (key === customChainLocalStorageKey) {
+        return JSON.stringify([
+          mockedOrbitChain_1,
+          mockedOrbitChain_2,
+          mockedOrbitChain_3
+        ])
       }
-    )
+      return null
+    })
     registerCustomArbitrumNetwork(mockedOrbitChain_1)
     registerCustomArbitrumNetwork(mockedOrbitChain_2)
     registerCustomArbitrumNetwork(mockedOrbitChain_3)

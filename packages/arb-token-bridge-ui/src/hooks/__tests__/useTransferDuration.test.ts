@@ -55,21 +55,7 @@ function mockTransactionObject({
 }
 
 const renderHookAsyncUseTransferDuration = async (tx: MergedTransaction) => {
-  let hook:
-    | RenderHookResult<
-        ReturnType<typeof useTransferDuration>,
-        MergedTransaction
-      >
-    | undefined
-
-  await act(async () => {
-    hook = renderHook(() => useTransferDuration(tx))
-  })
-
-  if (!hook) {
-    throw new Error('Hook is not defined')
-  }
-
+  const hook = renderHook(() => useTransferDuration(tx))
   return { result: hook.result }
 }
 

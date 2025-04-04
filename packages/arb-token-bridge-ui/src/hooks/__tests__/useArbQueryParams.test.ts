@@ -1,6 +1,3 @@
-/**
- * @jest-environment jsdom
- */
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'

@@ -2,13 +2,14 @@ import { BigNumber, constants } from 'ethers'
 import { getGasSummaryStatus } from '../TransferPanel/useGasSummary'
 import { ChainId } from '../../types/ChainId'
 import { CommonAddress } from '../../util/CommonAddressUtils'
+import { vi } from 'vitest'
 
-jest.mock('../TransferPanel/useSelectedTokenDecimals', () => ({
-  useSelectedTokenDecimals: jest.fn().mockReturnValue(18)
+vi.mock('../TransferPanel/useSelectedTokenDecimals', () => ({
+  useSelectedTokenDecimals: vi.fn().mockReturnValue(18)
 }))
 
-jest.mock('../../components/TransferPanel/hooks/useAmountBigNumber', () => ({
-  useAmountBigNumber: jest.fn()
+vi.mock('../../components/TransferPanel/hooks/useAmountBigNumber', () => ({
+  useAmountBigNumber: vi.fn()
 }))
 
 describe('getGasSummaryStatus', () => {

@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { BigNumber, constants } from 'ethers'
 
@@ -12,16 +13,16 @@ import { ChainId } from '../../types/ChainId'
 type BridgeToken = NonNullable<ReturnType<typeof useSelectedToken>[0]>
 const Erc20Type = 'ERC20' as BridgeToken['type']
 
-jest.mock('../useNetworks', () => ({
-  useNetworks: jest.fn()
+vi.mock('../useNetworks', () => ({
+  useNetworks: vi.fn()
 }))
 
-jest.mock('../useBalances', () => ({
-  useBalances: jest.fn()
+vi.mock('../useBalances', () => ({
+  useBalances: vi.fn()
 }))
 
-jest.mock('../useSelectedToken', () => ({
-  useSelectedToken: jest.fn().mockReturnValue([
+vi.mock('../useSelectedToken', () => ({
+  useSelectedToken: vi.fn().mockReturnValue([
     {
       type: 'ERC20',
       decimals: 18,
@@ -31,21 +32,21 @@ jest.mock('../useSelectedToken', () => ({
       l2Address: '0x234',
       listIds: new Set('1')
     },
-    jest.fn()
+    vi.fn()
   ])
 }))
 
-jest.mock('wagmi', () => ({
-  ...jest.requireActual('wagmi'),
+vi.mock('wagmi', async () => ({
+  ...(await vi.importActual('wagmi')),
   useAccount: () => ({
     isConnected: true
   })
 }))
 
 describe('useSelectedTokenBalances', () => {
-  const mockedUseNetworks = jest.mocked(useNetworks)
-  const mockedUseBalances = jest.mocked(useBalances)
-  const mockedUseSelectedToken = jest.mocked(useSelectedToken)
+  const mockedUseNetworks = vi.mocked(useNetworks)
+  const mockedUseBalances = vi.mocked(useBalances)
+  const mockedUseSelectedToken = vi.mocked(useSelectedToken)
 
   beforeAll(() => {
     mockedUseBalances.mockReturnValue({
@@ -56,10 +57,10 @@ describe('useSelectedTokenBalances', () => {
       },
       ethChildBalance: BigNumber.from(300_000),
       erc20ChildBalances: { '0x234': BigNumber.from(400_000) },
-      updateEthChildBalance: jest.fn(),
-      updateEthParentBalance: jest.fn(),
-      updateErc20ParentBalances: jest.fn(),
-      updateErc20ChildBalances: jest.fn()
+      updateEthChildBalance: vi.fn(),
+      updateEthParentBalance: vi.fn(),
+      updateErc20ParentBalances: vi.fn(),
+      updateErc20ChildBalances: vi.fn()
     })
   })
 
@@ -71,7 +72,7 @@ describe('useSelectedTokenBalances', () => {
         destinationChain: getWagmiChain(ChainId.ArbitrumSepolia),
         destinationChainProvider: getProviderForChainId(ChainId.ArbitrumSepolia)
       },
-      jest.fn()
+      vi.fn()
     ])
 
     const { result } = renderHook(useSelectedTokenBalances)
@@ -89,7 +90,7 @@ describe('useSelectedTokenBalances', () => {
         destinationChain: getWagmiChain(ChainId.Sepolia),
         destinationChainProvider: getProviderForChainId(ChainId.Sepolia)
       },
-      jest.fn()
+      vi.fn()
     ])
 
     const { result } = renderHook(useSelectedTokenBalances)
@@ -109,7 +110,7 @@ describe('useSelectedTokenBalances', () => {
         address: '0x222',
         listIds: new Set('2')
       },
-      jest.fn()
+      vi.fn()
     ])
 
     mockedUseNetworks.mockReturnValue([
@@ -119,7 +120,7 @@ describe('useSelectedTokenBalances', () => {
         destinationChain: getWagmiChain(ChainId.ArbitrumSepolia),
         destinationChainProvider: getProviderForChainId(ChainId.ArbitrumSepolia)
       },
-      jest.fn()
+      vi.fn()
     ])
 
     const { result } = renderHook(useSelectedTokenBalances)
@@ -139,7 +140,7 @@ describe('useSelectedTokenBalances', () => {
         address: '0x222',
         listIds: new Set('2')
       },
-      jest.fn()
+      vi.fn()
     ])
 
     mockedUseNetworks.mockReturnValue([
@@ -149,7 +150,7 @@ describe('useSelectedTokenBalances', () => {
         destinationChain: getWagmiChain(ChainId.Sepolia),
         destinationChainProvider: getProviderForChainId(ChainId.Sepolia)
       },
-      jest.fn()
+      vi.fn()
     ])
 
     const { result } = renderHook(useSelectedTokenBalances)
@@ -160,7 +161,7 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return null as source balance and null as destination balance when source chain is Sepolia and destination chain is Arbitrum Sepolia, and selected token is null', () => {
-    mockedUseSelectedToken.mockReturnValueOnce([null, jest.fn()])
+    mockedUseSelectedToken.mockReturnValueOnce([null, vi.fn()])
 
     mockedUseNetworks.mockReturnValue([
       {
@@ -169,7 +170,7 @@ describe('useSelectedTokenBalances', () => {
         destinationChain: getWagmiChain(ChainId.ArbitrumSepolia),
         destinationChainProvider: getProviderForChainId(ChainId.ArbitrumSepolia)
       },
-      jest.fn()
+      vi.fn()
     ])
 
     const { result } = renderHook(useSelectedTokenBalances)
@@ -180,7 +181,7 @@ describe('useSelectedTokenBalances', () => {
   })
 
   it('should return null as source balance and null as destination balance when source chain is Arbitrum Sepolia and destination chain is Sepolia, and selected token is null', () => {
-    mockedUseSelectedToken.mockReturnValueOnce([null, jest.fn()])
+    mockedUseSelectedToken.mockReturnValueOnce([null, vi.fn()])
 
     mockedUseNetworks.mockReturnValue([
       {
@@ -189,7 +190,7 @@ describe('useSelectedTokenBalances', () => {
         destinationChain: getWagmiChain(ChainId.Sepolia),
         destinationChainProvider: getProviderForChainId(ChainId.Sepolia)
       },
-      jest.fn()
+      vi.fn()
     ])
 
     const { result } = renderHook(useSelectedTokenBalances)
