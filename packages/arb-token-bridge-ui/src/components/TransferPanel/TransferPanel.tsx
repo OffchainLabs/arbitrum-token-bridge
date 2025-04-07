@@ -343,19 +343,20 @@ export function TransferPanel() {
       console.log(step)
     }
 
+    if (step.type === 'return') {
+      throw Error(
+        `[stepExecutor] "return" step should be handled outside the executor`
+      )
+    }
+
     switch (step.type) {
       case 'start': {
         setTransferring(true)
         return
       }
 
-      case 'dialog':
+      case 'dialog': {
         return confirmDialog(step.payload)
-
-      case 'return': {
-        throw Error(
-          `[stepExecutor] "return" step should be handled outside the executor`
-        )
       }
     }
   }
