@@ -184,7 +184,7 @@ export function NetworkContainer({
   )
 }
 
-export const TransferPanelMain = React.memo(() => {
+export function TransferPanelMain() {
   const [networks] = useNetworks()
   const { childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
@@ -260,6 +260,4 @@ export const TransferPanelMain = React.memo(() => {
       <TransferDisabledDialog />
     </div>
   )
-})
-
-TransferPanelMain.displayName = 'TransferPanelMain'
+}
