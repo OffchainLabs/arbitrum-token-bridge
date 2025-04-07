@@ -9,6 +9,10 @@ import { useNetworksRelationship } from './useNetworksRelationship'
 import { useArbQueryParams } from './useArbQueryParams'
 import { useAppState } from '../state'
 import { getUSDCAddresses } from '../state/cctpState'
+import { useNativeCurrency } from './useNativeCurrency'
+
+// stable reference
+const emptyData = {}
 
 export function useBalances() {
   const {
@@ -18,14 +22,19 @@ export function useBalances() {
     current: { bridgeTokens }
   } = useLatest(arbTokenBridge)
   const [networks] = useNetworks()
-  const { childChain, parentChain, isDepositMode } =
+  const { childChain, parentChain, childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const [{ destinationAddress }] = useArbQueryParams()
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
   const parentWalletAddress = isDepositMode
     ? walletAddress
     : destinationAddressOrWalletAddress
+
+  const nativeCurrencyAddress = nativeCurrency.isCustom
+    ? nativeCurrency.address
+    : undefined
 
   const childWalletAddress = isDepositMode
     ? destinationAddressOrWalletAddress
@@ -47,22 +56,32 @@ export function useBalances() {
     walletAddress: childWalletAddress
   })
 
-  const { data: erc20ParentBalances = {} } = useSWR(
+  const { data: erc20ParentBalances = emptyData } = useSWR(
     typeof bridgeTokens !== 'undefined'
       ? [
           parentWalletAddress,
           bridgeTokens,
           parentChain.id,
+          nativeCurrencyAddress,
           'useBalances',
           'erc20'
         ]
       : null,
-    ([_parentWalletAddress, _bridgeTokens, _parentChainId]) => {
+    ([
+      _parentWalletAddress,
+      _bridgeTokens,
+      _parentChainId,
+      _nativeCurrencyAddress
+    ]) => {
       const parentAddresses = Object.keys(_bridgeTokens)
       const parentUsdcAddress = getUSDCAddresses(_parentChainId)?.USDC
 
       if (parentUsdcAddress && !_bridgeTokens[parentUsdcAddress]) {
         parentAddresses.push(parentUsdcAddress)
+      }
+
+      if (_nativeCurrencyAddress) {
+        parentAddresses.push(_nativeCurrencyAddress)
       }
 
       return updateErc20ParentBalances(parentAddresses)
@@ -72,12 +91,14 @@ export function useBalances() {
     }
   )
 
-  const { data: erc20ChildBalances = {} } = useSWR(
+  const { data: erc20ChildBalances = emptyData } = useSWR(
     typeof bridgeTokens !== 'undefined'
       ? [
           childWalletAddress,
           bridgeTokens,
           childChain.id,
+          // nativeCurrencyAddress is not used but this way we share key with parent balances and can reuse cached data
+          nativeCurrencyAddress,
           'useBalances',
           'erc20'
         ]
