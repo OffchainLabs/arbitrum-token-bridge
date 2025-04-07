@@ -51,11 +51,14 @@ export async function* step<TStep extends UiDriverStep>(
   return yield step
 }
 
+/**
+ * @returns whether there was an early return
+ */
 export async function drive<TStep extends UiDriverStep>(
   generator: UiDriverStepGenerator<TStep>,
   executor: UiDriverStepExecutor<TStep>,
   context: UiDriverContext
-): Promise<void> {
+): Promise<boolean> {
   const flow = generator(context)
 
   let nextStep = await flow.next()
@@ -65,7 +68,7 @@ export async function drive<TStep extends UiDriverStep>(
 
     // handle special type for early return
     if (step.type === 'return') {
-      return
+      return true
     }
 
     // execute current step and obtain the result
@@ -74,4 +77,6 @@ export async function drive<TStep extends UiDriverStep>(
     // pass the result back into the generator
     nextStep = await flow.next(result)
   }
+
+  return false
 }

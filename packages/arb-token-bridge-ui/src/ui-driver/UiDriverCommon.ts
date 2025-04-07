@@ -19,7 +19,6 @@ export const stepGeneratorForDialog: UiDriverStepGeneratorForDialog =
 
     if (!userInput) {
       yield* step({ type: 'return' })
-      return
     }
   }
 

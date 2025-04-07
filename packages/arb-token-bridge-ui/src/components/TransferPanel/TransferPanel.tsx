@@ -378,10 +378,18 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
 
-      await drive(stepGeneratorForCctp, stepExecutor, {
+      const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
         isSmartContractWallet
       })
+
+      // this is only necessary while we are migrating to the ui driver
+      // so we can know when to stop the execution of the rest of the function
+      //
+      // after we are done, we can change the return type of `drive` to `void`
+      if (returnEarly) {
+        return
+      }
 
       const cctpTransferStarter = new CctpTransferStarter({
         sourceChainProvider,
