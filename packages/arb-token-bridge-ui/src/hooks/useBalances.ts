@@ -8,6 +8,7 @@ import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useArbQueryParams } from './useArbQueryParams'
 import { useAppState } from '../state'
+import { getUSDCAddresses } from '../state/cctpState'
 
 export function useBalances() {
   const {
@@ -56,8 +57,14 @@ export function useBalances() {
           'erc20'
         ]
       : null,
-    ([_parentWalletAddress, _bridgeTokens]) => {
+    ([_parentWalletAddress, _bridgeTokens, _parentChainId]) => {
       const parentAddresses = Object.keys(_bridgeTokens)
+      const parentUsdcAddress = getUSDCAddresses(_parentChainId)?.USDC
+
+      if (parentUsdcAddress && !_bridgeTokens[parentUsdcAddress]) {
+        parentAddresses.push(parentUsdcAddress)
+      }
+
       return updateErc20ParentBalances(parentAddresses)
     },
     {
@@ -75,12 +82,26 @@ export function useBalances() {
           'erc20'
         ]
       : null,
-    ([_parentWalletAddress, _bridgeTokens]) => {
-      const childAddresses = Object.values(_bridgeTokens)
-        .map(t => t?.l2Address)
-        .filter(Boolean) as string[]
+    ([_parentWalletAddress, _bridgeTokens, _childChainId]) => {
+      const childUsdcAddress = getUSDCAddresses(_childChainId)?.USDC
+      const childUsdceAddress =
+        getUSDCAddresses(_childChainId)?.[
+          'USDC.e' as keyof ReturnType<typeof getUSDCAddresses>
+        ]
 
-      return updateErc20ChildBalances(childAddresses)
+      const definedAddresses = [childUsdcAddress, childUsdceAddress].filter(
+        Boolean
+      ) as string[]
+
+      const childAddressesSet = new Set<string>(definedAddresses)
+
+      Object.values(_bridgeTokens).forEach(token => {
+        if (token?.l2Address) {
+          childAddressesSet.add(token.l2Address)
+        }
+      })
+
+      return updateErc20ChildBalances([...childAddressesSet])
     },
     {
       refreshInterval: 10_000
