@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { ExternalLink } from '../common/ExternalLink'
 import { ChainId } from '../../types/ChainId'
 import { useBalance } from '../../hooks/useBalance'
 import { CommonAddress } from '../../util/CommonAddressUtils'
+import { useAccountType } from '../../hooks/useAccountType'
+import { ExternalLink } from '../common/ExternalLink'
 
 export const highlightOftTransactionHistoryDisclaimer = () => {
   const element = document.getElementById('usdt0-tx-history-disclaimer')
@@ -18,9 +19,10 @@ export const highlightOftTransactionHistoryDisclaimer = () => {
   }, 3000)
 }
 
-//only show this disclaimer if the user has positive balances of `CommonAddress.Ethereum.USDT` or `CommonAddress.Arbitrum.USDT`
+//only show this disclaimer if the smart contract wallet has positive balances of `CommonAddress.Ethereum.USDT` or `CommonAddress.Arbitrum.USDT`
 export function OftTransactionHistoryDisclaimer() {
   const { address: walletAddress } = useAccount()
+  const { isSmartContractWallet } = useAccountType()
 
   const {
     erc20: [mainnetBalances]
@@ -43,8 +45,8 @@ export function OftTransactionHistoryDisclaimer() {
       (mainnetUsdtBalance && mainnetUsdtBalance.gt(0)) ||
       (arbOneUsdtBalance && arbOneUsdtBalance.gt(0))
 
-    return userHasUsdtBalance
-  }, [mainnetBalances, arbOneBalances])
+    return userHasUsdtBalance && isSmartContractWallet
+  }, [mainnetBalances, arbOneBalances, isSmartContractWallet])
 
   if (!showDisclaimer) {
     return null
@@ -61,15 +63,12 @@ export function OftTransactionHistoryDisclaimer() {
       </p>
       <p className="text-xs">
         Transaction History for USDT/USDT0 Transfers (between Mainnet and
-        Arbitrum One) made with LayerZero OFT protocol can be found on{' '}
-        <ExternalLink
-          href={`https://layerzeroscan.com/address/${walletAddress}`}
-          className="underline hover:opacity-70"
-        >
-          LayerZero Scanner
-        </ExternalLink>{' '}
-        . We are working on integrating those directly into this transaction
-        history page.
+        Arbitrum One) made with LayerZero OFT protocol cannot be shown for{' '}
+        <b>Smart-contract wallets</b>. In the meantime, please use other tools
+        like block explorers (
+        <ExternalLink href="https://etherscan.io/">Etherscan</ExternalLink> and{' '}
+        <ExternalLink href="https://arbiscan.io/">Arbiscan</ExternalLink>) to
+        track your transactions. We apologize for the inconvenience.
       </p>
     </div>
   )
