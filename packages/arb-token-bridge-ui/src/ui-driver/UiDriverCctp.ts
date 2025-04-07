@@ -1,7 +1,7 @@
 import { step, UiDriverStepGenerator } from './UiDriver'
 import {
   stepGeneratorForDialog,
-  stepGeneratorForDialogToCheckScwDestinationAddress
+  stepGeneratorForSmartContractWalletDestinationDialog
 } from './UiDriverCommon'
 
 export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
@@ -12,5 +12,5 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
 
   yield* step({ type: 'start' })
   yield* stepGeneratorForDialog(dialog)
-  yield* stepGeneratorForDialogToCheckScwDestinationAddress(context)
+  yield* stepGeneratorForSmartContractWalletDestinationDialog(context)
 }

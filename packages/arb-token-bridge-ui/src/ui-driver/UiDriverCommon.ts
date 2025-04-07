@@ -22,7 +22,7 @@ export const stepGeneratorForDialog: UiDriverStepGeneratorForDialog =
     }
   }
 
-export const stepGeneratorForDialogToCheckScwDestinationAddress: UiDriverStepGenerator =
+export const stepGeneratorForSmartContractWalletDestinationDialog: UiDriverStepGenerator =
   async function* (context) {
     if (
       context.isSmartContractWallet &&
