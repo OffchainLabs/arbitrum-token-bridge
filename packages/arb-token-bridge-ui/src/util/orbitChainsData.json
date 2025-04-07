@@ -913,52 +913,6 @@
       }
     },
     {
-      "chainId": 149,
-      "confirmPeriodBlocks": 45818,
-      "ethBridge": {
-        "bridge": "0xa2ed3b6B4069295F5C89F60B61a196dE09741fb6",
-        "inbox": "0xBC0862181F93f2fef61Cd5Edd4C7D8C5cCDb76AE",
-        "outbox": "0x51229C00f364F40dF07C4e71de02e6D16Ffb1aEa",
-        "rollup": "0x1210118afD15EF90CA4f83cF65dc659876299e7A",
-        "sequencerInbox": "0xf80Ce375724AF270D23526B93c37E9B17A64bD8a"
-      },
-      "nativeToken": "0x7777778E9199FBC424b7494D55D26579c011E8c6",
-      "explorerUrl": "https://socialnetwork-mainnet.explorer.alchemy.com/",
-      "rpcUrl": "https://socialnetwork-mainnet.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": false,
-      "name": "Social Network",
-      "slug": "social-network",
-      "parentChainId": 1,
-      "tokenBridge": {
-        "parentCustomGateway": "0xE32125cE1A8fFf30B5c0bB164B7E81816CA626F6",
-        "parentErc20Gateway": "0xB2e209Af16f087D2c985fFcee64EcabEF10A149F",
-        "parentGatewayRouter": "0x7eAc61b1477906a94e35F5efFAC24305C1654A19",
-        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0xE00D3DBD78aE6D674bE410Eb4828611897579746",
-        "childErc20Gateway": "0x33888CC3084689e2929277488D6D4f20a90B83BB",
-        "childGatewayRouter": "0x5cCcde8552d6eb4f27313766fe4D590b4677fbF8",
-        "childMultiCall": "0x7Cab274d056ec9CdB4231B30a36D36FD789DF9C3",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#12266B",
-        "network": {
-          "name": "Social Network",
-          "logo": "/images/SocialMainnet_Logo.webp"
-        },
-        "nativeTokenData": {
-          "name": "Earth",
-          "symbol": "Earth"
-        }
-      }
-    },
-    {
       "chainId": 140,
       "confirmPeriodBlocks": 1081,
       "ethBridge": {
@@ -1190,6 +1144,54 @@
           "name": "BirdLayer",
           "logo": "/images/BirdLayer_Logo.png",
           "description": "Birdlayer - an Omni-Trading Layer3 platform using Arbitrum Orbit, connecting EVM and non-EVM ecosystems for seamless trading."
+        }
+      }
+    },
+    {
+      "chainId": 98866,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x35381f63091926750F43b2A7401B083263aDEF83",
+        "inbox": "0x943fc691242291B74B105e8D19bd9E5DC2fcBa1D",
+        "outbox": "0x7e4627bC114Fcd12ba912103279FD2858E644E71",
+        "rollup": "0x35c60Cc77b0A8bf6F938B11bd3E9D319a876c2aC",
+        "sequencerInbox": "0x85eC1b9138a8b9659A51e2b51bb0861901040b59"
+      },
+      "nativeToken": "0x4C1746A800D224393fE2470C70A35717eD4eA5F1",
+      "explorerUrl": "https://phoenix-explorer.plumenetwork.xyz/",
+      "rpcUrl": "https://phoenix-rpc.plumenetwork.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Plume Mainnet",
+      "slug": "plume-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2053fcB0AC660d8B6769dDD9d02031EDa103F440",
+        "parentErc20Gateway": "0xE2C902BC61296531e556962ffC81A082b82f5F28",
+        "parentGatewayRouter": "0x17551CBD1ed02768b00D5Bd198c2D86a4c7ee43d",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xB9F9A04c11C0cCdb9d20bBc95929032B82b52D20",
+        "childErc20Gateway": "0x3955A911411cfae01c8B6Fd0D57c08DfE4428e38",
+        "childGatewayRouter": "0xEFE6F45507C24Bb85Fa25d417fe7d43763b9dE3d",
+        "childMultiCall": "0x73613BfF05CdF95d849A8280B21a01B6D5397644",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FF3D00",
+        "network": {
+          "name": "Plume Mainnet",
+          "logo": "/images/PlumeMainnet_Logo.svg",
+          "description": "Plume Network is the first full-stack L1 RWA Chain and ecosystem purpose-built for RWAfi, enabling the rapid adoption and demand-driven integration of real world assets. With 180+ projects building on the network, Plume offers a composable, EVM-compatible environment for onboarding and managing diverse real world assets. Coupled with an end-to-end tokenization engine and a network of financial infrastructure partners, Plume simplifies asset onboarding and enables seamless DeFi integration for RWAs so anyone can tokenize real world assets, distribute them globally, and make them useful for native crypto users."
+        },
+        "nativeTokenData": {
+          "name": "Plume",
+          "symbol": "PLUME",
+          "logoUrl": "/images/PlumeMainnet_NativeTokenLogo.png"
         }
       }
     }
@@ -1430,54 +1432,6 @@
       }
     },
     {
-      "chainId": 749,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0x57dfFb3C5446342B35217B76bA422d6aefe624c5",
-        "inbox": "0xb1118863AFdbEe5515C0D3a2522d642E65C0feA2",
-        "outbox": "0x41f72BdF0c63102052b4a22B92999f632bd1910f",
-        "rollup": "0x2Cd91ca21c843c7E1A06d122FdE5618E915685C4",
-        "sequencerInbox": "0x43ECa7bc80Dd5e6d0a26B3fe71F659d04074ad45"
-      },
-      "nativeToken": "0x79a1ca540e4b72280b8220e1fb6799cbca540bbd",
-      "explorerUrl": "https://socialnetwork-testnet.explorer.alchemy.com",
-      "rpcUrl": "https://socialnetwork-testnet.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Social Testnet",
-      "slug": "social-testnet",
-      "parentChainId": 17000,
-      "tokenBridge": {
-        "parentCustomGateway": "0xA44D215Af25B6C41aEB396470bD566e6Ff6aF883",
-        "parentErc20Gateway": "0xD2cC26a4134e9a4A265dE3F5F53EF200fbceCBa7",
-        "parentGatewayRouter": "0x6b08DFE55c4705F462CFA8055B2B38E66322D585",
-        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x850d2501E6Da6B105aFb689529497B7024776E78",
-        "childErc20Gateway": "0xe17851222aba0821EAfc4F0AE8fDf4d8827124fa",
-        "childGatewayRouter": "0x9A2e67eE268cE392A2D91D8fF87bac1D45980B98",
-        "childMultiCall": "0xc5DD7Dab959Eb221911a58dC469d769270C2De2F",
-        "childProxyAdmin": "0xe762728C1022dAe5D2d0f4a0317944B9d70B309C",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#12266B",
-        "network": {
-          "name": "Social Testnet",
-          "logo": "/images/SocialTestnetLogo.webp",
-          "description": ""
-        },
-        "nativeTokenData": {
-          "name": "social.network",
-          "symbol": "EARTH",
-          "logoUrl": ""
-        }
-      }
-    },
-    {
       "chainId": 10058112,
       "confirmPeriodBlocks": 150,
       "ethBridge": {
@@ -1676,8 +1630,8 @@
       "rpcUrl": "https://test-rpc.plumenetwork.xyz/",
       "isCustom": true,
       "isTestnet": true,
-      "name": "Plume Devnet",
-      "slug": "plume-devnet",
+      "name": "Plume Devnet (Legacy)",
+      "slug": "plume-devnet-legacy",
       "parentChainId": 11155111,
       "tokenBridge": {
         "parentCustomGateway": "0xa8168b76Aa023228CaA8Ef5110477cD6d02F1508",
@@ -1698,9 +1652,9 @@
       "bridgeUiConfig": {
         "color": "#F43B3A",
         "network": {
-          "name": "Plume Devnet",
+          "name": "Plume Devnet (Legacy)",
           "logo": "/images/PlumeDevnet_Logo.png",
-          "description": "Bringing the real world onchain. Optimized for real world assets."
+          "description": "(Legacy) Bringing the real world onchain. Optimized for real world assets."
         }
       }
     },
@@ -1939,6 +1893,148 @@
           "name": "Kick",
           "symbol": "KICK",
           "logoUrl": "/images/XProtocolSepolia_Logo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 98867,
+      "confirmPeriodBlocks": 60,
+      "ethBridge": {
+        "bridge": "0xC55b89c17d7a35877FA4ea818fea2a70d5765f1c",
+        "inbox": "0xb48cdff890199f5De31514024B95F8664F8Af222",
+        "outbox": "0x3F6e2Ee3406b18b7F5ce3D0447d3aD8fbc807744",
+        "rollup": "0x76268c4a75D1bE588356569acbfE03366d9eDCbD",
+        "sequencerInbox": "0xbCa991f1831bE1F1E7e5576d5F84A645e70F3E4d"
+      },
+      "nativeToken": "0x4C1746A800D224393fE2470C70A35717eD4eA5F1",
+      "explorerUrl": "https://testnet-explorer.plumenetwork.xyz",
+      "rpcUrl": "https://testnet-rpc.plumenetwork.xyz",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Plume Testnet",
+      "slug": "plume-testnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x00a9bBD46f51BCe24540246464266d4b21Cd82A0",
+        "parentErc20Gateway": "0xB57388059e3e2C13a6cb9E551dA6B5D80dCf8a47",
+        "parentGatewayRouter": "0xF06D7785E023FFdE5E0daAFc40d268c2DD6bB1eD",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8EC0C8CAc02964ab523636F2705e4AD5575D2616",
+        "childErc20Gateway": "0x53b1F1590Fc5E51d2620f17c49E236DE85482384",
+        "childGatewayRouter": "0x77510dC7fbB7a9861d233404794f6446d4BbFdc7",
+        "childMultiCall": "0x3db1bB2Dc478bFF895bc8ac7C806bA5676B629eD",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FF3D00",
+        "network": {
+          "name": "Plume Testnet",
+          "logo": "/images/PlumeTestnet_Logo.svg",
+          "description": "Plume Network is the first full-stack L1 RWA Chain and ecosystem purpose-built for RWAfi, enabling the rapid adoption and demand-driven integration of real world assets. With 180+ projects building on the network, Plume offers a composable, EVM-compatible environment for onboarding and managing diverse real world assets. Coupled with an end-to-end tokenization engine and a network of financial infrastructure partners, Plume simplifies asset onboarding and enables seamless DeFi integration for RWAs so anyone can tokenize real world assets, distribute them globally, and make them useful for native crypto users."
+        },
+        "nativeTokenData": {
+          "name": "Plume",
+          "symbol": "PLUME",
+          "logoUrl": "/images/PlumeTestnet_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 905905,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x8dE39e75fC6E415dD3761339eA512A7550E70B4b",
+        "inbox": "0x5ae4ceed2797288669eB003E7c24D48A2882D319",
+        "outbox": "0xf625af7a01479DCd65D1686B95F4aA2dd1984Ec3",
+        "rollup": "0x0FE7Bd483a45491BFD7D13851e03c45d0661d9BC",
+        "sequencerInbox": "0xA661704f9E841af0f79322c1542cEE68B7736eD3"
+      },
+      "nativeToken": "0x12630f88b4ac181bad45089ba1d0d5dbed708083",
+      "explorerUrl": "https://openloot-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://openloot-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "OpenLoot Sepolia",
+      "slug": "openloot-sepolia",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0xE305C5bEBF1971C42183500dc4034a64D8afa5e8",
+        "parentErc20Gateway": "0x81172d0855b54FeFb2048F36b3cD55e1F7a87c6e",
+        "parentGatewayRouter": "0xD14d6F31a6f67714fD5B1f1C23BAf316781F9B75",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8Dfe9813504B1A5dB8DF670086bC7D75398F3db5",
+        "childErc20Gateway": "0x1190609B568f2f634F13eDD3FA3A0aB2FA1E4bd0",
+        "childGatewayRouter": "0xf8F8E4FdE93C21f9EF1Fa3c6F72bbb6C6f866593",
+        "childMultiCall": "0x3c23Fe6E20DbA2b8edEE1f9550F176F5959187e5",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#e67d22",
+        "network": {
+          "name": "OpenLoot Sepolia",
+          "logo": "/images/OpenLootSepolia_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Openloot",
+          "symbol": "OL",
+          "logoUrl": "/images/OpenLootSepolia_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 2022091,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x0B61D503175D174E134A7DB407d077D84B0c6eD4",
+        "inbox": "0xa26A0DE07De346e33f7c41402E5e0a46AACa2A7F",
+        "outbox": "0xC9cB354a29047C796a51CDf5fA579d2e6a293F3e",
+        "rollup": "0x097f101c7b6129ADcc13cf2381FbA384Df4e1E9B",
+        "sequencerInbox": "0xC7cB05a5DEBD4ed2e03829E977F26119Fc222d5c"
+      },
+      "nativeToken": "0xefca0D4B2D7ce95E3ed53aB062eA069DE99Eda7B",
+      "explorerUrl": "https://alterscope-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://alterscope-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Alterscope Sepolia",
+      "slug": "alterscope-sepolia",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0x5883F5C09eb402A46A5D8240F362298bA981Bc0D",
+        "parentErc20Gateway": "0x6347ABCC22C91D8d03f85cC76E627Eb389048183",
+        "parentGatewayRouter": "0x05dDaDDaBEe7Da661b5f68dBD11CaF1a077B64Eb",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xB77904fdfb5352aB029058BA73E26693347C1528",
+        "childErc20Gateway": "0x7Aa9d5b6Cc7C4C2F22B1fC4F3D0C0B613b3EAbE9",
+        "childGatewayRouter": "0xf428BD6EB848a61A014E3a1F315B4510a411d9d6",
+        "childMultiCall": "0xb47801c5179FA0F0d59cD1ccE4e9c539d016777A",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#5cfcc3",
+        "network": {
+          "name": "Alterscope Sepolia",
+          "logo": "/images/AlterscopeSepolia_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Risk",
+          "symbol": "RISK",
+          "logoUrl": "/images/AlterscopeSepolia_NativeTokenLogo.svg"
         }
       }
     }

@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { TokenApprovalDialog } from '../TransferPanel/TokenApprovalDialog'
-import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { WithdrawalConfirmationDialog } from '../TransferPanel/WithdrawalConfirmationDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { CustomFeeTokenApprovalDialog } from '../TransferPanel/CustomFeeTokenApprovalDialog'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
+import { CctpUsdcWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/CctpUsdcWithdrawalConfirmationDialog'
+import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/CctpUsdcDepositConfirmationDialog'
+import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -22,7 +29,15 @@ type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
  */
 type UseDialogResult = [DialogProps, OpenDialogFunction]
 
-type DialogType = 'approve_token' | 'approve_cctp_usdc' | 'withdraw'
+export type DialogType =
+  | 'approve_token'
+  | 'approve_cctp_usdc'
+  | 'approve_custom_fee_token'
+  | 'withdraw'
+  | 'scw_custom_destination_address'
+  | 'confirm_cctp_withdrawal'
+  | 'confirm_cctp_deposit'
+  | 'confirm_usdc_deposit'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef =
@@ -68,9 +83,11 @@ type DialogProps = {
 }
 
 export function DialogWrapper(props: DialogProps) {
-  const isOftTransfer = useIsOftV2Transfer()
   const [selectedToken] = useSelectedToken()
   const [{ amount }] = useArbQueryParams()
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [isOpen, setIsOpen] = useState(false)
 
@@ -85,16 +102,27 @@ export function DialogWrapper(props: DialogProps) {
   switch (openedDialogType) {
     case 'approve_token':
     case 'approve_cctp_usdc':
-      return (
-        <TokenApprovalDialog
-          {...commonProps}
-          token={selectedToken}
-          isCctp={openedDialogType === 'approve_cctp_usdc'}
-          isOft={isOftTransfer}
-        />
-      )
+      return <TokenApprovalDialog {...commonProps} token={selectedToken} />
+    case 'approve_custom_fee_token':
+      if (nativeCurrency.isCustom) {
+        return (
+          <CustomFeeTokenApprovalDialog
+            {...commonProps}
+            customFeeToken={nativeCurrency}
+          />
+        )
+      }
+      return null
     case 'withdraw':
       return <WithdrawalConfirmationDialog {...commonProps} amount={amount} />
+    case 'scw_custom_destination_address':
+      return <CustomDestinationAddressConfirmationDialog {...commonProps} />
+    case 'confirm_cctp_withdrawal':
+      return <CctpUsdcWithdrawalConfirmationDialog {...commonProps} />
+    case 'confirm_cctp_deposit':
+      return <CctpUsdcDepositConfirmationDialog {...commonProps} />
+    case 'confirm_usdc_deposit':
+      return <UsdcDepositConfirmationDialog {...commonProps} />
     default:
       return null
   }

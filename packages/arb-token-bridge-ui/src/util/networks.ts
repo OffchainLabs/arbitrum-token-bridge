@@ -202,7 +202,6 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
 // Only support testnet chains
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
-  ChainId.Holesky,
   ChainId.ArbitrumSepolia,
   ChainId.BaseSepolia
 ]
@@ -563,4 +562,30 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
   }
 
   return sortChainIds(validDestinationChainIds)
+}
+
+export function isWithdrawalFromArbSepoliaToSepolia({
+  sourceChainId,
+  destinationChainId
+}: {
+  sourceChainId: number
+  destinationChainId: number
+}): boolean {
+  const { isArbitrumSepolia: isSourceChainArbitrumSepolia } =
+    isNetwork(sourceChainId)
+  const { isSepolia: isDestinationChainSepolia } = isNetwork(destinationChainId)
+  return isSourceChainArbitrumSepolia && isDestinationChainSepolia
+}
+
+export function isWithdrawalFromArbOneToEthereum({
+  sourceChainId,
+  destinationChainId
+}: {
+  sourceChainId: number
+  destinationChainId: number
+}): boolean {
+  const { isArbitrumOne: isSourceChainArbitrumOne } = isNetwork(sourceChainId)
+  const { isEthereumMainnet: isDestinationChainEthereum } =
+    isNetwork(destinationChainId)
+  return isSourceChainArbitrumOne && isDestinationChainEthereum
 }

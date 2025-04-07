@@ -51,6 +51,7 @@ export interface MergedTransaction {
   blockNum: number | null
   tokenAddress: string | null
   isCctp?: boolean
+  isOft?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   parentToChildMsgData?: ParentToChildMessageData
   childToParentMsgData?: ChildToParentMessageData
@@ -59,6 +60,9 @@ export interface MergedTransaction {
   parentChainId: number
   sourceChainId: number
   destinationChainId: number
+  oftData?: {
+    destinationTxHash?: string | null
+  }
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
     attestationHash?: Address | null
@@ -69,6 +73,8 @@ export interface MergedTransaction {
 }
 
 export interface TeleporterMergedTransaction extends MergedTransaction {
+  /** note: in contrast to general deposits which use `parentToChildMsgData`,
+   * Teleport transfers still follow L1/L2/L3 terminology, so we have `l1ToL2MsgData` and `l2ToL3MsgData` */
   l1ToL2MsgData?: ParentToChildMessageData
   l2ToL3MsgData: L2ToL3MessageData
 }

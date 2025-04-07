@@ -24,7 +24,14 @@ class WebStorage implements Storage {
 }
 
 const localStorageKey = `arbitrum:bridge:tx-receipts-cache`
-const enableCaching = true
+const enableCaching = (chainId: number) => {
+  const txReceiptsCachingEnabledConfig =
+    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS || 'testnet,mainnet' // default to 'testnet,mainnet' if not set
+
+  return txReceiptsCachingEnabledConfig.includes(
+    isNetwork(chainId).isTestnet ? 'testnet' : 'mainnet'
+  )
+}
 
 const getCacheKey = (chainId: number | string, txHash: string) =>
   `${chainId}:${txHash}`.toLowerCase()
@@ -77,12 +84,7 @@ export const shouldCacheTxReceipt = (
   chainId: number,
   txReceipt: TransactionReceipt
 ): boolean => {
-  if (!enableCaching) return false
-
-  //   for now, only enable caching for testnets,
-  if (!isNetwork(chainId).isTestnet) {
-    return false
-  }
+  if (!enableCaching(chainId)) return false
 
   // Finality checks to avoid caching re-org'ed transactions
   if (
@@ -101,7 +103,7 @@ function getTxReceiptFromCache(
   chainId: number,
   txHash: string
 ) {
-  if (!enableCaching) return undefined
+  if (!enableCaching(chainId)) return undefined
 
   const cachedReceipts = JSON.parse(storage.getItem(localStorageKey) || '{}')
   const receipt = cachedReceipts[getCacheKey(chainId, txHash)]
@@ -155,7 +157,11 @@ export class EnhancedProvider extends StaticJsonRpcProvider {
 
     // Cache the receipt if it meets the criteria
     if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
-      addTxReceiptToCache(this.storage, chainId, receipt)
+      try {
+        addTxReceiptToCache(this.storage, chainId, receipt)
+      } catch (_) {
+        // in case storage is full
+      }
     }
 
     return receipt
