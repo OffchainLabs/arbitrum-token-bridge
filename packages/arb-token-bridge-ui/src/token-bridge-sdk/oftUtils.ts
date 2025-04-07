@@ -159,3 +159,15 @@ export async function getOftV2Quote({
     lzTokenFee: quote.lzTokenFee
   }
 }
+
+export const getChainIdFromEid = (eid: number) => {
+  const chainId = Object.keys(oftProtocolConfig).find(
+    key => oftProtocolConfig[Number(key)]?.lzEndpointId === eid
+  )
+
+  if (!chainId) {
+    return null
+  }
+
+  return Number(chainId)
+}

@@ -1,7 +1,7 @@
 import { hasL2Subgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
-export type FetchWithdrawalsFromSubgraphResult = {
+export type WithdrawalFromSubgraph = {
   id: string
   type: 'EthWithdrawal' | 'TokenWithdrawal'
   sender: string
@@ -52,7 +52,7 @@ export async function fetchWithdrawalsFromSubgraph({
   pageSize?: number
   pageNumber?: number
   searchString?: string
-}): Promise<FetchWithdrawalsFromSubgraphResult[]> {
+}): Promise<WithdrawalFromSubgraph[]> {
   if (fromBlock >= toBlock) {
     // if fromBlock > toBlock or both are equal / 0
     return []
@@ -85,9 +85,7 @@ export async function fetchWithdrawalsFromSubgraph({
     }
   )
 
-  const transactions: FetchWithdrawalsFromSubgraphResult[] = (
-    await response.json()
-  ).data
+  const transactions: WithdrawalFromSubgraph[] = (await response.json()).data
 
   return transactions
 }
