@@ -215,7 +215,11 @@ export class EnhancedProvider extends JsonRpcBatchProvider {
 
     // Cache the receipt if it meets the criteria
     if (receipt && shouldCacheTxReceipt(chainId, receipt, this.options)) {
-      addTxReceiptToCache(this.storage, chainId, receipt)
+      try {
+        addTxReceiptToCache(this.storage, chainId, receipt)
+      } catch (_) {
+        // in case storage is full
+      }
     }
 
     return receipt
