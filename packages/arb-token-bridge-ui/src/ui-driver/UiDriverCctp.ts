@@ -8,8 +8,9 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
   context
 ) {
   const deposit = context.isDepositMode
+  const dialog = `confirm_cctp_${deposit ? 'deposit' : 'withdrawal'}` as const
 
   yield* step({ type: 'start' })
-  yield* stepGeneratorForDialog(`confirm_cctp_${deposit ? 'deposit' : 'withdrawal'}`)
+  yield* stepGeneratorForDialog(dialog)
   yield* stepGeneratorForDialogToCheckScwDestinationAddress(context)
 }
