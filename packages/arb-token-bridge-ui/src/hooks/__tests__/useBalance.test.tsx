@@ -22,24 +22,17 @@ const provider = new StaticJsonRpcProvider(
   process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
   1
 )
-vi.doMock('../../token-bridge-sdk/utils', () => ({
-  getProviderForChainId: function getProviderForChainIdMock() {
-    return provider
-  }
-}))
 
 describe.sequential('useBalance', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    vi.resetAllMocks()
-    vi.clearAllMocks()
 
     vi.mock('../../token-bridge-sdk/utils', () => ({
       getProviderForChainId: () => provider
     }))
   })
 
-  it('getter return null for undefined walletAddress', async () => {
+  it('getter returns null for undefined walletAddress', async () => {
     // This should not be called. It's here to avoid false positive
     const getBalanceSpy = vi
       .spyOn(provider, 'getBalance')
@@ -70,7 +63,7 @@ describe.sequential('useBalance', () => {
   })
 
   describe('ETH Balance', () => {
-    it('getter return ETH balance for valid tuple (walletAddress, chainId)', async () => {
+    it('getter returns ETH balance for valid tuple (walletAddress, chainId)', async () => {
       const getBalanceSpy = vi
         .spyOn(provider, 'getBalance')
         .mockResolvedValueOnce(BigNumber.from(32))
@@ -102,7 +95,7 @@ describe.sequential('useBalance', () => {
       expect(getTokenDataSpy).not.toHaveBeenCalled()
     })
 
-    it('setter update ETH balance', async () => {
+    it('setter updates ETH balance', async () => {
       const getBalanceSpy = vi
         .spyOn(provider, 'getBalance')
         .mockResolvedValueOnce(BigNumber.from(42))
@@ -152,7 +145,7 @@ describe.sequential('useBalance', () => {
 })
 
 describe.sequential('ERC20 Balance', () => {
-  it('getter return ERC20 balance for valid tuple (walletAddress, chainId)', async () => {
+  it('getter returns ERC20 balance for valid tuple (walletAddress, chainId)', async () => {
     const getBalanceSpy = vi
       .spyOn(provider, 'getBalance')
       .mockResolvedValueOnce(BigNumber.from(62))
@@ -205,7 +198,7 @@ describe.sequential('ERC20 Balance', () => {
     })
   })
 
-  it('setter update ERC20 balance and merge data', async () => {
+  it('setter updates ERC20 balance and merges data', async () => {
     const getBalanceSpy = vi
       .spyOn(provider, 'getBalance')
       .mockResolvedValueOnce(BigNumber.from(72))

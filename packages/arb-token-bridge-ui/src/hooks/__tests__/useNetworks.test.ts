@@ -49,7 +49,7 @@ describe('sanitizeQueryParams', () => {
   })
 
   afterAll(() => {
-    localStorageGetItemMock
+    localStorageGetItemMock.mockReset()
   })
 
   describe('when `destinationChainId` is valid and `sourceChainId` is valid', () => {
