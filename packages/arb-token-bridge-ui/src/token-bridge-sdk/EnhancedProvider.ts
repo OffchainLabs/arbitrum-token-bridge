@@ -136,7 +136,7 @@ function addTxReceiptToCache(
 
 export class EnhancedProvider extends JsonRpcBatchProvider {
   // `detectNetwork()` to give this provider StaticJsonRpcProvider's functionality
-  // copied from https://github.com/ethers-io/ethers.js/blob/v5.7/packages/providers/src.ts/url-json-rpc-provider.ts#L29
+  // copied from https://github.com/ethers-io/ethers.js/blob/v5/packages/providers/src.ts/url-json-rpc-provider.ts#L28
   async detectNetwork(): Promise<Network> {
     let network = this.network
     if (network == null) {
