@@ -97,7 +97,7 @@ const networkConnectionWarningToast = () =>
     { autoClose: false }
   )
 
-export const TransferPanel = React.memo(() => {
+export function TransferPanel() {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
@@ -1193,6 +1193,4 @@ export const TransferPanel = React.memo(() => {
       {showProjectsListing && <ProjectsListing />}
     </>
   )
-})
-
-TransferPanel.displayName = 'TransferPanel'
+}
