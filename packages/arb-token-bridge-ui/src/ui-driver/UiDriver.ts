@@ -1,7 +1,11 @@
-export type Dialog =
-  | 'cctp_deposit' //
-  | 'cctp_withdrawal'
-  | 'scw_custom_destination_address_equal'
+import { DialogType } from '../components/common/Dialog2'
+
+export type Dialog = Extract<
+  DialogType,
+  | 'confirm_cctp_deposit'
+  | 'confirm_cctp_withdrawal'
+  | 'scw_custom_destination_address'
+>
 
 export type UiDriverContext = {
   isDepositMode: boolean

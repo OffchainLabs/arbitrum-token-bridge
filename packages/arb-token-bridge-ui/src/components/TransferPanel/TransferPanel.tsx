@@ -349,26 +349,13 @@ export function TransferPanel() {
         return
       }
 
+      case 'dialog':
+        return confirmDialog(step.payload)
+
       case 'return': {
         throw Error(
           `[stepExecutor] "return" step should be handled outside the executor`
         )
-      }
-
-      case 'dialog': {
-        if (step.payload === 'cctp_deposit') {
-          return console.log('todo: cctp_deposit')
-        }
-
-        if (step.payload === 'cctp_withdrawal') {
-          return console.log('todo: cctp_withdrawal')
-        }
-
-        if (step.payload === 'scw_custom_destination_address_equal') {
-          return confirmCustomDestinationAddressForSCWallets()
-        }
-
-        throw Error(`[stepExecutor] unhandled dialog: ${step.payload}`)
       }
     }
   }
@@ -394,29 +381,6 @@ export function TransferPanel() {
         isDepositMode,
         isSmartContractWallet
       })
-
-      // show confirmation popup before cctp transfer
-      if (isDepositMode) {
-        const depositConfirmation = await confirmDialog('confirm_cctp_deposit')
-        if (!depositConfirmation) return
-      } else {
-        const withdrawalConfirmation = await confirmDialog(
-          'confirm_cctp_withdrawal'
-        )
-        if (!withdrawalConfirmation) return
-      }
-
-      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
-      if (
-        isSmartContractWallet &&
-        areSenderAndCustomDestinationAddressesEqual
-      ) {
-        const confirmation = await confirmDialog(
-          'scw_custom_destination_address'
-        )
-        if (!confirmation) return false
-      }
 
       const cctpTransferStarter = new CctpTransferStarter({
         sourceChainProvider,

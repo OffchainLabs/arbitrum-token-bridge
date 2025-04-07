@@ -29,6 +29,6 @@ export const stepGeneratorForDialogToCheckScwDestinationAddress: UiDriverStepGen
       context.isSmartContractWallet &&
       addressesEqual(context.walletAddress, context.destinationAddress)
     ) {
-      yield* stepGeneratorForDialog('scw_custom_destination_address_equal')
+      yield* stepGeneratorForDialog('scw_custom_destination_address')
     }
   }
