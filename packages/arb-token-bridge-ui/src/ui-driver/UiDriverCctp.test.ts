@@ -1,8 +1,7 @@
 import { stepGeneratorForCctp } from './UiDriverCctp'
 import { nextStep, expectStep } from './UiDriverTestUtils'
 
-it(`successfully returns steps for context:
-
+it(`context:
   isDepositMode=true
   isSmartContractWallet=false
 `, async () => {
@@ -24,8 +23,7 @@ it(`successfully returns steps for context:
   expectStep(step4).doesNotExist()
 })
 
-it(`successfully returns steps for context:
-
+it(`context:
   isDepositMode=false
   isSmartContractWallet=false
 `, async () => {
@@ -47,8 +45,7 @@ it(`successfully returns steps for context:
   expectStep(step4).doesNotExist()
 })
 
-it(`successfully returns steps for context:
-
+it(`context:
   isDepositMode=false
   isSmartContractWallet=false
   walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
@@ -71,8 +68,7 @@ it(`successfully returns steps for context:
   expectStep(step3).doesNotExist()
 })
 
-it(`successfully returns steps for context:
-
+it(`context:
   isDepositMode=false
   isSmartContractWallet=true
   walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
