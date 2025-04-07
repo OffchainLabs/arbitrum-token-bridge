@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
 import {
-  FetchWithdrawalsFromSubgraphResult,
+  WithdrawalFromSubgraph,
   fetchWithdrawalsFromSubgraph
 } from './fetchWithdrawalsFromSubgraph'
 import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
@@ -89,7 +89,7 @@ export async function fetchWithdrawals({
     toBlock = latestSubgraphBlockNumber
   }
 
-  let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
+  let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
   try {
     withdrawalsFromSubgraph = (
       await fetchWithdrawalsFromSubgraph({
