@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
@@ -74,17 +74,25 @@ export const useSelectedToken = () => {
     [setQueryParams]
   )
 
-  if (!tokenFromSearchParams) {
-    return [null, setSelectedToken] as const
-  }
-
-  return [
-    usdcToken ||
-      tokensFromUser[tokenFromSearchParams] ||
-      tokensFromLists[tokenFromSearchParams] ||
-      null,
-    setSelectedToken
-  ] as const
+  return useMemo(
+    () =>
+      tokenFromSearchParams
+        ? ([
+            usdcToken ||
+              tokensFromUser[tokenFromSearchParams] ||
+              tokensFromLists[tokenFromSearchParams] ||
+              null,
+            setSelectedToken
+          ] as const)
+        : [null, setSelectedToken],
+    [
+      setSelectedToken,
+      tokenFromSearchParams,
+      tokensFromLists,
+      tokensFromUser,
+      usdcToken
+    ]
+  )
 }
 
 function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
