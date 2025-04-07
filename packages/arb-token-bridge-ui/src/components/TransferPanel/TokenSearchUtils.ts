@@ -11,12 +11,15 @@ import { TokenListWithId } from '../../util/TokenListUtils'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../hooks/useNetworks'
 
+// keeps the reference stable
+const emptyData = {}
+
 export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { data: tokenLists = [] } = useTokenLists(childChain.id)
 
-  const { data = {} } = useSWRImmutable(
+  const { data = emptyData } = useSWRImmutable(
     [tokenLists, parentChain.id, childChain.id, 'useTokensFromLists'],
     ([_tokenLists, _parentChainId, _childChainId]) =>
       tokenListsToSearchableTokenStorage(
