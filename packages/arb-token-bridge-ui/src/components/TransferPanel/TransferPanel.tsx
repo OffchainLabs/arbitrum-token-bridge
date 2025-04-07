@@ -358,6 +358,11 @@ export function TransferPanel() {
       case 'dialog': {
         return confirmDialog(step.payload)
       }
+
+      case 'scw_tooltip': {
+        showDelayedSmartContractTxRequest()
+        return
+      }
     }
   }
 
@@ -379,10 +384,13 @@ export function TransferPanel() {
         networks
 
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
+        amountBigNumber,
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
-        destinationAddress
+        destinationAddress,
+        sourceChainProvider,
+        destinationChainProvider
       })
 
       // this is only necessary while we are migrating to the ui driver

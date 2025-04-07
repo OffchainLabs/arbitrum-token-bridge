@@ -31,3 +31,10 @@ export const stepGeneratorForSmartContractWalletDestinationDialog: UiDriverStepG
       yield* stepGeneratorForDialog('scw_custom_destination_address')
     }
   }
+
+export const stepGeneratorForSmartContractWalletTooltip: UiDriverStepGenerator =
+  async function* (context) {
+    if (context.isSmartContractWallet) {
+      yield* step({ type: 'scw_tooltip' })
+    }
+  }
