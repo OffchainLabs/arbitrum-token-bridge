@@ -380,7 +380,9 @@ export function TransferPanel() {
 
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
-        isSmartContractWallet
+        isSmartContractWallet,
+        walletAddress,
+        destinationAddress
       })
 
       // this is only necessary while we are migrating to the ui driver
