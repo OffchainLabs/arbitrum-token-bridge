@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import * as Sentry from '@sentry/react'
 import { isUserRejectedError } from '../util/isUserRejectedError'
-import { useAccount } from 'wagmi'
 import { useNetworks } from './useNetworks'
 
 /**
