@@ -82,7 +82,6 @@ import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
-import React from 'react'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -99,7 +98,7 @@ const networkConnectionWarningToast = () =>
     { autoClose: false }
   )
 
-export const TransferPanel = React.memo(() => {
+export function TransferPanel() {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
@@ -1201,6 +1200,4 @@ export const TransferPanel = React.memo(() => {
       {showProjectsListing && <ProjectsListing />}
     </>
   )
-})
-
-TransferPanel.displayName = 'TransferPanel'
+}

@@ -9,7 +9,7 @@ import {
 } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
-import { createOvermind } from 'overmind'
+import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
@@ -37,7 +37,6 @@ import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { isDepositMode } from '../../util/isDepositMode'
-import React from 'react'
 
 declare global {
   interface Window {
@@ -117,7 +116,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
-const AppContent = React.memo(() => {
+function AppContent() {
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
@@ -182,9 +181,7 @@ const AppContent = React.memo(() => {
       <MainContent />
     </>
   )
-})
-
-AppContent.displayName = 'AppContent'
+}
 
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
@@ -299,8 +296,9 @@ function ConnectedChainSyncer() {
   return null
 }
 
-const overmind = createOvermind(config)
 export default function App() {
+  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
+
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
