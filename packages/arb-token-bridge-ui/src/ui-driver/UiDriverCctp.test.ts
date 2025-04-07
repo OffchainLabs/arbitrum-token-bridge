@@ -15,7 +15,7 @@ it(`successfully returns steps for context:
   expectStep(step1).hasType('start')
 
   const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('cctp_deposit')
+  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
 
   const step3 = await nextStep(generator, [false])
   expectStep(step3).hasType('return')
@@ -38,7 +38,7 @@ it(`successfully returns steps for context:
   expectStep(step1).hasType('start')
 
   const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('cctp_withdrawal')
+  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_withdrawal')
 
   const step3 = await nextStep(generator, [false])
   expectStep(step3).hasType('return')
@@ -65,7 +65,7 @@ it(`successfully returns steps for context:
   expectStep(step1).hasType('start')
 
   const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('cctp_deposit')
+  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
 
   const step3 = await nextStep(generator, [true])
   expectStep(step3).doesNotExist()
@@ -89,12 +89,12 @@ it(`successfully returns steps for context:
   expectStep(step1).hasType('start')
 
   const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('cctp_deposit')
+  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
 
   const step3 = await nextStep(generator, [true])
   expectStep(step3)
     .hasType('dialog')
-    .hasPayload('scw_custom_destination_address_equal')
+    .hasPayload('scw_custom_destination_address')
 
   const step4 = await nextStep(generator, [false])
   expectStep(step4).hasType('return')
