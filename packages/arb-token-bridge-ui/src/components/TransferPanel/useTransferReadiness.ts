@@ -136,7 +136,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
   const gasSummary = useGasSummary()
-  const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const {
@@ -144,10 +143,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     erc20ParentBalances,
     ethChildBalance,
     erc20ChildBalances
-  } = useBalances({
-    parentWalletAddress: walletAddress,
-    childWalletAddress: walletAddress
-  })
+  } = useBalances()
   const { destinationAddressError } = useDestinationAddressError()
 
   const ethL1BalanceFloat = ethParentBalance
