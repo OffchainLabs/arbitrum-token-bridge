@@ -1,4 +1,4 @@
-import { http, passthrough } from 'msw'
+import { http, HttpResponse, passthrough } from 'msw'
 import { setupServer } from 'msw/node'
 import {
   JsonRpcBatchProvider,
@@ -9,6 +9,17 @@ import { BigNumber } from 'ethers'
 import { ChainId } from '../../types/ChainId'
 import { rpcURLs } from '../../util/networks'
 import { EnhancedProvider, shouldCacheTxReceipt } from '../EnhancedProvider'
+import {
+  vi,
+  describe,
+  beforeEach,
+  expect,
+  it,
+  MockInstance,
+  beforeAll,
+  afterEach,
+  afterAll
+} from 'vitest'
 
 class TestStorage {
   private store: Record<string, string> = {}
@@ -64,6 +75,7 @@ const resetRequestCount = () => {
 const server = setupServer(
   http.post(TEST_DATA.rpcUrl, async ({ request }) => {
     const body = await request.json()
+
     const txReceiptsInRequest =
       JSON.stringify(body || '').split('eth_getTransactionReceipt').length - 1
 
@@ -87,7 +99,7 @@ describe('EnhancedProvider', () => {
   describe('Tx Receipt Caching', () => {
     beforeEach(() => {
       storage = new TestStorage()
-      jest.restoreAllMocks()
+      vi.restoreAllMocks()
     })
 
     it('should fetch real transaction and use cache for subsequent requests', async () => {
@@ -110,7 +122,7 @@ describe('EnhancedProvider', () => {
       }
 
       // Spy on the parent class's getTransactionReceipt that fires the RPC call
-      const superGetReceipt = jest
+      const superGetReceipt = vi
         .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
         .mockResolvedValue(mockReceipt)
 
@@ -166,9 +178,10 @@ describe('EnhancedProvider', () => {
         }
 
         // Mock the parent class's getTransactionReceipt
-        jest
-          .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
-          .mockResolvedValue(mockReceipt)
+        vi.spyOn(
+          StaticJsonRpcProvider.prototype,
+          'getTransactionReceipt'
+        ).mockResolvedValue(mockReceipt)
 
         const receipt = await provider.getTransactionReceipt(
           mockReceipt.transactionHash
@@ -182,14 +195,14 @@ describe('EnhancedProvider', () => {
   })
 
   describe('RPC call batching', () => {
-    let mockBatchSend: jest.SpyInstance
-    let mockStaticSend: jest.SpyInstance
+    let mockBatchSend: MockInstance
+    let mockStaticSend: MockInstance
 
     beforeEach(() => {
       storage = new TestStorage()
-      jest.restoreAllMocks()
-      mockBatchSend = jest.spyOn(JsonRpcBatchProvider.prototype, 'send')
-      mockStaticSend = jest.spyOn(StaticJsonRpcProvider.prototype, 'send')
+      vi.restoreAllMocks()
+      mockBatchSend = vi.spyOn(JsonRpcBatchProvider.prototype, 'send')
+      mockStaticSend = vi.spyOn(StaticJsonRpcProvider.prototype, 'send')
     })
 
     beforeAll(() => {
@@ -205,84 +218,104 @@ describe('EnhancedProvider', () => {
       server.close()
     })
 
-    it('should use batch provider for all RPC calls when batching is enabled', async () => {
-      const provider = new EnhancedProvider(
-        TEST_DATA.rpcUrl,
-        ChainId.ArbitrumOne,
-        undefined,
-        { enableCaching: false, enableBatching: true }
-      )
+    it(
+      'should use batch provider for all RPC calls when batching is enabled',
+      async () => {
+        const provider = new EnhancedProvider(
+          TEST_DATA.rpcUrl,
+          ChainId.ArbitrumOne,
+          undefined,
+          { enableCaching: false, enableBatching: true }
+        )
 
-      // Test various RPC methods
-      await provider.getBlockNumber()
-      await provider.getGasPrice()
-      await Promise.all(
-        TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
-      )
+        // Test various RPC methods
+        await provider.getBlockNumber()
+        await provider.getGasPrice()
+        await Promise.all(
+          TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
+        )
 
-      // All calls should go through batch provider
-      expect(mockBatchSend).toHaveBeenCalled()
-      expect(mockStaticSend).not.toHaveBeenCalled()
-    })
+        // All calls should go through batch provider
+        expect(mockBatchSend).toHaveBeenCalled()
+        expect(mockStaticSend).not.toHaveBeenCalled()
+      },
+      { timeout: 10000 }
+    )
 
-    it('should use static provider for all RPC calls when batching is disabled', async () => {
-      const provider = new EnhancedProvider(
-        TEST_DATA.rpcUrl,
-        ChainId.ArbitrumOne,
-        undefined,
-        { enableCaching: false, enableBatching: false }
-      )
+    it(
+      'should use static provider for all RPC calls when batching is disabled',
+      async () => {
+        const provider = new EnhancedProvider(
+          TEST_DATA.rpcUrl,
+          ChainId.ArbitrumOne,
+          undefined,
+          { enableCaching: false, enableBatching: false }
+        )
 
-      // Test various RPC methods
-      await provider.getBlockNumber()
-      await provider.getGasPrice()
-      await Promise.all(
-        TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
-      )
+        // Test various RPC methods
+        await provider.getBlockNumber()
+        await provider.getGasPrice()
+        await Promise.all(
+          TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
+        )
 
-      // All calls should go through static provider
-      expect(mockStaticSend).toHaveBeenCalled()
-      expect(mockBatchSend).not.toHaveBeenCalled()
-    })
+        // All calls should go through static provider
+        expect(mockStaticSend).toHaveBeenCalled()
+        expect(mockBatchSend).not.toHaveBeenCalled()
+      },
+      { timeout: 10000 }
+    )
 
-    it('should batch multiple requests into single HTTP request when batching is enabled', async () => {
-      const provider = new EnhancedProvider(
-        TEST_DATA.rpcUrl,
-        ChainId.ArbitrumOne,
-        undefined,
-        { enableCaching: false, enableBatching: true }
-      )
+    it(
+      'should batch multiple requests into single HTTP request when batching is enabled',
+      async () => {
+        const provider = new EnhancedProvider(
+          TEST_DATA.rpcUrl,
+          ChainId.ArbitrumOne,
+          undefined,
+          { enableCaching: false, enableBatching: true }
+        )
 
-      // Multiple RPC calls should be batched
-      await Promise.all([
-        provider.getBlockNumber(),
-        provider.getGasPrice(),
-        ...TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
-      ])
+        // Multiple RPC calls should be batched
+        await Promise.all([
+          provider.getBlockNumber(),
+          provider.getGasPrice(),
+          ...TEST_DATA.txHashes.map(hash =>
+            provider.getTransactionReceipt(hash)
+          )
+        ])
 
-      // should send batched request
-      expect(singleRequestCount).toBe(0)
-      expect(batchedRequestCount).toBe(1)
-    })
+        // should send batched request
+        expect(singleRequestCount).toBe(0)
+        expect(batchedRequestCount).toBe(1)
+      },
+      { timeout: 10000 }
+    )
 
-    it('should make individual requests when batching is disabled', async () => {
-      const provider = new EnhancedProvider(
-        TEST_DATA.rpcUrl,
-        ChainId.ArbitrumOne,
-        undefined,
-        { enableCaching: false, enableBatching: false }
-      )
+    it(
+      'should make individual requests when batching is disabled',
+      async () => {
+        const provider = new EnhancedProvider(
+          TEST_DATA.rpcUrl,
+          ChainId.ArbitrumOne,
+          undefined,
+          { enableCaching: false, enableBatching: false }
+        )
 
-      // Multiple RPC calls should not be batched
-      await Promise.all([
-        provider.getBlockNumber(),
-        provider.getGasPrice(),
-        ...TEST_DATA.txHashes.map(hash => provider.getTransactionReceipt(hash))
-      ])
+        // Multiple RPC calls should not be batched
+        await Promise.all([
+          provider.getBlockNumber(),
+          provider.getGasPrice(),
+          ...TEST_DATA.txHashes.map(hash =>
+            provider.getTransactionReceipt(hash)
+          )
+        ])
 
-      // should send individual calls
-      expect(singleRequestCount).toBe(3)
-      expect(batchedRequestCount).toBe(0)
-    })
+        // should send individual calls
+        expect(singleRequestCount).toBe(3)
+        expect(batchedRequestCount).toBe(0)
+      },
+      { timeout: 10000 }
+    )
   })
 })
