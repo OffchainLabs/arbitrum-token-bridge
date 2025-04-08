@@ -8,7 +8,7 @@ import {
 } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
-import { ChainId } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 
 export { OutgoingMessageState }
 

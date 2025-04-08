@@ -195,7 +195,7 @@ export const addBridgeTokenListToBridge = ({
       if (!tokenList) return
 
       arbTokenBridge.token.addTokensFromList({
-        arbTokenList: tokenList,
+        tokenList,
         listId: bridgeTokenList.id,
         parentChainId,
         childChainId
