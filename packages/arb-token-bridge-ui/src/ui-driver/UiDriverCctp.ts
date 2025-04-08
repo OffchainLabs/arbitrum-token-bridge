@@ -24,7 +24,7 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
 
   const approval = await cctpTransferStarter.requiresTokenApproval({
     amount: context.amountBigNumber,
-    address: context.walletAddress
+    owner: context.walletAddress
   })
 
   if (approval) {
