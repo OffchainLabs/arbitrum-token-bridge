@@ -6,6 +6,7 @@ import { BigNumber } from 'ethers'
 import { ChainId } from '../../types/ChainId'
 import { rpcURLs } from '../../util/networks'
 import { EnhancedProvider, shouldCacheTxReceipt } from '../EnhancedProvider'
+import { vi, describe, beforeEach, expect, it } from 'vitest'
 
 class TestStorage {
   private store: Record<string, string> = {}
@@ -46,7 +47,7 @@ describe('EnhancedProvider', () => {
 
   beforeEach(() => {
     storage = new TestStorage()
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   it('should fetch real transaction and use cache for subsequent requests', async () => {
@@ -63,7 +64,7 @@ describe('EnhancedProvider', () => {
     const mockReceipt = { ...testTxReceipt, transactionHash: txHash }
 
     // Spy on the parent class's getTransactionReceipt that fires the RPC call
-    const superGetReceipt = jest
+    const superGetReceipt = vi
       .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
       .mockResolvedValue(mockReceipt)
 
@@ -116,9 +117,10 @@ describe('EnhancedProvider', () => {
       }
 
       // Mock the parent class's getTransactionReceipt
-      jest
-        .spyOn(StaticJsonRpcProvider.prototype, 'getTransactionReceipt')
-        .mockResolvedValue(mockReceipt)
+      vi.spyOn(
+        StaticJsonRpcProvider.prototype,
+        'getTransactionReceipt'
+      ).mockResolvedValue(mockReceipt)
 
       const receipt = await provider.getTransactionReceipt(
         mockReceipt.transactionHash
