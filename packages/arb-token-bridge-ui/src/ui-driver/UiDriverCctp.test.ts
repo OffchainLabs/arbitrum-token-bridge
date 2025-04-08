@@ -1,7 +1,7 @@
+import { it } from 'vitest'
+
 import { stepGeneratorForCctp } from './UiDriverCctp'
 import { nextStep, expectStep } from './UiDriverTestUtils'
-
-/* eslint-disable jest/valid-title */
 
 it(`
   context:
