@@ -25,6 +25,7 @@ export type UiDriverStep =
   | { type: 'return' }
   | { type: 'dialog'; payload: Dialog }
   | { type: 'scw_tooltip' }
+  | { type: 'tx'; payload: providers.TransactionRequest }
 
 export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
   TStep extends { type: 'start' }
@@ -38,6 +39,9 @@ export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
     : //
     TStep extends { type: 'scw_tooltip' }
     ? void
+    : //
+    TStep extends { type: 'tx' }
+    ? providers.TransactionReceipt
     : //
       never
 
