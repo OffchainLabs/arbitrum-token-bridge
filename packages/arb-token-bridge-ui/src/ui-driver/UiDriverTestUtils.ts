@@ -1,3 +1,5 @@
+import { expect } from 'vitest'
+
 import { UiDriverStep, UiDriverStepResultFor } from './UiDriver'
 
 export async function nextStep<TStep extends UiDriverStep>(

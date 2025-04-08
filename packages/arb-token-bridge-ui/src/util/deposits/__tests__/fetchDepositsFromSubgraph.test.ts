@@ -4,6 +4,7 @@ import {
   getQueryCoveringClassicAndNitroWithResults
 } from './fetchDepositsTestHelpers'
 import { fetchDepositsFromSubgraph } from '../fetchDepositsFromSubgraph'
+import { describe, it, expect } from 'vitest'
 
 describe('fetchDepositsFromSubgraph', () => {
   it('fetches no deposits from subgraph pre-nitro', async () => {

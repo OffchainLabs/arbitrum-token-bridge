@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
-import { RenderHookResult, act, renderHook } from '@testing-library/react'
+import { describe, beforeAll, it, expect } from 'vitest'
+import { renderHook } from '@testing-library/react'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { MergedTransaction } from '../../state/app/state'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -55,21 +56,7 @@ function mockTransactionObject({
 }
 
 const renderHookAsyncUseTransferDuration = async (tx: MergedTransaction) => {
-  let hook:
-    | RenderHookResult<
-        ReturnType<typeof useTransferDuration>,
-        MergedTransaction
-      >
-    | undefined
-
-  await act(async () => {
-    hook = renderHook(() => useTransferDuration(tx))
-  })
-
-  if (!hook) {
-    throw new Error('Hook is not defined')
-  }
-
+  const hook = renderHook(() => useTransferDuration(tx))
   return { result: hook.result }
 }
 

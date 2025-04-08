@@ -13,12 +13,6 @@ module.exports = {
     )
   },
   rules: {
-    'jest/expect-expect': [
-      'off',
-      {
-        assertFunctionNames: ['expect']
-      }
-    ],
     // Cypress awaiting by default
     'testing-library/await-async-query': 'off',
     '@typescript-eslint/no-empty-function': 'off'

@@ -6,7 +6,8 @@
     "next.config.js",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "build/types/**/*.ts"
+    "build/types/**/*.ts",
+    "vitest.config.ts"
   ],
   "compilerOptions": {
     "noEmit": true,

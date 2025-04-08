@@ -1,4 +1,5 @@
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
+import { it, expect, describe, beforeAll } from 'vitest'
 
 import {
   getBlockNumberReferenceChainIdByChainId,
