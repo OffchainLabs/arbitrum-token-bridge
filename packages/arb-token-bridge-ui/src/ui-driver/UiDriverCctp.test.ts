@@ -57,7 +57,7 @@ it(`
 
 it(`
   context:
-    isDepositMode=false
+    isDepositMode=true
     isSmartContractWallet=false
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
@@ -84,7 +84,7 @@ it(`
 
 it(`
   context:
-    isDepositMode=false
+    isDepositMode=true
     isSmartContractWallet=true
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
@@ -120,7 +120,7 @@ it(`
 
 it(`
   context:
-    isDepositMode=false
+    isDepositMode=true
     isSmartContractWallet=true
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
