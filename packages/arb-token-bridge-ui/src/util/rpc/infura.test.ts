@@ -1,5 +1,6 @@
 import { ChainId } from '../../types/ChainId'
 import { getInfuraRpcUrl, InfuraSupportedChainId } from './infura'
+import { it, expect } from 'vitest'
 
 it('successfully returns the correct url for the provided chain and key', () => {
   const key = '123456'
