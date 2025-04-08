@@ -11,9 +11,6 @@ import { useAppState } from '../state'
 import { getUSDCAddresses } from '../state/cctpState'
 import { useNativeCurrency } from './useNativeCurrency'
 
-// stable reference
-const emptyData = {}
-
 export function useBalances() {
   const {
     app: { arbTokenBridge }
@@ -56,7 +53,7 @@ export function useBalances() {
     walletAddress: childWalletAddress
   })
 
-  const { data: erc20ParentBalances = emptyData } = useSWR(
+  const { data: erc20ParentBalances } = useSWR(
     typeof bridgeTokens !== 'undefined'
       ? [
           parentWalletAddress,
@@ -91,7 +88,7 @@ export function useBalances() {
     }
   )
 
-  const { data: erc20ChildBalances = emptyData } = useSWR(
+  const { data: erc20ChildBalances } = useSWR(
     typeof bridgeTokens !== 'undefined'
       ? [
           childWalletAddress,
@@ -133,11 +130,11 @@ export function useBalances() {
     () => ({
       ethParentBalance,
       updateEthParentBalance,
-      erc20ParentBalances,
+      erc20ParentBalances: erc20ParentBalances || {},
       updateErc20ParentBalances,
       ethChildBalance,
       updateEthChildBalance,
-      erc20ChildBalances,
+      erc20ChildBalances: erc20ChildBalances || {},
       updateErc20ChildBalances
     }),
     [
