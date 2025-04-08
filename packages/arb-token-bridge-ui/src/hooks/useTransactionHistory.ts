@@ -266,7 +266,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
-  const { forceFetchReceived } = useForceFetchReceived()
+  const forceFetchReceived = useForceFetchReceived(
+    state => state.forceFetchReceived
+  )
 
   // Check what type of CCTP (deposit, withdrawal or all) to fetch
   // We need this because of Smart Contract Wallets
