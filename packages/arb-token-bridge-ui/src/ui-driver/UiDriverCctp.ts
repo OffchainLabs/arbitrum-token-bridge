@@ -4,7 +4,7 @@ import { step, UiDriverStepGenerator } from './UiDriver'
 import {
   stepGeneratorForDialog,
   stepGeneratorForSmartContractWalletDestinationDialog,
-  stepGeneratorForSmartContractWalletTooltip
+  stepGeneratorForTransaction
 } from './UiDriverCommon'
 
 export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
@@ -28,7 +28,13 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
   })
 
   if (approval) {
+    const txRequest = await cctpTransferStarter.approveTokenPrepareTxRequest({
+      amount: context.amountBigNumber
+    })
+
     yield* stepGeneratorForDialog('approve_token')
-    yield* stepGeneratorForSmartContractWalletTooltip(context)
+    const txReceipt = yield* stepGeneratorForTransaction(context, txRequest)
+
+    console.log(txReceipt)
   }
 }
