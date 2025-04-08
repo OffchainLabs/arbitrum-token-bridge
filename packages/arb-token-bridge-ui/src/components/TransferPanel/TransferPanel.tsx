@@ -363,6 +363,28 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
         return
       }
+
+      case 'tx': {
+        try {
+          const tx = await signer!.sendTransaction(step.payload)
+          const txReceipt = await tx.wait()
+
+          return txReceipt
+        } catch (error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+
+          captureSentryErrorWithExtraData({
+            error,
+            originFunction: 'cctpTransferStarter.approveToken'
+          })
+
+          errorToast(`${(error as Error)?.message ?? error}`)
+        }
+
+        return
+      }
     }
   }
 
@@ -405,43 +427,6 @@ export function TransferPanel() {
         sourceChainProvider,
         destinationChainProvider
       })
-
-      const isTokenApprovalRequired =
-        await cctpTransferStarter.requiresTokenApproval({
-          amount: amountBigNumber,
-          signer
-        })
-
-      if (isTokenApprovalRequired) {
-        const userConfirmation = await confirmDialog('approve_token')
-        if (!userConfirmation) return false
-
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
-        try {
-          const tx = await cctpTransferStarter.approveToken({
-            signer,
-            amount: amountBigNumber
-          })
-
-          await tx.wait()
-        } catch (error) {
-          if (isUserRejectedError(error)) {
-            return
-          }
-          captureSentryErrorWithExtraData({
-            error,
-            originFunction: 'cctpTransferStarter.approveToken'
-          })
-          errorToast(
-            `USDC approval transaction failed: ${
-              (error as Error)?.message ?? error
-            }`
-          )
-          return
-        }
-      }
 
       let depositForBurnTx
 
