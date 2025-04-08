@@ -1,11 +1,23 @@
+import { DialogType } from '../components/common/Dialog2'
+
+export type Dialog = Extract<
+  DialogType,
+  | 'confirm_cctp_deposit'
+  | 'confirm_cctp_withdrawal'
+  | 'scw_custom_destination_address'
+>
+
 export type UiDriverContext = {
   isDepositMode: boolean
   isSmartContractWallet: boolean
+  walletAddress?: string
+  destinationAddress?: string
 }
 
 export type UiDriverStep =
   | { type: 'start' } //
   | { type: 'return' }
+  | { type: 'dialog'; payload: Dialog }
 
 export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
   TStep extends { type: 'start' }
@@ -13,6 +25,9 @@ export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
     : //
     TStep extends { type: 'return' }
     ? void
+    : //
+    TStep extends { type: 'dialog' }
+    ? boolean
     : //
       never
 
@@ -36,11 +51,14 @@ export async function* step<TStep extends UiDriverStep>(
   return yield step
 }
 
+/**
+ * @returns whether there was an early return
+ */
 export async function drive<TStep extends UiDriverStep>(
   generator: UiDriverStepGenerator<TStep>,
   executor: UiDriverStepExecutor<TStep>,
   context: UiDriverContext
-): Promise<void> {
+): Promise<boolean> {
   const flow = generator(context)
 
   let nextStep = await flow.next()
@@ -50,7 +68,7 @@ export async function drive<TStep extends UiDriverStep>(
 
     // handle special type for early return
     if (step.type === 'return') {
-      return
+      return true
     }
 
     // execute current step and obtain the result
@@ -59,4 +77,6 @@ export async function drive<TStep extends UiDriverStep>(
     // pass the result back into the generator
     nextStep = await flow.next(result)
   }
+
+  return false
 }

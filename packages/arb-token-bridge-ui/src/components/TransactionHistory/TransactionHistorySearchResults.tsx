@@ -17,7 +17,10 @@ import {
 } from './helpers'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import {
+  useForceFetchReceived,
+  useTransactionHistory
+} from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { OftTransactionHistoryDisclaimer } from './OftTransactionHistoryDisclaimer'
 
@@ -57,6 +60,7 @@ export function TransactionHistorySearchResults() {
   const props = useTransactionHistoryUpdater()
   const { transactions } = props
   const { searchError } = useTransactionHistoryAddressStore()
+  const { forceFetchReceived, setForceFetchReceived } = useForceFetchReceived()
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -129,6 +133,20 @@ export function TransactionHistorySearchResults() {
             <span className="text-sm md:text-base">Settled transactions</span>
           </TabButton>
         </Tab.List>
+
+        {!forceFetchReceived && (
+          <div className="mb-2 text-xs text-white">
+            Missing a transaction after sending to or receiving from a different
+            address? Click{' '}
+            <button
+              onClick={() => setForceFetchReceived(true)}
+              className="arb-hover underline"
+            >
+              here
+            </button>{' '}
+            for a detailed search.
+          </div>
+        )}
 
         <Tab.Panels className="h-full w-full overflow-hidden">
           <Tab.Panel className="h-full w-full">
