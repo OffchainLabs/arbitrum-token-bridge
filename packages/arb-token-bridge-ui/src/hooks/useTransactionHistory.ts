@@ -98,17 +98,15 @@ export type Transfer =
   | TeleportFromSubgraph
   | LayerZeroTransaction
 
-type IsFullTransactionHistoryStore = {
-  isFullTransactionHistory: boolean
-  setIsFullTransactionHistory: (isFullTransactionHistory: boolean) => void
+type ForceFetchReceivedStore = {
+  forceFetchReceived: boolean
+  setForceFetchReceived: (forceFetchReceived: boolean) => void
 }
 
-export const useIsFullTransactionHistory =
-  create<IsFullTransactionHistoryStore>(set => ({
-    isFullTransactionHistory: false,
-    setIsFullTransactionHistory: isFullTransactionHistory =>
-      set({ isFullTransactionHistory })
-  }))
+export const useForceFetchReceived = create<ForceFetchReceivedStore>(set => ({
+  forceFetchReceived: false,
+  setForceFetchReceived: forceFetchReceived => set({ forceFetchReceived })
+}))
 
 function getTransactionTimestamp(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -268,7 +266,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
-  const { isFullTransactionHistory } = useIsFullTransactionHistory()
+  const { forceFetchReceived } = useForceFetchReceived()
 
   // Check what type of CCTP (deposit, withdrawal or all) to fetch
   // We need this because of Smart Contract Wallets
@@ -439,7 +437,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 l2Provider: getProviderForChainId(chainPair.childChainId),
                 pageNumber: 0,
                 pageSize: 1000,
-                alwaysFetchReceived: isFullTransactionHistory
+                forceFetchReceived
               })
             } catch {
               addFailedChainPair(prevFailedChainPairs => {
@@ -471,7 +469,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       addFailedChainPair,
       isSmartContractWallet,
       chain,
-      isFullTransactionHistory
+      forceFetchReceived
     ]
   )
 
@@ -493,13 +491,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
     shouldFetch
-      ? [
-          'tx_list',
-          'withdrawals',
-          address,
-          isTestnetMode,
-          isFullTransactionHistory
-        ]
+      ? ['tx_list', 'withdrawals', address, isTestnetMode, forceFetchReceived]
       : null,
     () => fetcher('withdrawals')
   )

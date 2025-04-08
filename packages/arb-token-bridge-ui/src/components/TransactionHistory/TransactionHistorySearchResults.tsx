@@ -18,7 +18,7 @@ import {
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
 import {
-  useIsFullTransactionHistory,
+  useForceFetchReceived,
   useTransactionHistory
 } from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
@@ -55,8 +55,7 @@ export function TransactionHistorySearchResults() {
   const props = useTransactionHistoryUpdater()
   const { transactions } = props
   const { searchError } = useTransactionHistoryAddressStore()
-  const { isFullTransactionHistory, setIsFullTransactionHistory } =
-    useIsFullTransactionHistory()
+  const { forceFetchReceived, setForceFetchReceived } = useForceFetchReceived()
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -130,12 +129,12 @@ export function TransactionHistorySearchResults() {
           </TabButton>
         </Tab.List>
 
-        {!isFullTransactionHistory && (
+        {!forceFetchReceived && (
           <div className="mb-2 text-xs text-white">
             Missing a transaction after sending to or receiving from a different
             address? Click{' '}
             <button
-              onClick={() => setIsFullTransactionHistory(true)}
+              onClick={() => setForceFetchReceived(true)}
               className="arb-hover underline"
             >
               here

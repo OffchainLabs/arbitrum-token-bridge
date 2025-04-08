@@ -53,7 +53,7 @@ export type FetchWithdrawalsParams = {
   pageNumber?: number
   pageSize?: number
   searchString?: string
-  alwaysFetchReceived?: boolean
+  forceFetchReceived?: boolean
 }
 
 export async function fetchWithdrawals({
@@ -66,7 +66,7 @@ export async function fetchWithdrawals({
   searchString,
   fromBlock,
   toBlock,
-  alwaysFetchReceived = false
+  forceFetchReceived = false
 }: FetchWithdrawalsParams): Promise<Withdrawal[]> {
   if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
     return []
@@ -151,7 +151,7 @@ export async function fetchWithdrawals({
 
   /// receiver queries; only add if nonce > 0 for orbit chains
   const fetchReceivedTransactions =
-    isCoreChain || (isOrbitChain && (senderNonce > 0 || alwaysFetchReceived))
+    isCoreChain || (isOrbitChain && (senderNonce > 0 || forceFetchReceived))
 
   if (fetchReceivedTransactions) {
     if (isAlchemy) {
