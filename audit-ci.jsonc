@@ -1,5 +1,12 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": []
+  "allowlist": [
+    // https://github.com/advisories/GHSA-3gc7-fjrx-p6mg
+    // bigint-buffer Vulnerable to Buffer Overflow via toBigIntLE() Function
+    // GHSA-3gc7-fjrx-p6mg|arb-token-bridge-ui>wagmi>@wagmi/core>@wagmi/connectors>@coinbase/wallet-sdk>@solana/web3.js>bigint-buffer
+    // we don't use @solana/web3.js so we won't use bigint-buffer
+    // also as of 7 Apr 2025, there's no patched version for this yet
+    "GHSA-3gc7-fjrx-p6mg"
+  ]
 }
