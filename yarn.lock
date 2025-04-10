@@ -2310,27 +2310,27 @@
   resolved "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz"
   integrity sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==
 
-"@lifi/sdk@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@lifi/sdk/-/sdk-3.6.1.tgz#41b5fe53be3702ba7a32dbf7a471f442e6255328"
-  integrity sha512-3RdUdwoZNhmF8Sa3whWPoCWl2aqVtz8v2NFVuaycLK0ei4bObYDOyl1UuGvDnIPAyQixpBINLA5VxEL8RvNIXg==
+"@lifi/sdk@^3.6.7":
+  version "3.6.7"
+  resolved "https://registry.yarnpkg.com/@lifi/sdk/-/sdk-3.6.7.tgz#96bcfbb172667b8084fca0515c9888f8b32d6912"
+  integrity sha512-4ip6eny2ecBzDBm4ZpS7BJ13u2zedDXOONeoGepQ+hQHlMIgvZbafB4J2fq6xC4czvh0p2DJ3qXdPZE5zHOB0A==
   dependencies:
     "@bigmi/core" "^0.1.1"
-    "@lifi/types" "^17.5.0"
+    "@lifi/types" "^17.10.0"
     "@noble/curves" "^1.8.1"
-    "@solana/wallet-adapter-base" "^0.9.23"
+    "@solana/wallet-adapter-base" "^0.9.24"
     "@solana/web3.js" "^1.98.0"
     bech32 "^2.0.0"
     bitcoinjs-lib "^7.0.0-rc.0"
     bs58 "^6.0.0"
-    viem "^2.23.9"
+    viem "^2.26.0"
 
-"@lifi/types@^17.5.0":
-  version "17.5.0"
-  resolved "https://registry.yarnpkg.com/@lifi/types/-/types-17.5.0.tgz#daee38e429934c2154c977eb8d32da6cfbc25c90"
-  integrity sha512-AQUEMSp+OJ2PSPyJzpOh6W3ZxVbEj6SqO3Y/2c6/wBNC92Gn4Ej78BSx9Iae8fBiXV8AKJZVPhrqC182N1Rtiw==
+"@lifi/types@^17.10.0":
+  version "17.12.0"
+  resolved "https://registry.yarnpkg.com/@lifi/types/-/types-17.12.0.tgz#646c888e74efbaa492effffe9503cfb9dd1e2296"
+  integrity sha512-syXncnrCoblbGLtPhhz0Jr2cEPK6A/ewOZxe7DUqF1KqGSgDSaSzM94WUeAZgk7VTjUU6S92TsfKppHyeCLd6g==
   dependencies:
-    viem "^2.23.5"
+    viem "^2.24.3"
 
 "@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0":
   version "1.3.0"
@@ -3492,10 +3492,10 @@
   dependencies:
     buffer "~6.0.3"
 
-"@solana/wallet-adapter-base@^0.9.23":
-  version "0.9.23"
-  resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-base/-/wallet-adapter-base-0.9.23.tgz#3b17c28afd44e173f44f658bf9700fd637e12a11"
-  integrity sha512-apqMuYwFp1jFi55NxDfvXUX2x1T0Zh07MxhZ/nCCTGys5raSfYUh82zen2BLv8BSDj/JxZ2P/s7jrQZGrX8uAw==
+"@solana/wallet-adapter-base@^0.9.24":
+  version "0.9.24"
+  resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-base/-/wallet-adapter-base-0.9.24.tgz#648164f2f90a5ea3bbb5760b05f960b7fb1f4d6b"
+  integrity sha512-f3kwHF/2Lx3YgcO37B45MM46YLFy4QkdLemZ+N/0SwLAnSfhq3+Vb9bC5vuoupMJ/onos09TIDeIxRdg/+51kw==
   dependencies:
     "@solana/wallet-standard-features" "^1.1.0"
     "@wallet-standard/base" "^1.0.1"
@@ -16067,10 +16067,24 @@ viem@^2.1.1:
     ox "0.6.5"
     ws "8.18.0"
 
-viem@^2.22.21, viem@^2.23.5, viem@^2.23.9:
+viem@^2.22.21:
   version "2.23.9"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.23.9.tgz#b28a77aa0f0c7ab1db0cb82eed95e6dbf7a19397"
   integrity sha512-y8VLPfKukrstZKTerS9bm45ajZ22wUyStF+VquK3I2OovWLOyXSbQmJWei8syMFhp1uwhxh1tb0fAdx0WSRZWg==
+  dependencies:
+    "@noble/curves" "1.8.1"
+    "@noble/hashes" "1.7.1"
+    "@scure/bip32" "1.6.2"
+    "@scure/bip39" "1.5.4"
+    abitype "1.0.8"
+    isows "1.0.6"
+    ox "0.6.9"
+    ws "8.18.1"
+
+viem@^2.24.3, viem@^2.26.0:
+  version "2.26.2"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.26.2.tgz#0095676262ffe44bf5a6c7f8a221a4b81bc766d7"
+  integrity sha512-+yXSl1n+jV/Kn/zpETiNq0WOcINXti29nxdPIONvvNh+Es0VfeusW8bb2okVfa55pmuc8kOCOpB5wq3ZIUCTSA==
   dependencies:
     "@noble/curves" "1.8.1"
     "@noble/hashes" "1.7.1"
