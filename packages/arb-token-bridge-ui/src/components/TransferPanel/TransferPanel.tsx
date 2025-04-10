@@ -141,6 +141,8 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
+  console.log('Tests should run')
+
   const { isSmartContractWallet } = useAccountType()
 
   const { data: signer } = useSigner({

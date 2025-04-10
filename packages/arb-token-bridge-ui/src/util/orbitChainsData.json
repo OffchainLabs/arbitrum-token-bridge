@@ -2075,7 +2075,7 @@
       "bridgeUiConfig": {
         "color": "#1fd82e",
         "network": {
-          "name": "Earnm Sepolia Testing",
+          "name": "Earnm Sepolia",
           "logo": "/images/EarnmSepolia_Logo.svg"
         },
         "nativeTokenData": {
