@@ -88,6 +88,7 @@ jobs:
   e2e-tests:
     name: "E2E Tests"
     needs: [build, check-files]
+    if: needs.check-files.outputs.run_tests == 'true'
     uses: ./.github/workflows/e2e-tests.yml
     with:
       test_type: 'regular'
