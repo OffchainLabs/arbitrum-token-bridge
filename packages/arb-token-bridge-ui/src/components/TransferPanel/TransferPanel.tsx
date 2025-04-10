@@ -139,6 +139,8 @@ export function TransferPanel() {
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
 
+  console.log("Should run tests")
+
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const { isSmartContractWallet } = useAccountType()
