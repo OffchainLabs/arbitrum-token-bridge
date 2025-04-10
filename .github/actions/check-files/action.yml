@@ -38,7 +38,7 @@ runs:
         done
         
         for file in $files; do
-          if [[ "$file" == */orbitChainsData.json || "$file" == packages/scripts/addOrbitChain/* ]]; then
+          if [[ "$file" == */orbitChainsData.json || "$file" == packages/scripts/src/addOrbitChain/* ]]; then
             validate_orbit_chains=true
             break
           fi
