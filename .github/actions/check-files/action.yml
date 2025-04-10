@@ -51,7 +51,7 @@ runs:
               continue
             fi
 
-            # Dont run tests if a new Orbit chain is added, it would catch any potential issues anyway
+            # Dont run tests if a new Orbit chain is added, it would not catch any potential issues anyway
             if [[ "$file" == */orbitChainsData.json ]]; then
               continue
             fi 
