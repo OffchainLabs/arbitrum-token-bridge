@@ -8,14 +8,12 @@ import {
 } from '@arbitrum/sdk'
 import dayjs from 'dayjs'
 
-import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
+import { WithdrawalFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
   L2ToL1EventResultPlus,
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
@@ -209,12 +207,12 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
   }
 }
 
-export async function mapWithdrawalToL2ToL1EventResult({
+export async function mapWithdrawalFromSubgraphToL2ToL1EventResult({
   withdrawal,
   l1Provider,
   l2Provider
 }: {
-  withdrawal: FetchWithdrawalsFromSubgraphResult
+  withdrawal: WithdrawalFromSubgraph
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<L2ToL1EventResultPlus | undefined> {

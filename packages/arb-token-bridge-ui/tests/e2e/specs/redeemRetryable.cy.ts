@@ -1,5 +1,5 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { Transaction } from '../../../src/hooks/useTransactions'
+import { Transaction } from '../../../src/types/Transactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 import {
   getInitialERC20Balance,

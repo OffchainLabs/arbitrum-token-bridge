@@ -15,8 +15,6 @@ import { DepositGasEstimates } from '../arbTokenBridge.types'
 import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 import { useSelectedToken } from '../useSelectedToken'
-import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
-import { useOftV2FeeEstimates } from './useOftV2FeeEstimates'
 import {
   isWithdrawalFromArbOneToEthereum,
   isWithdrawalFromArbSepoliaToSepolia
@@ -43,8 +41,6 @@ export function getGasSummaryStatus({
   amountBigNumber,
   balance,
   gasEstimatesError,
-  oftFeeEstimatesError,
-  oftFeeSummaryLoading,
   sourceChainId,
   destinationChainId
 }: {
@@ -52,8 +48,6 @@ export function getGasSummaryStatus({
   amountBigNumber: BigNumber
   balance: BigNumber | null
   gasEstimatesError: any
-  oftFeeEstimatesError: boolean
-  oftFeeSummaryLoading: boolean
   sourceChainId: number
   destinationChainId: number
 }): GasEstimationStatus {
@@ -72,7 +66,7 @@ export function getGasSummaryStatus({
     return 'unavailable'
   }
 
-  if (balance === null || oftFeeSummaryLoading) {
+  if (balance === null) {
     return 'loading'
   }
 
@@ -80,7 +74,7 @@ export function getGasSummaryStatus({
     return 'insufficientBalance'
   }
 
-  if (gasEstimatesError || oftFeeEstimatesError) {
+  if (gasEstimatesError) {
     return 'error'
   }
 
@@ -126,28 +120,7 @@ export function useGasSummary(): UseGasSummaryResult {
         : selectedToken?.address
     })
 
-  const isOft = useIsOftV2Transfer()
-  const {
-    feeEstimates: oftFeeEstimates,
-    error: oftFeeEstimatesError,
-    isLoading: oftFeeSummaryLoading
-  } = useOftV2FeeEstimates({
-    sourceChainErc20Address: isDepositMode
-      ? selectedToken?.address
-      : selectedToken?.l2Address
-  })
-
   const estimatedParentChainGasFees = useMemo(() => {
-    if (isOft && oftFeeEstimates) {
-      return parseFloat(
-        utils.formatEther(
-          isDepositMode
-            ? oftFeeEstimates.sourceChainGasFee
-            : oftFeeEstimates.destinationChainGasFee
-        )
-      )
-    }
-
     if (!estimateGasResult?.estimatedParentChainGas) {
       return
     }
@@ -156,25 +129,9 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedParentChainGas.mul(parentChainGasPrice)
       )
     )
-  }, [
-    estimateGasResult,
-    parentChainGasPrice,
-    isOft,
-    oftFeeEstimates,
-    isDepositMode
-  ])
+  }, [estimateGasResult, parentChainGasPrice])
 
   const estimatedChildChainGasFees = useMemo(() => {
-    if (isOft && oftFeeEstimates) {
-      return parseFloat(
-        utils.formatEther(
-          isDepositMode
-            ? oftFeeEstimates.destinationChainGasFee
-            : oftFeeEstimates.sourceChainGasFee
-        )
-      )
-    }
-
     if (!estimateGasResult?.estimatedChildChainGas) {
       return
     }
@@ -203,13 +160,7 @@ export function useGasSummary(): UseGasSummaryResult {
         estimateGasResult.estimatedChildChainGas.mul(childChainGasPrice)
       )
     )
-  }, [
-    childChainGasPrice,
-    estimateGasResult,
-    isDepositMode,
-    oftFeeEstimates,
-    isOft
-  ])
+  }, [childChainGasPrice, estimateGasResult, isDepositMode])
 
   const gasSummaryStatus = useMemo(
     () =>
@@ -218,20 +169,10 @@ export function useGasSummary(): UseGasSummaryResult {
         amountBigNumber,
         balance,
         gasEstimatesError,
-        oftFeeEstimatesError,
-        oftFeeSummaryLoading,
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id
       }),
-    [
-      selectedToken,
-      amountBigNumber,
-      balance,
-      gasEstimatesError,
-      oftFeeEstimatesError,
-      oftFeeSummaryLoading,
-      networks
-    ]
+    [selectedToken, amountBigNumber, balance, gasEstimatesError, networks]
   )
 
   return {

@@ -2,15 +2,11 @@
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
   "allowlist": [
-    // temp measure until npm cli fixes its registration issue
-    // see https://github.com/actions/toolkit/issues/1960#issuecomment-2682212538
-    //
-    // Octokit request package vulnerable to ReDoS
-    // Only used in development scripts for GitHub API interactions
-    "GHSA-rmvr-2pp2-xj38",
-    // https://github.com/advisories/GHSA-h5c3-5r3r-rr8q
-    // Octokit plugin-paginate-rest vulnerable to ReDoS
-    // Only used in development scripts for GitHub API pagination
-    "GHSA-h5c3-5r3r-rr8q"
+    // https://github.com/advisories/GHSA-3gc7-fjrx-p6mg
+    // bigint-buffer Vulnerable to Buffer Overflow via toBigIntLE() Function
+    // GHSA-3gc7-fjrx-p6mg|arb-token-bridge-ui>wagmi>@wagmi/core>@wagmi/connectors>@coinbase/wallet-sdk>@solana/web3.js>bigint-buffer
+    // we don't use @solana/web3.js so we won't use bigint-buffer
+    // also as of 7 Apr 2025, there's no patched version for this yet
+    "GHSA-3gc7-fjrx-p6mg"
   ]
 }
