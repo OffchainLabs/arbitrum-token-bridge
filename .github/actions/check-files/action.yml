@@ -4,6 +4,9 @@ outputs:
   validate_orbit_chains:
     description: "Should Orbit chains be validated"
     value: ${{ steps.check-files.outputs.validate_orbit_chains }}
+  test_scripts:
+    description: "Should test scripts"
+    value: ${{ steps.check-files.outputs.test_scripts }}
   run_tests:
     description: 'Whether tests should be run based on modified files'
     value: ${{ steps.check-files.outputs.run_tests }}
@@ -24,8 +27,16 @@ runs:
         echo "$files"
 
         run_tests=false
+        test_scripts=false
         validate_orbit_chains=false
 
+        for file in $files; do
+          if [[ "$file" == packages/scripts/* ]]; then
+            test_scripts=true
+            break
+          fi
+        done
+        
         for file in $files; do
           if [[ "$file" == */orbitChainsData.json || "$file" == packages/scripts/addOrbitChain/* ]]; then
             validate_orbit_chains=true
@@ -45,4 +56,5 @@ runs:
         done
 
         echo "validate_orbit_chains=$validate_orbit_chains" >> $GITHUB_OUTPUT
+        echo "test_scripts=$test_scripts" >> $GITHUB_OUTPUT
         echo "run_tests=$run_tests" >> $GITHUB_OUTPUT
