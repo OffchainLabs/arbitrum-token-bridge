@@ -1,6 +1,9 @@
 name: 'Check Files'
 description: 'Checks modified files to determine if tests should be run'
 outputs:
+  validate_orbit_chains:
+    description: "Should Orbit chains be validated"
+    value: ${{ steps.check-files.outputs.validate_orbit_chains }}
   run_tests:
     description: 'Whether tests should be run based on modified files'
     value: ${{ steps.check-files.outputs.run_tests }}
@@ -19,16 +22,27 @@ runs:
         echo "=============== list modified files ==============="
         files=`git diff --name-only HEAD^ HEAD`
         echo "$files"
+
+        run_tests=false
+        validate_orbit_chains=false
+
         for file in $files; do
-          if [[ $file != packages/* ]] && ! [[ $file =~ .*\.(lock|yml)$ ]]; then
-            # if not in packages/ and does not end with .lock or .yml
-            echo "run_tests=false" >> $GITHUB_OUTPUT
-          elif [[ $file == .github/ISSUE_TEMPLATE/* ]]; then
-            echo "run_tests=false" >> $GITHUB_OUTPUT
-          elif [[ $file =~ .*\.(md|svg|png|webp|gif|txt)$ ]]; then
-            echo "run_tests=false" >> $GITHUB_OUTPUT
-          else
-            echo "run_tests=true" >> $GITHUB_OUTPUT
+          if [[ "$file" == */orbitChainsData.json || "$file" == packages/scripts/addOrbitChain/* ]]; then
+            validate_orbit_chains=true
             break
           fi
         done
+
+        for file in $files; do
+          if [[ $file == packages/arb-token-bridge-ui/* ]]; then
+            # Dont run e2e if only images/docs were changed
+            if [[ $file =~ \.(md|svg|png|webp|gif|txt)$ ]]; then
+              continue
+            fi
+            run_tests=true
+            break
+          fi
+        done
+
+        echo "validate_orbit_chains=$validate_orbit_chains" >> $GITHUB_OUTPUT
+        echo "run_tests=$run_tests" >> $GITHUB_OUTPUT
