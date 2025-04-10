@@ -434,7 +434,5 @@ export const updateOrbitChainsFile = (
   // Write the updated contents back to the file
   fs.writeFileSync(targetJsonPath, updatedContents);
 
-  console.log("Test scripts should run");
-
   return orbitChains;
 };
