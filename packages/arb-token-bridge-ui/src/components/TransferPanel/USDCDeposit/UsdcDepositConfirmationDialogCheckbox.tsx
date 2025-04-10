@@ -43,7 +43,7 @@ export function USDCDepositConfirmationDialogCheckbox({
         <>
           <Checkbox
             label={
-              <span className="select-none font-light">
+              <span className="font-light select-none">
                 I understand that I&apos;ll have to send{' '}
                 <span className="font-medium">
                   a second transaction on {destinationNetworkName}
@@ -63,7 +63,7 @@ export function USDCDepositConfirmationDialogCheckbox({
           />
           <Checkbox
             label={
-              <span className="select-none font-light">
+              <span className="font-light select-none">
                 I understand that it will take{' '}
                 <span className="font-medium">
                   ~
@@ -88,7 +88,7 @@ export function USDCDepositConfirmationDialogCheckbox({
       )}
       <Checkbox
         label={
-          <span className="select-none font-light">
+          <span className="font-light select-none">
             I understand <span className="font-medium">USDC.e</span> is
             different from <span className="font-medium">USDC</span>.{' '}
             <ExternalLink

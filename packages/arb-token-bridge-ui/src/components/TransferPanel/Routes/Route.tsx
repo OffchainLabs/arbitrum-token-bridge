@@ -149,7 +149,7 @@ export const Route = React.memo(
       >
         <div
           className={twMerge(
-            'bg-gray-8 flex h-8 items-center rounded-t py-2 pl-4 pr-2 text-xs',
+            'bg-gray-8 flex h-8 items-center rounded-t py-2 pr-2 pl-4 text-xs',
             selected && 'bg-[#5F7D5B]'
           )}
         >
@@ -297,7 +297,7 @@ export const Route = React.memo(
           </div>
 
           {tag ? (
-            <div className="absolute right-2 top-2">{getBadge(tag)}</div>
+            <div className="absolute top-2 right-2">{getBadge(tag)}</div>
           ) : null}
         </div>
       </div>

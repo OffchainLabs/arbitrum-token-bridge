@@ -37,10 +37,13 @@ const typedOrbitChainsData = orbitChainsData as OrbitChainsData
 const convertArrayToObject = (
   array: OrbitChainConfig[]
 ): { [key: number]: OrbitChainConfig } => {
-  return array.reduce((acc, chain) => {
-    acc[chain.chainId] = chain
-    return acc
-  }, {} as { [key: number]: OrbitChainConfig })
+  return array.reduce(
+    (acc, chain) => {
+      acc[chain.chainId] = chain
+      return acc
+    },
+    {} as { [key: number]: OrbitChainConfig }
+  )
 }
 
 export const orbitMainnets: {

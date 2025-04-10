@@ -56,7 +56,7 @@ const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   more: {
     name: ChainGroupName.more,
     description: (
-      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+      <p className="mt-2 flex gap-1 rounded bg-orange-dark px-2 py-1 text-xs whitespace-normal text-orange">
         <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
         <span>
           Independent projects using non-Arbitrum technology. These chains have
@@ -69,7 +69,7 @@ const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   orbit: {
     name: ChainGroupName.orbit,
     description: (
-      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+      <p className="mt-2 flex gap-1 rounded bg-orange-dark px-2 py-1 text-xs whitespace-normal text-orange">
         <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
         <span>
           Independent projects using Arbitrum technology. Orbit chains have

@@ -112,9 +112,9 @@ export function useGasSummary(): UseGasSummaryResult {
       sourceChainErc20Address: isDepositMode
         ? selectedToken?.address
         : isTokenArbitrumOneNativeUSDC(selectedToken?.address) ||
-          isTokenArbitrumSepoliaNativeUSDC(selectedToken?.address)
-        ? selectedToken?.address
-        : selectedToken?.l2Address,
+            isTokenArbitrumSepoliaNativeUSDC(selectedToken?.address)
+          ? selectedToken?.address
+          : selectedToken?.l2Address,
       destinationChainErc20Address: isDepositMode
         ? selectedToken?.l2Address
         : selectedToken?.address

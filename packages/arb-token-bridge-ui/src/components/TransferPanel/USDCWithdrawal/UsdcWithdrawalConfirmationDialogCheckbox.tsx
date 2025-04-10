@@ -31,7 +31,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
     <>
       <Checkbox
         label={
-          <span className="select-none font-light">
+          <span className="font-light select-none">
             I understand that I&apos;ll have to send{' '}
             <span className="font-medium">
               a second transaction on {destinationNetworkName}
@@ -51,7 +51,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
       />
       <Checkbox
         label={
-          <span className="select-none font-light">
+          <span className="font-light select-none">
             I understand that it will take{' '}
             <span className="font-medium">
               ~{minutesToHumanReadableTime(getCctpTransferDuration(isTestnet))}

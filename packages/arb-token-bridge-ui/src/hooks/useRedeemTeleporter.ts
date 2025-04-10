@@ -101,9 +101,8 @@ const redeemTeleporterFirstLeg = async ({
     await redeemRetryable(l2ForwarderRetryable)
 
     // update the teleport tx in the UI
-    const updatedTeleportTransfer = await getUpdatedTeleportTransfer(
-      teleportTransfer
-    )
+    const updatedTeleportTransfer =
+      await getUpdatedTeleportTransfer(teleportTransfer)
     await txUpdateCallback?.(updatedTeleportTransfer)
   }
 }

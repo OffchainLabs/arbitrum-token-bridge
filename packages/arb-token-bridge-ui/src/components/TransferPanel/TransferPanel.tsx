@@ -1048,8 +1048,8 @@ export function TransferPanel() {
       type: isTeleportMode
         ? 'Teleport'
         : isDepositMode
-        ? 'Deposit'
-        : 'Withdrawal',
+          ? 'Deposit'
+          : 'Withdrawal',
       isCctpTransfer: selectedRoute === 'cctp',
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
@@ -1090,8 +1090,8 @@ export function TransferPanel() {
           type: isTeleportMode
             ? 'Teleport'
             : isDepositMode
-            ? 'Deposit'
-            : 'Withdrawal',
+              ? 'Deposit'
+              : 'Withdrawal',
           tokenSymbol: selectedToken?.symbol,
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',

@@ -28,7 +28,7 @@ export const Switch = ({
             checked={checked}
             onChange={onChange}
             className={twMerge(
-              'relative inline-flex h-3 w-7 items-center rounded-full transition-colors ui-checked:bg-white ui-not-checked:bg-white/50 disabled:cursor-not-allowed',
+              'relative inline-flex h-3 w-7 items-center rounded-full transition-colors disabled:cursor-not-allowed ui-checked:bg-white ui-not-checked:bg-white/50',
               'duration-200 [&_span]:bg-black ui-checked:[&_span]:translate-x-[22px] ui-not-checked:[&_span]:translate-x-[3px] ui-checked:[&~*]:text-white',
               className
             )}

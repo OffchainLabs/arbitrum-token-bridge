@@ -53,7 +53,7 @@ export const Project = ({
         {/* Content */}
         <div className="relative grow text-left">
           <div className="flex flex-col gap-1 px-2">
-            <h5 className="relative flex items-center gap-2 text-left text-lg font-semibold leading-7">
+            <h5 className="relative flex items-center gap-2 text-left text-lg leading-7 font-semibold">
               {project.title}
             </h5>
             <p className="mb-2 line-clamp-3 text-sm opacity-70">
@@ -64,7 +64,7 @@ export const Project = ({
               {project.subcategories.slice(0, 2).map(subcategory => (
                 <span
                   key={subcategory.id}
-                  className="inline-flex items-start justify-start gap-2 break-words rounded bg-black px-1.5 py-0.5 text-xs font-normal text-white/60"
+                  className="inline-flex items-start justify-start gap-2 rounded bg-black px-1.5 py-0.5 text-xs font-normal break-words text-white/60"
                 >
                   {subcategory.title.replaceAll('/', ' / ')}
                 </span>

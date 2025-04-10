@@ -65,7 +65,7 @@ export const ArbitrumStats = () => {
   }
 
   return (
-    <div className="fixed bottom-0 right-0 m-4 flex flex-col gap-2 whitespace-nowrap rounded border border-gray-dark bg-dark py-2 pl-3 pr-7 font-[monospace] text-xs text-gray-3 opacity-90">
+    <div className="fixed right-0 bottom-0 m-4 flex flex-col gap-2 rounded border border-gray-dark bg-dark py-2 pr-7 pl-3 font-[monospace] text-xs whitespace-nowrap text-gray-3 opacity-90">
       <div className="section flex flex-col">
         <span className="text-md flex items-center text-white">
           <span className="mr-1 animate-pulse text-lg text-green-300">
@@ -131,7 +131,7 @@ export const ArbitrumStats = () => {
       {/* Don't show the close button if the settings panel is visible */}
       {!settingsOpen && (
         <button
-          className="arb-hover absolute right-3 top-3 cursor-pointer"
+          className="arb-hover absolute top-3 right-3 cursor-pointer"
           onClick={closeArbitrumStats}
         >
           <XMarkIcon height={16} />

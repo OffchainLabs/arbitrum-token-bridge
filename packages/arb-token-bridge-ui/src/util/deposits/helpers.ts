@@ -618,9 +618,8 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
     | ParentToChildMessageReader
 }> => {
   // fetch Parent transaction receipt
-  const depositTxReceipt = await parentProvider.getTransactionReceipt(
-    depositTxId
-  )
+  const depositTxReceipt =
+    await parentProvider.getTransactionReceipt(depositTxId)
 
   // TODO: Handle tx not found
   if (!depositTxReceipt) {
@@ -642,9 +641,8 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
     // post-nitro handling
     if (!isRetryableDeposit) {
       // nitro eth deposit (to the same address)
-      const [ethDepositMessage] = await parentTxReceipt.getEthDeposits(
-        childProvider
-      )
+      const [ethDepositMessage] =
+        await parentTxReceipt.getEthDeposits(childProvider)
       return {
         isClassic: false,
         parentToChildMsg: ethDepositMessage
@@ -652,9 +650,8 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
     }
 
     // Else, nitro retryable (token deposit or eth deposit to a custom destination)
-    const [parentToChildMsg] = await parentTxReceipt.getParentToChildMessages(
-      childProvider
-    )
+    const [parentToChildMsg] =
+      await parentTxReceipt.getParentToChildMessages(childProvider)
     return {
       isClassic: false,
       parentToChildMsg

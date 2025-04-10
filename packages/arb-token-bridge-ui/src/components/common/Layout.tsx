@@ -42,7 +42,7 @@ export function Layout(props: LayoutProps) {
       <Image
         src={EclipseBottom}
         alt="grains"
-        className="absolute left-1/2 top-0 w-full -translate-x-1/2 rotate-180 opacity-20"
+        className="absolute top-0 left-1/2 w-full -translate-x-1/2 rotate-180 opacity-20"
         aria-hidden
       />
       <Image

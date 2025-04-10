@@ -37,9 +37,9 @@ export const Radio = ({
                 <div className="flex w-full cursor-pointer gap-3">
                   {/* radio checkmark */}
                   {checked ? (
-                    <div className="radio-selected mb-1 mt-[3px] h-4 w-4 shrink-0 rounded-full border border-white bg-white shadow-[inset_0_0_0_2px_rgba(0,0,0,1)]"></div>
+                    <div className="radio-selected mt-[3px] mb-1 h-4 w-4 shrink-0 rounded-full border border-white bg-white shadow-[inset_0_0_0_2px_rgba(0,0,0,1)]"></div>
                   ) : (
-                    <div className="mb-1 mt-[3px] h-4 w-4 shrink-0 rounded-full border border-white"></div>
+                    <div className="mt-[3px] mb-1 h-4 w-4 shrink-0 rounded-full border border-white"></div>
                   )}
 
                   {/* radio option text */}
@@ -47,7 +47,7 @@ export const Radio = ({
                     {/* option label */}
                     <RadioGroup.Label
                       as="p"
-                      className={`heading mb-1 mr-4 text-sm`}
+                      className={`heading mr-4 mb-1 text-sm`}
                     >
                       {option.label}
                     </RadioGroup.Label>

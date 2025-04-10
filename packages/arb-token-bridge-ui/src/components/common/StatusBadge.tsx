@@ -22,7 +22,7 @@ export function StatusBadge({
   return (
     <div
       className={twMerge(
-        'status-badge flex w-max flex-nowrap items-center gap-1 rounded py-1 pl-1 pr-2 text-sm font-normal',
+        'status-badge flex w-max flex-nowrap items-center gap-1 rounded py-1 pr-2 pl-1 text-sm font-normal',
         variants[variant],
         className
       )}

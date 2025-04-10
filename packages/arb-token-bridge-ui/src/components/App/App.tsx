@@ -146,7 +146,7 @@ function AppContent() {
           <HeaderAccountOrConnectWalletButton />
         </Header>
 
-        <div className="flex flex-col items-start gap-4 px-6 pb-8 pt-12 text-white">
+        <div className="flex flex-col items-start gap-4 px-6 pt-12 pb-8 text-white">
           <p className="text-5xl">No wallet connected</p>
           <p className="text-xl">
             Please connect your wallet to use the bridge.

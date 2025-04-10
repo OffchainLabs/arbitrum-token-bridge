@@ -39,7 +39,7 @@ const DetailsBox = ({
   return (
     <div className="my-2 flex w-full flex-col rounded border border-white/30 bg-black p-3 font-light text-white">
       {header && (
-        <h4 className="mb-2 text-xs uppercase text-white/60">{header}</h4>
+        <h4 className="mb-2 text-xs text-white/60 uppercase">{header}</h4>
       )}
       {children}
     </div>

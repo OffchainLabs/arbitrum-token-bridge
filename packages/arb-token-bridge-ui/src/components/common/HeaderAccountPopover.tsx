@@ -90,11 +90,11 @@ export function HeaderAccountPopover({
         <Popover.Panel className="flex w-full flex-col overflow-hidden rounded pb-2 sm:absolute sm:top-0 sm:bg-dark">
           {/* Profile photo with address */}
           {showCopied && (
-            <span className="absolute right-2 top-4 z-50 text-xs text-white">
+            <span className="absolute top-4 right-2 z-50 text-xs text-white">
               Copied to clipboard!
             </span>
           )}
-          <div className="relative hidden w-full flex-row items-center px-2 pb-2 pt-3 sm:flex">
+          <div className="relative hidden w-full flex-row items-center px-2 pt-3 pb-2 sm:flex">
             {/* Blurred background */}
             <div className="absolute inset-0 flex h-8 w-full flex-col items-center overflow-hidden bg-dark text-center">
               <div className="scale-400 blur-2xl filter">
@@ -119,7 +119,7 @@ export function HeaderAccountPopover({
                 className="flex translate-y-1 flex-row items-center gap-1 text-white/70 hover:text-white"
                 onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
               >
-                <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm">
+                <span className="max-w-[10rem] overflow-hidden text-sm text-ellipsis">
                   {ensName ?? udInfo.name ?? accountShort}
                 </span>
                 <DocumentDuplicateIcon className="h-3 w-3" />

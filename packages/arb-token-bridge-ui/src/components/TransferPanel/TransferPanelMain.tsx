@@ -78,7 +78,7 @@ function SwitchNetworkButtonBorderTop() {
 
   return (
     <div
-      className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
+      className="absolute top-0 right-0 left-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
       style={{ borderColor: sourceNetworkColor }}
     />
   )
@@ -93,7 +93,7 @@ function SwitchNetworkButtonBorderBottom() {
 
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
+      className="absolute right-0 bottom-0 left-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
       style={{ borderColor: destinationNetworkColor }}
     />
   )
@@ -174,7 +174,7 @@ export function NetworkContainer({
           showCustomAddressBanner && 'rounded-t-none'
         )}
       >
-        <div className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-3 opacity-50" />
+        <div className="absolute top-0 left-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-3 opacity-50" />
         <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row">
           {children}
         </div>

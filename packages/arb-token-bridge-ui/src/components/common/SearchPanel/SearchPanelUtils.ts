@@ -1,8 +1,8 @@
 import { twMerge } from 'tailwind-merge'
 
 export const panelWrapperClassnames = twMerge(
-  'h-screen w-full bg-bg-gray-1 text-white border-gray-dark border w-screen',
-  'sm:h-auto sm:w-auto sm:min-w-[448px] sm:gap-3 sm:rounded sm:shadow-modal'
+  'h-screen w-full w-screen border border-gray-dark bg-bg-gray-1 text-white',
+  'sm:shadow-modal sm:h-auto sm:w-auto sm:min-w-[448px] sm:gap-3 sm:rounded'
 )
 
 export function onPopoverClose() {

@@ -75,9 +75,8 @@ export const getRetryableTicketExpiration = async ({
   let expirationDate = 0
 
   try {
-    const depositTxReceipt = await parentChainProvider.getTransactionReceipt(
-      parentChainTxHash
-    )
+    const depositTxReceipt =
+      await parentChainProvider.getTransactionReceipt(parentChainTxHash)
     const parentChainTxReceipt = new ParentTransactionReceipt(depositTxReceipt)
     const [parentToChildMsg] =
       await parentChainTxReceipt.getParentToChildMessages(childChainProvider)

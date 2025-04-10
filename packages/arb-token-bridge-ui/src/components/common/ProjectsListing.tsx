@@ -148,7 +148,7 @@ export const ProjectsListing = () => {
               ? PORTAL_API_ENDPOINT
               : `${PORTAL_API_ENDPOINT}/projects?chains=${destinationChainSlug}`
           }
-          className="flex w-min flex-nowrap items-center gap-2 self-end whitespace-nowrap rounded-md border p-2 text-sm"
+          className="flex w-min flex-nowrap items-center gap-2 self-end rounded-md border p-2 text-sm whitespace-nowrap"
           style={{
             borderColor: destinationChainUIcolor,
             backgroundColor: `${destinationChainUIcolor}66`

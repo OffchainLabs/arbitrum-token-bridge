@@ -262,7 +262,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   }
 
   return (
-    <span className="flex items-center whitespace-nowrap text-sm text-white/70">
+    <span className="flex items-center text-sm whitespace-nowrap text-white/70">
       {balance ? (
         formatAmount(balance, {
           decimals,
@@ -358,7 +358,7 @@ export function TokenRow({
 
         <div className="flex w-full flex-col items-start gap-1 truncate">
           <div className="flex w-full items-center gap-1">
-            <span className="text-base font-medium leading-none">
+            <span className="text-base leading-none font-medium">
               {tokenSymbol}
             </span>
             <span className="text-xs text-white/70">{tokenName}</span>

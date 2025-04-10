@@ -16,7 +16,7 @@ export function BlockedDialog(props: DialogProps & { address: string }) {
       }
       isFooterHidden={true}
     >
-      <div className="flex flex-col space-y-4 break-words py-4 text-gray-3">
+      <div className="flex flex-col space-y-4 py-4 break-words text-gray-3">
         <span>{props.address.toLowerCase()}</span>
         <span>This address is affiliated with a blocked activity.</span>
         <span>

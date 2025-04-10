@@ -85,9 +85,8 @@ export async function fetchWithdrawals({
     // if toBlock hasn't been provided by the user
 
     // fetch the latest L2 block number thorough subgraph
-    const latestSubgraphBlockNumber = await fetchLatestSubgraphBlockNumber(
-      l2ChainID
-    )
+    const latestSubgraphBlockNumber =
+      await fetchLatestSubgraphBlockNumber(l2ChainID)
     toBlock = latestSubgraphBlockNumber
   }
 

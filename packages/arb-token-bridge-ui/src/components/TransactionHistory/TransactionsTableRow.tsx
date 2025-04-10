@@ -73,7 +73,7 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
         aria-label="Transaction status"
         className="arb-hover flex items-center space-x-1 text-yellow-400"
       >
-        <div className="h-[10px] w-[10px] rounded-full border border-yellow-400 " />
+        <div className="h-[10px] w-[10px] rounded-full border border-yellow-400" />
         <span>Pending</span>
         <ArrowTopRightOnSquareIcon height={10} className="shrink-0" />
       </ExternalLink>
