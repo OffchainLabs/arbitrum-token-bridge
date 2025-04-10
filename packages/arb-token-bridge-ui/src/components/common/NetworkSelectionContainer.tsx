@@ -143,7 +143,7 @@ export function NetworkButton({
     <button
       style={buttonStyle}
       className={twMerge(
-        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:gap-2 md:text-2xl'
+        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-hidden md:gap-2 md:text-2xl'
       )}
       disabled={disabled}
       onClick={onClick}

@@ -40,7 +40,7 @@ export function SwitchNetworksButton(
   const [networks, setNetworks] = useNetworks()
 
   return (
-    <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
+    <div className="z-1 flex h-4 w-full items-center justify-center lg:h-1">
       <button
         type="button"
         disabled={disabled}

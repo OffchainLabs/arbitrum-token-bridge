@@ -161,7 +161,7 @@ export const TransactionsTableDetails = () => {
               leaveTo="opacity-0 scale-95"
               afterLeave={reset}
             >
-              <Dialog.Panel className="h-screen w-screen transform overflow-hidden rounded border border-white/10 bg-dark p-4 text-left align-middle shadow shadow-white/10 transition-all sm:h-auto sm:w-full sm:max-w-[488px]">
+              <Dialog.Panel className="h-screen w-screen transform overflow-hidden rounded border border-white/10 bg-dark p-4 text-left align-middle shadow-sm shadow-white/10 transition-all sm:h-auto sm:w-full sm:max-w-[488px]">
                 <Dialog.Title
                   className="mb-4 flex items-center justify-between text-lg font-light text-white"
                   as="h3"

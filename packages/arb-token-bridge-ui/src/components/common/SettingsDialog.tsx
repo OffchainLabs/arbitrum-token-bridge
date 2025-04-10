@@ -47,8 +47,8 @@ export const SettingsDialog = () => {
       isOpen={settingsOpen}
       heading="Settings"
       onClose={closeSettings}
-      dialogWrapperClassName="z-[1001]"
-      panelClassNameOverrides="lg:!w-[944px] !min-w-[350px]" // custom width
+      dialogWrapperClassName="z-1001"
+      panelClassNameOverrides="lg:w-[944px]! min-w-[350px]!" // custom width
     >
       <div className="flex w-full flex-col items-center gap-6 text-white">
         {/* Arbitrum stats toggle */}

@@ -172,7 +172,7 @@ export function Dialog(props: DialogProps) {
               )}
             </div>
 
-            <div className="flex-grow px-6">{props.children}</div>
+            <div className="grow px-6">{props.children}</div>
 
             {!isFooterHidden && (
               <div className="flex flex-row justify-end space-x-2 bg-[#3B3B3B] px-6 py-2">

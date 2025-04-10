@@ -60,11 +60,11 @@ export function HeaderAccountPopover({
       <Popover.Button
         className={twMerge(
           'flex w-full flex-row items-center justify-start gap-3 px-[12px] py-[7px] transition-[background] duration-300',
-          'ui-open:bg-white/20 ui-not-open:bg-transparent ui-not-open:hover:bg-white/20',
+          'ui-open:bg-white/20 ui-not-open:bg-transparent hover:ui-not-open:bg-white/20',
           'sm:w-max sm:rounded sm:border sm:px-2 sm:py-1',
           isTestnet
             ? 'sm:border-white sm:ui-not-open:bg-white/20'
-            : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10'
+            : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:hover:ui-not-open:bg-white/10'
         )}
         style={destinationChainStyle}
         role="button"

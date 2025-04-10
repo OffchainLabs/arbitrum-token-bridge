@@ -1183,7 +1183,7 @@ export function TransferPanel() {
             }
           >
             {/* Override margin coming from Tippy that causes layout disruptions */}
-            <div className="!m-0" />
+            <div className="m-0!" />
           </Tippy>
         )}
       </div>

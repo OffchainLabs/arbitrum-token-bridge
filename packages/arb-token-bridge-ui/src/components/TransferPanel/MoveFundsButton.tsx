@@ -40,7 +40,7 @@ export function MoveFundsButton({
       }}
       className={twMerge(
         'w-full border py-3 text-lg',
-        'disabled:!border-white/10 disabled:!bg-white/10',
+        'disabled:border-white/10! disabled:bg-white/10!',
         'lg:text-2xl'
       )}
     >

@@ -32,7 +32,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
   return (
     <header
       className={twMerge(
-        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:relative sm:h-16 sm:px-6 sm:backdrop-blur-none [body.menu-open_&]:fixed',
+        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur-sm sm:relative sm:h-16 sm:px-6 sm:backdrop-blur-none [body.menu-open_&]:fixed',
         isTestnet || isExperimentalMode
           ? 'sm:border-b sm:border-white sm:bg-white/20'
           : 'sm:bg-transparent',
