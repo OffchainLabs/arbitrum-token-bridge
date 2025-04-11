@@ -59,15 +59,9 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const { usdcContractAddress, tokenMessengerContractAddress } =
       getCctpContracts({ sourceChainId })
 
-    // approve USDC token for burn
-    const contract = ERC20__factory.connect(
-      usdcContractAddress,
-      this.sourceChainProvider
-    )
-
     return {
       to: usdcContractAddress,
-      data: contract.interface.encodeFunctionData('approve', [
+      data: ERC20__factory.createInterface().encodeFunctionData('approve', [
         tokenMessengerContractAddress,
         amount ?? constants.MaxInt256
       ]),
