@@ -127,7 +127,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     // if it fails, the token gateway is not allowed to burn the token without additional approval
     const transferEstimateGasResult = await this.transferEstimateGas({
       amount,
-      signer
+      from: await signer.getAddress()
     })
 
     if (!transferEstimateGasResult.isError) {
@@ -185,10 +185,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     )
   }
 
-  public async transferEstimateGas({
-    amount,
-    signer
-  }: TransferEstimateGasProps) {
+  public async transferEstimateGas({ amount, from }: TransferEstimateGasProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -196,11 +193,9 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     const destinationChainErc20Address =
       await this.getDestinationChainErc20Address()
 
-    const address = (await getAddressFromSigner(signer)) as `0x${string}`
-
     return withdrawInitTxEstimateGas({
       amount,
-      address,
+      address: from as `0x${string}`,
       erc20L1Address: destinationChainErc20Address,
       childChainProvider: this.sourceChainProvider
     })

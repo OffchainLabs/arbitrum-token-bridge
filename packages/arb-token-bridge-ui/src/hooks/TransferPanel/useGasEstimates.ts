@@ -40,7 +40,7 @@ async function fetcher([
 
   return await bridgeTransferStarter.transferEstimateGas({
     amount,
-    signer,
+    from: await signer.getAddress(),
     destinationAddress
   })
 }
