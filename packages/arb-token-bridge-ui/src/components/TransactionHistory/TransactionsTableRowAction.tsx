@@ -39,8 +39,9 @@ export function TransactionsTableRowAction({
   const { address: connectedAddress, chain } = useAccount()
   const { switchChainAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
-  const { sanitizedAddress: searchedAddress } =
-    useTransactionHistoryAddressStore()
+  const searchedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
 
   const isViewingAnotherAddress =
     connectedAddress &&

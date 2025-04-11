@@ -10,7 +10,9 @@ import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'
 import { useAccount, useConfig } from 'wagmi'
+import { shallow } from 'zustand/shallow'
 import dayjs from 'dayjs'
+
 import {
   ChainDomain,
   CompletedCCTPTransfer,
@@ -330,7 +332,16 @@ export function useCctpState() {
     resetTransfers,
     setTransfers,
     updateTransfer
-  } = useCctpStore()
+  } = useCctpStore(
+    state => ({
+      transfersIds: state.transfersIds,
+      transfers: state.transfers,
+      resetTransfers: state.resetTransfers,
+      setTransfers: state.setTransfers,
+      updateTransfer: state.updateTransfer
+    }),
+    shallow
+  )
 
   const { pendingIds, completedIds, depositIds, withdrawalIds } =
     useMemo(() => {

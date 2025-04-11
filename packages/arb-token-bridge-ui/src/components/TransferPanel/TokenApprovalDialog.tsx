@@ -59,7 +59,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
   const signer = useEthersSigner({ chainId })
-  const { selectedRoute } = useRouteStore()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
   const isCctp = selectedRoute === 'cctp'
   const isOft = selectedRoute === 'oftV2'
 
