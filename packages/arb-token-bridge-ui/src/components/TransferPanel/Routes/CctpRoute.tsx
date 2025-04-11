@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import {shallow} from 'zustand/shallow'
+import { shallow } from 'zustand/shallow'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { Route, Token } from './Route'
