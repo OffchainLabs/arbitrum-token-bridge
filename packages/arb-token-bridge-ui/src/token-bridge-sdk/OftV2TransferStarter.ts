@@ -130,20 +130,19 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
   public async requiresTokenApproval({
     amount,
-    signer
+    owner
   }: RequiresTokenApprovalProps): Promise<boolean> {
     await this.validateOftTransfer()
 
     // only Eth adapter will need token approval
     if (!this.isSourceChainEthereum) return false
 
-    const address = await getAddressFromSigner(signer)
     const spender = this.getOftAdapterContractAddress()
 
     const allowance = await fetchErc20Allowance({
       address: this.sourceChainErc20Address!,
       provider: this.sourceChainProvider,
-      owner: address,
+      owner,
       spender
     })
 
