@@ -19,6 +19,7 @@ import { TransactionRequest } from '@ethersproject/providers'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'cctp'
+  public sourceChainId?: number
 
   public requiresNativeCurrencyApproval = async () => false
 
@@ -30,14 +31,25 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return
   }
 
+  private async getSourceChainId(): Promise<number> {
+    if (typeof this.sourceChainId === 'undefined') {
+      this.sourceChainId = await getChainIdFromProvider(
+        this.sourceChainProvider
+      )
+    }
+
+    return this.sourceChainId
+  }
+
   public async requiresTokenApproval({
     amount,
     signer
   }: RequiresTokenApprovalProps): Promise<boolean> {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getCctpContracts({ sourceChainId })
+    const {
+      //
+      usdcContractAddress,
+      tokenMessengerContractAddress
+    } = getCctpContracts({ sourceChainId: await this.getSourceChainId() })
 
     const allowance = await fetchErc20Allowance({
       address: usdcContractAddress,
@@ -54,10 +66,11 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }: {
     amount?: BigNumber
   }): Promise<TransactionRequest> {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getCctpContracts({ sourceChainId })
+    const {
+      //
+      usdcContractAddress,
+      tokenMessengerContractAddress
+    } = getCctpContracts({ sourceChainId: await this.getSourceChainId() })
 
     return {
       to: usdcContractAddress,
@@ -70,10 +83,11 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async approveToken({ signer, amount }: ApproveTokenProps) {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getCctpContracts({ sourceChainId })
+    const {
+      //
+      usdcContractAddress,
+      tokenMessengerContractAddress
+    } = getCctpContracts({ sourceChainId: await this.getSourceChainId() })
 
     // approve USDC token for burn
     const contract = ERC20__factory.connect(usdcContractAddress, signer)
@@ -84,9 +98,12 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getCctpContracts({ sourceChainId })
+    const {
+      //
+      usdcContractAddress,
+      tokenMessengerContractAddress
+    } = getCctpContracts({ sourceChainId: await this.getSourceChainId() })
+
     const contract = ERC20__factory.connect(usdcContractAddress, signer)
     return contract.estimateGas.approve(
       tokenMessengerContractAddress,
@@ -131,7 +148,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       tokenMessengerContractAddress,
       targetChainDomain
     } = getCctpContracts({
-      sourceChainId
+      sourceChainId: await this.getSourceChainId()
     })
 
     const config = await prepareWriteContract({
