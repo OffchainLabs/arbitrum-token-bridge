@@ -61,7 +61,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { data: signer } = useSigner({
     chainId
   })
-  const { selectedRoute } = useRouteStore()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
   const isCctp = selectedRoute === 'cctp'
   const isOft = selectedRoute === 'oftV2'
 
