@@ -19,7 +19,6 @@ import { TransactionRequest } from '@ethersproject/providers'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'cctp'
-  public sourceChainId?: number
 
   public requiresNativeCurrencyApproval = async () => false
 
@@ -29,16 +28,6 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
   public approveNativeCurrency = async () => {
     return
-  }
-
-  private async getSourceChainId(): Promise<number> {
-    if (typeof this.sourceChainId === 'undefined') {
-      this.sourceChainId = await getChainIdFromProvider(
-        this.sourceChainProvider
-      )
-    }
-
-    return this.sourceChainId
   }
 
   public async requiresTokenApproval({
