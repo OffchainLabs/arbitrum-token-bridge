@@ -88,17 +88,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
-    const {
-      //
-      usdcContractAddress,
-      tokenMessengerContractAddress
-    } = getCctpContracts({ sourceChainId: await this.getSourceChainId() })
-
-    const contract = ERC20__factory.connect(usdcContractAddress, signer)
-    return contract.estimateGas.approve(
-      tokenMessengerContractAddress,
-      amount ?? constants.MaxInt256
-    )
+    const txRequest = await this.approveTokenPrepareTxRequest({ amount })
+    return signer.estimateGas(txRequest)
   }
 
   public async transferEstimateGas() {
