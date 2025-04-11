@@ -32,7 +32,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
   public async requiresTokenApproval({
     amount,
-    signer
+    signer,
+    owner
   }: RequiresTokenApprovalProps): Promise<boolean> {
     const {
       //
@@ -43,7 +44,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const allowance = await fetchErc20Allowance({
       address: usdcContractAddress,
       provider: this.sourceChainProvider,
-      owner: await getAddressFromSigner(signer),
+      owner: owner ?? (await getAddressFromSigner(signer!)),
       spender: tokenMessengerContractAddress
     })
 
