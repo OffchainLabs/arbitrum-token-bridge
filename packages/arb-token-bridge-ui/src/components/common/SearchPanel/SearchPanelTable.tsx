@@ -1,5 +1,5 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import React, { PropsWithChildren } from 'react'
+import React, { PropsWithChildren, useEffect } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 type SearchPanelTableProps = {
@@ -26,6 +26,14 @@ export const SearchPanelTable = ({
   dataCy,
   isDialog
 }: PropsWithChildren<SearchPanelTableProps>) => {
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [inputRef])
+
   return (
     <div className="flex w-[calc(100vw_-_60px)] flex-col gap-3 md:w-full">
       <form onSubmit={onSubmit} className="flex flex-col">
@@ -33,6 +41,7 @@ export const SearchPanelTable = ({
           <div className="relative flex h-full w-full grow items-center rounded border-[1px] border-gray-dark bg-black/30 text-white shadow-input">
             <MagnifyingGlassIcon className="absolute left-2 top-1/2 -mt-2 h-4 w-4 shrink-0" />
             <input
+              ref={inputRef}
               type="search"
               placeholder={searchInputPlaceholder}
               value={searchInputValue}
