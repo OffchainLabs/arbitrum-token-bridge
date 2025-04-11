@@ -1,5 +1,6 @@
 import { prepareWriteContract, writeContract } from '@wagmi/core'
 import { BigNumber, constants, utils } from 'ethers'
+import { TransactionRequest } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import {
@@ -11,11 +12,10 @@ import {
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
 import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
-import { getChainIdFromProvider, getAddressFromSigner } from './utils'
+import { getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 import { Address } from '../util/AddressUtils'
-import { TransactionRequest } from '@ethersproject/providers'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'cctp'
