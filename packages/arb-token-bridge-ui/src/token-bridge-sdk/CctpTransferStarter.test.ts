@@ -14,7 +14,17 @@ const starter = new CctpTransferStarter({
   )
 })
 
-it('returns the correct data for approve token tx request', async () => {
+it('returns the correct data for approve token tx request (default amount)', async () => {
+  const txRequest = await starter.approveTokenPrepareTxRequest()
+
+  expect(txRequest).toEqual({
+    to: CommonAddress.Sepolia.USDC,
+    data: '0x095ea7b30000000000000000000000009f3b8679c73c2fef8b59b4f3444d4e156fb70aa57fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    value: BigNumber.from(0)
+  })
+})
+
+it('returns the correct data for approve token tx request (custom amount)', async () => {
   const txRequest = await starter.approveTokenPrepareTxRequest({
     amount: BigNumber.from(1_000_000) // 1 usdc (usdc is 6 decimals)
   })

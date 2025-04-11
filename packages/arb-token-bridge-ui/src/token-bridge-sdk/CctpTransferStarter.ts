@@ -61,10 +61,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return allowance.lt(amount)
   }
 
-  public async approveTokenPrepareTxRequest({
-    amount
-  }: {
-    amount?: BigNumber
+  public async approveTokenPrepareTxRequest(params?: {
+    amount: BigNumber | undefined
   }): Promise<TransactionRequest> {
     const {
       //
@@ -76,7 +74,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       to: usdcContractAddress,
       data: ERC20__factory.createInterface().encodeFunctionData('approve', [
         tokenMessengerContractAddress,
-        amount ?? constants.MaxInt256
+        params?.amount ?? constants.MaxInt256
       ]),
       value: BigNumber.from(0)
     }
