@@ -33,8 +33,6 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
     })
 
     yield* stepGeneratorForDialog('approve_token')
-    const txReceipt = yield* stepGeneratorForTransaction(context, txRequest)
-
-    console.log(txReceipt)
+    yield* stepGeneratorForTransaction(context, txRequest)
   }
 }
