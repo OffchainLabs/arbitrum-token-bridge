@@ -91,8 +91,8 @@ export type ApproveNativeCurrencyProps = {
 }
 
 export type RequiresTokenApprovalProps = {
-  owner: string
   amount: BigNumber
+  owner: string
   destinationAddress?: string
 }
 
