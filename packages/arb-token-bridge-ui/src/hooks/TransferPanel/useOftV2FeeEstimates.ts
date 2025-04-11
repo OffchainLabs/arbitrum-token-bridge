@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { BigNumber, constants } from 'ethers'
 import useSWR from 'swr'
-import { useAccount } from 'wagmi'
+import { Config, useAccount, useConfig } from 'wagmi'
 
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
@@ -13,13 +13,15 @@ async function fetcher([
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
-  isValidOftTransfer
+  isValidOftTransfer,
+  wagmiConfig
 ]: [
   walletAddress: string | undefined,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
-  isValidOftTransfer: boolean
+  isValidOftTransfer: boolean,
+  wagmiConfig: Config
 ]) {
   if (!isValidOftTransfer) {
     return {
@@ -43,7 +45,8 @@ async function fetcher([
       sourceChainErc20Address
     }).transferEstimateFee({
       amount,
-      signer
+      signer,
+      wagmiConfig
     })
 
   return {
@@ -59,6 +62,7 @@ export function useOftV2FeeEstimates({
 }) {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
+  const wagmiConfig = useConfig()
 
   const sourceChainId = networks.sourceChain.id
   const destinationChainId = networks.destinationChain.id
@@ -78,6 +82,7 @@ export function useOftV2FeeEstimates({
       sourceChainErc20Address,
       walletAddress,
       isValidOftTransfer,
+      wagmiConfig,
       'oftFeeEstimates'
     ] as const,
     ([
@@ -85,14 +90,16 @@ export function useOftV2FeeEstimates({
       _destinationChainId,
       _sourceChainErc20Address,
       _walletAddress,
-      _isValidOftTransfer
+      _isValidOftTransfer,
+      _wagmiConfig
     ]) => {
       return fetcher([
         _walletAddress,
         _sourceChainId,
         _destinationChainId,
         _sourceChainErc20Address,
-        _isValidOftTransfer
+        _isValidOftTransfer,
+        _wagmiConfig
       ])
     },
     {

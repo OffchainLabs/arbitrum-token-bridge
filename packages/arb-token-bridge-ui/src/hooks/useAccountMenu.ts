@@ -2,17 +2,12 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useState, useEffect, useMemo } from 'react'
 import Resolution from '@unstoppabledomains/resolution'
 
-import {
-  useProvider,
-  useAccount,
-  useDisconnect,
-  useNetwork,
-  useEnsName,
-  useEnsAvatar
-} from 'wagmi'
+import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi'
 import { useArbQueryParams } from './useArbQueryParams'
 import { shortenAddress } from '../util/CommonUtils'
 import { onDisconnectHandler } from '../util/walletConnectUtils'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { ChainId } from '../types/ChainId'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -44,38 +39,38 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
 }
 
 export const useAccountMenu = () => {
-  const l1Provider = useProvider({ chainId: 1 })
-  const { address } = useAccount()
+  const { address, chain } = useAccount()
   const { disconnect } = useDisconnect({
-    onSettled: onDisconnectHandler
+    mutation: {
+      onSettled: onDisconnectHandler
+    }
   })
-  const { chain } = useNetwork()
 
   const [, setQueryParams] = useArbQueryParams()
 
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
   const { data: ensName } = useEnsName({
     address,
-    chainId: 1
+    chainId: ChainId.Ethereum
   })
 
   const { data: ensAvatar } = useEnsAvatar({
-    address,
-    chainId: 1
+    name: ensName ?? '',
+    chainId: ChainId.Ethereum
   })
 
   useEffect(() => {
     if (!address) return
     async function resolveUdName() {
       const udName = await tryLookupUDName(
-        l1Provider as JsonRpcProvider,
+        getProviderForChainId(ChainId.Ethereum),
         address as string
       )
 
       setUDInfo({ name: udName })
     }
     resolveUdName()
-  }, [address, l1Provider])
+  }, [address])
 
   const accountShort = useMemo(() => {
     if (typeof address === 'undefined') {
@@ -89,14 +84,14 @@ export const useAccountMenu = () => {
     if (!address) return
     async function resolveUdName() {
       const udName = await tryLookupUDName(
-        l1Provider as JsonRpcProvider,
+        getProviderForChainId(ChainId.Ethereum),
         address as string
       )
 
       setUDInfo({ name: udName })
     }
     resolveUdName()
-  }, [address, l1Provider])
+  }, [address])
 
   return {
     address,
