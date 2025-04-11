@@ -56,7 +56,7 @@ const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   more: {
     name: ChainGroupName.more,
     description: (
-      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+      <p className="mt-2 flex gap-1 rounded bg-orange-dark px-2 py-1 text-xs whitespace-normal text-orange">
         <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
         <span>
           Independent projects using non-Arbitrum technology. These chains have
@@ -69,7 +69,7 @@ const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   orbit: {
     name: ChainGroupName.orbit,
     description: (
-      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+      <p className="mt-2 flex gap-1 rounded bg-orange-dark px-2 py-1 text-xs whitespace-normal text-orange">
         <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
         <span>
           Independent projects using Arbitrum technology. Orbit chains have
@@ -143,7 +143,7 @@ export function NetworkButton({
     <button
       style={buttonStyle}
       className={twMerge(
-        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:gap-2 md:text-2xl'
+        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-hidden md:gap-2 md:text-2xl'
       )}
       disabled={disabled}
       onClick={onClick}

@@ -74,7 +74,7 @@ export function TokenButton({
         {({ open }) => (
           <>
             <Popover.Button
-              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 pb-1 pt-2 text-white"
+              className="arb-hover h-full w-max rounded-tl rounded-bl px-3 pt-2 pb-1 text-white"
               aria-label="Select Token"
               onClick={onPopoverButtonClick}
               disabled={disabled}
@@ -102,7 +102,7 @@ export function TokenButton({
             <Transition
               // we don't unmount on leave here because otherwise transition won't work with virtualized lists
               options={{ unmountOnLeave: false }}
-              className="fixed right-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
+              className="fixed top-0 right-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
               afterLeave={onPopoverClose}
             >
               <Popover.Panel

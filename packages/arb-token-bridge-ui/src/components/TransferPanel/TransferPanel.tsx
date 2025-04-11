@@ -1059,8 +1059,8 @@ export function TransferPanel() {
       type: isTeleportMode
         ? 'Teleport'
         : isDepositMode
-        ? 'Deposit'
-        : 'Withdrawal',
+          ? 'Deposit'
+          : 'Withdrawal',
       isCctpTransfer: selectedRoute === 'cctp',
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
@@ -1101,8 +1101,8 @@ export function TransferPanel() {
           type: isTeleportMode
             ? 'Teleport'
             : isDepositMode
-            ? 'Deposit'
-            : 'Withdrawal',
+              ? 'Deposit'
+              : 'Withdrawal',
           tokenSymbol: selectedToken?.symbol,
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -1194,7 +1194,7 @@ export function TransferPanel() {
             }
           >
             {/* Override margin coming from Tippy that causes layout disruptions */}
-            <div className="!m-0" />
+            <div className="m-0!" />
           </Tippy>
         )}
       </div>

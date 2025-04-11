@@ -100,7 +100,7 @@ export const TransactionStatusInfo = () => {
   return (
     <div
       className={twMerge(
-        'mb-3 mt-3 w-full rounded border-x-0 border-white/30 px-3 py-2 text-left text-sm text-white sm:border md:mt-0',
+        'mt-3 mb-3 w-full rounded border-x-0 border-white/30 px-3 py-2 text-left text-sm text-white sm:border md:mt-0',
         colorClassName.dark
       )}
     >

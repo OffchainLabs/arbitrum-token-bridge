@@ -86,7 +86,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {props.showArrow && (
           <ArrowRightIcon
             className={twMerge(
-              'absolute right-3 top-[50%] translate-y-[-50%] transition-transform duration-300',
+              'absolute top-[50%] right-3 translate-y-[-50%] transition-transform duration-300',
               hovered && 'translate-x-[3px]'
             )}
             width={16}

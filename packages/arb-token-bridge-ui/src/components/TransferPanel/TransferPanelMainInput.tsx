@@ -55,7 +55,7 @@ function MaxButton({
     <button
       type="button"
       className={twMerge(
-        'rounded bg-white/30 px-1 py-0.5 text-right text-xs font-medium leading-none text-white opacity-80 transition-opacity hover:opacity-60',
+        'rounded bg-white/30 px-1 py-0.5 text-right text-xs leading-none font-medium text-white opacity-80 transition-opacity hover:opacity-60',
         className
       )}
       {...rest}
@@ -104,7 +104,7 @@ function SourceChainTokenBalance({
       <>
         <span className="text-sm font-light text-white">Balance: </span>
         <span
-          className="whitespace-nowrap text-sm text-white"
+          className="text-sm whitespace-nowrap text-white"
           aria-label={`${symbol} balance amount on ${
             isDepositMode ? 'parentChain' : 'childChain'
           }`}
@@ -266,7 +266,7 @@ export const TransferPanelMainInput = React.memo(
             />
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
-              <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+              <div className="flex items-center space-x-1 px-3 pt-1 pb-2">
                 <SourceChainTokenBalance
                   balanceOverride={options?.balance}
                   symbolOverride={options?.symbol}
