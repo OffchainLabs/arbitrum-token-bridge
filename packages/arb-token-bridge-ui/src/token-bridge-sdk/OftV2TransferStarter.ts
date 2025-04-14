@@ -1,5 +1,4 @@
-import { BigNumber, constants, Contract, ethers, Signer } from 'ethers'
-import { Provider } from '@ethersproject/providers'
+import { BigNumber, constants, ethers, Signer } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   BridgeTransferStarter,
@@ -24,14 +23,14 @@ import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
 
 async function prepareTransferConfig({
   signer,
-  oftContract,
+  oftContractAddress,
   destLzEndpointId,
   amount,
   destinationAddress,
   sourceChainId
 }: {
   signer: Signer
-  oftContract: Contract
+  oftContractAddress: string
   destLzEndpointId: number
   amount: BigNumber
   destinationAddress?: string
@@ -45,14 +44,15 @@ async function prepareTransferConfig({
     amount,
     destinationAddress
   })
+
   const quoteFee = await getOftV2Quote({
     sendParams,
-    address: oftContract.address as Address,
+    address: oftContractAddress as Address,
     chainId: sourceChainId
   })
 
   return prepareWriteContract({
-    address: oftContract.address as Address,
+    address: oftContractAddress as Address,
     abi: oftV2Abi,
     signer,
     functionName: 'send',
@@ -118,26 +118,6 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       throw Error('OFT transfer validation failed')
     }
     return this.oftAdapterAddress!
-  }
-
-  private getOftAdapterContract(
-    providerOrSigner: Signer | Provider
-  ): ethers.Contract {
-    if (!this.isOftTransferValidated) {
-      throw Error('OFT transfer validation failed')
-    }
-
-    if (this.oftAdapterContract) {
-      return this.oftAdapterContract
-    }
-
-    const oftAdapterContract = new ethers.Contract(
-      this.getOftAdapterContractAddress(),
-      oftV2Abi,
-      providerOrSigner
-    )
-    this.oftAdapterContract = oftAdapterContract
-    return oftAdapterContract
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -208,8 +188,6 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
   }: TransferEstimateGasProps) {
     await this.validateOftTransfer()
 
-    const oftContract = this.getOftAdapterContract(signer)
-
     const isDepositMode = isDepositModeUtil({
       sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
       destinationChainId: await getChainIdFromProvider(
@@ -225,8 +203,9 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
       owner: await signer.getAddress(),
-      spender: oftContract.address
+      spender: this.getOftAdapterContractAddress()
     })
+
     if (allowance.lt(amount)) {
       /**
        * Default to hardcoded values based on sample of transactions:
@@ -255,7 +234,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
     const config = await prepareTransferConfig({
       signer,
-      oftContract,
+      oftContractAddress: this.getOftAdapterContractAddress(),
       amount,
       destLzEndpointId: this.destLzEndpointId!,
       destinationAddress,
@@ -277,7 +256,6 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const address = await getAddressFromSigner(signer)
-    const oftContract = this.getOftAdapterContract(signer)
 
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
@@ -288,7 +266,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
     // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
     const { nativeFee } = await getOftV2Quote({
-      address: oftContract.address as Address,
+      address: this.getOftAdapterContractAddress() as Address,
       sendParams,
       chainId: await getChainIdFromProvider(this.sourceChainProvider)
     })
@@ -302,10 +280,9 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     await this.validateOftTransfer()
 
-    const oftContract = this.getOftAdapterContract(signer)
     const config = await prepareTransferConfig({
       signer,
-      oftContract,
+      oftContractAddress: this.getOftAdapterContractAddress(),
       amount,
       destLzEndpointId: this.destLzEndpointId!,
       destinationAddress,
