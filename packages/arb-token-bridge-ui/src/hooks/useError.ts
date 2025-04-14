@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import * as Sentry from '@sentry/react'
-import { isUserRejectedError } from '../util/isUserRejectedError'
 import { useNetworks } from './useNetworks'
 
 /**
@@ -34,11 +33,24 @@ export interface HandleErrorParams {
   /** A specific, unique identifier for the *operation* or context being attempted (e.g., 'cctp_approve_token', 'eth_deposit'). */
   label: string
   /** Optional: Caller-determined category for Sentry tagging. */
-  category?: ErrorCategory | string
+  category?: ErrorCategory
   /** Optional: Additional key-value data specific to this error instance for Sentry 'extra' context. */
   additionalData?: Record<string, any>
   /** Optional: Sentry severity level. Defaults to 'error' if not provided (except for user rejections). */
   level?: Sentry.SeverityLevel
+}
+
+/**
+ * Common data structure for error context
+ */
+interface ErrorContextData {
+  category: string
+  level: Sentry.SeverityLevel
+  sourceChainId: string
+  destinationChainId: string
+  urlPath: string
+  urlQuery: string
+  [key: string]: any
 }
 
 /**
@@ -49,9 +61,8 @@ export function useError() {
 
   // Helper to gather common context data for Sentry
   const _getCommonContext = useCallback(() => {
-    const sourceChainId = networks?.sourceChain?.id?.toString() ?? 'unknown'
-    const destinationChainId =
-      networks?.destinationChain?.id?.toString() ?? 'unknown_destination'
+    const sourceChainId = networks.sourceChain.id.toString()
+    const destinationChainId = networks.destinationChain.id.toString()
     const urlParams =
       typeof window !== 'undefined'
         ? Object.fromEntries(
@@ -74,34 +85,20 @@ export function useError() {
   const _logToSentry = (
     error: unknown,
     params: HandleErrorParams,
-    mergedData: Record<string, any>,
+    mergedData: ErrorContextData,
     level: Sentry.SeverityLevel
   ) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Sentry logging is disabled.')
-      return
-    }
-
     Sentry.withScope(scope => {
       scope.setLevel(level)
 
       // Set Tags (Caller provides most)
       scope.setTag('operation_label', params.label.substring(0, 200))
       if (params.category) {
-        scope.setTag(
-          'error_category',
-          String(params.category).substring(0, 200)
-        )
+        scope.setTag('error_category', params.category.substring(0, 200))
       }
       // Common context tags
-      scope.setTag(
-        'source_chain_id',
-        String(mergedData.sourceChainId ?? 'unknown')
-      )
-      scope.setTag(
-        'destination_chain_id',
-        String(mergedData.destinationChainId ?? 'unknown')
-      )
+      scope.setTag('source_chain_id', mergedData.sourceChainId)
+      scope.setTag('destination_chain_id', mergedData.destinationChainId)
       if (mergedData.walletAddress !== 'disconnected') {
         scope.setTag('wallet_involved', 'true')
       }
@@ -111,13 +108,18 @@ export function useError() {
       scope.setExtra('errorMessage', (error as Error)?.message)
       scope.setExtra('errorName', (error as Error)?.name)
 
-      // Set Fingerprint
-      scope.setFingerprint([
+      const fingerprint = [
         '{{ default }}',
         params.label,
-        String(params.category || 'no_category'),
-        String(mergedData.sourceChainId || 'unknown_chain')
-      ])
+        params.category || 'unknown'
+      ]
+
+      const errorObj = error as any
+      if (errorObj?.code && errorObj?.message) {
+        fingerprint.push(String(errorObj.code), errorObj.message)
+      }
+
+      scope.setFingerprint(fingerprint)
 
       // Capture Error
       Sentry.captureException(error)
@@ -137,24 +139,21 @@ export function useError() {
         level: levelOverride = 'error'
       } = params
 
-      // 1. handle user rejections
-      const isRejection = isUserRejectedError(error)
-      const level = levelOverride ?? (isRejection ? 'info' : 'error')
+      const level = levelOverride ?? 'error'
 
-      // 2. merge context data
+      // merge context data
       const commonContext = _getCommonContext()
-      const mergedData = {
+      const mergedData: ErrorContextData = {
         ...commonContext,
         ...additionalData,
         category,
-        level,
-        isUserRejection: isRejection
+        level
       }
 
-      // 3. log to sentry
+      // log to sentry
       _logToSentry(error, params, mergedData, level)
 
-      // 4. log to console in development
+      // log to console in development
       if (process.env.NODE_ENV === 'development') {
         console.log(
           `Handled Error '${label}' [Category: ${category} Level: ${level}]:`,
