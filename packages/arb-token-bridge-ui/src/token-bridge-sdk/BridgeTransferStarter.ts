@@ -102,12 +102,12 @@ export type ApproveTokenProps = {
 }
 
 export abstract class BridgeTransferStarter {
+  private sourceChainId?: number
+
   public sourceChainProvider: Provider
   public destinationChainProvider: Provider
   public sourceChainErc20Address?: string
   public destinationChainErc20Address?: string
-
-  protected sourceChainId?: number
 
   abstract transferType: TransferType
 
