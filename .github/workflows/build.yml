@@ -5,7 +5,6 @@ on:
     branches: ["master"]
     types:
       - opened
-      - edited
       - synchronize
       # we don't run tests for draft PRs
       # https://github.com/reviewdog/action-eslint/issues/29#issuecomment-985939887
