@@ -83,6 +83,7 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
+import { shallow } from 'zustand/shallow'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -149,9 +150,17 @@ export function TransferPanel() {
   })
 
   const { setTransferring } = useAppContextActions()
-  const { switchToTransactionHistoryTab } = useMainContentTabs()
+  const switchToTransactionHistoryTab = useMainContentTabs(
+    state => state.switchToTransactionHistoryTab
+  )
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-  const { selectedRoute, clearRoute } = useRouteStore()
+  const { selectedRoute, clearRoute } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      clearRoute: state.clearRoute
+    }),
+    shallow
+  )
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -168,7 +177,9 @@ export function TransferPanel() {
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
 
-  const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
+  const openTokenImportDialog = useTokenImportDialogStore(
+    state => state.openDialog
+  )
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
@@ -346,16 +357,20 @@ export function TransferPanel() {
       console.log(step)
     }
 
+    if (step.type === 'return') {
+      throw Error(
+        `[stepExecutor] "return" step should be handled outside the executor`
+      )
+    }
+
     switch (step.type) {
       case 'start': {
         setTransferring(true)
         return
       }
 
-      case 'return': {
-        throw Error(
-          `[stepExecutor] "return" step should be handled outside the executor`
-        )
+      case 'dialog': {
+        return confirmDialog(step.payload)
       }
     }
   }
@@ -377,32 +392,19 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
 
-      await drive(stepGeneratorForCctp, stepExecutor, {
+      const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
-        isSmartContractWallet
+        isSmartContractWallet,
+        walletAddress,
+        destinationAddress
       })
 
-      // show confirmation popup before cctp transfer
-      if (isDepositMode) {
-        const depositConfirmation = await confirmDialog('confirm_cctp_deposit')
-        if (!depositConfirmation) return
-      } else {
-        const withdrawalConfirmation = await confirmDialog(
-          'confirm_cctp_withdrawal'
-        )
-        if (!withdrawalConfirmation) return
-      }
-
-      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
-      if (
-        isSmartContractWallet &&
-        areSenderAndCustomDestinationAddressesEqual
-      ) {
-        const confirmation = await confirmDialog(
-          'scw_custom_destination_address'
-        )
-        if (!confirmation) return false
+      // this is only necessary while we are migrating to the ui driver
+      // so we can know when to stop the execution of the rest of the function
+      //
+      // after we are done, we can change the return type of `drive` to `void`
+      if (returnEarly) {
+        return
       }
 
       const cctpTransferStarter = new CctpTransferStarter({

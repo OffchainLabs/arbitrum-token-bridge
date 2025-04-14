@@ -9,13 +9,20 @@ import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
+import { shallow } from 'zustand/shallow'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {
   const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
-  const { selectedRoute, setSelectedRoute } = useRouteStore()
+  const { selectedRoute, setSelectedRoute } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      setSelectedRoute: state.setSelectedRoute
+    }),
+    shallow
+  )
   const [selectedToken] = useSelectedToken()
 
   const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
