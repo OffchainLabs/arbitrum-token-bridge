@@ -9,7 +9,6 @@ on:
       # we don't run tests for draft PRs
       # https://github.com/reviewdog/action-eslint/issues/29#issuecomment-985939887
       - ready_for_review
-      - converted_to_draft
   workflow_call:
 
 env:
