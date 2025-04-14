@@ -1,4 +1,4 @@
-import { BigNumber, constants, ethers, Signer } from 'ethers'
+import { BigNumber, constants, Signer } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   BridgeTransferStarter,
@@ -67,7 +67,6 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'oftV2'
   private isOftTransferValidated?: boolean
   private oftAdapterAddress?: string
-  private oftAdapterContract?: ethers.Contract
   private destLzEndpointId?: number
   private isSourceChainEthereum?: boolean
 
