@@ -59,7 +59,7 @@ function sanitizeSmartContractWalletCctpTransfers<
       return recipientLowercased === walletAddressLowercased
     }
     return senderLowercased === walletAddressLowercased
-  }) as T[]
+  }) satisfies T[]
 }
 
 async function fetchCCTP({
