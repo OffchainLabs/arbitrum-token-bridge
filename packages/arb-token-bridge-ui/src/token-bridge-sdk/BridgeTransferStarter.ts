@@ -6,6 +6,7 @@ import {
   DepositGasEstimates
 } from '../hooks/arbTokenBridge.types'
 import { Address } from '../util/AddressUtils'
+import { getChainIdFromProvider } from './utils'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal' | 'teleport'
@@ -101,6 +102,8 @@ export type ApproveTokenProps = {
 }
 
 export abstract class BridgeTransferStarter {
+  private sourceChainId?: number
+
   public sourceChainProvider: Provider
   public destinationChainProvider: Provider
   public sourceChainErc20Address?: string
@@ -113,6 +116,16 @@ export abstract class BridgeTransferStarter {
     this.destinationChainProvider = props.destinationChainProvider
     this.sourceChainErc20Address = props.sourceChainErc20Address
     this.destinationChainErc20Address = props.destinationChainErc20Address
+  }
+
+  protected async getSourceChainId(): Promise<number> {
+    if (typeof this.sourceChainId === 'undefined') {
+      this.sourceChainId = await getChainIdFromProvider(
+        this.sourceChainProvider
+      )
+    }
+
+    return this.sourceChainId
   }
 
   public abstract requiresNativeCurrencyApproval(
