@@ -12,7 +12,7 @@ import {
   BridgeTransferStarterProps,
   RequiresNativeCurrencyApprovalProps,
   RequiresTokenApprovalProps,
-  TransferEstimateGas,
+  TransferEstimateGasProps,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
@@ -269,7 +269,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    signer
+  }: TransferEstimateGasProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }

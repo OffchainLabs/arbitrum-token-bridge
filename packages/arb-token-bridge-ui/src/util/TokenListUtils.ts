@@ -8,7 +8,7 @@ import CMCLogo from '@/images/lists/cmc.png'
 import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
 import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
-import { ChainId } from './networks'
+import { ChainId } from '../types/ChainId'
 import orbitChainsData from './orbitChainsData.json'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID =

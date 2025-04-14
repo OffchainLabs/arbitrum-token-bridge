@@ -8,6 +8,7 @@ import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
+import { shallow } from 'zustand/shallow'
 
 enum MainContentTabs {
   Bridge = 0,
@@ -32,7 +33,13 @@ export const useMainContentTabs = create<MainContentTabStore>(set => ({
 export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-  const { selectedTab, setSelectedTab } = useMainContentTabs()
+  const { selectedTab, setSelectedTab } = useMainContentTabs(
+    state => ({
+      selectedTab: state.selectedTab,
+      setSelectedTab: state.setSelectedTab
+    }),
+    shallow
+  )
 
   useBalanceUpdater()
 

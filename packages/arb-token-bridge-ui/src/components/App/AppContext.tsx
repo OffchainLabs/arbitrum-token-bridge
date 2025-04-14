@@ -2,14 +2,12 @@ import { createContext, useContext, useReducer, Dispatch } from 'react'
 
 type AppContextState = {
   layout: {
-    isTransferPanelVisible: boolean
     isTransferring: boolean
   }
 }
 
 const initialState: AppContextState = {
   layout: {
-    isTransferPanelVisible: true,
     isTransferring: false
   }
 }
@@ -19,18 +17,10 @@ type AppContextValue = [AppContextState, Dispatch<Action>]
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const AppContext = createContext<AppContextValue>([initialState, () => {}])
 
-type Action =
-  | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
-  | { type: 'layout.set_is_transferring'; payload: boolean }
+type Action = { type: 'layout.set_is_transferring'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
-    case 'layout.set_is_transfer_panel_visible':
-      return {
-        ...state,
-        layout: { ...state.layout, isTransferPanelVisible: action.payload }
-      }
-
     case 'layout.set_is_transferring':
       return {
         ...state,

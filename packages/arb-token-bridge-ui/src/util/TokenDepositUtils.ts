@@ -9,7 +9,7 @@ import {
   getL2ERC20Address
 } from './TokenUtils'
 import { AssetType, DepositGasEstimates } from '../hooks/arbTokenBridge.types'
-import { addressIsSmartContract } from './AddressUtils'
+import { addressesEqual, addressIsSmartContract } from './AddressUtils'
 import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
 import { MergedTransaction } from '../state/app/state'
@@ -215,9 +215,9 @@ async function addressIsCustomGatewayToken({
     childChainProvider
   })
   const childChainNetwork = await getArbitrumNetwork(childChainProvider)
-  return (
-    parentChainGatewayAddress.toLowerCase() ===
-    childChainNetwork.tokenBridge?.parentCustomGateway.toLowerCase()
+  return addressesEqual(
+    parentChainGatewayAddress,
+    childChainNetwork.tokenBridge?.parentCustomGateway
   )
 }
 
@@ -225,6 +225,7 @@ export function isBatchTransfer(tx: MergedTransaction) {
   return (
     !tx.isCctp &&
     !tx.isWithdrawal &&
+    !tx.isOft &&
     tx.assetType === AssetType.ERC20 &&
     typeof tx.value2 !== 'undefined' &&
     Number(tx.value2) > 0

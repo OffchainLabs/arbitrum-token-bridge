@@ -17,6 +17,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { shallow } from 'zustand/shallow'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -73,7 +74,13 @@ async function getDestinationAddressWarning({
 
 export const AdvancedSettings = () => {
   const { advancedSettingsCollapsed, setAdvancedSettingsCollapsed } =
-    useAdvancedSettingsStore()
+    useAdvancedSettingsStore(
+      state => ({
+        advancedSettingsCollapsed: state.advancedSettingsCollapsed,
+        setAdvancedSettingsCollapsed: state.setAdvancedSettingsCollapsed
+      }),
+      shallow
+    )
   const [networks] = useNetworks()
   const {
     childChain,
@@ -198,7 +205,7 @@ export const AdvancedSettings = () => {
           />
         )}
       </button>
-      <Transition isOpen={!advancedSettingsCollapsed}>
+      <Transition isOpen={!advancedSettingsCollapsed} className="w-full">
         <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
           <p className="text-sm font-light">
             {isEOA ? (

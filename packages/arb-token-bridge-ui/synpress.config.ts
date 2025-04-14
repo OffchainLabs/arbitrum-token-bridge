@@ -29,13 +29,15 @@ import {
   getNativeTokenDecimals
 } from './tests/support/common'
 
+import { registerLocalNetwork } from './src/util/networks'
 import {
   defaultL2Network,
   defaultL3Network,
-  defaultL3CustomGasTokenNetwork,
-  registerLocalNetwork
-} from './src/util/networks'
+  defaultL3CustomGasTokenNetwork
+} from './src/util/networksNitroTestnode'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
+import { browserConfig } from './tests/e2e/browser.config'
+import { addressesEqual } from './src/util/AddressUtils'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -77,17 +79,23 @@ export default defineConfig({
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
 
       if (!ethRpcUrl && !isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 variable missing.'
+        )
       }
       if (!arbRpcUrl) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2 variable missing.'
+        )
       }
       if (!l3RpcUrl && isOrbitTest) {
-        throw new Error('NEXT_PUBLIC_LOCAL_L3_RPC_URL variable missing.')
+        throw new Error(
+          'NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3 variable missing.'
+        )
       }
       if (!sepoliaRpcUrl) {
         throw new Error(
-          'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
+          'process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA variable missing.'
         )
       }
 
@@ -227,7 +235,8 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: 'tests/support/index.ts',
-    defaultCommandTimeout: 20_000
+    defaultCommandTimeout: 20_000,
+    browsers: [browserConfig]
   }
 })
 
@@ -246,19 +255,19 @@ const ethRpcUrl = (() => {
   // For consistency purpose, we would be using 'custom-localhost'
   // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
   // so we have to add a / to the end of the rpc url
-  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+  if (!process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1) {
     return MAINNET_INFURA_RPC_URL
   }
-  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
-    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  if (process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1
   }
-  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
+  return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 + '/'
 })()
 
-const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const l3RpcUrl = process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL
+const arbRpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2
+const l3RpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3
 const sepoliaRpcUrl =
-  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+  process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const parentProvider = new StaticJsonRpcProvider(
@@ -373,7 +382,7 @@ async function deployERC20ToChildChain(erc20L1Address: string) {
   await deploy.wait()
 
   // store deployed weth address
-  if (erc20L1Address === l1WethAddress) {
+  if (addressesEqual(erc20L1Address, l1WethAddress)) {
     l2WethAddress = await getL2ERC20Address({
       erc20L1Address: l1WethAddress,
       l1Provider: parentProvider,
@@ -439,7 +448,7 @@ async function fundErc20ToChildChain({
 }) {
   // deploy any token that's not WETH
   // only deploy WETH for custom fee token chains because it's not deployed there
-  if (parentErc20Address !== l1WethAddress || isCustomFeeToken) {
+  if (!addressesEqual(parentErc20Address, l1WethAddress) || isCustomFeeToken) {
     // first deploy the ERC20 to L2 (if not, it might throw a gas error later)
     await deployERC20ToChildChain(parentErc20Address)
   }

@@ -1,8 +1,7 @@
-/**
- * @jest-environment jsdom
- */
+import { describe, it, expect } from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import { ChainId, customChainLocalStorageKey } from '../../util/networks'
+import { customChainLocalStorageKey } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { AmountQueryParam, ChainParam } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
 

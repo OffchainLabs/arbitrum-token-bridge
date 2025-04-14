@@ -6,6 +6,7 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
+import { ChainId } from '../types/ChainId'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
@@ -15,6 +16,7 @@ import {
   getConfirmPeriodBlocks,
   getL1BlockTime
 } from './networks'
+
 export async function withdrawInitTxEstimateGas({
   amount,
   address,
@@ -106,7 +108,8 @@ export async function withdrawInitTxEstimateGas({
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
       estimatedChildChainGas: isToken
         ? BigNumber.from(1_400_000)
-        : BigNumber.from(800_000)
+        : BigNumber.from(800_000),
+      isError: true
     }
   }
 }
@@ -156,10 +159,16 @@ export function getConfirmationTime(chainId: number) {
     const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId(
       { chainId }
     )
-    confirmationTimeInSeconds =
-      getL1BlockTime(blockNumberReferenceChainId) *
-        getConfirmPeriodBlocks(chainId) +
-      CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
+
+    // Local chain has instant confirmation time (in E2Es), so we hardcode it here
+    if (blockNumberReferenceChainId === ChainId.Local) {
+      confirmationTimeInSeconds = 0
+    } else {
+      confirmationTimeInSeconds =
+        getL1BlockTime(blockNumberReferenceChainId) *
+          getConfirmPeriodBlocks(chainId) +
+        CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
+    }
   }
 
   const confirmationTimeInReadableFormat = formatDuration(

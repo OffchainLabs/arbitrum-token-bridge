@@ -5,7 +5,7 @@ import { ChainDomain } from '../pages/api/cctp/[type]'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
-import { ChainId } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { Address } from '../util/AddressUtils'
 

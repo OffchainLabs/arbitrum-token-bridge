@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { isAddress } from 'ethers/lib/utils.js'
+import { isAddress } from 'ethers/lib/utils'
 import { Popover } from '@headlessui/react'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -11,7 +11,6 @@ import SyntaxHighlighter from 'react-syntax-highlighter'
 import { stackoverflowDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 import {
-  ChainId,
   ChainWithRpcUrl,
   getCustomChainsFromLocalStorage,
   getCustomChainFromLocalStorageById,
@@ -22,6 +21,7 @@ import {
   rpcURLs,
   isNetwork
 } from '../../util/networks'
+import { ChainId } from '../../types/ChainId'
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'

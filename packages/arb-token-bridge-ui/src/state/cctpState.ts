@@ -6,12 +6,8 @@ import { useAccount, useChainId, useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
-import {
-  ChainId,
-  getL1BlockTime,
-  getNetworkName,
-  isNetwork
-} from '../util/networks'
+import { getL1BlockTime, getNetworkName, isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'
@@ -28,6 +24,7 @@ import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { shallow } from 'zustand/shallow'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -346,7 +343,16 @@ export function useCctpState() {
     resetTransfers,
     setTransfers,
     updateTransfer
-  } = useCctpStore()
+  } = useCctpStore(
+    state => ({
+      transfersIds: state.transfersIds,
+      transfers: state.transfers,
+      resetTransfers: state.resetTransfers,
+      setTransfers: state.setTransfers,
+      updateTransfer: state.updateTransfer
+    }),
+    shallow
+  )
 
   const { pendingIds, completedIds, depositIds, withdrawalIds } =
     useMemo(() => {

@@ -16,6 +16,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { TokenMessengerAbi } from './src/util/cctp/TokenMessengerAbi'
 import { ChainDomain } from './src/pages/api/cctp/[type]'
 import { Address } from 'wagmi'
+import { browserConfig } from './tests/e2e/browser.config'
 
 export async function fundUsdc({
   address, // wallet address where funding is required
@@ -66,7 +67,7 @@ if (!process.env.PRIVATE_KEY_USER) {
 
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 const sepoliaRpcUrl =
-  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+  process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const sepoliaProvider = new StaticJsonRpcProvider(sepoliaRpcUrl)
@@ -242,6 +243,7 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts'
+    supportFile: 'tests/support/index.ts',
+    browsers: [browserConfig]
   }
 })

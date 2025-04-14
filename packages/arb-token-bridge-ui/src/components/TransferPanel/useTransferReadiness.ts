@@ -3,7 +3,6 @@ import { useAccount } from 'wagmi'
 import { utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
-import { useAppState } from '../../state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -26,6 +25,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
@@ -120,9 +120,7 @@ export type UseTransferReadinessResult = {
 
 export function useTransferReadiness(): UseTransferReadinessResult {
   const [{ amount, amount2 }] = useArbQueryParams()
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
   const {
     layout: { isTransferring }
   } = useAppContextState()

@@ -48,7 +48,7 @@ jobs:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
           tool-cache: false
-  
+
           # all of these default to true, but feel free to set to
           # "false" if necessary for your workflow
           android: true
@@ -58,15 +58,6 @@ jobs:
           docker-images: false
           swap-storage: true
 
-      # we found on 26 Sep that using Chrome 129 mysteriously broke ci at setupMetamask step
-      # with the following error: > Cannot read properties of undefined (reading 'waitForTimeout')
-      # so we are reverting to Chrome 128 on ci
-      # https://www.ubuntuupdates.org/package_logs?type=ppas&vals=8
-      - name: Set up Chrome 128
-        run: |
-          wget http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_128.0.6613.137-1_amd64.deb
-          sudo apt-get install ./google-chrome-stable_128.0.6613.137-1_amd64.deb
-      
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -116,12 +107,12 @@ jobs:
           start: yarn start
           command: >-
             ${{
-              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit --browser chrome' ||
-              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token --browser chrome') ||
-              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp --browser chrome') ||
-              'yarn test:e2e --browser chrome'
+              (matrix.test.type == 'orbit-eth') && 'yarn test:e2e:orbit' ||
+              (matrix.test.type == 'orbit-custom-6dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'orbit-custom-18dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'orbit-custom-20dec' && 'yarn test:e2e:orbit:custom-gas-token') ||
+              (matrix.test.type == 'cctp' && 'yarn test:e2e:cctp') ||
+              'yarn test:e2e'
             }}
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
@@ -136,9 +127,9 @@ jobs:
           PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
           NEXT_PUBLIC_IS_E2E_TEST: true
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
-          NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://127.0.0.1:8547
-          NEXT_PUBLIC_LOCAL_L3_RPC_URL: http://127.0.0.1:3347
+          NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1: http://127.0.0.1:8545
+          NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2: http://127.0.0.1:8547
+          NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3: http://127.0.0.1:3347
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@v4

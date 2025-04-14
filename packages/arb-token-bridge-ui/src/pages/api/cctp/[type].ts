@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { ChainId } from '../../../util/networks'
+import { ChainId } from '../../../types/ChainId'
 import { Address } from '../../../util/AddressUtils'
 
 import {
@@ -188,11 +188,22 @@ export default async function handler(
     const { messageSents } = messagesSentResult.data
     const formattedIds = messageSents.map(messageSent => `"${messageSent.id}"`)
 
-    const messagesReceivedQuery = gql(`{
+    /**
+     * TheGraph API returns up to 100 results for messageReceiveds.
+     * If we have more than 100 messageSents, we batch the queries for messageReceiveds
+     */
+    const chunkSize = 99
+    /** MessagesSent can be link to MessageReceived with the tuple (sourceDomain, nonce) */
+    // const messagesReceivedMap = new Map<string, MessageReceived>()
+    const messageReceivedsPromises = []
+    for (let i = 0; i < formattedIds.length; i += chunkSize) {
+      const chunk = formattedIds.slice(i, i + chunkSize)
+      const messagesReceivedQuery = gql(`{
         messageReceiveds(
-          where: {id_in: [${formattedIds.join(',')}]}
+          where: {id_in: [${chunk.join(',')}]}
           orderDirection: "desc"
           orderBy: "blockTimestamp"
+          first: ${chunkSize}
         ) {
           id
           caller
@@ -206,16 +217,20 @@ export default async function handler(
       }
     `)
 
-    const targetSubgraph = type === 'deposits' ? l2Subgraph : l1Subgraph
-    const messagesReceivedResult = await targetSubgraph.query<{
-      messageReceiveds: MessageReceived[]
-    }>({
-      query: messagesReceivedQuery
-    })
+      const targetSubgraph = type === 'deposits' ? l2Subgraph : l1Subgraph
+      messageReceivedsPromises.push(
+        targetSubgraph
+          .query<{ messageReceiveds: MessageReceived[] }>({
+            query: messagesReceivedQuery
+          })
+          .then(response => response.data.messageReceiveds)
+      )
+    }
 
-    const { messageReceiveds } = messagesReceivedResult.data
+    const messageReceiveds = (
+      await Promise.all(messageReceivedsPromises)
+    ).flatMap(chunk => chunk)
 
-    // MessagesSent can be link to MessageReceived with the tuple (sourceDomain, nonce)
     // Map constructor accept an array of [key, value] arrays
     // new Map(['key1', 'value1'], ['key2', 'value2'], ['keyN', 'valueN']) would return
     // Map(3) {'key1' => 'value1', 'key2' => 'value2', 'keyN' => 'valueN'}

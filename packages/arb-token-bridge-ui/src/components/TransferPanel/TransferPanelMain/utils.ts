@@ -1,4 +1,4 @@
-import { ChainId } from '../../../util/networks'
+import { ChainId } from '../../../types/ChainId'
 
 export enum NetworkType {
   parentChain = 'parentChain',

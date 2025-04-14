@@ -13,7 +13,7 @@ type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
-export type TransferType = `${Asset}_${TxType}` | 'cctp'
+export type TransferType = `${Asset}_${TxType}` | 'cctp' | 'oftV2'
 
 export type MergedTransactionCctp = MergedTransaction & {
   messageBytes: Address | null
@@ -43,7 +43,7 @@ export type BridgeTransferStarterPropsWithChainIds = {
   destinationChainErc20Address?: string
 }
 
-export type TransferEstimateGas = {
+export type TransferEstimateGasProps = {
   amount: BigNumber
   signer: Signer
   destinationAddress?: string
@@ -60,6 +60,11 @@ export type TransferProps = {
   destinationAddress?: string
   overrides?: TransferOverrides
 }
+
+export type TransferEstimateGasResult =
+  | GasEstimates
+  | DepositGasEstimates
+  | undefined
 
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
@@ -135,8 +140,8 @@ export abstract class BridgeTransferStarter {
   ): Promise<ContractTransaction | void>
 
   public abstract transferEstimateGas(
-    props: TransferEstimateGas
-  ): Promise<GasEstimates | DepositGasEstimates | undefined>
+    props: TransferEstimateGasProps
+  ): Promise<TransferEstimateGasResult>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
 }

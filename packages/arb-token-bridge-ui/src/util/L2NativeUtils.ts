@@ -1,4 +1,5 @@
-import { ChainId } from '../util/networks'
+import { ChainId } from '../types/ChainId'
+import { addressesEqual } from './AddressUtils'
 import { CommonAddress } from './CommonAddressUtils'
 
 export type L2NativeToken = {
@@ -41,9 +42,7 @@ function find(erc20L2Address: string, l2ChainId: number) {
   return (
     (L2NativeTokens[l2ChainId] ?? [])
       //
-      .find(
-        token => token.address.toLowerCase() === erc20L2Address.toLowerCase()
-      )
+      .find(token => addressesEqual(token.address, erc20L2Address))
   )
 }
 

@@ -13,7 +13,8 @@ import {
   baseSepolia,
   base
 } from './wagmiAdditionalNetworks'
-import { ChainId, getCustomChainFromLocalStorageById } from '../networks'
+import { getCustomChainFromLocalStorageById } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { orbitChains } from '../orbitChainsList'
 
 export function getWagmiChain(chainId: number): Chain {
