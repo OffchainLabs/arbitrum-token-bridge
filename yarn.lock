@@ -7996,9 +7996,9 @@ eslint-plugin-react@^7.37.5:
     string.prototype.matchall "^4.0.12"
     string.prototype.repeat "^1.0.0"
 
-eslint-plugin-zustand-rules@chrstph-dvx/eslint-plugin-zustand-rules#4e9222407d797d6767c577296239ecb4eb7da7d1:
+"eslint-plugin-zustand-rules@https://github.com/OffchainLabs/eslint-plugin-zustand-rules":
   version "1.0.2"
-  resolved "https://codeload.github.com/chrstph-dvx/eslint-plugin-zustand-rules/tar.gz/4e9222407d797d6767c577296239ecb4eb7da7d1"
+  resolved "https://github.com/OffchainLabs/eslint-plugin-zustand-rules#4e9222407d797d6767c577296239ecb4eb7da7d1"
 
 eslint-scope@^5.1.1:
   version "5.1.1"
