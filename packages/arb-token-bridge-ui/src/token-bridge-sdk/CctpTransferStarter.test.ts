@@ -19,7 +19,7 @@ it('returns the correct data for approve token tx request (default amount)', asy
 
   expect(txRequest).toEqual({
     to: CommonAddress.Sepolia.USDC,
-    data: '0x095ea7b30000000000000000000000009f3b8679c73c2fef8b59b4f3444d4e156fb70aa57fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    data: '0x095ea7b30000000000000000000000009f3b8679c73c2fef8b59b4f3444d4e156fb70aa5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
     value: BigNumber.from(0)
   })
 })

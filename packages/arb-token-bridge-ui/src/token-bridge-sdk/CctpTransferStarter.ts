@@ -63,7 +63,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       to: usdcContractAddress,
       data: ERC20__factory.createInterface().encodeFunctionData('approve', [
         tokenMessengerContractAddress,
-        params?.amount ?? constants.MaxInt256
+        params?.amount ?? constants.MaxUint256
       ]),
       value: BigNumber.from(0)
     }
