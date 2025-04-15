@@ -1,4 +1,6 @@
 import { it } from 'vitest'
+import { BigNumber } from 'ethers'
+import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 
 import { UiDriverContext } from './UiDriver'
 import { stepGeneratorForCctp } from './UiDriverCctp'
@@ -57,14 +59,22 @@ it(`
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 
+  more context:
+    requires token approval
+
   user actions:
     1. user confirms "confirm_cctp_deposit" dialog
+    2. user rejects "approve token" dialog
 `, async () => {
   const generator = stepGeneratorForCctp({
+    amountBigNumber: BigNumber.from(1),
     isDepositMode: true,
     isSmartContractWallet: false,
     walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-    destinationAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+    destinationAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+    transferStarter: {
+      requiresTokenApproval: () => true
+    } as unknown as BridgeTransferStarter
   })
 
   const step1 = await nextStep(generator)
@@ -74,7 +84,10 @@ it(`
   expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
 
   const step3 = await nextStep(generator, [true])
-  expectStep(step3).doesNotExist()
+  expectStep(step3).hasType('dialog').hasPayload('approve_token')
+
+  const step4 = await nextStep(generator, [false])
+  expectStep(step4).hasType('return')
 })
 
 it(`
