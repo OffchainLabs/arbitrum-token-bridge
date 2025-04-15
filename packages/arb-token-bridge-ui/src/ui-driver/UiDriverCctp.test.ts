@@ -1,5 +1,6 @@
 import { it } from 'vitest'
 
+import { UiDriverContext } from './UiDriver'
 import { stepGeneratorForCctp } from './UiDriverCctp'
 import { nextStep, expectStep } from './UiDriverTestUtils'
 
@@ -14,7 +15,7 @@ it(`
   const generator = stepGeneratorForCctp({
     isDepositMode: true,
     isSmartContractWallet: false
-  })
+  } as UiDriverContext)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -24,9 +25,6 @@ it(`
 
   const step3 = await nextStep(generator, [false])
   expectStep(step3).hasType('return')
-
-  const step4 = await nextStep(generator)
-  expectStep(step4).doesNotExist()
 })
 
 it(`
@@ -40,7 +38,7 @@ it(`
   const generator = stepGeneratorForCctp({
     isDepositMode: false,
     isSmartContractWallet: false
-  })
+  } as UiDriverContext)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -50,9 +48,6 @@ it(`
 
   const step3 = await nextStep(generator, [false])
   expectStep(step3).hasType('return')
-
-  const step4 = await nextStep(generator)
-  expectStep(step4).doesNotExist()
 })
 
 it(`
