@@ -196,7 +196,7 @@ export const useCCTPDeposits = ({
         isEthereumMainnetOrTestnet,
         isSmartContractWallet,
         'cctp-deposits'
-      ]
+      ] as const
     },
     ([
       _walletAddress,
@@ -255,7 +255,7 @@ export const useCCTPWithdrawals = ({
         isEthereumMainnetOrTestnet,
         isSmartContractWallet,
         'cctp-withdrawals'
-      ]
+      ] as const
     },
     ([
       _walletAddress,
