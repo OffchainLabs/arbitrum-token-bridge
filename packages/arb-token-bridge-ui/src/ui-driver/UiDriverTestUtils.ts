@@ -13,7 +13,7 @@ export function expectStep<TStep extends UiDriverStep>(step: TStep | void) {
   return {
     hasType<TStepType extends TStep['type']>(expectedStepType: TStepType) {
       expect(step).toBeDefined()
-      expect(step!.type).toBe(expectedStepType)
+      expect(step!.type).toEqual(expectedStepType)
       return expectStep(step as Extract<TStep, { type: TStepType }>)
     },
 
@@ -24,7 +24,7 @@ export function expectStep<TStep extends UiDriverStep>(step: TStep | void) {
         throw new Error(`Step of type "${step!.type}" does not have a payload.`)
       }
 
-      expect(step.payload).toBe(expectedStepPayload)
+      expect(step.payload).toEqual(expectedStepPayload)
       return this
     },
 
