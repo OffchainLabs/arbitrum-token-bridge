@@ -5,8 +5,11 @@ on:
     branches: ["master"]
     types:
       - opened
-      - edited
+      - reopened
       - synchronize
+      # we skip ci for draft PRs
+      # https://github.com/reviewdog/action-eslint/issues/29#issuecomment-985939887
+      - ready_for_review
   workflow_dispatch:
   merge_group:
 
