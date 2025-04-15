@@ -21,11 +21,12 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
   })
 
   if (approval) {
+    yield* stepGeneratorForDialog('approve_token')
+
     const request = await context.transferStarter.approveTokenPrepareTxRequest({
       amount: context.amountBigNumber
     })
 
-    yield* stepGeneratorForDialog('approve_token')
     yield* stepGeneratorForTransaction(context, request)
   }
 }
