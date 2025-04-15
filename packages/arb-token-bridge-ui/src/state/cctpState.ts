@@ -177,14 +177,15 @@ export const useCCTPDeposits = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
   const chainId = useChainId()
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
 
   return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
-      if (!walletAddress || !enabled) {
+      if (!walletAddress || !enabled || isLoadingAccountType) {
         return null
       }
 
@@ -236,14 +237,16 @@ export const useCCTPWithdrawals = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
   const chainId = useChainId()
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
 
   return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
-      if (!walletAddress || !enabled) {
+      console.log({ isLoadingAccountType, isEthereumMainnetOrTestnet })
+      if (!walletAddress || !enabled || isLoadingAccountType) {
         return null
       }
 
