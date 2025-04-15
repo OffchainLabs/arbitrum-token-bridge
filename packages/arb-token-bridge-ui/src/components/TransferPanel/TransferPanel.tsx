@@ -412,7 +412,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -579,7 +579,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await oftTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -869,7 +869,7 @@ export function TransferPanel() {
         const isTokenApprovalRequired =
           await bridgeTransferStarter.requiresTokenApproval({
             amount: amountBigNumber,
-            signer,
+            owner: await signer.getAddress(),
             destinationAddress
           })
         if (isTokenApprovalRequired) {
@@ -913,7 +913,7 @@ export function TransferPanel() {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer,
+          from: await signer.getAddress(),
           destinationAddress
         })) as DepositGasEstimates
 
