@@ -409,6 +409,8 @@ export function TransferPanel() {
         destinationChainProvider
       })
 
+      console.log('Test')
+
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
