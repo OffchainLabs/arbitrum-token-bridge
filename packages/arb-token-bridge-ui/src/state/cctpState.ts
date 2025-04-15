@@ -188,16 +188,31 @@ export const useCCTPDeposits = ({
         return null
       }
 
-      return [walletAddress, l1ChainId, pageNumber, pageSize, 'cctp-deposits']
+      return [
+        walletAddress,
+        l1ChainId,
+        pageNumber,
+        pageSize,
+        isEthereumMainnetOrTestnet,
+        isSmartContractWallet,
+        'cctp-deposits'
+      ]
     },
-    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
+    ([
+      _walletAddress,
+      _l1ChainId,
+      _pageNumber,
+      _pageSize,
+      _isEthereumMainnetOrTestnet,
+      _isSmartContractWallet
+    ]) =>
       fetchCCTPDeposits({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
-        connectedToEthereum: isEthereumMainnetOrTestnet,
-        isSmartContractWallet
+        connectedToEthereum: _isEthereumMainnetOrTestnet,
+        isSmartContractWallet: _isSmartContractWallet
       })
         .then(deposits => parseSWRResponse(deposits, _l1ChainId))
         .then(deposits => {
@@ -237,17 +252,26 @@ export const useCCTPWithdrawals = ({
         l1ChainId,
         pageNumber,
         pageSize,
+        isEthereumMainnetOrTestnet,
+        isSmartContractWallet,
         'cctp-withdrawals'
       ]
     },
-    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
+    ([
+      _walletAddress,
+      _l1ChainId,
+      _pageNumber,
+      _pageSize,
+      _isEthereumMainnetOrTestnet,
+      _isSmartContractWallet
+    ]) =>
       fetchCCTPWithdrawals({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
-        connectedToEthereum: isEthereumMainnetOrTestnet,
-        isSmartContractWallet
+        connectedToEthereum: _isEthereumMainnetOrTestnet,
+        isSmartContractWallet: _isSmartContractWallet
       })
         .then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
         .then(withdrawals => {
