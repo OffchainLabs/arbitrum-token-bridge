@@ -1,3 +1,5 @@
+import { BigNumber, providers } from 'ethers'
+
 import { DialogType } from '../components/common/Dialog2'
 
 export type Dialog = Extract<
@@ -5,19 +7,25 @@ export type Dialog = Extract<
   | 'confirm_cctp_deposit'
   | 'confirm_cctp_withdrawal'
   | 'scw_custom_destination_address'
+  | 'approve_token'
 >
 
 export type UiDriverContext = {
+  amountBigNumber: BigNumber
   isDepositMode: boolean
   isSmartContractWallet: boolean
-  walletAddress?: string
+  walletAddress: string
   destinationAddress?: string
+  sourceChainProvider: providers.Provider
+  destinationChainProvider: providers.Provider
 }
 
 export type UiDriverStep =
   | { type: 'start' } //
   | { type: 'return' }
   | { type: 'dialog'; payload: Dialog }
+  | { type: 'scw_tooltip' }
+  | { type: 'tx'; payload: providers.TransactionRequest }
 
 export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
   TStep extends { type: 'start' }
@@ -28,6 +36,12 @@ export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
     : //
     TStep extends { type: 'dialog' }
     ? boolean
+    : //
+    TStep extends { type: 'scw_tooltip' }
+    ? void
+    : //
+    TStep extends { type: 'tx' }
+    ? providers.TransactionReceipt
     : //
       never
 
