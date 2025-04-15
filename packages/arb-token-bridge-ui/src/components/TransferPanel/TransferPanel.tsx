@@ -913,7 +913,7 @@ export function TransferPanel() {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer,
+          from: await signer.getAddress(),
           destinationAddress
         })) as DepositGasEstimates
 
