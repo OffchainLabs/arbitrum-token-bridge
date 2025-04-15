@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import { useInterval } from 'react-use'
-import { useAccount, useChainId, useSigner } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
@@ -25,6 +25,7 @@ import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { shallow } from 'zustand/shallow'
+import { useNetworks } from '../hooks/useNetworks'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -179,8 +180,9 @@ export const useCCTPDeposits = ({
 }: fetchCctpParams) => {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const chainId = useChainId()
-  const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
+  const [networks] = useNetworks()
+
+  const { isEthereumMainnetOrTestnet } = isNetwork(networks.sourceChain.id)
 
   return useSWRImmutable(
     // Only fetch when we have walletAddress
@@ -239,13 +241,13 @@ export const useCCTPWithdrawals = ({
 }: fetchCctpParams) => {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const chainId = useChainId()
-  const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
+  const [networks] = useNetworks()
+
+  const { isEthereumMainnetOrTestnet } = isNetwork(networks.sourceChain.id)
 
   return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
-      console.log({ isLoadingAccountType, isEthereumMainnetOrTestnet })
       if (!walletAddress || !enabled || isLoadingAccountType) {
         return null
       }

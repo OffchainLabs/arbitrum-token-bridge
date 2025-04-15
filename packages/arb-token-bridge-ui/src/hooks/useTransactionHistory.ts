@@ -467,7 +467,12 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
 
   return {
     data: transactions,
-    loading: isLoadingAccountType || depositsLoading || withdrawalsLoading || cctpLoading || oftLoading,
+    loading:
+      isLoadingAccountType ||
+      depositsLoading ||
+      withdrawalsLoading ||
+      cctpLoading ||
+      oftLoading,
     error: depositsError ?? withdrawalsError,
     failedChainPairs: failedChainPairs || []
   }
