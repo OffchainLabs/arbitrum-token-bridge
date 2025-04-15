@@ -1,5 +1,6 @@
 import { prepareWriteContract, writeContract } from '@wagmi/core'
-import { constants, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
+import { TransactionRequest } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import {
@@ -11,7 +12,7 @@ import {
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
 import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
-import { getChainIdFromProvider, getAddressFromSigner } from './utils'
+import { getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 import { Address } from '../util/AddressUtils'
@@ -33,10 +34,11 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     amount,
     signer
   }: RequiresTokenApprovalProps): Promise<boolean> {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getCctpContracts({ sourceChainId })
+    const {
+      //
+      usdcContractAddress,
+      tokenMessengerContractAddress
+    } = getCctpContracts({ sourceChainId: await this.getSourceChainId() })
 
     const allowance = await fetchErc20Allowance({
       address: usdcContractAddress,
@@ -48,29 +50,33 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return allowance.lt(amount)
   }
 
+  public async approveTokenPrepareTxRequest(params?: {
+    amount: BigNumber | undefined
+  }): Promise<TransactionRequest> {
+    const {
+      //
+      usdcContractAddress,
+      tokenMessengerContractAddress
+    } = getCctpContracts({ sourceChainId: await this.getSourceChainId() })
+
+    return {
+      to: usdcContractAddress,
+      data: ERC20__factory.createInterface().encodeFunctionData('approve', [
+        tokenMessengerContractAddress,
+        params?.amount ?? constants.MaxUint256
+      ]),
+      value: BigNumber.from(0)
+    }
+  }
+
   public async approveToken({ signer, amount }: ApproveTokenProps) {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getCctpContracts({ sourceChainId })
-
-    // approve USDC token for burn
-    const contract = ERC20__factory.connect(usdcContractAddress, signer)
-    return contract.functions.approve(
-      tokenMessengerContractAddress,
-      amount ?? constants.MaxInt256
-    )
+    const txRequest = await this.approveTokenPrepareTxRequest({ amount })
+    return signer.sendTransaction(txRequest)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getCctpContracts({ sourceChainId })
-    const contract = ERC20__factory.connect(usdcContractAddress, signer)
-    return contract.estimateGas.approve(
-      tokenMessengerContractAddress,
-      amount ?? constants.MaxInt256
-    )
+    const txRequest = await this.approveTokenPrepareTxRequest({ amount })
+    return signer.estimateGas(txRequest)
   }
 
   public async transferEstimateGas() {
@@ -79,7 +85,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ signer, amount, destinationAddress }: TransferProps) {
-    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+    const sourceChainId = await this.getSourceChainId()
 
     const address = await getAddressFromSigner(signer)
 
