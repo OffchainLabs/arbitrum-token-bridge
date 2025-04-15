@@ -1,5 +1,3 @@
-import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-
 import { step, UiDriverStepGenerator } from './UiDriver'
 import {
   stepGeneratorForDialog,
@@ -17,22 +15,17 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
   yield* stepGeneratorForDialog(dialog)
   yield* stepGeneratorForSmartContractWalletDestinationDialog(context)
 
-  const cctpTransferStarter = new CctpTransferStarter({
-    sourceChainProvider: context.sourceChainProvider,
-    destinationChainProvider: context.destinationChainProvider
-  })
-
-  const approval = await cctpTransferStarter.requiresTokenApproval({
+  const approval = await context.transferStarter.requiresTokenApproval({
     amount: context.amountBigNumber,
     owner: context.walletAddress
   })
 
   if (approval) {
-    const txRequest = await cctpTransferStarter.approveTokenPrepareTxRequest({
+    const request = await context.transferStarter.approveTokenPrepareTxRequest({
       amount: context.amountBigNumber
     })
 
     yield* stepGeneratorForDialog('approve_token')
-    yield* stepGeneratorForTransaction(context, txRequest)
+    yield* stepGeneratorForTransaction(context, request)
   }
 }

@@ -419,14 +419,18 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
 
+      const cctpTransferStarter = new CctpTransferStarter({
+        sourceChainProvider,
+        destinationChainProvider
+      })
+
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         amountBigNumber,
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
         destinationAddress,
-        sourceChainProvider,
-        destinationChainProvider
+        transferStarter: cctpTransferStarter
       })
 
       // this is only necessary while we are migrating to the ui driver
@@ -436,11 +440,6 @@ export function TransferPanel() {
       if (returnEarly) {
         return
       }
-
-      const cctpTransferStarter = new CctpTransferStarter({
-        sourceChainProvider,
-        destinationChainProvider
-      })
 
       let depositForBurnTx
 

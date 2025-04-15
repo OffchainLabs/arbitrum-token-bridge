@@ -1,4 +1,5 @@
 import { BigNumber, providers } from 'ethers'
+import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 
 import { DialogType } from '../components/common/Dialog2'
 
@@ -16,8 +17,7 @@ export type UiDriverContext = {
   isSmartContractWallet: boolean
   walletAddress: string
   destinationAddress?: string
-  sourceChainProvider: providers.Provider
-  destinationChainProvider: providers.Provider
+  transferStarter: BridgeTransferStarter
 }
 
 export type UiDriverStep =
