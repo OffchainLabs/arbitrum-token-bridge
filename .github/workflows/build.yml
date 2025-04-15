@@ -22,7 +22,7 @@ jobs:
   check-build-cache:
     name: Check cache for build artifacts
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false || github.event.action == 'ready_for_review'
     steps:
     - name: Checkout
       uses: actions/checkout@v4
