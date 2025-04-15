@@ -1,4 +1,4 @@
-import { BigNumber, constants, Signer } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   BridgeTransferStarter,
@@ -22,25 +22,23 @@ import { Address, prepareWriteContract, writeContract } from '@wagmi/core'
 import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
 
 async function prepareTransferConfig({
-  signer,
+  from,
   oftContractAddress,
   destLzEndpointId,
   amount,
   destinationAddress,
   sourceChainId
 }: {
-  signer: Signer
+  from: string
   oftContractAddress: string
   destLzEndpointId: number
   amount: BigNumber
   destinationAddress?: string
   sourceChainId: number
 }) {
-  const address = await getAddressFromSigner(signer)
-
   const sendParams = buildSendParams({
     dstEid: destLzEndpointId,
-    address,
+    address: from,
     amount,
     destinationAddress
   })
@@ -54,9 +52,8 @@ async function prepareTransferConfig({
   return prepareWriteContract({
     address: oftContractAddress as Address,
     abi: oftV2Abi,
-    signer,
     functionName: 'send',
-    args: [sendParams, quoteFee, address as Address],
+    args: [sendParams, quoteFee, from as Address],
     overrides: {
       value: quoteFee.nativeFee
     }
@@ -133,21 +130,18 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
   public async requiresTokenApproval({
     amount,
-    signer
+    owner
   }: RequiresTokenApprovalProps): Promise<boolean> {
     await this.validateOftTransfer()
 
     // only Eth adapter will need token approval
     if (!this.isSourceChainEthereum) return false
 
-    const address = await getAddressFromSigner(signer)
-    const spender = this.getOftAdapterContractAddress()
-
     const allowance = await fetchErc20Allowance({
       address: this.sourceChainErc20Address!,
       provider: this.sourceChainProvider,
-      owner: address,
-      spender
+      owner,
+      spender: this.getOftAdapterContractAddress()
     })
 
     return allowance.lt(amount)
@@ -182,7 +176,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
   public async transferEstimateGas({
     amount,
-    signer,
+    from,
     destinationAddress
   }: TransferEstimateGasProps) {
     await this.validateOftTransfer()
@@ -201,7 +195,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     const allowance = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
-      owner: await signer.getAddress(),
+      owner: from,
       spender: this.getOftAdapterContractAddress()
     })
 
@@ -232,14 +226,18 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     }
 
     const config = await prepareTransferConfig({
-      signer,
+      from,
       oftContractAddress: this.getOftAdapterContractAddress(),
       amount,
       destLzEndpointId: this.destLzEndpointId!,
       destinationAddress,
       sourceChainId: await getChainIdFromProvider(this.sourceChainProvider)
     })
-    const gasEstimate = await signer.estimateGas(config.request)
+
+    const gasEstimate = await this.sourceChainProvider.estimateGas({
+      ...config.request,
+      from
+    })
 
     return {
       estimatedParentChainGas: isDepositMode ? gasEstimate : constants.Zero,
@@ -249,16 +247,14 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
 
   public async transferEstimateFee({
     amount,
-    signer,
+    from,
     destinationAddress
   }: TransferEstimateGasProps) {
     await this.validateOftTransfer()
 
-    const address = await getAddressFromSigner(signer)
-
     const sendParams = buildSendParams({
       dstEid: this.destLzEndpointId!,
-      address,
+      address: from,
       amount,
       destinationAddress
     })
@@ -280,7 +276,7 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     await this.validateOftTransfer()
 
     const config = await prepareTransferConfig({
-      signer,
+      from: await signer.getAddress(),
       oftContractAddress: this.getOftAdapterContractAddress(),
       amount,
       destLzEndpointId: this.destLzEndpointId!,
