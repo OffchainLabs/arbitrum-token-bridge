@@ -222,18 +222,16 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
   public requiresTokenApproval = async ({
     amount,
-    signer
+    owner
   }: RequiresTokenApprovalProps) => {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await getAddressFromSigner(signer)
-
     const allowanceForSourceChainGateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
-      owner: address,
+      owner,
       spender: await this.getSourceChainGatewayAddress()
     })
 

@@ -69,22 +69,19 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
   public requiresTokenApproval = async ({
     amount,
-    signer
+    owner
   }: RequiresTokenApprovalProps) => {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await getAddressFromSigner(signer)
-
     const l1l3Bridger = await this.getBridger()
-
     const l1TeleporterAddress = l1l3Bridger.teleporter.l1Teleporter
 
     const allowanceForTeleporter = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
-      owner: address,
+      owner,
       spender: l1TeleporterAddress
     })
 
