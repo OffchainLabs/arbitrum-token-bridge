@@ -412,7 +412,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -579,7 +579,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await oftTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -869,7 +869,7 @@ export function TransferPanel() {
         const isTokenApprovalRequired =
           await bridgeTransferStarter.requiresTokenApproval({
             amount: amountBigNumber,
-            signer,
+            owner: await signer.getAddress(),
             destinationAddress
           })
         if (isTokenApprovalRequired) {
