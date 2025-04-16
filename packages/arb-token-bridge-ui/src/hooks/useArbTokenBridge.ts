@@ -135,7 +135,7 @@ export const useArbTokenBridge = (
 
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
 
-  const removeTokensFromList = (listID: number) => {
+  const removeTokensFromList = (listID: string) => {
     setBridgeTokens(prevBridgeTokens => {
       const newBridgeTokens = { ...prevBridgeTokens }
       for (const address in bridgeTokens) {
@@ -152,7 +152,7 @@ export const useArbTokenBridge = (
     })
   }
 
-  const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
+  const addTokensFromList = async (arbTokenList: TokenList, listId: string) => {
     const l1ChainID = l1.network.id
     const l2ChainID = l2.network.id
 

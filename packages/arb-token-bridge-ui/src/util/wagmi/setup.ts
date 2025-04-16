@@ -1,9 +1,12 @@
 import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
-import { publicProvider } from 'wagmi/providers/public'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
+import {
+  trustWallet,
+  okxWallet,
+  rabbyWallet
+} from '@rainbow-me/rainbowkit/wallets'
 
 import {
   sepolia,
@@ -16,11 +19,14 @@ import {
   base,
   baseSepolia
 } from './wagmiAdditionalNetworks'
-import { isTestingEnvironment } from '../CommonUtils'
-import { getCustomChainsFromLocalStorage, ChainId, rpcURLs } from '../networks'
+import {
+  isE2eTestingEnvironment,
+  isDevelopmentEnvironment
+} from '../CommonUtils'
+import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
+import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
-import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -42,8 +48,22 @@ const defaultChains = [
   holesky
 ]
 
-const chainList = isTestingEnvironment
-  ? [
+const getChainList = () => {
+  // for E2E tests, only have local + minimal required chains
+  if (isE2eTestingEnvironment) {
+    return [
+      local,
+      arbitrumLocal,
+      l3Local,
+      sepolia, // required for testing cctp
+      arbitrumSepolia, // required for testing cctp
+      mainnet // required for import token test
+    ]
+  }
+
+  // for local env, have all local + default + user added chains
+  if (isDevelopmentEnvironment) {
+    return [
       ...defaultChains,
       // Orbit chains
       ...wagmiOrbitChains,
@@ -54,7 +74,13 @@ const chainList = isTestingEnvironment
       // user-added custom chains
       ...customChains
     ]
-  : [...defaultChains, ...wagmiOrbitChains, ...customChains]
+  }
+
+  // for preview + production env, return all non-local chains
+  return [...defaultChains, ...wagmiOrbitChains, ...customChains]
+}
+
+const chainList = getChainList()
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
@@ -133,12 +159,16 @@ export function getProps(targetChainKey: string | null) {
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
     [
-      customInfuraProvider(),
-      publicProvider(),
       jsonRpcProvider({
-        rpc: chain => ({
-          http: rpcURLs[chain.id]!
-        })
+        rpc: chain => {
+          const rpcUrl = rpcURLs[chain.id]
+
+          if (typeof rpcUrl === 'undefined') {
+            throw Error(`[wagmi/setup] no rpc url found for chain ${chain.id}`)
+          }
+
+          return { http: rpcUrl }
+        }
       })
     ]
   )
@@ -148,14 +178,13 @@ export function getProps(targetChainKey: string | null) {
     chains
   })
 
+  wallets[0]?.wallets.push(okxWallet({ chains, projectId }))
+
   const connectors = connectorsForWallets([
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        okxWallet({ chains, projectId })
-      ]
+      wallets: [trustWallet({ chains, projectId }), rabbyWallet({ chains })]
     }
   ])
 

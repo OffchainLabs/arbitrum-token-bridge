@@ -1,15 +1,11 @@
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 
 import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
-import {
-  getBlockNumberReferenceChainIdByChainId,
-  getConfirmPeriodBlocks,
-  getL1BlockTime,
-  isNetwork
-} from '../util/networks'
+import { isNetwork } from '../util/networks'
 import { getConfirmationTime } from '../util/WithdrawalUtils'
+import { getBoldInfo, getDifferenceInSeconds } from '../util/BoLDUtils'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,
@@ -31,13 +27,6 @@ const DEPOSIT_TIME_MINUTES_ORBIT = {
   testnet: 1
 }
 
-/**
- * Buffer for after a node is confirmable but isn't yet confirmed.
- * A rollup block (RBlock) typically gets asserted every 30-60 minutes.
- */
-const CONFIRMATION_BUFFER_MINUTES = 60
-const SECONDS_IN_MIN = 60
-
 type UseTransferDurationResult = {
   approximateDurationInMinutes: number
   estimatedMinutesLeft: number | null
@@ -56,7 +45,7 @@ export const useTransferDuration = (
 ): UseTransferDurationResult => {
   const { estimatedMinutesLeftCctp } = useRemainingTimeCctp(tx)
 
-  const { sourceChainId, destinationChainId, isCctp, childChainId } = tx
+  const { sourceChainId, destinationChainId, isCctp, childChainId, isOft } = tx
   const { isTestnet, isOrbitChain } = isNetwork(childChainId)
 
   const standardDepositDuration = getStandardDepositDuration(isTestnet)
@@ -79,6 +68,17 @@ export const useTransferDuration = (
     return {
       approximateDurationInMinutes: cctpTransferDuration,
       estimatedMinutesLeft: estimatedMinutesLeftCctp
+    }
+  }
+
+  if (isOft) {
+    const OFT_TRANSFER_DURATION_MINUTES = 5
+    return {
+      approximateDurationInMinutes: OFT_TRANSFER_DURATION_MINUTES,
+      estimatedMinutesLeft: getRemainingMinutes({
+        createdAt: tx.createdAt,
+        totalDuration: OFT_TRANSFER_DURATION_MINUTES
+      })
     }
   }
 
@@ -118,34 +118,43 @@ export function getWithdrawalConfirmationDate({
 }: {
   createdAt: number | null
   withdrawalFromChainId: number
-}) {
-  // For new txs createdAt won't be defined yet, we default to the current time in that case
-  const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
+}): Dayjs {
+  const { confirmationTimeInSeconds } = getConfirmationTime(
+    withdrawalFromChainId
+  )
 
-  const { confirmationTimeInSeconds, fastWithdrawalActive } =
-    getConfirmationTime(withdrawalFromChainId)
-  if (fastWithdrawalActive && confirmationTimeInSeconds) {
-    return createdAtDate.add(confirmationTimeInSeconds, 'second')
+  // For new txs createdAt won't be defined yet, we default to the current time in that case
+  if (createdAt === null) {
+    return dayjs().add(confirmationTimeInSeconds, 'second')
   }
 
-  const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId({
-    chainId: withdrawalFromChainId
-  })
-  // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
-  // and similarly, the confirm period blocks is always the number of blocks on the base chain
-  const confirmationSeconds =
-    getL1BlockTime(blockNumberReferenceChainId) *
-      getConfirmPeriodBlocks(withdrawalFromChainId) +
-    CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MIN
-  return createdAtDate.add(confirmationSeconds, 'second')
+  const boldInfo = getBoldInfo({ createdAt, withdrawalFromChainId })
+
+  if (boldInfo.affected) {
+    // Messages not confirmed at the time of the BoLD upgrade had their confirmation time reset and start again
+    const confirmationTimeBeforeResetInSeconds = getDifferenceInSeconds(
+      new Date(createdAt),
+      boldInfo.upgradeTime
+    )
+
+    return dayjs(createdAt)
+      .add(confirmationTimeBeforeResetInSeconds, 'second')
+      .add(confirmationTimeInSeconds, 'second')
+  }
+
+  // Add the confirmation time to createdAt
+  return dayjs(createdAt).add(confirmationTimeInSeconds, 'second')
 }
 
-function getWithdrawalDuration(tx: MergedTransaction) {
+export function getWithdrawalDuration({
+  createdAt,
+  sourceChainId
+}: Pick<MergedTransaction, 'createdAt' | 'sourceChainId'>) {
   const confirmationDate = getWithdrawalConfirmationDate({
-    createdAt: tx.createdAt,
-    withdrawalFromChainId: tx.sourceChainId
+    createdAt: createdAt,
+    withdrawalFromChainId: sourceChainId
   })
-  return Math.max(confirmationDate.diff(tx.createdAt, 'minute'), 0)
+  return Math.max(confirmationDate.diff(createdAt, 'minute'), 0)
 }
 
 export function getStandardDepositDuration(testnet: boolean) {

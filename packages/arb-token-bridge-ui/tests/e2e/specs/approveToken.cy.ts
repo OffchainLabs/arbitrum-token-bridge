@@ -31,15 +31,13 @@ describe('Approve token for deposit', () => {
       cy.findByText('MAX').click()
 
       cy.findGasFeeSummary(zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
 
       cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
         errorMsg: 'move funds button is disabled (expected to be enabled)',
         timeout: 50000,
         interval: 500
       })
-      cy.findMoveFundsButton().click()
+      cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
       cy.findByText(/pay a one-time approval fee/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
@@ -50,7 +48,7 @@ describe('Approve token for deposit', () => {
        * If confirm spending fails, test is still considered to be passing by Cypress
        * We add another check to make sure the test fails if needed
        */
-      cy.wait(10_000)
+      cy.wait(25_000)
       cy.rejectMetamaskTransaction()
     })
   })

@@ -10,7 +10,7 @@ import { MergedTransaction } from '../../state/app/state'
 import { FetchEthTeleportsFromSubgraphResult } from './fetchEthTeleportsFromSubgraph'
 import { TeleportFromSubgraph } from './fetchTeleports'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../hooks/useTransactions'
+import { Transaction } from '../../types/Transactions'
 import { transformDeposit } from '../../state/app/utils'
 import { updateAdditionalDepositData } from '../deposits/helpers'
 import { fetchErc20Data } from '../TokenUtils'
@@ -70,14 +70,7 @@ export async function transformTeleportFromSubgraph(
       childChainId: Number(tx.childChainId)
     } as Transaction
 
-    const childProvider = getProviderForChainId(Number(tx.childChainId))
-    return transformDeposit(
-      await updateAdditionalDepositData({
-        depositTx,
-        parentProvider,
-        childProvider
-      })
-    )
+    return transformDeposit(await updateAdditionalDepositData(depositTx))
   }
 
   // Erc20 transfers
@@ -112,12 +105,5 @@ export async function transformTeleportFromSubgraph(
     childChainId: l3ChainId
   } as Transaction
 
-  const childProvider = getProviderForChainId(l3ChainId)
-  return transformDeposit(
-    await updateAdditionalDepositData({
-      depositTx,
-      parentProvider,
-      childProvider
-    })
-  )
+  return transformDeposit(await updateAdditionalDepositData(depositTx))
 }

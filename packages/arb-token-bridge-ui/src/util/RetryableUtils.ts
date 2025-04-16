@@ -12,7 +12,7 @@ import {
   TeleporterMergedTransaction
 } from '../state/app/state'
 import { normalizeTimestamp } from '../state/app/utils'
-import { isTeleportTx } from '../hooks/useTransactions'
+import { isTeleportTx } from '../types/Transactions'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
@@ -113,7 +113,7 @@ export const l1L2RetryableRequiresRedeem = (
   tx: TeleporterMergedTransaction
 ) => {
   return (
-    tx.parentToChildMsgData?.status ===
+    tx.l1ToL2MsgData?.status ===
     ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )
 }

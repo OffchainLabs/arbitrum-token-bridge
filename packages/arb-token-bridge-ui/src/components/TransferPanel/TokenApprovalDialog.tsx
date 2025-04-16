@@ -26,15 +26,17 @@ import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
+import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
+import { useRouteStore } from './hooks/useRouteStore'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
-  isCctp: boolean
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { address: walletAddress } = useAccount()
-  const { isOpen, token, isCctp } = props
+  const { isOpen, token } = props
 
   const { ethToUSD } = useETHPrice()
 
@@ -59,6 +61,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { data: signer } = useSigner({
     chainId
   })
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
+  const isCctp = selectedRoute === 'cctp'
+  const isOft = selectedRoute === 'oftV2'
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
@@ -105,6 +110,18 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           amount: constants.MaxUint256,
           signer
         })
+      } else if (isOft) {
+        const oftTransferStarter = new OftV2TransferStarter({
+          sourceChainProvider,
+          destinationChainProvider,
+          sourceChainErc20Address: isDepositMode
+            ? token.address
+            : token.l2Address
+        })
+        gasEstimate = await oftTransferStarter.approveTokenEstimateGas({
+          amount: constants.MaxUint256,
+          signer
+        })
       } else {
         const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
           {
@@ -131,7 +148,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
     getEstimatedGas()
   }, [
-    isCctp,
     isOpen,
     isDepositMode,
     isTestnet,
@@ -143,11 +159,29 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     sourceChainProvider,
     destinationChain,
     destinationChainProvider,
-    chainId
+    chainId,
+    isCctp,
+    isOft
   ])
 
   useEffect(() => {
     const getContractAddress = async function () {
+      if (isOft) {
+        const oftTransferConfig = getOftV2TransferConfig({
+          sourceChainId: sourceChain.id,
+          destinationChainId: destinationChain.id,
+          sourceChainErc20Address: isDepositMode
+            ? token?.address
+            : token?.l2Address
+        })
+
+        if (!oftTransferConfig.isValid) {
+          throw new Error('OFT transfer validation failed')
+        }
+
+        setContractAddress(oftTransferConfig.sourceChainAdapterAddress)
+        return
+      }
       if (isCctp) {
         setContractAddress(
           getCctpContracts({ sourceChainId: chainId })
@@ -199,9 +233,11 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isDepositMode,
     parentChainProvider,
     token?.address,
+    token?.l2Address,
     sourceChain.id,
     destinationChain.id,
-    isTeleportMode
+    isTeleportMode,
+    isOft
   ])
 
   function closeWithReset(confirmed: boolean) {
@@ -250,7 +286,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           {token?.symbol ?? 'a specific token'}.
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2">
+          {isOft && (
+            <NoteBox variant="warning">
+              Note: USDT approvals for the LayerZero OFT contract must be set to
+              the maximum amount. Please do not modify the approval amount, or
+              the transaction may fail.
+            </NoteBox>
+          )}
+
           <NoteBox>
             After approval, you&apos;ll see a second prompt in your wallet for
             the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.

@@ -3,15 +3,45 @@ import { Provider } from '@ethersproject/providers'
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
 import {
-  FetchWithdrawalsFromSubgraphResult,
+  WithdrawalFromSubgraph,
   fetchWithdrawalsFromSubgraph
 } from './fetchWithdrawalsFromSubgraph'
 import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
-import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
-import { fetchL2Gateways } from '../fetchL2Gateways'
+
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
+import {
+  Query,
+  fetchTokenWithdrawalsFromEventLogsSequentially
+} from './fetchTokenWithdrawalsFromEventLogsSequentially'
+import { backOff, wait } from '../ExponentialBackoffUtils'
+import { isAlchemyChain, isNetwork } from '../networks'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
+import { fetchL2Gateways } from '../fetchL2Gateways'
+import { constants } from 'ethers'
+import { getNonce } from '../AddressUtils'
+
+async function getGateways(provider: Provider): Promise<{
+  standardGateway: string
+  wethGateway: string
+  customGateway: string
+  otherGateways: string[]
+}> {
+  const network = await getArbitrumNetwork(provider)
+
+  const standardGateway = network.tokenBridge?.childErc20Gateway
+  const customGateway = network.tokenBridge?.childCustomGateway
+  const wethGateway = network.tokenBridge?.childWethGateway
+  const otherGateways = await fetchL2Gateways(provider)
+
+  return {
+    standardGateway: standardGateway ?? constants.AddressZero,
+    wethGateway: wethGateway ?? constants.AddressZero,
+    customGateway: customGateway ?? constants.AddressZero,
+    otherGateways
+  }
+}
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -23,6 +53,7 @@ export type FetchWithdrawalsParams = {
   pageNumber?: number
   pageSize?: number
   searchString?: string
+  forceFetchReceived?: boolean
 }
 
 export async function fetchWithdrawals({
@@ -34,7 +65,8 @@ export async function fetchWithdrawals({
   pageSize = 10,
   searchString,
   fromBlock,
-  toBlock
+  toBlock,
+  forceFetchReceived = false
 }: FetchWithdrawalsParams): Promise<Withdrawal[]> {
   if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
     return []
@@ -43,7 +75,7 @@ export async function fetchWithdrawals({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
-  const l2GatewayAddresses = await fetchL2Gateways(l2Provider)
+  const { isOrbitChain, isCoreChain } = isNetwork(l2ChainID)
 
   if (!fromBlock) {
     fromBlock = 0
@@ -59,7 +91,7 @@ export async function fetchWithdrawals({
     toBlock = latestSubgraphBlockNumber
   }
 
-  let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
+  let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
   try {
     withdrawalsFromSubgraph = (
       await fetchWithdrawalsFromSubgraph({
@@ -85,23 +117,79 @@ export async function fetchWithdrawals({
     console.log('Error fetching withdrawals from subgraph', error)
   }
 
-  const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
-    await Promise.all([
-      fetchETHWithdrawalsFromEventLogs({
-        receiver,
-        fromBlock: toBlock + 1,
-        toBlock: 'latest',
-        l2Provider: l2Provider
-      }),
-      fetchTokenWithdrawalsFromEventLogs({
-        sender,
-        receiver,
-        fromBlock: toBlock + 1,
-        toBlock: 'latest',
-        l2Provider: l2Provider,
-        l2GatewayAddresses
-      })
-    ])
+  const gateways = await getGateways(l2Provider)
+  const senderNonce = await backOff(() =>
+    getNonce(sender, { provider: l2Provider })
+  )
+
+  const queries: Query[] = []
+
+  // alchemy as a raas has a global rate limit across their chains, so we have to fetch sequentially and wait in-between requests to work around this
+  const isAlchemy = isAlchemyChain(l2ChainID)
+  const delayMs = isAlchemy ? 2_000 : 0
+
+  const allGateways = [
+    gateways.standardGateway,
+    gateways.wethGateway,
+    gateways.customGateway,
+    ...gateways.otherGateways
+  ]
+
+  // sender queries; only add if nonce > 0
+  if (senderNonce > 0) {
+    if (isAlchemy) {
+      // for alchemy, fetch sequentially
+      queries.push({ sender, gateways: [gateways.standardGateway] })
+      queries.push({ sender, gateways: [gateways.wethGateway] })
+      queries.push({ sender, gateways: [gateways.customGateway] })
+      queries.push({ sender, gateways: gateways.otherGateways })
+    } else {
+      // for other chains, fetch in parallel
+      queries.push({ sender, gateways: allGateways })
+    }
+  }
+
+  /// receiver queries; only add if nonce > 0 for orbit chains
+  const fetchReceivedTransactions =
+    isCoreChain || (isOrbitChain && senderNonce > 0) || forceFetchReceived
+
+  if (fetchReceivedTransactions) {
+    if (isAlchemy) {
+      // for alchemy, fetch sequentially
+      queries.push({ receiver, gateways: [gateways.standardGateway] })
+      queries.push({ receiver, gateways: [gateways.wethGateway] })
+      queries.push({ receiver, gateways: [gateways.customGateway] })
+      queries.push({ receiver, gateways: gateways.otherGateways })
+    } else {
+      // for other chains, fetch in parallel
+      queries.push({ receiver, gateways: allGateways })
+    }
+  }
+
+  const ethWithdrawalsFromEventLogs = fetchReceivedTransactions
+    ? await backOff(() =>
+        fetchETHWithdrawalsFromEventLogs({
+          receiver,
+          // not sure why eslint is treating "toBlock" as "number | undefined" here
+          // even though typescript recognizes it as "number"
+          fromBlock: toBlock ?? 0 + 1,
+          toBlock: 'latest',
+          l2Provider: l2Provider
+        })
+      )
+    : []
+
+  await wait(delayMs)
+
+  const tokenWithdrawalsFromEventLogs =
+    await fetchTokenWithdrawalsFromEventLogsSequentially({
+      sender,
+      receiver,
+      fromBlock: toBlock + 1,
+      toBlock: 'latest',
+      provider: l2Provider,
+      queries
+    })
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
     ethWithdrawalsFromEventLogs.map(tx => {

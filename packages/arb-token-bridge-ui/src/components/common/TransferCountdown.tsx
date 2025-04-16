@@ -5,7 +5,7 @@ import {
   useTransferDuration
 } from '../../hooks/useTransferDuration'
 import { isNetwork } from '../../util/networks'
-import { isTeleportTx } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../types/Transactions'
 
 /**
  * Displays a transfer countdown for a deposit, withdrawal, or cctp.
@@ -36,7 +36,8 @@ export function TransferCountdown({
     estimatedMinutesLeft -= getOrbitDepositDuration(isTestnet)
   }
 
-  const isStandardDeposit = !tx.isWithdrawal && !tx.isCctp && !isTeleport
+  const isStandardDeposit =
+    !tx.isWithdrawal && !tx.isCctp && !isTeleport && !tx.isOft
 
   if (isStandardDeposit) {
     const depositStatus = tx.depositStatus

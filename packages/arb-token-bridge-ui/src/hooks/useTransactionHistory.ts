@@ -4,12 +4,8 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import {
-  ChainId,
-  getChains,
-  getChildChainIds,
-  isNetwork
-} from '../util/networks'
+import { getChains, getChildChainIds, isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -17,7 +13,7 @@ import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
-import { isTeleportTx, Transaction } from './useTransactions'
+import { isTeleportTx, Transaction } from '../types/Transactions'
 import { MergedTransaction } from '../state/app/state'
 import {
   isCustomDestinationAddressTx,
@@ -30,9 +26,9 @@ import {
   isTokenWithdrawal,
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
-  mapWithdrawalToL2ToL1EventResult
+  mapWithdrawalFromSubgraphToL2ToL1EventResult
 } from '../util/withdrawals/helpers'
-import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
+import { WithdrawalFromSubgraph } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import {
@@ -44,7 +40,8 @@ import {
   getUpdatedWithdrawal,
   isCctpTransfer,
   isSameTransaction,
-  isTxPending
+  isTxPending,
+  isOftTransfer
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useAccountType } from './useAccountType'
@@ -64,6 +61,14 @@ import {
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { useArbQueryParams } from './useArbQueryParams'
+import {
+  getUpdatedOftTransfer,
+  LayerZeroTransaction,
+  updateAdditionalLayerZeroData,
+  useOftTransactionHistory
+} from './useOftTransactionHistory'
+import { create } from 'zustand'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -82,7 +87,7 @@ export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
 export type Deposit = Transaction
 
 export type Withdrawal =
-  | FetchWithdrawalsFromSubgraphResult
+  | WithdrawalFromSubgraph
   | WithdrawalInitiated
   | EthWithdrawal
 
@@ -91,9 +96,24 @@ export type Transfer =
   | DepositOrWithdrawal
   | MergedTransaction
   | TeleportFromSubgraph
+  | LayerZeroTransaction
+
+type ForceFetchReceivedStore = {
+  forceFetchReceived: boolean
+  setForceFetchReceived: (forceFetchReceived: boolean) => void
+}
+
+export const useForceFetchReceived = create<ForceFetchReceivedStore>(set => ({
+  forceFetchReceived: false,
+  setForceFetchReceived: forceFetchReceived => set({ forceFetchReceived })
+}))
 
 function getTransactionTimestamp(tx: Transfer) {
   if (isCctpTransfer(tx)) {
+    return normalizeTimestamp(tx.createdAt ?? 0)
+  }
+
+  if (isOftTransfer(tx)) {
     return normalizeTimestamp(tx.createdAt ?? 0)
   }
 
@@ -139,7 +159,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
-): tx is FetchWithdrawalsFromSubgraphResult {
+): tx is WithdrawalFromSubgraph {
   return tx.source === 'subgraph'
 }
 
@@ -160,20 +180,18 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
     return tx
   }
 
+  if (isOftTransfer(tx)) {
+    return await updateAdditionalLayerZeroData(tx)
+  }
+
   if (isDeposit(tx)) {
-    return transformDeposit(
-      await updateAdditionalDepositData({
-        depositTx: tx,
-        parentProvider,
-        childProvider
-      })
-    )
+    return transformDeposit(await updateAdditionalDepositData(tx))
   }
 
   let withdrawal: L2ToL1EventResultPlus | undefined
 
   if (isWithdrawalFromSubgraph(tx)) {
-    withdrawal = await mapWithdrawalToL2ToL1EventResult({
+    withdrawal = await mapWithdrawalFromSubgraphToL2ToL1EventResult({
       withdrawal: tx,
       l1Provider: parentProvider,
       l2Provider: childProvider
@@ -209,7 +227,7 @@ function getTxIdFromTransaction(tx: Transfer) {
     return tx.transactionHash
   }
 
-  if (isCctpTransfer(tx)) {
+  if (isCctpTransfer(tx) || isOftTransfer(tx)) {
     return tx.txId
   }
   if (isDeposit(tx)) {
@@ -224,9 +242,7 @@ function getTxIdFromTransaction(tx: Transfer) {
   return tx.l2TxHash ?? tx.transactionHash
 }
 
-function getCacheKeyFromTransaction(
-  tx: Transaction | MergedTransaction | TeleportFromSubgraph | Withdrawal
-) {
+function getCacheKeyFromTransaction(tx: Transfer) {
   const txId = getTxIdFromTransaction(tx)
   if (!txId) {
     return undefined
@@ -249,30 +265,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-
-  // Check what type of CCTP (deposit, withdrawal or all) to fetch
-  // We need this because of Smart Contract Wallets
-  const cctpTypeToFetch = useCallback(
-    (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (isLoadingAccountType || !chain) {
-        return undefined
-      }
-      if (isSmartContractWallet) {
-        // fetch based on the connected network
-        if (chain.id === chainPair.parentChainId) {
-          return 'deposits'
-        }
-        if (chain.id === chainPair.childChainId) {
-          return 'withdrawals'
-        }
-        return undefined
-      }
-      // EOA
-      return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
-        ? 'all'
-        : undefined
-    },
-    [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
+  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
+  const forceFetchReceived = useForceFetchReceived(
+    state => state.forceFetchReceived
   )
 
   const cctpTransfersMainnet = useCctpFetching({
@@ -280,17 +275,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Ethereum,
     l2ChainId: ChainId.ArbitrumOne,
     pageNumber: 0,
-    pageSize: cctpTypeToFetch({
-      parentChainId: ChainId.Ethereum,
-      childChainId: ChainId.ArbitrumOne
-    })
-      ? 1000
-      : 0,
-    type:
-      cctpTypeToFetch({
-        parentChainId: ChainId.Ethereum,
-        childChainId: ChainId.ArbitrumOne
-      }) ?? 'all'
+    pageSize: 1000,
+    type: 'all'
   })
 
   const cctpTransfersTestnet = useCctpFetching({
@@ -298,27 +284,20 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Sepolia,
     l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
-    pageSize: cctpTypeToFetch({
-      parentChainId: ChainId.Sepolia,
-      childChainId: ChainId.ArbitrumSepolia
-    })
-      ? 1000
-      : 0,
-    type:
-      cctpTypeToFetch({
-        parentChainId: ChainId.Sepolia,
-        childChainId: ChainId.ArbitrumSepolia
-      }) ?? 'all'
+    pageSize: 1000,
+    type: 'all'
   })
 
-  // TODO: Clean up this logic when introducing testnet/mainnet split
-  const combinedCctpTransfers = [
+  const combinedCctpMainnetTransfers = [
     ...(cctpTransfersMainnet.deposits?.completed || []),
     ...(cctpTransfersMainnet.withdrawals?.completed || []),
+    ...(cctpTransfersMainnet.deposits?.pending || []),
+    ...(cctpTransfersMainnet.withdrawals?.pending || [])
+  ]
+
+  const combinedCctpTestnetTransfers = [
     ...(cctpTransfersTestnet.deposits?.completed || []),
     ...(cctpTransfersTestnet.withdrawals?.completed || []),
-    ...(cctpTransfersMainnet.deposits?.pending || []),
-    ...(cctpTransfersMainnet.withdrawals?.pending || []),
     ...(cctpTransfersTestnet.deposits?.pending || []),
     ...(cctpTransfersTestnet.withdrawals?.pending || [])
   ]
@@ -328,6 +307,12 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     cctpTransfersMainnet.isLoadingWithdrawals ||
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
+
+  const { transactions: oftTransfers, isLoading: oftLoading } =
+    useOftTransactionHistory({
+      walletAddress: address,
+      isTestnet: isTestnetMode
+    })
 
   const { data: failedChainPairs, mutate: addFailedChainPair } =
     useSWRImmutable<ChainPair[]>(
@@ -406,7 +391,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 l1Provider: getProviderForChainId(chainPair.parentChainId),
                 l2Provider: getProviderForChainId(chainPair.childChainId),
                 pageNumber: 0,
-                pageSize: 1000
+                pageSize: 1000,
+                forceFetchReceived
               })
             } catch {
               addFailedChainPair(prevFailedChainPairs => {
@@ -432,10 +418,18 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
           })
       )
     },
-    [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
+    [
+      address,
+      isTestnetMode,
+      addFailedChainPair,
+      isSmartContractWallet,
+      chain,
+      forceFetchReceived
+    ]
   )
 
-  const shouldFetch = address && chain && !isLoadingAccountType
+  const shouldFetch =
+    address && chain && !isLoadingAccountType && isTxHistoryEnabled
 
   const {
     data: depositsData,
@@ -451,7 +445,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     error: withdrawalsError,
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
-    shouldFetch ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
+    shouldFetch
+      ? ['tx_list', 'withdrawals', address, isTestnetMode, forceFetchReceived]
+      : null,
     () => fetcher('withdrawals')
   )
 
@@ -463,12 +459,20 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const transactions = [
     ...deposits,
     ...withdrawals,
-    ...combinedCctpTransfers
+    ...(isTestnetMode
+      ? combinedCctpTestnetTransfers
+      : combinedCctpMainnetTransfers),
+    ...oftTransfers
   ].flat()
 
   return {
     data: transactions,
-    loading: depositsLoading || withdrawalsLoading || cctpLoading,
+    loading:
+      isLoadingAccountType ||
+      depositsLoading ||
+      withdrawalsLoading ||
+      cctpLoading ||
+      oftLoading,
     error: depositsError ?? withdrawalsError,
     failedChainPairs: failedChainPairs || []
   }
@@ -487,6 +491,7 @@ export const useTransactionHistory = (
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
+  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
@@ -520,7 +525,7 @@ export const useTransactionHistory = (
   )
 
   const depositsFromCache = useMemo(() => {
-    if (isLoadingAccountType || !chain) {
+    if (isLoadingAccountType || !chain || !isTxHistoryEnabled) {
       return []
     }
     return getDepositsWithoutStatusesFromCache(address)
@@ -551,7 +556,8 @@ export const useTransactionHistory = (
     isTestnetMode,
     isLoadingAccountType,
     isSmartContractWallet,
-    chain
+    chain,
+    isTxHistoryEnabled
   ])
 
   const {
@@ -722,6 +728,12 @@ export const useTransactionHistory = (
         return
       }
 
+      if (isOftTransfer(tx)) {
+        const updatedOftTransfer = await getUpdatedOftTransfer(tx)
+        updateCachedTransaction(updatedOftTransfer)
+        return
+      }
+
       if (tx.isCctp) {
         const updatedCctpTransfer = await getUpdatedCctpTransfer(tx)
         updateCachedTransaction(updatedCctpTransfer)
@@ -838,7 +850,7 @@ export const useTransactionHistory = (
 
   if (isLoadingTxsWithoutStatus || error) {
     return {
-      transactions: [],
+      transactions: newTransactionsData || [],
       loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],

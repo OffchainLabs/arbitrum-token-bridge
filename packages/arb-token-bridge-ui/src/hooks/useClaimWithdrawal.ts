@@ -15,6 +15,7 @@ import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { useTransactionHistoryAddressStore } from '../components/TransactionHistory/TransactionHistorySearchBar'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -28,8 +29,13 @@ export function useClaimWithdrawal(
     app: { arbTokenBridge }
   } = useAppState()
   const { address } = useAccount()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
   const { data: signer } = useSigner({ chainId: tx.parentChainId })
-  const { updatePendingTransaction } = useTransactionHistory(address)
+  const { updatePendingTransaction } = useTransactionHistory(
+    sanitizedAddress ?? address
+  )
   const [isClaiming, setIsClaiming] = useState(false)
 
   const claim = useCallback(async () => {

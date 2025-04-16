@@ -8,6 +8,7 @@ import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import type { Chain } from 'wagmi'
+import { errors } from 'ethers'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -17,7 +18,6 @@ import '@rainbow-me/rainbowkit/styles.css'
 import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
-import '../styles/purple.css'
 import {
   ChainKeyQueryParam,
   getChainForChainKeyQueryParam
@@ -50,8 +50,21 @@ Sentry.init({
     /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i
   ],
   beforeSend: (event, hint) => {
+    if (!hint.originalException) {
+      return event
+    }
+
     if (isUserRejectedError(hint.originalException)) {
       return null
+    }
+
+    const { code, message } = hint.originalException as {
+      code?: errors
+      message?: string
+    }
+
+    if (code && message) {
+      event.fingerprint = ['{{ default }}', code, message]
     }
 
     return event

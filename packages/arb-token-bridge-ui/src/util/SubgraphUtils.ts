@@ -1,4 +1,4 @@
-import { ChainId } from './networks'
+import { ChainId } from '../types/ChainId'
 import { getAPIBaseUrl } from '.'
 
 export function hasL1Subgraph(l2ChainId: number) {

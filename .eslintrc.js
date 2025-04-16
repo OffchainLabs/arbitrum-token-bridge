@@ -1,9 +1,8 @@
 module.exports = {
-  plugins: ["@typescript-eslint", "jest"],
+  plugins: ["@typescript-eslint", "zustand-rules"],
   extends: [
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
-    "plugin:jest/recommended",
     "next",
   ],
   parser: "@typescript-eslint/parser",
@@ -33,5 +32,8 @@ module.exports = {
         "ts-check": "allow-with-description",
       },
     ],
+    "zustand-rules/use-store-selectors": "error",
+    "zustand-rules/no-state-mutation": "error",
+    "zustand-rules/enforce-use-setstate": "error",
   },
 };

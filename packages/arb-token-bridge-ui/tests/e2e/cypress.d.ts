@@ -3,8 +3,6 @@ import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
   login,
-  logout,
-  openTransactionsPanel,
   searchAndSelectToken,
   fillCustomDestinationAddress,
   typeAmount,
@@ -14,9 +12,8 @@ import {
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeSummary,
-  findGasFeeForChain,
   findMoveFundsButton,
-  startTransfer,
+  clickMoveFundsButton,
   findSelectTokenButton,
   openTransactionDetails,
   closeTransactionDetails,
@@ -27,7 +24,8 @@ import {
   confirmSpending,
   claimCctp,
   switchToTransferPanelTab,
-  switchToTransactionHistoryTab
+  switchToTransactionHistoryTab,
+  selectRoute
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -46,9 +44,7 @@ declare global {
         url?: string
         query?: { [s: string]: string }
       }): typeof login
-      logout(): typeof logout
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
-      openTransactionsPanel: typeof openTransactionsPanel
       searchAndSelectToken({
         tokenName,
         tokenAddress
@@ -63,10 +59,9 @@ declare global {
       findAmount2Input: typeof findAmount2Input
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
-      findGasFeeForChain: typeof findGasFeeForChain
       findGasFeeSummary: typeof findGasFeeSummary
       findMoveFundsButton: typeof findMoveFundsButton
-      startTransfer: typeof startTransfer
+      clickMoveFundsButton: typeof clickMoveFundsButton
       findSelectTokenButton: typeof findSelectTokenButton
       openTransactionDetails: typeof openTransactionDetails
       closeTransactionDetails: typeof closeTransactionDetails
@@ -77,6 +72,7 @@ declare global {
       findClaimButton: typeof findClaimButton
       confirmSpending: typeof confirmSpending
       claimCctp: typeof claimCctp
+      selectRoute: typeof selectRoute
     }
   }
 }

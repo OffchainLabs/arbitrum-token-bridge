@@ -11,7 +11,8 @@ import {
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { CommonAddress } from './CommonAddressUtils'
-import { ChainId, isNetwork } from './networks'
+import { isNetwork } from './networks'
+import { ChainId } from '../types/ChainId'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
@@ -20,6 +21,7 @@ import {
   isValidTeleportChainPair
 } from '../token-bridge-sdk/teleport'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
+import { addressesEqual } from './AddressUtils'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -369,35 +371,30 @@ type SanitizeTokenOptions = {
 }
 
 export const isTokenArbitrumOneCU = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.CU.toLowerCase()
+  addressesEqual(tokenAddress, CommonAddress.ArbitrumOne.CU)
 
 export const isTokenXaiMainnetCU = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress[660279].CU.toLowerCase()
+  addressesEqual(tokenAddress, CommonAddress[660279].CU)
 
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
+  addressesEqual(tokenAddress, CommonAddress.Ethereum.USDC)
 
 export const isTokenArbitrumOneUSDCe = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() ===
-  CommonAddress.ArbitrumOne['USDC.e'].toLowerCase()
+  addressesEqual(tokenAddress, CommonAddress.ArbitrumOne['USDC.e'])
 
 export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.Sepolia.USDC.toLowerCase()
+  addressesEqual(tokenAddress, CommonAddress.Sepolia.USDC)
 
 export const isTokenArbitrumSepoliaUSDCe = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() ===
-  CommonAddress.ArbitrumSepolia['USDC.e'].toLowerCase()
+  addressesEqual(tokenAddress, CommonAddress.ArbitrumSepolia['USDC.e'])
 
 export const isTokenArbitrumOneNativeUSDC = (
-  tokenAddress: string | undefined | null
-) =>
-  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
+  tokenAddress: string | undefined
+) => addressesEqual(tokenAddress, CommonAddress.ArbitrumOne.USDC)
 
 export const isTokenArbitrumSepoliaNativeUSDC = (
   tokenAddress: string | undefined
-) =>
-  tokenAddress?.toLowerCase() ===
-  CommonAddress.ArbitrumSepolia.USDC.toLowerCase()
+) => addressesEqual(tokenAddress, CommonAddress.ArbitrumSepolia.USDC)
 
 export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   return (
@@ -408,6 +405,9 @@ export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   )
 }
 
+export const isTokenEthereumUSDT = (tokenAddress: string | undefined) =>
+  addressesEqual(tokenAddress, CommonAddress.Ethereum.USDT)
+
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,
@@ -417,7 +417,16 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
+  const { isArbitrumOne, isArbitrumSepolia, isEthereumMainnet } = isNetwork(
+    options.chainId
+  )
+
+  if (
+    addressesEqual(options.erc20L1Address, CommonAddress.Ethereum.USDT) &&
+    isEthereumMainnet
+  ) {
+    return 'USDT'
+  }
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
@@ -447,7 +456,16 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
+  const { isArbitrumOne, isArbitrumSepolia, isEthereumMainnet } = isNetwork(
+    options.chainId
+  )
+
+  if (
+    addressesEqual(options.erc20L1Address, CommonAddress.Ethereum.USDT) &&
+    isEthereumMainnet
+  ) {
+    return 'USDT'
+  }
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||

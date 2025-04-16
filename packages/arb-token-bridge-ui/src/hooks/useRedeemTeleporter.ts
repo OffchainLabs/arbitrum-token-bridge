@@ -26,7 +26,7 @@ import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
-import { isTeleportTx, L2ToL3MessageData } from './useTransactions'
+import { isTeleportTx, L2ToL3MessageData } from '../types/Transactions'
 import { UseRedeemRetryableResult } from './useRedeemRetryable'
 import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
 

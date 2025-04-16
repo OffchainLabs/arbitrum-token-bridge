@@ -8,14 +8,13 @@ import {
   ApproveNativeCurrencyProps,
   BridgeTransferStarter,
   RequiresNativeCurrencyApprovalProps,
-  TransferEstimateGas,
+  TransferEstimateGasProps,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { isCustomDestinationAddressTx } from '../state/app/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
 import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
 
@@ -45,14 +44,9 @@ export class EthDepositStarter extends BridgeTransferStarter {
     amount: BigNumber
     destinationAddress?: string
   }) {
-    const address = await getAddressFromSigner(signer)
+    const isCustomDestinationAddress = !!destinationAddress
 
-    const isDifferentDestinationAddress = isCustomDestinationAddressTx({
-      sender: address,
-      destination: destinationAddress
-    })
-
-    if (!isDifferentDestinationAddress) {
+    if (!isCustomDestinationAddress) {
       return BigNumber.from(0)
     }
 
@@ -64,7 +58,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     // In the case of native currency we need to also approve native currency used for gas
     const gasEstimates = await this.transferEstimateGas({
       amount,
-      signer,
+      from: await signer.getAddress(),
       destinationAddress
     })
 
@@ -153,14 +147,12 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async transferEstimateGas({
     amount,
-    signer,
+    from,
     destinationAddress
-  }: TransferEstimateGas) {
-    const address = await getAddressFromSigner(signer)
-
+  }: TransferEstimateGasProps) {
     return depositEthEstimateGas({
       amount,
-      address,
+      address: from,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider,
       destinationAddress
@@ -171,12 +163,9 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const isDifferentDestinationAddress = isCustomDestinationAddressTx({
-      sender: address,
-      destination: destinationAddress
-    })
+    const isCustomDestinationAddress = !!destinationAddress
 
-    const depositRequest = isDifferentDestinationAddress
+    const depositRequest = isCustomDestinationAddress
       ? await ethBridger.getDepositToRequest({
           amount,
           from: address,
@@ -198,7 +187,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       gasLimit: percentIncrease(gasLimit, BigNumber.from(5))
     }
 
-    const sourceChainTransaction = isDifferentDestinationAddress
+    const sourceChainTransaction = isCustomDestinationAddress
       ? await ethBridger.depositTo({
           amount,
           parentSigner: signer,

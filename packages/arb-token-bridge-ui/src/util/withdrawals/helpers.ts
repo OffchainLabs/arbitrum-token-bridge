@@ -6,19 +6,20 @@ import {
   ChildTransactionReceipt,
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
-import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
+import dayjs from 'dayjs'
+
+import { WithdrawalFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
   L2ToL1EventResultPlus,
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -31,20 +32,6 @@ export type EthWithdrawal = L2ToL1EventResult & {
   source: 'subgraph' | 'event_logs' | 'local_storage_cache'
   parentChainId: number
   childChainId: number
-}
-
-export const updateAdditionalWithdrawalData = async (
-  withdrawalTx: L2ToL1EventResultPlus,
-  l1Provider: Provider,
-  l2Provider: Provider
-) => {
-  const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
-    withdrawalTx as L2ToL1EventResultPlus,
-    l1Provider,
-    l2Provider
-  )
-
-  return l2toL1TxWithDeadline
 }
 
 export async function attachTimestampToTokenWithdrawal({
@@ -119,61 +106,21 @@ export async function getOutgoingMessageState(
     return OutgoingMessageState.EXECUTED
   }
 
+  const confirmationDate = getWithdrawalConfirmationDate({
+    createdAt: event.timestamp.toNumber() * 1000,
+    withdrawalFromChainId: l2ChainID
+  })
+
+  if (dayjs() < confirmationDate) {
+    return OutgoingMessageState.UNCONFIRMED
+  }
+
   const messageReader = new ChildToParentMessageReader(l1Provider, event)
 
   try {
     return await messageReader.status(l2Provider)
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
-  }
-}
-
-export async function attachNodeBlockDeadlineToEvent(
-  event: L2ToL1EventResultPlus,
-  l1Provider: Provider,
-  l2Provider: Provider
-) {
-  if (
-    event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
-    event.outgoingMessageState === OutgoingMessageState.CONFIRMED
-  ) {
-    return event
-  }
-
-  const messageReader = ChildToParentMessageReader.fromEvent(l1Provider, event)
-
-  try {
-    const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-      l2Provider
-    )
-
-    return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
-  } catch (e) {
-    const expectedError = "batch doesn't exist"
-    const expectedError2 = 'CALL_EXCEPTION'
-
-    const err = e as Error & { error: Error }
-    const errorMessage = err && (err.message || err.error?.message)
-
-    if (errorMessage.includes(expectedError)) {
-      const nodeBlockDeadline: NodeBlockDeadlineStatus =
-        NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
-      return {
-        ...event,
-        nodeBlockDeadline
-      }
-    } else if (errorMessage.includes(expectedError2)) {
-      // in classic we simulate `executeTransaction` in `hasExecuted`
-      // which might revert if the L2 to L1 call fail
-      const nodeBlockDeadline: NodeBlockDeadlineStatus =
-        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
-      return {
-        ...event,
-        nodeBlockDeadline
-      }
-    } else {
-      throw e
-    }
   }
 }
 
@@ -260,12 +207,12 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
   }
 }
 
-export async function mapWithdrawalToL2ToL1EventResult({
+export async function mapWithdrawalFromSubgraphToL2ToL1EventResult({
   withdrawal,
   l1Provider,
   l2Provider
 }: {
-  withdrawal: FetchWithdrawalsFromSubgraphResult
+  withdrawal: WithdrawalFromSubgraph
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<L2ToL1EventResultPlus | undefined> {

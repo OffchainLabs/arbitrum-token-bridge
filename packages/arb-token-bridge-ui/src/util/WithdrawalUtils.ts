@@ -6,11 +6,16 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
+import { ChainId } from '../types/ChainId'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
 import { captureSentryErrorWithExtraData } from './SentryUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { isNetwork } from './networks'
+import {
+  getBlockNumberReferenceChainIdByChainId,
+  getConfirmPeriodBlocks,
+  getL1BlockTime
+} from './networks'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -103,7 +108,8 @@ export async function withdrawInitTxEstimateGas({
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
       estimatedChildChainGas: isToken
         ? BigNumber.from(1_400_000)
-        : BigNumber.from(800_000)
+        : BigNumber.from(800_000),
+      isError: true
     }
   }
 }
@@ -111,22 +117,26 @@ export async function withdrawInitTxEstimateGas({
 const SECONDS_IN_MINUTE = 60
 const SECONDS_IN_HOUR = 3600
 const SECONDS_IN_DAY = 86400
-const DEFAULT_CONFIRMATION_TIME = 7 * SECONDS_IN_DAY
-const DEFAULT_TESTNET_CONFIRMATION_TIME = SECONDS_IN_HOUR
+/**
+ * Buffer for after a node is confirmable but isn't yet confirmed.
+ * A rollup block (RBlock) typically gets asserted every 30-60 minutes.
+ */
+const CONFIRMATION_BUFFER_MINUTES = 60
 
 function formatDuration(seconds: number, short = false): string {
   if (seconds < SECONDS_IN_MINUTE) {
-    return `${seconds} ${short ? 'secs' : 'seconds'}`
+    return `${seconds} ${short ? 'secs' : seconds === 1 ? 'second' : 'seconds'}`
   }
   if (seconds < SECONDS_IN_HOUR) {
-    return `${Math.round(seconds / SECONDS_IN_MINUTE)} ${
-      short ? 'mins' : 'minutes'
-    }`
+    const minutes = Math.round(seconds / SECONDS_IN_MINUTE)
+    return `${minutes} ${short ? 'mins' : minutes === 1 ? 'minute' : 'minutes'}`
   }
   if (seconds < SECONDS_IN_DAY) {
-    return `${Math.round(seconds / SECONDS_IN_HOUR)} hours`
+    const hours = Math.round(seconds / SECONDS_IN_HOUR)
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'}`
   }
-  return `${Math.round(seconds / SECONDS_IN_DAY)} days`
+  const days = Math.round(seconds / SECONDS_IN_DAY)
+  return `${days} ${days === 1 ? 'day' : 'days'}`
 }
 
 /**
@@ -135,7 +145,6 @@ function formatDuration(seconds: number, short = false): string {
  */
 export function getConfirmationTime(chainId: number) {
   const { fastWithdrawalTime } = getBridgeUiConfigForChain(chainId)
-  const isTestnet = isNetwork(chainId).isTestnet
 
   const fastWithdrawalActive = typeof fastWithdrawalTime !== 'undefined'
 
@@ -144,9 +153,22 @@ export function getConfirmationTime(chainId: number) {
   if (fastWithdrawalActive) {
     confirmationTimeInSeconds = fastWithdrawalTime / 1000
   } else {
-    confirmationTimeInSeconds = isTestnet
-      ? DEFAULT_TESTNET_CONFIRMATION_TIME
-      : DEFAULT_CONFIRMATION_TIME
+    // Calculate confirmation period using block time from root chain:
+    // - Ethereum mainnet for Arbitrum chains
+    // - Parent chain for Base chains
+    const blockNumberReferenceChainId = getBlockNumberReferenceChainIdByChainId(
+      { chainId }
+    )
+
+    // Local chain has instant confirmation time (in E2Es), so we hardcode it here
+    if (blockNumberReferenceChainId === ChainId.Local) {
+      confirmationTimeInSeconds = 0
+    } else {
+      confirmationTimeInSeconds =
+        getL1BlockTime(blockNumberReferenceChainId) *
+          getConfirmPeriodBlocks(chainId) +
+        CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MINUTE
+    }
   }
 
   const confirmationTimeInReadableFormat = formatDuration(

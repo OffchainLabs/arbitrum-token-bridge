@@ -2,12 +2,24 @@ import React from 'react'
 import Image from 'next/image'
 import { twMerge } from 'tailwind-merge'
 import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
+import { useAccount } from 'wagmi'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 import { isExperimentalModeEnabled } from '../../util'
+import { HeaderAccountPopover } from './HeaderAccountPopover'
+import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
+
+export function HeaderAccountOrConnectWalletButton() {
+  const { isConnected } = useAccount()
+
+  if (isConnected) {
+    return <HeaderAccountPopover />
+  }
+  return <HeaderConnectWalletButton />
+}
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()

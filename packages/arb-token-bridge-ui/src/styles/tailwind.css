@@ -18,6 +18,10 @@
   --blue-link: #1366C1;
 }
 
+*:focus-visible, button:focus-visible, input:focus-visible {
+  outline-color: white !important;
+}
+
 /* Firefox */
 * {
   scrollbar-width: thin;
@@ -112,6 +116,11 @@ body > iframe {
 
 .tippy-box[data-theme='orange'] > .tippy-content {
   color: #60461f;
+}
+
+.tippy-box[data-theme~='dark'] {
+  border-radius: 5px;
+  border: 1px solid #777;
 }
 
 /*

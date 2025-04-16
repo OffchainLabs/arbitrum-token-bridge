@@ -3,9 +3,8 @@ import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
-import { useMedia } from 'react-use'
+import { isAddress } from 'ethers/lib/utils'
 
-import { useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -16,17 +15,19 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TransferDisabledDialog } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { addressesEqual } from '../../util/AddressUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -138,7 +139,6 @@ function CustomAddressBanner({
 export function NetworkContainer({
   network,
   customAddress,
-  bgLogoHeight = 58,
   children
 }: {
   network: Chain
@@ -146,26 +146,18 @@ export function NetworkContainer({
   bgLogoHeight?: number
   children: React.ReactNode
 }) {
-  const { address } = useAccount()
-  const {
-    color,
-    network: { logo: networkLogo }
-  } = getBridgeUiConfigForChain(network.id)
-  const isSmallScreen = useMedia('(max-width: 639px)')
-
-  const backgroundImage = `url(${networkLogo})`
-
-  const walletAddressLowercased = address?.toLowerCase()
+  const { address: walletAddress } = useAccount()
+  const { color } = getBridgeUiConfigForChain(network.id)
 
   const showCustomAddressBanner = useMemo(() => {
-    if (!customAddress || !walletAddressLowercased) {
+    if (!customAddress || !walletAddress) {
       return false
     }
-    if (customAddress === walletAddressLowercased) {
+    if (addressesEqual(customAddress, walletAddress)) {
       return false
     }
     return utils.isAddress(customAddress)
-  }, [customAddress, walletAddressLowercased])
+  }, [customAddress, walletAddress])
 
   return (
     <div>
@@ -182,37 +174,11 @@ export function NetworkContainer({
           showCustomAddressBanner && 'rounded-t-none'
         )}
       >
-        <div
-          className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-3 opacity-50"
-          style={{
-            backgroundImage,
-            backgroundSize: `auto ${bgLogoHeight + (isSmallScreen ? -12 : 0)}px`
-          }}
-        />
+        <div className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-3 opacity-50" />
         <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row">
           {children}
         </div>
       </div>
-    </div>
-  )
-}
-
-export function BalancesContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
-      {children}
-    </div>
-  )
-}
-
-export function NetworkListboxPlusBalancesContainer({
-  children
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-row flex-wrap items-center justify-between gap-1 gap-y-2.5 whitespace-nowrap">
-      {children}
     </div>
   )
 }
@@ -223,10 +189,7 @@ export function TransferPanelMain() {
     useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const [selectedToken] = useSelectedToken()
 
   const { address: walletAddress } = useAccount()
 
@@ -236,8 +199,12 @@ export function TransferPanelMain() {
 
   const { updateErc20ParentBalances, updateErc20ChildBalances } = useBalances()
 
-  const { updateUSDCBalances } = useUpdateUSDCBalances({
-    walletAddress: destinationAddressOrWalletAddress
+  const { updateUsdcBalances } = useUpdateUsdcBalances({
+    walletAddress:
+      destinationAddressOrWalletAddress &&
+      isAddress(destinationAddressOrWalletAddress)
+        ? destinationAddressOrWalletAddress
+        : undefined
   })
 
   useEffect(() => {
@@ -262,7 +229,7 @@ export function TransferPanelMain() {
         isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
         isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
     ) {
-      updateUSDCBalances()
+      updateUsdcBalances()
       return
     }
 
@@ -275,7 +242,7 @@ export function TransferPanelMain() {
     updateErc20ParentBalances,
     updateErc20ChildBalances,
     destinationAddressOrWalletAddress,
-    updateUSDCBalances,
+    updateUsdcBalances,
     isTeleportMode
   ])
 

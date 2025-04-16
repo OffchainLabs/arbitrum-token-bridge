@@ -21,7 +21,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { TransferCountdown } from '../common/TransferCountdown'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
-import { isTeleportTx } from '../../hooks/useTransactions'
+import { isTeleportTx } from '../../types/Transactions'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
@@ -34,6 +34,10 @@ import {
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
+  if (tx.isOft) {
+    return false
+  }
+
   return tx.isCctp || tx.isWithdrawal
 }
 
@@ -161,7 +165,9 @@ export const TransactionsTableDetailsSteps = ({
   tx: MergedTransaction
 }) => {
   const { approximateDurationInMinutes } = useTransferDuration(tx)
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
 
   const { sourceChainId } = tx
 

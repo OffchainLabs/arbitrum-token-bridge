@@ -4,11 +4,13 @@
 import { ethers } from 'ethers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import { ChainId, isNetwork } from '../util/networks'
+import { isNetwork } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
+import { CommonAddress } from './CommonAddressUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -223,9 +225,48 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
       l2Address: '0x35E6A59F786d9266c7961eA28c7b768B33959cbB'
+    },
+    {
+      symbol: 'cbBTC',
+      l2CustomAddr: '',
+      l1Address: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
+      l2Address: '0x4A605F93288e95db40cE72934b888641D9689a48'
+    },
+    {
+      symbol: 'NST',
+      l2CustomAddr: '',
+      l1Address: '0x70Bef3bB2f001dA2fDDb207dAe696cD9FAFf3f5d',
+      l2Address: '0xd5A1a674F0DA33A4147a8Cd96143E598e738c7FF'
+    },
+    {
+      symbol: 'USDS',
+      l2CustomAddr: '0x6491c05A82219b8D1479057361ff1654749b876b',
+      l1Address: '0xdC035D45d973E3EC169d2276DDab16f1e407384F',
+      l2Address: '0x8aaf46581401660222bc82f60f8512eb55ee361b'
+    },
+    {
+      symbol: 'sUSDS',
+      l2CustomAddr: '0xdDb46999F8891663a8F2828d25298f70416d7610',
+      l1Address: '0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD',
+      l2Address: '0x688c202577670fa1ae186c433965d178f26347f9'
     }
   ],
-  [ChainId.ArbitrumNova]: []
+  [ChainId.ArbitrumNova]: [],
+  // Plume
+  98865: [
+    {
+      symbol: 'USDC',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDC,
+      l2Address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+    },
+    {
+      symbol: 'USDT',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDT,
+      l2Address: '0x4ef0c9098563e2478bdf0cc32a10d24abaa46b1c'
+    }
+  ]
 }
 
 async function isLayerZeroToken(

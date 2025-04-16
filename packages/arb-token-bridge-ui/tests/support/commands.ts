@@ -75,16 +75,6 @@ export function login({
   })
 }
 
-// once all assertions are run, before test exit, make sure web-app is reset to original
-export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps()
-  cy.resetMetamaskAccount()
-  // resetMetamaskAccount doesn't seem to remove the connected network in CI
-  // changeMetamaskNetwork fails if already connected to the desired network
-  // as a workaround we switch to another network after all the tests
-  cy.changeMetamaskNetwork('sepolia')
-}
-
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
   cy.findByText(/Agree to Terms and Continue/i)
@@ -137,14 +127,19 @@ export const searchAndSelectToken = ({
 
 export const fillCustomDestinationAddress = () => {
   // click on advanced settings
-  cy.findByLabelText('advanced settings').should('be.visible').click()
+  cy.findByLabelText('advanced settings')
+    .scrollIntoView()
+    .should('be.visible')
+    .click()
 
   // unlock custom destination address input
   cy.findByLabelText('Custom destination input lock')
+    .scrollIntoView()
     .should('be.visible')
     .click()
 
   cy.findByLabelText('Custom Destination Address Input')
+    .scrollIntoView()
     .should('be.visible')
     .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
@@ -188,31 +183,10 @@ export function findDestinationChainButton(
   )
 }
 
-export function findGasFeeForChain(
-  label: string | RegExp,
-  amount?: string | number | RegExp
-): Cypress.Chainable<JQuery<HTMLElement>> {
-  if (amount) {
-    return cy
-      .findByText(`${label} gas fee`)
-      .parent()
-      .siblings()
-      .contains(amount)
-      .should('be.visible')
-  }
-
-  return cy.findByText(label).should('be.visible')
-}
-
 export function findGasFeeSummary(
   amount: string | number | RegExp
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy
-    .findByText('You will pay in gas fees:')
-    .siblings()
-    .last()
-    .contains(amount)
-    .should('be.visible')
+  return cy.findByLabelText('Route gas').should('contain', amount)
 }
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -222,11 +196,17 @@ export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
     .should('be.visible')
 }
 
-export function startTransfer() {
+export function clickMoveFundsButton({
+  shouldConfirmInMetamask = true
+}: {
+  shouldConfirmInMetamask?: boolean
+} = {}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
-  cy.confirmMetamaskTransaction()
+  if (shouldConfirmInMetamask) {
+    cy.confirmMetamaskTransaction()
+  }
 }
 
 export function findSelectTokenButton(
@@ -304,6 +284,8 @@ export function findTransactionInTransactionHistory({
   amount2?: number
   duration?: string
 }) {
+  const timeout = 120_000
+
   // Replace . with \.
   const parsedAmount = amount.toString().replace(/\./g, '\\.')
 
@@ -313,15 +295,18 @@ export function findTransactionInTransactionHistory({
     }`
   )
 
-  cy.findByTestId(rowId).as('row')
+  cy.findByTestId(rowId, { timeout }).as('row')
   if (duration) {
-    cy.get('@row').findAllByText(duration).first().should('be.visible')
+    cy.get('@row', { timeout })
+      .findAllByText(duration, { timeout })
+      .first()
+      .should('be.visible', { timeout })
   }
 
-  cy.get('@row')
-    .findByLabelText('Transaction details button')
-    .should('be.visible')
-  return cy.get('@row')
+  cy.get('@row', { timeout })
+    .findByLabelText('Transaction details button', { timeout })
+    .should('be.visible', { timeout })
+  return cy.get('@row', { timeout })
 }
 
 export function findClaimButton(
@@ -374,10 +359,13 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   }
 }
 
+export function selectRoute(type: 'arbitrum' | 'oftV2' | 'cctp') {
+  cy.findByLabelText(`Route ${type}`).should('be.visible').click()
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
-  logout,
   selectTransactionsPanelTab,
   searchAndSelectToken,
   fillCustomDestinationAddress,
@@ -387,10 +375,9 @@ Cypress.Commands.addAll({
   findAmount2Input,
   findSourceChainButton,
   findDestinationChainButton,
-  findGasFeeForChain,
   findGasFeeSummary,
   findMoveFundsButton,
-  startTransfer,
+  clickMoveFundsButton,
   findSelectTokenButton,
   switchToTransferPanelTab,
   switchToTransactionHistoryTab,
@@ -400,5 +387,6 @@ Cypress.Commands.addAll({
   findClaimButton,
   findTransactionDetailsCustomDestinationAddress,
   confirmSpending,
-  claimCctp
+  claimCctp,
+  selectRoute
 })

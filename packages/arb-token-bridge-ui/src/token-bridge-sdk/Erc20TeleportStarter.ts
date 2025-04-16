@@ -7,7 +7,7 @@ import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
   RequiresTokenApprovalProps,
-  TransferEstimateGas,
+  TransferEstimateGasProps,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
@@ -69,22 +69,19 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
   public requiresTokenApproval = async ({
     amount,
-    signer
+    owner
   }: RequiresTokenApprovalProps) => {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await getAddressFromSigner(signer)
-
     const l1l3Bridger = await this.getBridger()
-
     const l1TeleporterAddress = l1l3Bridger.teleporter.l1Teleporter
 
     const allowanceForTeleporter = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
-      owner: address,
+      owner,
       spender: l1TeleporterAddress
     })
 
@@ -127,7 +124,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({ amount, from }: TransferEstimateGasProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -138,7 +135,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     try {
       const depositRequest = await l1l3Bridger.getDepositRequest({
-        l1Signer: signer,
+        from,
         erc20L1Address: this.sourceChainErc20Address,
         amount,
         l1Provider: this.sourceChainProvider,
