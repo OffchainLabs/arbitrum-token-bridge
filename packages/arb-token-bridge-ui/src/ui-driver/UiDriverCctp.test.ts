@@ -7,6 +7,12 @@ import { UiDriverContext } from './UiDriver'
 import { stepGeneratorForCctp } from './UiDriverCctp'
 import { nextStep, expectStep } from './UiDriverTestUtils'
 
+const mockedApproveTokenTxRequest = {
+  to: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+  data: '0x095ea7b30000000000000000000000009f3b8679c73c2fef8b59b4f3444d4e156fb70aa5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+  value: BigNumber.from(0)
+}
+
 it(`
   context:
     isDepositMode=true
@@ -106,12 +112,6 @@ it.only(`
     2. user confirms "approve_token" dialog
     3. token approval tx fails
 `, async () => {
-  const mockTxRequest = {
-    to: '1',
-    data: '2',
-    value: 0
-  }
-
   const generator = stepGeneratorForCctp({
     amountBigNumber: BigNumber.from(1),
     isDepositMode: true,
@@ -120,7 +120,7 @@ it.only(`
     destinationAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
     transferStarter: {
       requiresTokenApproval: () => true,
-      approveTokenPrepareTxRequest: () => mockTxRequest
+      approveTokenPrepareTxRequest: () => mockedApproveTokenTxRequest
     } as unknown as BridgeTransferStarter
   })
 
@@ -134,7 +134,7 @@ it.only(`
   expectStep(step3).hasType('dialog').hasPayload('approve_token')
 
   const step4 = await nextStep(generator, [true])
-  expectStep(step4).hasType('tx').hasPayload(mockTxRequest)
+  expectStep(step4).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
 
   const step5 = await nextStep(generator, [{ error: new Error() }])
   expectStep(step5).hasType('return')
@@ -155,12 +155,6 @@ it.only(`
     2. user confirms "approve_token" dialog
     3. token approval tx is successful
 `, async () => {
-  const mockTxRequest = {
-    to: '2',
-    data: '3',
-    value: 1
-  }
-
   const generator = stepGeneratorForCctp({
     amountBigNumber: BigNumber.from(1),
     isDepositMode: true,
@@ -169,7 +163,7 @@ it.only(`
     destinationAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
     transferStarter: {
       requiresTokenApproval: () => true,
-      approveTokenPrepareTxRequest: () => mockTxRequest
+      approveTokenPrepareTxRequest: () => mockedApproveTokenTxRequest
     } as unknown as BridgeTransferStarter
   })
 
@@ -183,7 +177,7 @@ it.only(`
   expectStep(step3).hasType('dialog').hasPayload('approve_token')
 
   const step4 = await nextStep(generator, [true])
-  expectStep(step4).hasType('tx').hasPayload(mockTxRequest)
+  expectStep(step4).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
 
   const step5 = await nextStep(generator, [{ data: {} as TransactionReceipt }])
   expectStep(step5).doesNotExist()
