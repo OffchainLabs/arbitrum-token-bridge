@@ -17,7 +17,7 @@ export function SafeImage(props: SafeImageProps) {
       if (typeof src === 'undefined') {
         resolve('')
       } else {
-        const sanitizedImageSrc = sanitizeImageSrc(src)
+        const sanitizedImageSrc = sanitizeImageSrc(_src)
 
         image.onerror = () => {
           reject()
