@@ -10,10 +10,7 @@ import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import {
-  TokenDepositCheckDialog,
-  TokenDepositCheckDialogType
-} from './TokenDepositCheckDialog'
+import { TokenDepositCheckDialogType } from './TokenDepositCheckDialog'
 import {
   TokenImportDialog,
   useTokenImportDialogStore
@@ -101,8 +98,6 @@ const networkConnectionWarningToast = () =>
 
 export function TransferPanel() {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
-  const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
-    useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
@@ -174,7 +169,6 @@ export function TransferPanel() {
   const [dialogProps, openDialog] = useDialog2()
 
   const [tokenImportDialogProps] = useDialog()
-  const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
 
   const openTokenImportDialog = useTokenImportDialogStore(
     state => state.openDialog
@@ -279,9 +273,7 @@ export function TransferPanel() {
     const dialogType = getDialogType()
 
     if (dialogType) {
-      setTokenDepositCheckDialogType(dialogType)
-
-      const waitForInput = openTokenCheckDialog()
+      const waitForInput = openDialog(dialogType)
       const [confirmed] = await waitForInput()
 
       if (confirmed) {
@@ -311,7 +303,7 @@ export function TransferPanel() {
 
   function getDialogType(): TokenDepositCheckDialogType | null {
     if (isBridgingANewStandardToken) {
-      return 'new-token'
+      return 'deposit_token_new_token'
     }
 
     const isUserAddedToken =
@@ -319,15 +311,14 @@ export function TransferPanel() {
       selectedToken?.listIds.size === 0 &&
       typeof selectedToken.l2Address === 'undefined'
 
-    return isUserAddedToken ? 'user-added-token' : null
+    return isUserAddedToken ? 'deposit_token_user_added_token' : null
   }
 
   const firstTimeTokenBridgingConfirmation = async () => {
     // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
     const dialogType = getDialogType()
     if (dialogType) {
-      setTokenDepositCheckDialogType(dialogType)
-      const waitForInput = openTokenCheckDialog()
+      const waitForInput = openDialog(dialogType)
       const [confirmed] = await waitForInput()
       return confirmed
     }
@@ -1165,12 +1156,6 @@ export function TransferPanel() {
             tokenAddress={tokenFromSearchParams}
           />
         )}
-
-        <TokenDepositCheckDialog
-          {...tokenCheckDialogProps}
-          type={tokenDepositCheckDialogType}
-          symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
-        />
 
         {showSmartContractWalletTooltip && (
           <Tippy
