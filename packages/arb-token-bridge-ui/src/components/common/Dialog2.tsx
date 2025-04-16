@@ -112,10 +112,6 @@ export function DialogWrapper(props: DialogProps) {
         return (
           <TokenImportDialog
             {...commonProps}
-            onClose={imported => {
-              setSelectedToken(imported ? tokenFromSearchParams : null)
-              commonProps.onClose(imported)
-            }}
             tokenAddress={tokenFromSearchParams}
           />
         )
