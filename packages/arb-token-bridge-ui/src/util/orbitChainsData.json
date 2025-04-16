@@ -1990,6 +1990,100 @@
           "logoUrl": "/images/OpenLootSepolia_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 2022091,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x0B61D503175D174E134A7DB407d077D84B0c6eD4",
+        "inbox": "0xa26A0DE07De346e33f7c41402E5e0a46AACa2A7F",
+        "outbox": "0xC9cB354a29047C796a51CDf5fA579d2e6a293F3e",
+        "rollup": "0x097f101c7b6129ADcc13cf2381FbA384Df4e1E9B",
+        "sequencerInbox": "0xC7cB05a5DEBD4ed2e03829E977F26119Fc222d5c"
+      },
+      "nativeToken": "0xefca0D4B2D7ce95E3ed53aB062eA069DE99Eda7B",
+      "explorerUrl": "https://alterscope-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://alterscope-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Alterscope Sepolia",
+      "slug": "alterscope-sepolia",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0x5883F5C09eb402A46A5D8240F362298bA981Bc0D",
+        "parentErc20Gateway": "0x6347ABCC22C91D8d03f85cC76E627Eb389048183",
+        "parentGatewayRouter": "0x05dDaDDaBEe7Da661b5f68dBD11CaF1a077B64Eb",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xB77904fdfb5352aB029058BA73E26693347C1528",
+        "childErc20Gateway": "0x7Aa9d5b6Cc7C4C2F22B1fC4F3D0C0B613b3EAbE9",
+        "childGatewayRouter": "0xf428BD6EB848a61A014E3a1F315B4510a411d9d6",
+        "childMultiCall": "0xb47801c5179FA0F0d59cD1ccE4e9c539d016777A",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#5cfcc3",
+        "network": {
+          "name": "Alterscope Sepolia",
+          "logo": "/images/AlterscopeSepolia_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Risk",
+          "symbol": "RISK",
+          "logoUrl": "/images/AlterscopeSepolia_NativeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 132766,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xb18A9eF9005032eA3b564612F125E38CF742B493",
+        "inbox": "0x85aCea07726894d8f000DB0a588CEd3a944fF7F6",
+        "outbox": "0x7b6aB71DB9FbFdb44740D99AF936650245BC5B5D",
+        "rollup": "0x904B90D5a06205fBF6c7418917B3D538D9E2fFb5",
+        "sequencerInbox": "0x9F94d152a39B155bA3eB5129e56b6e7FD11f8B4d"
+      },
+      "nativeToken": "0x3e62fED35c97145e6B445704B8CE74B2544776A9",
+      "explorerUrl": "https://earnm-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://earnm-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Earnm Sepolia",
+      "slug": "earnm-sepolia",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0xfDF72e462a0cC6ADF9c196218635E9523bcba52b",
+        "parentErc20Gateway": "0x6D4B3D6d33b4C6810aBd473A0C0b6ada3E771bF2",
+        "parentGatewayRouter": "0xB6c64C254e873157A6F34e068d8861e0F3bFaA05",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xBBDF7BE864f87473350ddc27CA5c57bA5bfc6f7C",
+        "childErc20Gateway": "0x5cBFF06c424DfD335A566C6b6a1BA4cd9760c188",
+        "childGatewayRouter": "0x9502D3f0f60a8e93D1ed055fF638918858de96Fb",
+        "childMultiCall": "0x4C6acA0299e6aeeAAA837A680e5241dFf154ADbf",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#1fd82e",
+        "network": {
+          "name": "Earnm Sepolia",
+          "logo": "/images/EarnmSepolia_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Earnm",
+          "symbol": "EARNM",
+          "logoUrl": "/images/EarnmSepolia_NativeTokenLogo.jpg"
+        }
+      }
     }
   ]
 }

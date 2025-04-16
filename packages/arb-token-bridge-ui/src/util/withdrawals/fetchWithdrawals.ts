@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
 import {
-  FetchWithdrawalsFromSubgraphResult,
+  WithdrawalFromSubgraph,
   fetchWithdrawalsFromSubgraph
 } from './fetchWithdrawalsFromSubgraph'
 import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
@@ -53,6 +53,7 @@ export type FetchWithdrawalsParams = {
   pageNumber?: number
   pageSize?: number
   searchString?: string
+  forceFetchReceived?: boolean
 }
 
 export async function fetchWithdrawals({
@@ -64,7 +65,8 @@ export async function fetchWithdrawals({
   pageSize = 10,
   searchString,
   fromBlock,
-  toBlock
+  toBlock,
+  forceFetchReceived = false
 }: FetchWithdrawalsParams): Promise<Withdrawal[]> {
   if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
     return []
@@ -89,7 +91,7 @@ export async function fetchWithdrawals({
     toBlock = latestSubgraphBlockNumber
   }
 
-  let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
+  let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
   try {
     withdrawalsFromSubgraph = (
       await fetchWithdrawalsFromSubgraph({
@@ -149,7 +151,7 @@ export async function fetchWithdrawals({
 
   /// receiver queries; only add if nonce > 0 for orbit chains
   const fetchReceivedTransactions =
-    isCoreChain || (isOrbitChain && senderNonce > 0)
+    isCoreChain || (isOrbitChain && senderNonce > 0) || forceFetchReceived
 
   if (fetchReceivedTransactions) {
     if (isAlchemy) {
