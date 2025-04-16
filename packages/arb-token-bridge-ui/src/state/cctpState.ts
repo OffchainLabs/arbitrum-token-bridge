@@ -1,8 +1,9 @@
-import { BigNumber } from 'ethers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import { useInterval } from 'react-use'
+import { useAccount, useSigner } from 'wagmi'
+import dayjs from 'dayjs'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 import { getL1BlockTime, getNetworkName, isNetwork } from '../util/networks'
@@ -10,8 +11,6 @@ import { ChainId } from '../types/ChainId'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'
-import { useAccount, useSigner } from 'wagmi'
-import dayjs from 'dayjs'
 import {
   ChainDomain,
   CompletedCCTPTransfer,
@@ -26,6 +25,7 @@ import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { shallow } from 'zustand/shallow'
+import { useNetworks } from '../hooks/useNetworks'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -170,6 +170,7 @@ type fetchCctpParams = {
   pageSize: number
   enabled: boolean
 }
+
 export const useCCTPDeposits = ({
   walletAddress,
   l1ChainId,
@@ -177,21 +178,44 @@ export const useCCTPDeposits = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+  const [networks] = useNetworks()
+
+  const { isEthereumMainnetOrTestnet } = isNetwork(networks.sourceChain.id)
+
   return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
-      if (!walletAddress || !enabled) {
+      if (!walletAddress || !enabled || isLoadingAccountType) {
         return null
       }
 
-      return [walletAddress, l1ChainId, pageNumber, pageSize, 'cctp-deposits']
+      return [
+        walletAddress,
+        l1ChainId,
+        pageNumber,
+        pageSize,
+        isEthereumMainnetOrTestnet,
+        isSmartContractWallet,
+        'cctp-deposits'
+      ] as const
     },
-    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
+    ([
+      _walletAddress,
+      _l1ChainId,
+      _pageNumber,
+      _pageSize,
+      _isEthereumMainnetOrTestnet,
+      _isSmartContractWallet
+    ]) =>
       fetchCCTPDeposits({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
-        pageSize: _pageSize
+        pageSize: _pageSize,
+        connectedToEthereum: _isEthereumMainnetOrTestnet,
+        isSmartContractWallet: _isSmartContractWallet
       })
         .then(deposits => parseSWRResponse(deposits, _l1ChainId))
         .then(deposits => {
@@ -215,10 +239,16 @@ export const useCCTPWithdrawals = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+  const [networks] = useNetworks()
+
+  const { isEthereumMainnetOrTestnet } = isNetwork(networks.sourceChain.id)
+
   return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
-      if (!walletAddress || !enabled) {
+      if (!walletAddress || !enabled || isLoadingAccountType) {
         return null
       }
 
@@ -227,15 +257,26 @@ export const useCCTPWithdrawals = ({
         l1ChainId,
         pageNumber,
         pageSize,
+        isEthereumMainnetOrTestnet,
+        isSmartContractWallet,
         'cctp-withdrawals'
-      ]
+      ] as const
     },
-    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
+    ([
+      _walletAddress,
+      _l1ChainId,
+      _pageNumber,
+      _pageSize,
+      _isEthereumMainnetOrTestnet,
+      _isSmartContractWallet
+    ]) =>
       fetchCCTPWithdrawals({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
-        pageSize: _pageSize
+        pageSize: _pageSize,
+        connectedToEthereum: _isEthereumMainnetOrTestnet,
+        isSmartContractWallet: _isSmartContractWallet
       })
         .then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
         .then(withdrawals => {
