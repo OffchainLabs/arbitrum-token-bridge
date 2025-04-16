@@ -6,18 +6,19 @@ export type CheckboxProps = {
   label: string | React.ReactNode
   checked: boolean
   onChange: (checked: boolean) => void
+  labelClassName?: string
 }
 
 export function Checkbox(props: CheckboxProps) {
   return (
     <Switch.Group
       as="div"
-      className="arb-hover flex flex-row items-start space-x-1"
+      className="arb-hover flex flex-row items-center space-x-1"
     >
       <Switch
         {...props}
         className={twMerge(
-          'mt-[4px] h-3 w-3 flex-shrink-0 rounded-sm transition duration-200 ease-in-out',
+          'h-3 w-3 flex-shrink-0 rounded-sm transition duration-200 ease-in-out',
           props.checked
             ? 'border border-dark bg-white'
             : 'border border-white bg-dark'
@@ -28,6 +29,7 @@ export function Checkbox(props: CheckboxProps) {
       <Switch.Label
         className={twMerge(
           'cursor-pointer',
+          props.labelClassName,
           props.checked ? 'text-white' : 'text-gray-3'
         )}
       >

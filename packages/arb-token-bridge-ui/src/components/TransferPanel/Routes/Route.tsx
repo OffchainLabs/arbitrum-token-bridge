@@ -149,7 +149,7 @@ export const Route = React.memo(
       >
         <div
           className={twMerge(
-            'bg-gray-8 flex h-8 items-center rounded-t py-2 pl-4 pr-2 text-xs',
+            'flex h-8 items-center rounded-t bg-gray-8 py-2 pl-4 pr-2 text-xs',
             selected && 'bg-[#5F7D5B]'
           )}
         >
@@ -169,7 +169,7 @@ export const Route = React.memo(
             selected && 'bg-[#474747]'
           )}
         >
-          <div className="flex min-w-36 flex-col">
+          <div className="flex flex-col md:min-w-36">
             <span>You will receive:</span>
             <div className="flex flex-col text-lg">
               <div className="flex flex-row items-center gap-1">

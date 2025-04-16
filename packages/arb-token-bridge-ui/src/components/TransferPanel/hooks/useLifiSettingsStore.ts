@@ -8,10 +8,8 @@ interface LifiSettingsState {
   disabledExchanges: string[]
   disabledBridges: string[]
   setSlippage: (slippage: string) => void
-  disableExchange: (exchange: string) => void
-  disableBridge: (bridge: string) => void
-  enableExchange: (exchange: string) => void
-  enableBridge: (bridge: string) => void
+  setDisabledExchanges: (exchanges: string[]) => void
+  setDisabledBridges: (bridges: string[]) => void
 }
 
 export const useLifiSettingsStore = create<LifiSettingsState>()(
@@ -21,26 +19,14 @@ export const useLifiSettingsStore = create<LifiSettingsState>()(
       disabledExchanges: [],
       disabledBridges: [],
       setSlippage: slippage => set({ slippage }),
-      disableExchange: exchange =>
-        set(state => ({
-          disabledExchanges: [
-            ...new Set(state.disabledExchanges.concat(exchange))
-          ]
-        })),
-      disableBridge: bridge =>
-        set(state => ({
-          disabledBridges: [...new Set(state.disabledBridges.concat(bridge))]
-        })),
-      enableExchange: exchange =>
-        set(state => ({
-          disabledExchanges: state.disabledExchanges.filter(
-            ex => ex !== exchange
-          )
-        })),
-      enableBridge: bridge =>
-        set(state => ({
-          disabledBridges: state.disabledBridges.filter(b => b !== bridge)
-        }))
+      setDisabledExchanges: exchanges =>
+        set({
+          disabledExchanges: exchanges
+        }),
+      setDisabledBridges: bridges =>
+        set({
+          disabledBridges: bridges
+        })
     }),
     {
       name: 'lifi-settings',
