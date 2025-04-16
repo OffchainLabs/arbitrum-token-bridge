@@ -3,25 +3,46 @@ import { constants, utils } from 'ethers'
 
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import {
+  sanitizeAmountQueryParam,
+  useArbQueryParams
+} from '../../../hooks/useArbQueryParams'
+import { truncateExtraDecimals } from '../../../util/NumberUtils'
 
 export function useAmountBigNumber() {
   const [selectedToken] = useSelectedToken()
-  const [{ amount }] = useArbQueryParams()
+  const [{ amount }, setQueryParams] = useArbQueryParams()
   const nativeCurrencyDecimalsOnSourceChain =
     useSourceChainNativeCurrencyDecimals()
 
   return useMemo(() => {
     try {
-      const amountSafe = amount || '0'
+      const sanitizedAmount = sanitizeAmountQueryParam(
+        truncateExtraDecimals(
+          amount,
+          selectedToken?.decimals || nativeCurrencyDecimalsOnSourceChain
+        )
+      )
 
-      if (selectedToken) {
-        return utils.parseUnits(amountSafe, selectedToken.decimals)
+      if (amount !== sanitizedAmount) {
+        setQueryParams({ amount: sanitizedAmount })
       }
 
-      return utils.parseUnits(amountSafe, nativeCurrencyDecimalsOnSourceChain)
+      if (selectedToken) {
+        return utils.parseUnits(sanitizedAmount, selectedToken.decimals)
+      }
+
+      return utils.parseUnits(
+        sanitizedAmount,
+        nativeCurrencyDecimalsOnSourceChain
+      )
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, selectedToken, nativeCurrencyDecimalsOnSourceChain])
+  }, [
+    amount,
+    selectedToken,
+    nativeCurrencyDecimalsOnSourceChain,
+    setQueryParams
+  ])
 }
