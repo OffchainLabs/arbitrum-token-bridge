@@ -2037,6 +2037,53 @@
           "logoUrl": "/images/AlterscopeSepolia_NativeTokenLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 132766,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xb18A9eF9005032eA3b564612F125E38CF742B493",
+        "inbox": "0x85aCea07726894d8f000DB0a588CEd3a944fF7F6",
+        "outbox": "0x7b6aB71DB9FbFdb44740D99AF936650245BC5B5D",
+        "rollup": "0x904B90D5a06205fBF6c7418917B3D538D9E2fFb5",
+        "sequencerInbox": "0x9F94d152a39B155bA3eB5129e56b6e7FD11f8B4d"
+      },
+      "nativeToken": "0x3e62fED35c97145e6B445704B8CE74B2544776A9",
+      "explorerUrl": "https://earnm-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://earnm-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Earnm Sepolia",
+      "slug": "earnm-sepolia",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0xfDF72e462a0cC6ADF9c196218635E9523bcba52b",
+        "parentErc20Gateway": "0x6D4B3D6d33b4C6810aBd473A0C0b6ada3E771bF2",
+        "parentGatewayRouter": "0xB6c64C254e873157A6F34e068d8861e0F3bFaA05",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xBBDF7BE864f87473350ddc27CA5c57bA5bfc6f7C",
+        "childErc20Gateway": "0x5cBFF06c424DfD335A566C6b6a1BA4cd9760c188",
+        "childGatewayRouter": "0x9502D3f0f60a8e93D1ed055fF638918858de96Fb",
+        "childMultiCall": "0x4C6acA0299e6aeeAAA837A680e5241dFf154ADbf",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#1fd82e",
+        "network": {
+          "name": "Earnm Sepolia",
+          "logo": "/images/EarnmSepolia_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Earnm",
+          "symbol": "EARNM",
+          "logoUrl": "/images/EarnmSepolia_NativeTokenLogo.jpg"
+        }
+      }
     }
   ]
 }

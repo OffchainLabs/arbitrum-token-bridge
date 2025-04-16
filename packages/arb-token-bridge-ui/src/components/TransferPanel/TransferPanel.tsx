@@ -82,6 +82,7 @@ import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
+import { shallow } from 'zustand/shallow'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -148,9 +149,17 @@ export function TransferPanel() {
   })
 
   const { setTransferring } = useAppContextActions()
-  const { switchToTransactionHistoryTab } = useMainContentTabs()
+  const switchToTransactionHistoryTab = useMainContentTabs(
+    state => state.switchToTransactionHistoryTab
+  )
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-  const { selectedRoute, clearRoute } = useRouteStore()
+  const { selectedRoute, clearRoute } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      clearRoute: state.clearRoute
+    }),
+    shallow
+  )
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -167,7 +176,9 @@ export function TransferPanel() {
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
 
-  const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
+  const openTokenImportDialog = useTokenImportDialogStore(
+    state => state.openDialog
+  )
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
@@ -401,7 +412,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -568,7 +579,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await oftTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -858,7 +869,7 @@ export function TransferPanel() {
         const isTokenApprovalRequired =
           await bridgeTransferStarter.requiresTokenApproval({
             amount: amountBigNumber,
-            signer,
+            owner: await signer.getAddress(),
             destinationAddress
           })
         if (isTokenApprovalRequired) {
@@ -902,7 +913,7 @@ export function TransferPanel() {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer,
+          from: await signer.getAddress(),
           destinationAddress
         })) as DepositGasEstimates
 
