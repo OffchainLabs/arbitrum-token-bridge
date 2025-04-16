@@ -410,12 +410,13 @@ export const NetworkSelectionContainer = (
     type: 'source' | 'destination'
   }
 ) => {
-  const actions = useActions()
   const [, setSelectedToken] = useSelectedToken()
   const [networks, setNetworks] = useNetworks()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [, setQueryParams] = useArbQueryParams()
-  const { setAdvancedSettingsCollapsed } = useAdvancedSettingsStore()
+  const setAdvancedSettingsCollapsed = useAdvancedSettingsStore(
+    state => state.setAdvancedSettingsCollapsed
+  )
   const { isSmartContractWallet } = useAccountType()
 
   const isSource = props.type === 'source'
