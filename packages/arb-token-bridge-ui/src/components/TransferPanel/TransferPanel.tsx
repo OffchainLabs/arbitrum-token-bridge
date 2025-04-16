@@ -380,21 +380,20 @@ export function TransferPanel() {
           const tx = await signer!.sendTransaction(step.payload)
           const txReceipt = await tx.wait()
 
-          return txReceipt
+          return { data: txReceipt }
         } catch (error) {
-          if (isUserRejectedError(error)) {
-            return
+          // capture error and show toast for anything that's not user rejecting error
+          if (!isUserRejectedError(error)) {
+            captureSentryErrorWithExtraData({
+              error,
+              originFunction: 'stepExecutor.tx'
+            })
+
+            errorToast(`${(error as Error)?.message ?? error}`)
           }
 
-          captureSentryErrorWithExtraData({
-            error,
-            originFunction: 'cctpTransferStarter.approveToken'
-          })
-
-          errorToast(`${(error as Error)?.message ?? error}`)
+          return { error: error as unknown as Error }
         }
-
-        return
       }
     }
   }

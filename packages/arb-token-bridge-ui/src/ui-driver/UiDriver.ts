@@ -27,6 +27,10 @@ export type UiDriverStep =
   | { type: 'scw_tooltip' }
   | { type: 'tx'; payload: providers.TransactionRequest }
 
+type Result<T> =
+  | { data: T; error?: undefined }
+  | { data?: undefined; error: Error }
+
 export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
   TStep extends { type: 'start' }
     ? void
@@ -41,7 +45,7 @@ export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
     ? void
     : //
     TStep extends { type: 'tx' }
-    ? providers.TransactionReceipt
+    ? Result<providers.TransactionReceipt>
     : //
       never
 

@@ -42,7 +42,7 @@ export type UiDriverStepGeneratorForTransaction<
   txRequest: providers.TransactionRequest
 ) => AsyncGenerator<
   TStep,
-  providers.TransactionReceipt,
+  providers.TransactionReceipt | void,
   UiDriverStepResultFor<TStep>
 >
 
@@ -52,6 +52,11 @@ export const stepGeneratorForTransaction: UiDriverStepGeneratorForTransaction =
       yield* step({ type: 'scw_tooltip' })
     }
 
-    // return the tx receipt
-    return yield* step({ type: 'tx', payload: txRequest })
+    const { error, data } = yield* step({ type: 'tx', payload: txRequest })
+
+    if (typeof error === 'undefined') {
+      return data
+    }
+
+    yield* step({ type: 'return' })
   }
