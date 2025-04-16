@@ -13,6 +13,35 @@ const mockedApproveTokenTxRequest = {
   value: BigNumber.from(0)
 }
 
+async function expectStepsForApproveToken(
+  generator: ReturnType<typeof stepGeneratorForCctp>,
+  options?: {
+    shouldDialogReject?: boolean
+    shouldTxError?: boolean
+  }
+) {
+  const step1 = await nextStep(generator, [true])
+  expectStep(step1).hasType('dialog').hasPayload('approve_token')
+
+  if (options?.shouldDialogReject ?? false) {
+    const step2 = await nextStep(generator, [false])
+    expectStep(step2).hasType('return')
+    return
+  }
+
+  const step2 = await nextStep(generator, [true])
+  expectStep(step2).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
+
+  if (options?.shouldTxError ?? false) {
+    const payload = { error: new Error() }
+    const step5 = await nextStep(generator, [payload])
+    expectStep(step5).hasType('return')
+  } else {
+    const payload = { data: {} as TransactionReceipt }
+    const step5 = await nextStep(generator, [payload])
+  }
+}
+
 it(`
   context:
     isDepositMode=true
