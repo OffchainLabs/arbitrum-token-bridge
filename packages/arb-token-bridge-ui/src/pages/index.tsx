@@ -172,10 +172,17 @@ export async function getServerSideProps({
   addOrbitChainsToArbitrumSDK()
 
   // sanitize the query params
+  const sanitizedChainIds = sanitizeQueryParams({
+    sourceChainId,
+    destinationChainId
+  })
   const sanitized = {
-    ...sanitizeQueryParams({ sourceChainId, destinationChainId }),
+    ...sanitizedChainIds,
     experiments: sanitizeExperimentalFeaturesQueryParam(experiments),
-    token: sanitizeTokenQueryParam({ token, destinationChainId })
+    token: sanitizeTokenQueryParam({
+      token,
+      destinationChainId: sanitizedChainIds.destinationChainId
+    })
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
