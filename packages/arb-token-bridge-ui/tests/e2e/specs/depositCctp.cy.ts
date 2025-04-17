@@ -50,7 +50,7 @@ const confirmAndApproveCctpDeposit = () => {
 
 describe('Deposit USDC through CCTP', () => {
   before(() => cy.resetAppState())
-  
+
   // Happy Path
   const USDCAmountToSend = 0.0001
   const zeroToLessThanOneETH = getZeroToLessThanOneToken('ETH')

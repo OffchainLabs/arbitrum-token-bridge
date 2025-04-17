@@ -16,7 +16,7 @@ const ERC20TokenAddressL2: string = Cypress.env(
 
 describe('Import token', () => {
   before(() => cy.resetAppState())
-  
+
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   // we use mainnet to test token lists
 

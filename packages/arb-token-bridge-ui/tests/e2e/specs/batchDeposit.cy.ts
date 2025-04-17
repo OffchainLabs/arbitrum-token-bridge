@@ -12,7 +12,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Batch Deposit', () => {
   before(() => cy.resetAppState())
-  
+
   let parentNativeTokenBalance,
     parentErc20Balance,
     childNativeTokenBalance,

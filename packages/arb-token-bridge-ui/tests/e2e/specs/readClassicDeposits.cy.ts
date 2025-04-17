@@ -41,7 +41,7 @@ function mockClassicDepositTransaction(
 
 describe('Read classic deposit messages', () => {
   before(() => cy.resetAppState())
-  
+
   beforeEach(() => {
     window.localStorage.clear()
   })

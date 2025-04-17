@@ -15,7 +15,7 @@ import {
 
 describe('User enters site with query params on URL', () => {
   before(() => cy.resetAppState())
-  
+
   let l1ETHbal: number
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const nativeTokenDecimals = Cypress.env('NATIVE_TOKEN_DECIMALS')
