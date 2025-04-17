@@ -55,7 +55,11 @@ export function Header({ children }: { children?: React.ReactNode }) {
         {isTestnet && !isExperimentalMode && (
           <span className="grow font-medium">TESTNET MODE</span>
         )}
-        {<span>Signer defined: {typeof signer !== 'undefined' ? 'yes' : 'no'}</span>}
+        {
+          <span>
+            Signer defined: {typeof signer !== 'undefined' ? 'yes' : 'no'}
+          </span>
+        }
         {isExperimentalMode && (
           <span className="grow font-medium text-red-500">
             EXPERIMENTAL MODE: features may be incomplete or not work properly
