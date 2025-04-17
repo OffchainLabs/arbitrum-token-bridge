@@ -21,7 +21,6 @@ import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 
 function MaxButton({
   className = '',
@@ -207,14 +206,9 @@ export const TransferPanelMainInput = React.memo(
     ...rest
   }: TransferPanelMainInputProps) => {
     const [localValue, setLocalValue] = useState(value)
-    const [selectedToken] = useSelectedToken()
-    const nativeCurrencyDecimalsOnSourceChain =
-      useSourceChainNativeCurrencyDecimals()
+    const selectedTokenDecimals = useSelectedTokenDecimals()
     const sanitizedAmount = sanitizeAmountQueryParam(
-      truncateExtraDecimals(
-        value,
-        selectedToken?.decimals || nativeCurrencyDecimalsOnSourceChain
-      )
+      truncateExtraDecimals(value, selectedTokenDecimals)
     )
 
     useEffect(() => {
