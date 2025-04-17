@@ -82,6 +82,7 @@ import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
+import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -193,6 +194,8 @@ export function TransferPanel() {
   const [showProjectsListing, setShowProjectsListing] = useState(false)
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+  const { handleError } = useError()
 
   useEffect(() => {
     // hide Project listing when networks are changed
@@ -433,9 +436,10 @@ export function TransferPanel() {
           if (isUserRejectedError(error)) {
             return
           }
-          captureSentryErrorWithExtraData({
+          handleError({
             error,
-            originFunction: 'cctpTransferStarter.approveToken'
+            label: 'cctp_approve_token',
+            category: 'token_approval'
           })
           errorToast(
             `USDC approval transaction failed: ${
@@ -462,9 +466,10 @@ export function TransferPanel() {
         if (isUserRejectedError(error)) {
           return
         }
-        captureSentryErrorWithExtraData({
+        handleError({
           error,
-          originFunction: 'cctpTransferStarter.transfer'
+          label: 'cctp_transfer',
+          category: 'transaction_execution'
         })
         errorToast(
           `USDC ${
@@ -600,9 +605,10 @@ export function TransferPanel() {
           if (isUserRejectedError(error)) {
             return
           }
-          captureSentryErrorWithExtraData({
+          handleError({
             error,
-            originFunction: 'oftTransferStarter.approveToken'
+            label: 'oft_approve_token',
+            category: 'token_approval'
           })
           errorToast(
             `OFT token approval transaction failed: ${
@@ -671,9 +677,10 @@ export function TransferPanel() {
       if (isUserRejectedError(error)) {
         return
       }
-      captureSentryErrorWithExtraData({
+      handleError({
         error,
-        originFunction: 'oftTransferStarter.transfer'
+        label: 'oft_transfer',
+        category: 'transaction_execution'
       })
       console.error(error)
       errorToast(
@@ -940,9 +947,10 @@ export function TransferPanel() {
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (error) {
-      captureSentryErrorWithExtraData({
+      handleError({
         error,
-        originFunction: 'bridgeTransferStarter.transfer',
+        label: 'arbitrum_transfer',
+        category: 'transaction_execution',
         additionalData: selectedToken
           ? {
               erc20_address_on_parent_chain: selectedToken.address,
