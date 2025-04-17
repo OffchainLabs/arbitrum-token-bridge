@@ -100,11 +100,11 @@ describe('Withdraw native token', () => {
 
           cy.switchToTransactionHistoryTab('pending')
 
-          cy.findClaimButton(
+          cy.clickClaimButton(
             formatAmount(ETHToWithdraw, {
               symbol: nativeTokenSymbol
             })
-          ).click()
+          )
 
           cy.confirmMetamaskTransaction()
 

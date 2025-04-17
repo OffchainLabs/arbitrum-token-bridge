@@ -209,10 +209,15 @@ export function clickMoveFundsButton({
 } = {}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
-  cy.wait(15_000)
   if (shouldConfirmInMetamask) {
     cy.confirmMetamaskTransaction()
   }
+}
+
+export function clickClaimButton(amountToClaim: string) {
+  cy.findClaimButton(amountToClaim).should('be.visible')
+  cy.wait(5_000)
+  cy.findClaimButton(amountToClaim).click()
 }
 
 export function findSelectTokenButton(
