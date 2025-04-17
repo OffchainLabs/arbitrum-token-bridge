@@ -57,7 +57,7 @@ export class LifiTransferStarter extends BridgeTransferStarter {
 
   public async requiresTokenApproval({
     amount,
-    signer
+    owner
   }: RequiresTokenApprovalProps): Promise<boolean> {
     if (!this.sourceChainErc20Address) {
       // If we have no sourceChainErc20Address, we assume we want to send ETH
@@ -67,7 +67,7 @@ export class LifiTransferStarter extends BridgeTransferStarter {
     const allowance = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
-      owner: await signer.getAddress(),
+      owner,
       spender: this.lifiData.spenderAddress
     })
 
