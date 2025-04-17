@@ -85,7 +85,7 @@
     "@babel/preset-env": "^7.26.9",
     "@next/eslint-plugin-next": "^13.1.5",
     "@synthetixio/synpress": "3.7.3",
-    "@testing-library/react": "^16.1.0",
+    "@testing-library/react": "^16.3.0",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^16.6.1",
     "@types/react": "^18.2.6",
