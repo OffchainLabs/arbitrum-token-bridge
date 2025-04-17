@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "private": true,
   "dependencies": {
-    "@apollo/client": "^3.13.5",
+    "@apollo/client": "^3.13.8",
     "@arbitrum/sdk": "^4.0.3",
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.7.8",
