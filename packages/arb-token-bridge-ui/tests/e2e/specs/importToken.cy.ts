@@ -225,9 +225,7 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
+          .click()
         cy.findSelectTokenButton(ERC20TokenSymbol)
 
         // Modal is closed
