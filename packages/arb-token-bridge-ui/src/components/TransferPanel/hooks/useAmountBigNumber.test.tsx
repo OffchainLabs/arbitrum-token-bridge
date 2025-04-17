@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import { vi, describe, it, expect } from 'vitest'
+import { vi, it, expect } from 'vitest'
 import { useAmountBigNumber } from './useAmountBigNumber'
 import {
   EncodedQuery,
