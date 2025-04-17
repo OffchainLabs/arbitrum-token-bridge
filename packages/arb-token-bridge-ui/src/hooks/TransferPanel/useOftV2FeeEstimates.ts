@@ -36,7 +36,6 @@ async function fetcher([
   const _walletAddress = walletAddress ?? constants.AddressZero
   const sourceChainProvider = getProviderForChainId(sourceChainId)
   const destinationChainProvider = getProviderForChainId(destinationChainId)
-  const signer = sourceChainProvider.getSigner(_walletAddress)
 
   const { estimatedSourceChainFee, estimatedDestinationChainFee } =
     await new OftV2TransferStarter({
@@ -45,7 +44,7 @@ async function fetcher([
       sourceChainErc20Address
     }).transferEstimateFee({
       amount,
-      signer,
+      from: _walletAddress,
       wagmiConfig
     })
 
