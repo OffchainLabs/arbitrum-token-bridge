@@ -14,8 +14,14 @@ export function useAmountBigNumber() {
 
   return useMemo(() => {
     try {
+      if (isNaN(Number(amount))) {
+        return constants.Zero
+      }
+
+      const amountSafe = amount || '0'
+
       const sanitizedAmount = sanitizeAmountQueryParam(
-        truncateExtraDecimals(amount, selectedTokenDecimals)
+        truncateExtraDecimals(amountSafe, selectedTokenDecimals)
       )
 
       if (amount !== sanitizedAmount) {
