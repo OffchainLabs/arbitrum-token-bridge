@@ -1,3 +1,10 @@
+import {
+  Config,
+  estimateGas,
+  simulateContract,
+  writeContract
+} from '@wagmi/core'
+import { Address, encodeFunctionData } from 'viem'
 import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
@@ -18,7 +25,6 @@ import {
 } from './oftUtils'
 import { oftV2Abi } from './oftV2Abi'
 import { isNetwork } from '../util/networks'
-import { Address, prepareWriteContract, writeContract } from '@wagmi/core'
 import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
 
 async function prepareTransferConfig({
@@ -27,7 +33,8 @@ async function prepareTransferConfig({
   destLzEndpointId,
   amount,
   destinationAddress,
-  sourceChainId
+  sourceChainId,
+  wagmiConfig
 }: {
   from: string
   oftContractAddress: string
@@ -35,6 +42,7 @@ async function prepareTransferConfig({
   amount: BigNumber
   destinationAddress?: string
   sourceChainId: number
+  wagmiConfig: Config
 }) {
   const sendParams = buildSendParams({
     dstEid: destLzEndpointId,
@@ -46,17 +54,29 @@ async function prepareTransferConfig({
   const quoteFee = await getOftV2Quote({
     sendParams,
     address: oftContractAddress as Address,
-    chainId: sourceChainId
+    chainId: sourceChainId,
+    wagmiConfig
   })
 
-  return prepareWriteContract({
+  return simulateContract(wagmiConfig, {
     address: oftContractAddress as Address,
     abi: oftV2Abi,
     functionName: 'send',
-    args: [sendParams, quoteFee, from as Address],
-    overrides: {
-      value: quoteFee.nativeFee
-    }
+    args: [
+      // wagmi typing being weird that it doesn't recognize SendParams as a valid type
+      sendParams as {
+        dstEid: number
+        to: `0x${string}`
+        amountLD: bigint
+        minAmountLD: bigint
+        extraOptions: `0x${string}`
+        composeMsg: `0x${string}`
+        oftCmd: `0x${string}`
+      },
+      quoteFee,
+      from as Address
+    ],
+    value: quoteFee.nativeFee
   })
 }
 
@@ -177,7 +197,8 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
   public async transferEstimateGas({
     amount,
     from,
-    destinationAddress
+    destinationAddress,
+    wagmiConfig
   }: TransferEstimateGasProps) {
     await this.validateOftTransfer()
 
@@ -225,30 +246,48 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       }
     }
 
-    const config = await prepareTransferConfig({
+    if (!wagmiConfig) {
+      return undefined
+    }
+
+    const { request } = await prepareTransferConfig({
       from,
       oftContractAddress: this.getOftAdapterContractAddress(),
       amount,
       destLzEndpointId: this.destLzEndpointId!,
       destinationAddress,
-      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider)
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
+      wagmiConfig
     })
 
-    const gasEstimate = await this.sourceChainProvider.estimateGas({
-      ...config.request,
-      from
+    const { value, args } = request
+
+    const gasEstimate = await estimateGas(wagmiConfig, {
+      chainId: await getChainIdFromProvider(this.sourceChainProvider),
+      to: this.getOftAdapterContractAddress() as Address,
+      value,
+      data: encodeFunctionData({
+        abi: oftV2Abi,
+        functionName: 'send',
+        args
+      })
     })
 
     return {
-      estimatedParentChainGas: isDepositMode ? gasEstimate : constants.Zero,
-      estimatedChildChainGas: isDepositMode ? constants.Zero : gasEstimate
+      estimatedParentChainGas: isDepositMode
+        ? BigNumber.from(gasEstimate)
+        : constants.Zero,
+      estimatedChildChainGas: isDepositMode
+        ? constants.Zero
+        : BigNumber.from(gasEstimate)
     }
   }
 
   public async transferEstimateFee({
     amount,
     from,
-    destinationAddress
+    destinationAddress,
+    wagmiConfig
   }: TransferEstimateGasProps) {
     await this.validateOftTransfer()
 
@@ -259,11 +298,19 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
       destinationAddress
     })
 
+    if (!wagmiConfig) {
+      return {
+        estimatedSourceChainFee: constants.Zero,
+        estimatedDestinationChainFee: constants.Zero
+      }
+    }
+
     // the amount in native currency that needs to be paid at the source chain to cover for both source and destination message transfers
     const { nativeFee } = await getOftV2Quote({
       address: this.getOftAdapterContractAddress() as Address,
       sendParams,
-      chainId: await getChainIdFromProvider(this.sourceChainProvider)
+      chainId: await getChainIdFromProvider(this.sourceChainProvider),
+      wagmiConfig
     })
 
     return {
@@ -272,25 +319,31 @@ export class OftV2TransferStarter extends BridgeTransferStarter {
     }
   }
 
-  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+  public async transfer({
+    amount,
+    signer,
+    destinationAddress,
+    wagmiConfig
+  }: TransferProps & { wagmiConfig: Config }) {
     await this.validateOftTransfer()
 
-    const config = await prepareTransferConfig({
+    const { request } = await prepareTransferConfig({
       from: await signer.getAddress(),
       oftContractAddress: this.getOftAdapterContractAddress(),
       amount,
       destLzEndpointId: this.destLzEndpointId!,
       destinationAddress,
-      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider)
+      sourceChainId: await getChainIdFromProvider(this.sourceChainProvider),
+      wagmiConfig
     })
 
-    const sendTx = await writeContract(config)
+    const sendTx = await writeContract(wagmiConfig, request)
 
     return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: sendTx,
+      sourceChainTransaction: { hash: sendTx },
       destinationChainProvider: this.destinationChainProvider
     }
   }

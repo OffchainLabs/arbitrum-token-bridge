@@ -4,7 +4,6 @@ import {
   ParentToChildMessageStatus,
   ParentToChildMessageWriter
 } from '@arbitrum/sdk'
-import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import {
@@ -29,6 +28,7 @@ import { Address } from '../util/AddressUtils'
 import { isTeleportTx, L2ToL3MessageData } from '../types/Transactions'
 import { UseRedeemRetryableResult } from './useRedeemRetryable'
 import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
+import { useEthersSigner } from '../util/wagmi/useEthersSigner'
 
 // common handling for redeeming all 3 retryables for teleporter
 const redeemRetryable = async (retryable: ParentToChildMessageWriter) => {
@@ -157,9 +157,7 @@ export function useRedeemTeleporter(
 ): UseRedeemRetryableResult {
   const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
 
-  const { data: signer } = useSigner({
-    chainId: chainIdForRedeemingRetryable
-  })
+  const signer = useEthersSigner({ chainId: chainIdForRedeemingRetryable })
   const { updatePendingTransaction } = useTransactionHistory(address)
 
   const redeemerNetworkName = getNetworkName(chainIdForRedeemingRetryable)

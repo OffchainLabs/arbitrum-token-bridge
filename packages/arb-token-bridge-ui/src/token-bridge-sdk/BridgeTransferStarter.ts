@@ -1,5 +1,7 @@
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
+import { Config } from 'wagmi'
+
 import { MergedTransaction } from '../state/app/state'
 import {
   GasEstimates,
@@ -48,6 +50,7 @@ export type TransferEstimateGasProps = {
   amount: BigNumber
   from: string
   destinationAddress?: string
+  wagmiConfig?: Config
 }
 
 export type TransferOverrides = {
