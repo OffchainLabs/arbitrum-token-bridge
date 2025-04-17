@@ -1,6 +1,8 @@
 import { getL1NetworkName, getL2NetworkName } from '../../support/common'
 
 describe('Switch Networks', () => {
+  before(() => cy.resetAppState())
+  
   context('User is on test network L1', () => {
     it('should show L1 and L2 chains correctly', () => {
       cy.login({ networkType: 'parentChain' })

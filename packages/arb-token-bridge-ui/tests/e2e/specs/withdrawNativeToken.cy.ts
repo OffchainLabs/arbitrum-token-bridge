@@ -11,6 +11,8 @@ import {
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw native token', () => {
+  before(() => cy.resetAppState())
+  
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneNativeToken =
     getZeroToLessThanOneToken(nativeTokenSymbol)

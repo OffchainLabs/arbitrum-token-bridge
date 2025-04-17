@@ -84,6 +84,12 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible').click()
 }
 
+export const resetAppState = () => {
+  cy.resetMetamaskAccount()
+  cy.clearLocalStorage()
+  cy.clearAllCookies()
+}
+
 export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
   cy.findByRole('tab', {
     name: `show ${tab} transactions`
@@ -388,5 +394,6 @@ Cypress.Commands.addAll({
   findTransactionDetailsCustomDestinationAddress,
   confirmSpending,
   claimCctp,
-  selectRoute
+  selectRoute,
+  resetAppState
 })

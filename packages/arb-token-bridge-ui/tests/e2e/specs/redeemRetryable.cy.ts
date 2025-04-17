@@ -31,6 +31,8 @@ function mockErc20RedeemDepositTransaction(): Transaction {
 }
 
 describe('Redeem ERC20 Deposit', () => {
+  before(() => cy.resetAppState())
+  
   const l2WethAddress = Cypress.env('L2_WETH_ADDRESS')
 
   context('User has some ERC20 and is on L1', () => {

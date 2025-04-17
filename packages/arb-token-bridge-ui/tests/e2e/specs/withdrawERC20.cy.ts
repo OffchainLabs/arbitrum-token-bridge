@@ -27,6 +27,8 @@ const withdrawalTestCases = {
 }
 
 describe('Withdraw ERC20 Token', () => {
+  before(() => cy.resetAppState())
+  
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneNativeToken =
     getZeroToLessThanOneToken(nativeTokenSymbol)

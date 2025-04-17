@@ -25,7 +25,8 @@ import {
   claimCctp,
   switchToTransferPanelTab,
   switchToTransactionHistoryTab,
-  selectRoute
+  selectRoute,
+  resetAppState
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -73,6 +74,7 @@ declare global {
       confirmSpending: typeof confirmSpending
       claimCctp: typeof claimCctp
       selectRoute: typeof selectRoute
+      resetAppState: typeof resetAppState
     }
   }
 }

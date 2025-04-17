@@ -9,6 +9,8 @@ import {
 } from '../../support/common'
 
 describe('Deposit native token', () => {
+  before(() => cy.resetAppState())
+  
   const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')

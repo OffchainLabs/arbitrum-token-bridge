@@ -43,6 +43,8 @@ export const confirmAndApproveCctpWithdrawal = () => {
 }
 
 describe('Withdraw USDC through CCTP', () => {
+  before(() => cy.resetAppState())
+  
   beforeEach(() => {
     cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
     cy.findSourceChainButton('Arbitrum Sepolia')

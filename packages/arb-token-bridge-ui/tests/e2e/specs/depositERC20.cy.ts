@@ -27,6 +27,8 @@ const depositTestCases = {
 }
 
 describe('Deposit Token', () => {
+  before(() => cy.resetAppState())
+  
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test

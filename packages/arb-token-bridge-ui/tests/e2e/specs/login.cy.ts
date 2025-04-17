@@ -12,6 +12,8 @@ import {
 } from './../../support/common'
 
 describe('Login Account', () => {
+  before(() => cy.resetAppState())
+  
   let l1ETHbal
   let l2ETHbal
 

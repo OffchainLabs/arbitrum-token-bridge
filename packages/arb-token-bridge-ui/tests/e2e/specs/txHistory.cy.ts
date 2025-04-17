@@ -2,6 +2,8 @@ const DEPOSIT_ROW_IDENTIFIER = /deposit-row-*/i
 const CLAIMABLE_ROW_IDENTIFIER = /claimable-row-*/i
 
 describe('Transaction History', () => {
+  before(() => cy.resetAppState())
+  
   it('should successfully open and use pending transactions panel', () => {
     cy.login({
       networkType: 'parentChain',
