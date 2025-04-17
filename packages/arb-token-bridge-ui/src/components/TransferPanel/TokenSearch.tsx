@@ -64,16 +64,23 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
     app: { arbTokenBridge }
   } = useAppState()
   const { bridgeTokens, token } = arbTokenBridge
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
 
   const toggleTokenList = useCallback(
     (bridgeTokenList: BridgeTokenList, isActive: boolean) => {
       if (isActive) {
         token.removeTokensFromList(bridgeTokenList.id)
       } else {
-        addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+        addBridgeTokenListToBridge({
+          bridgeTokenList,
+          arbTokenBridge,
+          parentChainId: parentChain.id,
+          childChainId: childChain.id
+        })
       }
     },
-    [arbTokenBridge, token]
+    [arbTokenBridge, childChain.id, parentChain.id, token]
   )
 
   const isActive = Object.keys(bridgeTokens ?? []).some(address => {
@@ -346,9 +353,9 @@ function TokensPanel({
             return true
           }
 
-          // Always show official ARB token except from or to Orbit chain
+          // Always show official ARB token
           if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
-            return !isOrbitChain
+            return true
           }
 
           const balance = getBalance(address)
@@ -578,11 +585,13 @@ export function TokenSearch({
       return
     }
 
-    if (!_token.address) {
+    const lowercasedTokenAddress = _token.address.toLowerCase()
+
+    if (!lowercasedTokenAddress) {
       return
     }
 
-    if (isTokenNativeUSDC(_token.address)) {
+    if (isTokenNativeUSDC(lowercasedTokenAddress)) {
       // not supported
       setAmount2('')
     }
@@ -593,28 +602,28 @@ export function TokenSearch({
       }
 
       const isL2NativeUSDC =
-        isTokenArbitrumOneNativeUSDC(_token.address) ||
-        isTokenArbitrumSepoliaNativeUSDC(_token.address)
+        isTokenArbitrumOneNativeUSDC(lowercasedTokenAddress) ||
+        isTokenArbitrumSepoliaNativeUSDC(lowercasedTokenAddress)
 
       if (isL2NativeUSDC) {
-        setSelectedToken(_token.address)
+        setSelectedToken(lowercasedTokenAddress)
         return
       }
 
       // Token not added to the bridge, so we'll handle importing it
-      if (typeof bridgeTokens[_token.address] === 'undefined') {
-        setSelectedToken(_token.address)
+      if (typeof bridgeTokens[lowercasedTokenAddress] === 'undefined') {
+        setSelectedToken(lowercasedTokenAddress)
         return
       }
 
       const data = await fetchErc20Data({
-        address: _token.address,
+        address: lowercasedTokenAddress,
         provider: parentChainProvider
       })
 
       if (data) {
-        token.updateTokenData(_token.address)
-        setSelectedToken(_token.address)
+        token.updateTokenData(lowercasedTokenAddress)
+        setSelectedToken(lowercasedTokenAddress)
       }
     } catch (error: any) {
       console.warn(error)
