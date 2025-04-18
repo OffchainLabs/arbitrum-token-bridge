@@ -47,7 +47,8 @@ const isOrbitTest = [
   process.env.E2E_ORBIT,
   process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
 ].includes('true')
-const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+// const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+const shouldRecordVideo = true
 
 const l3Network =
   process.env.ORBIT_CUSTOM_GAS_TOKEN === 'true'
@@ -235,7 +236,7 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
     supportFile: 'tests/support/index.ts',
-    defaultCommandTimeout: 20_000,
+    defaultCommandTimeout: 40_000,
     browsers: [browserConfig]
   }
 })

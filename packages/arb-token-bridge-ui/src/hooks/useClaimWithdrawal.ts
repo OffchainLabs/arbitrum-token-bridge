@@ -88,7 +88,7 @@ export function useClaimWithdrawal(
 
     try {
       if (!signer) {
-        throw 'Signer is undefined'
+        throw `Signer is undefined. Parent chain ID: ${tx.parentChainId}`
       }
       if (tx.assetType === AssetType.ETH) {
         res = await arbTokenBridge.eth.triggerOutbox({

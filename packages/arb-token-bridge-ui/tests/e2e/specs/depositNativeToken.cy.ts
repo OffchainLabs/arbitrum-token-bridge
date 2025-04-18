@@ -9,7 +9,14 @@ import {
 } from '../../support/common'
 
 describe('Deposit native token', () => {
-  const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
+  before(() => cy.resetAppState())
+
+  let ETHAmountToDeposit = 0
+
+  while (ETHAmountToDeposit === 0) {
+    ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
+  }
+
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
   const zeroToLessThanOneNativeToken =
@@ -41,7 +48,11 @@ describe('Deposit native token', () => {
   })
 
   it('should deposit to custom destination address successfully', () => {
-    const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
+    let ETHAmountToDeposit = 0
+
+    while (ETHAmountToDeposit === 0) {
+      ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
+    }
 
     cy.login({ networkType: 'parentChain' })
 

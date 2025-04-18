@@ -20,12 +20,14 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
+  clickClaimButton,
   selectTransactionsPanelTab,
   confirmSpending,
   claimCctp,
   switchToTransferPanelTab,
   switchToTransactionHistoryTab,
-  selectRoute
+  selectRoute,
+  resetAppState
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -70,9 +72,11 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      clickClaimButton: typeof clickClaimButton
       confirmSpending: typeof confirmSpending
       claimCctp: typeof claimCctp
       selectRoute: typeof selectRoute
+      resetAppState: typeof resetAppState
     }
   }
 }

@@ -10,6 +10,8 @@ import {
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN')
 
 describe('Approve token for deposit', () => {
+  before(() => cy.resetAppState())
+
   // log in to metamask
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
   const zeroToLessThanOneNativeToken = getZeroToLessThanOneToken(

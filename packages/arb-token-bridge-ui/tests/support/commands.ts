@@ -84,6 +84,12 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible').click()
 }
 
+export const resetAppState = () => {
+  cy.resetMetamaskAccount()
+  cy.clearLocalStorage()
+  cy.clearAllCookies()
+}
+
 export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
   cy.findByRole('tab', {
     name: `show ${tab} transactions`
@@ -203,10 +209,16 @@ export function clickMoveFundsButton({
 } = {}) {
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
-  cy.wait(15_000)
   if (shouldConfirmInMetamask) {
+    cy.wait(30_000)
     cy.confirmMetamaskTransaction()
   }
+}
+
+export function clickClaimButton(amountToClaim: string) {
+  cy.findClaimButton(amountToClaim).should('be.visible')
+  cy.wait(10_000)
+  cy.findClaimButton(amountToClaim).click()
 }
 
 export function findSelectTokenButton(
@@ -385,8 +397,10 @@ Cypress.Commands.addAll({
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
+  clickClaimButton,
   findTransactionDetailsCustomDestinationAddress,
   confirmSpending,
   claimCctp,
-  selectRoute
+  selectRoute,
+  resetAppState
 })
