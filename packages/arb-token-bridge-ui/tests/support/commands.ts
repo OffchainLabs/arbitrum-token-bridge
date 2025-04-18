@@ -210,13 +210,14 @@ export function clickMoveFundsButton({
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   if (shouldConfirmInMetamask) {
+    cy.wait(30_000)
     cy.confirmMetamaskTransaction()
   }
 }
 
 export function clickClaimButton(amountToClaim: string) {
   cy.findClaimButton(amountToClaim).should('be.visible')
-  cy.wait(5_000)
+  cy.wait(10_000)
   cy.findClaimButton(amountToClaim).click()
 }
 
@@ -396,6 +397,7 @@ Cypress.Commands.addAll({
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
+  clickClaimButton,
   findTransactionDetailsCustomDestinationAddress,
   confirmSpending,
   claimCctp,

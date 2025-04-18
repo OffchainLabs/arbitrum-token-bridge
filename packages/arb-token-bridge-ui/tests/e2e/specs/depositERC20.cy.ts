@@ -64,7 +64,12 @@ describe('Deposit Token', () => {
       })
 
       it(`should deposit ${tokenType} successfully to the same address`, () => {
-        const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+        // randomize the amount to be sure that previous transactions are not checked in e2e
+        let ERC20AmountToSend = 0
+
+        while (ERC20AmountToSend === 0) {
+          ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
+        }
 
         cy.login({ networkType: 'parentChain' })
         context('should add a new token', () => {
@@ -102,7 +107,12 @@ describe('Deposit Token', () => {
       })
 
       it('should deposit ERC-20 to custom destination address successfully', () => {
-        const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+        // randomize the amount to be sure that previous transactions are not checked in e2e
+        let ERC20AmountToSend = 0
+
+        while (ERC20AmountToSend === 0) {
+          ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
+        }
 
         cy.login({ networkType: 'parentChain' })
         context('should add a new token', () => {

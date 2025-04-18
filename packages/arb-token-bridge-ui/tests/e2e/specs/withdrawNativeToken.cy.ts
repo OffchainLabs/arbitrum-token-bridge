@@ -16,7 +16,14 @@ describe('Withdraw native token', () => {
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneNativeToken =
     getZeroToLessThanOneToken(nativeTokenSymbol)
-  let ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+
+  // randomize the amount to be sure that previous transactions are not checked in e2e
+  let ETHToWithdraw = 0
+
+  while (ETHToWithdraw === 0) {
+    ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5))
+  }
+
   let l1EthBal: string
 
   beforeEach(() => {
@@ -50,7 +57,13 @@ describe('Withdraw native token', () => {
         })
 
         it('should show withdrawal confirmation and withdraw', () => {
-          ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
+          // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
+          let ETHToWithdraw = 0
+
+          while (ETHToWithdraw === 0) {
+            ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5))
+          }
+
           cy.login({ networkType: 'childChain' })
           cy.typeAmount(ETHToWithdraw)
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
@@ -132,7 +145,12 @@ describe('Withdraw native token', () => {
     )
 
     it('should withdraw to custom destination address successfully', () => {
-      const ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+      // randomize the amount to be sure that previous transactions are not checked in e2e
+      let ETHToWithdraw = 0
+
+      while (ETHToWithdraw === 0) {
+        ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5))
+      }
 
       cy.login({ networkType: 'childChain' })
 

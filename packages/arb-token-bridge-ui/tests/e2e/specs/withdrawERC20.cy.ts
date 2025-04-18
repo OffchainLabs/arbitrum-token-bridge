@@ -32,7 +32,14 @@ describe('Withdraw ERC20 Token', () => {
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneNativeToken =
     getZeroToLessThanOneToken(nativeTokenSymbol)
-  let ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+
+  // randomize the amount to be sure that previous transactions are not checked in e2e
+  let ERC20AmountToSend = 0
+
+  while (ERC20AmountToSend === 0) {
+    ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
+  }
+
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
@@ -79,7 +86,12 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       it(`should withdraw ${tokenType} to the same address successfully`, () => {
-        ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+        // randomize the amount to be sure that previous transactions are not checked in e2e
+        let ERC20AmountToSend = 0
+
+        while (ERC20AmountToSend === 0) {
+          ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
+        }
 
         cy.login({ networkType: 'childChain' })
         context(`should add ${tokenType} correctly`, () => {
@@ -180,7 +192,12 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       it(`should withdraw ${tokenType} to custom destination address successfully`, () => {
-        const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
+        // randomize the amount to be sure that previous transactions are not checked in e2e
+        let ERC20AmountToSend = 0
+
+        while (ERC20AmountToSend === 0) {
+          ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5))
+        }
 
         cy.login({ networkType: 'childChain' })
         context('should add a new token', () => {
