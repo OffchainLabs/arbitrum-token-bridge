@@ -9,6 +9,7 @@ export enum ChainId {
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
   Base = 8453,
+  Plume = 98866,
   // L2 Testnets
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
