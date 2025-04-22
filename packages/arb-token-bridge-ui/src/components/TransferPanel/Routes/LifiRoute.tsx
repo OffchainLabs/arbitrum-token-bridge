@@ -20,11 +20,12 @@ import {
 } from '../hooks/useLifiSettingsStore'
 import { getFromAndToTokenAddresses, LifiSettings } from '../LifiSettings'
 import { Loader } from '../../common/atoms/Loader'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
 import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
+import { useAppContextState } from '../../App/AppContext'
 
 function areQuotesTheSame(
   quote1: LifiCrosschainTransfersQuote | undefined,
@@ -61,6 +62,9 @@ export function LifiRoutes({
   cheapestTag?: BadgeType
   fastestTag?: BadgeType
 }) {
+  const {
+    layout: { isTransferring: isDisabled }
+  } = useAppContextState()
   const { address } = useAccount()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
@@ -73,6 +77,7 @@ export function LifiRoutes({
     shallow
   )
 
+  const clearRoute = useRouteStore(state => state.clearRoute)
   const [{ destinationAddress }] = useArbQueryParams()
   const [selectedToken] = useSelectedToken()
   const amount = useAmountBigNumber()
@@ -105,6 +110,20 @@ export function LifiRoutes({
       ...parameters,
       order: Order.Fastest
     })
+
+  useEffect(() => {
+    /**
+     * Clear selected route when quotes change
+     * This might be triggered even if routes seem to be the same because of gas fee or amount received
+     */
+    clearRoute()
+  }, [
+    cheapestQuote,
+    fastestQuote,
+    isLoadingCheapestQuote,
+    isLoadingFastestQuote,
+    clearRoute
+  ])
 
   if (isLoadingCheapestQuote && isLoadingFastestQuote) {
     // If quotes are loading but we got previous quote, keep settings icon displayed
@@ -154,7 +173,12 @@ export function LifiRoutes({
     return (
       <>
         <LifiSettings />
-        <LifiRoute type="lifi" quote={cheapestQuote!} tag={tags} />
+        <LifiRoute
+          type="lifi"
+          quote={cheapestQuote!}
+          tag={tags}
+          disabled={isDisabled}
+        />
       </>
     )
   }
@@ -167,10 +191,16 @@ export function LifiRoutes({
           type="lifi-cheapest"
           quote={cheapestQuote}
           tag={cheapestTag}
+          disabled={isDisabled}
         />
       )}
       {fastestQuote && (
-        <LifiRoute type="lifi-fastest" quote={fastestQuote} tag={fastestTag} />
+        <LifiRoute
+          type="lifi-fastest"
+          quote={fastestQuote}
+          tag={fastestTag}
+          disabled={isDisabled}
+        />
       )}
     </>
   )
@@ -179,11 +209,13 @@ export function LifiRoutes({
 function LifiRoute({
   type,
   quote,
-  tag
+  tag,
+  disabled
 }: {
   type: 'lifi' | 'lifi-fastest' | 'lifi-cheapest'
   quote: LifiCrosschainTransfersQuote
   tag?: BadgeType | BadgeType[]
+  disabled: boolean
 }) {
   const [selectedToken] = useSelectedToken()
   const { selectedRoute, setSelectedRoute } = useRouteStore(
@@ -215,17 +247,26 @@ function LifiRoute({
           amount: BigNumber.from(quote.toAmount.amount),
           token: quote.toAmount.token
         },
-        transactionRequest: quote.protocolData.transactionRequest
+        transactionRequest: quote.protocolData.transactionRequest,
+        toolDetails: quote.protocolData.tool,
+        durationMs: quote.durationMs,
+        destinationTxId: null
       })
     },
     [
-      quote.fee,
-      quote.gas,
-      quote.fromAmount,
-      quote.toAmount,
-      quote.protocolData.transactionRequest,
+      setSelectedRoute,
       quote.spenderAddress,
-      setSelectedRoute
+      quote.gas.amount,
+      quote.gas.token,
+      quote.fee.amount,
+      quote.fee.token,
+      quote.fromAmount.amount,
+      quote.fromAmount.token,
+      quote.toAmount.amount,
+      quote.toAmount.token,
+      quote.protocolData.transactionRequest,
+      quote.protocolData.tool,
+      quote.durationMs
     ]
   )
 
@@ -265,6 +306,7 @@ function LifiRoute({
       tag={tag}
       selected={isSelected}
       onSelectedRouteClick={setSelectedRouteWithContext}
+      disabled={disabled}
     />
   )
 }

@@ -41,7 +41,8 @@ import {
   isCctpTransfer,
   isSameTransaction,
   isTxPending,
-  isOftTransfer
+  isOftTransfer,
+  getUpdatedLifiTransfer
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useAccountType } from './useAccountType'
@@ -64,11 +65,11 @@ import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useArbQueryParams } from './useArbQueryParams'
 import {
   getUpdatedOftTransfer,
-  LayerZeroTransaction,
   updateAdditionalLayerZeroData,
   useOftTransactionHistory
 } from './useOftTransactionHistory'
 import { create } from 'zustand'
+import { LayerZeroTransaction } from '../state/app/state'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -736,6 +737,12 @@ export const useTransactionHistory = (
       if (tx.isCctp) {
         const updatedCctpTransfer = await getUpdatedCctpTransfer(tx)
         updateCachedTransaction(updatedCctpTransfer)
+        return
+      }
+
+      if (tx.isLifi) {
+        const updatedLifiTransfer = await getUpdatedLifiTransfer(tx)
+        updateCachedTransaction(updatedLifiTransfer)
         return
       }
 

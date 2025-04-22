@@ -10,9 +10,13 @@ import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { shallow } from 'zustand/shallow'
+import { useAppContextState } from '../../App/AppContext'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {
+  const {
+    layout: { isTransferring: isDisabled }
+  } = useAppContextState()
   const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
@@ -89,6 +93,7 @@ export function OftV2Route() {
       bridgeFee={bridgeFee}
       selected={selectedRoute === 'oftV2'}
       onSelectedRouteClick={setSelectedRoute}
+      disabled={isDisabled}
     />
   )
 }

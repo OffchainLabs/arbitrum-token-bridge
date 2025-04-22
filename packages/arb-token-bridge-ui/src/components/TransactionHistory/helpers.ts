@@ -11,6 +11,8 @@ import {
 
 import {
   DepositStatus,
+  LayerZeroTransaction,
+  LifiMergedTransaction,
   MergedTransaction,
   TeleporterMergedTransaction,
   WithdrawalStatus
@@ -33,7 +35,7 @@ import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { isTeleportTx } from '../../types/Transactions'
-import { LayerZeroTransaction } from '../../hooks/useOftTransactionHistory'
+import { getStatus } from '@lifi/sdk'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -52,6 +54,9 @@ export function isOftTransfer(tx: Transfer): tx is LayerZeroTransaction {
 }
 
 export function isTxCompleted(tx: MergedTransaction): boolean {
+  if (tx.isLifi) {
+    return tx.destinationStatus === WithdrawalStatus.CONFIRMED
+  }
   if (tx.isCctp) {
     return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
   }
@@ -76,6 +81,20 @@ export function isTxPending(tx: MergedTransaction) {
     return tx.status === 'pending'
   }
 
+  if (tx.isLifi) {
+    if (
+      tx.status === WithdrawalStatus.FAILURE ||
+      tx.destinationStatus === WithdrawalStatus.FAILURE
+    ) {
+      return false
+    }
+
+    return (
+      tx.status === WithdrawalStatus.UNCONFIRMED ||
+      tx.destinationStatus === WithdrawalStatus.UNCONFIRMED
+    )
+  }
+
   if (isDeposit(tx)) {
     return (
       tx.depositStatus === DepositStatus.L1_PENDING ||
@@ -86,6 +105,9 @@ export function isTxPending(tx: MergedTransaction) {
 }
 
 export function isTxClaimable(tx: MergedTransaction): boolean {
+  if (tx.isLifi) {
+    return false
+  }
   if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
     return true
   }
@@ -108,6 +130,13 @@ export function isTxExpired(tx: MergedTransaction): boolean {
 export function isTxFailed(tx: MergedTransaction): boolean {
   if (tx.isOft) {
     return tx.status === 'failed'
+  }
+
+  if (tx.isLifi) {
+    return (
+      tx.status === WithdrawalStatus.FAILURE ||
+      tx.destinationStatus === WithdrawalStatus.FAILURE
+    )
   }
 
   if (isDeposit(tx)) {
@@ -538,6 +567,68 @@ export async function getUpdatedCctpTransfer(
   return { ...tx, status: WithdrawalStatus.UNCONFIRMED }
 }
 
+export async function getUpdatedLifiTransfer(
+  tx: LifiMergedTransaction
+): Promise<MergedTransaction> {
+  if (
+    tx.status === WithdrawalStatus.FAILURE ||
+    tx.destinationStatus === WithdrawalStatus.FAILURE
+  ) {
+    return tx
+  }
+
+  const statusResponse = await getStatus({
+    txHash: tx.txId,
+    bridge: tx.toolDetails.key,
+    fromChain: tx.sourceChainId.toString(),
+    toChain: tx.destinationChainId.toString()
+  })
+
+  let sourceStatus: WithdrawalStatus
+  let destinationStatus: WithdrawalStatus
+  let destinationTxId: string | null = null
+
+  /**
+   * See https://docs.li.fi/li.fi-api/li.fi-api/status-of-a-transaction#the-different-statuses-and-what-they-mean
+   */
+  if (statusResponse.status === 'DONE') {
+    sourceStatus = WithdrawalStatus.CONFIRMED
+    destinationStatus = WithdrawalStatus.CONFIRMED
+    if ('txHash' in statusResponse.receiving) {
+      destinationTxId = statusResponse.receiving.txHash
+    }
+  } else if (statusResponse.status === 'PENDING') {
+    if ('timestamp' in statusResponse.sending) {
+      // Source transaction has been executed
+      sourceStatus = WithdrawalStatus.CONFIRMED
+      destinationStatus = WithdrawalStatus.UNCONFIRMED
+    } else {
+      sourceStatus = WithdrawalStatus.UNCONFIRMED
+      destinationStatus = WithdrawalStatus.UNCONFIRMED
+    }
+    if ('txHash' in statusResponse.receiving) {
+      destinationTxId = statusResponse.receiving.txHash
+    }
+  } else {
+    // Failure
+    if ('timestamp' in statusResponse.sending) {
+      // Source transaction has been executed
+      sourceStatus = WithdrawalStatus.CONFIRMED
+      destinationStatus = WithdrawalStatus.FAILURE
+    } else {
+      sourceStatus = WithdrawalStatus.FAILURE
+      destinationStatus = WithdrawalStatus.UNCONFIRMED
+    }
+  }
+
+  return {
+    ...tx,
+    destinationTxId,
+    status: sourceStatus,
+    destinationStatus
+  }
+}
+
 export async function getUpdatedTeleportTransfer(
   tx: TeleporterMergedTransaction
 ): Promise<TeleporterMergedTransaction> {
@@ -604,7 +695,7 @@ export function getTxRemainingTimeInMinutes(tx: MergedTransaction) {
 
 export function getDestinationNetworkTxId(tx: MergedTransaction) {
   if (tx.isOft) {
-    return tx.oftData?.destinationTxHash
+    return tx.destinationTxHash
   }
 
   if (tx.isCctp) {
@@ -613,6 +704,10 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
 
   if (isTeleportTx(tx)) {
     return tx.l2ToL3MsgData?.l3TxID
+  }
+
+  if (tx.isLifi) {
+    return tx.destinationTxId
   }
 
   return tx.isWithdrawal

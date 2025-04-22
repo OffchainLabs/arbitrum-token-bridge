@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
 import LayerZeroIcon from '@/images/LayerZeroIcon.png'
+import LifiLogo from '@/icons/lifi.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
@@ -32,6 +33,7 @@ import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar
 import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { shallow } from 'zustand/shallow'
+import { SafeImage } from '../common/SafeImage'
 
 const DetailsBox = ({
   children,
@@ -48,6 +50,26 @@ const DetailsBox = ({
 }
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
+  if (tx.isLifi) {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-row items-center gap-1">
+          <SafeImage
+            alt="Bridge logo"
+            src={tx.toolDetails.logoURI}
+            width={30}
+            height={30}
+          />
+          <span>{tx.toolDetails.name}</span>
+        </div>
+        <div className="flex flex-row items-center gap-1">
+          <Image alt="Lifi logo" src={LifiLogo} width={16} height={16} />
+          <span>Bridged via LiFi</span>
+        </div>
+      </div>
+    )
+  }
+
   let protocolLogo, protocolName, protocolDescription
 
   if (tx.isOft) {

@@ -29,6 +29,8 @@ import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { useRouteStore } from './hooks/useRouteStore'
+import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
+import { shallow } from 'zustand/shallow'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -59,8 +61,16 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
   const signer = useEthersSigner({ chainId })
-  const selectedRoute = useRouteStore(state => state.selectedRoute)
+  const { selectedRoute, context } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      context: state.context
+    }),
+    shallow
+  )
   const isCctp = selectedRoute === 'cctp'
+  const isLifi =
+    selectedRoute === 'lifi-cheapest' || selectedRoute === 'lifi-fastest'
   const isOft = selectedRoute === 'oftV2'
 
   const [checked, setChecked] = useState(false)
@@ -99,6 +109,19 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
       if (!signer) {
         gasEstimate = constants.Zero
+      } else if (isLifi) {
+        if (!context) {
+          throw new Error('Missing context data for Lifi transfer.')
+        }
+        const lifiTransferStarter = new LifiTransferStarter({
+          sourceChainProvider,
+          destinationChainProvider,
+          lifiData: context
+        })
+        gasEstimate = await lifiTransferStarter.approveTokenEstimateGas({
+          signer,
+          amount: constants.MaxUint256
+        })
       } else if (isCctp) {
         const cctpTransferStarter = new CctpTransferStarter({
           sourceChainProvider,
@@ -159,11 +182,22 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     destinationChainProvider,
     chainId,
     isCctp,
-    isOft
+    isOft,
+    isLifi,
+    context
   ])
 
   useEffect(() => {
     const getContractAddress = async function () {
+      if (isLifi) {
+        if (!context) {
+          throw new Error('Missing context data for Lifi transfer.')
+        }
+
+        setContractAddress(context.spenderAddress)
+        return
+      }
+
       if (isOft) {
         const oftTransferConfig = getOftV2TransferConfig({
           sourceChainId: sourceChain.id,
@@ -235,7 +269,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     sourceChain.id,
     destinationChain.id,
     isTeleportMode,
-    isOft
+    isOft,
+    isLifi,
+    context
   ])
 
   function closeWithReset(confirmed: boolean) {

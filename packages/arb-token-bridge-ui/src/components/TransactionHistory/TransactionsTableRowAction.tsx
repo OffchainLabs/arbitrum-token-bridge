@@ -194,6 +194,10 @@ export function TransactionsTableRowAction({
       return <ActionRowConnectButton />
     }
 
+    if (tx.isLifi) {
+      return null
+    }
+
     return isClaiming || isClaimingCctp ? (
       <span className="my-2 animate-pulse text-xs">Claiming...</span>
     ) : (

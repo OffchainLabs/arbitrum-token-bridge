@@ -25,6 +25,7 @@ import { useMemo } from 'react'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { shallow } from 'zustand/shallow'
+import { useAppContextState } from '../../App/AppContext'
 
 const commonUsdcToken: Token = {
   decimals: 6,
@@ -189,6 +190,9 @@ function getGasCostAndToken({
 }
 
 export function ArbitrumCanonicalRoute() {
+  const {
+    layout: { isTransferring: isDisabled }
+  } = useAppContextState()
   const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const {
@@ -285,6 +289,7 @@ export function ArbitrumCanonicalRoute() {
       onSelectedRouteClick={setSelectedRoute}
       tag={'security-guaranteed'}
       selected={selectedRoute === 'arbitrum'}
+      disabled={isDisabled}
     />
   )
 }

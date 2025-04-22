@@ -107,8 +107,7 @@ export const useLifiCrossTransfersQuote = ({
       refreshInterval: 1 * 60 * 1_000, // 1 minutes in miliseconds
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      shouldRetryOnError: false,
-      keepPreviousData: true
+      shouldRetryOnError: false
     }
   )
 }

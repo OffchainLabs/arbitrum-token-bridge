@@ -9,10 +9,12 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getNetworkName } from '../../util/networks'
 import { useRouteStore } from './hooks/useRouteStore'
+import { useSigner } from 'wagmi'
 
 export function MoveFundsButton({
   onClick
 }: Pick<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>) {
+  const { data: signer } = useSigner()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
 
@@ -25,6 +27,7 @@ export function MoveFundsButton({
   const { transferReady } = useTransferReadiness()
   const selectedRoute = useRouteStore(state => state.selectedRoute)
   const isDisabled =
+    !signer ||
     selectedRoute === undefined ||
     (isDepositMode ? !transferReady.deposit : !transferReady.withdrawal)
 

@@ -115,6 +115,15 @@ type AnalyticsEventMap = {
     sourceChain: string
     destinationChain: string
   }
+  'Lifi Transfer': {
+    tokenSymbol: string
+    assetType: string
+    accountType: string
+    network: string
+    amount: number
+    sourceChain: string
+    destinationChain: string
+  }
 }
 
 type AnalyticsEvent = keyof AnalyticsEventMap

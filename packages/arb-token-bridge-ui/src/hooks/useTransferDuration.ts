@@ -45,7 +45,14 @@ export const useTransferDuration = (
 ): UseTransferDurationResult => {
   const { estimatedMinutesLeftCctp } = useRemainingTimeCctp(tx)
 
-  const { sourceChainId, destinationChainId, isCctp, childChainId, isOft } = tx
+  const {
+    sourceChainId,
+    destinationChainId,
+    isCctp,
+    childChainId,
+    isOft,
+    isLifi
+  } = tx
   const { isTestnet, isOrbitChain } = isNetwork(childChainId)
 
   const standardDepositDuration = getStandardDepositDuration(isTestnet)
@@ -59,6 +66,18 @@ export const useTransferDuration = (
       estimatedMinutesLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: standardDepositDuration + orbitDepositDuration
+      })
+    }
+  }
+
+  if (isLifi) {
+    const durationMinutes = (tx.durationMs || 15_000) / (60 * 1_000)
+
+    return {
+      approximateDurationInMinutes: durationMinutes,
+      estimatedMinutesLeft: getRemainingMinutes({
+        createdAt: tx.createdAt,
+        totalDuration: durationMinutes
       })
     }
   }

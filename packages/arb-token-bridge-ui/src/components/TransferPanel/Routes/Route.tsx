@@ -45,6 +45,7 @@ export type RouteProps = {
   tag?: BadgeType | BadgeType[]
   selected: boolean
   onSelectedRouteClick: SetRoute
+  disabled?: boolean
 }
 
 function getBridgeConfigFromType(type: RouteType) {
@@ -151,7 +152,8 @@ export const Route = React.memo(
     selected,
     bridgeFee,
     tag,
-    onSelectedRouteClick
+    onSelectedRouteClick,
+    disabled
   }: RouteProps) => {
     const [networks] = useNetworks()
     const { childChainProvider, isDepositMode } =
@@ -194,6 +196,7 @@ export const Route = React.memo(
           selected && 'ring-[#5F7D5B]'
         )}
         onClick={() => onSelectedRouteClick(type)}
+        disabled={disabled}
         aria-label={`Route ${type}`}
       >
         <div

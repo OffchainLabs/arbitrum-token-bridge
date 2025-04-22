@@ -1,8 +1,6 @@
-import {
-  AmountWithToken,
-  LifiData
-} from '@/token-bridge-sdk/LifiTransferStarter'
+import { LifiData } from '@/token-bridge-sdk/LifiTransferStarter'
 import { create } from 'zustand'
+import { MergedTransactionLifiData } from '../../../state/app/state'
 
 export type RouteType =
   | 'arbitrum'
@@ -11,10 +9,7 @@ export type RouteType =
   | 'lifi-fastest'
   | 'lifi-cheapest'
   | 'lifi' // If fastest and cheapest quotes are the same
-export type RouteContext = LifiData & {
-  fromAmount: AmountWithToken
-  toAmount: AmountWithToken
-}
+export type RouteContext = LifiData & MergedTransactionLifiData
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
 interface RouteState {
   selectedRoute: RouteType | undefined
@@ -34,7 +29,7 @@ export const useRouteStore = create<RouteState>()(set => ({
   clearRoute: () => set({ selectedRoute: undefined, context: undefined })
 }))
 
-export function isLifiRoute(selectedRoute: RouteType) {
+export function isLifiRoute(selectedRoute: RouteType | undefined) {
   return (
     selectedRoute === 'lifi' ||
     selectedRoute === 'lifi-cheapest' ||

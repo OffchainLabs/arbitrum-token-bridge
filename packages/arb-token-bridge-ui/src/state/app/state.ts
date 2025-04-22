@@ -12,6 +12,7 @@ import {
 } from '../../types/Transactions'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
+import { AmountWithToken } from '@/token-bridge-sdk/LifiTransferStarter'
 
 export enum DepositStatus {
   L1_PENDING = 1,
@@ -21,7 +22,8 @@ export enum DepositStatus {
   L2_FAILURE = 5,
   CREATION_FAILED = 6,
   EXPIRED = 7,
-  CCTP_DEFAULT_STATE = 8 // Cctp only relies on tx.status
+  CCTP_DEFAULT_STATE = 8, // Cctp only relies on tx.status
+  LIFI_DEFAULT_STATE = 9
 }
 
 export enum WithdrawalStatus {
@@ -32,7 +34,14 @@ export enum WithdrawalStatus {
   FAILURE = 'Failure'
 }
 
-export interface MergedTransaction {
+export type MergedTransactionLifiData = {
+  toolDetails: { key: string; name: string; logoURI: string }
+  durationMs: number
+  fromAmount: AmountWithToken
+  toAmount: AmountWithToken
+  destinationTxId: string | null
+}
+export interface BaseMergedTransaction {
   // TODO: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/master/packages/arb-token-bridge-ui/src/util/withdrawals/helpers.ts#L31
   // should return sender as well, then we can make it non-optional
   sender?: string
@@ -51,7 +60,8 @@ export interface MergedTransaction {
   blockNum: number | null
   tokenAddress: string | null
   isCctp?: boolean
-  isOft?: boolean
+  isOft?: false
+  isLifi?: false
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   parentToChildMsgData?: ParentToChildMessageData
   childToParentMsgData?: ChildToParentMessageData
@@ -60,9 +70,6 @@ export interface MergedTransaction {
   parentChainId: number
   sourceChainId: number
   destinationChainId: number
-  oftData?: {
-    destinationTxHash?: string | null
-  }
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
     attestationHash?: Address | null
@@ -72,12 +79,31 @@ export interface MergedTransaction {
   }
 }
 
-export interface TeleporterMergedTransaction extends MergedTransaction {
+export interface LifiMergedTransaction
+  extends Omit<BaseMergedTransaction, 'isLifi'>,
+    MergedTransactionLifiData {
+  isLifi: true
+  destinationStatus: WithdrawalStatus
+}
+
+export interface TeleporterMergedTransaction extends BaseMergedTransaction {
   /** note: in contrast to general deposits which use `parentToChildMsgData`,
    * Teleport transfers still follow L1/L2/L3 terminology, so we have `l1ToL2MsgData` and `l2ToL3MsgData` */
   l1ToL2MsgData?: ParentToChildMessageData
   l2ToL3MsgData: L2ToL3MessageData
 }
+
+export interface LayerZeroTransaction
+  extends Omit<BaseMergedTransaction, 'isOft'> {
+  isOft: true
+  destinationTxHash?: string | null
+}
+
+export type MergedTransaction =
+  | BaseMergedTransaction
+  | LifiMergedTransaction
+  | TeleporterMergedTransaction
+  | LayerZeroTransaction
 
 export interface WarningTokens {
   [address: string]: {
