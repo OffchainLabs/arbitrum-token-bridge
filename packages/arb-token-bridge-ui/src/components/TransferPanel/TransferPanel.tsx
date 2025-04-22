@@ -224,7 +224,7 @@ export function TransferPanel() {
   handleError({
     error: new Error('This is a test error for handleError function'),
     label: 'cctp_transfer',
-    category: 'transaction_execution'
+    category: 'transaction_signing'
   })
 
   useEffect(() => {
@@ -474,7 +474,7 @@ export function TransferPanel() {
         handleError({
           error,
           label: 'cctp_transfer',
-          category: 'transaction_execution'
+          category: 'transaction_signing'
         })
         errorToast(
           `USDC ${
@@ -685,7 +685,7 @@ export function TransferPanel() {
       handleError({
         error,
         label: 'oft_transfer',
-        category: 'transaction_execution'
+        category: 'transaction_signing'
       })
       console.error(error)
       errorToast(
@@ -955,7 +955,7 @@ export function TransferPanel() {
       handleError({
         error,
         label: 'arbitrum_transfer',
-        category: 'transaction_execution',
+        category: 'transaction_signing',
         additionalData: selectedToken
           ? {
               erc20_address_on_parent_chain: selectedToken.address,

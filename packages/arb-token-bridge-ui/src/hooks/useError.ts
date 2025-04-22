@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import * as Sentry from '@sentry/react'
 import { useNetworks } from './useNetworks'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 
 /**
  * Categories for classifying errors
@@ -10,19 +11,29 @@ export type ErrorCategory =
   | 'token_approval'
   | 'token_transfer'
   | 'contract_interaction'
-  | 'contract_validation'
+  | 'contract_revert'
+  | 'gas_estimation'
+  | 'transaction_signing'
+  | 'transaction_submission'
+  | 'transaction_confirmation'
   | 'claim'
   | 'allowance_check'
   | 'network_request'
   | 'network_response'
-  | 'transaction_preparation'
-  | 'transaction_execution'
   | 'bridge_validation'
   | 'bridge_operation'
-  | 'user_input'
+  | 'user_input_validation'
+  | 'user_interface'
   | 'user_rejection'
+  | 'wallet_connection'
+  | 'configuration_error'
   | 'system'
   | 'unknown'
+
+/**
+ * Categories of errors that should be automatically ignored for Sentry reporting
+ */
+const IGNORED_ERROR_CATEGORIES: ErrorCategory[] = ['user_rejection']
 
 /**
  * Parameters for the `handleError` function
@@ -32,11 +43,11 @@ export interface HandleErrorParams {
   error: unknown
   /** A specific, unique identifier for the *operation* or context being attempted (e.g., 'cctp_approve_token', 'eth_deposit'). */
   label: string
-  /** Optional: Caller-determined category for Sentry tagging. */
-  category?: ErrorCategory
+  /** Caller-determined category for Sentry tagging. */
+  category: ErrorCategory
   /** Optional: Additional key-value data specific to this error instance for Sentry 'extra' context. */
   additionalData?: Record<string, any>
-  /** Optional: Sentry severity level. Defaults to 'error' if not provided (except for user rejections). */
+  /** Optional: Sentry severity level. Defaults to 'error' if not provided. */
   level?: Sentry.SeverityLevel
 }
 
@@ -44,7 +55,7 @@ export interface HandleErrorParams {
  * Common data structure for error context
  */
 interface ErrorContextData {
-  category: string
+  category: ErrorCategory
   level: Sentry.SeverityLevel
   sourceChainId: string
   destinationChainId: string
@@ -91,12 +102,11 @@ export function useError() {
     Sentry.withScope(scope => {
       scope.setLevel(level)
 
-      // Set Tags (Caller provides most)
+      const errorObj = error instanceof Error ? error : new Error(String(error))
+
+      // Set Tags
       scope.setTag('operation_label', params.label.substring(0, 200))
-      if (params.category) {
-        scope.setTag('error_category', params.category.substring(0, 200))
-      }
-      // Common context tags
+      scope.setTag('error_category', mergedData.category)
       scope.setTag('source_chain_id', mergedData.sourceChainId)
       scope.setTag('destination_chain_id', mergedData.destinationChainId)
       if (mergedData.walletAddress !== 'disconnected') {
@@ -105,24 +115,18 @@ export function useError() {
 
       // Set Extra Data
       scope.setExtra('errorDetails', mergedData)
-      scope.setExtra('errorMessage', (error as Error)?.message)
-      scope.setExtra('errorName', (error as Error)?.name)
+      scope.setExtra('errorMessage', errorObj.message)
+      scope.setExtra('errorName', errorObj.name)
 
       const fingerprint = [
         '{{ default }}',
+        mergedData.category,
         params.label,
-        params.category || 'unknown'
+        errorObj.name
       ]
 
-      const errorObj = error as any
-      if (errorObj?.code && errorObj?.message) {
-        fingerprint.push(String(errorObj.code), errorObj.message)
-      }
-
       scope.setFingerprint(fingerprint)
-
-      // Capture Error
-      Sentry.captureException(error)
+      Sentry.captureException(errorObj)
     })
   }
 
@@ -134,11 +138,25 @@ export function useError() {
       const {
         error,
         label,
-        category = 'unknown',
+        category,
         additionalData = {},
-        level: levelOverride = 'error'
+        level: levelOverride
       } = params
 
+      // Skip logging for ignored categories
+      if (
+        IGNORED_ERROR_CATEGORIES.includes(category) ||
+        isUserRejectedError(error)
+      ) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Ignored Error: '${label}' [Category: ${category}]`, {
+            originalError: error
+          })
+        }
+        return
+      }
+
+      // Determine level
       const level = levelOverride ?? 'error'
 
       // merge context data
