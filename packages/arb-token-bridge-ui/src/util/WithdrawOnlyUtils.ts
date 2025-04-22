@@ -253,6 +253,27 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   ],
   [ChainId.ArbitrumNova]: [],
   // Plume
+  98866: [
+    {
+      symbol: 'USDC',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDC,
+      l2Address: '0x54FD4da2Fa19Cf0f63d8f93A6EA5BEd3F9C042C6'
+    },
+    {
+      symbol: 'USDT',
+      l2CustomAddr: '',
+      l1Address: CommonAddress.Ethereum.USDT,
+      l2Address: '0x7c5568fd326086D35B002Cc705C852dbaB7438a8'
+    },
+    {
+      symbol: 'WETH',
+      l2CustomAddr: '',
+      l1Address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      l2Address: '0xEE9e50425E1599e4eC09f0a5F76Ce35A4924e4AC'
+    }
+  ],
+  // Plume Legacy
   98865: [
     {
       symbol: 'USDC',
