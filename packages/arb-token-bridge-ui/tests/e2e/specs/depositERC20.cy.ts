@@ -10,8 +10,7 @@ import {
   moreThanZeroBalance,
   getL1NetworkName,
   getL2NetworkName,
-  ERC20TokenSymbol,
-  getRandomAmountToSend
+  ERC20TokenSymbol
 } from '../../support/common'
 
 const depositTestCases = {
@@ -66,7 +65,7 @@ describe('Deposit Token', () => {
 
       it(`should deposit ${tokenType} successfully to the same address`, () => {
         // randomize the amount to be sure that previous transactions are not checked in e2e
-        const ERC20AmountToSend = getRandomAmountToSend()
+        const ERC20AmountToSend = 0.0017
 
         cy.login({ networkType: 'parentChain' })
         context('should add a new token', () => {
@@ -105,7 +104,7 @@ describe('Deposit Token', () => {
 
       it('should deposit ERC-20 to custom destination address successfully', () => {
         // randomize the amount to be sure that previous transactions are not checked in e2e
-        const ERC20AmountToSend = getRandomAmountToSend()
+        const ERC20AmountToSend = 0.0018
 
         cy.login({ networkType: 'parentChain' })
         context('should add a new token', () => {

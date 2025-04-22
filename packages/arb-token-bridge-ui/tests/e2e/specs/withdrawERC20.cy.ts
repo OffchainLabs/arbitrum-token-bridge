@@ -10,8 +10,7 @@ import {
   getL1NetworkName,
   getL2NetworkName,
   getZeroToLessThanOneToken,
-  ERC20TokenSymbol,
-  getRandomAmountToSend
+  ERC20TokenSymbol
 } from '../../support/common'
 
 const withdrawalTestCases = {
@@ -35,7 +34,7 @@ describe('Withdraw ERC20 Token', () => {
     getZeroToLessThanOneToken(nativeTokenSymbol)
 
   // randomize the amount to be sure that previous transactions are not checked in e2e
-  const ERC20AmountToSend = getRandomAmountToSend()
+  const ERC20AmountToSend = 0.0013
 
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
@@ -83,9 +82,6 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       it(`should withdraw ${tokenType} to the same address successfully`, () => {
-        // randomize the amount to be sure that previous transactions are not checked in e2e
-        const ERC20AmountToSend = getRandomAmountToSend()
-
         cy.login({ networkType: 'childChain' })
         context(`should add ${tokenType} correctly`, () => {
           cy.searchAndSelectToken({
@@ -186,7 +182,7 @@ describe('Withdraw ERC20 Token', () => {
 
       it(`should withdraw ${tokenType} to custom destination address successfully`, () => {
         // randomize the amount to be sure that previous transactions are not checked in e2e
-        const ERC20AmountToSend = getRandomAmountToSend()
+        const ERC20AmountToSend = 0.0014
 
         cy.login({ networkType: 'childChain' })
         context('should add a new token', () => {

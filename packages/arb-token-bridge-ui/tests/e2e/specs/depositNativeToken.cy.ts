@@ -5,14 +5,11 @@
 import {
   getL1NetworkName,
   getL2NetworkName,
-  getRandomAmountToSend,
   getZeroToLessThanOneToken
 } from '../../support/common'
 
 describe('Deposit native token', () => {
   before(() => cy.resetAppState())
-
-  const ETHAmountToDeposit = getRandomAmountToSend()
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
@@ -30,6 +27,8 @@ describe('Deposit native token', () => {
   })
 
   it('should show gas estimations and bridge successfully', () => {
+    const ETHAmountToDeposit = 0.0015
+
     cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
     cy.findGasFeeSummary(zeroToLessThanOneEth)
@@ -45,7 +44,7 @@ describe('Deposit native token', () => {
   })
 
   it('should deposit to custom destination address successfully', () => {
-    const ETHAmountToDeposit = getRandomAmountToSend()
+    const ETHAmountToDeposit = 0.0016
 
     cy.login({ networkType: 'parentChain' })
 

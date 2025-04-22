@@ -6,7 +6,6 @@ import {
   getL1NetworkName,
   getL2NetworkConfig,
   getL2NetworkName,
-  getRandomAmountToSend,
   getZeroToLessThanOneToken
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -62,8 +61,8 @@ describe('Batch Deposit', () => {
 
   it('should deposit erc-20 and native currency to the same address', () => {
     // randomize the amount to be sure that previous transactions are not checked in e2e
-    const ERC20AmountToSend = getRandomAmountToSend()
-    
+    const ERC20AmountToSend = 0.0019
+
     const nativeCurrencyAmountToSend = 0.002
 
     const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
@@ -188,7 +187,7 @@ describe('Batch Deposit', () => {
 
   it('should deposit erc-20 and native currency to a different address', () => {
     // randomize the amount to be sure that previous transactions are not checked in e2e
-    const ERC20AmountToSend = getRandomAmountToSend()
+    const ERC20AmountToSend = 0.0021
 
     const nativeCurrencyAmountToSend = 0.002
 
