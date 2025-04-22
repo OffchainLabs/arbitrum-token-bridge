@@ -21,7 +21,7 @@ export function captureSentryErrorWithExtraData({
     )
   }
 
-  Sentry.withScope((scope: Sentry.Scope) => {
+  Sentry.withScope(scope => {
     // tags only allow primitive values
     scope.setTag('origin function', originFunction)
 
