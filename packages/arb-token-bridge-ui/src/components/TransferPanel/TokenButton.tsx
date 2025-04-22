@@ -28,9 +28,11 @@ export type TokenButtonOptions = {
 }
 
 export function TokenButton({
-  options
+  options,
+  onSearchPanelClose
 }: {
   options?: TokenButtonOptions
+  onSearchPanelClose: () => void
 }): JSX.Element {
   const [selectedToken] = useSelectedToken()
   const disabled = options?.disabled ?? false
@@ -112,6 +114,7 @@ export function TokenButton({
                   function onClose() {
                     onPopoverClose()
                     close()
+                    onSearchPanelClose()
                   }
                   return <TokenSearch close={onClose} />
                 }}

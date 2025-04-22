@@ -2,6 +2,7 @@ import React, {
   ChangeEventHandler,
   useCallback,
   useEffect,
+  useRef,
   useState
 } from 'react'
 import { twMerge } from 'tailwind-merge'
@@ -123,8 +124,13 @@ function SourceChainTokenBalance({
   )
 }
 
+type InputProps = React.DetailedHTMLProps<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  HTMLInputElement
+>
+
 const TransferPanelInputField = React.memo(
-  (props: React.InputHTMLAttributes<HTMLInputElement>) => {
+  React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     return (
       <input
         type="text"
@@ -132,10 +138,11 @@ const TransferPanelInputField = React.memo(
         placeholder="0"
         aria-label="Amount input"
         className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-300 sm:text-3xl"
+        ref={ref}
         {...props}
       />
     )
-  }
+  })
 )
 
 TransferPanelInputField.displayName = 'TransferPanelInputField'
@@ -210,6 +217,7 @@ export const TransferPanelMainInput = React.memo(
     const sanitizedAmount = sanitizeAmountQueryParam(
       truncateExtraDecimals(value, selectedTokenDecimals)
     )
+    const inputFieldRef = useRef<HTMLInputElement | null>(null)
 
     useEffect(() => {
       /**
@@ -261,6 +269,16 @@ export const TransferPanelMainInput = React.memo(
       }
     }, [sanitizedAmount, value])
 
+    const onSearchPanelClose = useCallback(() => {
+      setTimeout(() => {
+        if (inputFieldRef.current) {
+          inputFieldRef.current.focus()
+        }
+        // the token info takes some time to load
+        // feels awkward if there is no delay
+      }, 500)
+    }, [inputFieldRef])
+
     return (
       <>
         <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
@@ -273,9 +291,13 @@ export const TransferPanelMainInput = React.memo(
               {...rest}
               value={localValue}
               onChange={handleInputChange}
+              ref={inputFieldRef}
             />
             <div className="flex flex-col items-end">
-              <TokenButton options={options} />
+              <TokenButton
+                options={options}
+                onSearchPanelClose={onSearchPanelClose}
+              />
               <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
                 <SourceChainTokenBalance
                   balanceOverride={options?.balance}

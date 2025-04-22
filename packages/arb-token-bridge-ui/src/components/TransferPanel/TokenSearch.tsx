@@ -505,7 +505,14 @@ function TokensPanel({
         />
       )
     },
-    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected, usdcToken]
+    [
+      tokensToShow,
+      tokensFromLists,
+      tokensFromUser,
+      onTokenSelected,
+      usdcToken,
+      isOrbitChain
+    ]
   )
 
   const AddButton = useMemo(
