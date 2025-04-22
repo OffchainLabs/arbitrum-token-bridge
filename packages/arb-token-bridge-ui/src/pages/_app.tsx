@@ -52,7 +52,7 @@ Sentry.init({
     'User denied transaction signature',
     'User rejected the transaction'
   ],
-  beforeSend: (event: Sentry.Event, hint: Sentry.EventHint) => {
+  beforeSend: (event: Sentry.ErrorEvent, hint: Sentry.EventHint) => {
     if (!hint.originalException) {
       return event
     }
