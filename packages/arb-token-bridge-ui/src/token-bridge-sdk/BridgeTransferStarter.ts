@@ -46,7 +46,7 @@ export type BridgeTransferStarterPropsWithChainIds = {
 
 export type TransferEstimateGasProps = {
   amount: BigNumber
-  signer: Signer
+  from: string
   destinationAddress?: string
 }
 
@@ -92,7 +92,7 @@ export type ApproveNativeCurrencyProps = {
 
 export type RequiresTokenApprovalProps = {
   amount: BigNumber
-  signer: Signer
+  owner: string
   destinationAddress?: string
 }
 

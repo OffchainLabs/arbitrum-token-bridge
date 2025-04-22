@@ -4,6 +4,7 @@ import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { AmountQueryParam, ChainParam } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
+import { sanitizeTokenQueryParam } from '../../pages'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
@@ -225,6 +226,46 @@ describe('ChainParam custom encoder and decoder', () => {
       })
       registerCustomArbitrumNetwork(customChain)
       expect(ChainParam.decode('222222')).toEqual(222222)
+    })
+  })
+})
+
+describe('sanitizeTokenQueryParam', () => {
+  describe('when `token=eth` is defined', () => {
+    const xaiChainId = 660279
+
+    it('should be kept if the destination chain is an Orbit chain with custom gas token', () => {
+      const result = sanitizeTokenQueryParam({
+        destinationChainId: xaiChainId,
+        token: 'eth'
+      })
+      expect(result).toEqual('eth')
+    })
+
+    it('should be case insensitive', () => {
+      const result = sanitizeTokenQueryParam({
+        destinationChainId: xaiChainId,
+        token: 'eTH'
+      })
+      expect(result).toEqual('eth')
+    })
+
+    it('should be stripped if the destination chain is a core chain with ETH as the gas token', () => {
+      const result = sanitizeTokenQueryParam({
+        destinationChainId: ChainId.ArbitrumOne,
+        token: 'eth'
+      })
+      expect(result).toBeUndefined()
+    })
+
+    it('should be stripped if the destination chain is an Orbit chain with ETH as the gas token', () => {
+      const rariChainId = 1380012617
+
+      const result = sanitizeTokenQueryParam({
+        destinationChainId: rariChainId,
+        token: 'eth'
+      })
+      expect(result).toBeUndefined()
     })
   })
 })
