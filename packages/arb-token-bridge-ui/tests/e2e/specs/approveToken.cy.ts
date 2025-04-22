@@ -44,6 +44,7 @@ describe('Approve token for deposit', () => {
       cy.findByRole('button', {
         name: /Pay approval fee of/
       }).click()
+      cy.wait(25_000)
       cy.confirmSpending('5')
 
       /**
