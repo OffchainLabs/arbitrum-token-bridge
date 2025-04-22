@@ -61,7 +61,6 @@ import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from 
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
-import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { normalizeTimestamp } from '../../state/app/utils'
