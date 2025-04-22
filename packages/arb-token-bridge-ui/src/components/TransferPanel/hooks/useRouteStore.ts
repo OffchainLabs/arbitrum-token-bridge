@@ -1,7 +1,20 @@
+import {
+  AmountWithToken,
+  LifiData
+} from '@/token-bridge-sdk/LifiTransferStarter'
 import { create } from 'zustand'
 
-export type RouteType = 'arbitrum' | 'oftV2' | 'cctp'
-export type RouteContext = null
+export type RouteType =
+  | 'arbitrum'
+  | 'oftV2'
+  | 'cctp'
+  | 'lifi-fastest'
+  | 'lifi-cheapest'
+  | 'lifi' // If fastest and cheapest quotes are the same
+export type RouteContext = LifiData & {
+  fromAmount: AmountWithToken
+  toAmount: AmountWithToken
+}
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
 interface RouteState {
   selectedRoute: RouteType | undefined
@@ -20,3 +33,11 @@ export const useRouteStore = create<RouteState>()(set => ({
     }),
   clearRoute: () => set({ selectedRoute: undefined, context: undefined })
 }))
+
+export function isLifiRoute(selectedRoute: RouteType) {
+  return (
+    selectedRoute === 'lifi' ||
+    selectedRoute === 'lifi-cheapest' ||
+    selectedRoute === 'lifi-fastest'
+  )
+}

@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useState, useMemo } from 'react'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
@@ -8,36 +8,14 @@ import { ArbitrumCanonicalRoute } from './ArbitrumCanonicalRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
 import React from 'react'
-import { useRouteStore } from '../hooks/useRouteStore'
+import { RouteType, useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
-import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { LifiRoutes } from './LifiRoute'
+import { isNetwork } from '../../../util/networks'
+import { shallow } from 'zustand/shallow'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
-}
-
-export function useDefaultSelectedRoute() {
-  const [{ amount }] = useArbQueryParams()
-  const isCctpTransfer = useIsCctpTransfer()
-  const isOftV2Transfer = useIsOftV2Transfer()
-  const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
-  const [selectedToken] = useSelectedToken()
-
-  useEffect(() => {
-    if (Number(amount) === 0) return
-
-    if (isOftV2Transfer) {
-      setSelectedRoute('oftV2')
-      return
-    }
-
-    if (isCctpTransfer) {
-      setSelectedRoute('cctp')
-      return
-    }
-
-    setSelectedRoute('arbitrum')
-  }, [amount, isOftV2Transfer, isCctpTransfer, setSelectedRoute, selectedToken])
 }
 
 function ShowHiddenRoutesButton(
@@ -51,6 +29,84 @@ function ShowHiddenRoutesButton(
       </button>
     </div>
   )
+}
+
+function getRoutes({
+  isOftV2Transfer,
+  isCctpTransfer,
+  amount,
+  isDepositMode,
+  isTestnet,
+  showHiddenRoutes,
+  setShowHiddenRoutes
+}: {
+  isOftV2Transfer: boolean
+  isCctpTransfer: boolean
+  amount: string
+  isDepositMode: boolean
+  isTestnet: boolean
+  showHiddenRoutes: boolean
+  setShowHiddenRoutes: (toggle: boolean) => void
+}): {
+  ChildRoutes: React.JSX.Element | null
+  focus: RouteType | null
+} {
+  if (Number(amount) === 0) {
+    return {
+      ChildRoutes: null,
+      focus: null
+    }
+  }
+
+  if (isOftV2Transfer) {
+    return {
+      ChildRoutes: <OftV2Route />,
+      focus: 'oftV2'
+    }
+  }
+
+  if (isCctpTransfer) {
+    if (isDepositMode) {
+      return {
+        ChildRoutes: (
+          <>
+            <CctpRoute />
+            {showHiddenRoutes ? (
+              <ArbitrumCanonicalRoute />
+            ) : (
+              <ShowHiddenRoutesButton
+                onClick={() => setShowHiddenRoutes(true)}
+              />
+            )}
+          </>
+        ),
+        focus: showHiddenRoutes ? null : 'cctp'
+      }
+    }
+
+    return {
+      ChildRoutes: (
+        <>
+          {!isTestnet && <LifiRoutes fastestTag="fastest" />}
+          <CctpRoute />
+        </>
+      ),
+      focus: isTestnet ? 'cctp' : null
+    }
+  }
+
+  const showLifiRoutes = !isDepositMode && !isTestnet
+  return {
+    ChildRoutes: (
+      <>
+        {showLifiRoutes && (
+          <LifiRoutes cheapestTag="best-deal" fastestTag="fastest" />
+        )}
+        <ArbitrumCanonicalRoute />
+      </>
+    ),
+    focus: showLifiRoutes ? null : 'arbitrum'
+  }
 }
 
 /**
@@ -68,58 +124,78 @@ function ShowHiddenRoutesButton(
  * - Arb1/ArbNova
  *
  * We memo the component, so calling `setSelectedRoute` doesn't rerender and cause infinite loop
+ *
+ * Tag logic:
+ * LiFi + Cctp
+ * - Cctp route: Best Deal
+ * - Cheapest LiFi route: no tag
+ * - Fastest LiFi route: Fastest
+ *
+ * LiFi + Canonical:
+ * - Cheapest LiFi route: Best Deal
+ * - Fastest LiFi route: Fastest
+ * - Canonical route: Security guaranteed by Arbitrum
+ *
+ * Canonical + Cctp:
+ * - Cctp route: Best Deal
+ * - Canonical route: Security guaranteed by Arbitrum
+ *
+ * Canonical only: Security guaranteed by Arbitrum
  */
 export const Routes = React.memo(() => {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
-  const [selectedToken] = useSelectedToken()
   const [{ amount }] = useArbQueryParams()
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
 
   const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
 
-  useEffect(() => {
-    setShowHiddenRoutes(false)
-  }, [selectedToken])
-
-  if (Number(amount) === 0) {
-    return
-  }
-
-  if (isOftV2Transfer) {
-    return (
-      <Wrapper>
-        <OftV2Route />
-      </Wrapper>
-    )
-  }
-
-  if (isCctpTransfer) {
-    if (isDepositMode) {
-      return (
-        <Wrapper>
-          <CctpRoute />
-          {showHiddenRoutes && <ArbitrumCanonicalRoute />}
-          {!showHiddenRoutes && (
-            <ShowHiddenRoutesButton onClick={() => setShowHiddenRoutes(true)} />
-          )}
-        </Wrapper>
-      )
-    }
-
-    return (
-      <Wrapper>
-        <CctpRoute />
-      </Wrapper>
-    )
-  }
-
-  return (
-    <Wrapper>
-      <ArbitrumCanonicalRoute />
-    </Wrapper>
+  const { isTestnet } = isNetwork(networks.sourceChain.id)
+  const { setSelectedRoute, clearRoute } = useRouteStore(
+    state => ({
+      setSelectedRoute: state.setSelectedRoute,
+      clearRoute: state.clearRoute
+    }),
+    shallow
   )
+
+  const { focus, ChildRoutes } = useMemo(
+    () =>
+      getRoutes({
+        isOftV2Transfer,
+        isCctpTransfer,
+        amount,
+        isDepositMode,
+        isTestnet,
+        showHiddenRoutes,
+        setShowHiddenRoutes
+      }),
+    [
+      amount,
+      isCctpTransfer,
+      isDepositMode,
+      isOftV2Transfer,
+      isTestnet,
+      showHiddenRoutes,
+      setShowHiddenRoutes
+    ]
+  )
+
+  useEffect(() => {
+    if (focus) {
+      setSelectedRoute(focus)
+    } else {
+      clearRoute()
+      setShowHiddenRoutes(false)
+    }
+  }, [setSelectedRoute, focus, clearRoute, ChildRoutes])
+
+  if (!ChildRoutes) {
+    return null
+  }
+
+  return <Wrapper>{ChildRoutes}</Wrapper>
 })
 
 Routes.displayName = 'Routes'

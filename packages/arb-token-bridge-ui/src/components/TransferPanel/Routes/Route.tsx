@@ -11,7 +11,7 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { RouteType, SetRoute } from '../hooks/useRouteStore'
 import { TokenLogo } from '../TokenLogo'
-import React from 'react'
+import React, { PropsWithChildren } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 
@@ -22,7 +22,7 @@ import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 
-export type BadgeType = 'security-guaranteed'
+export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
 export type Token = {
   address: string
   decimals: number
@@ -42,7 +42,7 @@ export type RouteProps = {
   bridgeFee?: { fee: string | undefined; token: Token }
   bridge: string
   bridgeIconURI: string
-  tag?: BadgeType
+  tag?: BadgeType | BadgeType[]
   selected: boolean
   onSelectedRouteClick: SetRoute
 }
@@ -73,21 +73,69 @@ function getBridgeConfigFromType(type: RouteType) {
         height: 15
       }
     }
+    case 'lifi':
+    case 'lifi-fastest':
+    case 'lifi-cheapest': {
+      return {
+        name: 'LI.FI',
+        icon: '/icons/lifi.svg',
+        width: 15,
+        height: 15
+      }
+    }
   }
 }
 
-function getBadge(badgeType: BadgeType) {
+function Tag({
+  children,
+  className
+}: PropsWithChildren<{ className: string }>) {
+  return (
+    <div className="flex">
+      <div
+        className={twMerge(
+          'flex h-fit items-center space-x-1 rounded-full p-2 text-xs',
+          className
+        )}
+      >
+        <span>{children}</span>
+      </div>
+    </div>
+  )
+}
+
+function getBadgeFromBadgeType(badgeType: BadgeType) {
   switch (badgeType) {
     case 'security-guaranteed': {
       return (
-        <div className="flex">
-          <div className="flex h-fit items-center space-x-1 rounded-full bg-lime-dark p-2 text-xs text-lime">
-            <span>Security guaranteed by Arbitrum</span>
-          </div>
-        </div>
+        <Tag className="bg-lime-dark text-lime" key="security-guaranteed">
+          Security guaranteed by Arbitrum
+        </Tag>
+      )
+    }
+    case 'best-deal': {
+      return (
+        <Tag className="bg-lilac text-white" key="best-deal">
+          Best deal
+        </Tag>
+      )
+    }
+    case 'fastest': {
+      return (
+        <Tag className="bg-lilac text-white" key="fastest">
+          Fastest
+        </Tag>
       )
     }
   }
+}
+
+function getBadges(badgeTypes: BadgeType | BadgeType[]) {
+  if (Array.isArray(badgeTypes)) {
+    return badgeTypes.map(getBadgeFromBadgeType)
+  }
+
+  return getBadgeFromBadgeType(badgeTypes)
 }
 
 export const Route = React.memo(
@@ -100,9 +148,9 @@ export const Route = React.memo(
     isLoadingGasEstimate,
     overrideToken,
     gasCost,
-    tag,
     selected,
     bridgeFee,
+    tag,
     onSelectedRouteClick
   }: RouteProps) => {
     const [networks] = useNetworks()
@@ -139,10 +187,11 @@ export const Route = React.memo(
       bridgeFee.token.address === constants.AddressZero
 
     return (
-      <div
+      <button
         className={twMerge(
-          'group cursor-pointer rounded text-white ring-1 ring-[#ffffff33] transition-colors',
-          selected && 'ring-2 ring-[#5F7D5B]'
+          'group cursor-pointer rounded text-left text-white ring-1 ring-[#ffffff33] transition-colors',
+          'focus-visible:!outline-none',
+          selected && 'ring-[#5F7D5B]'
         )}
         onClick={() => onSelectedRouteClick(type)}
         aria-label={`Route ${type}`}
@@ -165,7 +214,8 @@ export const Route = React.memo(
         </div>
         <div
           className={twMerge(
-            'relative flex gap-4 rounded-b bg-[#303030] px-4 py-3 text-sm transition-colors group-hover:bg-[#474747]',
+            'relative flex gap-4 rounded-b bg-[#303030] px-4 py-3 text-sm transition-colors',
+            'group-focus-within:bg-[#474747] group-hover:bg-[#474747]', // focused state
             selected && 'bg-[#474747]'
           )}
         >
@@ -297,10 +347,12 @@ export const Route = React.memo(
           </div>
 
           {tag ? (
-            <div className="absolute right-2 top-2">{getBadge(tag)}</div>
+            <div className="invisible absolute right-2 top-2 flex gap-1 md:visible">
+              {getBadges(tag)}
+            </div>
           ) : null}
         </div>
-      </div>
+      </button>
     )
   }
 )

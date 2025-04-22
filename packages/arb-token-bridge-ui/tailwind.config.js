@@ -25,6 +25,7 @@ module.exports = {
         brick: '#FFDDD6',
         orange: '#FFEED3',
         lime: '#E8FFE4',
+        lilac: '#754562',
 
         // SECONDARY
         'cyan-dark': '#11365E',

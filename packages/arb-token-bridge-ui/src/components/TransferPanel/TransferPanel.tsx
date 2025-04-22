@@ -81,7 +81,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
-import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
+import { Routes } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 
@@ -225,11 +225,6 @@ export function TransferPanel() {
     setAmount('')
     setAmount2('')
   }
-
-  useEffect(() => {
-    clearRoute()
-  }, [selectedToken, clearRoute])
-  useDefaultSelectedRoute()
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {

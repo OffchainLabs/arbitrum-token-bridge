@@ -14,17 +14,27 @@ import { fetchErc20Allowance } from '../util/TokenUtils'
 import { Address } from '../util/AddressUtils'
 import { TransactionRequest } from '../pages/api/crosschain-transfers/lifi'
 
-type LifiData = {
+type Token = {
+  address: string
+  decimals: number
+  symbol: string
+  logoURI?: string
+}
+export type AmountWithToken = {
+  amount: BigNumber
+  token: Token
+}
+export type LifiData = {
   spenderAddress: Address
-  gas: BigNumber
-  fee: BigNumber
+  gas: AmountWithToken
+  fee: AmountWithToken
   transactionRequest: TransactionRequest
 }
 export type LifiTransferStarterProps = BridgeTransferStarterProps & {
   lifiData: {
     spenderAddress: string
-    gas: BigNumber
-    fee: BigNumber
+    gas: AmountWithToken
+    fee: AmountWithToken
     transactionRequest: TransactionRequest
   }
 }
@@ -116,7 +126,7 @@ export class LifiTransferStarter extends BridgeTransferStarter {
     // We only use lifi for withdrawal, source chain is the child chain
     return {
       estimatedParentChainGas: constants.Zero,
-      estimatedChildChainGas: this.lifiData.gas
+      estimatedChildChainGas: this.lifiData.gas.amount
     }
   }
 
@@ -138,6 +148,6 @@ export class LifiTransferStarter extends BridgeTransferStarter {
   }
 
   public async transferEstimateFee() {
-    return this.lifiData.fee
+    return this.lifiData.fee.amount
   }
 }
