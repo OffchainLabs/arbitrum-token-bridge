@@ -61,7 +61,6 @@ interface ErrorContextData {
   destinationChainId: string
   urlPath: string
   urlQuery: string
-  [key: string]: any
 }
 
 /**
@@ -91,6 +90,43 @@ export function useError() {
   }, [networks])
 
   /**
+   * Generates a Sentry fingerprint based on context and error details.
+   */
+  const _generateFingerprint = (
+    error: unknown,
+    category: ErrorCategory,
+    label: string
+  ): string[] => {
+    const fingerprint = ['{{ default }}', category, label]
+    const errorObj = error instanceof Error ? error : new Error(String(error))
+
+    if (isEthersError(errorObj)) {
+      // Prioritize specific codes/reasons for better grouping
+      if (errorObj.code) {
+        fingerprint.push(`code:${errorObj.code}`)
+      } else if (errorObj.reason) {
+        // Basic normalization: limit length, remove unique identifiers
+        const normalizedReason = errorObj.reason
+          .replace(/0x[a-fA-F0-9]{40}/g, 'ADDRESS') // Replace addresses
+          .replace(/0x[a-fA-F0-9]+/g, 'HASH_OR_VALUE') // Replace other hex
+          .replace(/\d+/g, 'NUMBER') // Replace numbers
+          .substring(0, 80) // Limit length
+        fingerprint.push(`reason:${normalizedReason}`)
+      } else {
+        // Fallback to name if no code/reason
+        fingerprint.push(`name:${errorObj.name}`)
+      }
+    } else {
+      // For generic errors, use the error name
+      fingerprint.push(`name:${errorObj.name}`)
+    }
+
+    // Avoid adding the full error.message as it's often too unique
+
+    return fingerprint
+  }
+
+  /**
    * Logs error details directly to Sentry based on caller-provided parameters.
    */
   const _logToSentry = (
@@ -109,23 +145,36 @@ export function useError() {
       scope.setTag('error_category', mergedData.category)
       scope.setTag('source_chain_id', mergedData.sourceChainId)
       scope.setTag('destination_chain_id', mergedData.destinationChainId)
-      if (mergedData.walletAddress !== 'disconnected') {
-        scope.setTag('wallet_involved', 'true')
+      scope.setTag('error_type', errorObj.name)
+      if (isEthersError(errorObj) && errorObj.code) {
+        scope.setTag('error_code', String(errorObj.code))
       }
 
       // Set Extra Data
       scope.setExtra('errorDetails', mergedData)
       scope.setExtra('errorMessage', errorObj.message)
       scope.setExtra('errorName', errorObj.name)
+      scope.setExtra('errorStack', errorObj.stack)
+      scope.setExtra('originalError', error)
 
-      const fingerprint = [
-        '{{ default }}',
+      const fingerprint = _generateFingerprint(
+        error,
         mergedData.category,
-        params.label,
-        errorObj.name
-      ]
-
+        params.label
+      )
       scope.setFingerprint(fingerprint)
+
+      scope.setContext('Error Context', {
+        ...mergedData,
+        operationLabel: params.label
+      })
+      scope.setContext('Error Object', {
+        name: errorObj.name,
+        message: errorObj.message,
+        code: (errorObj as EthersError).code,
+        reason: (errorObj as EthersError).reason
+      })
+
       Sentry.captureException(errorObj)
     })
   }
@@ -143,15 +192,25 @@ export function useError() {
         level: levelOverride
       } = params
 
-      // Skip logging for ignored categories
-      if (
-        IGNORED_ERROR_CATEGORIES.includes(category) ||
-        isUserRejectedError(error)
-      ) {
+      // Handle user rejections explicitly
+      if (isUserRejectedError(error)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Ignored Error: '${label}' [Category: ${category}]`, {
+          console.log(`Ignored User Rejected Error: '${label}'`, {
             originalError: error
           })
+        }
+        return
+      }
+
+      // Skip logging for ignored categories
+      if (IGNORED_ERROR_CATEGORIES.includes(category)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            `Ignored Error by Category: '${label}' [Category: ${category}]`,
+            {
+              originalError: error
+            }
+          )
         }
         return
       }
@@ -173,8 +232,8 @@ export function useError() {
 
       // log to console in development
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-          `Handled Error '${label}' [Category: ${category} Level: ${level}]:`,
+        console.error(
+          `Handled Error: '${label}' [Category: ${category}, Level: ${level}]`,
           { originalError: error, contextData: mergedData }
         )
       }
@@ -185,4 +244,23 @@ export function useError() {
   return {
     handleError
   }
+}
+
+/**
+ * Interface for Ethers errors that might have specific properties
+ */
+interface EthersError extends Error {
+  code?: string | number
+  reason?: string
+}
+
+/**
+ * Helper to check if an error appears to be an Ethers error
+ */
+function isEthersError(error: unknown): error is EthersError {
+  return (
+    error instanceof Error &&
+    (typeof (error as EthersError).code !== 'undefined' ||
+      typeof (error as EthersError).reason !== 'undefined')
+  )
 }

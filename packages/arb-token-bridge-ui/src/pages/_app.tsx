@@ -8,7 +8,6 @@ import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import type { Chain } from 'wagmi'
-import { errors } from 'ethers'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -47,24 +46,32 @@ Sentry.init({
     // Ignore events about window.propertyX being redefined accross multiple extensions
     /Cannot redefine property/i,
     // Ignore WC bug until we can update to the latest version, see FS-677
-    /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i
+    /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i,
+    // Add common user rejection messages
+    'User rejected the request',
+    'User denied transaction signature',
+    'User rejected the transaction'
   ],
-  beforeSend: (event, hint) => {
+  beforeSend: (event: Sentry.Event, hint: Sentry.EventHint) => {
     if (!hint.originalException) {
       return event
     }
 
-    if (isUserRejectedError(hint.originalException)) {
-      return null
+    const exception = hint.originalException
+
+    if (isUserRejectedError(exception)) {
+      return null // Drop the event
     }
 
-    const { code, message } = hint.originalException as {
-      code?: errors
-      message?: string
-    }
-
-    if (code && message) {
-      event.fingerprint = ['{{ default }}', code, message]
+    // Only apply if useError didn't already set a fingerprint
+    if (!event.fingerprint || event.fingerprint.length === 0) {
+      if (exception instanceof Error) {
+        // Basic fallback: Group by default rules + error name for unhandled errors
+        event.fingerprint = ['{{ default }}', 'unhandled-error', exception.name]
+      } else {
+        // Fallback for non-Error exceptions
+        event.fingerprint = ['{{ default }}', 'unhandled-non-error']
+      }
     }
 
     return event
@@ -106,7 +113,7 @@ function DynamicMetaData({
 
   const siteTitle = `Bridge to ${destinationChainInfo.name}`
 
-  const siteDescription = `Bridge from ${sourceChainInfo.name} to ${destinationChainInfo.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
+  const siteDescription = `Bridge from ${sourceChainInfo.name} to ${destinationChainInfo.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum's security model. Arbitrum is a Layer 2 Optimistic Rollup.`
   const siteDomain = 'https://bridge.arbitrum.io'
 
   let metaImagePath = `${sourceChainInfo.id}-to-${destinationChainInfo.id}.jpg`
@@ -171,6 +178,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
   } catch (error) {
     // 1. slug misspelling can enter this flow
     // 2. when user selects a custom orbit chain, it will also go to this flow (they are only available in local storage and not on the server)
+    console.warn(
+      `Could not resolve chain slugs: ${sourceChainSlug} / ${destinationChainSlug}. Defaulting.`
+    )
     sourceChainInfo = getChainForChainKeyQueryParam('ethereum')
     destinationChainInfo = getChainForChainKeyQueryParam('arbitrum-one')
   }
