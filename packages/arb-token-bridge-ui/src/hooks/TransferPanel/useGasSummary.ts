@@ -1,5 +1,6 @@
 import { BigNumber, utils } from 'ethers'
 import { useMemo } from 'react'
+import { useDebounce } from '@uidotdev/usehooks'
 
 import { useGasPrice } from '../useGasPrice'
 import {
@@ -83,7 +84,7 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const amountBigNumber = useAmountBigNumber()
+  const amountBigNumber = useDebounce(useAmountBigNumber(), 300)
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
