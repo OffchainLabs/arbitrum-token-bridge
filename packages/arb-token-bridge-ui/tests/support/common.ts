@@ -381,3 +381,8 @@ export async function getNativeTokenDecimals({
 
   return nativeToken?.decimals ?? 18
 }
+
+export function getRandomAmountToSend() {
+  const random = Math.random() * 0.002 + 0.001
+  return Number(random.toFixed(5))
+}

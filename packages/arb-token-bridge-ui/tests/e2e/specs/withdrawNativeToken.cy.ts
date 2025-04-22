@@ -6,6 +6,7 @@ import {
   getInitialETHBalance,
   getL1NetworkName,
   getL2NetworkName,
+  getRandomAmountToSend,
   getZeroToLessThanOneToken
 } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -18,11 +19,7 @@ describe('Withdraw native token', () => {
     getZeroToLessThanOneToken(nativeTokenSymbol)
 
   // randomize the amount to be sure that previous transactions are not checked in e2e
-  let ETHToWithdraw = 0
-
-  while (ETHToWithdraw === 0) {
-    ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5))
-  }
+  const ETHToWithdraw = getRandomAmountToSend()
 
   let l1EthBal: string
 
@@ -58,11 +55,7 @@ describe('Withdraw native token', () => {
 
         it('should show withdrawal confirmation and withdraw', () => {
           // generate a new withdrawal amount for each test-run attempt so that findAllByText doesn't stall coz of prev transactions
-          let ETHToWithdraw = 0
-
-          while (ETHToWithdraw === 0) {
-            ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5))
-          }
+          const ETHToWithdraw = getRandomAmountToSend()
 
           cy.login({ networkType: 'childChain' })
           cy.typeAmount(ETHToWithdraw)
@@ -146,11 +139,7 @@ describe('Withdraw native token', () => {
 
     it('should withdraw to custom destination address successfully', () => {
       // randomize the amount to be sure that previous transactions are not checked in e2e
-      let ETHToWithdraw = 0
-
-      while (ETHToWithdraw === 0) {
-        ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5))
-      }
+      const ETHToWithdraw = getRandomAmountToSend()
 
       cy.login({ networkType: 'childChain' })
 
