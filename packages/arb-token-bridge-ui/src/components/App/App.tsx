@@ -36,7 +36,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
-import React from 'react'
 
 declare global {
   interface Window {
