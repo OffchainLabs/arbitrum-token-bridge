@@ -1,4 +1,4 @@
-import { Provider } from '@ethersproject/providers'
+import { Provider, TransactionRequest } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { MergedTransaction } from '../state/app/state'
 import {
@@ -96,6 +96,10 @@ export type RequiresTokenApprovalProps = {
   destinationAddress?: string
 }
 
+export type ApproveTokenPrepareTxRequestProps = {
+  amount?: BigNumber
+}
+
 export type ApproveTokenProps = {
   signer: Signer
   amount?: BigNumber
@@ -143,6 +147,15 @@ export abstract class BridgeTransferStarter {
   public abstract requiresTokenApproval(
     props: RequiresTokenApprovalProps
   ): Promise<boolean>
+
+  // not marking this as abstract for now, as we need a dummy implementation for every class
+  // only cctp is going to override it for now, and we'll do the same for others one by one
+  // finally, once we have all implementations we'll mark it as abstract
+  public async approveTokenPrepareTxRequest(
+    props?: ApproveTokenPrepareTxRequestProps
+  ): Promise<TransactionRequest> {
+    return {} as TransactionRequest
+  }
 
   public abstract approveTokenEstimateGas(
     props: ApproveTokenProps
