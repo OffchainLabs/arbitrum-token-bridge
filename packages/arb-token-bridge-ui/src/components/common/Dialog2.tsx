@@ -9,9 +9,11 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/CustomDestinationAddressConfirmationDialog'
+import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
 import { CctpUsdcWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/CctpUsdcWithdrawalConfirmationDialog'
 import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/CctpUsdcDepositConfirmationDialog'
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
+import { useIsOftV2Transfer } from '../TransferPanel/hooks/useIsOftV2Transfer'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -33,6 +35,7 @@ export type DialogType =
   | 'approve_token'
   | 'approve_cctp_usdc'
   | 'approve_custom_fee_token'
+  | 'import_token'
   | 'withdraw'
   | 'scw_custom_destination_address'
   | 'confirm_cctp_withdrawal'
@@ -83,8 +86,9 @@ type DialogProps = {
 }
 
 export function DialogWrapper(props: DialogProps) {
-  const [selectedToken] = useSelectedToken()
-  const [{ amount }] = useArbQueryParams()
+  const isOftTransfer = useIsOftV2Transfer()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
+  const [{ amount, token: tokenFromSearchParams }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -103,6 +107,16 @@ export function DialogWrapper(props: DialogProps) {
     case 'approve_token':
     case 'approve_cctp_usdc':
       return <TokenApprovalDialog {...commonProps} token={selectedToken} />
+    case 'import_token':
+      if (tokenFromSearchParams) {
+        return (
+          <TokenImportDialog
+            {...commonProps}
+            tokenAddress={tokenFromSearchParams}
+          />
+        )
+      }
+      return null
     case 'approve_custom_fee_token':
       if (nativeCurrency.isCustom) {
         return (

@@ -1,10 +1,3 @@
-export enum ImportTokenModalStatus {
-  // "IDLE" is here to distinguish between the modal never being opened, and being closed after a user interaction
-  IDLE,
-  OPEN,
-  CLOSED
-}
-
 export function getWarningTokenDescription(warningTokenType: number) {
   switch (warningTokenType) {
     case 0:
