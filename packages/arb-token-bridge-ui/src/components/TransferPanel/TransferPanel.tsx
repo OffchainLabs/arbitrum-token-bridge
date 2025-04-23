@@ -294,7 +294,7 @@ export function TransferPanel() {
     }
   }
 
-  const amountBigNumber = useAmountBigNumber()
+  const { current: amountBigNumber } = useLatest(useAmountBigNumber())
 
   const confirmDialog = async (dialogType: DialogType) => {
     const waitForInput = openDialog(dialogType)
