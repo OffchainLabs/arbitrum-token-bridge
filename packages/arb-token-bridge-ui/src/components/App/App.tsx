@@ -112,7 +112,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 }
 
 function AppContent() {
-  const { address, isConnected } = useAccount()
+  const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
 
