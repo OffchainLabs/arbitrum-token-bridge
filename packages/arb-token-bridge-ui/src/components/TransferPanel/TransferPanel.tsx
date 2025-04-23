@@ -221,12 +221,6 @@ export function TransferPanel() {
     setAmount2('')
   }
 
-  handleError({
-    error: new Error('This is a test error for handleError function'),
-    label: 'cctp_transfer',
-    category: 'transaction_signing'
-  })
-
   useEffect(() => {
     clearRoute()
   }, [selectedToken, clearRoute])
