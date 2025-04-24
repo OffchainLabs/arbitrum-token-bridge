@@ -46,10 +46,9 @@ type UseDialogParams = {
 }
 
 export function useDialog(params?: UseDialogParams): UseDialogResult {
-  const resolveRef =
-    useRef<
-      (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
-    >()
+  const resolveRef = useRef<
+    (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
+  >(() => {})
 
   // Whether the dialog is currently open
   const [isOpen, setIsOpen] = useState(params?.defaultIsOpen ?? false)
@@ -84,7 +83,7 @@ export function useDialog(params?: UseDialogParams): UseDialogResult {
 export type DialogProps = {
   isOpen: boolean
   closeable?: boolean
-  title?: string | JSX.Element
+  title?: React.ReactNode
   initialFocus?: React.MutableRefObject<HTMLElement | null>
   cancelButtonProps?: Partial<ButtonProps>
   actionButtonProps?: Partial<ButtonProps>

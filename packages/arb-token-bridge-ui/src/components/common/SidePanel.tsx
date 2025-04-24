@@ -1,5 +1,11 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import { Dialog } from '@headlessui/react'
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild
+} from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Transition } from '@headlessui/react'
@@ -55,8 +61,9 @@ export const SidePanel = ({
           'fixed z-40 h-screen max-h-screen',
           dialogWrapperClassName
         )}
+        transition
       >
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -66,12 +73,16 @@ export const SidePanel = ({
           leaveTo="opacity-0"
         >
           {/* The backdrop, rendered as a fixed sibling to the panel container */}
-          <div className="fixed inset-0 bg-dark" aria-hidden="true" />
-        </Transition.Child>
+          <DialogBackdrop
+            className="fixed inset-0 bg-dark opacity-80"
+            aria-hidden="true"
+            transition
+          />
+        </TransitionChild>
 
         {/* Full-screen container to center the panel */}
         <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-200"
             enterFrom="translate-x-full"
@@ -82,14 +93,14 @@ export const SidePanel = ({
             afterLeave={handleCloseEnd}
           >
             {/* The heading of dialog  */}
-            <Dialog.Panel
+            <DialogPanel
               className={twMerge(
                 'side-panel flex h-full w-screen max-w-[1000px] flex-col border-l border-gray-dark bg-black',
                 panelClassNameOverrides,
                 scrollable && 'overflow-y-auto'
               )}
             >
-              <Dialog.Title
+              <DialogTitle
                 className={twMerge(
                   'sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black pt-4 text-white',
                   !heading && 'pb-4'
@@ -108,7 +119,7 @@ export const SidePanel = ({
                     )}
                   />
                 </button>
-              </Dialog.Title>
+              </DialogTitle>
 
               {/* Contents of the panel */}
               <div
@@ -119,8 +130,8 @@ export const SidePanel = ({
               >
                 {children}
               </div>
-            </Dialog.Panel>
-          </Transition.Child>
+            </DialogPanel>
+          </TransitionChild>
         </div>
       </Dialog>
     </Transition>
