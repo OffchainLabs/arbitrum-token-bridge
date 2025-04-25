@@ -275,8 +275,7 @@ export function TransferPanel() {
     const dialogType = getDialogType()
 
     if (dialogType) {
-      const waitForInput = openDialog(dialogType)
-      const [confirmed] = await waitForInput()
+      const confirmed = await confirmDialog(dialogType)
 
       if (confirmed) {
         return transfer()
@@ -320,8 +319,7 @@ export function TransferPanel() {
     // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
     const dialogType = getDialogType()
     if (dialogType) {
-      const waitForInput = openDialog(dialogType)
-      const [confirmed] = await waitForInput()
+      const confirmed = await confirmDialog(dialogType)
       return confirmed
     }
 
