@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
-import { Tab } from '@headlessui/react'
+import { TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -124,8 +124,8 @@ export function TransactionHistorySearchResults() {
 
       <OftTransactionHistoryDisclaimer />
 
-      <Tab.Group as="div" className="h-full overflow-hidden rounded md:pr-0">
-        <Tab.List className="mb-4 flex border-b border-white/30">
+      <TabGroup as="div" className="h-full overflow-hidden rounded md:pr-0">
+        <TabList className="mb-4 flex border-b border-white/30">
           <TabButton
             aria-label="show pending transactions"
             className={tabClasses}
@@ -138,7 +138,7 @@ export function TransactionHistorySearchResults() {
           >
             <span className="text-sm md:text-base">Settled transactions</span>
           </TabButton>
-        </Tab.List>
+        </TabList>
 
         {!forceFetchReceived && (
           <div className="mb-2 text-xs text-white">
@@ -154,25 +154,25 @@ export function TransactionHistorySearchResults() {
           </div>
         )}
 
-        <Tab.Panels className="h-full w-full overflow-hidden">
-          <Tab.Panel className="h-full w-full">
+        <TabPanels className="h-full w-full overflow-hidden">
+          <TabPanel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
               transactions={pendingTransactions}
               selectedTabIndex={0}
               oldestTxTimeAgoString={oldestTxTimeAgoString}
             />
-          </Tab.Panel>
-          <Tab.Panel className="h-full w-full">
+          </TabPanel>
+          <TabPanel className="h-full w-full">
             <TransactionHistoryTable
               {...props}
               transactions={settledTransactions}
               selectedTabIndex={1}
               oldestTxTimeAgoString={oldestTxTimeAgoString}
             />
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+          </TabPanel>
+        </TabPanels>
+      </TabGroup>
       <TransactionsTableDetails />
     </>
   )
