@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import { Dialog } from '@headlessui/react'
+import { Dialog, DialogBackdrop } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Transition } from '@headlessui/react'
@@ -47,15 +47,15 @@ export const SidePanel = ({
   }, [onClose, setIsClosing])
 
   return (
-    <Transition show={open && !isClosing} as={Fragment}>
-      <Dialog
-        open={open}
-        onClose={handleCloseStart}
-        className={twMerge(
-          'fixed z-40 h-screen max-h-screen',
-          dialogWrapperClassName
-        )}
-      >
+    <Dialog
+      open={open}
+      onClose={handleCloseStart}
+      className={twMerge(
+        'fixed z-40 h-screen max-h-screen',
+        dialogWrapperClassName
+      )}
+    >
+      <Transition show={open && !isClosing} as={Fragment}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-200"
@@ -65,12 +65,14 @@ export const SidePanel = ({
           leaveFrom="opacity-80"
           leaveTo="opacity-0"
         >
-          {/* The backdrop, rendered as a fixed sibling to the panel container */}
-          <div className="fixed inset-0 bg-dark" aria-hidden="true" />
+          <DialogBackdrop
+            className="fixed inset-0 bg-dark opacity-80"
+            aria-hidden="true"
+          />
         </Transition.Child>
 
-        {/* Full-screen container to center the panel */}
         <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
+          {/* Full-screen container to center the panel */}
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-200"
@@ -122,7 +124,7 @@ export const SidePanel = ({
             </Dialog.Panel>
           </Transition.Child>
         </div>
-      </Dialog>
-    </Transition>
+      </Transition>
+    </Dialog>
   )
 }

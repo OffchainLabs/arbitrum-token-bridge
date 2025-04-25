@@ -1,4 +1,8 @@
-import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
+import {
+  DialogBackdrop,
+  Dialog as HeadlessUIDialog,
+  Transition
+} from '@headlessui/react'
 import { Fragment, useCallback, useRef, useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
@@ -126,14 +130,14 @@ export function Dialog(props: DialogProps) {
   }, [props, isConfirmed, setIsClosing])
 
   return (
-    <Transition show={props.isOpen && !isClosing} as={Fragment}>
-      <HeadlessUIDialog
-        as="div"
-        open={props.isOpen}
-        initialFocus={props.initialFocus || cancelButtonRef}
-        onClose={() => handleCloseStart(false)}
-        className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
-      >
+    <HeadlessUIDialog
+      as="div"
+      open={props.isOpen}
+      initialFocus={props.initialFocus || cancelButtonRef}
+      onClose={() => handleCloseStart(false)}
+      className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
+    >
+      <Transition show={props.isOpen && !isClosing} as={Fragment}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-400"
@@ -143,7 +147,10 @@ export function Dialog(props: DialogProps) {
           leaveFrom="opacity-80"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black" aria-hidden="true" />
+          <DialogBackdrop
+            className="fixed inset-0 bg-black opacity-80"
+            aria-hidden="true"
+          />
         </Transition.Child>
         <Transition.Child
           as={Fragment}
@@ -200,7 +207,7 @@ export function Dialog(props: DialogProps) {
             )}
           </HeadlessUIDialog.Panel>
         </Transition.Child>
-      </HeadlessUIDialog>
-    </Transition>
+      </Transition>
+    </HeadlessUIDialog>
   )
 }
