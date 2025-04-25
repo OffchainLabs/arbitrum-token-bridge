@@ -1,4 +1,11 @@
-import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
+import {
+  Dialog as HeadlessUIDialog,
+  DialogTitle as HeadlessUIDialogTitle,
+  DialogPanel as HeadlessUIDialogPanel,
+  Transition,
+  TransitionChild,
+  DialogBackdrop
+} from '@headlessui/react'
 import { Fragment, useCallback, useRef, useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
@@ -125,15 +132,15 @@ export function Dialog(props: DialogProps) {
   }, [props, isConfirmed, setIsClosing])
 
   return (
-    <Transition show={props.isOpen && !isClosing} as={Fragment}>
-      <HeadlessUIDialog
-        as="div"
-        open={props.isOpen}
-        initialFocus={props.initialFocus || cancelButtonRef}
-        onClose={() => handleCloseStart(false)}
-        className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
-      >
-        <Transition.Child
+    <HeadlessUIDialog
+      as="div"
+      open={props.isOpen}
+      initialFocus={props.initialFocus || cancelButtonRef}
+      onClose={() => handleCloseStart(false)}
+      className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
+    >
+      <Transition show={props.isOpen && !isClosing} as={Fragment}>
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-400"
           enterFrom="opacity-0"
@@ -142,9 +149,12 @@ export function Dialog(props: DialogProps) {
           leaveFrom="opacity-80"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black" aria-hidden="true" />
-        </Transition.Child>
-        <Transition.Child
+          <DialogBackdrop
+            className="fixed inset-0 bg-black opacity-80"
+            aria-hidden="true"
+          />
+        </TransitionChild>
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-400"
           enterFrom="opacity-0 scale-95"
@@ -154,16 +164,16 @@ export function Dialog(props: DialogProps) {
           leaveTo="opacity-0 scale-95"
           afterLeave={handleCloseEnd}
         >
-          <HeadlessUIDialog.Panel
+          <HeadlessUIDialogPanel
             className={twMerge(
               'z-10 max-h-screen w-screen overflow-y-auto border border-gray-dark bg-gray-1 md:max-w-[727px] md:rounded',
               className
             )}
           >
             <div className="flex items-start justify-between px-6 pt-4">
-              <HeadlessUIDialog.Title className="text-xl text-gray-2">
+              <HeadlessUIDialogTitle className="text-xl text-gray-2">
                 {props.title}
-              </HeadlessUIDialog.Title>
+              </HeadlessUIDialogTitle>
               {closeable && (
                 <button type="button" onClick={() => handleCloseStart(false)}>
                   <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
@@ -197,9 +207,9 @@ export function Dialog(props: DialogProps) {
                 </Button>
               </div>
             )}
-          </HeadlessUIDialog.Panel>
-        </Transition.Child>
-      </HeadlessUIDialog>
-    </Transition>
+          </HeadlessUIDialogPanel>
+        </TransitionChild>
+      </Transition>
+    </HeadlessUIDialog>
   )
 }
