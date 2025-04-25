@@ -53,16 +53,15 @@ export const SidePanel = ({
   }, [onClose, setIsClosing])
 
   return (
-    <Transition show={open && !isClosing} as={Fragment}>
-      <Dialog
-        open={open}
-        onClose={handleCloseStart}
-        className={twMerge(
-          'fixed z-40 h-screen max-h-screen',
-          dialogWrapperClassName
-        )}
-        transition
-      >
+    <Dialog
+      open={open}
+      onClose={handleCloseStart}
+      className={twMerge(
+        'fixed z-40 h-screen max-h-screen',
+        dialogWrapperClassName
+      )}
+    >
+      <Transition show={open && !isClosing} as={Fragment}>
         <TransitionChild
           as={Fragment}
           enter="ease-out duration-200"
@@ -76,22 +75,21 @@ export const SidePanel = ({
           <DialogBackdrop
             className="fixed inset-0 bg-dark opacity-80"
             aria-hidden="true"
-            transition
           />
         </TransitionChild>
 
         {/* Full-screen container to center the panel */}
-        <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
-          <TransitionChild
-            as={Fragment}
-            enter="ease-out duration-200"
-            enterFrom="translate-x-full"
-            enterTo="translate-x-0"
-            leave="ease-in duration-200"
-            leaveFrom="translate-x-0"
-            leaveTo="translate-x-full"
-            afterLeave={handleCloseEnd}
-          >
+        <TransitionChild
+          as={Fragment}
+          enter="ease-out duration-200"
+          enterFrom="translate-x-full"
+          enterTo="translate-x-0"
+          leave="ease-in duration-200"
+          leaveFrom="translate-x-0"
+          leaveTo="translate-x-full"
+          afterLeave={handleCloseEnd}
+        >
+          <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
             {/* The heading of dialog  */}
             <DialogPanel
               className={twMerge(
@@ -131,9 +129,9 @@ export const SidePanel = ({
                 {children}
               </div>
             </DialogPanel>
-          </TransitionChild>
-        </div>
-      </Dialog>
-    </Transition>
+          </div>
+        </TransitionChild>
+      </Transition>
+    </Dialog>
   )
 }
