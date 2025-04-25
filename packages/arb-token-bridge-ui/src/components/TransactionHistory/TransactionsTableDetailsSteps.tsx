@@ -20,7 +20,6 @@ import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
 import { TransferCountdown } from '../common/TransferCountdown'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
-import { Address } from '../../util/AddressUtils'
 import { isTeleportTx } from '../../types/Transactions'
 import {
   firstRetryableLegRequiresRedeem,
@@ -31,7 +30,6 @@ import {
   minutesToHumanReadableTime,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
-import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
   if (tx.isOft) {
@@ -112,13 +110,7 @@ export const Step = ({
   )
 }
 
-const LastStepEndItem = ({
-  tx,
-  address
-}: {
-  tx: MergedTransaction
-  address: Address | undefined
-}) => {
+const LastStepEndItem = ({ tx }: { tx: MergedTransaction }) => {
   const destinationNetworkTxId = getDestinationNetworkTxId(tx)
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
@@ -165,9 +157,6 @@ export const TransactionsTableDetailsSteps = ({
   tx: MergedTransaction
 }) => {
   const { approximateDurationInMinutes } = useTransferDuration(tx)
-  const sanitizedAddress = useTransactionHistoryAddressStore(
-    state => state.sanitizedAddress
-  )
 
   const { sourceChainId } = tx
 
@@ -264,7 +253,7 @@ export const TransactionsTableDetailsSteps = ({
         done={isTxCompleted(tx)}
         failure={isTxExpired(tx) || isDestinationChainFailure}
         text={destinationChainTxText}
-        endItem={<LastStepEndItem tx={tx} address={sanitizedAddress} />}
+        endItem={<LastStepEndItem tx={tx} />}
       />
     </div>
   )

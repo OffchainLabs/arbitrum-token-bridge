@@ -145,11 +145,11 @@ describe('Withdraw ERC20 Token', () => {
 
         cy.switchToTransactionHistoryTab('pending')
 
-        cy.findClaimButton(
+        cy.clickClaimButton(
           formatAmount(ERC20AmountToSend, {
             symbol: testCase.symbol
           })
-        ).click()
+        )
 
         cy.confirmMetamaskTransaction()
 

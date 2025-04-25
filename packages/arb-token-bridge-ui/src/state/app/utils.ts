@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
-import { ethers, BigNumber } from 'ethers'
+import { ethers } from 'ethers'
 
 import {
   DepositStatus,
