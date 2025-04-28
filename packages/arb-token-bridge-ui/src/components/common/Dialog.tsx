@@ -133,12 +133,21 @@ export function Dialog(props: DialogProps) {
     <HeadlessUIDialog
       as="div"
       open={props.isOpen}
-      initialFocus={props.initialFocus || cancelButtonRef}
       onClose={() => handleCloseStart(false)}
+      transition
       className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
     >
+      <DialogBackdrop
+        transition
+        className={twMerge(
+          'fixed inset-0 bg-black/80 transition-opacity',
+          'data-closed:opacity-0 data-enter:duration-400 data-enter:ease-out',
+          'data-leave:duration-200 data-leave:ease-in'
+        )}
+        aria-hidden="true"
+      />
       <Transition show={props.isOpen && !isClosing} as={Fragment}>
-        <Transition.Child
+        {/* <Transition.Child
           as={Fragment}
           enter="ease-out duration-400"
           enterFrom="opacity-0"
@@ -146,12 +155,7 @@ export function Dialog(props: DialogProps) {
           leave="ease-in duration-200"
           leaveFrom="opacity-80"
           leaveTo="opacity-0"
-        >
-          <DialogBackdrop
-            className="fixed inset-0 bg-black opacity-80"
-            aria-hidden="true"
-          />
-        </Transition.Child>
+        ></Transition.Child> */}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-400"
@@ -163,8 +167,10 @@ export function Dialog(props: DialogProps) {
           afterLeave={handleCloseEnd}
         >
           <HeadlessUIDialog.Panel
+            transition
             className={twMerge(
               'z-10 max-h-screen w-screen overflow-y-auto border border-gray-dark bg-gray-1 md:max-w-[727px] md:rounded',
+              'duration-400 ease-out',
               className
             )}
           >
