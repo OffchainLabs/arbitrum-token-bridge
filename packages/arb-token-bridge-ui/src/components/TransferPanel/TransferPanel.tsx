@@ -91,6 +91,7 @@ import { useError } from '../../hooks/useError'
 import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
 import { getFromAndToTokenAddresses } from './LifiSettings'
+import { getAmountLoss } from './HighSlippageWarningDialog'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -572,6 +573,20 @@ export function TransferPanel() {
       }
 
       setTransferring(true)
+
+      /**
+       * If the amount received is less than 90% of the sent amount, we show a warning dialog
+       * We multiply by 100 before dividing to avoid BigNumber stripping the value to 0
+       */
+      const { lossPercentage } = getAmountLoss({
+        fromAmount: context.fromAmount.amount,
+        toAmount: context.toAmount.amount
+      })
+
+      if (lossPercentage.gt(10)) {
+        const confirmation = await confirmDialog('high_slippage_warning')
+        if (!confirmation) return
+      }
 
       if (!(await confirmCustomDestinationAddress())) {
         return
