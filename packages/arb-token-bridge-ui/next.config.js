@@ -16,6 +16,9 @@ module.exports = {
       }
     ]
   },
+  experimental: {
+    reactCompiler: true
+  },
   async headers() {
     return [
       {
