@@ -44,3 +44,7 @@ export function getInsufficientFundsForGasFeesErrorMessage({
 export function getSmartContractWalletTeleportTransfersNotSupportedErrorMessage() {
   return `LayerLeap transfers using smart contract wallets aren't supported yet.`
 }
+
+export function getWithdrawOnlyChainErrorMessage(chainName: string) {
+  return `${chainName} has currently suspended deposits. You can only withdraw assets from this chain.`
+}
