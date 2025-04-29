@@ -10,18 +10,10 @@ export function addToLocalStorageObjectSequentially({
   localStoragePromise = localStoragePromise.then(() => {
     const localStorageItem = localStorage.getItem(localStorageKey)
 
-    if (!localStorageItem) {
-      localStorage.setItem(
-        localStorageKey,
-        JSON.stringify({ ...localStorageValue })
-      )
-      return
-    }
-
     localStorage.setItem(
       localStorageKey,
       JSON.stringify({
-        ...JSON.parse(localStorageItem),
+        ...JSON.parse(localStorageItem ?? '{}'),
         ...localStorageValue
       })
     )
