@@ -1659,53 +1659,6 @@
       }
     },
     {
-      "chainId": 5113,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0x27b5BA9331f20afd816C247d53BDf1EC577b04CD",
-        "inbox": "0xcAc6D9615D6c5653f1C714b21488bCc08DC9E43A",
-        "outbox": "0x5e3FbAc4e9635d8D87dc839E353a63c20C786B3B",
-        "rollup": "0x798CA465048fa8ec711FFc8cE0F03409f6985a04",
-        "sequencerInbox": "0x47c3DEC256DB25c527d92AAceE1269C17805ce9d"
-      },
-      "nativeToken": "0x9a0Ef1333681b357047282144dc06D7DAA1f76Ba",
-      "explorerUrl": "https://syndicate-exo.explorer.alchemy.com",
-      "rpcUrl": "https://syndicate-exo.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Syndicate Exo",
-      "slug": "syndicate-exo",
-      "parentChainId": 17000,
-      "tokenBridge": {
-        "parentCustomGateway": "0x470383E329CA86ED25B32F05B25C20B3C9369233",
-        "parentErc20Gateway": "0xe8C68189e73d78843bB9207019e810a627dFAdB7",
-        "parentGatewayRouter": "0x3cFCde696b8A7d9268Ea3417E69f4c3EeC0dF530",
-        "parentMultiCall": "0xF3cA368BeF5252476E84de2A835167c90262D3C1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x8C117Dde85c41dE53B2e394E6adE09915Fc266Bf",
-        "childErc20Gateway": "0x4AF204Dd6c5a26783f8306D47E1F6919553E00D4",
-        "childGatewayRouter": "0x5079579759f4AA2AF1fbE0510309dd463B3e9e5C",
-        "childMultiCall": "0x9617F5611303F213E8871d9F81f375864644f517",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#e1e3d5",
-        "network": {
-          "name": "Syndicate Exo",
-          "logo": "/images/SyndicateExo_Logo.svg"
-        },
-        "nativeTokenData": {
-          "name": "Syndicate",
-          "symbol": "SYND",
-          "logoUrl": "/images/SyndicateExo_NativeTokenLogo.png"
-        }
-      }
-    },
-    {
       "chainId": 2426,
       "confirmPeriodBlocks": 900,
       "ethBridge": {
