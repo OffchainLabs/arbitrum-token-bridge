@@ -270,7 +270,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     if (isDepositMode && WITHDRAW_ONLY_CHAIN_IDS.includes(childChain.id)) {
       return notReady({
         errorMessages: {
-          inputAmount1: getWithdrawOnlyChainErrorMessage()
+          inputAmount1: getWithdrawOnlyChainErrorMessage(childChain.name)
         }
       })
     }

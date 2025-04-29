@@ -45,6 +45,6 @@ export function getSmartContractWalletTeleportTransfersNotSupportedErrorMessage(
   return `LayerLeap transfers using smart contract wallets aren't supported yet.`
 }
 
-export function getWithdrawOnlyChainErrorMessage() {
-  return `This chain has currently suspended deposits. You can only withdraw assets from this chain.`
+export function getWithdrawOnlyChainErrorMessage(chainName: string) {
+  return `${chainName} has currently suspended deposits. You can only withdraw assets from this chain.`
 }
