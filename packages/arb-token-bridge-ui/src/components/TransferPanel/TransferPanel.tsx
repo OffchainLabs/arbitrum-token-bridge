@@ -10,10 +10,7 @@ import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import {
-  TokenDepositCheckDialog,
-  TokenDepositCheckDialogType
-} from './TokenDepositCheckDialog'
+import { TokenDepositCheckDialogType } from './TokenDepositCheckDialog'
 import {
   TokenImportDialog,
   useTokenImportDialogStore
@@ -61,7 +58,6 @@ import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from 
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
-import { captureSentryErrorWithExtraData } from '../../util/SentryUtils'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { normalizeTimestamp } from '../../state/app/utils'
@@ -82,6 +78,8 @@ import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
+import { useError } from '../../hooks/useError'
+import { shallow } from 'zustand/shallow'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -100,8 +98,6 @@ const networkConnectionWarningToast = () =>
 
 export function TransferPanel() {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
-  const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
-    useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
@@ -148,9 +144,17 @@ export function TransferPanel() {
   })
 
   const { setTransferring } = useAppContextActions()
-  const { switchToTransactionHistoryTab } = useMainContentTabs()
+  const switchToTransactionHistoryTab = useMainContentTabs(
+    state => state.switchToTransactionHistoryTab
+  )
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-  const { selectedRoute, clearRoute } = useRouteStore()
+  const { selectedRoute, clearRoute } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      clearRoute: state.clearRoute
+    }),
+    shallow
+  )
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
 
@@ -165,9 +169,10 @@ export function TransferPanel() {
   const [dialogProps, openDialog] = useDialog2()
 
   const [tokenImportDialogProps] = useDialog()
-  const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
 
-  const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
+  const openTokenImportDialog = useTokenImportDialogStore(
+    state => state.openDialog
+  )
 
   const isCustomDestinationTransfer = !!latestDestinationAddress.current
 
@@ -182,6 +187,8 @@ export function TransferPanel() {
   const [showProjectsListing, setShowProjectsListing] = useState(false)
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
+
+  const { handleError } = useError()
 
   useEffect(() => {
     // hide Project listing when networks are changed
@@ -268,10 +275,7 @@ export function TransferPanel() {
     const dialogType = getDialogType()
 
     if (dialogType) {
-      setTokenDepositCheckDialogType(dialogType)
-
-      const waitForInput = openTokenCheckDialog()
-      const [confirmed] = await waitForInput()
+      const confirmed = await confirmDialog(dialogType)
 
       if (confirmed) {
         return transfer()
@@ -281,7 +285,7 @@ export function TransferPanel() {
     }
   }
 
-  const amountBigNumber = useAmountBigNumber()
+  const { current: amountBigNumber } = useLatest(useAmountBigNumber())
 
   const confirmDialog = async (dialogType: DialogType) => {
     const waitForInput = openDialog(dialogType)
@@ -300,7 +304,7 @@ export function TransferPanel() {
 
   function getDialogType(): TokenDepositCheckDialogType | null {
     if (isBridgingANewStandardToken) {
-      return 'new-token'
+      return 'deposit_token_new_token'
     }
 
     const isUserAddedToken =
@@ -308,16 +312,14 @@ export function TransferPanel() {
       selectedToken?.listIds.size === 0 &&
       typeof selectedToken.l2Address === 'undefined'
 
-    return isUserAddedToken ? 'user-added-token' : null
+    return isUserAddedToken ? 'deposit_token_user_added_token' : null
   }
 
   const firstTimeTokenBridgingConfirmation = async () => {
     // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
     const dialogType = getDialogType()
     if (dialogType) {
-      setTokenDepositCheckDialogType(dialogType)
-      const waitForInput = openTokenCheckDialog()
-      const [confirmed] = await waitForInput()
+      const confirmed = await confirmDialog(dialogType)
       return confirmed
     }
 
@@ -343,16 +345,20 @@ export function TransferPanel() {
       console.log(step)
     }
 
+    if (step.type === 'return') {
+      throw Error(
+        `[stepExecutor] "return" step should be handled outside the executor`
+      )
+    }
+
     switch (step.type) {
       case 'start': {
         setTransferring(true)
         return
       }
 
-      case 'return': {
-        throw Error(
-          `[stepExecutor] "return" step should be handled outside the executor`
-        )
+      case 'dialog': {
+        return confirmDialog(step.payload)
       }
     }
   }
@@ -374,32 +380,19 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         networks
 
-      await drive(stepGeneratorForCctp, stepExecutor, {
+      const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
-        isSmartContractWallet
+        isSmartContractWallet,
+        walletAddress,
+        destinationAddress
       })
 
-      // show confirmation popup before cctp transfer
-      if (isDepositMode) {
-        const depositConfirmation = await confirmDialog('confirm_cctp_deposit')
-        if (!depositConfirmation) return
-      } else {
-        const withdrawalConfirmation = await confirmDialog(
-          'confirm_cctp_withdrawal'
-        )
-        if (!withdrawalConfirmation) return
-      }
-
-      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
-      if (
-        isSmartContractWallet &&
-        areSenderAndCustomDestinationAddressesEqual
-      ) {
-        const confirmation = await confirmDialog(
-          'scw_custom_destination_address'
-        )
-        if (!confirmation) return false
+      // this is only necessary while we are migrating to the ui driver
+      // so we can know when to stop the execution of the rest of the function
+      //
+      // after we are done, we can change the return type of `drive` to `void`
+      if (returnEarly) {
+        return
       }
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -410,7 +403,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -431,9 +424,10 @@ export function TransferPanel() {
           if (isUserRejectedError(error)) {
             return
           }
-          captureSentryErrorWithExtraData({
+          handleError({
             error,
-            originFunction: 'cctpTransferStarter.approveToken'
+            label: 'cctp_approve_token',
+            category: 'token_approval'
           })
           errorToast(
             `USDC approval transaction failed: ${
@@ -460,9 +454,10 @@ export function TransferPanel() {
         if (isUserRejectedError(error)) {
           return
         }
-        captureSentryErrorWithExtraData({
+        handleError({
           error,
-          originFunction: 'cctpTransferStarter.transfer'
+          label: 'cctp_transfer',
+          category: 'transaction_signing'
         })
         errorToast(
           `USDC ${
@@ -577,7 +572,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await oftTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          signer
+          owner: await signer.getAddress()
         })
 
       if (isTokenApprovalRequired) {
@@ -598,9 +593,10 @@ export function TransferPanel() {
           if (isUserRejectedError(error)) {
             return
           }
-          captureSentryErrorWithExtraData({
+          handleError({
             error,
-            originFunction: 'oftTransferStarter.approveToken'
+            label: 'oft_approve_token',
+            category: 'token_approval'
           })
           errorToast(
             `OFT token approval transaction failed: ${
@@ -615,7 +611,7 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
-      await oftTransferStarter.transfer({
+      const transfer = await oftTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
         destinationAddress
@@ -634,17 +630,45 @@ export function TransferPanel() {
       switchToTransactionHistoryTab()
       clearAmountInput()
 
-      setTimeout(() => {
-        highlightOftTransactionHistoryDisclaimer()
-      }, 100)
+      if (isSmartContractWallet) {
+        // show the warning in case of SCW since we don't cannot show OFT tx history
+        setTimeout(() => {
+          highlightOftTransactionHistoryDisclaimer()
+        }, 100)
+      } else {
+        // for EOA, show the transaction in tx history
+        addPendingTransaction({
+          isOft: true,
+          isCctp: false,
+          sender: walletAddress,
+          direction: isDepositMode ? 'deposit' : 'withdraw',
+          status: 'pending',
+          createdAt: dayjs().valueOf(),
+          resolvedAt: null,
+          txId: transfer.sourceChainTransaction.hash.toLowerCase(),
+          assetType: AssetType.ERC20,
+          uniqueId: null,
+          isWithdrawal: !isDepositMode,
+          blockNum: null,
+          childChainId: childChain.id,
+          parentChainId: parentChain.id,
+          sourceChainId: networks.sourceChain.id,
+          destinationChainId: networks.destinationChain.id,
+          asset: selectedToken.symbol,
+          value: amount,
+          tokenAddress: selectedToken.address
+        })
+      }
+
       clearRoute()
     } catch (error) {
       if (isUserRejectedError(error)) {
         return
       }
-      captureSentryErrorWithExtraData({
+      handleError({
         error,
-        originFunction: 'oftTransferStarter.transfer'
+        label: 'oft_transfer',
+        category: 'transaction_signing'
       })
       console.error(error)
       errorToast(
@@ -840,7 +864,7 @@ export function TransferPanel() {
         const isTokenApprovalRequired =
           await bridgeTransferStarter.requiresTokenApproval({
             amount: amountBigNumber,
-            signer,
+            owner: await signer.getAddress(),
             destinationAddress
           })
         if (isTokenApprovalRequired) {
@@ -884,7 +908,7 @@ export function TransferPanel() {
         // when sending additional ETH with ERC-20, we add the additional ETH value as maxSubmissionCost
         const gasEstimates = (await bridgeTransferStarter.transferEstimateGas({
           amount: amountBigNumber,
-          signer,
+          from: await signer.getAddress(),
           destinationAddress
         })) as DepositGasEstimates
 
@@ -911,9 +935,10 @@ export function TransferPanel() {
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (error) {
-      captureSentryErrorWithExtraData({
+      handleError({
         error,
-        originFunction: 'bridgeTransferStarter.transfer',
+        label: 'arbitrum_transfer',
+        category: 'transaction_signing',
         additionalData: selectedToken
           ? {
               erc20_address_on_parent_chain: selectedToken.address,
@@ -1136,12 +1161,6 @@ export function TransferPanel() {
             tokenAddress={tokenFromSearchParams}
           />
         )}
-
-        <TokenDepositCheckDialog
-          {...tokenCheckDialogProps}
-          type={tokenDepositCheckDialogType}
-          symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
-        />
 
         {showSmartContractWalletTooltip && (
           <Tippy

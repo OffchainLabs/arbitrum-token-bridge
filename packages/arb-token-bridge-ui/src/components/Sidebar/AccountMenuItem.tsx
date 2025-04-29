@@ -1,8 +1,7 @@
 import {
   ArrowLeftOnRectangleIcon,
   ArrowTopRightOnSquareIcon,
-  Cog6ToothIcon,
-  DocumentTextIcon
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import { MenuItem, MenuItemExpandable } from '@offchainlabs/cobalt'
 

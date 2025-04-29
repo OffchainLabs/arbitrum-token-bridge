@@ -169,7 +169,7 @@ export const Route = React.memo(
             selected && 'bg-[#474747]'
           )}
         >
-          <div className="flex flex-col">
+          <div className="flex min-w-36 flex-col">
             <span>You will receive:</span>
             <div className="flex flex-col text-lg">
               <div className="flex flex-row items-center gap-1">
