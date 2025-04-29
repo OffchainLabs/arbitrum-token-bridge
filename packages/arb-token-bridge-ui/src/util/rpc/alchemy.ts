@@ -16,8 +16,6 @@ export function getAlchemyRpcUrl(
     // L1 Testnet
     case ChainId.Sepolia:
       return `https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}`
-    case ChainId.Holesky:
-      return `https://eth-holesky.g.alchemy.com/v2/${alchemyKey}`
 
     // L2 Mainnet
     case ChainId.ArbitrumOne:
