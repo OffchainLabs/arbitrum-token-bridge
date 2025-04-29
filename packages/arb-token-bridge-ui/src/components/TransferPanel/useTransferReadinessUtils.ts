@@ -46,5 +46,5 @@ export function getSmartContractWalletTeleportTransfersNotSupportedErrorMessage(
 }
 
 export function getWithdrawOnlyChainErrorMessage() {
-  return `This chain has currently disabled deposits. You can only withdraw assets from this chain.`
+  return `This chain has currently suspended deposits. You can only withdraw assets from this chain.`
 }
