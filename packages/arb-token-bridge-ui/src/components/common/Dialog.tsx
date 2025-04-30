@@ -116,7 +116,12 @@ export function Dialog(props: DialogProps) {
 
       setTimeout(() => {
         props.onClose(isConfirmed)
-        setIsClosing(false)
+
+        setTimeout(() => {
+          setIsClosing(false)
+          // prevent flickering caused by race conditions
+        }, 10)
+
         // 200ms for the transition to finish
       }, 200)
     },
