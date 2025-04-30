@@ -6,8 +6,8 @@ module.exports = {
   bracketSpacing: true,
   arrowParens: 'avoid',
   trailingComma: 'none',
-  tailwindStylesheet: "./src/styles/tailwind.css",
-  "tailwindFunctions": ["twMerge"],
+  tailwindStylesheet: './src/styles/tailwind.css',
+  tailwindFunctions: ['twMerge'],
 
   // Plugins
   plugins: ['prettier-plugin-tailwindcss']

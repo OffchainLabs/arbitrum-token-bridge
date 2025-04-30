@@ -192,8 +192,8 @@ export default defineConfig({
         testType: isCustomFeeToken
           ? 'orbit-custom'
           : process.env.E2E_ORBIT === 'true'
-          ? 'orbit-eth'
-          : 'regular'
+            ? 'orbit-eth'
+            : 'regular'
       })
 
       // Set Cypress variables

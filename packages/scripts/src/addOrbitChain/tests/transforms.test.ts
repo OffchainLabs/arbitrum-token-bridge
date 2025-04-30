@@ -43,7 +43,7 @@ describe("Transforms", () => {
       const result = await transformIncomingDataToOrbitChain(
         mockIncomingChainData as IncomingChainData,
         chainLogoPath,
-        nativeTokenLogoPath
+        nativeTokenLogoPath,
       );
 
       expect(result).toMatchSnapshot();
@@ -82,7 +82,7 @@ describe("Transforms", () => {
       ]);
       expect(result.testnet.map((chain: any) => chain.chainId)).toEqual([3]);
       expect(result.mainnet.find((chain: any) => chain.chainId === 5)).toEqual(
-        newChain
+        newChain,
       );
 
       const updatedContent = fs.readFileSync(tempFilePath, "utf8");
@@ -102,7 +102,7 @@ describe("Transforms", () => {
       ]);
       expect(result.testnet.map((chain: any) => chain.chainId)).toEqual([3, 5]);
       expect(result.testnet.find((chain: any) => chain.chainId === 5)).toEqual(
-        newTestnetChain
+        newTestnetChain,
       );
 
       const updatedContent = fs.readFileSync(tempFilePath, "utf8");
@@ -124,7 +124,7 @@ describe("Transforms", () => {
       ]);
       expect(result.testnet.map((chain: any) => chain.chainId)).toEqual([3]);
       expect(result.mainnet.find((chain: any) => chain.chainId === 2)).toEqual(
-        updatedChain
+        updatedChain,
       );
 
       const updatedContent = fs.readFileSync(tempFilePath, "utf8");
@@ -157,7 +157,7 @@ describe("Transforms", () => {
     const resizedImagePath = path.join(
       __dirname,
       "__mocks__",
-      "resized-test-image.jpg"
+      "resized-test-image.jpg",
     );
 
     // COMMENT OUT TO KEEP RESIZED IMAGES
@@ -189,10 +189,10 @@ describe("Transforms", () => {
 
       expect(resizedMetadata.format).toBe("jpeg");
       expect(resizedMetadata.width).toBeLessThanOrEqual(
-        originalMetadata.width!
+        originalMetadata.width!,
       );
       expect(resizedMetadata.height).toBeLessThanOrEqual(
-        originalMetadata.height!
+        originalMetadata.height!,
       );
 
       const originalAspectRatio =
@@ -210,7 +210,7 @@ describe("Transforms", () => {
       "arb-token-bridge-ui",
       "public",
       "images",
-      "downloaded_chain_logo.png"
+      "downloaded_chain_logo.png",
     );
 
     // Clean up downloaded image after tests
@@ -247,7 +247,7 @@ describe("Transforms", () => {
         "..",
         "arb-token-bridge-ui",
         "public",
-        savedImagePath
+        savedImagePath,
       );
       expect(fs.existsSync(fullSavePath)).toBe(true);
 
@@ -276,7 +276,7 @@ describe("Transforms", () => {
       });
 
       const { buffer, fileExtension } = await fetchAndProcessImage(
-        "https://example.com/logo"
+        "https://example.com/logo",
       );
 
       // Verify it detected SVG correctly
@@ -313,7 +313,7 @@ Test Chain
 const saveImageLocally = (
   imageBuffer: Buffer,
   fileName: string,
-  fileExtension: string
+  fileExtension: string,
 ): string => {
   const imageSavePath = `images/${fileName}${fileExtension}`;
   const fullSavePath = path.join(
@@ -322,7 +322,7 @@ const saveImageLocally = (
     "..",
     "arb-token-bridge-ui",
     "public",
-    imageSavePath
+    imageSavePath,
   );
 
   // Create directories if they don't exist
@@ -333,7 +333,7 @@ const saveImageLocally = (
 
   if (fs.existsSync(fullSavePath)) {
     warning(
-      `${fileName} already exists at '${imageSavePath}'. Overwriting the existing image.`
+      `${fileName} already exists at '${imageSavePath}'. Overwriting the existing image.`,
     );
   }
 

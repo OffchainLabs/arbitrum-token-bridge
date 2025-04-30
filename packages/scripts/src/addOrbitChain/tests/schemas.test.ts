@@ -21,28 +21,28 @@ describe("Validation Functions", () => {
   describe("isValidAddress", () => {
     it("should return true for valid Ethereum addresses", () => {
       expect(isValidAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")).toBe(
-        true
+        true,
       );
       expect(isValidAddress("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed")).toBe(
-        true
+        true,
       );
       expect(isValidAddress("0x0000000000000000000000000000000000000000")).toBe(
-        true
+        true,
       );
     });
 
     it("should return false for invalid Ethereum addresses", () => {
       expect(isValidAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44")).toBe(
-        false
+        false,
       ); // Too short
       expect(isValidAddress("742d35Cc6634C0532925a3b844Bc454e4438f44e")).toBe(
-        false
+        false,
       ); // Missing 0x
       expect(
-        isValidAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e0")
+        isValidAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e0"),
       ).toBe(false); // Too long
       expect(isValidAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44G")).toBe(
-        false
+        false,
       ); // Invalid character
       expect(isValidAddress("not an address")).toBe(false);
     });
@@ -51,13 +51,13 @@ describe("Validation Functions", () => {
   describe("addressSchema", () => {
     it("should validate correct Ethereum addresses", () => {
       expect(() =>
-        addressSchema.parse("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
+        addressSchema.parse("0x742d35Cc6634C0532925a3b844Bc454e4438f44e"),
       ).not.toThrow();
     });
 
     it("should throw for invalid Ethereum addresses", () => {
       expect(() =>
-        addressSchema.parse("0x742d35Cc6634C0532925a3b844Bc454e4438f44")
+        addressSchema.parse("0x742d35Cc6634C0532925a3b844Bc454e4438f44"),
       ).toThrow();
     });
   });
@@ -67,7 +67,7 @@ describe("Validation Functions", () => {
       expect(() => urlSchema.parse("https://example.com")).not.toThrow();
       expect(() => urlSchema.parse("https://example.com/")).not.toThrow();
       expect(urlSchema.parse("https://example.com/")).toBe(
-        "https://example.com"
+        "https://example.com",
       );
     });
 
@@ -106,7 +106,7 @@ describe("Validation Functions", () => {
         sequencerInbox: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
       };
       await expect(
-        ethBridgeSchema.parseAsync(validEthBridge)
+        ethBridgeSchema.parseAsync(validEthBridge),
       ).resolves.not.toThrow();
     });
 
@@ -119,7 +119,7 @@ describe("Validation Functions", () => {
         sequencerInbox: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
       };
       await expect(
-        ethBridgeSchema.parseAsync(invalidEthBridge)
+        ethBridgeSchema.parseAsync(invalidEthBridge),
       ).rejects.toThrow();
     });
   });
@@ -136,7 +136,7 @@ describe("Validation Functions", () => {
         childGatewayRouter: "invalid",
       };
       await expect(
-        tokenBridgeSchema.parseAsync(invalidTokenBridge)
+        tokenBridgeSchema.parseAsync(invalidTokenBridge),
       ).rejects.toThrowErrorMatchingSnapshot();
     });
   });
@@ -159,7 +159,7 @@ describe("Validation Functions", () => {
         fastWithdrawalTime: 900000,
       };
       expect(() =>
-        bridgeUiConfigSchema.parse(validBridgeUiConfig)
+        bridgeUiConfigSchema.parse(validBridgeUiConfig),
       ).not.toThrow();
     });
 
@@ -178,7 +178,7 @@ describe("Validation Functions", () => {
   describe("chainSchema", () => {
     it("should validate correct chain objects", async () => {
       await expect(
-        chainSchema.parseAsync(mockOrbitChain)
+        chainSchema.parseAsync(mockOrbitChain),
       ).resolves.not.toThrow();
     }, 1000000);
 
@@ -195,7 +195,7 @@ describe("Validation Functions", () => {
   describe("validateOrbitChainsList", () => {
     it("should validate the entire orbitChainsList without throwing errors", async () => {
       await expect(
-        validateOrbitChainsList(orbitChainsList)
+        validateOrbitChainsList(orbitChainsList),
       ).resolves.not.toThrow();
     }, 1000000);
 
@@ -207,7 +207,7 @@ describe("Validation Functions", () => {
           invalidChain: {
             ...orbitChainsList.mainnet[
               Object.keys(
-                orbitChainsList.mainnet
+                orbitChainsList.mainnet,
               )[0] as keyof typeof orbitChainsList.mainnet
             ],
             chainId: "not a number", // Invalid chainId
@@ -216,7 +216,7 @@ describe("Validation Functions", () => {
       };
 
       await expect(
-        validateOrbitChainsList(invalidChainsList)
+        validateOrbitChainsList(invalidChainsList),
       ).rejects.toThrow();
     }, 1000000);
   });
