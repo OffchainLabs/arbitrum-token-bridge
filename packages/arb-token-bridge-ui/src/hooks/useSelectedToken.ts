@@ -79,9 +79,9 @@ export const useSelectedToken = () => {
   }
 
   return [
-    tokensFromUser[tokenFromSearchParams] ||
+    usdcToken ||
+      tokensFromUser[tokenFromSearchParams] ||
       tokensFromLists[tokenFromSearchParams] ||
-      usdcToken ||
       null,
     setSelectedToken
   ] as const
@@ -116,8 +116,17 @@ export async function getUsdcToken({
     isArbitrumSepolia: isParentChainArbitrumSepolia
   } = isNetwork(parentChainId)
 
+  const {
+    isArbitrumOne: isChildArbitrumOne,
+    isArbitrumSepolia: isChildArbitrumSepolia
+  } = isNetwork(childChainId)
+
   // Ethereum Mainnet USDC
-  if (isTokenMainnetUSDC(tokenAddress) && isParentChainEthereumMainnet) {
+  if (
+    isTokenMainnetUSDC(tokenAddress) &&
+    isParentChainEthereumMainnet &&
+    isChildArbitrumOne
+  ) {
     return {
       ...commonUSDC,
       address: CommonAddress.Ethereum.USDC,
@@ -126,7 +135,11 @@ export async function getUsdcToken({
   }
 
   // Ethereum Sepolia USDC
-  if (isTokenSepoliaUSDC(tokenAddress) && isParentChainSepolia) {
+  if (
+    isTokenSepoliaUSDC(tokenAddress) &&
+    isParentChainSepolia &&
+    isChildArbitrumSepolia
+  ) {
     return {
       ...commonUSDC,
       address: CommonAddress.Sepolia.USDC,
@@ -159,19 +172,19 @@ export async function getUsdcToken({
   if (
     (isTokenArbitrumOneNativeUSDC(tokenAddress) && isParentChainArbitrumOne) ||
     (isTokenArbitrumSepoliaNativeUSDC(tokenAddress) &&
-      isParentChainArbitrumSepolia)
+      isParentChainArbitrumSepolia) ||
+    (isTokenMainnetUSDC(tokenAddress) && isParentChainEthereumMainnet) ||
+    (isTokenSepoliaUSDC(tokenAddress) && isParentChainSepolia)
   ) {
     let childChainUsdcAddress
     try {
-      childChainUsdcAddress = isNetwork(childChainId).isOrbitChain
-        ? (
-            await getL2ERC20Address({
-              erc20L1Address: tokenAddress,
-              l1Provider: parentProvider,
-              l2Provider: childProvider
-            })
-          ).toLowerCase()
-        : undefined
+      childChainUsdcAddress = (
+        await getL2ERC20Address({
+          erc20L1Address: tokenAddress,
+          l1Provider: parentProvider,
+          l2Provider: childProvider
+        })
+      ).toLowerCase()
     } catch {
       // could be never bridged before
     }

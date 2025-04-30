@@ -12,7 +12,6 @@ import {
   findSourceChainButton,
   findDestinationChainButton,
   findGasFeeSummary,
-  findGasFeeForChain,
   findMoveFundsButton,
   clickMoveFundsButton,
   findSelectTokenButton,
@@ -21,11 +20,13 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
+  clickClaimButton,
   selectTransactionsPanelTab,
   confirmSpending,
   claimCctp,
   switchToTransferPanelTab,
-  switchToTransactionHistoryTab
+  switchToTransactionHistoryTab,
+  selectRoute
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -59,7 +60,6 @@ declare global {
       findAmount2Input: typeof findAmount2Input
       findSourceChainButton: typeof findSourceChainButton
       findDestinationChainButton: typeof findDestinationChainButton
-      findGasFeeForChain: typeof findGasFeeForChain
       findGasFeeSummary: typeof findGasFeeSummary
       findMoveFundsButton: typeof findMoveFundsButton
       clickMoveFundsButton: typeof clickMoveFundsButton
@@ -71,8 +71,10 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      clickClaimButton: typeof clickClaimButton
       confirmSpending: typeof confirmSpending
       claimCctp: typeof claimCctp
+      selectRoute: typeof selectRoute
     }
   }
 }

@@ -202,7 +202,6 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
 // Only support testnet chains
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
-  ChainId.Holesky,
   ChainId.ArbitrumSepolia,
   ChainId.BaseSepolia
 ]
