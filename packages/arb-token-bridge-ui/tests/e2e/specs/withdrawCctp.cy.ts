@@ -72,12 +72,11 @@ describe('Withdraw USDC through CCTP', () => {
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
-    cy.findClaimButton(
+    cy.clickClaimButton(
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'
-      }),
-      { timeout: 120_000 }
-    ).click()
+      })
+    )
     cy.allowMetamaskToSwitchNetwork()
     cy.rejectMetamaskTransaction()
     cy.changeMetamaskNetwork('Arbitrum Sepolia')
@@ -117,12 +116,11 @@ describe('Withdraw USDC through CCTP', () => {
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )
     cy.closeTransactionDetails()
-    cy.findClaimButton(
+    cy.clickClaimButton(
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'
-      }),
-      { timeout: 120_000 }
-    ).click()
+      })
+    )
     cy.allowMetamaskToSwitchNetwork()
     cy.rejectMetamaskTransaction()
   })
