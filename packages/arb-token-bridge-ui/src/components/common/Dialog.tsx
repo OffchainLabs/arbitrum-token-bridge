@@ -103,7 +103,6 @@ export function Dialog(props: DialogProps) {
 
   // separate state to track transition state and have a smooth exit animation
   const [isClosing, setIsClosing] = useState(false)
-  const [isConfirmed, setIsConfirmed] = useState(false)
 
   const handleClose = useCallback(
     (confirmed: boolean) => {
@@ -111,21 +110,15 @@ export function Dialog(props: DialogProps) {
         return
       }
 
-      setIsConfirmed(confirmed)
       setIsClosing(true)
+      props.onClose(confirmed)
 
       setTimeout(() => {
-        props.onClose(isConfirmed)
-
-        setTimeout(() => {
-          setIsClosing(false)
-          // prevent flickering caused by race conditions
-        }, 10)
-
+        setIsClosing(false)
         // 200ms for the transition to finish
       }, 200)
     },
-    [setIsClosing, setIsConfirmed, closeable]
+    [setIsClosing, closeable]
   )
 
   return (
