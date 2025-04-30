@@ -2052,8 +2052,8 @@
       "rpcUrl": "https://testnetrpc.trex.xyz",
       "isCustom": true,
       "isTestnet": true,
-      "name": "T-Rex",
-      "slug": "t-rex",
+      "name": "T-Rex Testnet",
+      "slug": "t-rex-testnet",
       "parentChainId": 11155111,
       "tokenBridge": {
         "parentCustomGateway": "0x13e32eABd36E71701092F536E841a998497204b5",
@@ -2074,7 +2074,7 @@
       "bridgeUiConfig": {
         "color": "#AAD394",
         "network": {
-          "name": "T-Rex",
+          "name": "T-Rex Testnet",
           "logo": "/images/T-Rex_Logo.png",
           "description": "Invisible blockchain bridging everyday digital interactions into real-world rewards."
         }
