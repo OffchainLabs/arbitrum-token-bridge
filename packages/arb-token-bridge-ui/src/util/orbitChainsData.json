@@ -2037,6 +2037,48 @@
           "logoUrl": "/images/EarnmSepolia_NativeTokenLogo.jpg"
         }
       }
+    },
+    {
+      "chainId": 1962,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x5b1b3C2B531caac8b7A50E65A8d954aDCf8CBc24",
+        "inbox": "0xCb47f0bb29f44e00fbb00324f0E104330Ee1072F",
+        "outbox": "0x8aB6FA23Ebb58FAa105C108b7F6c27C110828781",
+        "rollup": "0x456a1A88fC8ae1BA2387e9979499c7A4CaE73Bc3",
+        "sequencerInbox": "0xb688051CE65A9c886E717ab058F1Ec8c0C7b9582"
+      },
+      "explorerUrl": "https://testnet.trex.xyz",
+      "rpcUrl": "https://testnetrpc.trex.xyz",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "T-Rex",
+      "slug": "t-rex",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x13e32eABd36E71701092F536E841a998497204b5",
+        "parentErc20Gateway": "0xd30F1C65476f47A4D5c54e6c246a5EB6D74295A3",
+        "parentGatewayRouter": "0xa2ea20576C50371136ea1b20A364A82185d4D4a5",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+        "parentWethGateway": "0xEb801249D7213fE018e562970F1c29A107d52882",
+        "childCustomGateway": "0x64739984f1c327Fe96ee1eaE4Ec332671284313F",
+        "childErc20Gateway": "0x370fF0abDab8a1AC1f2e2943796eF932D1090749",
+        "childGatewayRouter": "0x00AB824F25ed820A351e0A7b0aF15c3B84755B77",
+        "childMultiCall": "0x56cC2Eb565A52340761DE8FFB8eA077F68F7bC8c",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x24305a5E6F469950E9842e95A7D577D5522E5151",
+        "childWethGateway": "0x1DEe1520483A8BC4Bada4a384D5F042a4A6B7062"
+      },
+      "bridgeUiConfig": {
+        "color": "#AAD394",
+        "network": {
+          "name": "T-Rex",
+          "logo": "/images/T-Rex_Logo.png",
+          "description": "Invisible blockchain bridging everyday digital interactions into real-world rewards."
+        }
+      }
     }
   ]
 }
