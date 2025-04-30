@@ -2631,10 +2631,10 @@
   dependencies:
     "@octokit/openapi-types" "^23.0.1"
 
-"@offchainlabs/cobalt@^0.3.12":
-  version "0.3.12"
-  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.12.tgz#f841028f0e698b57adbaa75c2225aec59baef821"
-  integrity sha512-ULbCD0DfxO8xmrPOmHcB4HuW+c81qAdbvXw5it5jMilb2bVjPoE4gtCALbVppkGbcft0P3FgEpKHbtfS7sEfeg==
+"@offchainlabs/cobalt@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.4.0.tgz#d0c8a393cdbe9edd16ffe0eeae7285fc25d18cdb"
+  integrity sha512-Gde0WxX8pyG4K+czGWTngKOsq0rdCZJrB9JSInIaQHCsyA8LeKScIPbgpk+J6clYX2T1QcFTUSX523tdWXH0Bw==
 
 "@parcel/watcher-android-arm64@2.4.1":
   version "2.4.1"
