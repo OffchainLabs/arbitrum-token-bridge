@@ -47,10 +47,14 @@ export function useSyncConnectedChainToAnalytics() {
     if (isConnected && connector) {
       const walletName = getWalletName(connector.name)
       trackEvent('Connect Wallet Click', { walletName })
-    }
 
-    // set a custom tag in sentry to filter issues by connected wallet.name
-    Sentry.setTag('wallet.name', connector?.name ?? '')
+      // Set wallet name tag only when we have a connected wallet
+      Sentry.setTag('wallet.name', connector.name)
+    } else {
+      // If no wallet is connected, explicitly set the tag to 'not_connected'
+      // This prevents it from showing as '<invalid>' in Sentry
+      Sentry.setTag('wallet.name', 'not_connected')
+    }
   }, [isConnected, connector])
 
   useEffect(() => {

@@ -31,6 +31,7 @@ import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
+import { shallow } from 'zustand/shallow'
 
 const DetailsBox = ({
   children,
@@ -84,8 +85,18 @@ const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
 }
 
 export const TransactionsTableDetails = () => {
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
-  const { tx: txFromStore, isOpen, close, reset } = useTxDetailsStore()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
+  const { txFromStore, isOpen, close, reset } = useTxDetailsStore(
+    state => ({
+      txFromStore: state.tx,
+      isOpen: state.isOpen,
+      close: state.close,
+      reset: state.reset
+    }),
+    shallow
+  )
   const { ethToUSD } = useETHPrice()
   const { transactions } = useTransactionHistory(sanitizedAddress)
 

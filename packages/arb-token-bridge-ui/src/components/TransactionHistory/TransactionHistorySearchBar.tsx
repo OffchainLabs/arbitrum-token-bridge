@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { shallow } from 'zustand/shallow'
 import { isAddress } from 'ethers/lib/utils'
 import { Address, useAccount } from 'wagmi'
 import { useCallback, useEffect } from 'react'
@@ -38,7 +39,15 @@ export const useTransactionHistoryAddressStore =
 
 export function TransactionHistorySearchBar() {
   const { address, setAddress, setSanitizedAddress, setSearchError } =
-    useTransactionHistoryAddressStore()
+    useTransactionHistoryAddressStore(
+      state => ({
+        address: state.address,
+        setAddress: state.setAddress,
+        setSanitizedAddress: state.setSanitizedAddress,
+        setSearchError: state.setSearchError
+      }),
+      shallow
+    )
   const { address: connectedAddress } = useAccount()
 
   useEffect(() => {
@@ -66,12 +75,11 @@ export function TransactionHistorySearchBar() {
     <div className="mb-4 flex flex-row items-stretch gap-1 pr-4 md:pr-0">
       <form
         className={twMerge(
-          'flex w-full items-center justify-center overflow-hidden rounded border border-gray-dark bg-black text-white md:w-1/2'
+          'relative flex w-full items-center justify-center overflow-hidden rounded border border-gray-dark bg-black text-white md:w-1/2'
         )}
         onSubmit={event => event.preventDefault()}
       >
-        <MagnifyingGlassIcon className="mr-1 ml-3 h-3 w-3" />
-
+        <MagnifyingGlassIcon className="absolute left-2 top-1/2 -mt-[7px] h-3 w-3" />
         <Tooltip
           content="Search any wallet address to view transactions and claim withdrawals for them. The funds will arrive at the destination wallet address specified by the original withdrawal transaction."
           wrapperClassName="h-full w-full"
@@ -86,7 +94,7 @@ export function TransactionHistorySearchBar() {
             inputMode="search"
             placeholder="Search any wallet address"
             aria-label="Transaction history wallet address input"
-            className="h-full w-full bg-transparent py-1 pr-3 pl-1 text-sm font-light placeholder:text-white/60"
+            className="h-full w-full bg-transparent py-1 pl-6 pr-3 text-sm font-light placeholder:text-white/60"
             // stop password managers from autofilling
             data-1p-ignore
             data-lpignore="true"
@@ -94,6 +102,7 @@ export function TransactionHistorySearchBar() {
           />
         </Tooltip>
         <Button
+          type="submit"
           variant="secondary"
           className={twMerge(
             'rounded-l-none border-y-0 border-r-0 border-gray-dark bg-black py-[7px] select-none',

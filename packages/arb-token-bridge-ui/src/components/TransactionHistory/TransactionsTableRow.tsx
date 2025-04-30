@@ -30,7 +30,6 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
 import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
-import { Address } from '../../util/AddressUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -126,7 +125,7 @@ export function TransactionsTableRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { open: openTxDetails } = useTxDetailsStore()
+  const openTxDetails = useTxDetailsStore(state => state.open)
   const childProvider = getProviderForChainId(tx.childChainId)
   const nativeCurrency = useNativeCurrency({ provider: childProvider })
 

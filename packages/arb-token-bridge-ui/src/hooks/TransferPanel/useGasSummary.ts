@@ -1,4 +1,4 @@
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import { useMemo } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'
 
@@ -19,9 +19,7 @@ import {
   isWithdrawalFromArbOneToEthereum,
   isWithdrawalFromArbSepoliaToSepolia
 } from '../../util/networks'
-import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
-import { useArbQueryParams } from '../useArbQueryParams'
-import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -86,20 +84,7 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const [{ amount }] = useArbQueryParams()
-  const debouncedAmount = useDebounce(amount, 300)
-  const decimals = useSelectedTokenDecimals()
-
-  const amountBigNumber = useMemo(() => {
-    if (isNaN(Number(debouncedAmount))) {
-      return constants.Zero
-    }
-    const amountSafe = debouncedAmount || '0'
-
-    const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
-
-    return utils.parseUnits(correctDecimalsAmount, decimals)
-  }, [debouncedAmount, decimals])
+  const amountBigNumber = useDebounce(useAmountBigNumber(), 300)
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })

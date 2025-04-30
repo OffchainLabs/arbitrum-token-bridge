@@ -206,6 +206,10 @@ export const TransferPanelMainInput = React.memo(
     ...rest
   }: TransferPanelMainInputProps) => {
     const [localValue, setLocalValue] = useState(value)
+    const selectedTokenDecimals = useSelectedTokenDecimals()
+    const sanitizedAmount = sanitizeAmountQueryParam(
+      truncateExtraDecimals(value, selectedTokenDecimals)
+    )
 
     useEffect(() => {
       /**
@@ -250,6 +254,12 @@ export const TransferPanelMainInput = React.memo(
       },
       [decimals, onChange]
     )
+
+    useEffect(() => {
+      if (value !== sanitizedAmount) {
+        setLocalValue(sanitizedAmount)
+      }
+    }, [sanitizedAmount, value])
 
     return (
       <>
