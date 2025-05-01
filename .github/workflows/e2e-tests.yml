@@ -87,7 +87,7 @@ jobs:
       - name: Run nitro testnode
         if: inputs.test_type != 'cctp'
         timeout-minutes: 20
-        uses: OffchainLabs/actions/run-nitro-test-node@c783f9733749e1cdc18b9b16a8a06c97cd5cf58c
+        uses: OffchainLabs/actions/run-nitro-test-node@d88da36c1d000bf0d4cf2998b2aa2e0e642bf1cb
         with:
           nitro-testnode-ref: badbcbea9b43d46e115da4d7c9f2f57c31af8431
           l3-node: ${{ matrix.test.type != 'regular' }}
