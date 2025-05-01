@@ -35,7 +35,7 @@ jobs:
   test-e2e:
     name: "Test E2E - ${{ matrix.test.name }} ${{ matrix.test.typeName }}"
     needs: [build, load-e2e-files]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22
     strategy:
       fail-fast: false
       matrix:
@@ -87,7 +87,7 @@ jobs:
       - name: Run nitro testnode
         if: inputs.test_type != 'cctp'
         timeout-minutes: 20
-        uses: OffchainLabs/actions/run-nitro-test-node@08bcd6d38c1245d378648d58e0f9ab8f3d6c9487
+        uses: OffchainLabs/actions/run-nitro-test-node@c783f9733749e1cdc18b9b16a8a06c97cd5cf58c
         with:
           nitro-testnode-ref: badbcbea9b43d46e115da4d7c9f2f57c31af8431
           l3-node: ${{ matrix.test.type != 'regular' }}
