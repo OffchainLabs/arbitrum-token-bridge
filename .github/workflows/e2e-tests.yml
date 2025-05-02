@@ -35,7 +35,7 @@ jobs:
   test-e2e:
     name: "Test E2E - ${{ matrix.test.name }} ${{ matrix.test.typeName }}"
     needs: [build, load-e2e-files]
-    runs-on: ubuntu-22
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
