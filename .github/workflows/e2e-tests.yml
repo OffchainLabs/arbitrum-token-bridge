@@ -74,9 +74,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y \
-          sudo apt-get install -y libc6 \
-          fluxbox \
-          xvfb
+            libc6 \
+            fluxbox \
+            xvfb
 
       - name: Run xvfb and fluxbox
         run: |
