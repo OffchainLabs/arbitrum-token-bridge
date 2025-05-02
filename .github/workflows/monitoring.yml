@@ -34,6 +34,7 @@ jobs:
       with:
         repository: OffchainLabs/arbitrum-monitoring
         path: arbitrum-monitoring
+        ref: refactor-retryable-monitoring
 
     - name: Setup Node and install dependencies
       uses: actions/setup-node@v4
