@@ -408,7 +408,8 @@ function TokensPanel({
     isParentChainArbitrumSepolia,
     isOrbitChain,
     nativeCurrency,
-    getBalance
+    getBalance,
+    walletAddress // required for re-rendering the row when wallet address changes / wallet is connected
   ])
 
   const storeNewToken = async () => {
@@ -505,7 +506,15 @@ function TokensPanel({
         />
       )
     },
-    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected, usdcToken]
+    [
+      tokensToShow,
+      tokensFromLists,
+      tokensFromUser,
+      onTokenSelected,
+      usdcToken,
+      isOrbitChain,
+      walletAddress // required for re-rendering the row when wallet address changes / wallet is connected
+    ]
   )
 
   const AddButton = useMemo(
