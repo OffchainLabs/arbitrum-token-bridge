@@ -33,7 +33,7 @@ export function useBalanceUpdater() {
       (bridgeTokens
         ? Object.keys(bridgeTokens ?? {}).map(key => bridgeTokens[key]?.address)
         : []
-      ).filter(address => address !== undefined),
+      ).filter((address): address is string => address !== undefined),
     [bridgeTokens]
   )
 
@@ -44,7 +44,7 @@ export function useBalanceUpdater() {
             key => bridgeTokens[key]?.l2Address
           )
         : []
-      ).filter(address => address !== undefined),
+      ).filter((address): address is string => address !== undefined),
     [bridgeTokens]
   )
 
