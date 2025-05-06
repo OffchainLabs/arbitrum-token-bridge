@@ -325,7 +325,7 @@ export const AddCustomChain = () => {
           <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded border border-gray-dark bg-dark p-4 text-sm text-error">
             <button
               onClick={() => setError(null)}
-              className="arb-hover absolute right-4 top-4 text-white"
+              className="arb-hover absolute top-4 right-4 text-white"
             >
               <XMarkIcon width={20} />
             </button>
@@ -385,7 +385,7 @@ export const AddCustomChain = () => {
                         <EllipsisHorizontalIcon width={20} />
                       </Popover.Button>
                       <Transition>
-                        <Popover.Panel className="absolute bottom-6 right-0 flex w-[240px] flex-col rounded border border-gray-dark bg-dark text-sm font-normal text-white">
+                        <Popover.Panel className="absolute right-0 bottom-6 flex w-[240px] flex-col rounded border border-gray-dark bg-dark text-sm font-normal text-white">
                           <button
                             className="rounded-t p-4 text-left transition duration-300 hover:bg-[#333333]"
                             onClick={() => {

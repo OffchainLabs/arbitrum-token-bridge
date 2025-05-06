@@ -20,13 +20,13 @@ export async function addOrbitChain(targetJsonPath: string): Promise<void> {
 
     const { chainLogoPath, nativeTokenLogoPath } = await handleImages(
       branchName,
-      validatedIncomingData
+      validatedIncomingData,
     );
 
     const orbitChain = await createAndValidateOrbitChain(
       validatedIncomingData,
       chainLogoPath,
-      nativeTokenLogoPath
+      nativeTokenLogoPath,
     );
 
     await updateAndValidateOrbitChainsList(orbitChain, targetJsonPath);

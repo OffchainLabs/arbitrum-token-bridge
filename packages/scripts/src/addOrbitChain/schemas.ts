@@ -194,7 +194,7 @@ export const chainSchema = z
       chain.tokenBridge.parentWethGateway,
     ].filter(
       (address): address is string =>
-        typeof address === "string" && address !== ZERO_ADDRESS
+        typeof address === "string" && address !== ZERO_ADDRESS,
     );
 
     const childAddressesToCheck = [
@@ -204,7 +204,7 @@ export const chainSchema = z
       chain.tokenBridge.childMultiCall,
     ].filter(
       (address): address is string =>
-        typeof address === "string" && address !== ZERO_ADDRESS
+        typeof address === "string" && address !== ZERO_ADDRESS,
     );
 
     const checkAddresses = async (
@@ -212,7 +212,7 @@ export const chainSchema = z
       rpcUrl: string,
       blockExplorer: string,
       chainId: number,
-      chainName: string
+      chainName: string,
     ) => {
       const provider = getProvider({ rpcUrl, name: chainName, chainId });
 
@@ -246,14 +246,14 @@ Please verify contract manually by visiting ${explorerLink}`;
       parentChainInfo.rpcUrl,
       parentChainInfo.blockExplorer,
       parentChainInfo.chainId,
-      parentChainInfo.name
+      parentChainInfo.name,
     );
     await checkAddresses(
       childAddressesToCheck,
       chain.rpcUrl,
       chain.explorerUrl,
       chain.chainId,
-      chain.name
+      chain.name,
     );
   });
 
@@ -303,7 +303,7 @@ export const incomingChainDataSchema = z.object({
 export const orbitChainSchema = chainSchema;
 
 export const validateIncomingChainData = async (
-  rawData: unknown
+  rawData: unknown,
 ): Promise<IncomingChainData> => {
   try {
     return await incomingChainDataSchema.parseAsync(rawData);
@@ -323,7 +323,7 @@ export const validateOrbitChain = async (chainData: unknown) => {
 };
 
 export const validateOrbitChainsList = async (
-  chainsList: unknown
+  chainsList: unknown,
 ): Promise<void> => {
   try {
     await orbitChainsListSchema.parseAsync(chainsList);

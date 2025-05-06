@@ -70,7 +70,7 @@ export const SidePanel = ({
         </Transition.Child>
 
         {/* Full-screen container to center the panel */}
-        <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
+        <div className="fixed inset-0 top-0 right-0 flex h-full w-full items-start justify-end">
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-200"

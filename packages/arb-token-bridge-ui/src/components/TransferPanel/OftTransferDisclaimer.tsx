@@ -3,7 +3,7 @@ import { ExternalLink } from '../common/ExternalLink'
 
 export const OftTransferDisclaimer = () => {
   return (
-    <div className="flex w-full flex-col flex-nowrap gap-2 whitespace-nowrap rounded bg-white/10 p-2 text-sm font-light text-white lg:flex-row lg:items-center">
+    <div className="flex w-full flex-col flex-nowrap gap-2 rounded bg-white/10 p-2 text-sm font-light whitespace-nowrap text-white lg:flex-row lg:items-center">
       <Image
         src="/images/LayerZeroLogo.svg"
         alt="LayerZero Logo"
