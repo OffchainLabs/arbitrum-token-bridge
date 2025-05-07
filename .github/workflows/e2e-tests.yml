@@ -89,7 +89,7 @@ jobs:
         timeout-minutes: 20
         uses: OffchainLabs/actions/run-nitro-test-node@ed09b0d87a23153e0f95cf69495e0dd8c1997cef
         with:
-          nitro-testnode-ref: 2cded897fb825511752177051a96fb2434a1c64f
+          nitro-testnode-ref: f5a54d679733c65b81d5106488feb957ec579a46
           l3-node: ${{ matrix.test.type != 'regular' }}
           no-l3-token-bridge: ${{ matrix.test.type == 'regular' }}
           args: >-
