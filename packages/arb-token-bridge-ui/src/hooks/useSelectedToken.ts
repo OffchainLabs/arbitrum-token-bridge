@@ -84,7 +84,7 @@ export const useSelectedToken = () => {
               null,
             setSelectedToken
           ] as const)
-        : [null, setSelectedToken],
+        : ([null, setSelectedToken] as const),
     [
       setSelectedToken,
       tokenFromSearchParams,

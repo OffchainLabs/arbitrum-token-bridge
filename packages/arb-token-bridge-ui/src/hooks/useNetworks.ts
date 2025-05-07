@@ -67,8 +67,9 @@ export function sanitizeQueryParams({
   destinationChainId: ChainId | number
 } {
   const key = `${sourceChainId}-${destinationChainId}`
-  if (cache[key]) {
-    return cache[key]
+  const cacheHit = cache[key]
+  if (cacheHit) {
+    return cacheHit
   }
 
   if (
