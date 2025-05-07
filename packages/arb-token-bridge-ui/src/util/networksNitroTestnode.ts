@@ -10,9 +10,7 @@ export const defaultL2Network: ArbitrumNetwork = {
     bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
     inbox: '0x9f8c1c641336A371031499e3c362e40d58d0f254',
     outbox: '0x50143333b44Ea46255BEb67255C9Afd35551072F',
-    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
-      ? '0xe5Ab92C74CD297F0a1F2914cE37204FC5Bc4e82D'
-      : '0x46966d871d29e1772c2809459469f849d8AAb1A3',
+    rollup: '0xe5Ab92C74CD297F0a1F2914cE37204FC5Bc4e82D',
     sequencerInbox: '0x18d19C5d3E685f5be5b9C86E097f0E439285D216'
   },
   isCustom: true,
@@ -44,9 +42,7 @@ export const defaultL3Network: ArbitrumNetwork = {
     bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
     inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
     outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
-    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
-      ? '0x47b238E195b638b8972Cb3649e5d6775c279245d'
-      : '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
+    rollup: '0x47b238E195b638b8972Cb3649e5d6775c279245d',
     sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
   },
   isCustom: true,
@@ -78,9 +74,7 @@ export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
     bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
     inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
     outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
-    rollup: process.env.NEXT_PUBLIC_IS_E2E_TEST
-      ? '0x44612A67F6A7c4C894fB4AeA66c7Cfa7A0f0D388'
-      : '0x7a23F33C1C384eFc11b8Cf207420c464ba2959CC',
+    rollup: '0x44612A67F6A7c4C894fB4AeA66c7Cfa7A0f0D388',
     sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
   },
   nativeToken: '0xE069078bA9ACCE4eeAE609d8754515Cf13dd6706',
@@ -94,8 +88,8 @@ export const defaultL3CustomGasTokenNetwork: ArbitrumNetwork = {
     parentGatewayRouter: '0x0C085152C2799834fc1603533ff6916fa1FdA302',
     parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
     parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
-    parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
-    parentWethGateway: '0x59156b0596689D965Ba707E160e5370AF22461a0',
+    parentWeth: '0x0000000000000000000000000000000000000000',
+    parentWethGateway: '0x0000000000000000000000000000000000000000',
     childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
     childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',
     childGatewayRouter: '0x8B6BC759226f8Fe687c8aD8Cc0DbF85E095e9297',
