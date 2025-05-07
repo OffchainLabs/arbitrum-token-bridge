@@ -34,8 +34,7 @@ function useTransactionHistoryUpdater() {
     runFetcher: true
   })
 
-  const { transactions, loading, updatePendingTransaction } =
-    transactionHistoryProps
+  const { transactions, updatePendingTransaction } = transactionHistoryProps
 
   const pendingTransactions = useMemo(() => {
     return transactions.filter(isTxPending)
@@ -43,15 +42,11 @@ function useTransactionHistoryUpdater() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // only update pending transactions when tx history is not loading
-      // otherwise it would cause a race condition in updating the swr state and fetching would get stuck
-      if (!loading) {
-        pendingTransactions.forEach(updatePendingTransaction)
-      }
+      pendingTransactions.forEach(updatePendingTransaction)
     }, 10_000)
 
     return () => clearInterval(interval)
-  }, [loading, pendingTransactions, updatePendingTransaction])
+  }, [pendingTransactions, updatePendingTransaction])
 
   return transactionHistoryProps
 }
