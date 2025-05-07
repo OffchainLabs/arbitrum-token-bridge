@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { Chain } from 'wagmi/chains'
 
+import useSWRImmutable from 'swr/immutable'
 import { useArbQueryParams } from './useArbQueryParams'
 import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { ChainId } from '../types/ChainId'
@@ -161,10 +162,28 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const {
     sourceChainId: validSourceChainId,
     destinationChainId: validDestinationChainId
-  } = sanitizeQueryParams({
-    sourceChainId,
-    destinationChainId
-  })
+  } = useMemo(
+    () =>
+      sanitizeQueryParams({
+        sourceChainId,
+        destinationChainId
+      }),
+    [destinationChainId, sourceChainId]
+  )
+
+  const {
+    data = {
+      sourceChain: getWagmiChain(validSourceChainId),
+      destinationChain: getWagmiChain(validDestinationChainId)
+    }
+  } = useSWRImmutable(
+    [validSourceChainId, validDestinationChainId, 'useNetworks'] as const,
+    ([_validSourceChainId, _validDestinationChainId]) => {
+      const sourceChain = getWagmiChain(_validSourceChainId)
+      const destinationChain = getWagmiChain(_validDestinationChainId)
+      return { sourceChain, destinationChain }
+    }
+  )
 
   const setState = useCallback(
     ({
@@ -188,17 +207,20 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {
-    const sourceChain = getWagmiChain(validSourceChainId)
-    const destinationChain = getWagmiChain(validDestinationChainId)
-
     return [
       {
-        sourceChain,
+        sourceChain: data.sourceChain,
         sourceChainProvider: getProviderForChainId(validSourceChainId),
-        destinationChain,
+        destinationChain: data.destinationChain,
         destinationChainProvider: getProviderForChainId(validDestinationChainId)
       },
       setState
     ]
-  }, [validSourceChainId, validDestinationChainId, setState])
+  }, [
+    data.destinationChain,
+    data.sourceChain,
+    setState,
+    validDestinationChainId,
+    validSourceChainId
+  ])
 }
