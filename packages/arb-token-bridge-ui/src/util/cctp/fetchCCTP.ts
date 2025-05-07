@@ -12,6 +12,8 @@ export type FetchParams = {
   l1ChainId: ChainId
   pageNumber: number
   pageSize: number
+  connectedToEthereum: boolean
+  isSmartContractWallet: boolean
 }
 
 function convertStringToUsdcBigNumber(amount: string) {
@@ -26,12 +28,48 @@ function mapCCTPTransfer<T extends PendingCCTPTransfer | CompletedCCTPTransfer>(
   return cctpTransfer
 }
 
+function sanitizeSmartContractWalletCctpTransfers<
+  T extends PendingCCTPTransfer | CompletedCCTPTransfer
+>({
+  type,
+  walletAddress,
+  transfers,
+  connectedToEthereum
+}: {
+  type: 'deposits' | 'withdrawals'
+  walletAddress: string
+  transfers: T[]
+  connectedToEthereum: boolean
+}): T[] {
+  const walletAddressLowercased = walletAddress.toLowerCase()
+
+  return transfers.filter(tx => {
+    const { sender, recipient } = tx.messageSent
+    const senderLowercased = sender.toLowerCase()
+    const recipientLowercased = recipient.toLowerCase()
+
+    if (type === 'deposits') {
+      if (connectedToEthereum) {
+        return senderLowercased === walletAddressLowercased
+      }
+      return recipientLowercased === walletAddressLowercased
+    }
+
+    if (connectedToEthereum) {
+      return recipientLowercased === walletAddressLowercased
+    }
+    return senderLowercased === walletAddressLowercased
+  }) satisfies T[]
+}
+
 async function fetchCCTP({
   walletAddress,
   l1ChainId,
   pageNumber,
   pageSize,
-  type
+  type,
+  connectedToEthereum,
+  isSmartContractWallet
 }: FetchParams & { type: 'deposits' | 'withdrawals' }): Promise<
   Response['data']
 > {
@@ -40,7 +78,9 @@ async function fetchCCTP({
       walletAddress,
       l1ChainId,
       pageNumber,
-      pageSize
+      pageSize,
+      connectedToEthereum,
+      isSmartContractWallet
     })
   )
 
@@ -57,9 +97,31 @@ async function fetchCCTP({
   const parsedResponse: Response = await response.json()
   const { pending, completed } = parsedResponse.data
 
+  const sanitizedPendingTransfers = isSmartContractWallet
+    ? sanitizeSmartContractWalletCctpTransfers<PendingCCTPTransfer>({
+        type,
+        walletAddress,
+        transfers: pending,
+        connectedToEthereum
+      })
+    : pending
+
+  const sanitizedCompletedTransfers = isSmartContractWallet
+    ? sanitizeSmartContractWalletCctpTransfers<CompletedCCTPTransfer>({
+        type,
+        walletAddress,
+        transfers: completed,
+        connectedToEthereum
+      })
+    : completed
+
   return {
-    pending: pending.map(transfer => mapCCTPTransfer(transfer)),
-    completed: completed.map(transfer => mapCCTPTransfer(transfer))
+    pending: sanitizedPendingTransfers.map(transfer =>
+      mapCCTPTransfer(transfer)
+    ),
+    completed: sanitizedCompletedTransfers.map(transfer =>
+      mapCCTPTransfer(transfer)
+    )
   }
 }
 

@@ -20,6 +20,7 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
+  clickClaimButton,
   selectTransactionsPanelTab,
   confirmSpending,
   claimCctp,
@@ -64,6 +65,7 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      clickClaimButton: typeof clickClaimButton
       confirmSpending: typeof confirmSpending
       claimCctp: typeof claimCctp
       selectRoute: typeof selectRoute

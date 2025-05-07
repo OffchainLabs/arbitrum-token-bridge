@@ -343,6 +343,12 @@ export function claimCctp(amount: number, options: { accept: boolean }) {
   }
 }
 
+export function clickClaimButton(amountToClaim: string) {
+  cy.findClaimButton(amountToClaim).should('be.visible')
+  cy.wait(10_000)
+  cy.findClaimButton(amountToClaim).click()
+}
+
 export function selectRoute(type: 'arbitrum' | 'oftV2' | 'cctp') {
   cy.findByLabelText(`Route ${type}`).should('be.visible').click()
 }
@@ -369,6 +375,7 @@ Cypress.Commands.addAll({
   closeTransactionDetails,
   findTransactionInTransactionHistory,
   findClaimButton,
+  clickClaimButton,
   findTransactionDetailsCustomDestinationAddress,
   confirmSpending,
   claimCctp,
