@@ -139,9 +139,13 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner({
-    chainId: networks.sourceChain.id
-  })
+  const {
+    current: { data: signer }
+  } = useLatest(
+    useSigner({
+      chainId: latestNetworks.current.sourceChain.id
+    })
+  )
 
   const { setTransferring } = useAppContextActions()
   const switchToTransactionHistoryTab = useMainContentTabs(
@@ -378,7 +382,7 @@ export function TransferPanel() {
 
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
-        networks
+        latestNetworks.current
 
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
@@ -548,7 +552,8 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const { sourceChainProvider, destinationChainProvider } = networks
+      const { sourceChainProvider, destinationChainProvider } =
+        latestNetworks.current
 
       // confirm if the user is certain about the custom destination address for SCW
       if (
