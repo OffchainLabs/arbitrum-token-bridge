@@ -2,7 +2,7 @@ import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
-
+import useSWRImmutable from 'swr/immutable'
 import { useArbQueryParams } from './useArbQueryParams'
 import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { ChainId } from '../types/ChainId'
@@ -51,6 +51,13 @@ export function isSupportedChainId(
   ].includes(chainId)
 }
 
+const cache: Record<
+  string,
+  {
+    sourceChainId: number
+    destinationChainId: number
+  }
+> = {}
 export function sanitizeQueryParams({
   sourceChainId,
   destinationChainId
@@ -61,16 +68,22 @@ export function sanitizeQueryParams({
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
+  const key = `${sourceChainId}-${destinationChainId}`
+  const cacheHit = cache[key]
+  if (cacheHit) {
+    return cacheHit
+  }
+
   if (
     (!sourceChainId && !destinationChainId) ||
     (!isSupportedChainId(sourceChainId) &&
       !isSupportedChainId(destinationChainId))
   ) {
-    return {
+    // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
+    return (cache[key] = {
       sourceChainId: ChainId.Ethereum,
       destinationChainId: ChainId.ArbitrumOne
-    }
+    })
   }
 
   // destinationChainId is valid and sourceChainId is undefined
@@ -81,13 +94,16 @@ export function sanitizeQueryParams({
     const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
 
     if (typeof defaultSourceChainId === 'undefined') {
-      return {
+      return (cache[key] = {
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
-      }
+      })
     }
 
-    return { sourceChainId: defaultSourceChainId, destinationChainId }
+    return (cache[key] = {
+      sourceChainId: defaultSourceChainId,
+      destinationChainId
+    })
   }
 
   // sourceChainId is valid and destinationChainId is undefined
@@ -98,31 +114,31 @@ export function sanitizeQueryParams({
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
 
     if (typeof defaultDestinationChainId === 'undefined') {
-      return {
+      return (cache[key] = {
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
-      }
+      })
     }
 
-    return {
+    return (cache[key] = {
       sourceChainId: sourceChainId,
       destinationChainId: defaultDestinationChainId
-    }
+    })
   }
 
   // destinationChainId is not a partner of sourceChainId
   if (!getDestinationChainIds(sourceChainId!).includes(destinationChainId!)) {
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!)
-    return {
+    return (cache[key] = {
       sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!
-    }
+    })
   }
 
-  return {
+  return (cache[key] = {
     sourceChainId: sourceChainId!,
     destinationChainId: destinationChainId!
-  }
+  })
 }
 
 export type UseNetworksState = {
@@ -147,10 +163,28 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const {
     sourceChainId: validSourceChainId,
     destinationChainId: validDestinationChainId
-  } = sanitizeQueryParams({
-    sourceChainId,
-    destinationChainId
-  })
+  } = useMemo(
+    () =>
+      sanitizeQueryParams({
+        sourceChainId,
+        destinationChainId
+      }),
+    [destinationChainId, sourceChainId]
+  )
+
+  const {
+    data = {
+      sourceChain: getWagmiChain(validSourceChainId),
+      destinationChain: getWagmiChain(validDestinationChainId)
+    }
+  } = useSWRImmutable(
+    [validSourceChainId, validDestinationChainId, 'useNetworks'] as const,
+    ([_validSourceChainId, _validDestinationChainId]) => {
+      const sourceChain = getWagmiChain(_validSourceChainId)
+      const destinationChain = getWagmiChain(_validDestinationChainId)
+      return { sourceChain, destinationChain }
+    }
+  )
 
   const setState = useCallback(
     ({
@@ -174,17 +208,20 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {
-    const sourceChain = getWagmiChain(validSourceChainId)
-    const destinationChain = getWagmiChain(validDestinationChainId)
-
     return [
       {
-        sourceChain,
+        sourceChain: data.sourceChain,
         sourceChainProvider: getProviderForChainId(validSourceChainId),
-        destinationChain,
+        destinationChain: data.destinationChain,
         destinationChainProvider: getProviderForChainId(validDestinationChainId)
       },
       setState
     ]
-  }, [validSourceChainId, validDestinationChainId, setState])
+  }, [
+    data.destinationChain,
+    data.sourceChain,
+    setState,
+    validDestinationChainId,
+    validSourceChainId
+  ])
 }

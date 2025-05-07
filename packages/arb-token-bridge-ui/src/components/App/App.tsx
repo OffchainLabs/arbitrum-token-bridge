@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAccount, useNetwork, WagmiConfig, useDisconnect } from 'wagmi'
 import {
@@ -9,7 +9,7 @@ import {
 } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
-import { createOvermind, Overmind } from 'overmind'
+import { createOvermind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
@@ -115,7 +115,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
-function AppContent() {
+const AppContent = React.memo(() => {
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
@@ -180,7 +180,9 @@ function AppContent() {
       <MainContent />
     </>
   )
-}
+})
+
+AppContent.displayName = 'AppContent'
 
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
@@ -296,7 +298,7 @@ function ConnectedChainSyncer() {
 }
 
 export default function App() {
-  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
+  const overmind = useMemo(() => createOvermind(config), [])
 
   return (
     <Provider value={overmind}>

@@ -62,6 +62,7 @@ const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   }
 }
 
+// TODO: load only once
 export const getChains = () => {
   const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
