@@ -81,6 +81,7 @@ import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
 import { Cog8ToothIcon, QueueListIcon } from '@heroicons/react/24/outline'
+import { WidgetRoutes } from '../Widget/WidgetRoutes'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -1181,7 +1182,7 @@ export function TransferPanel() {
           <div className="flex h-full max-w-[400px] flex-col gap-1 min-[850px]:justify-between">
             <div className="flex flex-col gap-1">
               <div className="h-[30px] text-lg">Receive</div>
-              <Routes />
+              <WidgetRoutes />
             </div>
             {isConnected ? (
               <MoveFundsButton onClick={moveFundsButtonOnClick} />
