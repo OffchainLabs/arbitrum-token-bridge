@@ -5,7 +5,6 @@ import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
 import LayerZeroIcon from '@/images/LayerZeroIcon.png'
-import LifiLogo from '@/icons/lifi.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
@@ -26,7 +25,6 @@ import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { addressesEqual } from '../../util/AddressUtils'
-import { SafeImage } from '../common/SafeImage'
 import { MergedTransaction } from '../../state/app/state'
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {

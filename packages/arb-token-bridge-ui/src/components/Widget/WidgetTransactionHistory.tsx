@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { MergedTransaction } from '../../state/app/state'
 import { TransactionDetailsContent } from '../TransactionHistory/TransactionDetailsContent'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
