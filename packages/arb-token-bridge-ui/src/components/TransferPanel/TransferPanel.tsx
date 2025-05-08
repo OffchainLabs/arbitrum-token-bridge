@@ -80,6 +80,7 @@ import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
+import { Cog8ToothIcon, QueueListIcon } from '@heroicons/react/24/outline'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -164,7 +165,8 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
+  const [{ amount, amount2, destinationAddress, embedMode }] =
+    useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -1139,6 +1141,56 @@ export function TransferPanel() {
     return transfer()
   }
 
+  if (embedMode) {
+    return (
+      <>
+        <DialogWrapper {...dialogProps} />
+
+        <div className="relative m-auto grid w-max grid-cols-1 gap-4 rounded-lg bg-gray-1 p-4 text-white transition-all duration-300 min-[850px]:grid min-[850px]:max-w-[850px] min-[850px]:grid-cols-2">
+          {/* Left/Top panel */}
+          <div className="flex h-full max-w-[400px] flex-col gap-1 overflow-hidden">
+            <div className="flex flex-row items-center justify-between text-lg">
+              <div className="h-[30px] text-lg">Send</div>
+              <div className="flex flex-row gap-2 text-sm">
+                {isConnected && (
+                  <QueueListIcon
+                    className="h-4 w-4 cursor-pointer text-gray-400 hover:text-white"
+                    // onClick={() => openDialog('widget_transaction_history')}
+                  />
+                )}
+                <Cog8ToothIcon
+                  className="h-4 w-4 cursor-pointer text-gray-400 hover:text-white"
+                  onClick={() => openDialog('widget_settings')}
+                />
+              </div>
+            </div>
+            <TransferPanelMain />
+          </div>
+
+          {/* Right/Bottom panel */}
+          <div className="flex h-full max-w-[400px] flex-col gap-1 min-[850px]:justify-between">
+            <div className="flex flex-col gap-1">
+              <div className="h-[30px] text-lg">Receive</div>
+              <Routes />
+            </div>
+            {isConnected ? (
+              <MoveFundsButton onClick={moveFundsButtonOnClick} />
+            ) : (
+              <ConnectWalletButton />
+            )}
+          </div>
+        </div>
+
+        {isTokenAlreadyImported === false && tokenFromSearchParams && (
+          <TokenImportDialog
+            {...tokenImportDialogProps}
+            onClose={closeWithResetTokenImportDialog}
+            tokenAddress={tokenFromSearchParams}
+          />
+        )}
+      </>
+    )
+  }
   return (
     <>
       <DialogWrapper {...dialogProps} />
