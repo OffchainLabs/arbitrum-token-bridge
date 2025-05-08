@@ -2,10 +2,10 @@ import React, {
   ChangeEventHandler,
   useCallback,
   useEffect,
-  useState
+  useState,
+  useMemo
 } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
 import { TokenButton, TokenButtonOptions } from './TokenButton'
@@ -215,6 +215,7 @@ export const TransferPanelMainInput = React.memo(
     options,
     ...rest
   }: TransferPanelMainInputProps) => {
+    const { isConnected } = useAccount()
     const [localValue, setLocalValue] = useState(value)
     const selectedTokenDecimals = useSelectedTokenDecimals()
     const sanitizedAmount = sanitizeAmountQueryParam(
@@ -271,14 +272,12 @@ export const TransferPanelMainInput = React.memo(
       }
     }, [sanitizedAmount, value])
 
-    const { isConnected } = useAccount()
-
     return (
       <>
         <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
           <div
             className={twMerge(
-              'flex grow flex-row items-center justify-center'
+              'flex min-h-[83px] grow flex-row items-center justify-center'
             )}
           >
             <TransferPanelInputField

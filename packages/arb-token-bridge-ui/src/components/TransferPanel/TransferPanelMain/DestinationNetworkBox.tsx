@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { constants } from 'ethers'
 import Image from 'next/image'
+import { useAccount } from 'wagmi'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { NetworkContainer } from '../TransferPanelMain'
@@ -27,7 +28,6 @@ import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
-import { useAccount } from 'wagmi'
 
 function BalanceRow({
   parentErc20Address,
@@ -39,6 +39,8 @@ function BalanceRow({
   symbolOverride?: string
 }) {
   const [networks] = useNetworks()
+  const [{ destinationAddress }] = useArbQueryParams()
+  const { isConnected } = useAccount()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -83,6 +85,8 @@ function BalanceRow({
     tokensFromUser
   ])
 
+  const shouldShowBalance = !isConnected ? !!destinationAddress : true
+
   return (
     <div className="flex justify-between py-3 text-sm">
       <div className="flex items-center space-x-1.5">
@@ -93,20 +97,22 @@ function BalanceRow({
         />
         <span>{symbol}</span>
       </div>
-      <div className="flex space-x-1">
-        <span>Balance: </span>
-        <span
-          aria-label={`${symbol} balance amount on ${
-            isDepositMode ? 'childChain' : 'parentChain'
-          }`}
-        >
-          {balance ? (
-            balance
-          ) : (
-            <Loader wrapperClass="ml-2" size="small" color="white" />
-          )}
-        </span>
-      </div>
+      {shouldShowBalance && (
+        <div className="flex space-x-1">
+          <span>Balance: </span>
+          <span
+            aria-label={`${symbol} balance amount on ${
+              isDepositMode ? 'childChain' : 'parentChain'
+            }`}
+          >
+            {balance ? (
+              balance
+            ) : (
+              <Loader wrapperClass="ml-2" size="small" color="white" />
+            )}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
