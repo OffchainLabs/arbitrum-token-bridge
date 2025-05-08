@@ -27,6 +27,7 @@ import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { useAccount } from 'wagmi'
 
 function BalanceRow({
   parentErc20Address,
@@ -116,6 +117,7 @@ function BalancesContainer() {
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
   const [selectedToken] = useSelectedToken()
+  const { isConnected } = useAccount()
 
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()
@@ -127,6 +129,10 @@ function BalancesContainer() {
   const selectedTokenOrNativeCurrencyBalance = selectedToken
     ? selectedTokenBalances.destinationBalance
     : nativeCurrencyBalances.destinationBalance
+
+  if (!isConnected) {
+    return null
+  }
 
   return (
     <div

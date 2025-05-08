@@ -6,6 +6,7 @@ import React, {
 } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
 
 import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -261,6 +262,8 @@ export const TransferPanelMainInput = React.memo(
       }
     }, [sanitizedAmount, value])
 
+    const { isConnected } = useAccount()
+
     return (
       <>
         <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
@@ -276,13 +279,15 @@ export const TransferPanelMainInput = React.memo(
             />
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
-              <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-                <SourceChainTokenBalance
-                  balanceOverride={options?.balance}
-                  symbolOverride={options?.symbol}
-                />
-                <MaxButton onClick={handleMaxButtonClick} />
-              </div>
+              {isConnected && (
+                <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                  <SourceChainTokenBalance
+                    balanceOverride={options?.balance}
+                    symbolOverride={options?.symbol}
+                  />
+                  <MaxButton onClick={handleMaxButtonClick} />
+                </div>
+              )}
             </div>
           </div>
         </div>
