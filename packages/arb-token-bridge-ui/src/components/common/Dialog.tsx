@@ -4,6 +4,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -100,6 +101,7 @@ export function Dialog(props: DialogProps) {
   const closeable = props.closeable ?? true
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
+  const [{ embedMode }] = useArbQueryParams()
 
   // separate state to track transition state and have a smooth exit animation
   const [isClosing, setIsClosing] = useState(false)
@@ -158,7 +160,8 @@ export function Dialog(props: DialogProps) {
           <HeadlessUIDialog.Panel
             className={twMerge(
               'z-10 max-h-screen w-screen overflow-y-auto border border-gray-dark bg-gray-1 md:max-w-[727px] md:rounded',
-              className
+              className,
+              embedMode && 'border-0'
             )}
           >
             <div className="flex items-start justify-between px-6 pt-4">

@@ -18,7 +18,10 @@ import { ExternalLink } from '../common/ExternalLink'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
-import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
+import {
+  sanitizeAmountQueryParam,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
@@ -146,12 +149,18 @@ function ErrorMessage({
 }: {
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
 }) {
+  const [{ embedMode }] = useArbQueryParams()
+
   if (typeof errorMessage === 'undefined') {
     return null
   }
 
   if (typeof errorMessage === 'string') {
-    return <span className="text-sm text-brick">{errorMessage}</span>
+    return (
+      <span className={twMerge('text-sm text-brick', embedMode && 'text-xs')}>
+        {errorMessage}
+      </span>
+    )
   }
 
   switch (errorMessage) {

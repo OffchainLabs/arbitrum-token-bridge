@@ -9,6 +9,7 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
 import { shallow } from 'zustand/shallow'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 enum MainContentTabs {
   Bridge = 0,
@@ -42,6 +43,12 @@ export function MainContent() {
   )
 
   useBalanceUpdater()
+
+  const [{ embedMode }] = useArbQueryParams()
+
+  if (embedMode) {
+    return <TransferPanel />
+  }
 
   return (
     <>

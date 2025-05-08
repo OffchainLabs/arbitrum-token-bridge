@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { utils } from 'ethers'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -16,7 +17,7 @@ import {
   getSmartContractWalletTeleportTransfersNotSupportedErrorMessage,
   getWithdrawOnlyChainErrorMessage
 } from './useTransferReadinessUtils'
-import { ether } from '../../constants'
+import { ether, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import {
   UseGasSummaryResult,
   useGasSummary
@@ -153,6 +154,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childWalletAddress: walletAddress
   })
   const { destinationAddressError } = useDestinationAddressError()
+  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY)
 
   const ethL1BalanceFloat = ethParentBalance
     ? parseFloat(utils.formatEther(ethParentBalance))
@@ -216,6 +218,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
   }, [nativeCurrency, erc20ParentBalances])
 
   return useMemo(() => {
+    if (!tosAccepted) {
+      return notReady()
+    }
+
     const { estimatedL1GasFees, estimatedL2GasFees } = sanitizeEstimatedGasFees(
       gasSummary,
       {
