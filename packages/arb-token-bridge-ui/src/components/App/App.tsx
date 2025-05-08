@@ -26,6 +26,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
+import { Layout } from '../common/Layout'
 
 declare global {
   interface Window {
@@ -175,19 +176,21 @@ export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
   return (
-    <Provider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
-            <AppContextProvider>
-              <AppContent />
-            </AppContextProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
-      </ArbQueryParamProvider>
-    </Provider>
+    <Layout>
+      <Provider value={overmind}>
+        <ArbQueryParamProvider>
+          <WagmiConfig {...wagmiConfigProps}>
+            <RainbowKitProvider
+              theme={rainbowkitTheme}
+              {...rainbowKitProviderProps}
+            >
+              <AppContextProvider>
+                <AppContent />
+              </AppContextProvider>
+            </RainbowKitProvider>
+          </WagmiConfig>
+        </ArbQueryParamProvider>
+      </Provider>
+    </Layout>
   )
 }
