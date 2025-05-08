@@ -570,6 +570,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     networks.sourceChain.name,
     isTeleportMode,
     isSelectedTokenWithdrawOnly,
-    isSelectedTokenWithdrawOnlyLoading
+    isSelectedTokenWithdrawOnlyLoading,
+    childChain.name
   ])
 }

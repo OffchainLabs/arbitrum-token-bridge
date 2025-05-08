@@ -294,10 +294,6 @@ export const useArbTokenBridge = (
     let l1Address: string
     let l2Address: string | undefined
 
-    if (!walletAddress) {
-      return
-    }
-
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
     const maybeL1Address = await getL1ERC20Address({
       erc20L2Address: lowercasedErc20L1orL2Address,
@@ -410,7 +406,8 @@ export const useArbTokenBridge = (
       updateErc20L1Balance,
       updateErc20L2Balance,
       updateErc20L1CustomDestinationBalance,
-      updateErc20CustomDestinationL2Balance
+      updateErc20CustomDestinationL2Balance,
+      destinationAddress
     ]
   )
 
