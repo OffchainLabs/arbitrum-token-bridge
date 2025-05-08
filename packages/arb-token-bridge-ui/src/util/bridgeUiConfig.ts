@@ -42,15 +42,6 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           description: 'The current recommended Ethereum testnet.'
         }
       }
-    case ChainId.Holesky:
-      return {
-        ...ethereumBaseConfig,
-        network: {
-          ...ethereumBaseConfig.network,
-          name: 'Holesky',
-          description: 'Ethereum testnet.'
-        }
-      }
     case ChainId.Local:
       return {
         ...ethereumBaseConfig,

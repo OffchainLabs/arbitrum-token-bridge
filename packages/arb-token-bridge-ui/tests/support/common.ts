@@ -166,12 +166,18 @@ export const acceptMetamaskAccess = () => {
   })
 }
 
-export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
+export const startWebApp = (
+  url = '/',
+  options: {
+    query: { [s: string]: string }
+    connectMetamask: boolean
+  }
+) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
   cy.clearLocalStorage('arbitrum:bridge:tos-v2')
   cy.visit(url, {
-    qs
+    qs: options.query
   })
   if (Cypress.currentRetry > 0) {
     // ensures we don't test with the same state that could have caused the test to fail
@@ -180,10 +186,13 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   cy.acceptTnC()
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
-      cy.findByText('Connect a Wallet').should('be.visible')
-      cy.findByText('MetaMask').should('be.visible').click()
-      acceptMetamaskAccess()
-      cy.task('setWalletConnectedToDapp')
+      cy.findByText('Connect Wallet').should('be.visible')
+      if (options.connectMetamask) {
+        cy.findByText('Connect Wallet').first().click()
+        cy.findByText('MetaMask').should('be.visible').click()
+        acceptMetamaskAccess()
+        cy.task('setWalletConnectedToDapp')
+      }
     }
   })
 }

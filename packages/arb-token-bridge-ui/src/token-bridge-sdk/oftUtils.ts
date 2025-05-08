@@ -30,10 +30,6 @@ const oftProtocolConfig: {
     lzEndpointId: 40161,
     endpointV2: '0x6EDCE65403992e310A62460808c4b910D972f10f'
   },
-  [ChainId.Holesky]: {
-    lzEndpointId: 40217,
-    endpointV2: '0x6EDCE65403992e310A62460808c4b910D972f10f'
-  },
   [ChainId.ArbitrumOne]: {
     lzEndpointId: 30110,
     endpointV2: '0x1a44076050125825900e736c501f859c50fE728c',

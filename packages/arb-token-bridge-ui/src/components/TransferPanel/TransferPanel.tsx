@@ -140,7 +140,9 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const signer = useEthersSigner({ chainId: networks.sourceChain.id })
+  const { current: signer } = useLatest(
+    useEthersSigner({ chainId: networks.sourceChain.id })
+  )
   const wagmiConfig = useConfig()
 
   const { setTransferring } = useAppContextActions()
@@ -378,7 +380,7 @@ export function TransferPanel() {
 
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
-        networks
+        latestNetworks.current
 
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
@@ -549,7 +551,8 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const { sourceChainProvider, destinationChainProvider } = networks
+      const { sourceChainProvider, destinationChainProvider } =
+        latestNetworks.current
 
       // confirm if the user is certain about the custom destination address for SCW
       if (

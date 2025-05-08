@@ -1,4 +1,5 @@
-import { PropsWithChildren, useEffect } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
@@ -16,9 +17,7 @@ function Wrapper({ children }: PropsWithChildren) {
 }
 
 export function useDefaultSelectedRoute() {
-  const [networks] = useNetworks()
   const [{ amount }] = useArbQueryParams()
-  const { isDepositMode } = useNetworksRelationship(networks)
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
   const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
@@ -33,19 +32,25 @@ export function useDefaultSelectedRoute() {
     }
 
     if (isCctpTransfer) {
-      if (!isDepositMode) setSelectedRoute('cctp')
+      setSelectedRoute('cctp')
       return
     }
 
     setSelectedRoute('arbitrum')
-  }, [
-    amount,
-    isOftV2Transfer,
-    isCctpTransfer,
-    isDepositMode,
-    setSelectedRoute,
-    selectedToken
-  ])
+  }, [amount, isOftV2Transfer, isCctpTransfer, setSelectedRoute, selectedToken])
+}
+
+function ShowHiddenRoutesButton(
+  props: React.ButtonHTMLAttributes<HTMLButtonElement>
+) {
+  return (
+    <div className="mt-1 flex justify-center text-xs text-white/80">
+      <button className="arb-hover flex space-x-1" {...props}>
+        <span>Show more routes</span>
+        <PlusCircleIcon width={16} />
+      </button>
+    </div>
+  )
 }
 
 /**
@@ -67,9 +72,16 @@ export function useDefaultSelectedRoute() {
 export const Routes = React.memo(() => {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
+  const [selectedToken] = useSelectedToken()
   const [{ amount }] = useArbQueryParams()
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
+
+  const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
+
+  useEffect(() => {
+    setShowHiddenRoutes(false)
+  }, [selectedToken])
 
   if (Number(amount) === 0) {
     return
@@ -88,7 +100,10 @@ export const Routes = React.memo(() => {
       return (
         <Wrapper>
           <CctpRoute />
-          <ArbitrumCanonicalRoute />
+          {showHiddenRoutes && <ArbitrumCanonicalRoute />}
+          {!showHiddenRoutes && (
+            <ShowHiddenRoutesButton onClick={() => setShowHiddenRoutes(true)} />
+          )}
         </Wrapper>
       )
     }
