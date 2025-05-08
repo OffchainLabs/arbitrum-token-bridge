@@ -21,6 +21,7 @@ import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnaly
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 import { Layout } from '../common/Layout'
 import { AppProviders } from './AppProviders'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 declare global {
   interface Window {
@@ -98,8 +99,9 @@ function AppContent() {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
+  const [{ embedMode }] = useArbQueryParams()
 
-  if (!tosAccepted) {
+  if (!tosAccepted && !embedMode) {
     return (
       <>
         <Header />
