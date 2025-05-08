@@ -155,7 +155,7 @@ describe('sanitizeQueryParams', () => {
     it('should set `sourceChainId` to Ethereum and `destinationChainId` to Arbitrum One', () => {
       const result = sanitizeQueryParams({
         sourceChainId: undefined,
-        destinationChainId: ChainId.Holesky
+        destinationChainId: ChainId.Base
       })
       expect(result).toEqual({
         sourceChainId: ChainId.Ethereum,
@@ -230,7 +230,7 @@ describe('sanitizeQueryParams', () => {
   describe('when `destinationChainId` is undefined and `sourceChainId` is valid but has no paired destination chains', () => {
     it('should set `sourceChainId` to Ethereum and `destinationChainId` to Arbitrum One', () => {
       const result = sanitizeQueryParams({
-        sourceChainId: ChainId.Holesky,
+        sourceChainId: ChainId.Base,
         destinationChainId: undefined
       })
       expect(result).toEqual({
