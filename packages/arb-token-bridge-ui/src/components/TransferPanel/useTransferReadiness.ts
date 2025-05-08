@@ -571,7 +571,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isTeleportMode,
     isSelectedTokenWithdrawOnly,
     isSelectedTokenWithdrawOnlyLoading,
-    childChain.name,
-    walletAddress
+    childChain.name
   ])
 }
