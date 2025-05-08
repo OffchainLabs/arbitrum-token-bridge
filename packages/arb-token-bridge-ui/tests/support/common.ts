@@ -188,7 +188,7 @@ export const startWebApp = (
     if (!connected) {
       cy.findByText('Connect Wallet').should('be.visible')
       if (options.connectMetamask) {
-        cy.findByText('Connect Wallet').first().click()
+        cy.findAllByText('Connect Wallet').first().click()
         cy.findByText('MetaMask').should('be.visible').click()
         acceptMetamaskAccess()
         cy.task('setWalletConnectedToDapp')
