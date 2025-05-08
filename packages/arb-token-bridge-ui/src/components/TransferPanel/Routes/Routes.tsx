@@ -17,9 +17,7 @@ function Wrapper({ children }: PropsWithChildren) {
 }
 
 export function useDefaultSelectedRoute() {
-  const [networks] = useNetworks()
   const [{ amount }] = useArbQueryParams()
-  const { isDepositMode } = useNetworksRelationship(networks)
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
   const setSelectedRoute = useRouteStore(state => state.setSelectedRoute)
@@ -39,14 +37,7 @@ export function useDefaultSelectedRoute() {
     }
 
     setSelectedRoute('arbitrum')
-  }, [
-    amount,
-    isOftV2Transfer,
-    isCctpTransfer,
-    isDepositMode,
-    setSelectedRoute,
-    selectedToken
-  ])
+  }, [amount, isOftV2Transfer, isCctpTransfer, setSelectedRoute, selectedToken])
 }
 
 function ShowHiddenRoutesButton(
