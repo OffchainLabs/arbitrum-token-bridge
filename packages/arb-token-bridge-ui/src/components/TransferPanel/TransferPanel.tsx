@@ -82,6 +82,7 @@ import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
 import { Cog8ToothIcon, QueueListIcon } from '@heroicons/react/24/outline'
 import { WidgetRoutes } from '../Widget/WidgetRoutes'
+import { WidgetTosConfirmationCheckbox } from '../Widget/WidgetTosConfirmationCheckbox'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -1185,7 +1186,10 @@ export function TransferPanel() {
               <WidgetRoutes />
             </div>
             {isConnected ? (
-              <MoveFundsButton onClick={moveFundsButtonOnClick} />
+              <div className="flex flex-col gap-2">
+                <WidgetTosConfirmationCheckbox />
+                <MoveFundsButton onClick={moveFundsButtonOnClick} />
+              </div>
             ) : (
               <ConnectWalletButton />
             )}
