@@ -96,7 +96,6 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
 
   const queryKey = useCallback(
     (type: 'eth' | 'erc20') => {
-      // we return 0 for ETH when wallet is not connected, but do not fetch for ERC20
       if (typeof walletAddressLowercased === 'undefined') {
         // Don't fetch
         return null
