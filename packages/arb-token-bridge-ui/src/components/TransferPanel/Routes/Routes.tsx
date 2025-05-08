@@ -47,7 +47,7 @@ function ShowHiddenRoutesButton(
     <div className="mt-1 flex justify-center text-xs text-white/80">
       <button className="arb-hover flex space-x-1" {...props}>
         <span>Show more routes</span>
-        <PlusCircleIcon width={14} />
+        <PlusCircleIcon width={16} />
       </button>
     </div>
   )
@@ -72,11 +72,16 @@ function ShowHiddenRoutesButton(
 export const Routes = React.memo(() => {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
+  const [selectedToken] = useSelectedToken()
   const [{ amount }] = useArbQueryParams()
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
 
   const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
+
+  useEffect(() => {
+    setShowHiddenRoutes(false)
+  }, [selectedToken])
 
   if (Number(amount) === 0) {
     return
