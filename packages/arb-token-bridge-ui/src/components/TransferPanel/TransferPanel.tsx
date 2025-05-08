@@ -1185,14 +1185,15 @@ export function TransferPanel() {
               <div className="h-[30px] text-lg">Receive</div>
               <WidgetRoutes />
             </div>
-            {isConnected ? (
-              <div className="flex flex-col gap-2">
-                <WidgetTosConfirmationCheckbox />
+
+            <div className="flex flex-col gap-2">
+              <WidgetTosConfirmationCheckbox />
+              {isConnected ? (
                 <MoveFundsButton onClick={moveFundsButtonOnClick} />
-              </div>
-            ) : (
-              <ConnectWalletButton />
-            )}
+              ) : (
+                <ConnectWalletButton />
+              )}
+            </div>
           </div>
         </div>
 
