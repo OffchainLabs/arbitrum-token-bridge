@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import useSWR, {
   useSWRConfig,
   unstable_serialize,
@@ -97,7 +97,7 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
   const queryKey = useCallback(
     (type: 'eth' | 'erc20') => {
       // we return 0 for ETH when wallet is not connected, but do not fetch for ERC20
-      if (typeof walletAddressLowercased === 'undefined' && type === 'erc20') {
+      if (typeof walletAddressLowercased === 'undefined') {
         // Don't fetch
         return null
       }
@@ -110,9 +110,6 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
     queryKey('eth'),
     ([_walletAddress, _chainId]) => {
-      if (typeof _walletAddress === 'undefined') {
-        return constants.Zero
-      }
       const _provider = getProviderForChainId(_chainId)
       return _provider.getBalance(_walletAddress)
     },

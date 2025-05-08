@@ -32,7 +32,7 @@ describe.sequential('useBalance', () => {
     }))
   })
 
-  it('getter returns 0 for undefined walletAddress', async () => {
+  it('getter returns null for undefined walletAddress', async () => {
     // This should not be called. It's here to avoid false positive
     const getBalanceSpy = vi
       .spyOn(provider, 'getBalance')
@@ -54,7 +54,7 @@ describe.sequential('useBalance', () => {
         }
       } = result
 
-      expect(ethBalance?.toNumber()).toEqual(0)
+      expect(ethBalance).toBeNull()
       expect(erc20Balances).toBeNull()
     })
 
