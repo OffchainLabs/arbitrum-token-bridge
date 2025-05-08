@@ -117,6 +117,7 @@ export function NetworkButton({
   const { isSmartContractWallet, isLoading } = useAccountType()
   const isSource = type === 'source'
   const chains = useChainIdsForNetworkSelection({ isSource })
+  const [{ allowSwitchingNetworkPair }] = useArbQueryParams()
 
   const selectedChainId = isSource
     ? networks.sourceChain.id
@@ -127,7 +128,8 @@ export function NetworkButton({
   const disabled =
     hasOneOrLessChain ||
     (isSmartContractWallet && type === 'source') ||
-    isLoading
+    isLoading ||
+    !allowSwitchingNetworkPair
 
   const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
 
