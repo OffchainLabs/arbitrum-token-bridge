@@ -69,6 +69,8 @@ import {
   useOftTransactionHistory
 } from './useOftTransactionHistory'
 import { create } from 'zustand'
+import useSWR from 'swr'
+import { BigNumber } from 'ethers'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -76,7 +78,6 @@ export type UseTransactionHistoryResult = {
   completed: boolean
   error: unknown
   failedChainPairs: ChainPair[]
-  pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
@@ -260,7 +261,10 @@ function dedupeTransactions(txs: Transfer[]) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
+const useTransactionHistoryWithoutStatuses = (
+  address: Address | undefined,
+  enabled: boolean
+) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -429,7 +433,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   )
 
   const shouldFetch =
-    address && chain && !isLoadingAccountType && isTxHistoryEnabled
+    address && chain && !isLoadingAccountType && isTxHistoryEnabled && enabled
 
   const {
     data: depositsData,
@@ -478,14 +482,157 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   }
 }
 
+interface TokenDetails {
+  symbol: string
+  decimals: number
+  address: string
+  name: string
+}
+
+type IndexerPartialTransaction = {
+  address: Address
+  chainId: number
+  transactionHash: string
+  status: string
+  createdAt: number
+  settledAt: number
+  amount: number
+  token?: TokenDetails
+}
+
+enum TransferType {
+  ETH_DEPOSIT = 'eth_deposit',
+  ETH_WITHDRAWAL = 'eth_withdrawal',
+  ERC20_DEPOSIT = 'erc20_deposit',
+  ERC20_WITHDRAWAL = 'erc20_withdrawal'
+}
+
+export enum TransferStatus {
+  // Deposit initiated on Parent, awaiting finalization on Child
+  PENDING_CHILD_EXECUTION = 'PENDING_CHILD_EXECUTION',
+  // Withdrawal initiated on Child, awaiting claim on Parent
+  PENDING_PARENT_EXECUTION = 'PENDING_PARENT_EXECUTION',
+  // Deposit finalized on Child
+  COMPLETED = 'COMPLETED',
+  // Withdrawal awaiting user to claim it (has been confirmed in outbox)
+  READY_TO_CLAIM = 'READY_TO_CLAIM',
+  // Withdrawal claimed on Parent
+  CLAIMED = 'CLAIMED',
+  // Retryable failed/expired
+  FAILED = 'FAILED',
+  // Error cases
+  ERROR_TOKEN_LOOKUP = 'ERROR_TOKEN_LOOKUP',
+  ERROR_CLAIM_CHECK = 'ERROR_CLAIM_CHECK'
+}
+
+type IndexerTransaction = {
+  sourceChain: IndexerPartialTransaction
+  destinationChain: IndexerPartialTransaction
+  parentChain: IndexerPartialTransaction
+  childChain: IndexerPartialTransaction
+  transferType: TransferType
+}
+
+const useIndexerTransactionHistory = (
+  address: Address | undefined
+): Omit<
+  UseTransactionHistoryResult,
+  'addPendingTransaction' | 'updatePendingTransaction'
+> => {
+  const getCacheKey = useCallback(
+    (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
+      if (prevPageTxs) {
+        if (prevPageTxs.length === 0) {
+          // THIS is the last page
+          return null
+        }
+      }
+
+      return address ? ([address, pageNumber] as const) : null
+    },
+    [address]
+  )
+
+  const {
+    data,
+    error,
+    size: page,
+    setSize: setPage,
+    isValidating,
+    isLoading: isLoadingFirstPage
+  } = useSWRInfinite<IndexerTransaction[]>(getCacheKey, ([]) => [])
+
+  const mappedIndexerTransactions = useMemo(() => {
+    if (!data) {
+      return []
+    }
+    return data.flat().map(indexerTransactionToMergedTransaction)
+  }, [data])
+
+  function resume() {
+    setPage(prevPage => prevPage + 1)
+  }
+
+  const completed =
+    !isLoadingFirstPage &&
+    typeof data !== 'undefined' &&
+    data.length === data.flat().length
+
+  return {
+    transactions: mappedIndexerTransactions,
+    loading: isLoadingFirstPage || isValidating,
+    error,
+    completed,
+    resume,
+    // no single pair will fail because we don't interact with individual RPCs
+    failedChainPairs: []
+  }
+}
+
+function indexerTransactionToMergedTransaction(
+  tx: IndexerTransaction
+): MergedTransaction {
+  return {
+    sender: tx.sourceChain.address,
+    destination: tx.destinationChain.address,
+    direction: [TransferType.ETH_DEPOSIT, TransferType.ERC20_DEPOSIT].includes(
+      tx.transferType
+    )
+      ? 'deposit-l1'
+      : 'withdraw',
+    status: 'pending',
+    createdAt: tx.sourceChain.createdAt,
+    resolvedAt: tx.destinationChain.settledAt,
+    txId: tx.sourceChain.transactionHash,
+    asset: tx.sourceChain.token ? tx.sourceChain.token.symbol : 'ETH',
+    assetType: tx.sourceChain.token ? AssetType.ERC20 : AssetType.ETH,
+    value: tx.sourceChain.amount.toString(),
+    uniqueId: BigNumber.from(0),
+    isWithdrawal: [
+      TransferType.ETH_WITHDRAWAL,
+      TransferType.ERC20_WITHDRAWAL
+    ].includes(tx.transferType),
+    blockNum: 0,
+    tokenAddress: tx.sourceChain.token?.address ?? null,
+    isCctp: false,
+    isOft: false,
+    nodeBlockDeadline: 0,
+    depositStatus: 1,
+    parentChainId: tx.parentChain.chainId,
+    childChainId: tx.childChain.chainId,
+    sourceChainId: tx.sourceChain.chainId,
+    destinationChainId: tx.destinationChain.chainId
+  }
+}
+
 /**
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
  */
-export const useTransactionHistory = (
+const useLegacyTransactionHistory = (
   address: Address | undefined,
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
-  { runFetcher = false } = {}
+  { runFetcher = false, enabled = false } = {}
 ): UseTransactionHistoryResult => {
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
@@ -506,10 +653,14 @@ export const useTransactionHistory = (
     loading: isLoadingTxsWithoutStatus,
     error,
     failedChainPairs
-  } = useTransactionHistoryWithoutStatuses(address)
+  } = useTransactionHistoryWithoutStatuses(address, enabled)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
+      if (!enabled) {
+        return null
+      }
+
       if (prevPageTxs) {
         if (prevPageTxs.length === 0) {
           // THIS is the last page
@@ -521,7 +672,7 @@ export const useTransactionHistory = (
         ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
+    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType, enabled]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -855,7 +1006,6 @@ export const useTransactionHistory = (
       error,
       failedChainPairs: [],
       completed: true,
-      pause,
       resume,
       addPendingTransaction,
       updatePendingTransaction
@@ -868,9 +1018,33 @@ export const useTransactionHistory = (
     completed,
     error: txPagesError ?? error,
     failedChainPairs,
-    pause,
     resume,
     addPendingTransaction,
     updatePendingTransaction
   }
+}
+
+export const useTransactionHistory = (
+  address: Address | undefined,
+  { runFetcher = false } = {}
+): UseTransactionHistoryResult => {
+  const indexerData = useIndexerTransactionHistory(address)
+
+  const isFallback =
+    indexerData.transactions.length === 0 &&
+    typeof indexerData.error !== 'undefined'
+
+  const fallbackData = useLegacyTransactionHistory(address, {
+    runFetcher,
+    enabled: isFallback
+  })
+
+  return isFallback
+    ? fallbackData
+    : {
+        ...indexerData,
+        // New transactions are handled by the legacy system
+        addPendingTransaction: fallbackData.addPendingTransaction,
+        updatePendingTransaction: fallbackData.updatePendingTransaction
+      }
 }
