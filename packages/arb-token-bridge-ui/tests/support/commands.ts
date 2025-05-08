@@ -19,27 +19,26 @@ import {
 import { shortenAddress } from '../../src/util/CommonUtils'
 import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
-function shouldChangeNetwork(networkName: NetworkName) {
-  // synpress throws if trying to connect to a network we are already connected to
-  // issue has been raised with synpress and this is just a workaround
-  // TODO: remove this whenever fixed
-  return cy
-    .task('getCurrentNetworkName')
-    .then((currentNetworkName: NetworkName) => {
-      return currentNetworkName !== networkName
-    })
-}
-
+/**
+ * Visit the bridge UI with different query params, accepts the terms and conditions, and optionally connect to the bridge with MetaMask.
+ * @param params.networkType - The type of network to connect to ('parentChain' or 'childChain').
+ * @param params.networkName - By default, we connect to a local network from testnode. Specify the network name to connect to a testnet or mainnet.
+ * @param params.url - Legacy param. The URL of the web app to start (optional). By default it's `/` and we only use `/` in the codebase now. TODO: remove this.
+ * @param params.query - Additional query parameters to pass to the web app (optional). This is used for specifying any query params.
+ * @param params.connectMetamask - Whether to connect to MetaMask during login (default: true).
+ */
 export function login({
   networkType,
   networkName,
   url,
-  query
+  query,
+  connectMetamask = true
 }: {
   networkType: NetworkType
   networkName?: NetworkName
   url?: string
   query?: { [s: string]: string }
+  connectMetamask?: boolean
 }) {
   // if networkName is not specified we connect to default network from config
   const network =
@@ -56,32 +55,25 @@ export function login({
         ? 'l3-localhost'
         : ''
     startWebApp(url, {
-      ...query,
-      sourceChain,
-      destinationChain
+      query: { ...query, sourceChain, destinationChain },
+      connectMetamask
     })
   }
 
-  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
-    if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
-        _startWebApp()
-      })
-    } else {
-      _startWebApp()
-    }
-
-    cy.task('setCurrentNetworkName', networkNameWithDefault)
+  cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+    _startWebApp()
   })
 }
 
-export const connectToApp = () => {
+export const connectToApp = (connectMetamask: boolean) => {
   // initial modal prompts which come in the web-app
   cy.findByText(/Agree to Terms and Continue/i)
     .should('be.visible')
     .click()
-  cy.findByText('Connect a Wallet').should('be.visible')
-  cy.findByText('MetaMask').should('be.visible').click()
+  if (connectMetamask) {
+    cy.findAllByText('Connect Wallet').first().should('be.visible').click()
+    cy.findByText('MetaMask').should('be.visible').click()
+  }
 }
 
 export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
