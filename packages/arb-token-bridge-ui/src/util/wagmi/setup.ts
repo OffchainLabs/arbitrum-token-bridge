@@ -15,7 +15,6 @@ import {
   localL1Network as local,
   localL2Network as arbitrumLocal,
   localL3Network as l3Local,
-  holesky,
   base,
   baseSepolia
 } from './wagmiAdditionalNetworks'
@@ -44,8 +43,7 @@ const defaultChains = [
   // sepolia & arb sepolia are for tx history panel tests
   sepolia,
   arbitrumSepolia,
-  baseSepolia,
-  holesky
+  baseSepolia
 ]
 
 const getChainList = () => {
