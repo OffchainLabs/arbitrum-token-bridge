@@ -3,6 +3,7 @@ import { Command } from "commander";
 import * as fs from "fs";
 import { addOrbitChain } from "./addOrbitChain";
 import { validateOrbitChainsList } from "./addOrbitChain/schemas";
+import { calculateConfirmationTime } from "./getConfirmationTime";
 
 const program = new Command();
 
@@ -35,6 +36,24 @@ program
       });
     } catch (error) {
       console.error("Error reading or parsing file:", error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("get-confirmation-time <chainId>")
+  .description("Get the confirmation time for a chain by ID")
+  .action(async (chainId: string) => {
+    try {
+      const confirmationTime = await calculateConfirmationTime(Number(chainId));
+      console.log(
+        `Confirmation time for chain ID ${chainId}: ${confirmationTime} minutes`
+      );
+    } catch (error) {
+      console.error(
+        `Error calculating confirmation time for chain ID ${chainId}:`,
+        error
+      );
       process.exit(1);
     }
   });
