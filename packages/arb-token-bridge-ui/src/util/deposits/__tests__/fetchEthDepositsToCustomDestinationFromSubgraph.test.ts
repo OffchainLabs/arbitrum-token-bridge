@@ -3,6 +3,7 @@ import {
   getQueryCoveringNitroWithoutResults
 } from './fetchEthDepositsToCustomDestinationTestHelpers'
 import { fetchEthDepositsToCustomDestinationFromSubgraph } from '../fetchEthDepositsToCustomDestinationFromSubgraph'
+import { describe, it, expect } from 'vitest'
 
 describe('fetchEthDepositsToCustomDestinationFromSubgraph', () => {
   it('fetches deposits from subgraph with zero results', async () => {

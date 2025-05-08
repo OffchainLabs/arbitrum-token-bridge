@@ -1,6 +1,7 @@
-import { useState, useEffect, ImgHTMLAttributes } from 'react'
+import { ImgHTMLAttributes } from 'react'
 
 import { sanitizeImageSrc } from '../../util'
+import useSWR from 'swr'
 
 export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   fallback?: JSX.Element
@@ -8,33 +9,28 @@ export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
 
 export function SafeImage(props: SafeImageProps) {
   const { fallback = null, src, ...imgProps } = props
-  const [validImageSrc, setValidImageSrc] = useState<false | string>(false)
 
-  useEffect(() => {
-    let mounted = true
-    const image = new Image()
+  const { data: validImageSrc, error } = useSWR(src, _src => {
+    return new Promise<string>((resolve, reject) => {
+      const image = new Image()
 
-    if (typeof src === 'undefined') {
-      setValidImageSrc(false)
-    } else {
-      const sanitizedImageSrc = sanitizeImageSrc(src)
+      if (typeof _src === 'undefined') {
+        resolve('')
+      } else {
+        const sanitizedImageSrc = sanitizeImageSrc(_src)
 
-      image.onerror = () => {
-        if (mounted) setValidImageSrc(false)
+        image.onerror = () => {
+          reject()
+        }
+        image.onload = () => {
+          resolve(sanitizedImageSrc)
+        }
+        image.src = sanitizedImageSrc
       }
-      image.onload = () => {
-        if (mounted) setValidImageSrc(sanitizedImageSrc)
-      }
-      image.src = sanitizedImageSrc
-    }
+    })
+  })
 
-    return () => {
-      mounted = false
-      image.src = ''
-    }
-  }, [src])
-
-  if (!validImageSrc) {
+  if (!validImageSrc || error) {
     return fallback
   }
 

@@ -4,6 +4,7 @@ import {
   getQueryCoveringClassicOnlyWithResults,
   getQueryCoveringClassicAndNitroWithResults
 } from './fetchWithdrawalsTestHelpers'
+import { describe, it, expect } from 'vitest'
 
 describe('fetchTokenWithdrawalsFromEventLogs', () => {
   it('fetches no token withdrawals from event logs pre-nitro', async () => {
