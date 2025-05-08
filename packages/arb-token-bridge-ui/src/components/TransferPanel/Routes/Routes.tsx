@@ -1,4 +1,5 @@
-import { PropsWithChildren, useEffect } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
@@ -33,7 +34,7 @@ export function useDefaultSelectedRoute() {
     }
 
     if (isCctpTransfer) {
-      if (!isDepositMode) setSelectedRoute('cctp')
+      setSelectedRoute('cctp')
       return
     }
 
@@ -46,6 +47,19 @@ export function useDefaultSelectedRoute() {
     setSelectedRoute,
     selectedToken
   ])
+}
+
+function ShowHiddenRoutesButton(
+  props: React.ButtonHTMLAttributes<HTMLButtonElement>
+) {
+  return (
+    <div className="mt-1 flex justify-center text-xs text-white/80">
+      <button className="arb-hover flex space-x-1" {...props}>
+        <span>Show more routes</span>
+        <PlusCircleIcon width={14} />
+      </button>
+    </div>
+  )
 }
 
 /**
@@ -71,6 +85,8 @@ export const Routes = React.memo(() => {
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
 
+  const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
+
   if (Number(amount) === 0) {
     return
   }
@@ -88,7 +104,10 @@ export const Routes = React.memo(() => {
       return (
         <Wrapper>
           <CctpRoute />
-          <ArbitrumCanonicalRoute />
+          {showHiddenRoutes && <ArbitrumCanonicalRoute />}
+          {!showHiddenRoutes && (
+            <ShowHiddenRoutesButton onClick={() => setShowHiddenRoutes(true)} />
+          )}
         </Wrapper>
       )
     }
