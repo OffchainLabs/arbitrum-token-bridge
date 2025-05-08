@@ -10,8 +10,7 @@ import React from 'react'
 import { Tooltip } from '../../common/Tooltip'
 import { ClockIcon } from '@heroicons/react/24/outline'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
-import { RouteType, SetRoute } from '../hooks/useRouteStore'
-import { BadgeType, RouteGas, RouteProps } from './Route'
+import { RouteGas, RouteProps } from './Route'
 
 export type Token = {
   address: string
