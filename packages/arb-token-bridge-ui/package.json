@@ -109,6 +109,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-zustand-rules": "https://github.com/OffchainLabs/eslint-plugin-zustand-rules",
     "happy-dom": "^17.4.4",
+    "msw": "^2.7.0",
     "patch-package": "^8.0.0",
     "postcss": "^8.5.3",
     "postinstall-postinstall": "^2.1.0",
