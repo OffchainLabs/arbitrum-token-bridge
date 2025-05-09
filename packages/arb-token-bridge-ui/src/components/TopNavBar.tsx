@@ -5,6 +5,11 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import { useTransactionReminderInfo } from './TransactionHistory/useTransactionReminderInfo'
 
+export enum TabParamEnum {
+  BRIDGE = 0,
+  TX_HISTORY = 1
+}
+
 function StyledTab({ children, ...props }: PropsWithChildren) {
   return (
     <Tab

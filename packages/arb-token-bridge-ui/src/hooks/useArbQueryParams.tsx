@@ -33,6 +33,7 @@ import {
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../types/ChainId'
+import { TabParamEnum } from '../components/TopNavBar'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'
@@ -53,7 +54,8 @@ export const useArbQueryParams = () => {
     destinationAddress: withDefault(StringParam, undefined),
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
-    txHistory: withDefault(BooleanParam, true) // enable/disable tx history
+    txHistory: withDefault(BooleanParam, true), // enable/disable tx history
+    tab: withDefault(TabParam, TabParamEnum.BRIDGE) // which tab is active
   })
 }
 
@@ -175,6 +177,44 @@ export function decodeChainQueryParam(
 export const ChainParam = {
   encode: encodeChainQueryParam,
   decode: decodeChainQueryParam
+}
+
+export function encodeTabQueryParam(
+  tab: string | (string | null)[] | null | undefined
+): string {
+  if (!tab || Array.isArray(tab)) {
+    return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
+  }
+
+  const tabNumber = Number(tab)
+  if (!Number.isNaN(tabNumber) && tabNumber in TabParamEnum) {
+    return TabParamEnum[tabNumber]!.toLowerCase()
+  }
+
+  return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
+}
+
+// Parse string to number
+// URL accept both number and tab name (string)
+export function decodeTabQueryParam(
+  tab: string | (string | null)[] | null | undefined
+): number {
+  if (!tab || Array.isArray(tab)) {
+    return TabParamEnum.BRIDGE
+  }
+
+  const tabUppercased = tab.toUpperCase()
+
+  if (tabUppercased in TabParamEnum) {
+    return TabParamEnum[tabUppercased as keyof typeof TabParamEnum]
+  }
+
+  return TabParamEnum.BRIDGE
+}
+
+export const TabParam = {
+  encode: encodeTabQueryParam,
+  decode: decodeTabQueryParam
 }
 
 export function ArbQueryParamProvider({

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
-import { AmountQueryParam, ChainParam } from '../useArbQueryParams'
+import { AmountQueryParam, ChainParam, TabParam } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
 import { sanitizeTokenQueryParam } from '../../pages'
 
@@ -226,6 +226,49 @@ describe('ChainParam custom encoder and decoder', () => {
       })
       registerCustomArbitrumNetwork(customChain)
       expect(ChainParam.decode('222222')).toEqual(222222)
+    })
+  })
+})
+
+describe('TabParam custom encoder and decoder', () => {
+  describe('encode tab index number to string query param', () => {
+    it('should return bridge tab string if value is null or undefined', () => {
+      expect(TabParam.encode(null)).toEqual('bridge')
+      expect(TabParam.encode(undefined)).toEqual('bridge')
+    })
+
+    it('should return string query param if value is a valid tab index number', () => {
+      expect(TabParam.encode('0')).toEqual('bridge')
+      expect(TabParam.encode('1')).toEqual('tx_history')
+    })
+
+    it('should return bridge tab string if value is an invalid tab index number', () => {
+      expect(TabParam.encode('2')).toEqual('bridge')
+      expect(TabParam.encode('3')).toEqual('bridge')
+      expect(TabParam.encode('3111111')).toEqual('bridge')
+      expect(TabParam.encode('000000')).toEqual('bridge')
+    })
+  })
+
+  describe('decode string query param to tab index number', () => {
+    it('should return 0 (bridge index number) if value is null or undefined', () => {
+      expect(TabParam.decode(null)).toEqual(0)
+      expect(TabParam.decode(undefined)).toEqual(0)
+    })
+
+    it('should return bridge tab index number if value is an invalid string query param', () => {
+      expect(TabParam.decode('')).toEqual(0)
+      expect(TabParam.decode('random')).toEqual(0)
+      expect(TabParam.decode('random text here')).toEqual(0)
+      expect(TabParam.decode('2')).toEqual(0)
+      expect(TabParam.decode('3')).toEqual(0)
+      expect(TabParam.decode('3111111')).toEqual(0)
+      expect(TabParam.decode('000000')).toEqual(0)
+    })
+
+    it('should return corresponding tab index number if string query param is valid', () => {
+      expect(TabParam.decode('bridge')).toEqual(0)
+      expect(TabParam.decode('tx_history')).toEqual(1)
     })
   })
 })
