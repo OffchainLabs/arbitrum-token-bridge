@@ -264,7 +264,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+    useAccountType(address)
   const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
   const forceFetchReceived = useForceFetchReceived(
     state => state.forceFetchReceived
@@ -428,8 +428,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     ]
   )
 
-  const shouldFetch =
-    address && chain && !isLoadingAccountType && isTxHistoryEnabled
+  const shouldFetch = address && !isLoadingAccountType && isTxHistoryEnabled
 
   const {
     data: depositsData,
@@ -490,7 +489,7 @@ export const useTransactionHistory = (
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+    useAccountType(address)
   const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
