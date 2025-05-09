@@ -1,5 +1,6 @@
 import { GET_HELP_LINK } from '../../constants'
 import { ExternalLink } from '../common/ExternalLink'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import {
   ContentWrapper,
   HistoryLoader,
@@ -19,6 +20,16 @@ export const EmptyTransactionHistory = ({
   resume: () => void
   tabType: 'pending' | 'settled'
 }) => {
+  const txHistoryAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
+
+  if (typeof txHistoryAddress === 'undefined') {
+    return <ContentWrapper>
+      <p>Please connect your wallet or search for a wallet address to see transactions.</p>
+    </ContentWrapper>
+  }
+
   if (loading) {
     return (
       <ContentWrapper>
