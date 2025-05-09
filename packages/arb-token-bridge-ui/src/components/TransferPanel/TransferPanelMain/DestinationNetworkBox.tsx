@@ -124,7 +124,7 @@ function BalancesContainer() {
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
   const [selectedToken] = useSelectedToken()
-  const { selectedRoute } = useRouteStore()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
 
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()
