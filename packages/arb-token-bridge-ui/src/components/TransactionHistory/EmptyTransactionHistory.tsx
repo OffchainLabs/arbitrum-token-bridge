@@ -25,9 +25,14 @@ export const EmptyTransactionHistory = ({
   )
 
   if (typeof txHistoryAddress === 'undefined') {
-    return <ContentWrapper>
-      <p>Please connect your wallet or search for a wallet address to see transactions.</p>
-    </ContentWrapper>
+    return (
+      <ContentWrapper>
+        <p>
+          Please connect your wallet or search for a wallet address to see
+          transactions.
+        </p>
+      </ContentWrapper>
+    )
   }
 
   if (loading) {
