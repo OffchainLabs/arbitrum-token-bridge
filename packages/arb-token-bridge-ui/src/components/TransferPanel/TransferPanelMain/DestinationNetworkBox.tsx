@@ -120,7 +120,7 @@ function BalanceRow({
 
 function BalancesContainer() {
   const [networks] = useNetworks()
-  const { childChain, isDepositMode } = useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
   const [selectedToken] = useSelectedToken()
