@@ -137,8 +137,7 @@ function BalancesContainer() {
     ? selectedTokenBalances.destinationBalance
     : nativeCurrencyBalances.destinationBalance
 
-  const showNativeUsdcBalance =
-    isCctpTransfer && (!selectedRoute || selectedRoute === 'cctp')
+  const showNativeUsdcBalance = isCctpTransfer && selectedRoute === 'cctp'
 
   return (
     <div
