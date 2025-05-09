@@ -1,6 +1,5 @@
 import { useLocalStorage } from '@uidotdev/usehooks'
 import { Tab } from '@headlessui/react'
-import { create } from 'zustand'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
