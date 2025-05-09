@@ -1,5 +1,5 @@
 import { useLocalStorage } from '@uidotdev/usehooks'
-import { Tab } from '@headlessui/react'
+import { Tab, TabGroup } from '@headlessui/react'
 import { create } from 'zustand'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
@@ -9,6 +9,7 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
 import { shallow } from 'zustand/shallow'
+import { Fragment } from 'react'
 
 enum MainContentTabs {
   Bridge = 0,
@@ -46,7 +47,11 @@ export function MainContent() {
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
-        <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
+        <TabGroup
+          as={Fragment}
+          selectedIndex={selectedTab}
+          onChange={setSelectedTab}
+        >
           <TopNavBar />
           <Tab.Panels className="flex w-full items-center justify-center">
             <Tab.Panel className="w-full sm:max-w-[600px]">
@@ -56,7 +61,7 @@ export function MainContent() {
               <TransactionHistory />
             </Tab.Panel>
           </Tab.Panels>
-        </Tab.Group>
+        </TabGroup>
       </div>
 
       {/* Settings panel */}

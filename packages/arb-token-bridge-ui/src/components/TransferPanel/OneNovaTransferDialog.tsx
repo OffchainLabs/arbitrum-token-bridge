@@ -12,6 +12,7 @@ import { ether } from '../../constants'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useNetworks } from '../../hooks/useNetworks'
+import { Fragment } from 'react'
 
 /**
  * On the UI, user can select the pair Arbitrum One/Arbitrum Nova with the network selection dropdowns.
@@ -82,7 +83,7 @@ export function OneNovaTransferDialog(props: UseDialogProps) {
       className="max-w-[700px]"
     >
       <div className="flex flex-col pt-4">
-        <Tab.Group>
+        <Tab.Group as={Fragment}>
           <Tab.List className="border-b border-gray-dark">
             <TabButton>Third party bridge</TabButton>
           </Tab.List>
