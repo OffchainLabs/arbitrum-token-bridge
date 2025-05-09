@@ -27,7 +27,11 @@ describe('Import token', () => {
     })
     context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
-        cy.login({ networkType: 'parentChain', connectMetamask: false })
+        cy.login({
+          networkType: 'parentChain',
+          networkName: 'Ethereum',
+          connectMetamask: false
+        })
         importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the ERC-20 token
@@ -46,7 +50,11 @@ describe('Import token', () => {
 
     context('User uses L2 address', () => {
       it('should import token through its L2 address', () => {
-        cy.login({ networkType: 'parentChain', connectMetamask: false })
+        cy.login({
+          networkType: 'parentChain',
+          networkName: 'Ethereum',
+          connectMetamask: false
+        })
         importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
@@ -61,7 +69,11 @@ describe('Import token', () => {
 
     context('User uses invalid address', () => {
       it('should display an error message after invalid input', () => {
-        cy.login({ networkType: 'parentChain', connectMetamask: false })
+        cy.login({
+          networkType: 'parentChain',
+          networkName: 'Ethereum',
+          connectMetamask: false
+        })
         importTokenThroughUI(invalidTokenAddress)
 
         // Error message is displayed
@@ -74,7 +86,7 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'parentChain',
-          networkName: 'mainnet',
+          networkName: 'Ethereum',
           connectMetamask: false
         })
 
@@ -99,7 +111,7 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'parentChain',
-          networkName: 'mainnet',
+          networkName: 'Ethereum',
           connectMetamask: false
         })
 
@@ -138,7 +150,11 @@ describe('Import token', () => {
       it('should disable Add button if address is too long/short', () => {
         const addressWithoutLastChar = ERC20TokenAddressL1.slice(0, -1) // Remove the last character
 
-        cy.login({ networkType: 'parentChain', connectMetamask: false })
+        cy.login({
+          networkType: 'parentChain',
+          networkName: 'Ethereum',
+          connectMetamask: false
+        })
         cy.findSelectTokenButton(nativeTokenSymbol).click()
 
         // open the Select Token popup
@@ -172,6 +188,7 @@ describe('Import token', () => {
       it('should import token through URL using its L1 address', () => {
         cy.login({
           networkType: 'parentChain',
+          networkName: 'Ethereum',
           url: '/',
           query: {
             token: ERC20TokenAddressL1
@@ -205,6 +222,7 @@ describe('Import token', () => {
       it('should import token through URL using its L2 address', () => {
         cy.login({
           networkType: 'parentChain',
+          networkName: 'Ethereum',
           url: '/',
           query: {
             token: ERC20TokenAddressL2
@@ -241,6 +259,7 @@ describe('Import token', () => {
       it('should display an error message after invalid URL', () => {
         cy.login({
           networkType: 'parentChain',
+          networkName: 'Ethereum',
           url: '/',
           query: {
             token: invalidTokenAddress
@@ -250,8 +269,8 @@ describe('Import token', () => {
 
         visitAfterSomeDelay('/', {
           qs: {
-            sourceChain: 'arbitrum-localhost',
-            destinationChain: 'l3-localhost',
+            sourceChain: 'nitro-testnode-l2',
+            destinationChain: 'nitro-testnode-l3',
             token: invalidTokenAddress
           }
         })

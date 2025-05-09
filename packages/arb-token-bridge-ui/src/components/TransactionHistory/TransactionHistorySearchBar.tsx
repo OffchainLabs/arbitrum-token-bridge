@@ -1,8 +1,9 @@
 import { create } from 'zustand'
+import { useAccount } from 'wagmi'
+import { Address, isAddress } from 'viem'
 import { shallow } from 'zustand/shallow'
-import { isAddress } from 'ethers/lib/utils'
-import { Address, useAccount } from 'wagmi'
 import { useCallback, useEffect } from 'react'
+
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
