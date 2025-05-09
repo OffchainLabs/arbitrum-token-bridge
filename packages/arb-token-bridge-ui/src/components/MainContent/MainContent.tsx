@@ -1,5 +1,6 @@
 import { useLocalStorage } from '@uidotdev/usehooks'
 import { Tab } from '@headlessui/react'
+import { useCallback } from 'react'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
@@ -14,9 +15,12 @@ export function MainContent() {
     useLocalStorage<boolean>(statsLocalStorageKey)
   const [{ tab }, setQueryParams] = useArbQueryParams()
 
-  function setSelectedTab(index: number) {
-    setQueryParams({ tab: index })
-  }
+  const setSelectedTab = useCallback(
+    (index: number) => {
+      setQueryParams({ tab: index })
+    },
+    [setQueryParams]
+  )
 
   useBalanceUpdater()
 
