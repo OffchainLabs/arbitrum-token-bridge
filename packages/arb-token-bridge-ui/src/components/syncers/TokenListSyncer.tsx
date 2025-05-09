@@ -15,7 +15,7 @@ const TokenListSyncer = (): JSX.Element => {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain } = useNetworksRelationship(networks)
+  const { childChain, parentChain } = useNetworksRelationship(networks)
 
   useEffect(() => {
     if (!arbTokenBridgeLoaded) {
@@ -35,12 +35,18 @@ const TokenListSyncer = (): JSX.Element => {
     })
 
     tokenListsToSet.forEach(bridgeTokenList => {
-      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+      addBridgeTokenListToBridge({
+        bridgeTokenList,
+        arbTokenBridge,
+        parentChainId: parentChain.id,
+        childChainId: childChain.id
+      })
     })
   }, [
     // arbTokenBridge.token is not a memoized object, adding it here would cause infinite loop
     childChain.id,
-    arbTokenBridgeLoaded
+    arbTokenBridgeLoaded,
+    parentChain.id
   ])
 
   return <></>
