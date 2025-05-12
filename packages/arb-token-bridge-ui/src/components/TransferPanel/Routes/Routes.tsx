@@ -13,6 +13,8 @@ import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { LifiRoutes } from './LifiRoute'
 import { isNetwork } from '../../../util/networks'
 import { shallow } from 'zustand/shallow'
+import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
+import { ChainId } from '../../../types/ChainId'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
@@ -38,7 +40,9 @@ function getRoutes({
   isDepositMode,
   isTestnet,
   showHiddenRoutes,
-  setShowHiddenRoutes
+  setShowHiddenRoutes,
+  sourceChainId,
+  destinationChainId
 }: {
   isOftV2Transfer: boolean
   isCctpTransfer: boolean
@@ -47,10 +51,18 @@ function getRoutes({
   isTestnet: boolean
   showHiddenRoutes: boolean
   setShowHiddenRoutes: (toggle: boolean) => void
+  sourceChainId: number
+  destinationChainId: number
 }): {
   ChildRoutes: React.JSX.Element | null
   focus: RouteType | null
 } {
+  const isLifiEnabled =
+    isLifiEnabledUtil() &&
+    !isTestnet &&
+    sourceChainId === ChainId.ArbitrumOne &&
+    destinationChainId === ChainId.Ethereum
+
   if (Number(amount) === 0) {
     return {
       ChildRoutes: null,
@@ -87,15 +99,15 @@ function getRoutes({
     return {
       ChildRoutes: (
         <>
-          {!isTestnet && <LifiRoutes fastestTag="fastest" />}
+          {isLifiEnabled && <LifiRoutes fastestTag="fastest" />}
           <CctpRoute />
         </>
       ),
-      focus: isTestnet ? 'cctp' : null
+      focus: isLifiEnabled ? null : 'cctp'
     }
   }
 
-  const showLifiRoutes = !isDepositMode && !isTestnet
+  const showLifiRoutes = !isDepositMode && isLifiEnabled
   return {
     ChildRoutes: (
       <>
@@ -169,7 +181,9 @@ export const Routes = React.memo(() => {
         isDepositMode,
         isTestnet,
         showHiddenRoutes,
-        setShowHiddenRoutes
+        setShowHiddenRoutes,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       }),
     [
       amount,
@@ -178,7 +192,9 @@ export const Routes = React.memo(() => {
       isOftV2Transfer,
       isTestnet,
       showHiddenRoutes,
-      setShowHiddenRoutes
+      setShowHiddenRoutes,
+      networks.destinationChain.id,
+      networks.sourceChain.id
     ]
   )
 
