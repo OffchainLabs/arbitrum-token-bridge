@@ -1,8 +1,11 @@
+import { providers } from 'ethers'
+
 import {
   step,
   UiDriverStep,
   UiDriverStepResultFor,
   UiDriverStepGenerator,
+  UiDriverContext,
   Dialog
 } from './UiDriver'
 import { addressesEqual } from '../util/AddressUtils'
@@ -30,4 +33,30 @@ export const stepGeneratorForSmartContractWalletDestinationDialog: UiDriverStepG
     ) {
       yield* stepGeneratorForDialog('scw_custom_destination_address')
     }
+  }
+
+export type UiDriverStepGeneratorForTransaction<
+  TStep extends UiDriverStep = UiDriverStep
+> = (
+  context: UiDriverContext,
+  txRequest: providers.TransactionRequest
+) => AsyncGenerator<
+  TStep,
+  providers.TransactionReceipt | void,
+  UiDriverStepResultFor<TStep>
+>
+
+export const stepGeneratorForTransaction: UiDriverStepGeneratorForTransaction =
+  async function* (context, txRequest) {
+    if (context.isSmartContractWallet) {
+      yield* step({ type: 'scw_tooltip' })
+    }
+
+    const { error, data } = yield* step({ type: 'tx', payload: txRequest })
+
+    if (typeof error === 'undefined') {
+      return data
+    }
+
+    yield* step({ type: 'return' })
   }
