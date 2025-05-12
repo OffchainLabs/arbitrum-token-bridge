@@ -150,7 +150,7 @@ export function NetworkContainer({
   const { color } = getBridgeUiConfigForChain(network.id)
 
   const showCustomAddressBanner = useMemo(() => {
-    if (!customAddress || !walletAddress) {
+    if (!customAddress) {
       return false
     }
     if (addressesEqual(customAddress, walletAddress)) {

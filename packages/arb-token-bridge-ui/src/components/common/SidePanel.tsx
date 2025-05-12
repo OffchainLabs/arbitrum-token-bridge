@@ -1,14 +1,7 @@
-import { Fragment, useCallback, useEffect, useState } from 'react'
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-  TransitionChild
-} from '@headlessui/react'
+import { useCallback, useEffect, useState } from 'react'
+import { Dialog, DialogBackdrop } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Transition } from '@headlessui/react'
 
 type SidePanelProps = {
   heading?: string
@@ -39,99 +32,80 @@ export const SidePanel = ({
     setOpen(isOpen)
   }, [isOpen])
 
-  const handleCloseStart = useCallback(() => {
+  const handleClose = useCallback(() => {
     setIsClosing(true)
-  }, [setIsClosing])
 
-  const handleCloseEnd = useCallback(() => {
-    onClose?.()
-
-    // prevent flickering caused by race conditions
     setTimeout(() => {
-      setIsClosing(false)
-    }, 10)
-  }, [onClose, setIsClosing])
+      onClose?.()
+
+      setTimeout(() => {
+        setIsClosing(false)
+        // prevent flickering caused by race conditions
+      }, 10)
+
+      // 200ms for the transition to finish
+    }, 200)
+  }, [setIsClosing])
 
   return (
     <Dialog
-      open={open}
-      onClose={handleCloseStart}
+      open={open && !isClosing}
+      onClose={handleClose}
       className={twMerge(
         'fixed z-40 h-screen max-h-screen',
         dialogWrapperClassName
       )}
     >
-      <Transition show={open && !isClosing} as={Fragment}>
-        <TransitionChild
-          as={Fragment}
-          enter="ease-out duration-200"
-          enterFrom="opacity-0"
-          enterTo="opacity-80"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-80"
-          leaveTo="opacity-0"
-        >
-          {/* The backdrop, rendered as a fixed sibling to the panel container */}
-          <DialogBackdrop
-            className="fixed inset-0 bg-dark opacity-80"
-            aria-hidden="true"
-          />
-        </TransitionChild>
+      <DialogBackdrop
+        transition
+        className={twMerge(
+          'fixed inset-0 bg-dark opacity-80 transition-opacity',
+          'data-[closed]:opacity-0 data-[enter]:duration-200 data-[enter]:ease-out',
+          'data-[leave]:duration-200 data-[leave]:ease-in'
+        )}
+        aria-hidden="true"
+      />
 
-        {/* Full-screen container to center the panel */}
-        <TransitionChild
-          as={Fragment}
-          enter="ease-out duration-200"
-          enterFrom="translate-x-full"
-          enterTo="translate-x-0"
-          leave="ease-in duration-200"
-          leaveFrom="translate-x-0"
-          leaveTo="translate-x-full"
-          afterLeave={handleCloseEnd}
+      <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
+        <Dialog.Panel
+          transition
+          className={twMerge(
+            'side-panel flex h-full w-screen max-w-[1000px] translate-x-0 flex-col border-l border-gray-dark bg-black opacity-100 transition-[transform_opacity]',
+            'data-[closed]:translate-x-full data-[closed]:opacity-0 data-[enter]:duration-200 data-[enter]:ease-out',
+            'data-[leave]:duration-200 data-[leave]:ease-in',
+            panelClassNameOverrides,
+            scrollable && 'overflow-y-auto'
+          )}
         >
-          <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
-            {/* The heading of dialog  */}
-            <DialogPanel
-              className={twMerge(
-                'side-panel flex h-full w-screen max-w-[1000px] flex-col border-l border-gray-dark bg-black',
-                panelClassNameOverrides,
-                scrollable && 'overflow-y-auto'
-              )}
+          <Dialog.Title
+            className={twMerge(
+              'sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black pt-4 text-white',
+              !heading && 'pb-4'
+            )}
+          >
+            {heading && <span className="text-2xl">{heading}</span>}
+            <button
+              className="arb-hover"
+              onClick={handleClose}
+              aria-label="Close side panel"
             >
-              <DialogTitle
-                className={twMerge(
-                  'sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black pt-4 text-white',
-                  !heading && 'pb-4'
-                )}
-              >
-                {heading && <span className="text-2xl">{heading}</span>}
-                <button
-                  className="arb-hover"
-                  onClick={handleCloseStart}
-                  aria-label="Close side panel"
-                >
-                  <XMarkIcon
-                    className={twMerge(
-                      'h-5 w-5 text-white',
-                      !heading && 'ml-2'
-                    )}
-                  />
-                </button>
-              </DialogTitle>
+              <XMarkIcon
+                className={twMerge('h-5 w-5 text-white', !heading && 'ml-2')}
+              />
+            </button>
+          </Dialog.Title>
 
-              {/* Contents of the panel */}
-              <div
-                className={twMerge(
-                  'side-panel-content z-40 h-full px-4 pb-4',
-                  heading && 'p-4'
-                )}
-              >
-                {children}
-              </div>
-            </DialogPanel>
+          {/* Contents of the panel */}
+          <div
+            className={twMerge(
+              'side-panel-content z-40 h-full px-4 pb-4',
+              heading && 'p-4'
+            )}
+          >
+            {children}
           </div>
-        </TransitionChild>
-      </Transition>
+        </Dialog.Panel>
+      </div>
     </Dialog>
   )
 }

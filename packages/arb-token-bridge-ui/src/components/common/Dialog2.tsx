@@ -12,6 +12,7 @@ import { CustomDestinationAddressConfirmationDialog } from '../TransferPanel/Cus
 import { CctpUsdcWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithdrawal/CctpUsdcWithdrawalConfirmationDialog'
 import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/CctpUsdcDepositConfirmationDialog'
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
+import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -34,6 +35,8 @@ export type DialogType =
   | 'approve_cctp_usdc'
   | 'approve_custom_fee_token'
   | 'withdraw'
+  | 'deposit_token_new_token'
+  | 'deposit_token_user_added_token'
   | 'scw_custom_destination_address'
   | 'confirm_cctp_withdrawal'
   | 'confirm_cctp_deposit'
@@ -122,6 +125,15 @@ export function DialogWrapper(props: DialogProps) {
       return <CctpUsdcDepositConfirmationDialog {...commonProps} />
     case 'confirm_usdc_deposit':
       return <UsdcDepositConfirmationDialog {...commonProps} />
+    case 'deposit_token_new_token':
+    case 'deposit_token_user_added_token':
+      return (
+        <TokenDepositCheckDialog
+          {...commonProps}
+          type={openedDialogType}
+          symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
+        />
+      )
     default:
       return null
   }

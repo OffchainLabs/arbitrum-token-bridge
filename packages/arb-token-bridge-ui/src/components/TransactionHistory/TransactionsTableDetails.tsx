@@ -1,14 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import { Fragment, PropsWithChildren, useMemo } from 'react'
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-  Transition,
-  TransitionChild
-} from '@headlessui/react'
+import { Dialog, DialogBackdrop, Transition } from '@headlessui/react'
 import Image from 'next/image'
 import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
@@ -155,7 +148,7 @@ export const TransactionsTableDetails = () => {
       onClose={close}
     >
       <Transition show={isOpen} as={Fragment}>
-        <TransitionChild
+        <Transition.Child
           as={Fragment}
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -168,11 +161,11 @@ export const TransactionsTableDetails = () => {
             className="fixed inset-0 bg-black opacity-70"
             aria-hidden="true"
           />
-        </TransitionChild>
+        </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center text-center sm:p-4">
-            <TransitionChild
+            <Transition.Child
               as={Fragment}
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -182,8 +175,8 @@ export const TransactionsTableDetails = () => {
               leaveTo="opacity-0 scale-95"
               afterLeave={reset}
             >
-              <DialogPanel className="h-screen w-screen transform overflow-hidden rounded border border-white/10 bg-dark p-4 text-left align-middle shadow shadow-white/10 transition-all sm:h-auto sm:w-full sm:max-w-[488px]">
-                <DialogTitle
+              <Dialog.Panel className="h-screen w-screen transform overflow-hidden rounded border border-white/10 bg-dark p-4 text-left align-middle shadow shadow-white/10 transition-all sm:h-auto sm:w-full sm:max-w-[488px]">
+                <Dialog.Title
                   className="mb-4 flex items-center justify-between text-lg font-light text-white"
                   as="h3"
                 >
@@ -195,7 +188,7 @@ export const TransactionsTableDetails = () => {
                   >
                     <XMarkIcon height={20} />
                   </button>
-                </DialogTitle>
+                </Dialog.Title>
 
                 <DetailsBox>
                   <div className="flex flex-col space-y-3">
@@ -323,8 +316,8 @@ export const TransactionsTableDetails = () => {
                     </ExternalLink>
                   </div>
                 )}
-              </DialogPanel>
-            </TransitionChild>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
         </div>
       </Transition>

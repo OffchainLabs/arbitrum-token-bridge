@@ -67,6 +67,9 @@ export function TransactionHistorySearchResults() {
   const searchError = useTransactionHistoryAddressStore(
     state => state.searchError
   )
+  const txHistoryAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -140,7 +143,7 @@ export function TransactionHistorySearchResults() {
           </TabButton>
         </TabList>
 
-        {!forceFetchReceived && (
+        {!forceFetchReceived && typeof txHistoryAddress !== 'undefined' && (
           <div className="mb-2 text-xs text-white">
             Missing a transaction after sending to or receiving from a different
             address? Click{' '}

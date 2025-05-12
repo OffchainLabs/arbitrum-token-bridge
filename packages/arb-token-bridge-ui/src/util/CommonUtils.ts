@@ -1,3 +1,25 @@
+let localStoragePromise = Promise.resolve()
+
+export function addToLocalStorageObjectSequentially({
+  localStorageKey,
+  localStorageValue
+}: {
+  localStorageKey: string
+  localStorageValue: Record<string, string | number | boolean>
+}) {
+  localStoragePromise = localStoragePromise.then(() => {
+    const localStorageItem = localStorage.getItem(localStorageKey)
+
+    localStorage.setItem(
+      localStorageKey,
+      JSON.stringify({
+        ...JSON.parse(localStorageItem ?? '{}'),
+        ...localStorageValue
+      })
+    )
+  })
+}
+
 export function shortenAddress(address: string) {
   const addressLength = address.length
 

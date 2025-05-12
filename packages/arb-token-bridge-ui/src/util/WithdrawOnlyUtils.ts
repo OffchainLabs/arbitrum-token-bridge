@@ -272,21 +272,6 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l1Address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       l2Address: '0xEE9e50425E1599e4eC09f0a5F76Ce35A4924e4AC'
     }
-  ],
-  // Plume Legacy
-  98865: [
-    {
-      symbol: 'USDC',
-      l2CustomAddr: '',
-      l1Address: CommonAddress.Ethereum.USDC,
-      l2Address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
-    },
-    {
-      symbol: 'USDT',
-      l2CustomAddr: '',
-      l1Address: CommonAddress.Ethereum.USDT,
-      l2Address: '0x4ef0c9098563e2478bdf0cc32a10d24abaa46b1c'
-    }
   ]
 }
 

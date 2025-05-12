@@ -37,11 +37,6 @@ const l1Networks: { [chainId: number]: BlockNumberReferenceNetwork } = {
     blockTime: 12,
     isTestnet: true
   },
-  [ChainId.Holesky]: {
-    chainId: ChainId.Holesky,
-    blockTime: 12,
-    isTestnet: true
-  },
   [ChainId.Local]: {
     chainId: ChainId.Local,
     blockTime: 12,
@@ -217,10 +212,6 @@ export const rpcURLs: { [chainId: number]: string } = {
     env: process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
     fallback: getRpcUrl(ChainId.Sepolia)
   }),
-  [ChainId.Holesky]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_HOLESKY,
-    fallback: getRpcUrl(ChainId.Holesky)
-  }),
   // L2 Mainnet
   [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_ONE,
@@ -250,7 +241,6 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.Ethereum]: 'https://etherscan.io',
   // L1 Testnets
   [ChainId.Sepolia]: 'https://sepolia.etherscan.io',
-  [ChainId.Holesky]: 'https://holesky.etherscan.io',
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
@@ -398,7 +388,6 @@ export function isNetwork(chainId: ChainId) {
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
   const isSepolia = chainId === ChainId.Sepolia
-  const isHolesky = chainId === ChainId.Holesky
   const isLocal = chainId === ChainId.Local
 
   const isArbitrumOne = chainId === ChainId.ArbitrumOne
@@ -409,8 +398,7 @@ export function isNetwork(chainId: ChainId) {
   const isBaseMainnet = chainId === ChainId.Base
   const isBaseSepolia = chainId === ChainId.BaseSepolia
 
-  const isEthereumMainnetOrTestnet =
-    isEthereumMainnet || isSepolia || isHolesky || isLocal
+  const isEthereumMainnetOrTestnet = isEthereumMainnet || isSepolia || isLocal
 
   const isArbitrum =
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia

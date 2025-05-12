@@ -10,10 +10,7 @@ import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import {
-  TokenDepositCheckDialog,
-  TokenDepositCheckDialogType
-} from './TokenDepositCheckDialog'
+import { TokenDepositCheckDialogType } from './TokenDepositCheckDialog'
 import {
   TokenImportDialog,
   useTokenImportDialogStore
@@ -101,8 +98,6 @@ const networkConnectionWarningToast = () =>
 
 export function TransferPanel() {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
-  const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
-    useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
@@ -144,9 +139,13 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner({
-    chainId: networks.sourceChain.id
-  })
+  const {
+    current: { data: signer }
+  } = useLatest(
+    useSigner({
+      chainId: latestNetworks.current.sourceChain.id
+    })
+  )
 
   const { setTransferring } = useAppContextActions()
   const switchToTransactionHistoryTab = useMainContentTabs(
@@ -174,7 +173,6 @@ export function TransferPanel() {
   const [dialogProps, openDialog] = useDialog2()
 
   const [tokenImportDialogProps] = useDialog()
-  const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
 
   const openTokenImportDialog = useTokenImportDialogStore(
     state => state.openDialog
@@ -281,10 +279,7 @@ export function TransferPanel() {
     const dialogType = getDialogType()
 
     if (dialogType) {
-      setTokenDepositCheckDialogType(dialogType)
-
-      const waitForInput = openTokenCheckDialog()
-      const [confirmed] = await waitForInput()
+      const confirmed = await confirmDialog(dialogType)
 
       if (confirmed) {
         return transfer()
@@ -313,7 +308,7 @@ export function TransferPanel() {
 
   function getDialogType(): TokenDepositCheckDialogType | null {
     if (isBridgingANewStandardToken) {
-      return 'new-token'
+      return 'deposit_token_new_token'
     }
 
     const isUserAddedToken =
@@ -321,16 +316,14 @@ export function TransferPanel() {
       selectedToken?.listIds.size === 0 &&
       typeof selectedToken.l2Address === 'undefined'
 
-    return isUserAddedToken ? 'user-added-token' : null
+    return isUserAddedToken ? 'deposit_token_user_added_token' : null
   }
 
   const firstTimeTokenBridgingConfirmation = async () => {
     // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
     const dialogType = getDialogType()
     if (dialogType) {
-      setTokenDepositCheckDialogType(dialogType)
-      const waitForInput = openTokenCheckDialog()
-      const [confirmed] = await waitForInput()
+      const confirmed = await confirmDialog(dialogType)
       return confirmed
     }
 
@@ -389,7 +382,7 @@ export function TransferPanel() {
 
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
-        networks
+        latestNetworks.current
 
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
@@ -559,7 +552,8 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const { sourceChainProvider, destinationChainProvider } = networks
+      const { sourceChainProvider, destinationChainProvider } =
+        latestNetworks.current
 
       // confirm if the user is certain about the custom destination address for SCW
       if (
@@ -1172,12 +1166,6 @@ export function TransferPanel() {
             tokenAddress={tokenFromSearchParams}
           />
         )}
-
-        <TokenDepositCheckDialog
-          {...tokenCheckDialogProps}
-          type={tokenDepositCheckDialogType}
-          symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
-        />
 
         {showSmartContractWalletTooltip && (
           <Tippy

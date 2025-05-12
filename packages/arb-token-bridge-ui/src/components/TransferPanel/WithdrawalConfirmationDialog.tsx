@@ -107,7 +107,7 @@ export function WithdrawalConfirmationDialog(
       }}
     >
       <div className="flex flex-col pt-4">
-        <Tab.Group onChange={setSelectedIndex} as={Fragment}>
+        <Tab.Group as={Fragment} onChange={setSelectedIndex}>
           <Tab.List className="border-b border-gray-dark">
             {isArbitrumOne && <TabButton>Third party bridge</TabButton>}
             <TabButton>Arbitrum’s bridge</TabButton>

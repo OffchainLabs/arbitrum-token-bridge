@@ -13,7 +13,8 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
+  getSmartContractWalletTeleportTransfersNotSupportedErrorMessage,
+  getWithdrawOnlyChainErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
 import {
@@ -33,8 +34,11 @@ import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdr
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 
 // Add chains IDs that are currently down or disabled
-// It will block transfers and display an info box in the transfer panel
+// It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
 export const DISABLED_CHAIN_IDS: number[] = []
+
+// withdraw-only chains (will also display error message in the transfer panel)
+const WITHDRAW_ONLY_CHAIN_IDS: number[] = [98865] // Plume Legacy
 
 type ErrorMessages = {
   inputAmount1?: string | TransferReadinessRichErrorMessage
@@ -261,6 +265,14 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
     if (DISABLED_CHAIN_IDS.includes(childChain.id)) {
       return notReady()
+    }
+
+    if (isDepositMode && WITHDRAW_ONLY_CHAIN_IDS.includes(childChain.id)) {
+      return notReady({
+        errorMessages: {
+          inputAmount1: getWithdrawOnlyChainErrorMessage(childChain.name)
+        }
+      })
     }
 
     // teleport transfers using SC wallets not enabled yet
@@ -558,6 +570,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     networks.sourceChain.name,
     isTeleportMode,
     isSelectedTokenWithdrawOnly,
-    isSelectedTokenWithdrawOnlyLoading
+    isSelectedTokenWithdrawOnlyLoading,
+    childChain.name
   ])
 }

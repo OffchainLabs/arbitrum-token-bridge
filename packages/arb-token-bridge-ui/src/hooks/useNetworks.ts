@@ -8,7 +8,6 @@ import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
   sepolia,
-  holesky,
   arbitrumNova,
   arbitrumSepolia,
   localL1Network as local,
@@ -37,7 +36,6 @@ export function isSupportedChainId(
   return [
     mainnet.id,
     sepolia.id,
-    holesky.id,
     arbitrum.id,
     arbitrumNova.id,
     base.id,
