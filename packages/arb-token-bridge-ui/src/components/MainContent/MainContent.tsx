@@ -1,6 +1,7 @@
 import { useLocalStorage } from '@uidotdev/usehooks'
 import { Tab } from '@headlessui/react'
 import { create } from 'zustand'
+import { Fragment } from 'react'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
@@ -53,7 +54,11 @@ export function MainContent() {
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
-        <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
+        <Tab.Group
+          as={Fragment}
+          selectedIndex={selectedTab}
+          onChange={setSelectedTab}
+        >
           <TopNavBar />
           <Tab.Panels className="flex w-full items-center justify-center">
             <Tab.Panel className="w-full sm:max-w-[600px]">

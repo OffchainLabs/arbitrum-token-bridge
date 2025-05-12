@@ -1,4 +1,6 @@
 import { Tab } from '@headlessui/react'
+import { Fragment } from 'react'
+
 import Hop from '@/images/bridge/hop.png'
 
 import { TabButton } from '../common/Tab'
@@ -82,7 +84,7 @@ export function OneNovaTransferDialog(props: UseDialogProps) {
       className="max-w-[700px]"
     >
       <div className="flex flex-col pt-4">
-        <Tab.Group>
+        <Tab.Group as={Fragment}>
           <Tab.List className="border-b border-gray-dark">
             <TabButton>Third party bridge</TabButton>
           </Tab.List>
