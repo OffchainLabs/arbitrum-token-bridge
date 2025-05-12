@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
@@ -27,6 +28,22 @@ import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar
 import { Tooltip } from '../common/Tooltip'
 import { addressesEqual } from '../../util/AddressUtils'
 
+function ActionRowConnectButton() {
+  return (
+    <ConnectButton.Custom>
+      {({ openConnectModal }) => (
+        <Button
+          variant="primary"
+          className="w-14 rounded bg-lime-dark p-2 text-xs text-white"
+          onClick={openConnectModal}
+        >
+          Connect
+        </Button>
+      )}
+    </ConnectButton.Custom>
+  )
+}
+
 export function TransactionsTableRowAction({
   tx,
   isError,
@@ -36,7 +53,7 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const { address: connectedAddress } = useAccount()
+  const { address: connectedAddress, isConnected } = useAccount()
   const { chain } = useNetwork()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
@@ -136,6 +153,10 @@ export function TransactionsTableRowAction({
   }
 
   if (isDepositReadyToRedeem(tx)) {
+    if (!isConnected) {
+      return <ActionRowConnectButton />
+    }
+
     // Failed retryable
     return isRedeeming ? (
       <span className="animate-pulse">Retrying...</span>
@@ -168,6 +189,10 @@ export function TransactionsTableRowAction({
   if (tx.status === 'Confirmed') {
     if (tx.isCctp && tx.resolvedAt) {
       return null
+    }
+
+    if (!isConnected) {
+      return <ActionRowConnectButton />
     }
 
     return isClaiming || isClaimingCctp ? (
