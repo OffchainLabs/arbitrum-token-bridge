@@ -542,7 +542,6 @@ function TokensPanel({
       errorMessage={errorMessage}
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
-      dataCy="tokenSearchList"
       isDialog={true}
     >
       <AutoSizer>
