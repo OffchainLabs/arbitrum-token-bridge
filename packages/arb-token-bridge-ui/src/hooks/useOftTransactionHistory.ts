@@ -2,12 +2,14 @@ import { ethers, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
-import { getChainIdFromEid } from '../token-bridge-sdk/oftUtils'
+import {
+  getChainIdFromEid,
+  getOftV2TransferDecodedData
+} from '../token-bridge-sdk/oftUtils'
 import { isDepositMode } from '../util/isDepositMode'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { isNetwork } from '../util/networks'
-import { oftV2Abi } from '../token-bridge-sdk/oftV2Abi'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
@@ -165,13 +167,23 @@ const getOftTransactionStatus = (message: LayerZeroMessage) => {
 /**
  * Validate a LayerZero tx received from LzScan API: check source and destination chain ids, and double check that protocol is USDT0 (to filter out Lifi transfers routed through LayerZero)
  */
-function validateLayerZeroMessage(message: LayerZeroMessage) {
+async function validateLayerZeroMessage(message: LayerZeroMessage) {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
-  const isProtocolUsdt0 = message.pathway?.sender?.id === 'usdt0'
+  if (sourceChainId && destinationChainId) {
+    try {
+      const isOftDataDecodable = !!(await getOftV2TransferDecodedData(
+        message.source.tx.txHash,
+        getProviderForChainId(sourceChainId)
+      ))
+      return isOftDataDecodable
+    } catch (e) {
+      // invalid oft transfer (OFT message is probably triggered by a SC/protocol (internal tx), rather than the user)
+    }
+  }
 
-  return sourceChainId && destinationChainId && isProtocolUsdt0
+  return false
 }
 
 function mapLayerZeroMessageToLayerZeroTransaction(
@@ -230,11 +242,9 @@ export async function updateAdditionalLayerZeroData(
   const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
 
   // extract destination address
-  const sourceChainTx = await sourceChainProvider.getTransaction(txId)
-  const oftInterface = new ethers.utils.Interface(oftV2Abi)
-  const decodedInputData = oftInterface.decodeFunctionData(
-    'send',
-    sourceChainTx.data
+  const decodedInputData = await getOftV2TransferDecodedData(
+    txId,
+    sourceChainProvider
   )
   updatedTx.destination = utils.hexValue(decodedInputData[0][1])
 
@@ -297,9 +307,14 @@ export function useOftTransactionHistory({
 
     const layerZeroResponse: LayerZeroResponse = await response.json()
 
-    return layerZeroResponse.data
-      .filter(validateLayerZeroMessage) // filter out transactions that don't have Arbitrum supported chain ids, and USDT0 protocol
-      .map(mapLayerZeroMessageToLayerZeroTransaction)
+    const validMessages = []
+    for (const message of layerZeroResponse.data) {
+      if (await validateLayerZeroMessage(message)) {
+        validMessages.push(message)
+      }
+    }
+
+    return validMessages.map(mapLayerZeroMessageToLayerZeroTransaction)
   }
 
   const { data, error, isLoading } = useSWRImmutable(
