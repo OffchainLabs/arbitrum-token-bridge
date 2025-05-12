@@ -29,7 +29,6 @@ describe('Import token', () => {
       it('should import token through its L1 address', () => {
         cy.login({
           networkType: 'parentChain',
-          networkName: 'Ethereum',
           connectMetamask: false
         })
         importTokenThroughUI(ERC20TokenAddressL1)
@@ -52,7 +51,6 @@ describe('Import token', () => {
       it('should import token through its L2 address', () => {
         cy.login({
           networkType: 'parentChain',
-          networkName: 'Ethereum',
           connectMetamask: false
         })
         importTokenThroughUI(ERC20TokenAddressL2)
@@ -71,7 +69,6 @@ describe('Import token', () => {
       it('should display an error message after invalid input', () => {
         cy.login({
           networkType: 'parentChain',
-          networkName: 'Ethereum',
           connectMetamask: false
         })
         importTokenThroughUI(invalidTokenAddress)
@@ -152,7 +149,6 @@ describe('Import token', () => {
 
         cy.login({
           networkType: 'parentChain',
-          networkName: 'Ethereum',
           connectMetamask: false
         })
         cy.findSelectTokenButton(nativeTokenSymbol).click()
@@ -188,7 +184,6 @@ describe('Import token', () => {
       it('should import token through URL using its L1 address', () => {
         cy.login({
           networkType: 'parentChain',
-          networkName: 'Ethereum',
           url: '/',
           query: {
             token: ERC20TokenAddressL1
@@ -222,7 +217,6 @@ describe('Import token', () => {
       it('should import token through URL using its L2 address', () => {
         cy.login({
           networkType: 'parentChain',
-          networkName: 'Ethereum',
           url: '/',
           query: {
             token: ERC20TokenAddressL2
@@ -259,7 +253,6 @@ describe('Import token', () => {
       it('should display an error message after invalid URL', () => {
         cy.login({
           networkType: 'parentChain',
-          networkName: 'Ethereum',
           url: '/',
           query: {
             token: invalidTokenAddress
