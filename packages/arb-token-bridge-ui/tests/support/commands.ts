@@ -87,7 +87,7 @@ export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
   return cy
     .get('@tab')
     .should('have.attr', 'data-headlessui-state')
-    .and('equal', 'selected')
+    .and('contain', 'selected')
 }
 
 export const searchAndSelectToken = ({
