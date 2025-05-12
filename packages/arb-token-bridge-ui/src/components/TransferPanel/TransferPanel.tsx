@@ -80,7 +80,7 @@ import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
-import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { highlightTransactionHistoryDisclaimer } from '../TransactionHistory/TransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper, DialogType } from '../common/Dialog2'
 import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
@@ -701,6 +701,10 @@ export function TransferPanel() {
       addPendingTransaction(newTransfer)
       addLifiTransactionToCache(newTransfer)
 
+      setTimeout(() => {
+        highlightTransactionHistoryDisclaimer()
+      }, 100)
+
       switchToTransactionHistoryTab()
       clearAmountInput()
       clearRoute()
@@ -818,7 +822,7 @@ export function TransferPanel() {
       if (isSmartContractWallet) {
         // show the warning in case of SCW since we don't cannot show OFT tx history
         setTimeout(() => {
-          highlightOftTransactionHistoryDisclaimer()
+          highlightTransactionHistoryDisclaimer()
         }, 100)
       } else {
         // for EOA, show the transaction in tx history

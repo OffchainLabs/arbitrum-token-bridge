@@ -26,6 +26,7 @@ module.exports = {
         orange: '#FFEED3',
         lime: '#E8FFE4',
         lilac: '#754562',
+        blue: '#00FBFF',
 
         // SECONDARY
         'cyan-dark': '#11365E',
