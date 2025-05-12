@@ -23,7 +23,7 @@ import { Button } from '../common/Button'
 import { GET_HELP_LINK, ether } from '../../constants'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
-import { isLifiTransfer, isTxCompleted } from './helpers'
+import { getTransactionType, isLifiTransfer, isTxCompleted } from './helpers'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
@@ -34,6 +34,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { shallow } from 'zustand/shallow'
 import { SafeImage } from '../common/SafeImage'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 const DetailsBox = ({
   children,
@@ -332,6 +333,12 @@ export const TransactionsTableDetails = () => {
                       <Button
                         variant="secondary"
                         className="border-white/30 text-xs"
+                        onClick={() => {
+                          trackEvent('Tx Error: Get Help Click', {
+                            network: getNetworkName(tx.sourceChainId),
+                            transactionType: getTransactionType(tx)
+                          })
+                        }}
                       >
                         Get help
                       </Button>

@@ -36,6 +36,7 @@ import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { isTeleportTx } from '../../types/Transactions'
 import { getStatus } from '@lifi/sdk'
+import { SimplifiedRouteType } from '../../util/AnalyticsUtils'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -55,6 +56,19 @@ export function isOftTransfer(tx: Transfer): tx is LayerZeroTransaction {
 
 export function isLifiTransfer(tx: Transfer): tx is LifiMergedTransaction {
   return 'isLifi' in tx && tx.isLifi === true
+}
+
+export function getTransactionType(tx: Transfer): SimplifiedRouteType {
+  if (isCctpTransfer(tx)) {
+    return 'cctp'
+  }
+  if (isOftTransfer(tx)) {
+    return 'oftV2'
+  }
+  if (isLifiTransfer(tx)) {
+    return 'lifi'
+  }
+  return 'arbitrum'
 }
 
 export function isTxCompleted(tx: MergedTransaction): boolean {

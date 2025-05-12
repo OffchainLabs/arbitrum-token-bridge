@@ -1234,7 +1234,7 @@ export function TransferPanel() {
         : isDepositMode
         ? 'Deposit'
         : 'Withdrawal',
-      isCctpTransfer: selectedRoute === 'cctp',
+      selectedRoute,
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
       accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
