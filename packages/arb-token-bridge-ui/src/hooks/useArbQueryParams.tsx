@@ -191,7 +191,7 @@ export function encodeTabQueryParam(
 }
 
 // Parse string to number
-// URL accept both number and tab name (string)
+// URL accepts string only
 export function decodeTabQueryParam(
   tab: string | (string | null)[] | null | undefined
 ): number {
