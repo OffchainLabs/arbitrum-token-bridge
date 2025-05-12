@@ -341,6 +341,7 @@ export function TokenRow({
       onClick={() => onTokenSelected(token)}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
+      aria-label={`Select ${token?.symbol}`}
       className={twMerge(
         'flex w-full flex-row items-center justify-between px-4 py-3 transition duration-200 hover:bg-white/10',
         tokenIsBridgeable
