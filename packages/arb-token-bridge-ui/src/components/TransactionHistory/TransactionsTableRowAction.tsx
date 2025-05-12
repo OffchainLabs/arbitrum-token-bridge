@@ -27,6 +27,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { Tooltip } from '../common/Tooltip'
 import { addressesEqual } from '../../util/AddressUtils'
+import { isLifiTransfer } from './helpers'
 
 function ActionRowConnectButton() {
   return (
@@ -194,7 +195,7 @@ export function TransactionsTableRowAction({
       return <ActionRowConnectButton />
     }
 
-    if (tx.isLifi) {
+    if (isLifiTransfer(tx)) {
       return null
     }
 

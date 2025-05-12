@@ -42,7 +42,8 @@ import {
   isSameTransaction,
   isTxPending,
   isOftTransfer,
-  getUpdatedLifiTransfer
+  getUpdatedLifiTransfer,
+  isLifiTransfer
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useAccountType } from './useAccountType'
@@ -54,8 +55,8 @@ import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Address } from '../util/AddressUtils'
 import {
-  TeleportFromSubgraph,
-  fetchTeleports
+  fetchTeleports,
+  TeleportFromSubgraph
 } from '../util/teleports/fetchTeleports'
 import {
   isTransferTeleportFromSubgraph,
@@ -69,7 +70,7 @@ import {
   useOftTransactionHistory
 } from './useOftTransactionHistory'
 import { create } from 'zustand'
-import { LayerZeroTransaction } from '../state/app/state'
+import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -97,7 +98,6 @@ export type Transfer =
   | DepositOrWithdrawal
   | MergedTransaction
   | TeleportFromSubgraph
-  | LayerZeroTransaction
 
 type ForceFetchReceivedStore = {
   forceFetchReceived: boolean
@@ -110,6 +110,10 @@ export const useForceFetchReceived = create<ForceFetchReceivedStore>(set => ({
 }))
 
 function getTransactionTimestamp(tx: Transfer) {
+  if (isLifiTransfer(tx)) {
+    return tx.createdAt ?? 0
+  }
+
   if (isCctpTransfer(tx)) {
     return normalizeTimestamp(tx.createdAt ?? 0)
   }
@@ -169,6 +173,11 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
+  // LifiTransaction are already MergedTransaction
+  if (isLifiTransfer(tx)) {
+    return tx
+  }
+
   // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
   if (isTransferTeleportFromSubgraph(tx)) {
     return await transformTeleportFromSubgraph(tx)
@@ -456,7 +465,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const withdrawals = (withdrawalsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
-  const transactions = [
+  const transactions: Transfer[] = [
     ...deposits,
     ...withdrawals,
     ...(isTestnetMode
@@ -492,6 +501,9 @@ export const useTransactionHistory = (
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType(address)
   const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
+  const lifiTransactions = useLifiMergedTransactionCacheStore(
+    state => state.transactions
+  )
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
@@ -560,6 +572,14 @@ export const useTransactionHistory = (
     isTxHistoryEnabled
   ])
 
+  const lifiTransactionsFromCache = useMemo(() => {
+    if (!useLifiMergedTransactionCacheStore.persist.hasHydrated || !address) {
+      return []
+    }
+
+    return lifiTransactions[address] || []
+  }, [address, lifiTransactions])
+
   const {
     data: txPages,
     error: txPagesError,
@@ -573,13 +593,14 @@ export const useTransactionHistory = (
     ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
-      const dataWithCache = [..._data, ...depositsFromCache]
+      const dataWithCache = _data.concat(depositsFromCache)
 
       // duplicates may occur when txs are taken from the local storage
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
-      const dedupedTransactions = dedupeTransactions(dataWithCache).sort(
-        sortByTimestampDescending
-      )
+      // Lifi transactions don't need deduping from other transactions, they are only fetched from localStorage
+      const dedupedTransactions = dedupeTransactions(dataWithCache)
+        .concat(lifiTransactionsFromCache)
+        .sort(sortByTimestampDescending)
 
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
@@ -740,7 +761,7 @@ export const useTransactionHistory = (
         return
       }
 
-      if (tx.isLifi) {
+      if (isLifiTransfer(tx)) {
         const updatedLifiTransfer = await getUpdatedLifiTransfer(tx)
         updateCachedTransaction(updatedLifiTransfer)
         return

@@ -53,8 +53,12 @@ export function isOftTransfer(tx: Transfer): tx is LayerZeroTransaction {
   return 'isOft' in tx && tx.isOft === true
 }
 
+export function isLifiTransfer(tx: Transfer): tx is LifiMergedTransaction {
+  return 'isLifi' in tx && tx.isLifi === true
+}
+
 export function isTxCompleted(tx: MergedTransaction): boolean {
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     return tx.destinationStatus === WithdrawalStatus.CONFIRMED
   }
   if (tx.isCctp) {
@@ -81,7 +85,7 @@ export function isTxPending(tx: MergedTransaction) {
     return tx.status === 'pending'
   }
 
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     if (
       tx.status === WithdrawalStatus.FAILURE ||
       tx.destinationStatus === WithdrawalStatus.FAILURE
@@ -105,7 +109,7 @@ export function isTxPending(tx: MergedTransaction) {
 }
 
 export function isTxClaimable(tx: MergedTransaction): boolean {
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     return false
   }
   if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
@@ -132,7 +136,7 @@ export function isTxFailed(tx: MergedTransaction): boolean {
     return tx.status === 'failed'
   }
 
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     return (
       tx.status === WithdrawalStatus.FAILURE ||
       tx.destinationStatus === WithdrawalStatus.FAILURE
@@ -706,7 +710,7 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
     return tx.l2ToL3MsgData?.l3TxID
   }
 
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     return tx.destinationTxId
   }
 

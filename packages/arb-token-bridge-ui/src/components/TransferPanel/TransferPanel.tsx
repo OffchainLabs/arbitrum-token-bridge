@@ -92,6 +92,7 @@ import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
 import { getFromAndToTokenAddresses } from './LifiSettings'
 import { getAmountLoss } from './HighSlippageWarningDialog'
+import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTransactionCacheStore'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -170,6 +171,9 @@ export function TransferPanel() {
       context: state.context
     }),
     shallow
+  )
+  const addLifiTransactionToCache = useLifiMergedTransactionCacheStore(
+    state => state.addTransaction
   )
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
@@ -695,6 +699,7 @@ export function TransferPanel() {
         destinationTxId: null
       }
       addPendingTransaction(newTransfer)
+      addLifiTransactionToCache(newTransfer)
 
       switchToTransactionHistoryTab()
       clearAmountInput()

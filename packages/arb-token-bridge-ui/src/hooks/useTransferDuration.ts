@@ -6,6 +6,7 @@ import { useRemainingTimeCctp } from '../state/cctpState'
 import { isNetwork } from '../util/networks'
 import { getConfirmationTime } from '../util/WithdrawalUtils'
 import { getBoldInfo, getDifferenceInSeconds } from '../util/BoLDUtils'
+import { isLifiTransfer } from '../components/TransactionHistory/helpers'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,
@@ -45,14 +46,7 @@ export const useTransferDuration = (
 ): UseTransferDurationResult => {
   const { estimatedMinutesLeftCctp } = useRemainingTimeCctp(tx)
 
-  const {
-    sourceChainId,
-    destinationChainId,
-    isCctp,
-    childChainId,
-    isOft,
-    isLifi
-  } = tx
+  const { sourceChainId, destinationChainId, isCctp, childChainId, isOft } = tx
   const { isTestnet, isOrbitChain } = isNetwork(childChainId)
 
   const standardDepositDuration = getStandardDepositDuration(isTestnet)
@@ -70,7 +64,7 @@ export const useTransferDuration = (
     }
   }
 
-  if (isLifi) {
+  if (isLifiTransfer(tx)) {
     const durationMinutes = (tx.durationMs || 15_000) / (60 * 1_000)
 
     return {

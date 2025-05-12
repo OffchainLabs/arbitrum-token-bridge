@@ -14,6 +14,7 @@ import {
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import {
   getDestinationNetworkTxId,
+  isLifiTransfer,
   isTxClaimable,
   isTxCompleted,
   isTxExpired,
@@ -36,7 +37,7 @@ import {
 } from '../../hooks/useTransferDuration'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
-  if (tx.isOft || tx.isLifi) {
+  if (tx.isOft || isLifiTransfer(tx)) {
     return false
   }
 
@@ -156,7 +157,7 @@ export const TransactionFailedOnNetwork = ({
 )
 
 function isSourceChainStatusFailure(tx: MergedTransaction) {
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     return tx.status === WithdrawalStatus.FAILURE
   }
 
@@ -169,7 +170,7 @@ function isSourceChainStatusFailure(tx: MergedTransaction) {
 }
 
 function isDestinationChainStatusFailure(tx: MergedTransaction) {
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     return tx.destinationStatus === WithdrawalStatus.FAILURE
   }
 

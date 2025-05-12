@@ -23,7 +23,7 @@ import { Button } from '../common/Button'
 import { GET_HELP_LINK, ether } from '../../constants'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
-import { isTxCompleted } from './helpers'
+import { isLifiTransfer, isTxCompleted } from './helpers'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
@@ -50,7 +50,7 @@ const DetailsBox = ({
 }
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
-  if (tx.isLifi) {
+  if (isLifiTransfer(tx)) {
     return (
       <div className="flex flex-col gap-1">
         <div className="flex flex-row items-center gap-1">

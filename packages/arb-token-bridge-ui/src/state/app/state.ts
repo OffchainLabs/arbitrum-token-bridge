@@ -93,6 +93,10 @@ export interface TeleporterMergedTransaction extends BaseMergedTransaction {
   l2ToL3MsgData: L2ToL3MessageData
 }
 
+/*
+ * LayerZero API returns LayerZeroTransaction` without `asset` and `value`.
+ * `updateAdditionalLayerZeroData()` fills these gaps, returning `MergedTransaction` for tx history.
+ */
 export interface LayerZeroTransaction
   extends Omit<BaseMergedTransaction, 'isOft'> {
   isOft: true
