@@ -1,5 +1,5 @@
-import { useAccount } from 'wagmi'
 import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
 import * as Sentry from '@sentry/react'
 
 import { useNetworks } from '../../hooks/useNetworks'
@@ -16,11 +16,8 @@ function getWalletName(connectorName: string): ProviderName {
     case 'Safe':
     case 'Injected':
     case 'Ledger':
-      return connectorName
-
-    case 'WalletConnectLegacy':
     case 'WalletConnect':
-      return 'WalletConnect'
+      return connectorName
 
     default:
       return 'Other'
@@ -28,13 +25,17 @@ function getWalletName(connectorName: string): ProviderName {
 }
 
 /** given our RPC url, sanitize it before logging to Sentry, to only pass the url and not the keys */
-function getBaseUrl(url: string) {
+function getBaseUrl(url: string | undefined): string | null {
+  if (typeof url === 'undefined') {
+    return null
+  }
+
   try {
     const urlObject = new URL(url)
     return `${urlObject.protocol}//${urlObject.hostname}`
   } catch {
     // if invalid url passed
-    return ''
+    return null
   }
 }
 
@@ -47,22 +48,29 @@ export function useSyncConnectedChainToAnalytics() {
     if (isConnected && connector) {
       const walletName = getWalletName(connector.name)
       trackEvent('Connect Wallet Click', { walletName })
-    }
 
-    // set a custom tag in sentry to filter issues by connected wallet.name
-    Sentry.setTag('wallet.name', connector?.name ?? '')
+      // Set wallet name tag only when we have a connected wallet
+      Sentry.setTag('wallet.name', connector.name)
+    } else {
+      // If no wallet is connected, explicitly set the tag to 'not_connected'
+      // This prevents it from showing as '<invalid>' in Sentry
+      Sentry.setTag('wallet.name', 'not_connected')
+    }
   }, [isConnected, connector])
 
   useEffect(() => {
     Sentry.setTag('network.parent_chain_id', parentChain.id)
-    Sentry.setTag(
-      'network.parent_chain_rpc_url',
-      getBaseUrl(rpcURLs[parentChain.id] ?? '')
-    )
     Sentry.setTag('network.child_chain_id', childChain.id)
-    Sentry.setTag(
-      'network.child_chain_rpc_url',
-      getBaseUrl(rpcURLs[childChain.id] ?? '')
-    )
+
+    const parentChainRpcUrl = getBaseUrl(rpcURLs[parentChain.id])
+    const childChainRpcUrl = getBaseUrl(rpcURLs[childChain.id])
+
+    if (parentChainRpcUrl) {
+      Sentry.setTag('network.parent_chain_rpc_url', parentChainRpcUrl)
+    }
+
+    if (childChainRpcUrl) {
+      Sentry.setTag('network.child_chain_rpc_url', childChainRpcUrl)
+    }
   }, [childChain.id, parentChain.id])
 }

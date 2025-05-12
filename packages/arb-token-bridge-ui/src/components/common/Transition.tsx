@@ -46,9 +46,8 @@ export const Transition = (props: TransitionProps) => {
       leaveFrom="opacity-100 translate-y-0"
       leaveTo="opacity-0 translate-y-1"
       afterLeave={afterLeave}
-      className={className}
     >
-      {children}
+      {className ? <div className={className}>{children}</div> : children}
     </HeadlessUiTransition>
   )
 }

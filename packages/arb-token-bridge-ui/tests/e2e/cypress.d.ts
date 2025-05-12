@@ -20,6 +20,7 @@ import {
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
   findClaimButton,
+  clickClaimButton,
   selectTransactionsPanelTab,
   confirmSpending,
   claimCctp,
@@ -27,7 +28,6 @@ import {
   switchToTransactionHistoryTab,
   selectRoute
 } from '../support/commands'
-import { NetworkType, NetworkName } from '../support/common'
 
 declare global {
   namespace Cypress {
@@ -36,14 +36,9 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
-      connectToApp(): typeof connectToApp
+      connectToApp: typeof connectToApp
       // eslint-disable-next-line no-unused-vars
-      login(options: {
-        networkType: NetworkType
-        networkName?: NetworkName
-        url?: string
-        query?: { [s: string]: string }
-      }): typeof login
+      login: typeof login
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       searchAndSelectToken({
         tokenName,
@@ -70,6 +65,7 @@ declare global {
       findTransactionDetailsCustomDestinationAddress: typeof findTransactionDetailsCustomDestinationAddress
       findTransactionInTransactionHistory: typeof findTransactionInTransactionHistory
       findClaimButton: typeof findClaimButton
+      clickClaimButton: typeof clickClaimButton
       confirmSpending: typeof confirmSpending
       claimCctp: typeof claimCctp
       selectRoute: typeof selectRoute

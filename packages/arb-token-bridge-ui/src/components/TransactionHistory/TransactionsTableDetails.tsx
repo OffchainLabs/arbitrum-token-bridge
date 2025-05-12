@@ -1,7 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import { Fragment, PropsWithChildren, useMemo } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, DialogBackdrop, Transition } from '@headlessui/react'
 import Image from 'next/image'
 import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
@@ -141,13 +141,13 @@ export const TransactionsTableDetails = () => {
   const destinationNetworkName = getNetworkName(destinationChainId)
 
   return (
-    <Transition show={isOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        open={typeof tx !== 'undefined'}
-        className="relative z-40"
-        onClose={close}
-      >
+    <Dialog
+      as="div"
+      open={typeof tx !== 'undefined'}
+      className="relative z-40"
+      onClose={close}
+    >
+      <Transition show={isOpen} as={Fragment}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-200"
@@ -157,7 +157,10 @@ export const TransactionsTableDetails = () => {
           leaveFrom="opacity-70"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black" aria-hidden="true" />
+          <DialogBackdrop
+            className="fixed inset-0 bg-black opacity-70"
+            aria-hidden="true"
+          />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -317,7 +320,7 @@ export const TransactionsTableDetails = () => {
             </Transition.Child>
           </div>
         </div>
-      </Dialog>
-    </Transition>
+      </Transition>
+    </Dialog>
   )
 }

@@ -42,7 +42,7 @@ export async function getDestinationAddressError({
 export function useDestinationAddressError() {
   const [{ destinationAddress }] = useArbQueryParams()
   const [networks] = useNetworks()
-  const { address, isConnected } = useAccount()
+  const { address } = useAccount()
   const { isTeleportMode } = useNetworksRelationship(networks)
   const { isSmartContractWallet: isSenderSmartContractWallet } =
     useAccountType()
@@ -56,12 +56,7 @@ export function useDestinationAddressError() {
       'useDestinationAddressError'
     ] as const,
     // Extracts the first element of the query key as the fetcher param
-    ([
-      _address,
-      _destinationAddress,
-      _isSenderSmartContractWallet,
-      _isTeleportMode
-    ]) =>
+    ([, _destinationAddress, _isSenderSmartContractWallet, _isTeleportMode]) =>
       getDestinationAddressError({
         destinationAddress: _destinationAddress,
         isSenderSmartContractWallet: _isSenderSmartContractWallet,
