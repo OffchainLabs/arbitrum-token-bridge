@@ -5,6 +5,7 @@ import { BigNumber } from 'ethers'
 import { Address } from 'wagmi'
 import { ReadContractResult, readContract } from '@wagmi/core'
 import { oftV2Abi } from './oftV2Abi'
+import { Provider } from '@ethersproject/providers'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 const oftProtocolConfig: {
@@ -152,4 +153,14 @@ export const getChainIdFromEid = (eid: number) => {
   }
 
   return Number(chainId)
+}
+
+export const getOftV2TransferDecodedData = async (
+  txId: string,
+  sourceChainProvider: Provider
+) => {
+  const sourceChainTx = await sourceChainProvider.getTransaction(txId)
+  const oftInterface = new ethers.utils.Interface(oftV2Abi)
+
+  return oftInterface.decodeFunctionData('send', sourceChainTx.data)
 }
