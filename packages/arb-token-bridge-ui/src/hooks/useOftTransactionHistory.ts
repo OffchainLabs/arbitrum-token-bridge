@@ -307,9 +307,14 @@ export function useOftTransactionHistory({
 
     const layerZeroResponse: LayerZeroResponse = await response.json()
 
-    return layerZeroResponse.data
-      .filter(await validateLayerZeroMessage) // filter out transactions that don't have Arbitrum supported chain ids, and invalid oft transfers
-      .map(mapLayerZeroMessageToLayerZeroTransaction)
+    const validMessages = []
+    for (const message of layerZeroResponse.data) {
+      if (await validateLayerZeroMessage(message)) {
+        validMessages.push(message)
+      }
+    }
+
+    return validMessages.map(mapLayerZeroMessageToLayerZeroTransaction)
   }
 
   const { data, error, isLoading } = useSWRImmutable(
