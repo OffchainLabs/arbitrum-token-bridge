@@ -33,11 +33,7 @@ import {
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../types/ChainId'
-import { TabParamEnum } from '../components/TopNavBar'
-
-export enum AmountQueryParamEnum {
-  MAX = 'max'
-}
+import { AmountQueryParamEnum, TabParamEnum } from './enum'
 
 export const useArbQueryParams = () => {
   /*

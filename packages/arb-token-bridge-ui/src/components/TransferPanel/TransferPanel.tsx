@@ -79,7 +79,7 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
-import { TabParamEnum } from '../TopNavBar'
+import { TabParamEnum } from '../../hooks/enum'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
