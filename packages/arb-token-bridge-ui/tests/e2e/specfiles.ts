@@ -1,67 +1,67 @@
 export default [
   {
-    "name": "Login and balance check",
-    "file": "./e2e/specs/**/login.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Login and balance check',
+    file: './e2e/specs/**/login.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Deposit native token",
-    "file": "./e2e/specs/**/depositNativeToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Deposit native token',
+    file: './e2e/specs/**/depositNativeToken.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Withdraw native token",
-    "file": "./e2e/specs/**/withdrawNativeToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Withdraw native token',
+    file: './e2e/specs/**/withdrawNativeToken.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Deposit ERC20",
-    "file": "./e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Deposit ERC20',
+    file: './e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Withdraw ERC20",
-    "file": "./e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Withdraw ERC20',
+    file: './e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Batch deposit",
-    "file": "./e2e/specs/**/batchDeposit.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Batch deposit',
+    file: './e2e/specs/**/batchDeposit.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "TX history",
-    "file": "./e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'TX history',
+    file: './e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Approve ERC20",
-    "file": "./e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Approve ERC20',
+    file: './e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Import test ERC20",
-    "file": "./e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Import test ERC20',
+    file: './e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Read classic deposits",
-    "file": "./e2e/specs/**/readClassicDeposits.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Read classic deposits',
+    file: './e2e/specs/**/readClassicDeposits.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Redeem Retryable",
-    "file": "./e2e/specs/**/redeemRetryable.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Redeem Retryable',
+    file: './e2e/specs/**/redeemRetryable.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "Switch network",
-    "file": "./e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'Switch network',
+    file: './e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   },
   {
-    "name": "URL query param",
-    "file": "./e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    name: 'URL query param',
+    file: './e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}',
+    recordVideo: 'false'
   }
 ]
