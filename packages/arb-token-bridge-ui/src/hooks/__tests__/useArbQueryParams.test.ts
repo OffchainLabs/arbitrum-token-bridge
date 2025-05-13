@@ -238,15 +238,16 @@ describe('TabParam custom encoder and decoder', () => {
     })
 
     it('should return string query param if value is a valid tab index number', () => {
-      expect(TabParam.encode('0')).toEqual('bridge')
-      expect(TabParam.encode('1')).toEqual('tx_history')
+      expect(TabParam.encode(0)).toEqual('bridge')
+      expect(TabParam.encode(1)).toEqual('tx_history')
     })
 
     it('should return bridge tab string if value is an invalid tab index number', () => {
-      expect(TabParam.encode('2')).toEqual('bridge')
-      expect(TabParam.encode('3')).toEqual('bridge')
-      expect(TabParam.encode('3111111')).toEqual('bridge')
-      expect(TabParam.encode('000000')).toEqual('bridge')
+      expect(TabParam.encode(2)).toEqual('bridge')
+      expect(TabParam.encode(3)).toEqual('bridge')
+      expect(TabParam.encode(3111111)).toEqual('bridge')
+      expect(TabParam.encode(-1)).toEqual('bridge')
+      expect(TabParam.encode(-129)).toEqual('bridge')
     })
   })
 

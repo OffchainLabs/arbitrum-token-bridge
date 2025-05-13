@@ -175,16 +175,13 @@ export const ChainParam = {
   decode: decodeChainQueryParam
 }
 
-export function encodeTabQueryParam(
-  tab: string | (string | null)[] | null | undefined
-): string {
+export function encodeTabQueryParam(tab: number | null | undefined): string {
   if (!tab || Array.isArray(tab)) {
     return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
   }
 
-  const tabNumber = Number(tab)
-  if (!Number.isNaN(tabNumber) && tabNumber in TabParamEnum) {
-    return TabParamEnum[tabNumber]!.toLowerCase()
+  if (!Number.isNaN(tab) && tab in TabParamEnum) {
+    return TabParamEnum[tab]!.toLowerCase()
   }
 
   return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
