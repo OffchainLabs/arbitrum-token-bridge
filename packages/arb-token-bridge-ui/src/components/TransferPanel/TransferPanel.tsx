@@ -80,9 +80,10 @@ import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
-import { Cog8ToothIcon, QueueListIcon } from '@heroicons/react/24/outline'
+import { QueueListIcon } from '@heroicons/react/24/outline'
 import { WidgetRoutes } from '../Widget/WidgetRoutes'
 import { WidgetTosConfirmationCheckbox } from '../Widget/WidgetTosConfirmationCheckbox'
+import { WidgetHeaderAccountButton } from '../Widget/WidgetHeaderAccountButton'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -1162,7 +1163,9 @@ export function TransferPanel() {
           {/* Left/Top panel */}
           <div className="flex h-full max-w-[400px] flex-col gap-1 overflow-hidden">
             <div className="flex flex-row items-center justify-between text-lg">
-              <div className="h-[30px] text-lg">Send</div>
+              <WidgetHeaderAccountButton />
+
+              {/* widget transaction history */}
               <div className="flex flex-row gap-2 text-sm">
                 {isConnected && (
                   <QueueListIcon
@@ -1170,10 +1173,6 @@ export function TransferPanel() {
                     onClick={() => openDialog('widget_transaction_history')}
                   />
                 )}
-                <Cog8ToothIcon
-                  className="h-4 w-4 cursor-pointer text-gray-400 hover:text-white"
-                  onClick={() => openDialog('widget_settings')}
-                />
               </div>
             </div>
             <TransferPanelMain />

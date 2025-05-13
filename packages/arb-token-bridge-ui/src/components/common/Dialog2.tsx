@@ -13,7 +13,6 @@ import { CctpUsdcWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithd
 import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/CctpUsdcDepositConfirmationDialog'
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
-import { WidgetSettingsDialog } from '../Widget/WidgetSettingsDialog'
 import { WidgetTransactionHistory } from '../Widget/WidgetTransactionHistory'
 
 /**
@@ -44,7 +43,6 @@ export type DialogType =
   | 'confirm_cctp_withdrawal'
   | 'confirm_cctp_deposit'
   | 'confirm_usdc_deposit'
-  | 'widget_settings'
   | 'widget_transaction_history'
 
 export function useDialog2(): UseDialogResult {
@@ -140,8 +138,6 @@ export function DialogWrapper(props: DialogProps) {
           symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
         />
       )
-    case 'widget_settings':
-      return <WidgetSettingsDialog {...commonProps} />
     case 'widget_transaction_history':
       return <WidgetTransactionHistory {...commonProps} />
     default:
