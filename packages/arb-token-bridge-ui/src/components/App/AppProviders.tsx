@@ -1,8 +1,8 @@
 import { ReactNode, useState } from 'react'
 import { Provider as OvermindProvider } from 'overmind-react'
+import { WagmiProvider } from 'wagmi'
 import { Overmind } from 'overmind'
-import { WagmiConfig } from 'wagmi'
-import { RainbowKitProvider, Theme, darkTheme } from '@rainbow-me/rainbowkit'
+import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import { createOvermind } from 'overmind'
 
@@ -10,6 +10,7 @@ import { config } from '../../state'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { AppContextProvider } from './AppContext'
 import { getProps } from '../../util/wagmi/setup'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const rainbowkitTheme = merge(darkTheme(), {
   colors: {
@@ -27,7 +28,7 @@ const rainbowkitTheme = merge(darkTheme(), {
 const searchParams = new URLSearchParams(window.location.search)
 const targetChainKey = searchParams.get('sourceChain')
 
-const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
+const wagmiConfig = getProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.
 //
@@ -46,20 +47,21 @@ interface AppProvidersProps {
   children: ReactNode
 }
 
+const queryClient = new QueryClient()
+
 export function AppProviders({ children }: AppProvidersProps) {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
   return (
     <OvermindProvider value={overmind}>
       <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
-            <AppContextProvider>{children}</AppContextProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider theme={rainbowkitTheme}>
+              <AppContextProvider>{children}</AppContextProvider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
       </ArbQueryParamProvider>
     </OvermindProvider>
   )

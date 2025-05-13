@@ -1,4 +1,4 @@
-import { useAccount, useDisconnect, useEnsAvatar } from 'wagmi'
+import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
 import { Button } from '../common/Button'
 
 import { shortenAddress } from '../../util/CommonUtils'
@@ -10,14 +10,20 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { Popover, Transition } from '@headlessui/react'
+import { ChainId } from '../../types/ChainId'
 
 export const WidgetHeaderAccountButton = () => {
   const { isConnected, address } = useAccount()
   const { openConnectModal } = useConnectModal()
   const { disconnect } = useDisconnect()
-  const { data: ensAvatar } = useEnsAvatar({
+  const { data: ensName } = useEnsName({
     address,
-    chainId: 1
+    chainId: ChainId.Ethereum
+  })
+
+  const { data: ensAvatar } = useEnsAvatar({
+    name: ensName ?? '',
+    chainId: ChainId.Ethereum
   })
 
   return (
