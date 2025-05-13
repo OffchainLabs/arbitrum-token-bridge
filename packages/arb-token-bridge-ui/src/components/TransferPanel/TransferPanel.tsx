@@ -81,6 +81,7 @@ import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
+import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -146,9 +147,7 @@ export function TransferPanel() {
   const wagmiConfig = useConfig()
 
   const { setTransferring } = useAppContextActions()
-  const switchToTransactionHistoryTab = useMainContentTabs(
-    state => state.switchToTransactionHistoryTab
-  )
+
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
   const { selectedRoute, clearRoute } = useRouteStore(
     state => ({
@@ -162,7 +161,20 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
+  const [{ amount, amount2, destinationAddress, embedMode }] =
+    useArbQueryParams()
+
+  const _switchToTransactionHistoryTab = useMainContentTabs(
+    state => state.switchToTransactionHistoryTab
+  )
+
+  const switchToTransactionHistoryTab = useCallback(() => {
+    if (embedMode) {
+      openDialog('widget_transaction_history')
+    } else {
+      _switchToTransactionHistoryTab()
+    }
+  }, [embedMode, _switchToTransactionHistoryTab])
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -1139,6 +1151,17 @@ export function TransferPanel() {
     return transfer()
   }
 
+  if (embedMode) {
+    return (
+      <WidgetTransferPanel
+        moveFundsButtonOnClick={moveFundsButtonOnClick}
+        isTokenAlreadyImported={isTokenAlreadyImported}
+        tokenFromSearchParams={tokenFromSearchParams}
+        tokenImportDialogProps={tokenImportDialogProps}
+        closeWithResetTokenImportDialog={closeWithResetTokenImportDialog}
+      />
+    )
+  }
   return (
     <>
       <DialogWrapper {...dialogProps} />

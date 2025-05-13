@@ -14,8 +14,6 @@ import 'tippy.js/themes/light.css'
 
 import '@rainbow-me/rainbowkit/styles.css'
 
-import { Layout } from '../components/common/Layout'
-
 import '../styles/tailwind.css'
 import {
   ChainKeyQueryParam,
@@ -198,9 +196,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
         {/* title must be here because it doesn't render if it's in DynamicMetaData */}
         <title>{siteTitle}</title>
       </Head>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <Component {...pageProps} />
     </>
   )
 }

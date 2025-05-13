@@ -1,48 +1,33 @@
 import { useEffect, useState } from 'react'
-import { useAccount, WagmiProvider } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
-import merge from 'lodash-es/merge'
-import axios from 'axios'
-import { createOvermind, Overmind } from 'overmind'
-import { Provider } from 'overmind-react'
-import { useLocalStorage } from '@uidotdev/usehooks'
+import { useAccount } from 'wagmi'
 
+import axios from 'axios'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
-import { AppContextProvider } from './AppContext'
-import { config, useActions } from '../../state'
+
+import { useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
-import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
+import { Layout } from '../common/Layout'
+import { AppProviders } from './AppProviders'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 declare global {
   interface Window {
     Cypress?: any
   }
 }
-
-const rainbowkitTheme = merge(darkTheme(), {
-  colors: {
-    accentColor: 'var(--blue-link)'
-  },
-  fonts: {
-    body: 'Roboto, sans-serif'
-  }
-} as Theme)
-
-const queryClient = new QueryClient()
 
 const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
@@ -114,8 +99,9 @@ function AppContent() {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
+  const [{ embedMode }] = useArbQueryParams()
 
-  if (!tosAccepted) {
+  if (!tosAccepted && !embedMode) {
     return (
       <>
         <Header />
@@ -151,44 +137,12 @@ function AppContent() {
   )
 }
 
-// We're doing this as a workaround so users can select their preferred chain on WalletConnect.
-//
-// https://github.com/orgs/WalletConnect/discussions/2733
-// https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-const searchParams = new URLSearchParams(window.location.search)
-const targetChainKey = searchParams.get('sourceChain')
-
-const wagmiConfig = getProps(targetChainKey)
-
-// Clear cache for everything related to WalletConnect v2.
-//
-// TODO: Remove this once the fix for the infinite loop / memory leak is identified.
-Object.keys(localStorage).forEach(key => {
-  if (
-    key === 'wagmi.requestedChains' ||
-    key === 'wagmi.store' ||
-    key.startsWith('wc@2')
-  ) {
-    localStorage.removeItem(key)
-  }
-})
-
 export default function App() {
-  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-
   return (
-    <Provider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiProvider config={wagmiConfig}>
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider theme={rainbowkitTheme}>
-              <AppContextProvider>
-                <AppContent />
-              </AppContextProvider>
-            </RainbowKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </ArbQueryParamProvider>
-    </Provider>
+    <AppProviders>
+      <Layout>
+        <AppContent />
+      </Layout>
+    </AppProviders>
   )
 }
