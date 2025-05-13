@@ -1,8 +1,12 @@
-import { readContract } from '@wagmi/core'
-import { Signer } from 'ethers'
+import {
+  Config,
+  readContract,
+  simulateContract,
+  writeContract
+} from '@wagmi/core'
 import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
 import { ChainDomain } from '../pages/api/cctp/[type]'
-import { prepareWriteContract, writeContract } from '@wagmi/core'
+
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../types/ChainId'
@@ -92,15 +96,17 @@ export function getCctpContracts({
 }
 
 export function fetchPerMessageBurnLimit({
-  sourceChainId
+  sourceChainId,
+  wagmiConfig
 }: {
   sourceChainId: CCTPSupportedChainId
+  wagmiConfig: Config
 }) {
   const { usdcContractAddress, tokenMinterContractAddress } = getCctpContracts({
     sourceChainId
   })
 
-  return readContract({
+  return readContract(wagmiConfig, {
     address: tokenMinterContractAddress,
     chainId: sourceChainId,
     abi: TokenMinterAbi,
@@ -140,21 +146,21 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
   const receiveMessage = async ({
     messageBytes,
     attestation,
-    signer
+    wagmiConfig
   }: {
     messageBytes: Address
     attestation: Address
-    signer: Signer
+    wagmiConfig: Config
   }) => {
-    const config = await prepareWriteContract({
+    const { request } = await simulateContract(wagmiConfig, {
       address: messageTransmitterContractAddress,
       abi: MessageTransmitterAbi,
       functionName: 'receiveMessage',
       chainId: targetChainId,
-      signer,
       args: [messageBytes, attestation]
     })
-    return writeContract(config)
+    const txHash = await writeContract(wagmiConfig, request)
+    return { hash: txHash }
   }
 
   return {

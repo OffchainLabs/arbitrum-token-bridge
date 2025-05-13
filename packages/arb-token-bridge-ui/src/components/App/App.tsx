@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useAccount, WagmiConfig } from 'wagmi'
+import { useAccount, WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
-
 import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
@@ -41,6 +41,8 @@ const rainbowkitTheme = merge(darkTheme(), {
     body: 'Roboto, sans-serif'
   }
 } as Theme)
+
+const queryClient = new QueryClient()
 
 const ArbTokenBridgeStoreSyncWrapper = (): React.ReactNode => {
   const actions = useActions()
@@ -156,7 +158,7 @@ function AppContent() {
 const searchParams = new URLSearchParams(window.location.search)
 const targetChainKey = searchParams.get('sourceChain')
 
-const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
+const wagmiConfig = getProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.
 //
@@ -177,16 +179,15 @@ export default function App() {
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
-            <AppContextProvider>
-              <AppContent />
-            </AppContextProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider theme={rainbowkitTheme}>
+              <AppContextProvider>
+                <AppContent />
+              </AppContextProvider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
       </ArbQueryParamProvider>
     </Provider>
   )
