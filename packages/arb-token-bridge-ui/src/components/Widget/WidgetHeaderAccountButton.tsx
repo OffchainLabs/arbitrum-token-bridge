@@ -1,15 +1,15 @@
 import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
-import { Button } from '../common/Button'
-
-import { shortenAddress } from '../../util/CommonUtils'
-import { SafeImage } from '../common/SafeImage'
-import { CustomBoringAvatar } from '../common/CustomBoringAvatar'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import {
   ArrowLeftEndOnRectangleIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { Popover, Transition } from '@headlessui/react'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+
+import { Button } from '../common/Button'
+import { shortenAddress } from '../../util/CommonUtils'
+import { SafeImage } from '../common/SafeImage'
+import { CustomBoringAvatar } from '../common/CustomBoringAvatar'
 import { ChainId } from '../../types/ChainId'
 
 export const WidgetHeaderAccountButton = () => {
