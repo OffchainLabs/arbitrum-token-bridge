@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
-import { useSigner } from 'wagmi'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
@@ -26,6 +25,7 @@ import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { useRouteStore } from './hooks/useRouteStore'
@@ -58,9 +58,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
-  const { data: signer } = useSigner({
-    chainId
-  })
+  const signer = useEthersSigner({ chainId })
   const selectedRoute = useRouteStore(state => state.selectedRoute)
   const isCctp = selectedRoute === 'cctp'
   const isOft = selectedRoute === 'oftV2'

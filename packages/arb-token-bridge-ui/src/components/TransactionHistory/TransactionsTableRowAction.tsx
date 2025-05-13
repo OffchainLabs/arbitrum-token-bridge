@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { GET_HELP_LINK } from '../../constants'
@@ -53,9 +53,8 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const { address: connectedAddress, isConnected } = useAccount()
-  const { chain } = useNetwork()
-  const { switchNetworkAsync } = useSwitchNetworkWithConfig()
+  const { address: connectedAddress, chain, isConnected } = useAccount()
+  const { switchChainAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
   const searchedAddress = useTransactionHistoryAddressStore(
     state => state.sanitizedAddress
@@ -91,7 +90,7 @@ export function TransactionsTableRowAction({
   const handleRedeemRetryable = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchNetworkAsync?.(chainIdForRedeemingRetryable)
+        await switchChainAsync({ chainId: chainIdForRedeemingRetryable })
       }
 
       if (isTeleportTx(tx)) {
@@ -110,14 +109,14 @@ export function TransactionsTableRowAction({
     isConnectedToCorrectNetworkForAction,
     chainIdForRedeemingRetryable,
     redeem,
-    switchNetworkAsync,
+    switchChainAsync,
     teleporterRedeem
   ])
 
   const handleClaim = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchNetworkAsync?.(tx.destinationChainId)
+        await switchChainAsync({ chainId: tx.destinationChainId })
       }
 
       if (tx.isCctp) {
@@ -140,7 +139,7 @@ export function TransactionsTableRowAction({
     claim,
     claimCctp,
     isConnectedToCorrectNetworkForAction,
-    switchNetworkAsync,
+    switchChainAsync,
     tx,
     type
   ])
