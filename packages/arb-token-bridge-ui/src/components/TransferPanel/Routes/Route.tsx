@@ -19,7 +19,6 @@ import { useETHPrice } from '../../../hooks/useETHPrice'
 import { isNetwork } from '../../../util/networks'
 import { Tooltip } from '../../common/Tooltip'
 import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
@@ -46,45 +45,6 @@ export type RouteProps = {
   selected: boolean
   onSelectedRouteClick: SetRoute
   disabled?: boolean
-}
-
-function getBridgeConfigFromType(type: RouteType) {
-  switch (type) {
-    case 'arbitrum': {
-      return {
-        name: 'Arbitrum',
-        icon: '/icons/arbitrum.svg',
-        width: 13,
-        height: 15
-      }
-    }
-    case 'oftV2': {
-      return {
-        name: 'LayerZero',
-        icon: '/icons/layerzero.svg',
-        width: 8,
-        height: 15
-      }
-    }
-    case 'cctp': {
-      return {
-        name: 'CCTP',
-        icon: '/images/CctpLogoColor.svg',
-        width: 15,
-        height: 15
-      }
-    }
-    case 'lifi':
-    case 'lifi-fastest':
-    case 'lifi-cheapest': {
-      return {
-        name: 'LI.FI',
-        icon: '/icons/lifi.svg',
-        width: 15,
-        height: 15
-      }
-    }
-  }
 }
 
 function Tag({
@@ -167,7 +127,6 @@ export const Route = React.memo(
 
     const token = overrideToken || _token || childNativeCurrency
 
-    const { name, icon, width, height } = getBridgeConfigFromType(type)
     const { isTestnet } = isNetwork(networks.sourceChain.id)
     const { ethToUSD } = useETHPrice()
     // Only display USD values for ETH
@@ -201,23 +160,7 @@ export const Route = React.memo(
       >
         <div
           className={twMerge(
-            'flex h-8 items-center rounded-t bg-gray-8 py-2 pl-4 pr-2 text-xs',
-            selected && 'bg-[#5F7D5B]'
-          )}
-        >
-          <Image
-            src={icon}
-            width={width}
-            height={height}
-            alt="protocol"
-            className="mr-1"
-          />
-          Powered by {name}
-          {selected && <CheckCircleIcon width={22} className="ml-auto" />}
-        </div>
-        <div
-          className={twMerge(
-            'relative flex gap-4 rounded-b bg-[#303030] px-4 py-3 text-sm transition-colors',
+            'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded-b bg-[#303030] px-4 py-3 text-sm transition-colors md:flex-row',
             'group-focus-within:bg-[#474747] group-hover:bg-[#474747]', // focused state
             selected && 'bg-[#474747]'
           )}
@@ -228,6 +171,9 @@ export const Route = React.memo(
               <div className="flex flex-row items-center gap-1">
                 <TokenLogo
                   srcOverride={'logoURI' in token ? token.logoURI : null}
+                  fallback={
+                    <div className="h-5 w-5 min-w-5 rounded-full bg-gray-dark" />
+                  }
                 />
                 {formatAmount(Number(amountReceived))} {token.symbol}
                 <div className="text-sm">
@@ -240,7 +186,12 @@ export const Route = React.memo(
               </div>
               {isBatchTransferSupported && Number(amount2) > 0 && (
                 <div className="flew-row flex items-center gap-1">
-                  <TokenLogo srcOverride={null} />
+                  <TokenLogo
+                    srcOverride={null}
+                    fallback={
+                      <div className="h-5 w-5 min-w-5 rounded-full bg-gray-dark" />
+                    }
+                  />
                   {formatAmount(Number(amount2), {
                     symbol: childNativeCurrency.symbol
                   })}
@@ -249,33 +200,40 @@ export const Route = React.memo(
             </div>
           </div>
           <div className="flex flex-col justify-between gap-3">
-            <div className="flex items-center">
-              <ClockIcon width={18} height={18} className="-ml-[1px]" />
-              <span className="ml-1">
-                {dayjs().add(durationMs, 'millisecond').fromNow(true)}
-              </span>
-              {fastWithdrawalActive && (
-                <div className="flex items-center">
-                  <Tooltip
-                    content={
-                      'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
-                    }
-                  >
-                    <InformationCircleIcon className="h-3 w-3 sm:ml-1" />
-                  </Tooltip>
-                </div>
-              )}
-            </div>
+            <div className="flex flex-row gap-3 md:flex-col md:justify-between">
+              <div className="flex items-center">
+                <ClockIcon width={18} height={18} className="-ml-[1px]" />
+                <span className="ml-1 whitespace-nowrap">
+                  {dayjs().add(durationMs, 'millisecond').fromNow(true)}
+                </span>
+                {fastWithdrawalActive && (
+                  <div className="flex items-center">
+                    <Tooltip
+                      content={
+                        'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
+                      }
+                    >
+                      <InformationCircleIcon className="ml-1 h-3 w-3" />
+                    </Tooltip>
+                  </div>
+                )}
+              </div>
 
-            <div className="flex items-center">
-              <SafeImage
-                src={bridgeIconURI}
-                width={15}
-                height={15}
-                alt="bridge"
-                className="max-h-3 max-w-3 rounded-full"
-              />
-              <span className="ml-1">{bridge}</span>
+              <div className="flex min-w-0 items-center">
+                <SafeImage
+                  src={bridgeIconURI}
+                  width={15}
+                  height={15}
+                  alt="bridge"
+                  className="max-h-3 max-w-3 rounded-full"
+                  fallback={
+                    <div className="h-3 w-3 min-w-3 rounded-full bg-gray-dark" />
+                  }
+                />
+                <div className="truncate">
+                  <span className="ml-1 whitespace-nowrap">{bridge}</span>
+                </div>
+              </div>
             </div>
 
             <Tooltip content={'The gas fees paid to operate the network'}>

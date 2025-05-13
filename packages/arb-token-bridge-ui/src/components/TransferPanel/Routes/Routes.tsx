@@ -15,6 +15,7 @@ import { isNetwork } from '../../../util/networks'
 import { shallow } from 'zustand/shallow'
 import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { ChainId } from '../../../types/ChainId'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
@@ -160,6 +161,7 @@ export const Routes = React.memo(() => {
   const [{ amount }] = useArbQueryParams()
   const isCctpTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
+  const [selectedToken] = useSelectedToken()
 
   const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
 
@@ -203,9 +205,13 @@ export const Routes = React.memo(() => {
       setSelectedRoute(focus)
     } else {
       clearRoute()
-      setShowHiddenRoutes(false)
     }
   }, [setSelectedRoute, focus, clearRoute, ChildRoutes])
+
+  useEffect(() => {
+    // If selected token changes, reset the showHidden route state
+    setShowHiddenRoutes(false)
+  }, [selectedToken])
 
   if (!ChildRoutes) {
     return null

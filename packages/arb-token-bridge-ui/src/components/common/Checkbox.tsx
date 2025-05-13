@@ -9,7 +9,7 @@ export type CheckboxProps = {
   labelClassName?: string
 }
 
-export function Checkbox(props: CheckboxProps) {
+export function Checkbox({ labelClassName, label, ...props }: CheckboxProps) {
   return (
     <Switch.Group
       as="div"
@@ -29,11 +29,11 @@ export function Checkbox(props: CheckboxProps) {
       <Switch.Label
         className={twMerge(
           'cursor-pointer',
-          props.labelClassName,
+          labelClassName,
           props.checked ? 'text-white' : 'text-gray-3'
         )}
       >
-        {props.label}
+        {label}
       </Switch.Label>
     </Switch.Group>
   )

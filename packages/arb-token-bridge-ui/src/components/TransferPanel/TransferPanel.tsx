@@ -93,6 +93,8 @@ import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
 import { getFromAndToTokenAddresses } from './LifiSettings'
 import { getAmountLoss } from './HighSlippageWarningDialog'
 import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTransactionCacheStore'
+import { getStepTransaction } from '@lifi/sdk'
+import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -604,12 +606,20 @@ export function TransferPanel() {
         sourceChainId: networks.sourceChain.id
       })
 
+      const { transactionRequest } = await getStepTransaction(context.step)
+      if (!isValidTransactionRequest(transactionRequest)) {
+        return
+      }
+
       const lifiTransferStarter = new LifiTransferStarter({
         destinationChainProvider,
         sourceChainProvider,
         destinationChainErc20Address: toToken,
         sourceChainErc20Address: fromToken,
-        lifiData: context
+        lifiData: {
+          ...context,
+          transactionRequest
+        }
       })
 
       // Check for allowance
@@ -696,7 +706,8 @@ export function TransferPanel() {
         durationMs: context.durationMs,
         fromAmount: context.fromAmount,
         toAmount: context.toAmount,
-        destinationTxId: null
+        destinationTxId: null,
+        transactionRequest
       }
       addPendingTransaction(newTransfer)
       addLifiTransactionToCache(newTransfer)

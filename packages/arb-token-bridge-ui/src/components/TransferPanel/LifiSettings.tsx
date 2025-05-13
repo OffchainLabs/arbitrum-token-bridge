@@ -198,7 +198,12 @@ function Tools({
           key={tool.key}
           label={
             <div className="flex items-center">
-              <SafeImage src={tool.logoURI} width="15" height="15" />
+              <SafeImage
+                src={tool.logoURI}
+                width="15"
+                height="15"
+                fallback={<div className="h-3 w-3 bg-gray-dark" />}
+              />
               <div key={tool.key} className="ml-1 truncate whitespace-nowrap">
                 {tool.name}
               </div>
@@ -316,6 +321,7 @@ export function LifiSettings() {
                     onFocus={e => {
                       // On focus, if the current value is equal to the default slippage, clear the input
                       if (e.target.value === defaultSlippage) {
+                        setSlippageValue('')
                         e.target.value = ''
                       }
                     }}
@@ -335,48 +341,50 @@ export function LifiSettings() {
                     %
                   </div>
                 </span>
-                {slippageIsTooLow && (
-                  <div className="flex gap-1">
-                    <ExclamationCircleIcon
-                      height={20}
-                      className="text-orange"
-                    />
-                    <span className="text-sm text-orange">
-                      Slippage amount is low. You may see very limited route
-                      options.
-                    </span>
-                  </div>
-                )}
-                {slippageIsTooHigh && (
-                  <div className="flex gap-1">
-                    <ExclamationCircleIcon
-                      height={20}
-                      className="text-orange"
-                    />
-                    <span className="text-sm text-orange">
-                      Slippage amount is high. Industry recommendation is 0.5%
-                      or less.
-                    </span>
-                  </div>
-                )}
-                {!slippageIsTooHigh && !slippageIsTooLow && (
-                  <div className="flex gap-1">
-                    <InformationCircleIcon
-                      height={20}
-                      className="text-white/80"
-                    />
-                    <span className="flex items-center gap-1">
-                      0.5% - 1% is the recommended range for slippage.{' '}
-                      <ExternalLink
-                        href="https://www.ledger.com/academy/what-is-slippage-in-crypto"
-                        className="flex items-center gap-1"
-                      >
-                        Read more
-                        <ArrowTopRightOnSquareIcon className="h-3 w-3 text-white/60 sm:text-white" />
-                      </ExternalLink>
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1">
+                  {slippageIsTooLow && (
+                    <>
+                      <ExclamationCircleIcon
+                        height={20}
+                        className="text-orange"
+                      />
+                      <span className="text-sm text-orange">
+                        Slippage amount is low. You may see very limited route
+                        options.
+                      </span>
+                    </>
+                  )}
+                  {slippageIsTooHigh && (
+                    <>
+                      <ExclamationCircleIcon
+                        height={20}
+                        className="text-orange"
+                      />
+                      <span className="text-sm text-orange">
+                        Slippage amount is high. Industry recommendation is 0.5%
+                        or less.
+                      </span>
+                    </>
+                  )}
+                  {!slippageIsTooHigh && !slippageIsTooLow && (
+                    <>
+                      <InformationCircleIcon
+                        height={20}
+                        className="text-white/80"
+                      />
+                      <span className="md:flex md:items-center md:gap-1">
+                        0.5% - 1% is the recommended range for slippage.{' '}
+                        <ExternalLink
+                          href="https://www.ledger.com/academy/what-is-slippage-in-crypto"
+                          className="arb-hover flex items-center underline"
+                        >
+                          Read more
+                          <ArrowTopRightOnSquareIcon className="ml-[2px] h-3 w-3 text-white/60 sm:text-white" />
+                        </ExternalLink>
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div className="grid gap-2">

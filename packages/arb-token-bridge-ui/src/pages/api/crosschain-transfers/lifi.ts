@@ -1,15 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import {
   createConfig,
-  LiFiStep,
-  QuoteRequest,
   TransactionRequest as LiFiTransactionRequest,
   GasCost,
   FeeCost,
-  StepToolDetails
+  StepToolDetails,
+  getRoutes,
+  RoutesRequest,
+  Route,
+  LiFiStep
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
-import { CrosschainTransfersQuoteBase, QueryParams } from './types'
+import { CrosschainTransfersRouteBase, QueryParams } from './types'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 
 export enum Order {
@@ -32,36 +34,16 @@ export type TransactionRequest = Required<
   >
 >
 
-export type LifiData = {
-  order: Order
-  transactionRequest: TransactionRequest
-  tool: StepToolDetails
-}
-export interface LifiCrosschainTransfersQuote
-  extends CrosschainTransfersQuoteBase {
+type Tags = Order[]
+export interface LifiCrosschainTransfersRoute
+  extends CrosschainTransfersRouteBase {
   type: 'lifi'
   protocolData: {
-    order: Order
-    transactionRequest: TransactionRequest
+    orders: Tags
     tool: StepToolDetails
+    /** This is needed to fetch transactionRequest later on */
+    step: LiFiStep
   }
-}
-
-function isValidTransactionRequest(
-  transactionRequest: LiFiTransactionRequest | undefined
-): transactionRequest is TransactionRequest {
-  if (!transactionRequest) {
-    return false
-  }
-
-  const { value, to, data, from, chainId, gasPrice, gasLimit } =
-    transactionRequest
-
-  if (!value || !to || !data || !from || !chainId || !gasPrice || !gasLimit) {
-    return false
-  }
-
-  return true
 }
 
 function sumGasCosts(gasCosts: GasCost[] | undefined) {
@@ -79,80 +61,131 @@ function sumFee(feeCosts: FeeCost[] | undefined) {
   ).toString()
 }
 
-function parseLifiQuoteToCrosschainTransfersQuoteWithLifiData({
-  quote,
+function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
+  route,
   fromAddress,
   toAddress,
   fromChainId,
-  toChainId,
-  fromToken,
-  toToken,
-  order
+  toChainId
 }: {
-  quote: LiFiStep & { transactionRequest: TransactionRequest }
-  fromAddress: string
+  route: Route
+  fromAddress?: string
   toAddress: string
   fromChainId: string
   toChainId: string
   fromToken: string
   toToken: string
-  order: Order
-}): LifiCrosschainTransfersQuote {
+}): LifiCrosschainTransfersRoute {
+  const step = route.steps[0]!
+  const tags: Order[] = []
+  if (route.tags && route.tags.includes(Order.Cheapest)) {
+    tags.push(Order.Cheapest)
+  }
+  if (route.tags && route.tags.includes(Order.Fastest)) {
+    tags.push(Order.Fastest)
+  }
   return {
     type: 'lifi',
-    durationMs: quote.estimate.executionDuration * 1_000,
+    durationMs: step.estimate.executionDuration * 1_000,
     gas: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: sumGasCosts(quote.estimate.gasCosts),
-      token: quote.estimate.gasCosts![0]!.token
+      amount: sumGasCosts(step.estimate.gasCosts),
+      token: step.estimate.gasCosts![0]!.token
     },
     fee: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: sumFee(quote.estimate.feeCosts),
-      token: quote.estimate.feeCosts![0]!.token
+      amount: sumFee(step.estimate.feeCosts),
+      token: step.estimate.feeCosts![0]!.token
     },
-    fromToken,
-    toToken,
     fromAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: quote.action.fromAmount,
-      token: quote.action.fromToken
+      amount: step.action.fromAmount,
+      token: step.action.fromToken
     },
     toAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: quote.estimate.toAmount,
-      token: quote.action.toToken
+      amount: step.estimate.toAmount,
+      token: step.action.toToken
     },
     fromAddress,
     toAddress,
     fromChainId: Number(fromChainId),
     toChainId: Number(toChainId),
-    spenderAddress: quote.estimate.approvalAddress,
+    spenderAddress: step.estimate.approvalAddress,
     protocolData: {
-      order,
-      transactionRequest: quote.transactionRequest,
-      tool: quote.toolDetails
+      step,
+      tool: step.toolDetails,
+      orders: tags
     }
   }
 }
 
+function findCheapestRoute(
+  routes: LifiCrosschainTransfersRoute[]
+): LifiCrosschainTransfersRoute {
+  const cheapestRoute = routes.reduce((currentMin, route) => {
+    if (!currentMin) {
+      return route
+    }
+
+    if (
+      BigNumber.from(route.toAmount.amount).lt(
+        BigNumber.from(currentMin.toAmount.amount)
+      )
+    ) {
+      return route
+    }
+    return currentMin
+  }, routes[0])
+
+  if (!cheapestRoute) {
+    throw new Error('No cheapest route found')
+  }
+
+  return cheapestRoute
+}
+
+function findFastestRoute(
+  routes: LifiCrosschainTransfersRoute[]
+): LifiCrosschainTransfersRoute {
+  const fastestRoute = routes.reduce((currentMin, route) => {
+    if (!currentMin) {
+      return route
+    }
+
+    if (
+      BigNumber.from(route.durationMs).lt(BigNumber.from(currentMin.durationMs))
+    ) {
+      return route
+    }
+    return currentMin
+  }, routes[0])
+
+  if (!fastestRoute) {
+    throw new Error('No fastest route found')
+  }
+
+  return fastestRoute
+}
+
+const INTEGRATOR_ID = 'arbitrum'
+
 createConfig({
-  integrator: 'arbitrum',
+  integrator: INTEGRATOR_ID,
   apiKey: process.env.NEXT_PUBLIC_LIFI_KEY
 })
 
-type LifiCrossTransfersQuotesResponse =
+type LifiCrossTransfersRoutesResponse =
   | {
       message: string
       data: null
     }
   | {
-      data: LifiCrosschainTransfersQuote
+      data: LifiCrosschainTransfersRoute[]
     }
 
 export type LifiParams = QueryParams & {
   slippage?: string
-  order: Order
   denyBridges?: string | string[]
   denyExchanges?: string | string[]
 }
@@ -163,7 +196,7 @@ export type NextApiRequestWithLifiParams = NextApiRequest & {
 }
 export default async function handler(
   req: NextApiRequestWithLifiParams,
-  res: NextApiResponse<LifiCrossTransfersQuotesResponse>
+  res: NextApiResponse<LifiCrossTransfersRoutesResponse>
 ) {
   const {
     fromToken,
@@ -175,8 +208,7 @@ export default async function handler(
     toAddress,
     denyBridges,
     denyExchanges,
-    slippage,
-    order
+    slippage
   } = req.query
 
   try {
@@ -189,13 +221,6 @@ export default async function handler(
     }
 
     // Validate parameters
-    if (!fromAddress || !utils.isAddress(fromAddress)) {
-      res
-        .status(400)
-        .send({ message: 'fromAddress is not a valid address', data: null })
-      return
-    }
-
     if (!toAddress || !utils.isAddress(toAddress)) {
       res
         .status(400)
@@ -273,66 +298,112 @@ export default async function handler(
       }
     }
 
-    const parameters = new URLSearchParams({
+    const parameters: RoutesRequest = {
       fromAddress,
       fromAmount,
-      fromToken,
-      fromChain: fromChainId.toString(),
-      toChain: toChainId.toString(),
-      toToken,
-      toAddress,
-      integrator: 'arbitrum',
-      order
-    } satisfies QuoteRequest)
+      fromTokenAddress: fromToken,
+      fromChainId: Number(fromChainId),
+      toChainId: Number(toChainId),
+      toTokenAddress: toToken,
+      toAddress
+    }
+
+    const options: RoutesRequest['options'] = {
+      integrator: INTEGRATOR_ID,
+      allowSwitchChain: false,
+      allowDestinationCall: false
+    }
 
     if (slippage) {
-      parameters.set('slippage', (parsedSlippage / 100).toString())
+      options.slippage = parsedSlippage / 100
     }
 
     if (bridgesToExclude && bridgesToExclude.length > 0) {
-      bridgesToExclude.forEach(bridgeToExclude => {
-        parameters.append('denyBridges', bridgeToExclude)
-      })
+      options.bridges = {
+        deny: bridgesToExclude
+      }
     }
     if (exchangesToExclude && exchangesToExclude.length > 0) {
-      exchangesToExclude.forEach(exchangeToExclude => {
-        parameters.append('denyExchanges', exchangeToExclude)
-      })
+      options.exchanges = {
+        deny: exchangesToExclude
+      }
     }
 
-    const quote = await fetch(
-      `https://li.quest/v1/quote?${parameters.toString()}`
-    ).then(response => {
-      if (!response.ok) {
-        throw new Error(response.statusText)
-      }
-      return response.json() as unknown as LiFiStep
-    })
+    const { routes } = await getRoutes({ ...parameters, options })
 
-    /** LiFi transactionRequest doesn't guarantee to have all fields on TransactionRequest by default */
-    if (!isValidTransactionRequest(quote.transactionRequest)) {
-      res.status(500).json({
-        data: null,
-        message: 'Invalid transaction request received.'
+    const filteredRoutes = routes
+      .filter(route => route.steps.length === 1)
+      .map(route =>
+        parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
+          route,
+          fromAddress,
+          toAddress,
+          fromChainId,
+          toChainId,
+          fromToken,
+          toToken
+        })
+      )
+
+    /**
+     * We only care about the fastest and the cheapest route
+     * The fastest and the cheapest route might be the same
+     *
+     * We filter any route with more than 1 step, those filtered out route might be the fastest and/or the cheapest
+     * If we filtered one of those route, we manually compute it
+     *
+     * We filter all route with more than 1 step.
+     * If we filtered the fastest and/or cheapest route, we manually compute and
+     */
+    const tags = filteredRoutes.reduce((acc, route) => {
+      return acc.concat(route.protocolData.orders)
+    }, [] as Order[])
+
+    // We didn't filter route with tags
+    if (tags.length === 2) {
+      res.status(200).json({
+        data: filteredRoutes.filter(
+          route => route.protocolData.orders.length > 0
+        )
       })
       return
     }
 
-    const transactionRequest = quote.transactionRequest
-    res.status(200).json({
-      data: parseLifiQuoteToCrosschainTransfersQuoteWithLifiData({
-        quote: {
-          ...quote,
-          transactionRequest
-        },
-        fromAddress,
-        toAddress,
-        fromChainId,
-        toChainId,
-        fromToken,
-        toToken,
-        order
+    const cheapestRoute = findCheapestRoute(filteredRoutes)
+    const fastestRoute = findFastestRoute(filteredRoutes)
+
+    if (cheapestRoute === fastestRoute) {
+      res.status(200).json({
+        data: [
+          {
+            ...cheapestRoute,
+            protocolData: {
+              ...cheapestRoute.protocolData,
+              orders: [Order.Cheapest, Order.Fastest]
+            }
+          }
+        ]
       })
+      return
+    }
+
+    res.status(200).json({
+      data: [
+        {
+          ...cheapestRoute,
+          protocolData: {
+            ...cheapestRoute.protocolData,
+            orders: [Order.Cheapest]
+          }
+        },
+        {
+          ...fastestRoute,
+          protocolData: {
+            ...fastestRoute.protocolData,
+            orders: [Order.Fastest]
+          }
+        }
+      ]
     })
   } catch (error: any) {
     res.status(500).json({

@@ -13,6 +13,7 @@ import {
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
 import { AmountWithToken } from '@/token-bridge-sdk/LifiTransferStarter'
+import { TransactionRequest } from '@lifi/sdk'
 
 export enum DepositStatus {
   L1_PENDING = 1,
@@ -40,6 +41,7 @@ export type MergedTransactionLifiData = {
   fromAmount: AmountWithToken
   toAmount: AmountWithToken
   destinationTxId: string | null
+  transactionRequest: TransactionRequest
 }
 export interface BaseMergedTransaction {
   // TODO: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/master/packages/arb-token-bridge-ui/src/util/withdrawals/helpers.ts#L31

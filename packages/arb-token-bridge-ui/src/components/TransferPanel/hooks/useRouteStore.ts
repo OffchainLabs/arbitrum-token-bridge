@@ -1,6 +1,7 @@
 import { LifiData } from '@/token-bridge-sdk/LifiTransferStarter'
 import { create } from 'zustand'
 import { MergedTransactionLifiData } from '../../../state/app/state'
+import { LiFiStep } from '@lifi/sdk'
 
 export type RouteType =
   | 'arbitrum'
@@ -9,7 +10,9 @@ export type RouteType =
   | 'lifi-fastest'
   | 'lifi-cheapest'
   | 'lifi' // If fastest and cheapest quotes are the same
-export type RouteContext = LifiData & MergedTransactionLifiData
+/** When route is in context, we didn't fetch transactionRequest yet and we only have information about the step */
+export type RouteContext = LifiData &
+  Omit<MergedTransactionLifiData, 'transactionRequest'> & { step: LiFiStep }
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
 interface RouteState {
   selectedRoute: RouteType | undefined

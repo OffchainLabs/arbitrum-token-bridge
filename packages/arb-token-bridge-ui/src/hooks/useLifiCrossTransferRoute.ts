@@ -1,16 +1,16 @@
 import useSWR from 'swr'
 import { getAPIBaseUrl } from '../util'
 import {
-  LifiCrosschainTransfersQuote,
+  LifiCrosschainTransfersRoute,
   LifiParams
 } from '../pages/api/crosschain-transfers/lifi'
 import { Address } from 'wagmi'
+import { useDebounce } from '@uidotdev/usehooks'
 
-export type UseLifiCrossTransfersQuoteParams = Pick<
+export type UseLifiCrossTransfersRouteParams = Pick<
   LifiParams,
-  'fromAmount' | 'fromToken' | 'toToken' | 'slippage' | 'order'
+  'fromAmount' | 'fromToken' | 'toToken' | 'slippage' | 'fromAddress'
 > & {
-  fromAddress: Address | undefined
   toAddress: Address | undefined
   fromChainId: number
   toChainId: number
@@ -18,7 +18,7 @@ export type UseLifiCrossTransfersQuoteParams = Pick<
   denyExchanges?: string[]
 }
 
-export const useLifiCrossTransfersQuote = ({
+export const useLifiCrossTransfersRoute = ({
   fromAmount,
   fromToken,
   toToken,
@@ -28,10 +28,10 @@ export const useLifiCrossTransfersQuote = ({
   toAddress,
   denyBridges,
   denyExchanges,
-  slippage,
-  order
-}: UseLifiCrossTransfersQuoteParams) => {
-  return useSWR(
+  slippage
+}: UseLifiCrossTransfersRouteParams) => {
+  /** Fetch only after 1 second elapsed since last parameter changed */
+  const queryKey = useDebounce(
     fromAddress && toAddress && fromAmount !== '0'
       ? ([
           fromAmount,
@@ -44,10 +44,14 @@ export const useLifiCrossTransfersQuote = ({
           denyBridges,
           denyExchanges,
           slippage,
-          order,
-          'useLifiCrossTransfersQuote'
+          'useLifiCrossTransfersRoute'
         ] as const)
       : null,
+    1 * 1000 // 1 second in miliseconds
+  )
+
+  return useSWR(
+    queryKey,
     async ([
       _fromAmount,
       _fromToken,
@@ -98,7 +102,7 @@ export const useLifiCrossTransfersQuote = ({
           throw new Error(data.message)
         }
 
-        return data as Promise<{ data: LifiCrosschainTransfersQuote }>
+        return data as Promise<{ data: LifiCrosschainTransfersRoute[] }>
       })
 
       return response.data

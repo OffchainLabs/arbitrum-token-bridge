@@ -28,15 +28,10 @@ export type LifiData = {
   spenderAddress: Address
   gas: AmountWithToken
   fee: AmountWithToken
-  transactionRequest: TransactionRequest
+  transactionRequest?: TransactionRequest
 }
 export type LifiTransferStarterProps = BridgeTransferStarterProps & {
-  lifiData: {
-    spenderAddress: string
-    gas: AmountWithToken
-    fee: AmountWithToken
-    transactionRequest: TransactionRequest
-  }
+  lifiData: LifiData
 }
 
 export class LifiTransferStarter extends BridgeTransferStarter {
@@ -131,6 +126,10 @@ export class LifiTransferStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ signer }: TransferProps) {
+    if (!this.lifiData.transactionRequest) {
+      throw new Error('LifiTransferStarter is missing transaction request.')
+    }
+
     const config = await prepareSendTransaction({
       chainId: this.lifiData.transactionRequest.chainId,
       request: this.lifiData.transactionRequest,

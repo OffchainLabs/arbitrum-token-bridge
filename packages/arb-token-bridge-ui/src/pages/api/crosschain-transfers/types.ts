@@ -5,7 +5,7 @@ export type QueryParams = {
   toToken: string
   fromChainId: string
   toChainId: string
-  fromAddress: string
+  fromAddress?: string
   toAddress: string
   fromAmount: string
 }
@@ -16,7 +16,7 @@ export type Token = Pick<
 >
 
 /** This interface is meant to be extended by the different API, it's not meant to be consummed by the bridge  */
-export interface CrosschainTransfersQuoteBase {
+export interface CrosschainTransfersRouteBase {
   durationMs: number
   gas: {
     amount: string
@@ -26,8 +26,6 @@ export interface CrosschainTransfersQuoteBase {
     amount: string
     token: Token
   }
-  fromToken: string
-  toToken: string
   fromAmount: {
     amount: string
     token: Token
@@ -38,7 +36,7 @@ export interface CrosschainTransfersQuoteBase {
   }
   fromChainId: number
   toChainId: number
-  fromAddress: string
+  fromAddress?: string
   toAddress: string
   spenderAddress: string
 }
