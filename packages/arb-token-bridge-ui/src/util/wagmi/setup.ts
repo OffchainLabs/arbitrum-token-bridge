@@ -26,6 +26,7 @@ import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
 import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
+import { env } from '../../config/env'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -80,7 +81,7 @@ const getChainList = () => {
 
 const chainList = getChainList()
 
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
+const projectId = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
 
 if (!projectId) {
   console.error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID variable missing.')

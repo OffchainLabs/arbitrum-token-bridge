@@ -17,6 +17,7 @@ import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
 import { contractAbi, contractByteCode } from './testErc20Token'
+import { e2eEnv, isOrbitTest, shouldRecordVideo } from './src/config/e2e.env'
 import {
   checkForAssertions,
   generateActivityOnChains,
@@ -39,20 +40,13 @@ import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 import { browserConfig } from './tests/e2e/browser.config'
 import { addressesEqual } from './src/util/AddressUtils'
 
-const tests = process.env.TEST_FILE
-  ? [process.env.TEST_FILE]
+const tests = e2eEnv.TEST_FILE
+  ? [e2eEnv.TEST_FILE]
   : specFiles.map(file => file.file)
 
-const isOrbitTest = [
-  process.env.E2E_ORBIT,
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
-].includes('true')
-const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
-
-const l3Network =
-  process.env.ORBIT_CUSTOM_GAS_TOKEN === 'true'
-    ? defaultL3CustomGasTokenNetwork
-    : defaultL3Network
+const l3Network = e2eEnv.ORBIT_CUSTOM_GAS_TOKEN
+  ? defaultL3CustomGasTokenNetwork
+  : defaultL3Network
 
 const l1WethGateway = isOrbitTest
   ? l3Network.tokenBridge!.parentWethGateway
@@ -94,9 +88,7 @@ export default defineConfig({
         )
       }
       if (!sepoliaRpcUrl) {
-        throw new Error(
-          'process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA variable missing.'
-        )
+        throw new Error('NEXT_PUBLIC_RPC_URL_SEPOLIA variable missing.')
       }
 
       const userWalletAddress = await userWallet.getAddress()
@@ -191,7 +183,7 @@ export default defineConfig({
         parentProvider,
         testType: isCustomFeeToken
           ? 'orbit-custom'
-          : process.env.E2E_ORBIT === 'true'
+          : e2eEnv.E2E_ORBIT
           ? 'orbit-eth'
           : 'regular'
       })
@@ -203,7 +195,7 @@ export default defineConfig({
       config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
-      config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+      config.env.INFURA_KEY = e2eEnv.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_PARENT_CHAIN = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
       config.env.ORBIT_TEST = isOrbitTest ? '1' : '0'
@@ -240,7 +232,7 @@ export default defineConfig({
   }
 })
 
-const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+const INFURA_KEY = e2eEnv.NEXT_PUBLIC_INFURA_KEY
 if (typeof INFURA_KEY === 'undefined') {
   throw new Error('Infura API key not provided')
 }
@@ -249,25 +241,19 @@ const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 const ethRpcUrl = (() => {
-  // MetaMask comes with a default http://localhost:8545 network with 'localhost' as network name
-  // On CI, the rpc is http://geth:8545 so we cannot reuse the 'localhost' network
-  // However, Synpress does not allow editing network name on the MetaMask extension
-  // For consistency purpose, we would be using 'custom-localhost'
-  // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
-  // so we have to add a / to the end of the rpc url
-  if (!process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1) {
+  if (!e2eEnv.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1) {
     return MAINNET_INFURA_RPC_URL
   }
-  if (process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1.endsWith('/')) {
-    return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1
+  if (e2eEnv.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1.endsWith('/')) {
+    return e2eEnv.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1
   }
-  return process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 + '/'
+  return e2eEnv.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1 + '/'
 })()
 
-const arbRpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2
-const l3RpcUrl = process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3
+const arbRpcUrl = e2eEnv.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2
+const l3RpcUrl = e2eEnv.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3
 const sepoliaRpcUrl =
-  process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA ?? SEPOLIA_INFURA_RPC_URL
+  e2eEnv.NEXT_PUBLIC_RPC_URL_SEPOLIA ?? SEPOLIA_INFURA_RPC_URL
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const parentProvider = new StaticJsonRpcProvider(
@@ -277,19 +263,19 @@ const childProvider = new StaticJsonRpcProvider(
   isOrbitTest ? l3RpcUrl : arbRpcUrl
 )
 
-if (!process.env.PRIVATE_KEY_CUSTOM) {
+if (!e2eEnv.PRIVATE_KEY_CUSTOM) {
   throw new Error('PRIVATE_KEY_CUSTOM variable missing.')
 }
-if (!process.env.PRIVATE_KEY_USER) {
+if (!e2eEnv.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
 
 const localWallet = new Wallet(
-  process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN === 'true'
+  e2eEnv.E2E_ORBIT_CUSTOM_GAS_TOKEN
     ? utils.sha256(utils.toUtf8Bytes('user_fee_token_deployer'))
-    : process.env.PRIVATE_KEY_CUSTOM
+    : e2eEnv.PRIVATE_KEY_CUSTOM
 )
-const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
+const userWallet = new Wallet(e2eEnv.PRIVATE_KEY_USER)
 
 async function approveCustomFeeToken({
   signer,

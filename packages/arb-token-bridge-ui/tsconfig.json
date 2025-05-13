@@ -1,29 +1,27 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": [
-    "src",
-    "additional.d.ts",
-    "next.config.js",
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
-    "build/types/**/*.ts",
-    "vitest.config.ts"
-  ],
   "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "incremental": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "jsx": "preserve",
-    "paths": {
-      "@/images/*": ["./public/images/*"],
-      "@/icons/*": ["./public/icons/*"],
-      "@/token-bridge-sdk/*": ["./src/token-bridge-sdk/*"]
-    },
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "strictNullChecks": true
+    "incremental": true,
+    "types": [
+      "node",
+      "cypress",
+      "@synthetixio/synpress",
+      "cypress-terminal-report"
+    ]
   },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

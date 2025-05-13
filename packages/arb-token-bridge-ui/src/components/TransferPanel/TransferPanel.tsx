@@ -80,6 +80,7 @@ import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 import { shallow } from 'zustand/shallow'
+import { isDevelopment } from '../../config/env'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -345,7 +346,7 @@ export function TransferPanel() {
     }, 3000)
 
   const stepExecutor: UiDriverStepExecutor = async step => {
-    if (process.env.NODE_ENV === 'development') {
+    if (isDevelopment) {
       console.log(step)
     }
 

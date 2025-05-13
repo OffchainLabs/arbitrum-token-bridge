@@ -1,11 +1,12 @@
 import { loadEnvironmentVariableWithFallback } from '..'
 import { ChainId } from '../../types/ChainId'
 import { ProductionChainId } from './getRpcUrl'
+import { env } from '../../config/env'
 
 export function getAlchemyRpcUrl(
   chainId: ProductionChainId,
   alchemyKey: string = loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_ALCHEMY_KEY
+    env: env.NEXT_PUBLIC_ALCHEMY_KEY
   })
 ): string {
   switch (chainId) {

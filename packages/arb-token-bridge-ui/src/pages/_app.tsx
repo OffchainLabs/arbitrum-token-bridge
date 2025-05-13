@@ -23,6 +23,7 @@ import {
 } from '../types/ChainQueryParam'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { isNetwork } from '../util/networks'
+import { env, isProduction } from '../config/env'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
@@ -30,8 +31,8 @@ dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
 
 Sentry.init({
-  environment: process.env.NODE_ENV,
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  environment: env.NODE_ENV,
+  dsn: env.NEXT_PUBLIC_SENTRY_DSN,
   integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 0.025,
   maxValueLength: 0,
@@ -78,24 +79,15 @@ Sentry.init({
   }
 })
 
-if (
-  typeof window !== 'undefined' &&
-  typeof process.env.NEXT_PUBLIC_POSTHOG_KEY === 'string'
-) {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+if (typeof env.NEXT_PUBLIC_POSTHOG_KEY === 'string') {
+  posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
     api_host: 'https://app.posthog.com',
-    loaded: posthog => {
-      if (process.env.NODE_ENV !== 'production') {
-        // when in dev, you can see data that would be sent in prod (in devtools)
-        posthog.debug()
+    loaded: () => {
+      if (!isProduction) {
+        // Disable capturing by default in development
+        posthog.opt_out_capturing()
       }
-    },
-    // store data in temporary memory that expires with each session
-    persistence: 'memory',
-    // by default posthog autocaptures (sends) events such as onClick, etc
-    // we set up our own events instead
-    autocapture: false,
-    disable_session_recording: true
+    }
   })
 }
 

@@ -1,6 +1,7 @@
 import { loadEnvironmentVariableWithFallback } from '..'
 import { ChainId } from '../../types/ChainId'
 import { ProductionChainId } from './getRpcUrl'
+import { env } from '../../config/env'
 
 export type InfuraSupportedChainId = Exclude<
   ProductionChainId,
@@ -9,44 +10,44 @@ export type InfuraSupportedChainId = Exclude<
 >
 
 export function getInfuraKeyFromEnv(chainId: InfuraSupportedChainId): string {
-  const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
+  const defaultInfuraKey = env.NEXT_PUBLIC_INFURA_KEY
 
   switch (chainId) {
     // L1 Mainnet
     case ChainId.Ethereum:
       return loadEnvironmentVariableWithFallback({
-        env: process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM,
+        env: env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM,
         fallback: defaultInfuraKey
       })
 
     // L1 Testnet
     case ChainId.Sepolia:
       return loadEnvironmentVariableWithFallback({
-        env: process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA,
+        env: env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA,
         fallback: defaultInfuraKey
       })
 
     // L2 Mainnet
     case ChainId.ArbitrumOne:
       return loadEnvironmentVariableWithFallback({
-        env: process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE,
+        env: env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE,
         fallback: defaultInfuraKey
       })
     case ChainId.Base:
       return loadEnvironmentVariableWithFallback({
-        env: process.env.NEXT_PUBLIC_INFURA_KEY_BASE,
+        env: env.NEXT_PUBLIC_INFURA_KEY_BASE,
         fallback: defaultInfuraKey
       })
 
     // L2 Testnet
     case ChainId.ArbitrumSepolia:
       return loadEnvironmentVariableWithFallback({
-        env: process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA,
+        env: env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA,
         fallback: defaultInfuraKey
       })
     case ChainId.BaseSepolia:
       return loadEnvironmentVariableWithFallback({
-        env: process.env.NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA,
+        env: env.NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA,
         fallback: defaultInfuraKey
       })
   }

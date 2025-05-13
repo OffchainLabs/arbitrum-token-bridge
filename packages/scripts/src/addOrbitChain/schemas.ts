@@ -5,6 +5,7 @@ import { getOctokit } from "@actions/github";
 import path from "path";
 import * as dotenv from "dotenv";
 import { getProvider } from "./provider";
+import { env } from "../config/env";
 
 // Load .env from the UI project directory
 dotenv.config({
@@ -12,6 +13,8 @@ dotenv.config({
 });
 export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
+
+const INFURA_KEY = env.NEXT_PUBLIC_INFURA_KEY;
 
 export const getParentChainInfo = (parentChainId: number) => {
   const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;

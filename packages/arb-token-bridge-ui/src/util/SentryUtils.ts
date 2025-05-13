@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react'
+import { isDevelopment } from '../config/env'
 
 /**
  * @deprecated Use the useError().handleError() hook instead
@@ -15,7 +16,7 @@ export function captureSentryErrorWithExtraData({
   additionalData?: Record<string, string>
 }) {
   // Add a console warning in development
-  if (process.env.NODE_ENV === 'development') {
+  if (isDevelopment) {
     console.warn(
       'captureSentryErrorWithExtraData is deprecated. Use the useError().handleError() hook instead.'
     )

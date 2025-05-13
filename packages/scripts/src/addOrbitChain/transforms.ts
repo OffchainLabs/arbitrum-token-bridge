@@ -24,6 +24,7 @@ import {
 } from "./schemas";
 import { getProvider } from "./provider";
 import { ethers } from "ethers";
+import { env } from "../config/env";
 
 const SUPPORTED_IMAGE_EXTENSIONS = ["png", "svg", "jpg", "jpeg", "webp"];
 const MAX_IMAGE_SIZE_KB = 100;
@@ -435,4 +436,17 @@ export const updateOrbitChainsFile = (
   fs.writeFileSync(targetJsonPath, updatedContents);
 
   return orbitChains;
+};
+
+export const getIssueNumber = () => {
+  const issueNumber = env.ISSUE_NUMBER;
+  if (!issueNumber) {
+    throw new Error("ISSUE_NUMBER environment variable is required");
+  }
+  return issueNumber;
+};
+
+export const getIssueData = async () => {
+  const issue = await getIssue(env.ISSUE_NUMBER!.toString());
+  // ... rest of the function ...
 };

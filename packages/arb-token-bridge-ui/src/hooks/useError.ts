@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import * as Sentry from '@sentry/react'
 import { useNetworks } from './useNetworks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
+import { isDevelopment } from '../config/env'
 
 /**
  * Categories for classifying errors
@@ -194,7 +195,7 @@ export function useError() {
 
       // Handle user rejections explicitly
       if (isUserRejectedError(error)) {
-        if (process.env.NODE_ENV === 'development') {
+        if (isDevelopment) {
           console.log(`Ignored User Rejected Error: '${label}'`, {
             originalError: error
           })
@@ -204,7 +205,7 @@ export function useError() {
 
       // Skip logging for ignored categories
       if (IGNORED_ERROR_CATEGORIES.includes(category)) {
-        if (process.env.NODE_ENV === 'development') {
+        if (isDevelopment) {
           console.log(
             `Ignored Error by Category: '${label}' [Category: ${category}]`,
             {
@@ -231,7 +232,7 @@ export function useError() {
       _logToSentry(error, params, mergedData, level)
 
       // log to console in development
-      if (process.env.NODE_ENV === 'development') {
+      if (isDevelopment) {
         console.error(
           `Handled Error: '${label}' [Category: ${category}, Level: ${level}]`,
           { originalError: error, contextData: mergedData }

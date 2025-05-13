@@ -1,3 +1,5 @@
+import { isTest } from '../config/env'
+
 export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {
     return `https://ipfs.io/ipfs/${url.substring(7)}`
@@ -34,10 +36,8 @@ export const sanitizeQueryParams = (data: any) => {
   return JSON.parse(JSON.stringify(data))
 }
 
-export const getAPIBaseUrl = () => {
-  // if dev environment, eg. tests, then prepend actual running environment
-  // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci
-  return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
+export function getBaseUrl(): string {
+  return isTest ? 'http://localhost:3000' : ''
 }
 
 // add feature flags to the array

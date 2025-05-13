@@ -1,49 +1,34 @@
+import { env } from '../../config/env'
+import { getInfuraRpcUrl, InfuraSupportedChainId } from './infura'
+import { getAlchemyRpcUrl } from './alchemy'
 import { ChainId } from '../../types/ChainId'
 
-import { getInfuraRpcUrl } from './infura'
-import { getAlchemyRpcUrl } from './alchemy'
-
-type RpcProvider = 'infura' | 'alchemy'
-
+export type RpcProvider = 'infura' | 'alchemy'
 export type ProductionChainId = Exclude<
   ChainId,
   ChainId.Local | ChainId.ArbitrumLocal | ChainId.L3Local
 >
 
 function getRpcProvider(): RpcProvider {
-  const rpcProviderFromEnv = process.env.NEXT_PUBLIC_RPC_PROVIDER
-
-  if (typeof rpcProviderFromEnv === 'undefined' || rpcProviderFromEnv === '') {
-    console.warn(`[getRpcProvider] no provider specified`)
-    console.warn(`[getRpcProvider] defaulting to infura`)
-    return 'infura'
-  }
-
-  if (rpcProviderFromEnv !== 'infura' && rpcProviderFromEnv !== 'alchemy') {
-    console.warn(`[getRpcProvider] unknown provider "${rpcProviderFromEnv}"`)
-    console.warn(`[getRpcProvider] defaulting to infura`)
-    return 'infura'
-  }
-
-  return rpcProviderFromEnv
+  return env.NEXT_PUBLIC_RPC_PROVIDER
 }
 
-export function getRpcUrl(
-  chainId: ProductionChainId,
-  rpcProvider: RpcProvider = getRpcProvider(),
-  rpcProviderKey?: string
-): string {
-  switch (rpcProvider) {
-    case 'infura': {
-      // only arbitrum nova is currently not supported on infura
-      if (chainId === ChainId.ArbitrumNova) {
-        return 'https://nova.arbitrum.io/rpc'
-      }
+export function getRpcUrl(chainId: ProductionChainId): string {
+  // Arbitrum Nova is not supported by Infura, always use Alchemy
+  if (chainId === ChainId.ArbitrumNova) {
+    return getAlchemyRpcUrl(chainId)
+  }
 
-      return getInfuraRpcUrl(chainId, rpcProviderKey)
-    }
+  const rpcProvider = getRpcProvider()
+
+  switch (rpcProvider) {
+    case 'infura':
+      return getInfuraRpcUrl(chainId as InfuraSupportedChainId)
 
     case 'alchemy':
-      return getAlchemyRpcUrl(chainId, rpcProviderKey)
+      return getAlchemyRpcUrl(chainId)
+
+    default:
+      throw new Error(`Unsupported RPC provider: ${rpcProvider}`)
   }
 }

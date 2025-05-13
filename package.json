@@ -38,7 +38,13 @@
     "packages/*"
   ],
   "devDependencies": {
-    "audit-ci": "^6.3.0"
+    "@playwright/test": "1.48.2",
+    "@synthetixio/synpress": "^4.1.0",
+    "@types/cypress": "^1.1.6",
+    "@types/node": "^22.15.17",
+    "audit-ci": "^6.3.0",
+    "cypress": "12.17.4",
+    "cypress-terminal-report": "^7.2.0"
   },
   "config": {
     "chromeVersion": "128.0.6613.137",

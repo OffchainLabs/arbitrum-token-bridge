@@ -18,6 +18,7 @@ import {
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
+import { env } from '../config/env'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -204,34 +205,34 @@ export const supportedCustomOrbitParentChains = [
 export const rpcURLs: { [chainId: number]: string } = {
   // L1 Mainnet
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
+    env: env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
     fallback: getRpcUrl(ChainId.Ethereum)
   }),
   // L1 Testnet
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
+    env: env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
     fallback: getRpcUrl(ChainId.Sepolia)
   }),
   // L2 Mainnet
   [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_ONE,
+    env: env.NEXT_PUBLIC_RPC_URL_ARBITRUM_ONE,
     fallback: getRpcUrl(ChainId.ArbitrumOne)
   }),
   [ChainId.ArbitrumNova]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_NOVA,
+    env: env.NEXT_PUBLIC_RPC_URL_ARBITRUM_NOVA,
     fallback: getRpcUrl(ChainId.ArbitrumNova)
   }),
   [ChainId.Base]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_BASE,
+    env: env.NEXT_PUBLIC_RPC_URL_BASE,
     fallback: getRpcUrl(ChainId.Base)
   }),
   // L2 Testnet
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM_SEPOLIA,
+    env: env.NEXT_PUBLIC_RPC_URL_ARBITRUM_SEPOLIA,
     fallback: getRpcUrl(ChainId.ArbitrumSepolia)
   }),
   [ChainId.BaseSepolia]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_BASE_SEPOLIA,
+    env: env.NEXT_PUBLIC_RPC_URL_BASE_SEPOLIA,
     fallback: getRpcUrl(ChainId.BaseSepolia)
   })
 }
@@ -312,15 +313,15 @@ const defaultL1Network: BlockNumberReferenceNetwork = {
 }
 
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
+  env: env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
   fallback: 'http://127.0.0.1:8545'
 })
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
+  env: env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
   fallback: 'http://127.0.0.1:8547'
 })
 export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
+  env: env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
   fallback: 'http://127.0.0.1:3347'
 })
 

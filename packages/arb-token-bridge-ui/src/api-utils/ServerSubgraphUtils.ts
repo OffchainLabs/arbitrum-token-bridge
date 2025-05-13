@@ -6,13 +6,14 @@ import {
 } from '@apollo/client'
 
 import { ChainId } from '../types/ChainId'
+import { env } from '../config/env'
 
 /**
  * The API key to be used for calls to The Graph Network.
  */
-const theGraphNetworkApiKey = process.env.THE_GRAPH_NETWORK_API_KEY
+const theGraphNetworkApiKey = env.THE_GRAPH_NETWORK_API_KEY
 
-const selfHostedSubgraphApiKey = process.env.SELF_HOSTED_SUBGRAPH_API_KEY
+const selfHostedSubgraphApiKey = env.SELF_HOSTED_SUBGRAPH_API_KEY
 
 type SubgraphKey = keyof typeof subgraphs
 

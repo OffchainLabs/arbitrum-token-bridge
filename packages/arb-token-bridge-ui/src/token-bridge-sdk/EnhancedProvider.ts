@@ -7,6 +7,7 @@ import { BigNumber } from 'ethers'
 import { ChainId } from '../types/ChainId'
 import { ConnectionInfo } from 'ethers/lib/utils.js'
 import { isNetwork } from '../util/networks'
+import { env } from '../config/env'
 
 interface Storage {
   getItem(key: string): string | null
@@ -24,9 +25,11 @@ class WebStorage implements Storage {
 }
 
 const localStorageKey = `arbitrum:bridge:tx-receipts-cache`
+const shouldCacheReceipts =
+  env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS || 'testnet,mainnet' // default to 'testnet,mainnet' if not set
+
 const enableCaching = (chainId: number) => {
-  const txReceiptsCachingEnabledConfig =
-    process.env.NEXT_PUBLIC_PROVIDER_CACHE_TX_RECEIPTS || 'testnet,mainnet' // default to 'testnet,mainnet' if not set
+  const txReceiptsCachingEnabledConfig = shouldCacheReceipts
 
   return txReceiptsCachingEnabledConfig.includes(
     isNetwork(chainId).isTestnet ? 'testnet' : 'mainnet'

@@ -6,8 +6,19 @@ import { BigNumber } from 'ethers'
 import { SWRConfig } from 'swr'
 import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
+import { env } from '../../config/env'
 
 import { useBalance } from '../useBalance'
+import { useNetworks } from '../useNetworks'
+import { useWallet } from '../useWallet'
+import { useArbQueryParams } from '../useArbQueryParams'
+import { useAppState } from '../useAppState'
+import { useChainLayers } from '../useChainLayers'
+import { useNetworksAndSigners } from '../useNetworksAndSigners'
+import { useTokens } from '../useTokens'
+import { useIsConnectedToArbitrum } from '../useIsConnectedToArbitrum'
+import { useIsConnectedToOrbit } from '../useIsConnectedToOrbit'
+import { useIsTestingEnvironment } from '../useIsTestingEnvironment'
 
 // Create a new cache for every test
 const Container = ({ children }: PropsWithChildren<unknown>) => (
@@ -18,10 +29,7 @@ const Container = ({ children }: PropsWithChildren<unknown>) => (
 
 const walletAddress = '0x58b6a8a3302369daec383334672404ee733ab239'
 
-const provider = new StaticJsonRpcProvider(
-  process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
-  1
-)
+const provider = new StaticJsonRpcProvider(env.NEXT_PUBLIC_RPC_URL_ETHEREUM, 1)
 
 describe.sequential('useBalance', () => {
   beforeEach(() => {

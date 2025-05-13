@@ -1,5 +1,6 @@
 import { ChainId } from '../types/ChainId'
 import { isNetwork } from './networks'
+import { isTest } from '../config/env'
 
 const boldUpgrades: {
   [chainId: number]: {
@@ -70,7 +71,7 @@ export function getBoldUpgradeInfo(chainId: number): BoldUpgradeInfo {
   const upgrade = boldUpgrades[chainId]
 
   // Skip this logic entirely in tests
-  if (process.env.NODE_ENV === 'test') {
+  if (isTest) {
     return {
       status: BoldUpgradeStatus.NotScheduled
     }

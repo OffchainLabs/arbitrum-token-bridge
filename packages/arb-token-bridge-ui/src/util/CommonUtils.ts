@@ -1,3 +1,5 @@
+import { isDevelopment } from '../config/env'
+
 let localStoragePromise = Promise.resolve()
 
 export function addToLocalStorageObjectSequentially({
@@ -41,4 +43,4 @@ export function shortenTxHash(txHash: string) {
 export const isE2eTestingEnvironment =
   typeof window !== 'undefined' && !!window.Cypress
 
-export const isDevelopmentEnvironment = process.env.NODE_ENV === 'development'
+export const isDevelopmentEnvironment = isDevelopment

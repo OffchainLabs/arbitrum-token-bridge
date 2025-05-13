@@ -1,7 +1,8 @@
 import { context, getOctokit } from "@actions/github";
 import { Issue } from "./schemas";
+import { env } from "../config/env";
 
-const github = getOctokit(process.env.GITHUB_TOKEN || "");
+const github = getOctokit(env.GITHUB_TOKEN || "");
 
 export const getIssue = async (issueNumber: string): Promise<Issue> => {
   const response = await github.rest.issues.get({
