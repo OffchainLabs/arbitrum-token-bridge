@@ -172,7 +172,7 @@ const INTEGRATOR_ID = 'arbitrum'
 
 createConfig({
   integrator: INTEGRATOR_ID,
-  apiKey: process.env.NEXT_PUBLIC_LIFI_KEY
+  apiKey: process.env.LIFI_KEY
 })
 
 type LifiCrossTransfersRoutesResponse =
