@@ -65,7 +65,8 @@ function createMockedLifiTransaction({
         symbol: 'ETH'
       }
     },
-    destinationTxId: null
+    destinationTxId: null,
+    transactionRequest: {}
   }
 }
 
