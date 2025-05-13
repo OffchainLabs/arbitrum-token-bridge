@@ -1,7 +1,7 @@
-import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
+import { Chain } from 'wagmi/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
 import { getCustomChainsFromLocalStorage } from '../util/networks'

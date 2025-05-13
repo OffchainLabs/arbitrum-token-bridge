@@ -3,7 +3,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount, useNetwork, useSigner } from 'wagmi'
+import { useAccount, useConfig } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
@@ -69,6 +69,7 @@ import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper, DialogType } from '../common/Dialog2'
@@ -114,13 +115,13 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
+  const { address: walletAddress, chain, isConnected } = useAccount()
   const [selectedToken, setSelectedToken] = useSelectedToken()
-  const { address: walletAddress, isConnected } = useAccount()
-  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+  const { switchChainAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
   // do not use `useChainId` because it won't detect chains outside of our wagmi config
-  const latestChain = useLatest(useNetwork())
+  const latestChain = useLatest(chain)
   const [networks] = useNetworks()
   const latestNetworks = useLatest(networks)
   const tokensFromLists = useTokensFromLists()
@@ -144,13 +145,10 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const {
-    current: { data: signer }
-  } = useLatest(
-    useSigner({
-      chainId: latestNetworks.current.sourceChain.id
-    })
+  const { current: signer } = useLatest(
+    useEthersSigner({ chainId: networks.sourceChain.id })
   )
+  const wagmiConfig = useConfig()
 
   const { setTransferring } = useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
@@ -457,7 +455,8 @@ export function TransferPanel() {
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
           signer,
-          destinationAddress
+          destinationAddress,
+          wagmiConfig
         })
         depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
@@ -625,7 +624,8 @@ export function TransferPanel() {
       const transfer = await oftTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
-        destinationAddress
+        destinationAddress,
+        wagmiConfig
       })
 
       trackEvent('OFT Transfer', {
@@ -1093,7 +1093,7 @@ export function TransferPanel() {
 
   const moveFundsButtonOnClick = async () => {
     const isConnectedToTheWrongChain =
-      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
+      latestChain.current?.id !== latestNetworks.current.sourceChain.id
 
     const sourceChainId = latestNetworks.current.sourceChain.id
     const childChainName = getNetworkName(childChain.id)
@@ -1118,7 +1118,7 @@ export function TransferPanel() {
           amount2: isBatchTransfer ? Number(amount2) : undefined,
           version: 2
         })
-        await switchNetworkAsync?.(sourceChainId)
+        await switchChainAsync({ chainId: sourceChainId })
       }
     } catch (error) {
       if (isUserRejectedError(error)) {
