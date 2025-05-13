@@ -217,8 +217,6 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
 
   cy.findByLabelText('Switch to Transaction History Tab').click()
 
-  cy.selectTransactionsPanelTab(tab)
-
   cy.findByText(/Showing \d+ \w+ transactions made in/, {
     timeout: 120_000
   }).should('be.visible')
