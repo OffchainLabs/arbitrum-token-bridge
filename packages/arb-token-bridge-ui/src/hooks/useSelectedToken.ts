@@ -74,25 +74,17 @@ export const useSelectedToken = () => {
     [setQueryParams]
   )
 
-  const { data = null } = useSWRImmutable(
-    tokenFromSearchParams
-      ? [usdcToken, tokensFromUser, tokensFromLists, tokenFromSearchParams]
-      : null,
-    ([
-      _usdcToken,
-      _tokensFromUser,
-      _tokensFromLists,
-      _tokenFromSearchParams
-    ]) => {
-      return (
-        _usdcToken ||
-        _tokensFromUser[_tokenFromSearchParams] ||
-        _tokensFromLists[_tokenFromSearchParams]
-      )
-    }
-  )
+  if (!tokenFromSearchParams) {
+    return [null, setSelectedToken] as const
+  }
 
-  return [data, setSelectedToken] as const
+  return [
+    usdcToken ||
+      tokensFromUser[tokenFromSearchParams] ||
+      tokensFromLists[tokenFromSearchParams] ||
+      null,
+    setSelectedToken
+  ] as const
 }
 
 function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
