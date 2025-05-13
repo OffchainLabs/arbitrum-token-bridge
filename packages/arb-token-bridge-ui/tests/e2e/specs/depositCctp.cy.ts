@@ -54,7 +54,7 @@ describe('Deposit USDC through CCTP', () => {
   const zeroToLessThanOneETH = getZeroToLessThanOneToken('ETH')
 
   beforeEach(() => {
-    cy.login({ networkType: 'parentChain', networkName: 'sepolia' })
+    cy.login({ networkType: 'parentChain', networkName: 'Sepolia' })
     cy.findSourceChainButton('Sepolia')
     cy.findDestinationChainButton('Arbitrum Sepolia')
     cy.findSelectTokenButton('ETH')

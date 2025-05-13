@@ -5,7 +5,7 @@ describe('Transaction History', () => {
   it('should successfully open and use pending transactions panel', () => {
     cy.login({
       networkType: 'parentChain',
-      networkName: 'sepolia',
+      networkName: 'Sepolia',
       query: {
         sourceChain: 'sepolia',
         destinationChain: 'arbitrum-sepolia'
@@ -23,7 +23,7 @@ describe('Transaction History', () => {
   it('should successfully open and use settled transactions panel', () => {
     cy.login({
       networkType: 'parentChain',
-      networkName: 'sepolia',
+      networkName: 'Sepolia',
       query: {
         sourceChain: 'sepolia',
         destinationChain: 'arbitrum-sepolia'

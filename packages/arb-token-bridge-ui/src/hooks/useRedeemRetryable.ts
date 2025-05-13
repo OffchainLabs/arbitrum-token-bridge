@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
-import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { DepositStatus, MergedTransaction } from '../state/app/state'
@@ -12,6 +11,7 @@ import { errorToast } from '../components/common/atoms/Toast'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
+import { useEthersSigner } from '../util/wagmi/useEthersSigner'
 
 export type UseRedeemRetryableResult = {
   redeem: () => Promise<void>
@@ -22,7 +22,7 @@ export function useRedeemRetryable(
   tx: MergedTransaction,
   address: Address | undefined
 ): UseRedeemRetryableResult {
-  const { data: signer } = useSigner({ chainId: tx.destinationChainId })
+  const signer = useEthersSigner({ chainId: tx.destinationChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
 
   const destinationNetworkName = getNetworkName(tx.destinationChainId)

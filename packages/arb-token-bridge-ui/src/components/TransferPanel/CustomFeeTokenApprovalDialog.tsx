@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSigner } from 'wagmi'
 import { BigNumber, constants, utils } from 'ethers'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -18,6 +17,7 @@ import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferS
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useIsBatchTransferSupported } from '../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -40,7 +40,7 @@ export function CustomFeeTokenApprovalDialog(
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
-  const { data: l1Signer } = useSigner({ chainId: parentChain.id })
+  const l1Signer = useEthersSigner({ chainId: parentChain.id })
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
 
   const [checked, setChecked] = useState(false)
