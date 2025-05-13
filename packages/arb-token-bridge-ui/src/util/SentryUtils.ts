@@ -1,5 +1,10 @@
 import * as Sentry from '@sentry/react'
 
+/**
+ * @deprecated Use the useError().handleError() hook instead
+ * This function is kept for backward compatibility but should not be used in new code.
+ * TODO: Replace all usages of this function with useError().handleError() and remove this function completely
+ */
 export function captureSentryErrorWithExtraData({
   error,
   originFunction,
@@ -9,6 +14,13 @@ export function captureSentryErrorWithExtraData({
   originFunction: string
   additionalData?: Record<string, string>
 }) {
+  // Add a console warning in development
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      'captureSentryErrorWithExtraData is deprecated. Use the useError().handleError() hook instead.'
+    )
+  }
+
   Sentry.withScope(scope => {
     // tags only allow primitive values
     scope.setTag('origin function', originFunction)

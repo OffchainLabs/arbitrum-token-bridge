@@ -1,14 +1,14 @@
 import { BigNumber, constants, utils } from 'ethers'
 import useSWR from 'swr'
-import { useAccount } from 'wagmi'
+import { Config, useAccount, useConfig } from 'wagmi'
 
-import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
+import { TransferEstimateGasResult } from '@/token-bridge-sdk/BridgeTransferStarter'
 
 async function fetcher([
   walletAddress,
@@ -17,7 +17,8 @@ async function fetcher([
   sourceChainErc20Address,
   destinationChainErc20Address,
   destinationAddress,
-  amount
+  amount,
+  wagmiConfig
 ]: [
   walletAddress: string | undefined,
   sourceChainId: number,
@@ -25,8 +26,9 @@ async function fetcher([
   sourceChainErc20Address: string | undefined,
   destinationChainErc20Address: string | undefined,
   destinationAddress: string | undefined,
-  amount: BigNumber
-]): Promise<GasEstimates | DepositGasEstimates | undefined> {
+  amount: BigNumber,
+  wagmiConfig: Config
+]): Promise<TransferEstimateGasResult> {
   const _walletAddress = walletAddress ?? constants.AddressZero
   const sourceProvider = getProviderForChainId(sourceChainId)
   const signer = sourceProvider.getSigner(_walletAddress)
@@ -40,8 +42,9 @@ async function fetcher([
 
   return await bridgeTransferStarter.transferEstimateGas({
     amount,
-    signer,
-    destinationAddress
+    from: await signer.getAddress(),
+    destinationAddress,
+    wagmiConfig
   })
 }
 
@@ -54,7 +57,7 @@ export function useGasEstimates({
   destinationChainErc20Address?: string
   amount: BigNumber
 }): {
-  gasEstimates: GasEstimates | DepositGasEstimates | undefined
+  gasEstimates: TransferEstimateGasResult
   error: any
 } {
   const [{ sourceChain, destinationChain }] = useNetworks()
@@ -62,6 +65,7 @@ export function useGasEstimates({
   const [{ destinationAddress }] = useArbQueryParams()
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
+  const wagmiConfig = useConfig()
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
@@ -81,6 +85,7 @@ export function useGasEstimates({
       amountToTransfer.toString(), // BigNumber is not serializable
       sanitizedDestinationAddress,
       walletAddress,
+      wagmiConfig,
       'gasEstimates'
     ] as const,
     ([
@@ -90,7 +95,8 @@ export function useGasEstimates({
       _destinationChainErc20Address,
       _amount,
       _destinationAddress,
-      _walletAddress
+      _walletAddress,
+      _wagmiConfig
     ]) =>
       fetcher([
         _walletAddress,
@@ -99,7 +105,8 @@ export function useGasEstimates({
         _sourceChainErc20Address,
         _destinationChainErc20Address,
         _destinationAddress,
-        BigNumber.from(_amount)
+        BigNumber.from(_amount),
+        _wagmiConfig
       ]),
     {
       refreshInterval: 30_000,

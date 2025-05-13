@@ -89,8 +89,7 @@ export const shouldCacheTxReceipt = (
   // Finality checks to avoid caching re-org'ed transactions
   if (
     (chainId === ChainId.Ethereum && txReceipt.confirmations < 65) ||
-    (chainId === ChainId.Sepolia && txReceipt.confirmations < 5) ||
-    (chainId === ChainId.Holesky && txReceipt.confirmations < 5)
+    (chainId === ChainId.Sepolia && txReceipt.confirmations < 5)
   ) {
     return false
   }
@@ -157,7 +156,11 @@ export class EnhancedProvider extends StaticJsonRpcProvider {
 
     // Cache the receipt if it meets the criteria
     if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
-      addTxReceiptToCache(this.storage, chainId, receipt)
+      try {
+        addTxReceiptToCache(this.storage, chainId, receipt)
+      } catch (_) {
+        // in case storage is full
+      }
     }
 
     return receipt

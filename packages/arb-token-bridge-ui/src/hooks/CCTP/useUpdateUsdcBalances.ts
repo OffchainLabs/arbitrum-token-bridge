@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Address } from 'wagmi'
+import { Address } from 'viem'
 import useSWRImmutable from 'swr/immutable'
 
 import { CommonAddress } from '../../util/CommonAddressUtils'
@@ -21,12 +21,16 @@ export async function getChildUsdcAddress({
     isEthereumMainnet: isParentEthereumMainnet,
     isSepolia: isParentSepolia
   } = isNetwork(parentChainId)
+  const {
+    isArbitrumOne: isChildArbitrumOne,
+    isArbitrumSepolia: isChildArbitrumSepolia
+  } = isNetwork(childChainId)
 
-  if (isParentEthereumMainnet) {
+  if (isParentEthereumMainnet && isChildArbitrumOne) {
     return CommonAddress.ArbitrumOne.USDC
   }
 
-  if (isParentSepolia) {
+  if (isParentSepolia && isChildArbitrumSepolia) {
     return CommonAddress.ArbitrumSepolia.USDC
   }
 

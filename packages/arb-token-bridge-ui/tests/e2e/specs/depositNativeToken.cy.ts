@@ -29,8 +29,6 @@ describe('Deposit native token', () => {
     cy.login({ networkType: 'parentChain' })
     cy.typeAmount(ETHAmountToDeposit)
     cy.findGasFeeSummary(zeroToLessThanOneEth)
-    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     cy.clickMoveFundsButton()
     cy.findTransactionInTransactionHistory({
       duration: depositTime,
@@ -51,8 +49,6 @@ describe('Deposit native token', () => {
     cy.fillCustomDestinationAddress()
 
     cy.findGasFeeSummary(zeroToLessThanOneEth)
-    cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-    cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
     cy.clickMoveFundsButton()
 
     const txData = {

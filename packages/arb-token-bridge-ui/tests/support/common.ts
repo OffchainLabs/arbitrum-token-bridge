@@ -16,12 +16,12 @@ export const MULTICALL_TESTNET_ADDRESS =
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
-  | 'custom-localhost'
-  | 'arbitrum-localhost'
-  | 'l3-localhost'
-  | 'arbitrum-sepolia'
-  | 'mainnet'
-  | 'sepolia'
+  | 'Nitro Testnode L1'
+  | 'Nitro Testnode L2'
+  | 'Nitro Testnode L3'
+  | 'Arbitrum Sepolia'
+  | 'Ethereum'
+  | 'Sepolia'
 
 type NetworkConfig = {
   name: NetworkName
@@ -33,20 +33,24 @@ type NetworkConfig = {
 }
 
 export const getL1NetworkName = () => {
-  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  return isOrbitTest ? 'Arbitrum Local' : 'Ethereum Local'
+  return getL1NetworkConfig().name
 }
 
 export const getL2NetworkName = () => {
-  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
-  return isOrbitTest ? 'L3 Local' : 'Arbitrum Local'
+  return getL2NetworkConfig().name
+}
+
+export const getNetworkSlug = (network: 'parent' | 'child') => {
+  const networkName =
+    network === 'parent' ? getL1NetworkName() : getL2NetworkName()
+  return networkName.toLowerCase().replace(' ', '-')
 }
 
 export const getL1NetworkConfig = (): NetworkConfig => {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
-    name: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
+    name: isOrbitTest ? 'Nitro Testnode L2' : 'Nitro Testnode L1',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: isOrbitTest ? 412346 : 1337,
     symbol: 'ETH',
@@ -67,7 +71,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     : defaultL3Network
 
   return {
-    name: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
+    name: isOrbitTest ? 'Nitro Testnode L3' : 'Nitro Testnode L2',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: isOrbitTest ? 333333 : 412346,
     symbol: nativeTokenSymbol,
@@ -80,7 +84,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
 
 export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    name: 'sepolia',
+    name: 'Sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
     chainId: 11155111,
     symbol: 'ETH',
@@ -91,7 +95,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
 
 export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
-    name: 'arbitrum-sepolia',
+    name: 'Arbitrum Sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
     chainId: 421614,
     symbol: 'ETH',
@@ -158,22 +162,33 @@ export const acceptMetamaskAccess = () => {
   cy.connectToDapp()
 }
 
-export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
+export const startWebApp = (
+  url = '/',
+  options: {
+    query: { [s: string]: string }
+    connectMetamask: boolean
+  }
+) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
   cy.clearLocalStorage('arbitrum:bridge:tos-v2')
   cy.visit(url, {
-    qs
+    qs: options.query
   })
   if (Cypress.currentRetry > 0) {
     // ensures we don't test with the same state that could have caused the test to fail
     cy.reload(true)
   }
-  cy.connectToApp()
+  cy.acceptTnC()
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
-      acceptMetamaskAccess()
-      cy.task('setWalletConnectedToDapp')
+      cy.findAllByText('Connect Wallet').first().should('be.visible')
+      if (options.connectMetamask) {
+        cy.findAllByText('Connect Wallet').first().click()
+        cy.findByText('MetaMask').should('be.visible').click()
+        acceptMetamaskAccess()
+        cy.task('setWalletConnectedToDapp')
+      }
     }
   })
 }

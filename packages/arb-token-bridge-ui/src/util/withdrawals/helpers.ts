@@ -8,20 +8,19 @@ import {
 } from '@arbitrum/sdk'
 import dayjs from 'dayjs'
 
-import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
+import { WithdrawalFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
   L2ToL1EventResultPlus,
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
+import { addToLocalStorageObjectSequentially } from '../CommonUtils'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -100,9 +99,10 @@ export async function getOutgoingMessageState(
     event,
     l2ChainId: l2ChainID
   })
+  const localStorageKey = 'arbitrum:bridge:executed-messages'
 
   const executedMessagesCache = JSON.parse(
-    localStorage.getItem('arbitrum:bridge:executed-messages') || '{}'
+    localStorage.getItem(localStorageKey) || '{}'
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
@@ -120,7 +120,16 @@ export async function getOutgoingMessageState(
   const messageReader = new ChildToParentMessageReader(l1Provider, event)
 
   try {
-    return await messageReader.status(l2Provider)
+    const status = await messageReader.status(l2Provider)
+
+    if (status === OutgoingMessageState.EXECUTED) {
+      addToLocalStorageObjectSequentially({
+        localStorageKey,
+        localStorageValue: { [cacheKey]: true }
+      })
+    }
+
+    return status
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
   }
@@ -209,12 +218,12 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
   }
 }
 
-export async function mapWithdrawalToL2ToL1EventResult({
+export async function mapWithdrawalFromSubgraphToL2ToL1EventResult({
   withdrawal,
   l1Provider,
   l2Provider
 }: {
-  withdrawal: FetchWithdrawalsFromSubgraphResult
+  withdrawal: WithdrawalFromSubgraph
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<L2ToL1EventResultPlus | undefined> {

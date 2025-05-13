@@ -1,7 +1,7 @@
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 
-import { Transaction } from '../../../src/types/Transactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
+import { Transaction } from '../../../src/types/Transactions'
 
 type MockClassicDepositTransactionParams = {
   txID: string
@@ -31,7 +31,7 @@ function mockClassicDepositTransaction(
     l2NetworkID: '42161',
     timestampCreated: dateYearAgo.toISOString(),
     timestampResolved: dateYearAgo.toISOString(),
-    l1ToL2MsgData: {
+    parentToChildMsgData: {
       fetchingUpdate: false,
       status: ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: undefined,
@@ -63,7 +63,7 @@ describe('Read classic deposit messages', () => {
       // log in to metamask
       cy.login({
         networkType: 'parentChain',
-        networkName: 'mainnet'
+        networkName: 'Ethereum'
       })
 
       cy.switchToTransactionHistoryTab('settled')
@@ -97,7 +97,7 @@ describe('Read classic deposit messages', () => {
       // log in to metamask
       cy.login({
         networkType: 'parentChain',
-        networkName: 'mainnet'
+        networkName: 'Ethereum'
       })
 
       cy.switchToTransactionHistoryTab('settled')

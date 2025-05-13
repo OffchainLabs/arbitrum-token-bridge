@@ -1,7 +1,11 @@
-import { ethers } from 'ethers'
+import { ethers, BigNumber } from 'ethers'
+import { Address } from 'viem'
+import { Config, type ReadContractReturnType, readContract } from '@wagmi/core'
+
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
-import { BigNumber } from 'ethers'
+import { oftV2Abi } from './oftV2Abi'
+import { Provider } from '@ethersproject/providers'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 const oftProtocolConfig: {
@@ -25,10 +29,6 @@ const oftProtocolConfig: {
   },
   [ChainId.Sepolia]: {
     lzEndpointId: 40161,
-    endpointV2: '0x6EDCE65403992e310A62460808c4b910D972f10f'
-  },
-  [ChainId.Holesky]: {
-    lzEndpointId: 40217,
     endpointV2: '0x6EDCE65403992e310A62460808c4b910D972f10f'
   },
   [ChainId.ArbitrumOne]: {
@@ -90,17 +90,12 @@ export function getOftV2TransferConfig({
 }
 interface SendParam {
   dstEid: number
-  to: string
-  amountLD: string
-  minAmountLD: string
-  extraOptions: string
-  composeMsg: string
-  oftCmd: string
-}
-
-interface QuoteResult {
-  nativeFee: string
-  lzTokenFee: string
+  to: Address
+  amountLD: bigint
+  minAmountLD: bigint
+  extraOptions: `0x${string}`
+  composeMsg: `0x${string}`
+  oftCmd: `0x${string}`
 }
 
 export function buildSendParams({
@@ -112,29 +107,74 @@ export function buildSendParams({
   dstEid: number
   address: string
   amount: BigNumber
-  destinationAddress?: string
+  destinationAddress: string | undefined
 }): SendParam {
   return {
     dstEid,
-    to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32),
-    amountLD: amount.toString(),
-    minAmountLD: amount.toString(),
+    to: ethers.utils.hexZeroPad(destinationAddress ?? address, 32) as Address,
+    amountLD: amount.toBigInt(),
+    minAmountLD: amount.toBigInt(),
     extraOptions: '0x',
     composeMsg: '0x',
     oftCmd: '0x'
   }
 }
 
+type QuoteResult = ReadContractReturnType<typeof oftV2Abi, 'quoteSend'>
 export async function getOftV2Quote({
-  contract,
-  sendParams
+  address,
+  sendParams,
+  chainId,
+  wagmiConfig
 }: {
-  contract: ethers.Contract
+  address: Address
   sendParams: SendParam
+  chainId: number
+  wagmiConfig: Config
 }): Promise<QuoteResult> {
-  const quote = await contract.quoteSend(sendParams, false)
+  const quote = await readContract(wagmiConfig, {
+    address,
+    abi: oftV2Abi,
+    functionName: 'quoteSend',
+    chainId,
+    args: [
+      // wagmi typing being weird that it doesn't recognize SendParams as a valid type
+      sendParams as {
+        dstEid: number
+        to: `0x${string}`
+        amountLD: bigint
+        minAmountLD: bigint
+        extraOptions: `0x${string}`
+        composeMsg: `0x${string}`
+        oftCmd: `0x${string}`
+      },
+      false
+    ]
+  })
   return {
-    nativeFee: quote.nativeFee.toString(),
-    lzTokenFee: quote.lzTokenFee.toString()
+    nativeFee: quote.nativeFee,
+    lzTokenFee: quote.lzTokenFee
   }
+}
+
+export const getChainIdFromEid = (eid: number) => {
+  const chainId = Object.keys(oftProtocolConfig).find(
+    key => oftProtocolConfig[Number(key)]?.lzEndpointId === eid
+  )
+
+  if (!chainId) {
+    return null
+  }
+
+  return Number(chainId)
+}
+
+export const getOftV2TransferDecodedData = async (
+  txId: string,
+  sourceChainProvider: Provider
+) => {
+  const sourceChainTx = await sourceChainProvider.getTransaction(txId)
+  const oftInterface = new ethers.utils.Interface(oftV2Abi)
+
+  return oftInterface.decodeFunctionData('send', sourceChainTx.data)
 }

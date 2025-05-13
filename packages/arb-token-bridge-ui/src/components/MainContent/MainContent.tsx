@@ -1,6 +1,7 @@
 import { useLocalStorage } from '@uidotdev/usehooks'
 import { Tab } from '@headlessui/react'
 import { create } from 'zustand'
+import { Fragment } from 'react'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
@@ -8,6 +9,7 @@ import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
+import { shallow } from 'zustand/shallow'
 
 enum MainContentTabs {
   Bridge = 0,
@@ -32,14 +34,24 @@ export const useMainContentTabs = create<MainContentTabStore>(set => ({
 export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-  const { selectedTab, setSelectedTab } = useMainContentTabs()
+  const { selectedTab, setSelectedTab } = useMainContentTabs(
+    state => ({
+      selectedTab: state.selectedTab,
+      setSelectedTab: state.setSelectedTab
+    }),
+    shallow
+  )
 
   useBalanceUpdater()
 
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
-        <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
+        <Tab.Group
+          as={Fragment}
+          selectedIndex={selectedTab}
+          onChange={setSelectedTab}
+        >
           <TopNavBar />
           <Tab.Panels className="flex w-full items-center justify-center">
             <Tab.Panel className="w-full sm:max-w-[600px]">

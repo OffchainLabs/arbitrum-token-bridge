@@ -2,10 +2,11 @@ import React, {
   ChangeEventHandler,
   useCallback,
   useEffect,
-  useState
+  useState,
+  useMemo
 } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
 
 import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -205,7 +206,12 @@ export const TransferPanelMainInput = React.memo(
     options,
     ...rest
   }: TransferPanelMainInputProps) => {
+    const { isConnected } = useAccount()
     const [localValue, setLocalValue] = useState(value)
+    const selectedTokenDecimals = useSelectedTokenDecimals()
+    const sanitizedAmount = sanitizeAmountQueryParam(
+      truncateExtraDecimals(value, selectedTokenDecimals)
+    )
 
     useEffect(() => {
       /**
@@ -251,12 +257,18 @@ export const TransferPanelMainInput = React.memo(
       [decimals, onChange]
     )
 
+    useEffect(() => {
+      if (value !== sanitizedAmount) {
+        setLocalValue(sanitizedAmount)
+      }
+    }, [sanitizedAmount, value])
+
     return (
       <>
         <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
           <div
             className={twMerge(
-              'flex grow flex-row items-center justify-center'
+              'flex min-h-[83px] grow flex-row items-center justify-center'
             )}
           >
             <TransferPanelInputField
@@ -266,13 +278,15 @@ export const TransferPanelMainInput = React.memo(
             />
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
-              <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
-                <SourceChainTokenBalance
-                  balanceOverride={options?.balance}
-                  symbolOverride={options?.symbol}
-                />
-                <MaxButton onClick={handleMaxButtonClick} />
-              </div>
+              {isConnected && (
+                <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                  <SourceChainTokenBalance
+                    balanceOverride={options?.balance}
+                    symbolOverride={options?.symbol}
+                  />
+                  <MaxButton onClick={handleMaxButtonClick} />
+                </div>
+              )}
             </div>
           </div>
         </div>

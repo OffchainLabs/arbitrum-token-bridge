@@ -1,5 +1,6 @@
 import { ChainId } from '../../types/ChainId'
 import { getInfuraRpcUrl, InfuraSupportedChainId } from './infura'
+import { it, expect } from 'vitest'
 
 it('successfully returns the correct url for the provided chain and key', () => {
   const key = '123456'
@@ -9,7 +10,6 @@ it('successfully returns the correct url for the provided chain and key', () => 
     [ChainId.Ethereum]: getInfuraRpcUrl(ChainId.Ethereum, key),
     // L1 Testnet
     [ChainId.Sepolia]: getInfuraRpcUrl(ChainId.Sepolia, key),
-    [ChainId.Holesky]: getInfuraRpcUrl(ChainId.Holesky, key),
     // L2 Mainnet
     [ChainId.ArbitrumOne]: getInfuraRpcUrl(ChainId.ArbitrumOne, key),
     [ChainId.Base]: getInfuraRpcUrl(ChainId.Base, key),
@@ -22,7 +22,6 @@ it('successfully returns the correct url for the provided chain and key', () => 
     {
       "1": "https://mainnet.infura.io/v3/123456",
       "11155111": "https://sepolia.infura.io/v3/123456",
-      "17000": "https://holesky.infura.io/v3/123456",
       "42161": "https://arbitrum-mainnet.infura.io/v3/123456",
       "421614": "https://arbitrum-sepolia.infura.io/v3/123456",
       "8453": "https://base-mainnet.infura.io/v3/123456",

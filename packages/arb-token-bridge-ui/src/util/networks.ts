@@ -37,11 +37,6 @@ const l1Networks: { [chainId: number]: BlockNumberReferenceNetwork } = {
     blockTime: 12,
     isTestnet: true
   },
-  [ChainId.Holesky]: {
-    chainId: ChainId.Holesky,
-    blockTime: 12,
-    isTestnet: true
-  },
   [ChainId.Local]: {
     chainId: ChainId.Local,
     blockTime: 12,
@@ -202,12 +197,30 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
 // Only support testnet chains
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
-  ChainId.Holesky,
   ChainId.ArbitrumSepolia,
   ChainId.BaseSepolia
 ]
 
-export const rpcURLs: { [chainId: number]: string } = {
+const defaultL1Network: BlockNumberReferenceNetwork = {
+  blockTime: 10,
+  chainId: 1337,
+  isTestnet: true
+}
+
+export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
+  fallback: 'http://127.0.0.1:8545'
+})
+export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
+  fallback: 'http://127.0.0.1:8547'
+})
+export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
+  fallback: 'http://127.0.0.1:3347'
+})
+
+const defaultRpcUrls: { [chainId: number]: string } = {
   // L1 Mainnet
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
@@ -217,10 +230,6 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA,
     fallback: getRpcUrl(ChainId.Sepolia)
-  }),
-  [ChainId.Holesky]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_RPC_URL_HOLESKY,
-    fallback: getRpcUrl(ChainId.Holesky)
   }),
   // L2 Mainnet
   [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
@@ -246,12 +255,21 @@ export const rpcURLs: { [chainId: number]: string } = {
   })
 }
 
+export const rpcURLs: { [chainId: number]: string } =
+  process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_IS_E2E_TEST
+    ? {
+        ...defaultRpcUrls,
+        [defaultL1Network.chainId]: localL1NetworkRpcUrl,
+        [defaultL2Network.chainId]: localL2NetworkRpcUrl,
+        [defaultL3Network.chainId]: localL3NetworkRpcUrl
+      }
+    : defaultRpcUrls
+
 export const explorerUrls: { [chainId: number]: string } = {
   // L1
   [ChainId.Ethereum]: 'https://etherscan.io',
   // L1 Testnets
   [ChainId.Sepolia]: 'https://sepolia.etherscan.io',
-  [ChainId.Holesky]: 'https://holesky.etherscan.io',
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
@@ -315,25 +333,6 @@ export const l2UsdcGatewayAddresses: { [chainId: number]: string } = {
   // Superposition
   55244: '0xF70ae1Af7D49dA0f7D66Bb55469caC9da336181b'
 }
-
-const defaultL1Network: BlockNumberReferenceNetwork = {
-  blockTime: 10,
-  chainId: 1337,
-  isTestnet: true
-}
-
-export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
-  fallback: 'http://127.0.0.1:8545'
-})
-export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
-  fallback: 'http://127.0.0.1:8547'
-})
-export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
-  fallback: 'http://127.0.0.1:3347'
-})
 
 export async function registerLocalNetwork() {
   try {
@@ -399,7 +398,6 @@ export function isNetwork(chainId: ChainId) {
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
   const isSepolia = chainId === ChainId.Sepolia
-  const isHolesky = chainId === ChainId.Holesky
   const isLocal = chainId === ChainId.Local
 
   const isArbitrumOne = chainId === ChainId.ArbitrumOne
@@ -410,8 +408,7 @@ export function isNetwork(chainId: ChainId) {
   const isBaseMainnet = chainId === ChainId.Base
   const isBaseSepolia = chainId === ChainId.BaseSepolia
 
-  const isEthereumMainnetOrTestnet =
-    isEthereumMainnet || isSepolia || isHolesky || isLocal
+  const isEthereumMainnetOrTestnet = isEthereumMainnet || isSepolia || isLocal
 
   const isArbitrum =
     isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia

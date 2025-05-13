@@ -42,21 +42,12 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           description: 'The current recommended Ethereum testnet.'
         }
       }
-    case ChainId.Holesky:
-      return {
-        ...ethereumBaseConfig,
-        network: {
-          ...ethereumBaseConfig.network,
-          name: 'Holesky',
-          description: 'Ethereum testnet.'
-        }
-      }
     case ChainId.Local:
       return {
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          name: 'Ethereum Local'
+          name: 'Nitro Testnode L1'
         }
       }
     case ChainId.ArbitrumOne:
@@ -84,14 +75,14 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Local'
+          name: 'Nitro Testnode L2'
         }
       }
     case ChainId.L3Local:
       return {
         color: '#12AAFF',
         network: {
-          name: 'L3 Local',
+          name: 'Nitro Testnode L3',
           logo: '/images/OrbitLogo.svg'
         }
       }

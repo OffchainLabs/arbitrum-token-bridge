@@ -1,14 +1,13 @@
-import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
+import { Chain } from 'wagmi/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
 import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
   sepolia,
-  holesky,
   arbitrumNova,
   arbitrumSepolia,
   localL1Network as local,
@@ -37,7 +36,6 @@ export function isSupportedChainId(
   return [
     mainnet.id,
     sepolia.id,
-    holesky.id,
     arbitrum.id,
     arbitrumNova.id,
     base.id,

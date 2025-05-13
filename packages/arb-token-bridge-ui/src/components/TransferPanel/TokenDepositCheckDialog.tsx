@@ -7,7 +7,9 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { getNetworkName } from '../../util/networks'
 
-export type TokenDepositCheckDialogType = 'user-added-token' | 'new-token'
+export type TokenDepositCheckDialogType =
+  | 'deposit_token_user_added_token'
+  | 'deposit_token_new_token'
 
 export type TokenDepositCheckDialogProps = UseDialogProps & {
   type: TokenDepositCheckDialogType
@@ -23,14 +25,14 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
 
   const textContent = useMemo(() => {
     switch (type) {
-      case 'user-added-token':
+      case 'deposit_token_user_added_token':
         return (
           <p className="pb-2">
             You are about to deposit {symbol} to {networkName}
           </p>
         )
 
-      case 'new-token':
+      case 'deposit_token_new_token':
         return (
           <div className="mb-4">
             <p className="pb-2">
@@ -50,10 +52,10 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
 
   const title = useMemo(() => {
     switch (type) {
-      case 'user-added-token':
+      case 'deposit_token_user_added_token':
         return `Depositing ${symbol} to ${networkName}`
 
-      case 'new-token':
+      case 'deposit_token_new_token':
         return 'New Token Detected'
     }
   }, [type, symbol, networkName])

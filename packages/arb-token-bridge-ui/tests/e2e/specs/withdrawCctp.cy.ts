@@ -7,15 +7,6 @@ import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
-  cy.findByRole('tab', {
-    name: 'Native USDC',
-    selected: true
-  }).should('exist')
-  cy.findByRole('tab', {
-    name: 'Native USDC (Third Party Bridge)',
-    selected: false
-  }).should('exist')
-
   // By default, confirm button is disabled
   cy.findByRole('button', {
     name: /Continue/i
@@ -53,7 +44,7 @@ export const confirmAndApproveCctpWithdrawal = () => {
 
 describe('Withdraw USDC through CCTP', () => {
   beforeEach(() => {
-    cy.login({ networkType: 'childChain', networkName: 'arbitrum-sepolia' })
+    cy.login({ networkType: 'childChain', networkName: 'Arbitrum Sepolia' })
     cy.findSourceChainButton('Arbitrum Sepolia')
     cy.findDestinationChainButton('Sepolia')
     cy.findSelectTokenButton('ETH')
@@ -68,10 +59,8 @@ describe('Withdraw USDC through CCTP', () => {
     const USDCAmountToSend = 0.0001
     cy.typeAmount(USDCAmountToSend)
 
-    cy.findByText('Gas estimates are not available for this action.').should(
-      'be.visible'
-    )
-    cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
+    cy.findGasFeeSummary('N/A')
+    cy.selectRoute('cctp')
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
@@ -83,16 +72,18 @@ describe('Withdraw USDC through CCTP', () => {
       amount: USDCAmountToSend,
       symbol: 'USDC'
     })
-    cy.findClaimButton(
+    cy.clickClaimButton(
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'
-      }),
-      { timeout: 120_000 }
-    ).click()
+      })
+    )
+    cy.allowMetamaskToSwitchNetwork()
+    cy.rejectMetamaskTransaction()
+    cy.changeMetamaskNetwork('Arbitrum Sepolia')
   })
 
   it('should claim deposit', () => {
-    cy.switchNetwork('sepolia')
+    cy.changeMetamaskNetwork('Sepolia')
     cy.claimCctp(0.00012, { accept: true })
     cy.claimCctp(0.00013, { accept: true })
   })
@@ -101,11 +92,9 @@ describe('Withdraw USDC through CCTP', () => {
     const USDCAmountToSend = 0.00011
     cy.typeAmount(USDCAmountToSend)
 
-    cy.findByText('Gas estimates are not available for this action.').should(
-      'be.visible'
-    )
-    cy.findGasFeeForChain(/You'll have to pay Sepolia gas fee upon claiming./i)
+    cy.findGasFeeSummary('N/A')
     cy.fillCustomDestinationAddress()
+    cy.selectRoute('cctp')
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
@@ -127,11 +116,12 @@ describe('Withdraw USDC through CCTP', () => {
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )
     cy.closeTransactionDetails()
-    cy.findClaimButton(
+    cy.clickClaimButton(
       formatAmount(USDCAmountToSend, {
         symbol: 'USDC'
-      }),
-      { timeout: 120_000 }
-    ).click()
+      })
+    )
+    cy.allowMetamaskToSwitchNetwork()
+    cy.rejectMetamaskTransaction()
   })
 })

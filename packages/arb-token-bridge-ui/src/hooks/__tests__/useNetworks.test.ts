@@ -1,6 +1,12 @@
-/**
- * @jest-environment jsdom
- */
+import {
+  vi,
+  describe,
+  beforeAll,
+  afterAll,
+  it,
+  expect,
+  MockInstance
+} from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
@@ -8,7 +14,7 @@ import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'
 
 describe('sanitizeQueryParams', () => {
-  let localStorageGetItemMock: jest.Mock
+  let localStorageGetItemMock: MockInstance<(key: string) => string | null>
 
   beforeAll(() => {
     const mockedOrbitChain_1 = createMockOrbitChain({
@@ -24,8 +30,9 @@ describe('sanitizeQueryParams', () => {
       parentChainId: ChainId.ArbitrumNova
     })
 
-    localStorageGetItemMock = global.Storage.prototype.getItem = jest.fn(
-      key => {
+    localStorageGetItemMock = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation((key: string) => {
         if (key === customChainLocalStorageKey) {
           return JSON.stringify([
             mockedOrbitChain_1,
@@ -34,8 +41,8 @@ describe('sanitizeQueryParams', () => {
           ])
         }
         return null
-      }
-    )
+      })
+
     registerCustomArbitrumNetwork(mockedOrbitChain_1)
     registerCustomArbitrumNetwork(mockedOrbitChain_2)
     registerCustomArbitrumNetwork(mockedOrbitChain_3)
@@ -148,7 +155,7 @@ describe('sanitizeQueryParams', () => {
     it('should set `sourceChainId` to Ethereum and `destinationChainId` to Arbitrum One', () => {
       const result = sanitizeQueryParams({
         sourceChainId: undefined,
-        destinationChainId: ChainId.Holesky
+        destinationChainId: ChainId.Base
       })
       expect(result).toEqual({
         sourceChainId: ChainId.Ethereum,
@@ -223,7 +230,7 @@ describe('sanitizeQueryParams', () => {
   describe('when `destinationChainId` is undefined and `sourceChainId` is valid but has no paired destination chains', () => {
     it('should set `sourceChainId` to Ethereum and `destinationChainId` to Arbitrum One', () => {
       const result = sanitizeQueryParams({
-        sourceChainId: ChainId.Holesky,
+        sourceChainId: ChainId.Base,
         destinationChainId: undefined
       })
       expect(result).toEqual({

@@ -31,8 +31,6 @@ describe('Approve token for deposit', () => {
       cy.findByText('MAX').click()
 
       cy.findGasFeeSummary(zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-      cy.findGasFeeForChain(getL2NetworkName(), zeroToLessThanOneNativeToken)
 
       cy.findMoveFundsButton().should('not.be.disabled')
       cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })

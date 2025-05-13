@@ -17,12 +17,18 @@ import {
 } from './helpers'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import {
+  useForceFetchReceived,
+  useTransactionHistory
+} from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { OftTransactionHistoryDisclaimer } from './OftTransactionHistoryDisclaimer'
+import { shallow } from 'zustand/shallow'
 
 function useTransactionHistoryUpdater() {
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
 
   const transactionHistoryProps = useTransactionHistory(sanitizedAddress, {
     runFetcher: true
@@ -51,7 +57,19 @@ const tabClasses =
 export function TransactionHistorySearchResults() {
   const props = useTransactionHistoryUpdater()
   const { transactions } = props
-  const { searchError } = useTransactionHistoryAddressStore()
+  const { forceFetchReceived, setForceFetchReceived } = useForceFetchReceived(
+    state => ({
+      forceFetchReceived: state.forceFetchReceived,
+      setForceFetchReceived: state.setForceFetchReceived
+    }),
+    shallow
+  )
+  const searchError = useTransactionHistoryAddressStore(
+    state => state.searchError
+  )
+  const txHistoryAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -124,6 +142,20 @@ export function TransactionHistorySearchResults() {
             <span className="text-sm md:text-base">Settled transactions</span>
           </TabButton>
         </Tab.List>
+
+        {!forceFetchReceived && typeof txHistoryAddress !== 'undefined' && (
+          <div className="mb-2 text-xs text-white">
+            Missing a transaction after sending to or receiving from a different
+            address? Click{' '}
+            <button
+              onClick={() => setForceFetchReceived(true)}
+              className="arb-hover underline"
+            >
+              here
+            </button>{' '}
+            for a detailed search.
+          </div>
+        )}
 
         <Tab.Panels className="h-full w-full overflow-hidden">
           <Tab.Panel className="h-full w-full">

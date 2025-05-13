@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
@@ -16,6 +16,7 @@ import { fetchNativeCurrency } from './useNativeCurrency'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useTransactionHistoryAddressStore } from '../components/TransactionHistory/TransactionHistorySearchBar'
+import { useEthersSigner } from '../util/wagmi/useEthersSigner'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -29,8 +30,10 @@ export function useClaimWithdrawal(
     app: { arbTokenBridge }
   } = useAppState()
   const { address } = useAccount()
-  const { sanitizedAddress } = useTransactionHistoryAddressStore()
-  const { data: signer } = useSigner({ chainId: tx.parentChainId })
+  const sanitizedAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
+  )
+  const signer = useEthersSigner({ chainId: tx.parentChainId })
   const { updatePendingTransaction } = useTransactionHistory(
     sanitizedAddress ?? address
   )

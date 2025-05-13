@@ -97,13 +97,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
    */
   public requiresTokenApproval = async ({
     amount,
-    signer
+    owner
   }: RequiresTokenApprovalProps) => {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
-
-    const address = await getAddressFromSigner(signer)
 
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
@@ -127,7 +125,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     // if it fails, the token gateway is not allowed to burn the token without additional approval
     const transferEstimateGasResult = await this.transferEstimateGas({
       amount,
-      signer
+      from: owner
     })
 
     if (!transferEstimateGasResult.isError) {
@@ -137,7 +135,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     const allowanceForSourceChainGateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
-      owner: address,
+      owner,
       spender: gatewayAddress
     })
 
@@ -185,10 +183,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     )
   }
 
-  public async transferEstimateGas({
-    amount,
-    signer
-  }: TransferEstimateGasProps) {
+  public async transferEstimateGas({ amount, from }: TransferEstimateGasProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -196,11 +191,9 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     const destinationChainErc20Address =
       await this.getDestinationChainErc20Address()
 
-    const address = (await getAddressFromSigner(signer)) as `0x${string}`
-
     return withdrawInitTxEstimateGas({
       amount,
-      address,
+      address: from as `0x${string}`,
       erc20L1Address: destinationChainErc20Address,
       childChainProvider: this.sourceChainProvider
     })

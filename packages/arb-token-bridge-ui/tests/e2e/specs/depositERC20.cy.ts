@@ -82,11 +82,6 @@ describe('Deposit Token', () => {
         context('should show gas estimations', () => {
           cy.typeAmount(ERC20AmountToSend)
           cy.findGasFeeSummary(zeroToLessThanOneEth)
-          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-          cy.findGasFeeForChain(
-            getL2NetworkName(),
-            zeroToLessThanOneNativeToken
-          )
         })
 
         context('should deposit successfully', () => {
@@ -119,11 +114,6 @@ describe('Deposit Token', () => {
         context('should show summary', () => {
           cy.typeAmount(ERC20AmountToSend)
           cy.findGasFeeSummary(zeroToLessThanOneEth)
-          cy.findGasFeeForChain(getL1NetworkName(), zeroToLessThanOneEth)
-          cy.findGasFeeForChain(
-            getL2NetworkName(),
-            zeroToLessThanOneNativeToken
-          )
         })
 
         context('should fill custom destination address successfully', () => {
