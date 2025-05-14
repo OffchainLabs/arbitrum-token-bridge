@@ -1,6 +1,6 @@
 export enum TabParamEnum {
-  BRIDGE = 0,
-  TX_HISTORY = 1
+  BRIDGE = 'bridge',
+  TX_HISTORY = 'tx_history'
 }
 
 export enum AmountQueryParamEnum {

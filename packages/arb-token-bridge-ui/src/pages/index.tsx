@@ -91,7 +91,7 @@ export const sanitizeTabQueryParam = (
     return tab.toLowerCase()
   }
 
-  return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
+  return TabParamEnum.BRIDGE.toLowerCase()
 }
 
 function getDestinationWithSanitizedQueryParams(

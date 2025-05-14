@@ -35,6 +35,16 @@ import {
 import { ChainId } from '../types/ChainId'
 import { AmountQueryParamEnum, TabParamEnum } from './enum'
 
+const tabToIndex = {
+  [TabParamEnum.BRIDGE]: 0,
+  [TabParamEnum.TX_HISTORY]: 1
+} as const satisfies Record<TabParamEnum, number>
+
+const indexToTab = {
+  0: TabParamEnum.BRIDGE,
+  1: TabParamEnum.TX_HISTORY
+} as const satisfies Record<number, TabParamEnum>
+
 export const useArbQueryParams = () => {
   /*
     returns [
@@ -51,7 +61,7 @@ export const useArbQueryParams = () => {
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
     txHistory: withDefault(BooleanParam, true), // enable/disable tx history
-    tab: withDefault(TabParam, TabParamEnum.BRIDGE) // which tab is active
+    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]) // which tab is active
   })
 }
 
@@ -175,11 +185,13 @@ export const ChainParam = {
   decode: decodeChainQueryParam
 }
 
-export function encodeTabQueryParam(tab: number | null | undefined): string {
-  return (
-    TabParamEnum[tab ?? TabParamEnum.BRIDGE] ??
-    TabParamEnum[TabParamEnum.BRIDGE]
-  ).toLowerCase()
+export function encodeTabQueryParam(
+  tabIndex: number | null | undefined
+): string {
+  if (typeof tabIndex === 'number' && tabIndex in indexToTab) {
+    return indexToTab[tabIndex as keyof typeof indexToTab]
+  }
+  return TabParamEnum.BRIDGE
 }
 
 // Parse string to number
@@ -187,22 +199,10 @@ export function encodeTabQueryParam(tab: number | null | undefined): string {
 export function decodeTabQueryParam(
   tab: string | (string | null)[] | null | undefined
 ): number {
-  if (typeof tab !== 'string') {
-    return TabParamEnum.BRIDGE
+  if (typeof tab === 'string' && tab in tabToIndex) {
+    return tabToIndex[tab as TabParamEnum]
   }
-
-  const tabUppercased = tab.toUpperCase()
-
-  // filter out the numeric keys, because all values will be returned when used Object.keys, not just the enum entry names
-  const enumEntryNames = Object.keys(TabParamEnum).filter(key =>
-    isNaN(Number(key))
-  )
-
-  if (enumEntryNames.includes(tabUppercased)) {
-    return TabParamEnum[tabUppercased as keyof typeof TabParamEnum]
-  }
-
-  return TabParamEnum.BRIDGE
+  return tabToIndex[TabParamEnum.BRIDGE]
 }
 
 export const TabParam = {
