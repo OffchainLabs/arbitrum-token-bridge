@@ -176,11 +176,10 @@ export const ChainParam = {
 }
 
 export function encodeTabQueryParam(tab: number | null | undefined): string {
-  if (typeof tab === 'number' && TabParamEnum[tab]) {
-    return TabParamEnum[tab].toLowerCase()
-  }
-
-  return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
+  return (
+    TabParamEnum[tab ?? TabParamEnum.BRIDGE] ??
+    TabParamEnum[TabParamEnum.BRIDGE]
+  ).toLowerCase()
 }
 
 // Parse string to number
