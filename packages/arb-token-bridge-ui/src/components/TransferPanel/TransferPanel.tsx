@@ -16,7 +16,11 @@ import {
   TokenImportDialog,
   useTokenImportDialogStore
 } from './TokenImportDialog'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  TabParamEnum,
+  tabToIndex,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -80,8 +84,6 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
-import { TabParamEnum } from '../../hooks/enum'
-import { tabToIndex } from '../../hooks/enumHelpers'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'

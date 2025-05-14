@@ -20,7 +20,10 @@ import {
 import { ExternalLink } from '../../common/ExternalLink'
 import { TransferPanelMainInput } from '../TransferPanelMainInput'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../../hooks/useArbQueryParams'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
 import { useDialog } from '../../common/Dialog'
@@ -33,7 +36,6 @@ import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
-import { AmountQueryParamEnum } from '../../../hooks/enum'
 
 function Amount2ToggleButton({
   onClick

@@ -33,8 +33,25 @@ import {
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../types/ChainId'
-import { AmountQueryParamEnum, TabParamEnum } from './enum'
-import { indexToTab, tabToIndex } from './enumHelpers'
+
+export enum TabParamEnum {
+  BRIDGE = 'bridge',
+  TX_HISTORY = 'tx_history'
+}
+
+export enum AmountQueryParamEnum {
+  MAX = 'max'
+}
+
+export const tabToIndex = {
+  [TabParamEnum.BRIDGE]: 0,
+  [TabParamEnum.TX_HISTORY]: 1
+} as const satisfies Record<TabParamEnum, number>
+
+export const indexToTab = {
+  0: TabParamEnum.BRIDGE,
+  1: TabParamEnum.TX_HISTORY
+} as const satisfies Record<number, TabParamEnum>
 
 export const useArbQueryParams = () => {
   /*

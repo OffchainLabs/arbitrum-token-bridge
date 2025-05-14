@@ -15,10 +15,10 @@ import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
-  encodeChainQueryParam
+  encodeChainQueryParam,
+  TabParamEnum
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
-import { TabParamEnum } from '../hooks/enum'
 
 const App = dynamic(
   () => {
