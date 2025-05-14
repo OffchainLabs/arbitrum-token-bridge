@@ -1,5 +1,5 @@
 import { Fragment, PropsWithChildren, useState } from 'react'
-import { Transition, TransitionChild } from '@headlessui/react'
+import { Transition } from '@headlessui/react'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 
 import { ExternalLink } from '../common/ExternalLink'
@@ -24,7 +24,7 @@ export const TransactionsTableExternalLink = ({
     >
       {children}
       <Transition show={show} as={Fragment}>
-        <TransitionChild
+        <Transition.Child
           as={Fragment}
           enter="ease-out duration-150"
           enterFrom="translate-x-4 opacity-0"
@@ -34,7 +34,7 @@ export const TransactionsTableExternalLink = ({
           leaveTo="translate-x-4 opacity-0"
         >
           <ArrowTopRightOnSquareIcon height={10} />
-        </TransitionChild>
+        </Transition.Child>
       </Transition>
     </ExternalLink>
   )
