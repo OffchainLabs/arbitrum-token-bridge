@@ -176,12 +176,8 @@ export const ChainParam = {
 }
 
 export function encodeTabQueryParam(tab: number | null | undefined): string {
-  if (!tab || Array.isArray(tab)) {
-    return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
-  }
-
-  if (!Number.isNaN(tab) && tab in TabParamEnum) {
-    return TabParamEnum[tab]!.toLowerCase()
+  if (typeof tab === 'number' && TabParamEnum[tab]) {
+    return TabParamEnum[tab].toLowerCase()
   }
 
   return TabParamEnum[TabParamEnum.BRIDGE].toLowerCase()
@@ -192,13 +188,18 @@ export function encodeTabQueryParam(tab: number | null | undefined): string {
 export function decodeTabQueryParam(
   tab: string | (string | null)[] | null | undefined
 ): number {
-  if (!tab || Array.isArray(tab)) {
+  if (typeof tab !== 'string') {
     return TabParamEnum.BRIDGE
   }
 
   const tabUppercased = tab.toUpperCase()
 
-  if (tabUppercased in TabParamEnum) {
+  // filter out the numeric keys, because all values will be returned when used Object.keys, not just the enum entry names
+  const enumEntryNames = Object.keys(TabParamEnum).filter(key =>
+    isNaN(Number(key))
+  )
+
+  if (enumEntryNames.includes(tabUppercased)) {
     return TabParamEnum[tabUppercased as keyof typeof TabParamEnum]
   }
 

@@ -4,7 +4,7 @@ import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { AmountQueryParam, ChainParam, TabParam } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
-import { sanitizeTokenQueryParam } from '../../pages'
+import { sanitizeTabQueryParam, sanitizeTokenQueryParam } from '../../pages'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
@@ -249,6 +249,16 @@ describe('TabParam custom encoder and decoder', () => {
       expect(TabParam.encode(-1)).toEqual('bridge')
       expect(TabParam.encode(-129)).toEqual('bridge')
     })
+
+    it('should return bridge tab string if value is an invalid string', () => {
+      // @ts-ignore - test invalid values
+      expect(TabParam.encode('xxx')).toEqual('bridge')
+      // @ts-ignore - test invalid values
+      expect(TabParam.encode('random text')).toEqual('bridge')
+      // @ts-ignore - test invalid values
+      // we are encoding the selected tab index number to string; `tx_history` is not a valid tab index number
+      expect(TabParam.encode('tx_history')).toEqual('bridge')
+    })
   })
 
   describe('decode string query param to tab index number', () => {
@@ -265,6 +275,8 @@ describe('TabParam custom encoder and decoder', () => {
       expect(TabParam.decode('3')).toEqual(0)
       expect(TabParam.decode('3111111')).toEqual(0)
       expect(TabParam.decode('000000')).toEqual(0)
+      expect(TabParam.decode('0')).toEqual(0)
+      expect(TabParam.decode('1')).toEqual(0)
     })
 
     it('should return corresponding tab index number if string query param is valid', () => {
@@ -311,5 +323,35 @@ describe('sanitizeTokenQueryParam', () => {
       })
       expect(result).toBeUndefined()
     })
+  })
+})
+
+describe('sanitizeTabQueryParam', () => {
+  it('should be kept if it is a valid tab string value', () => {
+    const result1 = sanitizeTabQueryParam('bridge')
+    const result2 = sanitizeTabQueryParam('tx_history')
+
+    expect(result1).toEqual('bridge')
+    expect(result2).toEqual('tx_history')
+  })
+
+  it('should be case insensitive', () => {
+    const result1 = sanitizeTabQueryParam('TX_history')
+    const result2 = sanitizeTabQueryParam('Tx_HiStoRy')
+
+    expect(result1).toEqual('tx_history')
+    expect(result2).toEqual('tx_history')
+  })
+
+  it('should default to bridge if the value is invalid', () => {
+    const result1 = sanitizeTabQueryParam('0')
+    const result2 = sanitizeTabQueryParam('1')
+    const result3 = sanitizeTabQueryParam('3')
+    const result4 = sanitizeTabQueryParam('tx_HISTORY_')
+
+    expect(result1).toEqual('bridge')
+    expect(result2).toEqual('bridge')
+    expect(result3).toEqual('bridge')
+    expect(result4).toEqual('bridge')
   })
 })
