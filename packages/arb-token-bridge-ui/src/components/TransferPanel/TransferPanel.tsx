@@ -81,6 +81,7 @@ import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
 import { TabParamEnum } from '../../hooks/enum'
+import { tabToIndex } from '../../hooks/enumHelpers'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -193,7 +194,7 @@ export function TransferPanel() {
   const switchToTransactionHistoryTab = useCallback(
     () =>
       setQueryParams({
-        tab: TabParamEnum.TX_HISTORY
+        tab: tabToIndex[TabParamEnum.TX_HISTORY]
       }),
     [setQueryParams]
   )

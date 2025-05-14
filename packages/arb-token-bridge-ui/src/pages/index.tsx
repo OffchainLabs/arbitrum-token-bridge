@@ -82,16 +82,13 @@ export const sanitizeTokenQueryParam = ({
 export const sanitizeTabQueryParam = (
   tab: string | string[] | null | undefined
 ): string => {
-  // filter out the numeric keys, because all values will be returned when used Object.keys, not just the enum entry names
-  const enumEntryNames = Object.keys(TabParamEnum).filter(key =>
-    isNaN(Number(key))
-  )
+  const enumEntryNames = Object.keys(TabParamEnum)
 
   if (typeof tab === 'string' && enumEntryNames.includes(tab.toUpperCase())) {
     return tab.toLowerCase()
   }
 
-  return TabParamEnum.BRIDGE.toLowerCase()
+  return TabParamEnum.BRIDGE
 }
 
 function getDestinationWithSanitizedQueryParams(
