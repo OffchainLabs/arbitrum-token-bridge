@@ -116,7 +116,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         const lifiTransferStarter = new LifiTransferStarter({
           sourceChainProvider,
           destinationChainProvider,
-          lifiData: context
+          lifiData: context,
+          sourceChainErc20Address: token.address
         })
         gasEstimate = await lifiTransferStarter.approveTokenEstimateGas({
           signer,
