@@ -9,12 +9,12 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getNetworkName } from '../../util/networks'
 import { useRouteStore } from './hooks/useRouteStore'
-import { useSigner } from 'wagmi'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
 export function MoveFundsButton({
   onClick
 }: Pick<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>) {
-  const { data: signer } = useSigner()
+  const signer = useEthersSigner()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
 
