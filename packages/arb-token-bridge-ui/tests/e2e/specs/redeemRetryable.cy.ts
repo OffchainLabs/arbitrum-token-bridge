@@ -8,7 +8,7 @@ import {
 
 const wethAmountToDeposit = 0.001
 
-function mockErc20RedeemDepositTransaction(): Transaction {
+function mockErc20RedeemDepositTransaction() {
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
 
   return {
@@ -87,7 +87,7 @@ describe('Redeem ERC20 Deposit', () => {
           .click()
 
         // approve redeem transaction
-        cy.confirmMetamaskTransaction()
+        cy.confirmTransaction()
         cy.wait(15_000)
         cy.selectTransactionsPanelTab('settled')
 

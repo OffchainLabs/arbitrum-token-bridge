@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "include": [
     "src",
-    "additional.d.ts",
     "next.config.js",
     "next-env.d.ts",
+    "additional.d.ts",
     ".next/types/**/*.ts",
     "build/types/**/*.ts",
     "vitest.config.ts"
@@ -23,7 +23,10 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "typeRoots": ["./node_modules/@types", "./tests/types"]
   },
   "exclude": ["node_modules"]
 }

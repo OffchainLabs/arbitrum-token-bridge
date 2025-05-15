@@ -5,12 +5,14 @@
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { EthBridger, MultiCaller } from '@arbitrum/sdk'
-import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import {
   defaultL2Network,
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
-} from '../../src/util/networksNitroTestnode'
+} from './networksNitroTestnode'
+
+export const MULTICALL_TESTNET_ADDRESS =
+  '0xcA11bde05977b3631167028862bE2a173976CA11'
 
 export type NetworkType = 'parentChain' | 'childChain'
 export type NetworkName =
@@ -153,17 +155,11 @@ export async function getInitialERC20Balance({
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
     balanceOf: { account: address }
   })
-  return tokenData.balance
+  return tokenData?.balance
 }
 
 export const acceptMetamaskAccess = () => {
-  cy.acceptMetamaskAccess().then(() => {
-    cy.isCypressWindowActive().then(cyWindowIsActive => {
-      if (!cyWindowIsActive) {
-        cy.switchToCypressWindow().should('be.true')
-      }
-    })
-  })
+  cy.connectToDapp()
 }
 
 export const startWebApp = (

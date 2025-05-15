@@ -2,17 +2,11 @@ import React from 'react'
 import satori, { Font } from 'satori'
 import sharp from 'sharp'
 import fs from 'fs'
-import path from 'path'
-import dotenv from 'dotenv'
 
-// this has to be called before import from "networks.ts"
-// to ensure that the environment variables are loaded
-dotenv.config({ path: path.resolve(__dirname, '../.env') })
-
-import { isNetwork } from './util/networks'
-import { ChainId } from './types/ChainId'
-import { getBridgeUiConfigForChain } from './util/bridgeUiConfig'
-import { orbitMainnets, orbitTestnets } from './util/orbitChainsList'
+import { ChainId } from '../src/types/ChainId.js'
+import { getBridgeUiConfigForChain } from '../src/util/bridgeUiConfig.js'
+import { orbitMainnets, orbitTestnets } from '../src/util/orbitChainsList.js'
+import { isNetwork } from '../src/util/networks.js'
 
 const dimensions = {
   width: 1200,

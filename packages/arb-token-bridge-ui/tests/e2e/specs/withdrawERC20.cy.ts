@@ -36,7 +36,8 @@ describe('Withdraw ERC20 Token', () => {
   // because it is cleared between each `it` cypress test
 
   Object.keys(withdrawalTestCases).forEach(tokenType => {
-    const testCase = withdrawalTestCases[tokenType]
+    const testCase =
+      withdrawalTestCases[tokenType as keyof typeof withdrawalTestCases]
     // Happy Path
     context(`User is on L2 and imports ${tokenType}`, () => {
       let l1ERC20bal: string, l2ERC20bal: string
@@ -122,7 +123,7 @@ describe('Withdraw ERC20 Token', () => {
             .should('be.enabled')
             .click()
 
-          cy.confirmMetamaskTransaction()
+          cy.confirmTransaction()
 
           cy.findTransactionInTransactionHistory({
             duration: 'Less than a minute',
@@ -151,7 +152,7 @@ describe('Withdraw ERC20 Token', () => {
           })
         )
 
-        cy.confirmMetamaskTransaction()
+        cy.confirmTransaction()
 
         cy.findByLabelText('show settled transactions')
           .should('be.visible')
@@ -227,7 +228,7 @@ describe('Withdraw ERC20 Token', () => {
             .should('be.enabled')
             .click()
 
-          cy.confirmMetamaskTransaction()
+          cy.confirmTransaction()
           const txData = {
             amount: ERC20AmountToSend,
             symbol: testCase.symbol
@@ -236,7 +237,7 @@ describe('Withdraw ERC20 Token', () => {
             duration: 'Less than a minute',
             ...txData
           })
-          cy.openTransactionDetails(txData)
+          cy.openTransactionHistoryDetails(txData)
           cy.findTransactionDetailsCustomDestinationAddress(
             Cypress.env('CUSTOM_DESTINATION_ADDRESS')
           )

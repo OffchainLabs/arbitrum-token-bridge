@@ -8,7 +8,7 @@ import { useTransactionReminderInfo } from './TransactionHistory/useTransactionR
 function StyledTab({ children, ...props }: PropsWithChildren) {
   return (
     <Tab
-      className="flex h-full items-center justify-center gap-2 rounded p-1 text-lg ui-selected:bg-black/75"
+      className="ui-selected:bg-black/75 flex h-full items-center justify-center gap-2 rounded p-1 text-lg"
       {...props}
     >
       {children}
