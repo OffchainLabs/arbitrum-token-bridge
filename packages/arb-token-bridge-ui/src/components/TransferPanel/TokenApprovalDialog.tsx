@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
@@ -38,7 +38,7 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { address: walletAddress } = useAccount()
-  const { isOpen, token } = props
+  const { isOpen, token, onClose } = props
 
   const { ethToUSD } = useETHPrice()
 
@@ -275,11 +275,19 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     context
   ])
 
-  function closeWithReset(confirmed: boolean) {
-    props.onClose(confirmed)
+  const closeWithReset = useCallback(
+    (confirmed: boolean) => {
+      onClose(confirmed)
+      setChecked(false)
+    },
+    [onClose]
+  )
 
-    setChecked(false)
-  }
+  useEffect(() => {
+    if (isLifi && !context) {
+      closeWithReset(false)
+    }
+  }, [context, closeWithReset, isLifi])
 
   return (
     <Dialog
