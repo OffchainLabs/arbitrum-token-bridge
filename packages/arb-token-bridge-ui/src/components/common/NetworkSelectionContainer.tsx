@@ -1,4 +1,4 @@
-import {
+import React, {
   CSSProperties,
   useCallback,
   useEffect,
@@ -406,95 +406,99 @@ function NetworksPanel({
   )
 }
 
-export const NetworkSelectionContainer = (
-  props: UseDialogProps & {
-    type: 'source' | 'destination'
-  }
-) => {
-  const [, setSelectedToken] = useSelectedToken()
-  const [networks, setNetworks] = useNetworks()
-  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
-  const [, setQueryParams] = useArbQueryParams()
-  const setAdvancedSettingsCollapsed = useAdvancedSettingsStore(
-    state => state.setAdvancedSettingsCollapsed
-  )
-  const { isSmartContractWallet } = useAccountType()
+export const NetworkSelectionContainer = React.memo(
+  (
+    props: UseDialogProps & {
+      type: 'source' | 'destination'
+    }
+  ) => {
+    const [, setSelectedToken] = useSelectedToken()
+    const [networks, setNetworks] = useNetworks()
+    const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+    const [, setQueryParams] = useArbQueryParams()
+    const setAdvancedSettingsCollapsed = useAdvancedSettingsStore(
+      state => state.setAdvancedSettingsCollapsed
+    )
+    const { isSmartContractWallet } = useAccountType()
 
-  const isSource = props.type === 'source'
+    const isSource = props.type === 'source'
 
-  const selectedChainId = isSource
-    ? networks.sourceChain.id
-    : networks.destinationChain.id
+    const selectedChainId = isSource
+      ? networks.sourceChain.id
+      : networks.destinationChain.id
 
-  const supportedChainIds = useChainIdsForNetworkSelection({
-    isSource
-  })
+    const supportedChainIds = useChainIdsForNetworkSelection({
+      isSource
+    })
 
-  const onNetworkRowClick = useCallback(
-    (value: Chain) => {
-      const pairedChain = isSource ? 'destinationChain' : 'sourceChain'
+    const onNetworkRowClick = useCallback(
+      (value: Chain) => {
+        const pairedChain = isSource ? 'destinationChain' : 'sourceChain'
 
-      if (shouldOpenOneNovaDialog([value.id, networks[pairedChain].id])) {
-        openOneNovaTransferDialog()
-        return
-      }
+        if (shouldOpenOneNovaDialog([value.id, networks[pairedChain].id])) {
+          openOneNovaTransferDialog()
+          return
+        }
 
-      if (networks[pairedChain].id === value.id) {
+        if (networks[pairedChain].id === value.id) {
+          setNetworks({
+            sourceChainId: networks.destinationChain.id,
+            destinationChainId: networks.sourceChain.id
+          })
+          return
+        }
+
+        // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
+        // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
         setNetworks({
-          sourceChainId: networks.destinationChain.id,
-          destinationChainId: networks.sourceChain.id
+          sourceChainId: isSource ? value.id : networks.sourceChain.id,
+          destinationChainId: isSource ? networks.destinationChain.id : value.id
         })
-        return
-      }
 
-      // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
-      // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
-      setNetworks({
-        sourceChainId: isSource ? value.id : networks.sourceChain.id,
-        destinationChainId: isSource ? networks.destinationChain.id : value.id
-      })
+        setSelectedToken(null)
+        setQueryParams({ destinationAddress: undefined })
 
-      setSelectedToken(null)
-      setQueryParams({ destinationAddress: undefined })
+        if (!isSmartContractWallet) {
+          setAdvancedSettingsCollapsed(true)
+        }
+      },
+      [
+        isSource,
+        networks,
+        setNetworks,
+        setSelectedToken,
+        setQueryParams,
+        setAdvancedSettingsCollapsed,
+        openOneNovaTransferDialog,
+        isSmartContractWallet
+      ]
+    )
 
-      if (!isSmartContractWallet) {
-        setAdvancedSettingsCollapsed(true)
-      }
-    },
-    [
-      isSource,
-      networks,
-      setNetworks,
-      setSelectedToken,
-      setQueryParams,
-      setAdvancedSettingsCollapsed,
-      openOneNovaTransferDialog,
-      isSmartContractWallet
-    ]
-  )
+    return (
+      <>
+        <Dialog
+          {...props}
+          onClose={() => props.onClose(false)}
+          title={`Select ${isSource ? 'Source' : 'Destination'} Network`}
+          actionButtonProps={{ hidden: true }}
+          isFooterHidden={true}
+          className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
+        >
+          <SearchPanel>
+            <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
+              <NetworksPanel
+                chainIds={supportedChainIds}
+                selectedChainId={selectedChainId}
+                close={() => props.onClose(false)}
+                onNetworkRowClick={onNetworkRowClick}
+              />
+            </SearchPanel.MainPage>
+          </SearchPanel>
+        </Dialog>
+        <OneNovaTransferDialog {...oneNovaTransferDialogProps} />
+      </>
+    )
+  }
+)
 
-  return (
-    <>
-      <Dialog
-        {...props}
-        onClose={() => props.onClose(false)}
-        title={`Select ${isSource ? 'Source' : 'Destination'} Network`}
-        actionButtonProps={{ hidden: true }}
-        isFooterHidden={true}
-        className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
-      >
-        <SearchPanel>
-          <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
-            <NetworksPanel
-              chainIds={supportedChainIds}
-              selectedChainId={selectedChainId}
-              close={() => props.onClose(false)}
-              onNetworkRowClick={onNetworkRowClick}
-            />
-          </SearchPanel.MainPage>
-        </SearchPanel>
-      </Dialog>
-      <OneNovaTransferDialog {...oneNovaTransferDialogProps} />
-    </>
-  )
-}
+NetworkSelectionContainer.displayName = 'NetworkSelectionContainer'

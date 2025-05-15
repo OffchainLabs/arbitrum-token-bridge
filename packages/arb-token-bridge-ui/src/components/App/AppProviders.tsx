@@ -1,7 +1,6 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { Provider as OvermindProvider } from 'overmind-react'
 import { WagmiProvider } from 'wagmi'
-import { Overmind } from 'overmind'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import { createOvermind } from 'overmind'
@@ -50,7 +49,7 @@ interface AppProvidersProps {
 const queryClient = new QueryClient()
 
 export function AppProviders({ children }: AppProvidersProps) {
-  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
+  const overmind = useMemo(() => createOvermind(config), [])
 
   return (
     <OvermindProvider value={overmind}>

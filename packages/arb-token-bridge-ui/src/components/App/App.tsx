@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 
 import axios from 'axios'
@@ -95,7 +95,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
-function AppContent() {
+const AppContent = React.memo(() => {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
@@ -135,7 +135,9 @@ function AppContent() {
       <MainContent />
     </>
   )
-}
+})
+
+AppContent.displayName = 'AppContent'
 
 export default function App() {
   return (
