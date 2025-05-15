@@ -3,10 +3,11 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { useAccount, useNetwork, useSigner } from 'wagmi'
+import { useAccount, useConfig } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
+import { shallow } from 'zustand/shallow'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -15,7 +16,11 @@ import {
   TokenImportDialog,
   useTokenImportDialogStore
 } from './TokenImportDialog'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  TabParamEnum,
+  tabToIndex,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -68,7 +73,7 @@ import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
-import { useMainContentTabs } from '../MainContent/MainContent'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper, DialogType } from '../common/Dialog2'
@@ -79,7 +84,6 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
-import { shallow } from 'zustand/shallow'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -97,7 +101,12 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
+  // Link the amount state directly to the amount in query params -  no need of useState
+  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
+  const [
+    { amount, amount2, destinationAddress, token: tokenFromSearchParams },
+    setQueryParams
+  ] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
@@ -109,13 +118,13 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
+  const { address: walletAddress, chain, isConnected } = useAccount()
   const [selectedToken, setSelectedToken] = useSelectedToken()
-  const { address: walletAddress, isConnected } = useAccount()
-  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+  const { switchChainAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
   // do not use `useChainId` because it won't detect chains outside of our wagmi config
-  const latestChain = useLatest(useNetwork())
+  const latestChain = useLatest(chain)
   const [networks] = useNetworks()
   const latestNetworks = useLatest(networks)
   const tokensFromLists = useTokensFromLists()
@@ -139,14 +148,12 @@ export function TransferPanel() {
 
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner({
-    chainId: networks.sourceChain.id
-  })
+  const { current: signer } = useLatest(
+    useEthersSigner({ chainId: networks.sourceChain.id })
+  )
+  const wagmiConfig = useConfig()
 
   const { setTransferring } = useAppContextActions()
-  const switchToTransactionHistoryTab = useMainContentTabs(
-    state => state.switchToTransactionHistoryTab
-  )
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
   const { selectedRoute, clearRoute } = useRouteStore(
     state => ({
@@ -157,10 +164,6 @@ export function TransferPanel() {
   )
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
-
-  // Link the amount state directly to the amount in query params -  no need of useState
-  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -189,6 +192,14 @@ export function TransferPanel() {
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
   const { handleError } = useError()
+
+  const switchToTransactionHistoryTab = useCallback(
+    () =>
+      setQueryParams({
+        tab: tabToIndex[TabParamEnum.TX_HISTORY]
+      }),
+    [setQueryParams]
+  )
 
   useEffect(() => {
     // hide Project listing when networks are changed
@@ -378,7 +389,7 @@ export function TransferPanel() {
 
     try {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
-        networks
+        latestNetworks.current
 
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
         isDepositMode,
@@ -447,7 +458,8 @@ export function TransferPanel() {
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
           signer,
-          destinationAddress
+          destinationAddress,
+          wagmiConfig
         })
         depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
@@ -548,7 +560,8 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const { sourceChainProvider, destinationChainProvider } = networks
+      const { sourceChainProvider, destinationChainProvider } =
+        latestNetworks.current
 
       // confirm if the user is certain about the custom destination address for SCW
       if (
@@ -614,7 +627,8 @@ export function TransferPanel() {
       const transfer = await oftTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
-        destinationAddress
+        destinationAddress,
+        wagmiConfig
       })
 
       trackEvent('OFT Transfer', {
@@ -1082,7 +1096,7 @@ export function TransferPanel() {
 
   const moveFundsButtonOnClick = async () => {
     const isConnectedToTheWrongChain =
-      latestChain.current?.chain?.id !== latestNetworks.current.sourceChain.id
+      latestChain.current?.id !== latestNetworks.current.sourceChain.id
 
     const sourceChainId = latestNetworks.current.sourceChain.id
     const childChainName = getNetworkName(childChain.id)
@@ -1107,7 +1121,7 @@ export function TransferPanel() {
           amount2: isBatchTransfer ? Number(amount2) : undefined,
           version: 2
         })
-        await switchNetworkAsync?.(sourceChainId)
+        await switchChainAsync({ chainId: sourceChainId })
       }
     } catch (error) {
       if (isUserRejectedError(error)) {

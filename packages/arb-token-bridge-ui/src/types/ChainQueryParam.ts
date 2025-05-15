@@ -1,4 +1,4 @@
-import { Chain } from 'wagmi'
+import { Chain } from 'wagmi/chains'
 import * as chains from 'wagmi/chains'
 import {
   getCustomChainFromLocalStorageById,
@@ -12,15 +12,14 @@ import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 const chainQueryParams = [
   'ethereum',
   'sepolia',
-  'holesky',
   'arbitrum-one',
   'arbitrum-nova',
   'base',
   'arbitrum-sepolia',
   'base-sepolia',
-  'custom-localhost',
-  'arbitrum-localhost',
-  'l3-localhost'
+  'nitro-testnode-l1',
+  'nitro-testnode-l2',
+  'nitro-testnode-l3'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
@@ -55,9 +54,6 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.Base:
       return 'base'
 
-    case ChainId.Holesky:
-      return 'holesky'
-
     case ChainId.Sepolia:
       return 'sepolia'
 
@@ -68,13 +64,13 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'base-sepolia'
 
     case ChainId.Local:
-      return 'custom-localhost'
+      return 'nitro-testnode-l1'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-localhost'
+      return 'nitro-testnode-l2'
 
     case ChainId.L3Local:
-      return 'l3-localhost'
+      return 'nitro-testnode-l3'
 
     default:
       const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -105,9 +101,6 @@ export function getChainForChainKeyQueryParam(
     case 'sepolia':
       return chains.sepolia
 
-    case 'holesky':
-      return customChains.holesky
-
     case 'arbitrum-one':
       return chains.arbitrum
 
@@ -123,13 +116,13 @@ export function getChainForChainKeyQueryParam(
     case 'base-sepolia':
       return customChains.baseSepolia
 
-    case 'custom-localhost':
+    case 'nitro-testnode-l1':
       return customChains.localL1Network
 
-    case 'arbitrum-localhost':
+    case 'nitro-testnode-l2':
       return customChains.localL2Network
 
-    case 'l3-localhost':
+    case 'nitro-testnode-l3':
       return customChains.localL3Network
 
     default:

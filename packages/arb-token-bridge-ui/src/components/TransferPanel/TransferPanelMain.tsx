@@ -2,8 +2,9 @@ import React, { useEffect, useMemo } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { utils } from 'ethers'
-import { Chain, useAccount } from 'wagmi'
-import { isAddress } from 'ethers/lib/utils'
+import { isAddress } from 'viem'
+import { useAccount } from 'wagmi'
+import { Chain } from 'wagmi/chains'
 
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
@@ -150,7 +151,7 @@ export function NetworkContainer({
   const { color } = getBridgeUiConfigForChain(network.id)
 
   const showCustomAddressBanner = useMemo(() => {
-    if (!customAddress || !walletAddress) {
+    if (!customAddress) {
       return false
     }
     if (addressesEqual(customAddress, walletAddress)) {
