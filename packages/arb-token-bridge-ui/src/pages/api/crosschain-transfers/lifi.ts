@@ -11,8 +11,9 @@ import {
   LiFiStep
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
-import { CrosschainTransfersRouteBase, QueryParams } from './types'
+import { CrosschainTransfersRouteBase, QueryParams, Token } from './types'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { ether } from '../../../constants'
 
 export enum Order {
   /**
@@ -84,18 +85,29 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
   if (route.tags && route.tags.includes(Order.Fastest)) {
     tags.push(Order.Fastest)
   }
+
+  const gasToken: Token =
+    step.estimate.gasCosts && step.estimate.gasCosts.length > 0
+      ? step.estimate.gasCosts[0]!.token
+      : { ...ether, address: constants.AddressZero }
+
+  const feeToken: Token =
+    step.estimate.feeCosts && step.estimate.feeCosts.length > 0
+      ? step.estimate.feeCosts[0]!.token
+      : { ...ether, address: constants.AddressZero }
+
   return {
     type: 'lifi',
     durationMs: step.estimate.executionDuration * 1_000,
     gas: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: sumGasCosts(step.estimate.gasCosts),
-      token: step.estimate.gasCosts![0]!.token
+      token: gasToken
     },
     fee: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: sumFee(step.estimate.feeCosts),
-      token: step.estimate.feeCosts![0]!.token
+      token: feeToken
     },
     fromAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
