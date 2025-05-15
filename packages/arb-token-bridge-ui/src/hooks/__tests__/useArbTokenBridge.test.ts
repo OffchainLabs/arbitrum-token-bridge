@@ -1,5 +1,4 @@
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { ChainId } from '../../util/networks'
 import { processTokensFromList } from '../useArbTokenBridge'
 import {
   BRIDGE_TOKEN_LISTS,
@@ -9,6 +8,7 @@ import {
   fetchErc20L2GatewayAddress,
   fetchErc20ParentChainGatewayAddress
 } from '../../util/TokenUtils'
+import { ChainId } from '../../types/ChainId'
 
 // can be found on https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json
 // standard gateway token
