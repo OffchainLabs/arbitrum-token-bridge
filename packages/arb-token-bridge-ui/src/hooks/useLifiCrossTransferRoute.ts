@@ -62,16 +62,14 @@ export const useLifiCrossTransfersRoute = ({
       _toAddress,
       _denyBridges,
       _denyExchanges,
-      _slippage,
-      _order
+      _slippage
     ]) => {
       const urlParams = new URLSearchParams({
         fromAmount: _fromAmount,
         fromChainId: _fromChainId.toString(),
         toChainId: _toChainId.toString(),
         fromToken: _fromToken,
-        toToken: _toToken,
-        order: _order
+        toToken: _toToken
       })
 
       if (_fromAddress) {
