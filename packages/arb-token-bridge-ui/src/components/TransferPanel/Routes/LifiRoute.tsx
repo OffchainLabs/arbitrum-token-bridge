@@ -13,7 +13,7 @@ import {
   useLifiCrossTransfersRoute,
   UseLifiCrossTransfersRouteParams
 } from '../../../hooks/useLifiCrossTransferRoute'
-import { Address, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 import {
   defaultSlippage,
   useLifiSettingsStore
@@ -26,6 +26,7 @@ import { shallow } from 'zustand/shallow'
 import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { useAppContextState } from '../../App/AppContext'
+import { Address } from 'viem'
 
 export function LifiRoutes({
   cheapestTag,

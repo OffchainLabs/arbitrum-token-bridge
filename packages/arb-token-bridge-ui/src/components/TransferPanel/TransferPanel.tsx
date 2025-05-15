@@ -667,7 +667,8 @@ export function TransferPanel() {
       const transfer = await lifiTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
-        destinationAddress
+        destinationAddress,
+        wagmiConfig
       })
 
       trackEvent('Lifi Transfer', {

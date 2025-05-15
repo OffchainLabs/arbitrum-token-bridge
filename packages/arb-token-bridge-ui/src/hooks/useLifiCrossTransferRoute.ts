@@ -4,7 +4,7 @@ import {
   LifiCrosschainTransfersRoute,
   LifiParams
 } from '../pages/api/crosschain-transfers/lifi'
-import { Address } from 'wagmi'
+import { Address } from 'viem'
 import { useDebounce } from '@uidotdev/usehooks'
 
 export type UseLifiCrossTransfersRouteParams = Pick<

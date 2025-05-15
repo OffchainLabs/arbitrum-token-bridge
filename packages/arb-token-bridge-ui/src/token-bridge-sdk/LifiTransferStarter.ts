@@ -1,4 +1,4 @@
-import { prepareSendTransaction, sendTransaction } from '@wagmi/core'
+import { Config, sendTransaction } from '@wagmi/core'
 import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
@@ -11,7 +11,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { Address } from '../util/AddressUtils'
+import { Address } from 'viem'
 import { TransactionRequest } from '../pages/api/crosschain-transfers/lifi'
 
 type Token = {
@@ -125,23 +125,24 @@ export class LifiTransferStarter extends BridgeTransferStarter {
     }
   }
 
-  public async transfer({ signer }: TransferProps) {
+  public async transfer({
+    wagmiConfig
+  }: TransferProps & { wagmiConfig: Config }) {
     if (!this.lifiData.transactionRequest) {
       throw new Error('LifiTransferStarter is missing transaction request.')
     }
 
-    const config = await prepareSendTransaction({
-      chainId: this.lifiData.transactionRequest.chainId,
-      request: this.lifiData.transactionRequest,
-      signer: signer
+    const tx = await sendTransaction(wagmiConfig, {
+      to: this.lifiData.transactionRequest.to as Address,
+      data: this.lifiData.transactionRequest.data as Address,
+      value: BigInt(this.lifiData.transactionRequest.value)
     })
-    const tx = await sendTransaction(config)
 
     return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: tx,
+      sourceChainTransaction: { hash: tx },
       destinationChainProvider: this.destinationChainProvider
     }
   }
