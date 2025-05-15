@@ -78,6 +78,7 @@ export function HighSlippageWarningDialog(props: UseDialogProps) {
       onClose={(confirmed: boolean) => {
         props.onClose(confirmed)
       }}
+      className="max-w-[420px]"
     >
       <div className="mt-4 text-sm text-brick">
         You will receive significantly less value than you are sending due to
