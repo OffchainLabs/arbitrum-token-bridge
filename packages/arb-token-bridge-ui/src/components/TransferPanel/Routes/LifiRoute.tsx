@@ -96,7 +96,11 @@ export function LifiRoutes({
   }
 
   if (!routes) {
-    if (slippage !== defaultSlippage.toString()) {
+    if (
+      slippage !== defaultSlippage.toString() ||
+      disabledExchanges.length > 0 ||
+      disabledBridges.length > 0
+    ) {
       return (
         <>
           <LifiSettings />
