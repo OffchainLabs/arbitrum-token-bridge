@@ -221,13 +221,6 @@ export default async function handler(
     }
 
     // Validate parameters
-    if (!toAddress || !utils.isAddress(toAddress)) {
-      res
-        .status(400)
-        .send({ message: 'toAddress is not a valid address', data: null })
-      return
-    }
-
     if (!fromToken || !utils.isAddress(fromToken)) {
       res
         .status(400)

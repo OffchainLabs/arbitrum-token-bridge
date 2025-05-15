@@ -32,7 +32,7 @@ export const useLifiCrossTransfersRoute = ({
 }: UseLifiCrossTransfersRouteParams) => {
   /** Fetch only after 1 second elapsed since last parameter changed */
   const queryKey = useDebounce(
-    fromAddress && toAddress && fromAmount !== '0'
+    fromAmount !== '0'
       ? ([
           fromAmount,
           fromToken,
@@ -66,15 +66,21 @@ export const useLifiCrossTransfersRoute = ({
       _order
     ]) => {
       const urlParams = new URLSearchParams({
-        fromAddress: _fromAddress,
         fromAmount: _fromAmount,
         fromChainId: _fromChainId.toString(),
         toChainId: _toChainId.toString(),
         fromToken: _fromToken,
         toToken: _toToken,
-        toAddress: _toAddress,
         order: _order
       })
+
+      if (_fromAddress) {
+        urlParams.append('fromAddress', _fromAddress)
+      }
+
+      if (_toAddress) {
+        urlParams.append('toAddress', _toAddress)
+      }
 
       if (_denyBridges && _denyBridges.length > 0) {
         _denyBridges.map(denyBridge =>
