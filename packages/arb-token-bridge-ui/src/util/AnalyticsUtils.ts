@@ -1,6 +1,7 @@
 import posthog from 'posthog-js'
 
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
+import { isProductionEnvironment } from './CommonUtils'
 
 type AccountType = 'EOA' | 'Smart Contract'
 type AssetType = 'ETH' | 'ERC-20'
@@ -123,7 +124,7 @@ export function trackEvent(
   event: AnalyticsEvent,
   properties?: AnalyticsEventMap[AnalyticsEvent]
 ): void {
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProductionEnvironment) {
     return
   }
 
