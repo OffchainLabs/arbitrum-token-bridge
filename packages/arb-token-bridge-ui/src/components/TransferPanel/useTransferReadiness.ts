@@ -35,7 +35,6 @@ import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { addressesEqual } from '../../util/AddressUtils'
-import { log } from 'console'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
