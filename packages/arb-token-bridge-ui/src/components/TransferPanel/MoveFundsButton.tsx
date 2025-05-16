@@ -11,9 +11,16 @@ import { getNetworkName } from '../../util/networks'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 
+type MoveFundsButtonProps = Pick<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'onClick'
+> & {
+  overrideText?: string
+}
 export function MoveFundsButton({
-  onClick
-}: Pick<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>) {
+  onClick,
+  overrideText
+}: MoveFundsButtonProps) {
   const signer = useEthersSigner()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
@@ -47,9 +54,10 @@ export function MoveFundsButton({
         'lg:text-2xl'
       )}
     >
-      {isSmartContractWallet && isTransferring
-        ? 'Sending request...'
-        : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
+      {overrideText ||
+        (isSmartContractWallet && isTransferring
+          ? 'Sending request...'
+          : `Move funds to ${getNetworkName(networks.destinationChain.id)}`)}
     </Button>
   )
 }
