@@ -28,7 +28,7 @@ export function getInsufficientFundsForGasFeesErrorMessage({
   balance,
   requiredBalance
 }: GetInsufficientFundsForGasFeesErrorMessageParams) {
-  const errorMessage = `Please add more ${asset} on ${chain} to pay for gas fees.`
+  const errorMessage = `Please add more ${asset} on ${chain} to pay for fees.`
 
   if (balance === requiredBalance) {
     // An edge case where formatAmount returns the same value. In this case we don't want to show balances because in the UI it's the same as requiredBalance.

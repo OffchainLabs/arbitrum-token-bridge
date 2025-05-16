@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import { utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -32,6 +32,10 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
+import { shallow } from 'zustand/shallow'
+import { addressesEqual } from '../../util/AddressUtils'
+import { log } from 'console'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
@@ -136,6 +140,13 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
+  const { selectedRoute, selectedRouteContext } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      selectedRouteContext: state.context
+    }),
+    shallow
+  )
 
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
@@ -224,6 +235,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       }
     )
 
+    if (!selectedRoute) {
+      return notReady()
+    }
+
     const ethBalanceFloat = isDepositMode
       ? ethL1BalanceFloat
       : ethL2BalanceFloat
@@ -237,6 +252,58 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     // No error while loading balance
     if (ethBalanceFloat === null) {
       return notReady()
+    }
+
+    // Lifi: Prevent bridge is bridge fee, gas fee and amount are superior to user's balance
+    if (isLifiRoute(selectedRoute)) {
+      if (!selectedRouteContext) {
+        return notReady()
+      }
+
+      let amountToPay = BigNumber.from(0)
+      if (
+        addressesEqual(
+          selectedRouteContext.fee.token.address,
+          constants.AddressZero
+        )
+      ) {
+        amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
+      }
+      if (
+        addressesEqual(
+          selectedRouteContext.gas.token.address,
+          constants.AddressZero
+        )
+      ) {
+        amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
+      }
+      if (
+        addressesEqual(
+          selectedRouteContext.fromAmount.token.address,
+          constants.AddressZero
+        )
+      ) {
+        amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
+      }
+
+      const parsedAmountToPay = parseFloat(
+        utils.formatUnits(
+          amountToPay,
+          selectedRouteContext.fromAmount.token.decimals
+        )
+      )
+      if (parsedAmountToPay > ethBalanceFloat) {
+        return notReady({
+          errorMessages: {
+            inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+              asset: ether.symbol,
+              chain: networks.sourceChain.name,
+              balance: formatAmount(ethBalanceFloat),
+              requiredBalance: formatAmount(parsedAmountToPay)
+            })
+          }
+        })
+      }
     }
 
     const sendsAmount2 = Number(amount2) > 0
