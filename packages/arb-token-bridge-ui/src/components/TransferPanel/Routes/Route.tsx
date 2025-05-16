@@ -55,7 +55,7 @@ function Tag({
     <div className="flex">
       <div
         className={twMerge(
-          'flex h-fit items-center space-x-1 rounded-full p-2 text-xs',
+          'flex h-fit items-center space-x-1 rounded-full px-2 py-1 text-xs',
           className
         )}
       >
