@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAccount, WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+
 import merge from 'lodash-es/merge'
 import axios from 'axios'
-import { createOvermind, Overmind } from 'overmind'
+import { createOvermind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
@@ -26,6 +27,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
+import React from 'react'
 
 declare global {
   interface Window {
@@ -110,7 +112,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): React.ReactNode => {
   return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
-function AppContent() {
+const AppContent = React.memo(() => {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
@@ -149,7 +151,9 @@ function AppContent() {
       <MainContent />
     </>
   )
-}
+})
+
+AppContent.displayName = 'AppContent'
 
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
@@ -174,7 +178,7 @@ Object.keys(localStorage).forEach(key => {
 })
 
 export default function App() {
-  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
+  const overmind = useMemo(() => createOvermind(config), [])
 
   return (
     <Provider value={overmind}>

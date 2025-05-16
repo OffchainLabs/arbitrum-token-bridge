@@ -9,7 +9,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { fetchErc20Data } from './TokenUtils'
+import { Erc20Data, fetchErc20Data } from './TokenUtils'
 import { orbitChains } from './orbitChainsList'
 import { ChainId } from '../types/ChainId'
 import { getRpcUrl } from './rpc/getRpcUrl'
@@ -57,6 +57,7 @@ const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   }
 }
 
+// TODO: load only once
 export const getChains = () => {
   const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
@@ -87,6 +88,7 @@ export type ChainWithRpcUrl = ArbitrumNetwork & {
   rpcUrl: string
   explorerUrl: string
   slug?: string
+  nativeTokenData?: Erc20Data
 }
 
 export function getBlockNumberReferenceChainIdByChainId({
