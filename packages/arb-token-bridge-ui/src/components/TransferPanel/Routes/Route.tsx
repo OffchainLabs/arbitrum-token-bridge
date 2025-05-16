@@ -150,169 +150,158 @@ export const Route = React.memo(
     return (
       <button
         className={twMerge(
-          'group cursor-pointer rounded text-left text-white ring-1 ring-[#ffffff33] transition-colors',
+          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-[#ffffff33] transition-colors md:flex-row',
           'focus-visible:!outline-none',
-          selected && 'ring-[#5F7D5B]'
+          'focus-within:bg-[#474747] hover:bg-[#474747]', // focused state
+          selected && 'bg-[#474747] ring-[#5F7D5B]'
         )}
         onClick={() => onSelectedRouteClick(type)}
         disabled={disabled}
         aria-label={`Route ${type}`}
       >
-        <div
-          className={twMerge(
-            'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded-b bg-[#303030] px-4 py-3 text-sm transition-colors md:flex-row',
-            'group-focus-within:bg-[#474747] group-hover:bg-[#474747]', // focused state
-            selected && 'bg-[#474747]'
-          )}
-        >
-          <div className="flex flex-col md:min-w-36">
-            <span>You will receive:</span>
-            <div className="flex flex-col text-lg">
-              <div className="flex flex-row items-center gap-1">
+        <div className="flex flex-col md:min-w-36">
+          <span>You will receive:</span>
+          <div className="flex flex-col text-lg">
+            <div className="flex flex-row items-center gap-1">
+              <TokenLogo
+                srcOverride={'logoURI' in token ? token.logoURI : null}
+                fallback={
+                  <div className="h-5 w-5 min-w-5 rounded-full bg-gray-dark" />
+                }
+              />
+              {formatAmount(Number(amountReceived))} {token.symbol}
+              <div className="text-sm">
+                {showUsdValueForReceivedToken && (
+                  <div className="text-sm tabular-nums opacity-80">
+                    {formatUSD(ethToUSD(Number(amountReceived)))}
+                  </div>
+                )}
+              </div>
+            </div>
+            {isBatchTransferSupported && Number(amount2) > 0 && (
+              <div className="flew-row flex items-center gap-1">
                 <TokenLogo
-                  srcOverride={'logoURI' in token ? token.logoURI : null}
+                  srcOverride={null}
                   fallback={
                     <div className="h-5 w-5 min-w-5 rounded-full bg-gray-dark" />
                   }
                 />
-                {formatAmount(Number(amountReceived))} {token.symbol}
-                <div className="text-sm">
-                  {showUsdValueForReceivedToken && (
-                    <div className="text-sm tabular-nums opacity-80">
-                      {formatUSD(ethToUSD(Number(amountReceived)))}
-                    </div>
-                  )}
-                </div>
+                {formatAmount(Number(amount2), {
+                  symbol: childNativeCurrency.symbol
+                })}
               </div>
-              {isBatchTransferSupported && Number(amount2) > 0 && (
-                <div className="flew-row flex items-center gap-1">
-                  <TokenLogo
-                    srcOverride={null}
-                    fallback={
-                      <div className="h-5 w-5 min-w-5 rounded-full bg-gray-dark" />
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col justify-between gap-3">
+          <div className="flex flex-row gap-3 md:flex-col md:justify-between">
+            <div className="flex items-center">
+              <ClockIcon width={18} height={18} className="-ml-[1px]" />
+              <span className="ml-1 whitespace-nowrap">
+                {dayjs().add(durationMs, 'millisecond').fromNow(true)}
+              </span>
+              {fastWithdrawalActive && (
+                <div className="flex items-center">
+                  <Tooltip
+                    content={
+                      'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
                     }
-                  />
-                  {formatAmount(Number(amount2), {
-                    symbol: childNativeCurrency.symbol
-                  })}
+                  >
+                    <InformationCircleIcon className="ml-1 h-3 w-3" />
+                  </Tooltip>
                 </div>
               )}
             </div>
+
+            <div className="flex min-w-0 items-center">
+              <SafeImage
+                src={bridgeIconURI}
+                width={15}
+                height={15}
+                alt="bridge"
+                className="max-h-3 max-w-3 rounded-full"
+                fallback={
+                  <div className="h-3 w-3 min-w-3 rounded-full bg-gray-dark" />
+                }
+              />
+              <div className="truncate">
+                <span className="ml-1 whitespace-nowrap">{bridge}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col justify-between gap-3">
-            <div className="flex flex-row gap-3 md:flex-col md:justify-between">
-              <div className="flex items-center">
-                <ClockIcon width={18} height={18} className="-ml-[1px]" />
-                <span className="ml-1 whitespace-nowrap">
-                  {dayjs().add(durationMs, 'millisecond').fromNow(true)}
+
+          <Tooltip content={'The gas fees paid to operate the network'}>
+            <div className="flex items-center">
+              <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
+              <span className="ml-1" aria-label="Route gas">
+                {isLoadingGasEstimate ? (
+                  <Loader size="small" color="white" />
+                ) : gasCost ? (
+                  <div
+                    className="flex items-center gap-1"
+                    aria-label="Route gas"
+                  >
+                    {gasCost
+                      .map(({ gasCost, gasToken }) =>
+                        formatAmount(BigNumber.from(gasCost), {
+                          decimals: gasToken.decimals,
+                          symbol: gasToken.symbol
+                        })
+                      )
+                      .join(' and ')}
+                    {gasEth && (
+                      <div className="text-sm tabular-nums opacity-80">
+                        {formatUSD(
+                          ethToUSD(
+                            Number(
+                              utils.formatEther(BigNumber.from(gasEth.gasCost))
+                            )
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div aria-label="Route gas">{'N/A'}</div>
+                )}
+              </span>
+            </div>
+          </Tooltip>
+
+          {bridgeFee && (
+            <Tooltip content={'The fee the bridge takes'}>
+              <div className="flex items-center gap-1">
+                <Image
+                  src="/icons/bridge.svg"
+                  width={15}
+                  height={15}
+                  alt="bridge fee"
+                />
+                <span>
+                  {formatAmount(BigNumber.from(bridgeFee.fee), {
+                    decimals: bridgeFee.token.decimals,
+                    symbol: bridgeFee.token.symbol
+                  })}
                 </span>
-                {fastWithdrawalActive && (
-                  <div className="flex items-center">
-                    <Tooltip
-                      content={
-                        'Fast Withdrawals relies on a committee of validators. In the event of a committee outage, your withdrawal falls back to the 7 day challenge period secured by Arbitrum Fraud Proofs.'
-                      }
-                    >
-                      <InformationCircleIcon className="ml-1 h-3 w-3" />
-                    </Tooltip>
+                {showUSDValueForBridgeFee && (
+                  <div className="text-sm tabular-nums opacity-80">
+                    {formatUSD(
+                      ethToUSD(
+                        Number(utils.formatEther(BigNumber.from(bridgeFee.fee)))
+                      )
+                    )}
                   </div>
                 )}
               </div>
-
-              <div className="flex min-w-0 items-center">
-                <SafeImage
-                  src={bridgeIconURI}
-                  width={15}
-                  height={15}
-                  alt="bridge"
-                  className="max-h-3 max-w-3 rounded-full"
-                  fallback={
-                    <div className="h-3 w-3 min-w-3 rounded-full bg-gray-dark" />
-                  }
-                />
-                <div className="truncate">
-                  <span className="ml-1 whitespace-nowrap">{bridge}</span>
-                </div>
-              </div>
-            </div>
-
-            <Tooltip content={'The gas fees paid to operate the network'}>
-              <div className="flex items-center">
-                <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
-                <span className="ml-1" aria-label="Route gas">
-                  {isLoadingGasEstimate ? (
-                    <Loader size="small" color="white" />
-                  ) : gasCost ? (
-                    <div
-                      className="flex items-center gap-1"
-                      aria-label="Route gas"
-                    >
-                      {gasCost
-                        .map(({ gasCost, gasToken }) =>
-                          formatAmount(BigNumber.from(gasCost), {
-                            decimals: gasToken.decimals,
-                            symbol: gasToken.symbol
-                          })
-                        )
-                        .join(' and ')}
-                      {gasEth && (
-                        <div className="text-sm tabular-nums opacity-80">
-                          {formatUSD(
-                            ethToUSD(
-                              Number(
-                                utils.formatEther(
-                                  BigNumber.from(gasEth.gasCost)
-                                )
-                              )
-                            )
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div aria-label="Route gas">{'N/A'}</div>
-                  )}
-                </span>
-              </div>
             </Tooltip>
-
-            {bridgeFee && (
-              <Tooltip content={'The fee the bridge takes'}>
-                <div className="flex items-center gap-1">
-                  <Image
-                    src="/icons/bridge.svg"
-                    width={15}
-                    height={15}
-                    alt="bridge fee"
-                  />
-                  <span>
-                    {formatAmount(BigNumber.from(bridgeFee.fee), {
-                      decimals: bridgeFee.token.decimals,
-                      symbol: bridgeFee.token.symbol
-                    })}
-                  </span>
-                  {showUSDValueForBridgeFee && (
-                    <div className="text-sm tabular-nums opacity-80">
-                      {formatUSD(
-                        ethToUSD(
-                          Number(
-                            utils.formatEther(BigNumber.from(bridgeFee.fee))
-                          )
-                        )
-                      )}
-                    </div>
-                  )}
-                </div>
-              </Tooltip>
-            )}
-          </div>
-
-          {tag ? (
-            <div className="invisible absolute right-2 top-2 flex gap-1 md:visible">
-              {getBadges(tag)}
-            </div>
-          ) : null}
+          )}
         </div>
+
+        {tag ? (
+          <div className="invisible absolute right-2 top-2 flex gap-1 md:visible">
+            {getBadges(tag)}
+          </div>
+        ) : null}
       </button>
     )
   }
