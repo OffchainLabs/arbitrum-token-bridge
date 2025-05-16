@@ -19,14 +19,15 @@ import {
   TabParamEnum
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
+import {
+  isE2eTestingEnvironment,
+  isProductionEnvironment
+} from '../util/CommonUtils'
 
 const App = dynamic(
   () => {
     return new Promise<{ default: ComponentType }>(async resolve => {
-      if (
-        process.env.NODE_ENV !== 'production' ||
-        process.env.NEXT_PUBLIC_IS_E2E_TEST
-      ) {
+      if (!isProductionEnvironment || isE2eTestingEnvironment) {
         await registerLocalNetwork()
       }
 
@@ -183,10 +184,7 @@ export async function getServerSideProps({
     }
   }
 
-  if (
-    process.env.NODE_ENV !== 'production' ||
-    process.env.NEXT_PUBLIC_IS_E2E_TEST
-  ) {
+  if (!isProductionEnvironment || isE2eTestingEnvironment) {
     await registerLocalNetwork()
   }
   // it's necessary to call this before sanitization to make sure all chains are registered

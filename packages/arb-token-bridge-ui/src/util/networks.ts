@@ -18,6 +18,7 @@ import {
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
+import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -258,7 +259,7 @@ const defaultRpcUrls: { [chainId: number]: string } = {
 }
 
 export const rpcURLs: { [chainId: number]: string } =
-  process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_IS_E2E_TEST
+  !isProductionEnvironment || isE2eTestingEnvironment
     ? {
         ...defaultRpcUrls,
         [defaultL1Network.chainId]: localL1NetworkRpcUrl,
