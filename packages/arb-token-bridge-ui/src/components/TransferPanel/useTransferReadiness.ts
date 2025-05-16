@@ -254,58 +254,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       return notReady()
     }
 
-    // Lifi: Prevent bridge is bridge fee, gas fee and amount are superior to user's balance
-    if (isLifiRoute(selectedRoute)) {
-      if (!selectedRouteContext) {
-        return notReady()
-      }
-
-      let amountToPay = BigNumber.from(0)
-      if (
-        addressesEqual(
-          selectedRouteContext.fee.token.address,
-          constants.AddressZero
-        )
-      ) {
-        amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
-      }
-      if (
-        addressesEqual(
-          selectedRouteContext.gas.token.address,
-          constants.AddressZero
-        )
-      ) {
-        amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
-      }
-      if (
-        addressesEqual(
-          selectedRouteContext.fromAmount.token.address,
-          constants.AddressZero
-        )
-      ) {
-        amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
-      }
-
-      const parsedAmountToPay = parseFloat(
-        utils.formatUnits(
-          amountToPay,
-          selectedRouteContext.fromAmount.token.decimals
-        )
-      )
-      if (parsedAmountToPay > ethBalanceFloat) {
-        return notReady({
-          errorMessages: {
-            inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
-              chain: networks.sourceChain.name,
-              balance: formatAmount(ethBalanceFloat),
-              requiredBalance: formatAmount(parsedAmountToPay)
-            })
-          }
-        })
-      }
-    }
-
     const sendsAmount2 = Number(amount2) > 0
     const notEnoughAmount2 = nativeCurrency.isCustom
       ? Number(amount2) > Number(customFeeTokenL1BalanceFloat)
@@ -456,6 +404,58 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           })
         }
       })
+    }
+
+    /**
+     * Lifi: Prevent bridge is bridge fee, gas fee and amount are superior to user's balance
+     * This check needs to be after ERC20 check.
+     * In case of insufficient balance we want to show insufficient balance error message, not gas error
+     */
+    if (isLifiRoute(selectedRoute)) {
+      if (!selectedRouteContext) {
+        return notReady()
+      }
+
+      let amountToPay = BigNumber.from(0)
+      if (
+        addressesEqual(
+          selectedRouteContext.fee.token.address,
+          constants.AddressZero
+        )
+      ) {
+        amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
+      }
+      if (
+        addressesEqual(
+          selectedRouteContext.gas.token.address,
+          constants.AddressZero
+        )
+      ) {
+        amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
+      }
+      if (
+        addressesEqual(
+          selectedRouteContext.fromAmount.token.address,
+          constants.AddressZero
+        )
+      ) {
+        amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
+      }
+
+      const parsedAmountToPay = parseFloat(utils.formatUnits(amountToPay, 18))
+
+      if (parsedAmountToPay > ethBalanceFloat) {
+        return notReady({
+          errorMessages: {
+            inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+              asset: ether.symbol,
+              chain: networks.sourceChain.name,
+              balance: formatAmount(ethBalanceFloat),
+              requiredBalance: formatAmount(parsedAmountToPay)
+            })
+          }
+        })
+      }
     }
 
     // The amount entered is enough funds, but now let's include gas costs
