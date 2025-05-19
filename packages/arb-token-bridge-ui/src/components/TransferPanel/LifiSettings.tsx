@@ -204,7 +204,11 @@ function Tools({
                 height="15"
                 fallback={<div className="h-3 w-3 bg-gray-dark" />}
               />
-              <div key={tool.key} className="ml-1 truncate whitespace-nowrap">
+              <div
+                key={tool.key}
+                className="ml-1 truncate whitespace-nowrap"
+                title={tool.name}
+              >
                 {tool.name}
               </div>
             </div>
