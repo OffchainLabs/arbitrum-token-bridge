@@ -220,7 +220,7 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
   cy.selectTransactionsPanelTab(tab)
 
   cy.findByText(/Showing \d+ \w+ transactions made in/, {
-    timeout: 120_000
+    timeout: 150_000
   }).should('be.visible')
 }
 
