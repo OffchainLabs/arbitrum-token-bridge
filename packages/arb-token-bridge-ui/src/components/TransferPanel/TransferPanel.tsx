@@ -1346,7 +1346,7 @@ export function TransferPanel() {
       >
         <TransferPanelMain />
         <div className="z-50 mb-2 sm:relative">
-          <Settings key="aaaaaaaaaaaaaaaaaaaaaaaaa" />
+          <Settings />
         </div>
         <Routes />
 
