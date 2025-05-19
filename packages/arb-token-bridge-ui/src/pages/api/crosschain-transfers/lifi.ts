@@ -62,6 +62,16 @@ function sumFee(feeCosts: FeeCost[] | undefined) {
   ).toString()
 }
 
+export const allowedSourceTokens = [
+  CommonAddress.ArbitrumOne.USDC,
+  constants.AddressZero
+]
+
+export const allowedDestinationToken = [
+  CommonAddress.Ethereum.USDC,
+  constants.AddressZero
+]
+
 function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
   route,
   fromAddress,
@@ -240,10 +250,6 @@ export default async function handler(
       return
     }
 
-    const allowedSourceTokens = [
-      CommonAddress.ArbitrumOne.USDC,
-      constants.AddressZero
-    ]
     if (!allowedSourceTokens.includes(fromToken)) {
       res.status(400).send({
         message: 'fromToken is not one of the allowed tokens: USDC, ETH',
@@ -259,10 +265,6 @@ export default async function handler(
       return
     }
 
-    const allowedDestinationToken = [
-      CommonAddress.Ethereum.USDC,
-      constants.AddressZero
-    ]
     if (!allowedDestinationToken.includes(toToken)) {
       res.status(400).send({
         message: 'toToken is not one of the allowed tokens: USDC, ETH',

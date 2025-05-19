@@ -16,6 +16,10 @@ import { shallow } from 'zustand/shallow'
 import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { ChainId } from '../../../types/ChainId'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { getFromAndToTokenAddresses } from '../LifiSettings'
+import { allowedSourceTokens } from '../../../pages/api/crosschain-transfers/lifi'
+import { constants } from 'ethers'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>
@@ -43,7 +47,8 @@ function getRoutes({
   showHiddenRoutes,
   setShowHiddenRoutes,
   sourceChainId,
-  destinationChainId
+  destinationChainId,
+  selectedToken
 }: {
   isOftV2Transfer: boolean
   isCctpTransfer: boolean
@@ -54,15 +59,27 @@ function getRoutes({
   setShowHiddenRoutes: (toggle: boolean) => void
   sourceChainId: number
   destinationChainId: number
+  selectedToken: ERC20BridgeToken | null
 }): {
   ChildRoutes: React.JSX.Element | null
   focus: RouteType | null
 } {
+  const { fromToken } = getFromAndToTokenAddresses({
+    isDepositMode,
+    selectedToken: selectedToken || {
+      address: constants.AddressZero,
+      l2Address: constants.AddressZero
+    },
+    sourceChainId
+  })
+
   const isLifiEnabled =
     isLifiEnabledUtil() &&
     !isTestnet &&
     sourceChainId === ChainId.ArbitrumOne &&
-    destinationChainId === ChainId.Ethereum
+    destinationChainId === ChainId.Ethereum &&
+    fromToken &&
+    allowedSourceTokens.includes(fromToken)
 
   if (Number(amount) === 0) {
     return {
@@ -185,18 +202,19 @@ export const Routes = React.memo(() => {
         showHiddenRoutes,
         setShowHiddenRoutes,
         sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
+        destinationChainId: networks.destinationChain.id,
+        selectedToken
       }),
     [
-      amount,
-      isCctpTransfer,
-      isDepositMode,
       isOftV2Transfer,
+      isCctpTransfer,
+      amount,
+      isDepositMode,
       isTestnet,
       showHiddenRoutes,
-      setShowHiddenRoutes,
+      networks.sourceChain.id,
       networks.destinationChain.id,
-      networks.sourceChain.id
+      selectedToken
     ]
   )
 
