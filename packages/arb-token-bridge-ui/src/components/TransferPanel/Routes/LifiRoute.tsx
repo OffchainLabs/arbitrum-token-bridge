@@ -18,7 +18,7 @@ import {
   defaultSlippage,
   useLifiSettingsStore
 } from '../hooks/useLifiSettingsStore'
-import { getFromAndToTokenAddresses, LifiSettings } from '../LifiSettings'
+import { getFromAndToTokenAddresses } from '../Settings'
 import { Loader } from '../../common/atoms/Loader'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
@@ -83,7 +83,6 @@ export function LifiRoutes({
   if (isLoading) {
     return (
       <>
-        <LifiSettings />
         <div className="flex items-center justify-center">
           <Loader color="white" size="small" />
         </div>
@@ -99,7 +98,6 @@ export function LifiRoutes({
     ) {
       return (
         <>
-          <LifiSettings />
           <div className="rounded border border-lilac bg-lilac/50 p-3 text-sm text-white">
             Want more route options? Consider adjusting your slippage in
             Settings.
@@ -129,7 +127,6 @@ export function LifiRoutes({
     }
     return (
       <>
-        <LifiSettings />
         <LifiRoute type="lifi" route={route} tag={tags} />
       </>
     )
@@ -137,7 +134,6 @@ export function LifiRoutes({
 
   return (
     <>
-      <LifiSettings />
       {cheapestRoute && (
         <LifiRoute
           type="lifi-cheapest"
