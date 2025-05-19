@@ -245,7 +245,7 @@ export const Route = React.memo(
           <Tooltip content={'The gas fees paid to operate the network'}>
             <div className="flex items-center">
               <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
-              <span className="ml-1" aria-label="Route gas">
+              <span className="ml-1">
                 {isLoadingGasEstimate ? (
                   <Loader size="small" color="white" />
                 ) : gasCost ? (

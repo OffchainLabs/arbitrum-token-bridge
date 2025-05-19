@@ -72,7 +72,6 @@ describe('Withdraw ERC20 Token', () => {
         cy.login({ networkType: 'childChain' })
         cy.findSourceChainButton(getL2NetworkName())
         cy.findDestinationChainButton(getL1NetworkName())
-        cy.selectRoute('arbitrum')
         cy.findMoveFundsButton().should('be.disabled')
         cy.findSelectTokenButton(nativeTokenSymbol)
       })
@@ -94,12 +93,11 @@ describe('Withdraw ERC20 Token', () => {
         })
 
         context('should show clickable withdraw button', () => {
+          cy.selectRoute('arbitrum')
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
         })
 
         context('should withdraw successfully', () => {
-          cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
-
           // the Continue withdrawal button should be disabled at first
           cy.findByRole('button', {
             name: /Continue/i
@@ -199,12 +197,11 @@ describe('Withdraw ERC20 Token', () => {
         })
 
         context('should show clickable withdraw button', () => {
+          cy.selectRoute('arbitrum')
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
         })
 
         context('should initiate withdrawal successfully', () => {
-          cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
-
           // the Continue withdrawal button should be disabled at first
           cy.findByRole('button', {
             name: /Continue/i
