@@ -253,6 +253,7 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
+  const [{ embedMode }] = useArbQueryParams()
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -398,10 +399,12 @@ function NetworksPanel({
           )}
         </AutoSizer>
       </SearchPanelTable>
-      <div className="flex justify-between pb-2">
-        <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
-        <AddCustomOrbitChainButton closeDialog={close} />
-      </div>
+      {!embedMode && (
+        <div className="flex justify-between pb-2">
+          <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
+          <AddCustomOrbitChainButton closeDialog={close} />
+        </div>
+      )}
     </div>
   )
 }

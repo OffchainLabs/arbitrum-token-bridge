@@ -28,28 +28,27 @@ export const WidgetTransactionHistory = (props: UseDialogProps) => {
   const { transactions, loading: isLoadingTransactions } =
     useTransactionHistory(walletAddress)
   const currentTx = transactions[0]
-  const totalTransactions = transactions.length
   const isLoading = transactions.length ? false : isLoadingTransactions
 
   return (
     <Dialog
       {...props}
       onClose={() => props.onClose(false)}
-      title="Transaction Details"
+      title=""
       actionButtonProps={{ hidden: true }}
       isFooterHidden={true}
-      className="h-screen overflow-hidden"
+      className="relative h-screen overflow-hidden"
     >
-      <div className="my-3 flex flex-col gap-4">
-        {!isLoading && totalTransactions > 1 && (
-          <ExternalLink
-            href="https://bridge.arbitrum.io"
-            className="flex items-center gap-1 text-sm"
-          >
-            See full transaction history
-            <ArrowTopRightOnSquareIcon className="h-3 w-3" />
-          </ExternalLink>
-        )}
+      <ExternalLink
+        href="https://bridge.arbitrum.io/?tab=tx_history"
+        className="absolute right-6 top-4 flex items-center gap-1 text-sm"
+      >
+        See full transaction history
+        <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+      </ExternalLink>
+
+      <div className="my-3 flex flex-col gap-2">
+        <div className="mt-2 text-lg">Transaction Details</div>
 
         {isLoading && <WidgetTransactionHistoryLoadingPlaceholder />}
 

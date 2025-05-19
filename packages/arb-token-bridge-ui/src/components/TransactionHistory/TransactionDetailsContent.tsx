@@ -222,7 +222,7 @@ export const TransactionDetailsContent = ({
       </DetailsBox>
 
       {!isTxCompleted(tx) && (
-        <div className="flex justify-end">
+        <div className="flex justify-end min-[850px]:col-span-2">
           <ExternalLink href={GET_HELP_LINK}>
             <Button variant="secondary" className="border-white/30 text-xs">
               Get help

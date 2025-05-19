@@ -218,10 +218,6 @@ export function useTransferReadiness(): UseTransferReadinessResult {
   }, [nativeCurrency, erc20ParentBalances])
 
   return useMemo(() => {
-    if (!tosAccepted) {
-      return notReady()
-    }
-
     const { estimatedL1GasFees, estimatedL2GasFees } = sanitizeEstimatedGasFees(
       gasSummary,
       {
@@ -395,6 +391,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           })
         }
       })
+    }
+
+    if (!tosAccepted) {
+      return notReady()
     }
 
     // The amount entered is enough funds, but now let's include gas costs

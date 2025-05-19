@@ -25,7 +25,9 @@ type WaitForInputFunction = () => Promise<[boolean, unknown]>
 /**
  * Opens the dialog and returns a function which can be called to retrieve a {@link WaitForInputFunction}.
  */
-type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
+export type OpenDialogFunction = (
+  dialogType: DialogType
+) => WaitForInputFunction
 
 /**
  * Returns an array containing {@link DialogProps} and {@link OpenDialogFunction}.
@@ -83,7 +85,7 @@ export function useDialog2(): UseDialogResult {
   return [{ openedDialogType, onClose: closeDialog }, openDialog]
 }
 
-type DialogProps = {
+export type DialogProps = {
   openedDialogType: DialogType | null
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
 }

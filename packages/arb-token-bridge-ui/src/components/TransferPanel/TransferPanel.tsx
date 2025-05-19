@@ -1158,6 +1158,8 @@ export function TransferPanel() {
   if (embedMode) {
     return (
       <WidgetTransferPanel
+        openDialog={openDialog}
+        dialogProps={dialogProps}
         moveFundsButtonOnClick={moveFundsButtonOnClick}
         isTokenAlreadyImported={isTokenAlreadyImported}
         tokenFromSearchParams={tokenFromSearchParams}

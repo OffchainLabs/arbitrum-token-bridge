@@ -1,6 +1,10 @@
 import { useAccount } from 'wagmi'
 import { QueueListIcon } from '@heroicons/react/24/outline'
-import { DialogWrapper, useDialog2 } from '../common/Dialog2'
+import {
+  DialogProps,
+  DialogWrapper,
+  OpenDialogFunction
+} from '../common/Dialog2'
 import { WidgetHeaderAccountButton } from './WidgetHeaderAccountButton'
 import { WidgetRoutes } from './WidgetRoutes'
 import { WidgetTosConfirmationCheckbox } from './WidgetTosConfirmationCheckbox'
@@ -15,10 +19,14 @@ type WidgetTransferPanelProps = {
   isTokenAlreadyImported?: boolean
   tokenFromSearchParams?: string
   tokenImportDialogProps: UseDialogProps
+  openDialog: OpenDialogFunction
+  dialogProps: DialogProps
   closeWithResetTokenImportDialog: () => void
 }
 
 export function WidgetTransferPanel({
+  dialogProps,
+  openDialog,
   moveFundsButtonOnClick,
   isTokenAlreadyImported,
   tokenFromSearchParams,
@@ -26,7 +34,6 @@ export function WidgetTransferPanel({
   closeWithResetTokenImportDialog
 }: WidgetTransferPanelProps) {
   const { isConnected } = useAccount()
-  const [dialogProps, openDialog] = useDialog2()
 
   return (
     <>
