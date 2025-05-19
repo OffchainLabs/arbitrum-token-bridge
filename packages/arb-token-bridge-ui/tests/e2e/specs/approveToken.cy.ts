@@ -31,6 +31,7 @@ describe('Approve token for deposit', () => {
       cy.findByText('MAX').click()
 
       cy.findGasFeeSummary(zeroToLessThanOneEth)
+      cy.selectRoute('arbitrum')
 
       cy.waitUntil(() => cy.findMoveFundsButton().should('not.be.disabled'), {
         errorMsg: 'move funds button is disabled (expected to be enabled)',

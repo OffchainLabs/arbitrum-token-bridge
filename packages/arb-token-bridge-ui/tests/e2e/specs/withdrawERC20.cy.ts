@@ -72,6 +72,7 @@ describe('Withdraw ERC20 Token', () => {
         cy.login({ networkType: 'childChain' })
         cy.findSourceChainButton(getL2NetworkName())
         cy.findDestinationChainButton(getL1NetworkName())
+        cy.selectRoute('arbitrum')
         cy.findMoveFundsButton().should('be.disabled')
         cy.findSelectTokenButton(nativeTokenSymbol)
       })
