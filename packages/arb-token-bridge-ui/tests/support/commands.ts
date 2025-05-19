@@ -113,8 +113,8 @@ export const searchAndSelectToken = ({
 }
 
 export const fillCustomDestinationAddress = () => {
-  // click on advanced settings
-  cy.findByLabelText('advanced settings')
+  // click on settings
+  cy.findByLabelText('Open Settings')
     .scrollIntoView()
     .should('be.visible')
     .click()
@@ -129,6 +129,8 @@ export const fillCustomDestinationAddress = () => {
     .scrollIntoView()
     .should('be.visible')
     .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+
+  cy.findByLabelText('Close Settings').should('be.visible').click()
 }
 
 export function findAmountInput(): Cypress.Chainable<JQuery<HTMLElement>> {

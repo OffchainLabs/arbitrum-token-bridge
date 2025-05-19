@@ -30,7 +30,6 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import { AdvancedSettings } from './AdvancedSettings'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import {
@@ -90,12 +89,12 @@ import { Routes } from './Routes/Routes'
 import { useError } from '../../hooks/useError'
 import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
-import { getFromAndToTokenAddresses } from './LifiSettings'
 import { getAmountLoss } from './HighSlippageWarningDialog'
 import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTransactionCacheStore'
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
+import { Settings, getFromAndToTokenAddresses } from './Settings'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -1346,8 +1345,10 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
+        <div className="z-50 mb-2 sm:relative">
+          <Settings key="aaaaaaaaaaaaaaaaaaaaaaaaa" />
+        </div>
         <Routes />
-        <AdvancedSettings />
 
         {isConnected ? (
           <MoveFundsButton onClick={moveFundsButtonOnClick} />
