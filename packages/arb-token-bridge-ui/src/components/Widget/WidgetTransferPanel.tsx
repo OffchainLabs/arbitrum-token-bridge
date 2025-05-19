@@ -39,7 +39,7 @@ export function WidgetTransferPanel({
     <>
       <DialogWrapper {...dialogProps} />
 
-      <div className="relative m-auto grid w-max grid-cols-1 gap-4 rounded-lg bg-gray-1 p-4 text-white transition-all duration-300 min-[850px]:grid min-[850px]:max-w-[850px] min-[850px]:grid-cols-2">
+      <div className="relative m-auto grid w-max grid-cols-1 gap-4 rounded-lg bg-transparent p-4 text-white transition-all duration-300 min-[850px]:grid min-[850px]:max-w-[850px] min-[850px]:grid-cols-2">
         {/* Left/Top panel */}
         <div className="flex h-full max-w-[400px] flex-col gap-1 overflow-hidden">
           <div className="flex flex-row items-center justify-between text-lg">

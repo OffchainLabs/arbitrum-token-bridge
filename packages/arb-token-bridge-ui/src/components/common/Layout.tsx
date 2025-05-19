@@ -41,11 +41,15 @@ export function Layout(props: LayoutProps) {
   const [{ embedMode }] = useArbQueryParams()
 
   if (embedMode) {
-    return props.children
+    return (
+      <body className={twMerge('bg-gray-1', unica.className)}>
+        {props.children}
+      </body>
+    )
   }
 
   return (
-    <div className={twMerge('relative flex-col', unica.className)}>
+    <body className={twMerge('relative flex-col bg-black', unica.className)}>
       <Image
         src={EclipseBottom}
         alt="grains"
@@ -76,6 +80,6 @@ export function Layout(props: LayoutProps) {
           <Toast />
         </div>
       </div>
-    </div>
+    </body>
   )
 }
