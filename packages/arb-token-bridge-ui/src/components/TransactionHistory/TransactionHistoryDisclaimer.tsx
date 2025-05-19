@@ -85,14 +85,21 @@ export function TransactionHistoryDisclaimer() {
             <ExternalLink
               href={
                 walletAddress
-                  ? // Only show Arb/Mainnet and Mainnet/Arb transfers
-                    `https://layerzeroscan.com/address/${walletAddress}?srcChainKey[0]=arbitrum&srcChainKey[1]=ethereum&dstChainKey[0]=arbitrum&dstChainKey[1]=ethereum`
-                  : 'https://layerzeroscan.com'
+                  ? `https://etherscan.io/address/${walletAddress}`
+                  : 'https://etherscan.io'
               }
-              className="arb-hover inline-flex underline"
             >
-              <ExternalLink></ExternalLink>
-              LayerZero scanner
+              Etherscan
+            </ExternalLink>{' '}
+            and{' '}
+            <ExternalLink
+              href={
+                walletAddress
+                  ? `https://arbiscan.io/address/${walletAddress}`
+                  : 'https://arbiscan.io'
+              }
+            >
+              Arbiscan
             </ExternalLink>
             .
           </li>
