@@ -20,7 +20,7 @@ export function WidgetTosConfirmationCheckbox() {
   return (
     <div
       className={twMerge(
-        isTosHighlighted ? 'animate-blinkInfinite' : 'opacity-30'
+        isTosHighlighted ? 'animate-blinkInfinite' : 'opacity-50'
       )}
     >
       <Checkbox

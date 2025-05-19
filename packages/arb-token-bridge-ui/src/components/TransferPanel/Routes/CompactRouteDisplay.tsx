@@ -67,7 +67,7 @@ export const CompactRouteDisplay = React.memo(
           )}
         >
           {/* Main content - top row */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1">
               <TokenLogo
                 srcOverride={'logoURI' in token ? token.logoURI : null}
