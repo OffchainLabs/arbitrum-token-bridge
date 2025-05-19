@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import { utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -32,9 +32,10 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
+import { isLifiRoute, RouteContext, useRouteStore } from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { getAmountToPay } from './HighSlippageWarningDialog'
+import { addressesEqual } from '../../util/AddressUtils'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
@@ -113,6 +114,36 @@ function notReady(
   }
 
   return { ...result, ...params }
+}
+
+export function getAmountToPay(selectedRouteContext: RouteContext) {
+  let amountToPay = BigNumber.from(0)
+  if (
+    addressesEqual(
+      selectedRouteContext.fee.token.address,
+      constants.AddressZero
+    )
+  ) {
+    amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
+  }
+  if (
+    addressesEqual(
+      selectedRouteContext.gas.token.address,
+      constants.AddressZero
+    )
+  ) {
+    amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
+  }
+  if (
+    addressesEqual(
+      selectedRouteContext.fromAmount.token.address,
+      constants.AddressZero
+    )
+  ) {
+    amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
+  }
+
+  return amountToPay
 }
 
 export type UseTransferReadinessTransferReady = {

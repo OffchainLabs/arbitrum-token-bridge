@@ -1,11 +1,11 @@
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { RouteContext, useRouteStore } from './hooks/useRouteStore'
+import { useRouteStore } from './hooks/useRouteStore'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { BigNumber, constants, utils } from 'ethers'
 import { Token } from '../../pages/api/crosschain-transfers/types'
-import { addressesEqual } from '../../util/AddressUtils'
+import { getAmountToPay } from './useTransferReadiness'
 
 type AmountProps = {
   amount: BigNumber
@@ -34,36 +34,6 @@ function Amount({ amount, token, showToken }: AmountProps) {
       {formatUSD(ethToUSD(Number(utils.formatUnits(amount, token.decimals))))}
     </span>
   )
-}
-
-export function getAmountToPay(selectedRouteContext: RouteContext) {
-  let amountToPay = BigNumber.from(0)
-  if (
-    addressesEqual(
-      selectedRouteContext.fee.token.address,
-      constants.AddressZero
-    )
-  ) {
-    amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
-  }
-  if (
-    addressesEqual(
-      selectedRouteContext.gas.token.address,
-      constants.AddressZero
-    )
-  ) {
-    amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
-  }
-  if (
-    addressesEqual(
-      selectedRouteContext.fromAmount.token.address,
-      constants.AddressZero
-    )
-  ) {
-    amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
-  }
-
-  return amountToPay
 }
 
 export function getAmountLoss({
