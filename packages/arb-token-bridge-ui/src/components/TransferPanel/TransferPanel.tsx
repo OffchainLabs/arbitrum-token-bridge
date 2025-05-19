@@ -91,7 +91,7 @@ import { useError } from '../../hooks/useError'
 import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
 import { getFromAndToTokenAddresses } from './LifiSettings'
-import { getAmountLoss } from './HighSlippageWarningDialog'
+import { getAmountLoss, getAmountToPay } from './HighSlippageWarningDialog'
 import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTransactionCacheStore'
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
@@ -585,7 +585,7 @@ export function TransferPanel() {
        * We multiply by 100 before dividing to avoid BigNumber stripping the value to 0
        */
       const { lossPercentage } = getAmountLoss({
-        fromAmount: context.fromAmount.amount,
+        fromAmount: getAmountToPay(context),
         toAmount: context.toAmount.amount
       })
 

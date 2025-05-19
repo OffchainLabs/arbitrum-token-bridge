@@ -34,7 +34,7 @@ import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdr
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
-import { addressesEqual } from '../../util/AddressUtils'
+import { getAmountToPay } from './HighSlippageWarningDialog'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
@@ -415,42 +415,18 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         return notReady()
       }
 
-      let amountToPay = BigNumber.from(0)
-      if (
-        addressesEqual(
-          selectedRouteContext.fee.token.address,
-          constants.AddressZero
-        )
-      ) {
-        amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
-      }
-      if (
-        addressesEqual(
-          selectedRouteContext.gas.token.address,
-          constants.AddressZero
-        )
-      ) {
-        amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
-      }
-      if (
-        addressesEqual(
-          selectedRouteContext.fromAmount.token.address,
-          constants.AddressZero
-        )
-      ) {
-        amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
-      }
+      const amountToPay = parseFloat(
+        utils.formatUnits(getAmountToPay(selectedRouteContext), 18)
+      )
 
-      const parsedAmountToPay = parseFloat(utils.formatUnits(amountToPay, 18))
-
-      if (parsedAmountToPay > ethBalanceFloat) {
+      if (amountToPay > ethBalanceFloat) {
         return notReady({
           errorMessages: {
             inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
               asset: ether.symbol,
               chain: networks.sourceChain.name,
               balance: formatAmount(ethBalanceFloat),
-              requiredBalance: formatAmount(parsedAmountToPay)
+              requiredBalance: formatAmount(amountToPay)
             })
           }
         })
@@ -637,6 +613,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isTeleportMode,
     isSelectedTokenWithdrawOnly,
     isSelectedTokenWithdrawOnlyLoading,
-    childChain.name
+    childChain.name,
+    selectedRoute,
+    selectedRouteContext
   ])
 }
