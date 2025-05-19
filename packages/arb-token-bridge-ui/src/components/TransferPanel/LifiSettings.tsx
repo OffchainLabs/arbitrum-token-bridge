@@ -7,7 +7,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import useSWRImmutable from 'swr/immutable'
 import { useCallback, useState } from 'react'
-import { Popover } from '@headlessui/react'
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { Checkbox } from '../common/Checkbox'
 import { Loader } from '../common/atoms/Loader'
 import { Transition } from '../common/Transition'
@@ -225,16 +225,12 @@ export function LifiSettings() {
     slippage,
     setSlippage,
     storeDisabledBridges,
-    storeDisabledExchanges,
-    setDisabledExchangesToStore,
     setDisabledBridgesToStore
   } = useLifiSettingsStore(
     state => ({
       slippage: state.slippage,
       setSlippage: state.setSlippage,
       storeDisabledBridges: state.disabledBridges,
-      storeDisabledExchanges: state.disabledExchanges,
-      setDisabledExchangesToStore: state.setDisabledExchanges,
       setDisabledBridgesToStore: state.setDisabledBridges
     }),
     shallow
@@ -242,23 +238,12 @@ export function LifiSettings() {
 
   const [slippageValue, setSlippageValue] = useState(slippage)
   const [disabledBridges, setDisabledBridges] = useState(storeDisabledBridges)
-  const [disabledExchanges, setDisabledExchanges] = useState(
-    storeDisabledExchanges
-  )
 
   const toggleBridge = useCallback((bridge: string, enabled: boolean) => {
     setDisabledBridges(disabledBridges =>
       enabled
         ? disabledBridges.filter(b => b !== bridge)
         : [...new Set([...disabledBridges, bridge])]
-    )
-  }, [])
-
-  const toggleExchange = useCallback((exchange: string, enabled: boolean) => {
-    setDisabledExchanges(disabledExchanges =>
-      enabled
-        ? disabledExchanges.filter(e => e !== exchange)
-        : [...new Set([...disabledExchanges, exchange])]
     )
   }, [])
 
@@ -276,23 +261,22 @@ export function LifiSettings() {
     <Popover className="z-50 flex sm:relative">
       {({ open }) => (
         <>
-          <Popover.Button className="ml-auto">
-            <Cog8ToothIcon width={18} className="arb-hover text-white" />
-          </Popover.Button>
+          <PopoverButton className="ml-auto">
+            <Cog8ToothIcon width={30} className="arb-hover text-white" />
+          </PopoverButton>
           <Transition
             isOpen={open}
             afterLeave={() => {
               // When user leave, persist settings to zustand store
               setSlippage(slippageValue)
               setDisabledBridgesToStore(disabledBridges)
-              setDisabledExchangesToStore(disabledExchanges)
             }}
             options={{
               unmountOnLeave: false
             }}
             className="max-sm:transform-none" // Remove Transition from the stacking context
           >
-            <Popover.Panel
+            <PopoverPanel
               className={twMerge(
                 'flex flex-col gap-4 border-black bg-gray-8 p-4 text-sm text-gray-2',
                 'sm:absolute sm:left-auto sm:top-auto sm:mt-6 sm:h-auto sm:max-w-[700px] sm:-translate-x-full sm:rounded sm:border sm:p-6',
@@ -301,9 +285,9 @@ export function LifiSettings() {
             >
               <div className="flex items-center text-xl">
                 <span>Li.Fi Settings</span>
-                <Popover.Button className="ml-auto">
+                <PopoverButton className="ml-auto">
                   <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
-                </Popover.Button>
+                </PopoverButton>
               </div>
 
               <div className="flex flex-col justify-center gap-1">
@@ -398,19 +382,7 @@ export function LifiSettings() {
                   />
                 )}
               </div>
-
-              <div className="grid gap-2">
-                <div>Supported Exchanges</div>
-                {isLoadingTools && <Loader size="small" color="white" />}
-                {tools && tools.exchanges.length > 0 && (
-                  <Tools
-                    tools={tools.exchanges}
-                    toggle={toggleExchange}
-                    disabledTools={disabledExchanges}
-                  />
-                )}
-              </div>
-            </Popover.Panel>
+            </PopoverPanel>
           </Transition>
         </>
       )}

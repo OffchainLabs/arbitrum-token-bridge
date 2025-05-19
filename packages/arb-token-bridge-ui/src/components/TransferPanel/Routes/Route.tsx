@@ -20,6 +20,7 @@ import { isNetwork } from '../../../util/networks'
 import { Tooltip } from '../../common/Tooltip'
 import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
+import { shortenAddress } from '../../../util/CommonUtils'
 
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
 export type Token = {
@@ -122,7 +123,7 @@ export const Route = React.memo(
       provider: childChainProvider
     })
     const [_token] = useSelectedToken()
-    const [{ amount2 }] = useArbQueryParams()
+    const [{ amount2, destinationAddress }] = useArbQueryParams()
     const isBatchTransferSupported = useIsBatchTransferSupported()
 
     const token = overrideToken || _token || childNativeCurrency
@@ -160,7 +161,16 @@ export const Route = React.memo(
         aria-label={`Route ${type}`}
       >
         <div className="flex flex-col md:min-w-36">
-          <span>You will receive:</span>
+          <span className="flex gap-1">
+            {destinationAddress ? (
+              <Tooltip content={destinationAddress}>
+                {shortenAddress(destinationAddress)}
+              </Tooltip>
+            ) : (
+              'You'
+            )}{' '}
+            will receive:
+          </span>
           <div className="flex flex-col text-lg">
             <div className="flex flex-row items-center gap-1">
               <TokenLogo
