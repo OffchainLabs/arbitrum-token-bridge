@@ -25,7 +25,6 @@ import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
 import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
-import { useAppContextState } from '../../App/AppContext'
 import { Address } from 'viem'
 
 export function LifiRoutes({
@@ -35,9 +34,6 @@ export function LifiRoutes({
   cheapestTag?: BadgeType
   fastestTag?: BadgeType
 }) {
-  const {
-    layout: { isTransferring: isDisabled }
-  } = useAppContextState()
   const { address } = useAccount()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
@@ -134,7 +130,7 @@ export function LifiRoutes({
     return (
       <>
         <LifiSettings />
-        <LifiRoute type="lifi" route={route} tag={tags} disabled={isDisabled} />
+        <LifiRoute type="lifi" route={route} tag={tags} />
       </>
     )
   }
@@ -147,16 +143,10 @@ export function LifiRoutes({
           type="lifi-cheapest"
           route={cheapestRoute}
           tag={cheapestTag}
-          disabled={isDisabled}
         />
       )}
       {fastestRoute && (
-        <LifiRoute
-          type="lifi-fastest"
-          route={fastestRoute}
-          tag={fastestTag}
-          disabled={isDisabled}
-        />
+        <LifiRoute type="lifi-fastest" route={fastestRoute} tag={fastestTag} />
       )}
     </>
   )
@@ -165,13 +155,11 @@ export function LifiRoutes({
 function LifiRoute({
   type,
   route,
-  tag,
-  disabled
+  tag
 }: {
   type: 'lifi' | 'lifi-fastest' | 'lifi-cheapest'
   route: LifiCrosschainTransfersRoute
   tag?: BadgeType | BadgeType[]
-  disabled: boolean
 }) {
   const [selectedToken] = useSelectedToken()
   const { selectedRoute, setSelectedRoute } = useRouteStore(
@@ -248,7 +236,6 @@ function LifiRoute({
       tag={tag}
       selected={isSelected}
       onSelectedRouteClick={setSelectedRouteWithContext}
-      disabled={disabled}
     />
   )
 }

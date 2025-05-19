@@ -406,7 +406,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     }
 
     /**
-     * Lifi: Prevent bridge is bridge fee, gas fee and amount are superior to user's balance
+     * Lifi: Prevent bridging if the total of bridge fee, gas fee and amount are greater than the user's balance
      * This check needs to be after ERC20 check.
      * In case of insufficient balance we want to show insufficient balance error message, not gas error
      */

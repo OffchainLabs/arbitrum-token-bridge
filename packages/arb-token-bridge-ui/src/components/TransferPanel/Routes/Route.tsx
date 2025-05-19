@@ -21,6 +21,7 @@ import { Tooltip } from '../../common/Tooltip'
 import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
+import { useAppContextState } from '../../App/AppContext'
 
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
 export type Token = {
@@ -45,7 +46,6 @@ export type RouteProps = {
   tag?: BadgeType | BadgeType[]
   selected: boolean
   onSelectedRouteClick: SetRoute
-  disabled?: boolean
 }
 
 function Tag({
@@ -113,9 +113,11 @@ export const Route = React.memo(
     selected,
     bridgeFee,
     tag,
-    onSelectedRouteClick,
-    disabled
+    onSelectedRouteClick
   }: RouteProps) => {
+    const {
+      layout: { isTransferring: isDisabled }
+    } = useAppContextState()
     const [networks] = useNetworks()
     const { childChainProvider, isDepositMode } =
       useNetworksRelationship(networks)
@@ -154,10 +156,10 @@ export const Route = React.memo(
           'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-[#ffffff33] transition-colors md:flex-row',
           'focus-visible:!outline-none',
           'focus-within:bg-[#474747] hover:bg-[#474747]', // focused state
-          selected && 'bg-[#474747] ring-[#5F7D5B]'
+          !isDisabled && selected && 'bg-[#474747] ring-[#5F7D5B]'
         )}
         onClick={() => onSelectedRouteClick(type)}
-        disabled={disabled}
+        disabled={isDisabled}
         aria-label={`Route ${type}`}
       >
         <div className="flex flex-col md:min-w-36">

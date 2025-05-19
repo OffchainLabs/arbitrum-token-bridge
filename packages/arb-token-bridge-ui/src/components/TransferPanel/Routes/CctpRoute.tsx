@@ -9,12 +9,8 @@ import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
-import { useAppContextState } from '../../App/AppContext'
 
 export function CctpRoute() {
-  const {
-    layout: { isTransferring: isDisabled }
-  } = useAppContextState()
   const [{ amount }] = useArbQueryParams()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
@@ -50,7 +46,6 @@ export function CctpRoute() {
       selected={selectedRoute === 'cctp'}
       onSelectedRouteClick={setSelectedRoute}
       tag="best-deal"
-      disabled={isDisabled}
     />
   )
 }
