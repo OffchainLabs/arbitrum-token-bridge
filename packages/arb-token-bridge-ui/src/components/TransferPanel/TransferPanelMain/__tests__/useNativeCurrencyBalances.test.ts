@@ -10,6 +10,7 @@ import { getWagmiChain } from '../../../../util/wagmi/getWagmiChain'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { ChainId } from '../../../../types/ChainId'
 import { useNativeCurrency } from '../../../../hooks/useNativeCurrency'
+import { useArbQueryParams } from '../../../../hooks/useArbQueryParams'
 
 const useAccountDisconnectedMockReturnValue: UseAccountReturnType = {
   address: undefined,
@@ -22,6 +23,18 @@ const useAccountDisconnectedMockReturnValue: UseAccountReturnType = {
   isConnecting: false,
   isDisconnected: true,
   status: 'disconnected'
+}
+
+const useArbQueryParamsWithDestinationAddrMockReturnValue = {
+  sourceChain: ChainId.ArbitrumSepolia,
+  destinationChain: ChainId.Sepolia,
+  amount: '',
+  amount2: '',
+  destinationAddress: '0xaaa',
+  token: undefined,
+  settingsOpen: false,
+  txHistory: true,
+  tab: 0
 }
 
 vi.mock('../../../../hooks/useNetworks', () => ({
@@ -40,18 +53,19 @@ vi.mock('../../../../hooks/useNativeCurrency', () => ({
 }))
 
 vi.mock('../../../../hooks/useArbQueryParams', () => ({
-  useArbQueryParams: () => [{ destinationAddress: undefined }]
+  useArbQueryParams: vi.fn(() => [{ destinationAddress: undefined }])
 }))
 
 vi.mock('wagmi', async () => ({
   ...(await vi.importActual('wagmi')),
-  useAccount: vi.fn(() => ({ isConnected: true }))
+  useAccount: vi.fn(() => ({ address: '0xaaa', isConnected: true }))
 }))
 
 describe('useNativeCurrencyBalances', () => {
   const mockedUseNetworks = vi.mocked(useNetworks)
   const mockedUseBalances = vi.mocked(useBalances)
   const mockedUseAccount = vi.mocked(useAccount)
+  const mockedUseArbQueryParams = vi.mocked(useArbQueryParams)
   const mockedUseNativeCurrency = vi.mocked(useNativeCurrency)
 
   beforeAll(() => {
@@ -76,7 +90,7 @@ describe('useNativeCurrencyBalances', () => {
     destination address is the same as connected wallet, and 
     source chain is Sepolia and 
     destination chain is Arbitrum Sepolia`, () => {
-    mockedUseNetworks.mockReturnValue([
+    mockedUseNetworks.mockReturnValueOnce([
       {
         sourceChain: getWagmiChain(ChainId.Sepolia),
         sourceChainProvider: getProviderForChainId(ChainId.Sepolia),
@@ -99,7 +113,7 @@ describe('useNativeCurrencyBalances', () => {
     destination address is the same as connected wallet, and 
     source chain is Arbitrum Sepolia and 
     destination chain is Sepolia`, () => {
-    mockedUseNetworks.mockReturnValue([
+    mockedUseNetworks.mockReturnValueOnce([
       {
         sourceChain: getWagmiChain(ChainId.ArbitrumSepolia),
         sourceChainProvider: getProviderForChainId(ChainId.ArbitrumSepolia),
@@ -116,13 +130,17 @@ describe('useNativeCurrencyBalances', () => {
     })
   })
 
+  /** In the codebase we use the name `ethChildBalance` due to legacy setup
+   * where only ETH was supported as native currency, and therefore when the
+   * native currency is a custom gas token, we still use the name `ethChildBalance`
+   */
   it(`should return 0x123 parent balance as source balance and 
                     native currency "ETH" child balance as destination balance
     when wallet is connected, 
     destination address is the same as connected wallet, and 
     source chain is Sepolia and 
     destination chain is Arbitrum Sepolia`, () => {
-    mockedUseNetworks.mockReturnValue([
+    mockedUseNetworks.mockReturnValueOnce([
       {
         sourceChain: getWagmiChain(ChainId.Sepolia),
         sourceChainProvider: getProviderForChainId(ChainId.Sepolia),
@@ -132,7 +150,7 @@ describe('useNativeCurrencyBalances', () => {
       vi.fn()
     ])
 
-    mockedUseNativeCurrency.mockReturnValue({
+    mockedUseNativeCurrency.mockReturnValueOnce({
       isCustom: true,
       address: '0x123',
       name: 'Custom Token',
@@ -149,11 +167,10 @@ describe('useNativeCurrencyBalances', () => {
 
   it(`should return native currency "ETH" child balance as source balance and 
                     0x123 parent balance as destination balance
-    when wallet is connected, 
-    destination address is the same as connected wallet, and 
+    when wallet is connected, and
     source chain is Arbitrum Sepolia and 
     destination chain is Sepolia`, () => {
-    mockedUseNetworks.mockReturnValue([
+    mockedUseNetworks.mockReturnValueOnce([
       {
         sourceChain: getWagmiChain(ChainId.ArbitrumSepolia),
         sourceChainProvider: getProviderForChainId(ChainId.ArbitrumSepolia),
@@ -163,7 +180,7 @@ describe('useNativeCurrencyBalances', () => {
       vi.fn()
     ])
 
-    mockedUseNativeCurrency.mockReturnValue({
+    mockedUseNativeCurrency.mockReturnValueOnce({
       isCustom: true,
       address: '0x123',
       name: 'Custom Token',
@@ -171,10 +188,17 @@ describe('useNativeCurrencyBalances', () => {
       decimals: 18
     })
 
-    const { result } = renderHook(useNativeCurrencyBalances)
-    expect(result.current).toEqual({
-      sourceBalance: BigNumber.from(300_000),
-      destinationBalance: BigNumber.from(200_000)
+    it('when the destination address is the same as connected wallet', () => {
+      mockedUseArbQueryParams.mockReturnValueOnce([
+        useArbQueryParamsWithDestinationAddrMockReturnValue,
+        vi.fn()
+      ])
+
+      const { result } = renderHook(useNativeCurrencyBalances)
+      expect(result.current).toEqual({
+        sourceBalance: BigNumber.from(300_000),
+        destinationBalance: BigNumber.from(200_000)
+      })
     })
   })
 
@@ -184,9 +208,9 @@ describe('useNativeCurrencyBalances', () => {
     destination address is not specified, and 
     source chain is Sepolia and 
     destination chain is Arbitrum Sepolia`, () => {
-    mockedUseAccount.mockReturnValue(useAccountDisconnectedMockReturnValue)
+    mockedUseAccount.mockReturnValueOnce(useAccountDisconnectedMockReturnValue)
 
-    mockedUseNetworks.mockReturnValue([
+    mockedUseNetworks.mockReturnValueOnce([
       {
         sourceChain: getWagmiChain(ChainId.Sepolia),
         sourceChainProvider: getProviderForChainId(ChainId.Sepolia),
