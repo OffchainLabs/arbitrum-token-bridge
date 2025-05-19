@@ -34,9 +34,24 @@ import {
 } from '../types/ChainQueryParam'
 import { ChainId } from '../types/ChainId'
 
+export enum TabParamEnum {
+  BRIDGE = 'bridge',
+  TX_HISTORY = 'tx_history'
+}
+
 export enum AmountQueryParamEnum {
   MAX = 'max'
 }
+
+export const tabToIndex = {
+  [TabParamEnum.BRIDGE]: 0,
+  [TabParamEnum.TX_HISTORY]: 1
+} as const satisfies Record<TabParamEnum, number>
+
+export const indexToTab = {
+  0: TabParamEnum.BRIDGE,
+  1: TabParamEnum.TX_HISTORY
+} as const satisfies Record<number, TabParamEnum>
 
 export const useArbQueryParams = () => {
   /*
@@ -54,6 +69,7 @@ export const useArbQueryParams = () => {
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
     txHistory: withDefault(BooleanParam, true), // enable/disable tx history
+    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
     embedMode: withDefault(BooleanParam, false), // enable/disable embed mode
     allowBatchTransfers: withDefault(BooleanParam, true), // allow batch transfers
     allowSwitchingNetworkPair: withDefault(BooleanParam, true) // allow switching networks
@@ -178,6 +194,31 @@ export function decodeChainQueryParam(
 export const ChainParam = {
   encode: encodeChainQueryParam,
   decode: decodeChainQueryParam
+}
+
+export function encodeTabQueryParam(
+  tabIndex: number | null | undefined
+): string {
+  if (typeof tabIndex === 'number' && tabIndex in indexToTab) {
+    return indexToTab[tabIndex as keyof typeof indexToTab]
+  }
+  return TabParamEnum.BRIDGE
+}
+
+// Parse string to number
+// URL accepts string only
+export function decodeTabQueryParam(
+  tab: string | (string | null)[] | null | undefined
+): number {
+  if (typeof tab === 'string' && tab in tabToIndex) {
+    return tabToIndex[tab as TabParamEnum]
+  }
+  return tabToIndex[TabParamEnum.BRIDGE]
+}
+
+export const TabParam = {
+  encode: encodeTabQueryParam,
+  decode: decodeTabQueryParam
 }
 
 export function ArbQueryParamProvider({

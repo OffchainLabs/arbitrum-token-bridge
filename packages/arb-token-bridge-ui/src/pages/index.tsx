@@ -1,4 +1,4 @@
-import React, { ComponentType, useEffect, useState } from 'react'
+import { ComponentType, useEffect, useState } from 'react'
 import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
 import { decodeString, encodeString } from 'use-query-params'
@@ -15,7 +15,8 @@ import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
-  encodeChainQueryParam
+  encodeChainQueryParam,
+  TabParamEnum
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 
@@ -78,12 +79,25 @@ export const sanitizeTokenQueryParam = ({
   return tokenLowercased
 }
 
+export const sanitizeTabQueryParam = (
+  tab: string | string[] | null | undefined
+): string => {
+  const enumEntryNames = Object.keys(TabParamEnum)
+
+  if (typeof tab === 'string' && enumEntryNames.includes(tab.toUpperCase())) {
+    return tab.toLowerCase()
+  }
+
+  return TabParamEnum.BRIDGE
+}
+
 function getDestinationWithSanitizedQueryParams(
   sanitized: {
     sourceChainId: number
     destinationChainId: number
     experiments: string | undefined
     token: string | undefined
+    tab: string
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -95,7 +109,8 @@ function getDestinationWithSanitizedQueryParams(
       key === 'sourceChain' ||
       key === 'destinationChain' ||
       key === 'experiments' ||
-      key === 'token'
+      key === 'token' ||
+      key === 'tab'
     ) {
       continue
     }
@@ -112,6 +127,7 @@ function getDestinationWithSanitizedQueryParams(
   const encodedDestination = encodeChainQueryParam(sanitized.destinationChainId)
   const encodedExperiments = encodeString(sanitized.experiments)
   const encodedToken = encodeString(sanitized.token)
+  const encodedTab = encodeString(sanitized.tab)
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -127,6 +143,10 @@ function getDestinationWithSanitizedQueryParams(
 
   if (encodedToken) {
     params.set('token', encodedToken)
+  }
+
+  if (encodedTab) {
+    params.set('tab', encodedTab)
   }
 
   return `/?${params.toString()}`
@@ -154,6 +174,7 @@ export async function getServerSideProps({
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
   const experiments = decodeString(query.experiments)
   const token = decodeString(query.token)
+  const tab = decodeString(query.tab)
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -182,7 +203,8 @@ export async function getServerSideProps({
     token: sanitizeTokenQueryParam({
       token,
       destinationChainId: sanitizedChainIds.destinationChainId
-    })
+    }),
+    tab: sanitizeTabQueryParam(tab)
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
@@ -190,14 +212,15 @@ export async function getServerSideProps({
     sourceChainId !== sanitized.sourceChainId ||
     destinationChainId !== sanitized.destinationChainId ||
     experiments !== sanitized.experiments ||
-    token !== sanitized.token
+    token !== sanitized.token ||
+    tab !== sanitized.tab
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
-      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token} (before)`
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab} (before)`
     )
     console.log(
-      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token} (after)`
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab} (after)`
     )
     return {
       redirect: {

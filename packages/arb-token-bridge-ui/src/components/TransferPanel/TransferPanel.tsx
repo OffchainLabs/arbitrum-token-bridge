@@ -7,6 +7,7 @@ import { useAccount, useConfig } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
+import { shallow } from 'zustand/shallow'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -15,7 +16,11 @@ import {
   TokenImportDialog,
   useTokenImportDialogStore
 } from './TokenImportDialog'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  TabParamEnum,
+  tabToIndex,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -68,7 +73,6 @@ import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
-import { useMainContentTabs } from '../MainContent/MainContent'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
@@ -80,7 +84,6 @@ import { ConnectWalletButton } from './ConnectWalletButton'
 import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
 import { useRouteStore } from './hooks/useRouteStore'
 import { useError } from '../../hooks/useError'
-import { shallow } from 'zustand/shallow'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 
 const signerUndefinedError = 'Signer is undefined'
@@ -99,7 +102,18 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
+  // Link the amount state directly to the amount in query params -  no need of useState
+  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
+  const [
+    {
+      amount,
+      amount2,
+      destinationAddress,
+      token: tokenFromSearchParams,
+      embedMode
+    },
+    setQueryParams
+  ] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
@@ -147,7 +161,6 @@ export function TransferPanel() {
   const wagmiConfig = useConfig()
 
   const { setTransferring } = useAppContextActions()
-
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
   const { selectedRoute, clearRoute } = useRouteStore(
     state => ({
@@ -158,23 +171,6 @@ export function TransferPanel() {
   )
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
-
-  // Link the amount state directly to the amount in query params -  no need of useState
-  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2, destinationAddress, embedMode }] =
-    useArbQueryParams()
-
-  const _switchToTransactionHistoryTab = useMainContentTabs(
-    state => state.switchToTransactionHistoryTab
-  )
-
-  const switchToTransactionHistoryTab = useCallback(() => {
-    if (embedMode) {
-      openDialog('widget_transaction_history')
-    } else {
-      _switchToTransactionHistoryTab()
-    }
-  }, [embedMode, _switchToTransactionHistoryTab])
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -203,6 +199,14 @@ export function TransferPanel() {
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
   const { handleError } = useError()
+
+  const switchToTransactionHistoryTab = useCallback(
+    () =>
+      setQueryParams({
+        tab: tabToIndex[TabParamEnum.TX_HISTORY]
+      }),
+    [setQueryParams]
+  )
 
   useEffect(() => {
     // hide Project listing when networks are changed
