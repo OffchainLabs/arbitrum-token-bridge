@@ -124,8 +124,8 @@ export function HighSlippageWarningDialog(props: UseDialogProps) {
       className="!max-w-[420px]"
     >
       <div className="mt-4 text-sm">
-        Slippage for this transaction is {lossPercentage.toString()}%, that's
-        quite high.
+        Slippage for this transaction is {lossPercentage.toString()}%,
+        that&apos;s quite high.
       </div>
 
       <div className="my-4 flex flex-col gap-2 text-sm">
