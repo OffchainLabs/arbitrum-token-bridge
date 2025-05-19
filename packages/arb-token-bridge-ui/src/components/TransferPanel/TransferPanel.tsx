@@ -1347,7 +1347,9 @@ export function TransferPanel() {
         {isConnected ? (
           <MoveFundsButton
             onClick={moveFundsButtonOnClick}
-            overrideText={!selectedRoute ? 'Select route' : undefined}
+            overrideText={
+              !selectedRoute && Number(amount) > 0 ? 'Select route' : undefined
+            }
           />
         ) : (
           <ConnectWalletButton />
