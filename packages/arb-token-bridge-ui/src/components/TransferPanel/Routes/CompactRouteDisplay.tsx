@@ -53,8 +53,8 @@ export const CompactRouteDisplay = React.memo(
     return (
       <div
         className={twMerge(
-          'group cursor-pointer rounded text-white ring-1 ring-[#ffffff33]',
-          selected && 'ring-2 ring-[#5F7D5B]'
+          'group cursor-pointer rounded border border-[#ffffff33] text-white',
+          selected && 'border-2 border-[#5F7D5B]'
         )}
         onClick={() => onSelectedRouteClick(type)}
         aria-label={`Route ${type}`}
