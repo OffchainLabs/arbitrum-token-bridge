@@ -34,7 +34,6 @@ import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdr
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { isLifiRoute, RouteContext, useRouteStore } from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
-import { getAmountToPay } from './HighSlippageWarningDialog'
 import { addressesEqual } from '../../util/AddressUtils'
 
 // Add chains IDs that are currently down or disabled
