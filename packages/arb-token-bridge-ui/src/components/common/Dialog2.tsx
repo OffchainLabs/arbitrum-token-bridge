@@ -14,6 +14,7 @@ import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
 import { WidgetTransactionHistory } from '../Widget/WidgetTransactionHistory'
+import { TokenSelectionDialog } from '../TransferPanel/TokenSelectionDialog'
 
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
@@ -46,6 +47,7 @@ export type DialogType =
   | 'confirm_cctp_deposit'
   | 'confirm_usdc_deposit'
   | 'widget_transaction_history'
+  | 'token_selection'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef =
@@ -142,6 +144,8 @@ export function DialogWrapper(props: DialogProps) {
       )
     case 'widget_transaction_history':
       return <WidgetTransactionHistory {...commonProps} />
+    case 'token_selection':
+      return <TokenSelectionDialog {...commonProps} />
     default:
       return null
   }
