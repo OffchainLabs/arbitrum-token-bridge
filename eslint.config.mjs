@@ -1,44 +1,26 @@
-import { defineConfig, globalIgnores } from "eslint/config";
+import { globalIgnores, defineConfig } from "eslint/config";
 import path from "path";
 import { fileURLToPath } from "url";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import zustandRules from "eslint-plugin-zustand-rules";
 import tsParser from "@typescript-eslint/parser";
+import prettierRecommended from "eslint-plugin-prettier/recommended";
 import js from "@eslint/js";
-
-import { FlatCompat } from "@eslint/eslintrc";
+import tseslint from "typescript-eslint";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
-
 export default [
+  ...tseslint.configs.recommended,
+  prettierRecommended,
   {
-    env: {
-      node: true,
-    },
-
-    files: [
-      "/packages/arb-token-bridge-ui/src/**/*.js",
-      "/packages/arb-token-bridge-ui/src/**/*.ts",
-      "/packages/arb-token-bridge-ui/src/**/*.tsx",
-    ],
+    files: ["**/*.js", "**/*.ts", "**/*.tsx", "**/*.mjs", "**/*.jsx"],
 
     plugins: {
       "@typescript-eslint": typescriptEslint,
       "zustand-rules": zustandRules,
     },
-
-    extends: compat.extends(
-      "plugin:@typescript-eslint/recommended",
-      "plugin:prettier/recommended",
-      "next"
-    ),
 
     languageOptions: {
       parser: tsParser,
@@ -86,5 +68,8 @@ export default [
     "**/dist",
     "**/synpress.config.ts",
     "**/tailwind.config.js",
+    "**/build/",
+    ".github/",
+    "**/tests/",
   ]),
 ];
