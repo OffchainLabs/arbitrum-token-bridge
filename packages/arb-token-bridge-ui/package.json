@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.13.8",
-    "@arbitrum/sdk": "^4.0.3",
+    "@arbitrum/sdk": "^4.0.5-alpha.0",
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^2.2.2",
     "@headlessui/tailwindcss": "^0.2.2",
