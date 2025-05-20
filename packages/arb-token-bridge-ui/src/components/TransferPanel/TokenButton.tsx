@@ -13,7 +13,7 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { Button } from '../common/Button'
-import { useDialog2 } from '../common/Dialog2'
+import { DialogWrapper, useDialog2 } from '../common/Dialog2'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -29,7 +29,7 @@ export function TokenButton({
   const [selectedToken] = useSelectedToken()
   const disabled = options?.disabled ?? false
 
-  const [, openDialog] = useDialog2()
+  const [dialogProps, openDialog] = useDialog2()
 
   const [networks] = useNetworks()
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
@@ -65,30 +65,34 @@ export function TokenButton({
   }, [tokenFromSearchParams, isLoadingTokenLists])
 
   return (
-    <Button
-      variant="primary"
-      className="arb-hover h-full w-max rounded-bl rounded-tl px-3 pb-1 pt-2 text-white"
-      aria-label="Select Token"
-      onClick={() => openDialog('token_selection')}
-      disabled={disabled}
-    >
-      <div className="flex items-center gap-2">
-        {isLoadingToken ? (
-          <Loader size="small" color="white" />
-        ) : (
-          <>
-            <TokenLogo srcOverride={options?.logoSrc} />
-            <span className="text-xl font-light">{tokenSymbol}</span>
-            {!disabled && (
-              <ChevronDownIcon
-                className={twMerge(
-                  'h-3 w-3 text-gray-6 transition-transform duration-200'
-                )}
-              />
-            )}
-          </>
-        )}
-      </div>
-    </Button>
+    <>
+      <DialogWrapper {...dialogProps} />
+
+      <Button
+        variant="primary"
+        className="arb-hover h-full w-max rounded-bl rounded-tl px-3 pb-1 pt-2 text-white"
+        aria-label="Select Token"
+        onClick={() => openDialog('token_selection')}
+        disabled={disabled}
+      >
+        <div className="flex items-center gap-2">
+          {isLoadingToken ? (
+            <Loader size="small" color="white" />
+          ) : (
+            <>
+              <TokenLogo srcOverride={options?.logoSrc} />
+              <span className="text-xl font-light">{tokenSymbol}</span>
+              {!disabled && (
+                <ChevronDownIcon
+                  className={twMerge(
+                    'h-3 w-3 text-gray-6 transition-transform duration-200'
+                  )}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </Button>
+    </>
   )
 }

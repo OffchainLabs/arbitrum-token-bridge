@@ -14,7 +14,7 @@ import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
 import { WidgetTransactionHistory } from '../Widget/WidgetTransactionHistory'
-import { TokenSelectionDialog } from '../TransferPanel/TokenSelectionDialog'
+import { TokenSearch } from '../TransferPanel/TokenSearch'
 
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
@@ -145,7 +145,7 @@ export function DialogWrapper(props: DialogProps) {
     case 'widget_transaction_history':
       return <WidgetTransactionHistory {...commonProps} />
     case 'token_selection':
-      return <TokenSelectionDialog {...commonProps} />
+      return <TokenSearch {...commonProps} />
     default:
       return null
   }

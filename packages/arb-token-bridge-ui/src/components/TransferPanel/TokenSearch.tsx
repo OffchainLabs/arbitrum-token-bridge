@@ -30,7 +30,7 @@ import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
-import { SearchPanel } from '../common/SearchPanel/SearchPanel'
+import { Panel, SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -40,6 +40,8 @@ import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { addressesEqual } from '../../util/AddressUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { Dialog, UseDialogProps } from '../common/Dialog'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -120,7 +122,7 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
   )
 }
 
-function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
+function TokenListsPanel() {
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
 
@@ -141,9 +143,6 @@ function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
 
   return (
     <>
-      <SearchPanel.PageTitle title="Token Lists">
-        <SearchPanel.CloseButton onClick={closePanel} />
-      </SearchPanel.PageTitle>
       <div className="flex flex-col gap-6 rounded-md border border-gray-dark p-6 text-white">
         {listsToShow.map(tokenList => (
           <TokenListRow key={tokenList.id} tokenList={tokenList} />
@@ -543,7 +542,7 @@ function TokensPanel({
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
       dataCy="tokenSearchList"
-      isDialog={false}
+      isDialog={true}
     >
       <AutoSizer>
         {({ height, width }) => (
@@ -560,13 +559,7 @@ function TokensPanel({
   )
 }
 
-export function TokenSearch({
-  className,
-  close
-}: {
-  className?: string
-  close: () => void
-}) {
+export function TokenSearch(props: UseDialogProps) {
   const { setAmount2 } = useSetInputAmount()
   const {
     app: {
@@ -576,6 +569,8 @@ export function TokenSearch({
   const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChain, parentChainProvider } = useNetworksRelationship(networks)
+
+  const [activePanel, setActivePanel] = useState<Panel>(Panel.MAIN)
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -635,28 +630,49 @@ export function TokenSearch({
   }
 
   return (
-    <SearchPanel>
-      <SearchPanel.MainPage className={className}>
-        <SearchPanel.PageTitle title="Select Token">
-          <SearchPanel.CloseButton onClick={close} />
-        </SearchPanel.PageTitle>
-        <TokensPanel onTokenSelected={selectToken} />
-        <div className="flex justify-end pt-4">
-          {isFetchingTokenLists ? (
-            <SearchPanel.LoaderWithMessage loadingMessage="Fetching Tokens..." />
-          ) : (
-            <SearchPanel.MainPageCTA>
-              Manage token lists
-            </SearchPanel.MainPageCTA>
-          )}
-        </div>
-      </SearchPanel.MainPage>
-      <SearchPanel.SecondaryPage className={className}>
-        <TokenListsPanel closePanel={close} />
-        <SearchPanel.SecondaryPageCTA>
-          Back to Select Token
-        </SearchPanel.SecondaryPageCTA>
-      </SearchPanel.SecondaryPage>
-    </SearchPanel>
+    <Dialog
+      {...props}
+      onClose={() => props.onClose(false)}
+      title={activePanel === Panel.MAIN ? 'Select Token' : 'Manage Token Lists'}
+      actionButtonProps={{ hidden: true }}
+      isFooterHidden={true}
+      className="h-screen overflow-hidden md:h-[calc(100vh_-_175px)] md:max-h-[900px] md:max-w-[500px]"
+    >
+      <div className="mt-4 flex flex-col gap-4">
+        {activePanel === Panel.MAIN && (
+          <>
+            <TokensPanel onTokenSelected={selectToken} />
+
+            <div className="flex justify-end pt-4">
+              {isFetchingTokenLists ? (
+                <SearchPanel.LoaderWithMessage loadingMessage="Fetching Tokens..." />
+              ) : (
+                <button
+                  className="flex cursor-pointer items-center gap-2 text-sm"
+                  onClick={() => setActivePanel(Panel.SECONDARY)}
+                >
+                  Manage token lists
+                  <ArrowRightIcon className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </>
+        )}
+
+        {activePanel === Panel.SECONDARY && (
+          <>
+            <TokenListsPanel />
+
+            <button
+              className="flex cursor-pointer items-center gap-2 text-sm"
+              onClick={() => setActivePanel(Panel.MAIN)}
+            >
+              <ArrowLeftIcon className="h-3 w-3" />
+              Back to Select Token
+            </button>
+          </>
+        )}
+      </div>
+    </Dialog>
   )
 }
