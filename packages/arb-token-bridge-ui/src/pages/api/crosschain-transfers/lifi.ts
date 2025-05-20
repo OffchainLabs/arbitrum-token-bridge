@@ -371,7 +371,7 @@ export default async function handler(
     const cheapestRoute = findCheapestRoute(filteredRoutes)
     const fastestRoute = findFastestRoute(filteredRoutes)
 
-    if (!cheapestRoute || !fastestRoute) {
+    if (!cheapestRoute && !fastestRoute) {
       res.status(204).json({ data: [] })
       return
     }
