@@ -2,6 +2,7 @@ import { BigNumber } from 'ethers'
 import { vi, describe, beforeAll, it, expect, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useAccount, UseAccountReturnType } from 'wagmi'
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 
 import { useNetworks } from '../../../../hooks/useNetworks'
 import { useBalances } from '../../../../hooks/useBalances'
@@ -11,7 +12,6 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { ChainId } from '../../../../types/ChainId'
 import { useNativeCurrency } from '../../../../hooks/useNativeCurrency'
 import { useArbQueryParams } from '../../../../hooks/useArbQueryParams'
-import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 
 const useAccountDisconnectedMockReturnValue: UseAccountReturnType = {
   address: undefined,
