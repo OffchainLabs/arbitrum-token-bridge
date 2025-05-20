@@ -64,22 +64,38 @@ export function TransactionHistoryDisclaimer() {
     >
       <span className="font-bold">Don&apos;t see your transaction?</span>
       <ul className="list-disc pl-4">
-        {showLifiDisclaimer && (
-          <li>
-            Some LiFi routes might be on{' '}
-            <ExternalLink
-              href={
-                walletAddress
-                  ? `https://scan.li.fi/wallet/${walletAddress}`
-                  : 'https://scan.li.fi'
-              }
-              className="arb-hover inline-flex underline"
-            >
-              LifiScanner
-            </ExternalLink>
-            .
-          </li>
-        )}
+        {showLifiDisclaimer &&
+          (lifiTransactions && lifiTransactions.length > 0 ? (
+            <li>
+              Some LiFi routes might be on{' '}
+              <ExternalLink
+                href={
+                  walletAddress
+                    ? `https://scan.li.fi/wallet/${walletAddress}`
+                    : 'https://scan.li.fi'
+                }
+                className="arb-hover inline-flex underline"
+              >
+                LifiScanner
+              </ExternalLink>
+              .
+            </li>
+          ) : (
+            <li>
+              Some LiFi routes might be on{' '}
+              <ExternalLink
+                href={
+                  walletAddress
+                    ? `https://arbiscan.io/address/${walletAddress}`
+                    : 'https://arbiscan.io'
+                }
+                className="arb-hover inline-flex underline"
+              >
+                Arbiscan
+              </ExternalLink>
+              .
+            </li>
+          ))}
         {showOftDisclaimer && (
           <li>
             Some LayerZero USDT transfers might be on{' '}
