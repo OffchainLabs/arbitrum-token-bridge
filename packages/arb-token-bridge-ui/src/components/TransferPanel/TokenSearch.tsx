@@ -42,6 +42,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -552,6 +553,7 @@ function TokensPanel({
             rowCount={tokensToShow.length}
             rowHeight={84}
             rowRenderer={rowRenderer}
+            style={{ minHeight: '180px' }}
           />
         )}
       </AutoSizer>
@@ -570,6 +572,7 @@ export function TokenSearch(props: UseDialogProps) {
   const [networks] = useNetworks()
   const { childChain, parentChainProvider } = useNetworksRelationship(networks)
 
+  const [{ embedMode }] = useArbQueryParams()
   const [activePanel, setActivePanel] = useState<Panel>(Panel.MAIN)
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
@@ -636,7 +639,10 @@ export function TokenSearch(props: UseDialogProps) {
       title={activePanel === Panel.MAIN ? 'Select Token' : 'Manage Token Lists'}
       actionButtonProps={{ hidden: true }}
       isFooterHidden={true}
-      className="h-screen overflow-hidden md:h-[calc(100vh_-_175px)] md:max-h-[900px] md:max-w-[500px]"
+      className={twMerge(
+        'h-screen overflow-hidden md:h-[calc(100vh_-_175px)] md:max-h-[900px] md:max-w-[500px]',
+        embedMode && 'md:h-full'
+      )}
     >
       <div className="mt-4 flex flex-col gap-4">
         {activePanel === Panel.MAIN && (
