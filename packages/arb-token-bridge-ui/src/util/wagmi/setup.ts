@@ -155,7 +155,12 @@ function getChains(targetChainKey: TargetChainKey) {
   return [...target, ...others] as unknown as _chains
 }
 
+let cachedProps: ReturnType<typeof createConfig>
 export function getProps(targetChainKey: string | null) {
+  if (cachedProps) {
+    return cachedProps
+  }
+
   const config = getDefaultConfig({
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     //
@@ -193,5 +198,6 @@ export function getProps(targetChainKey: string | null) {
     transports
   })
 
-  return wagmiConfig
+  cachedProps = wagmiConfig
+  return cachedProps
 }

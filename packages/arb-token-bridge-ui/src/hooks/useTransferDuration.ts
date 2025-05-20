@@ -6,6 +6,7 @@ import { useRemainingTimeCctp } from '../state/cctpState'
 import { isNetwork } from '../util/networks'
 import { getConfirmationTime } from '../util/WithdrawalUtils'
 import { getBoldInfo, getDifferenceInSeconds } from '../util/BoLDUtils'
+import { isLifiTransfer } from '../components/TransactionHistory/helpers'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,
@@ -59,6 +60,18 @@ export const useTransferDuration = (
       estimatedMinutesLeft: getRemainingMinutes({
         createdAt: tx.createdAt,
         totalDuration: standardDepositDuration + orbitDepositDuration
+      })
+    }
+  }
+
+  if (isLifiTransfer(tx)) {
+    const durationMinutes = (tx.durationMs || 15_000) / (60 * 1_000)
+
+    return {
+      approximateDurationInMinutes: durationMinutes,
+      estimatedMinutesLeft: getRemainingMinutes({
+        createdAt: tx.createdAt,
+        totalDuration: durationMinutes
       })
     }
   }

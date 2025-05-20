@@ -18,7 +18,7 @@ import { fetchErc20Data } from '../TokenUtils'
 export function isTransferTeleportFromSubgraph(
   tx: Transfer
 ): tx is TeleportFromSubgraph {
-  return typeof (tx as TeleportFromSubgraph).teleport_type !== 'undefined'
+  return 'teleport_type' in tx && tx.teleport_type !== undefined
 }
 
 function isTransactionEthTeleportFromSubgraph(
