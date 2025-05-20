@@ -682,43 +682,47 @@ export function TransferPanel() {
         destinationChain: getNetworkName(networks.destinationChain.id)
       })
 
-      const newTransfer: LifiMergedTransaction = {
-        txId: transfer.sourceChainTransaction.hash,
-        asset: selectedToken?.symbol || 'ETH',
-        assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
-        blockNum: null,
-        createdAt: dayjs().valueOf(),
-        direction: 'withdraw',
-        isWithdrawal: true,
-        resolvedAt: null,
-        status: WithdrawalStatus.UNCONFIRMED,
-        destinationStatus: WithdrawalStatus.UNCONFIRMED,
-        uniqueId: null,
-        value: amount,
-        depositStatus: DepositStatus.LIFI_DEFAULT_STATE,
-        destination: destinationAddress ?? walletAddress,
-        sender: walletAddress,
-        isLifi: true,
-        tokenAddress: selectedToken?.address || constants.AddressZero,
-        parentChainId: parentChain.id,
-        childChainId: childChain.id,
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id,
-        toolDetails: context.toolDetails,
-        durationMs: context.durationMs,
-        fromAmount: context.fromAmount,
-        toAmount: context.toAmount,
-        destinationTxId: null,
-        transactionRequest
+      if (isSmartContractWallet) {
+        // show the warning in case of SCW since we cannot show Lifi tx history for SCW
+        switchToTransactionHistoryTab()
+        setTimeout(() => {
+          highlightTransactionHistoryDisclaimer()
+        }, 100)
+      } else {
+        const newTransfer: LifiMergedTransaction = {
+          txId: transfer.sourceChainTransaction.hash,
+          asset: selectedToken?.symbol || 'ETH',
+          assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
+          blockNum: null,
+          createdAt: dayjs().valueOf(),
+          direction: 'withdraw',
+          isWithdrawal: true,
+          resolvedAt: null,
+          status: WithdrawalStatus.UNCONFIRMED,
+          destinationStatus: WithdrawalStatus.UNCONFIRMED,
+          uniqueId: null,
+          value: amount,
+          depositStatus: DepositStatus.LIFI_DEFAULT_STATE,
+          destination: destinationAddress ?? walletAddress,
+          sender: walletAddress,
+          isLifi: true,
+          tokenAddress: selectedToken?.address || constants.AddressZero,
+          parentChainId: parentChain.id,
+          childChainId: childChain.id,
+          sourceChainId: networks.sourceChain.id,
+          destinationChainId: networks.destinationChain.id,
+          toolDetails: context.toolDetails,
+          durationMs: context.durationMs,
+          fromAmount: context.fromAmount,
+          toAmount: context.toAmount,
+          destinationTxId: null,
+          transactionRequest
+        }
+        addPendingTransaction(newTransfer)
+        addLifiTransactionToCache(newTransfer)
+        switchToTransactionHistoryTab()
       }
-      addPendingTransaction(newTransfer)
-      addLifiTransactionToCache(newTransfer)
 
-      setTimeout(() => {
-        highlightTransactionHistoryDisclaimer()
-      }, 100)
-
-      switchToTransactionHistoryTab()
       clearAmountInput()
       clearRoute()
     } catch (error) {

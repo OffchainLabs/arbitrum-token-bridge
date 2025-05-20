@@ -50,7 +50,8 @@ export function TransactionHistoryDisclaimer() {
     return userHasUsdtBalance && isSmartContractWallet
   }, [mainnetBalances, arbOneBalances, isSmartContractWallet])
 
-  const showLifiDisclaimer = lifiTransactions && lifiTransactions.length > 0
+  const showLifiDisclaimer =
+    isSmartContractWallet || (lifiTransactions && lifiTransactions.length > 0)
 
   if (!showOftDisclaimer && !showLifiDisclaimer) {
     return null
