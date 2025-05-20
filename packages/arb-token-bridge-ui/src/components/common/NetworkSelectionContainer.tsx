@@ -33,7 +33,6 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { useAdvancedSettingsStore } from '../TransferPanel/AdvancedSettings'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -414,7 +413,6 @@ export const NetworkSelectionContainer = React.memo(
     const [networks, setNetworks] = useNetworks()
     const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
     const [, setQueryParams] = useArbQueryParams()
-    const { isSmartContractWallet } = useAccountType()
 
     const isSource = props.type === 'source'
 
