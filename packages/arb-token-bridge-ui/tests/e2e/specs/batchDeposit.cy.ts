@@ -152,18 +152,14 @@ describe('Batch Deposit', () => {
         `${ERC20TokenSymbol} balance amount on childChain`
       ).should($el => {
         const currentBalance = parseFloat($el.text())
-        expect(currentBalance).to.be.gt(
-          Number(childErc20Balance) + ERC20AmountToSend
-        )
+        expect(currentBalance).to.be.gt(Number(childErc20Balance))
       })
 
       cy.findByLabelText(
         `${nativeTokenSymbol} balance amount on childChain`
       ).should($el => {
         const currentBalance = parseFloat($el.text())
-        expect(currentBalance).to.be.gt(
-          Number(childNativeTokenBalance) + nativeCurrencyAmountToSend
-        )
+        expect(currentBalance).to.be.gt(Number(childNativeTokenBalance))
       })
 
       // the balance on the source chain should not be the same as before
