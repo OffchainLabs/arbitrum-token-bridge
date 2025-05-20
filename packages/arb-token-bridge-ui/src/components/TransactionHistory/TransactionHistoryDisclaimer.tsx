@@ -67,7 +67,7 @@ export function TransactionHistoryDisclaimer() {
         {showLifiDisclaimer &&
           (lifiTransactions && lifiTransactions.length > 0 ? (
             <li>
-              Some LiFi routes might be on{' '}
+              LiFi transactions can be found on{' '}
               <ExternalLink
                 href={
                   walletAddress
@@ -82,7 +82,8 @@ export function TransactionHistoryDisclaimer() {
             </li>
           ) : (
             <li>
-              Some LiFi routes might be on{' '}
+              LiFi transactions inititated by Smart-contract wallets can be
+              found on{' '}
               <ExternalLink
                 href={
                   walletAddress
@@ -98,7 +99,8 @@ export function TransactionHistoryDisclaimer() {
           ))}
         {showOftDisclaimer && (
           <li>
-            Some LayerZero USDT transfers might be on{' '}
+            LayerZero USDT transfers initiated by Smart-contract wallets can be
+            found on{' '}
             <ExternalLink
               href={
                 walletAddress
