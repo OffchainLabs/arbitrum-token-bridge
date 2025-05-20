@@ -144,7 +144,7 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
 
 function findCheapestRoute(
   routes: LifiCrosschainTransfersRoute[]
-): LifiCrosschainTransfersRoute {
+): LifiCrosschainTransfersRoute | undefined {
   const cheapestRoute = routes.reduce((currentMin, route) => {
     if (!currentMin) {
       return route
@@ -160,16 +160,12 @@ function findCheapestRoute(
     return currentMin
   }, routes[0])
 
-  if (!cheapestRoute) {
-    throw new Error('No cheapest route found')
-  }
-
   return cheapestRoute
 }
 
 function findFastestRoute(
   routes: LifiCrosschainTransfersRoute[]
-): LifiCrosschainTransfersRoute {
+): LifiCrosschainTransfersRoute | undefined {
   const fastestRoute = routes.reduce((currentMin, route) => {
     if (!currentMin) {
       return route
@@ -182,10 +178,6 @@ function findFastestRoute(
     }
     return currentMin
   }, routes[0])
-
-  if (!fastestRoute) {
-    throw new Error('No fastest route found')
-  }
 
   return fastestRoute
 }
@@ -379,7 +371,12 @@ export default async function handler(
     const cheapestRoute = findCheapestRoute(filteredRoutes)
     const fastestRoute = findFastestRoute(filteredRoutes)
 
-    if (cheapestRoute === fastestRoute) {
+    if (!cheapestRoute || !fastestRoute) {
+      res.status(204).json({ data: [] })
+      return
+    }
+
+    if (cheapestRoute && fastestRoute && cheapestRoute === fastestRoute) {
       res.status(200).json({
         data: [
           {
@@ -394,23 +391,27 @@ export default async function handler(
       return
     }
 
-    res.status(200).json({
-      data: [
-        {
-          ...cheapestRoute,
-          protocolData: {
-            ...cheapestRoute.protocolData,
-            orders: [Order.Cheapest]
-          }
-        },
-        {
-          ...fastestRoute,
-          protocolData: {
-            ...fastestRoute.protocolData,
-            orders: [Order.Fastest]
-          }
+    const data: LifiCrosschainTransfersRoute[] = []
+    if (cheapestRoute) {
+      data.push({
+        ...cheapestRoute,
+        protocolData: {
+          ...cheapestRoute.protocolData,
+          orders: [Order.Cheapest]
         }
-      ]
+      })
+    }
+    if (fastestRoute) {
+      data.push({
+        ...fastestRoute,
+        protocolData: {
+          ...fastestRoute.protocolData,
+          orders: [Order.Fastest]
+        }
+      })
+    }
+    res.status(200).json({
+      data
     })
   } catch (error: any) {
     res.status(500).json({
