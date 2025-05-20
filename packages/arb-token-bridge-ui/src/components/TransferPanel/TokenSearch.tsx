@@ -575,7 +575,7 @@ export function TokenSearch(props: UseDialogProps) {
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
   async function selectToken(_token: ERC20BridgeToken | null) {
-    close()
+    props.onClose(false)
 
     if (_token === null) {
       setSelectedToken(null)
