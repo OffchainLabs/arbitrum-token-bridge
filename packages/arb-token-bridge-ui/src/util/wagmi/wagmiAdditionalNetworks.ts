@@ -1,4 +1,5 @@
-import { Chain, sepolia as sepoliaDefault } from 'wagmi'
+import { sepolia as sepoliaDefault } from 'viem/chains'
+import { Chain } from '@rainbow-me/rainbowkit'
 
 import { ether } from '../../constants'
 import { ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
@@ -29,7 +30,6 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
   return {
     id: chain.chainId,
     name: chain.name,
-    network: chain.name.toLowerCase().split(' ').join('-'),
     nativeCurrency,
     rpcUrls: {
       default: {
@@ -60,32 +60,9 @@ export const sepolia: Chain = {
   }
 }
 
-export const holesky: Chain = {
-  id: ChainId.Holesky,
-  name: 'Holesky',
-  network: 'holesky',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.Holesky]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.Holesky]!]
-    }
-  },
-  blockExplorers: {
-    etherscan: {
-      name: 'Etherscan',
-      url: explorerUrls[ChainId.Holesky]!
-    },
-    default: { name: 'Etherscan', url: explorerUrls[ChainId.Holesky]! }
-  }
-}
-
 export const arbitrumSepolia: Chain = {
   id: ChainId.ArbitrumSepolia,
   name: 'Arbitrum Sepolia',
-  network: 'arbitrum-sepolia',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -107,7 +84,6 @@ export const arbitrumSepolia: Chain = {
 export const baseSepolia: Chain = {
   id: ChainId.BaseSepolia,
   name: 'Base Sepolia',
-  network: 'base-sepolia',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -129,7 +105,6 @@ export const baseSepolia: Chain = {
 export const arbitrumNova: Chain = {
   id: ChainId.ArbitrumNova,
   name: 'Arbitrum Nova',
-  network: 'arbitrum-nova',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -148,7 +123,6 @@ export const arbitrumNova: Chain = {
 export const base: Chain = {
   id: ChainId.Base,
   name: 'Base',
-  network: 'base',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -169,8 +143,7 @@ export const base: Chain = {
  */
 export const localL1Network: Chain = {
   id: ChainId.Local,
-  name: 'Ethereum Local',
-  network: 'custom-localhost',
+  name: 'Nitro Testnode L1',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -190,8 +163,7 @@ export const localL1Network: Chain = {
  */
 export const localL2Network: Chain = {
   id: ChainId.ArbitrumLocal,
-  name: 'Arbitrum Local',
-  network: 'arbitrum-localhost',
+  name: 'Nitro Testnode L2',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -211,8 +183,7 @@ export const localL2Network: Chain = {
  */
 export const localL3Network: Chain = {
   id: ChainId.L3Local,
-  name: 'L3 Local',
-  network: 'l3-localhost',
+  name: 'Nitro Testnode L3',
   nativeCurrency: ether,
   rpcUrls: {
     default: {

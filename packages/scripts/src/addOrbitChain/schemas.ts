@@ -10,12 +10,11 @@ import { getProvider } from "./provider";
 dotenv.config({
   path: path.resolve(__dirname, "../../../arb-token-bridge-ui/.env"),
 });
-export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 17000, 84532];
+export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 84532];
 const ZERO_ADDRESS = constants.AddressZero;
 
 export const getParentChainInfo = (parentChainId: number) => {
   const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
-  const HOLESKY_INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY_HOLESKY;
 
   switch (parentChainId) {
     case 1: // Ethereum Mainnet
@@ -60,15 +59,6 @@ export const getParentChainInfo = (parentChainId: number) => {
         blockExplorer: "https://sepolia.arbiscan.io",
         chainId: 421614,
         name: "Arbitrum Sepolia",
-      };
-    case 17000: // Holesky
-      return {
-        rpcUrl: HOLESKY_INFURA_KEY
-          ? `https://holesky.infura.io/v3/${HOLESKY_INFURA_KEY}`
-          : "https://ethereum-holesky-rpc.publicnode.com",
-        blockExplorer: "https://holesky.etherscan.io/",
-        chainId: 17000,
-        name: "Holesky",
       };
     case 8453: // Base
       return {

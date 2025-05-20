@@ -1,4 +1,5 @@
 import { BigNumber, Contract, Wallet, utils } from 'ethers'
+import { Address } from 'viem'
 import { defineConfig } from 'cypress'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -15,7 +16,6 @@ import { CommonAddress } from './src/util/CommonAddressUtils'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { TokenMessengerAbi } from './src/util/cctp/TokenMessengerAbi'
 import { ChainDomain } from './src/pages/api/cctp/[type]'
-import { Address } from 'wagmi'
 import { browserConfig } from './tests/e2e/browser.config'
 
 export async function fundUsdc({

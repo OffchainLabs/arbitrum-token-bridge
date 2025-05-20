@@ -6,32 +6,34 @@ export type CheckboxProps = {
   label: string | React.ReactNode
   checked: boolean
   onChange: (checked: boolean) => void
+  labelClassName?: string
 }
 
-export function Checkbox(props: CheckboxProps) {
+export function Checkbox({ labelClassName, label, ...props }: CheckboxProps) {
   return (
     <Switch.Group
       as="div"
-      className="arb-hover flex flex-row items-start space-x-1"
+      className="arb-hover flex flex-row items-center space-x-1"
     >
       <Switch
         {...props}
         className={twMerge(
-          'mt-[4px] h-3 w-3 shrink-0 rounded-xs transition duration-200 ease-in-out',
+          'h-3 w-3 flex-shrink-0 rounded-sm transition duration-200 ease-in-out',
           props.checked
-            ? 'border border-dark bg-white'
-            : 'border border-white bg-dark'
+            ? 'border-dark border bg-white'
+            : 'bg-dark border border-white'
         )}
       >
-        <CheckIcon className="mt-[1px] ml-[2px] h-2 w-2 stroke-5 text-dark" />
+        <CheckIcon className="stroke-5 text-dark ml-[2px] mt-[1px] h-2 w-2" />
       </Switch>
       <Switch.Label
         className={twMerge(
           'cursor-pointer',
+          labelClassName,
           props.checked ? 'text-white' : 'text-gray-3'
         )}
       >
-        {props.label}
+        {label}
       </Switch.Label>
     </Switch.Group>
   )

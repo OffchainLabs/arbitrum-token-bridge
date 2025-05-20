@@ -1,4 +1,4 @@
-import { prepareWriteContract, writeContract } from '@wagmi/core'
+import { Config, simulateContract, writeContract } from '@wagmi/core'
 import { BigNumber, constants, utils } from 'ethers'
 import { TransactionRequest } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -84,18 +84,24 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return undefined
   }
 
-  public async transfer({ signer, amount, destinationAddress }: TransferProps) {
+  public async transfer({
+    signer,
+    amount,
+    destinationAddress,
+    wagmiConfig
+  }: TransferProps & { wagmiConfig: Config }) {
     const sourceChainId = await this.getSourceChainId()
 
     const address = await getAddressFromSigner(signer)
 
     // cctp has an upper limit for transfer
     const burnLimit = await fetchPerMessageBurnLimit({
-      sourceChainId
+      sourceChainId,
+      wagmiConfig
     })
 
     if (amount.gt(burnLimit)) {
-      const formatedLimit = formatAmount(burnLimit, {
+      const formatedLimit = formatAmount(BigNumber.from(burnLimit), {
         decimals: 6, // hardcode for USDC
         symbol: 'USDC'
       })
@@ -119,21 +125,25 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       sourceChainId
     })
 
-    const config = await prepareWriteContract({
+    const { request } = await simulateContract(wagmiConfig, {
       address: tokenMessengerContractAddress,
       abi: TokenMessengerAbi,
       functionName: 'depositForBurn',
-      signer,
-      args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
+      args: [
+        amount.toBigInt(),
+        targetChainDomain,
+        mintRecipient,
+        usdcContractAddress
+      ]
     })
 
-    const depositForBurnTx = await writeContract(config)
+    const depositForBurnTx = await writeContract(wagmiConfig, request)
 
     return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: depositForBurnTx,
+      sourceChainTransaction: { hash: depositForBurnTx },
       destinationChainProvider: this.destinationChainProvider
     }
   }

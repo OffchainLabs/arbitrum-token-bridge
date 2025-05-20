@@ -2,10 +2,11 @@ import React, {
   ChangeEventHandler,
   useCallback,
   useEffect,
-  useState
+  useState,
+  useMemo
 } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
 
 import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -55,7 +56,7 @@ function MaxButton({
     <button
       type="button"
       className={twMerge(
-        'rounded bg-white/30 px-1 py-0.5 text-right text-xs leading-none font-medium text-white opacity-80 transition-opacity hover:opacity-60',
+        'rounded bg-white/30 px-1 py-0.5 text-right text-xs font-medium leading-none text-white opacity-80 transition-opacity hover:opacity-60',
         className
       )}
       {...rest}
@@ -104,7 +105,7 @@ function SourceChainTokenBalance({
       <>
         <span className="text-sm font-light text-white">Balance: </span>
         <span
-          className="text-sm whitespace-nowrap text-white"
+          className="whitespace-nowrap text-sm text-white"
           aria-label={`${symbol} balance amount on ${
             isDepositMode ? 'parentChain' : 'childChain'
           }`}
@@ -150,13 +151,13 @@ function ErrorMessage({
   }
 
   if (typeof errorMessage === 'string') {
-    return <span className="text-sm text-brick">{errorMessage}</span>
+    return <span className="text-brick text-sm">{errorMessage}</span>
   }
 
   switch (errorMessage) {
     case TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE:
       return (
-        <span className="text-sm text-brick">
+        <span className="text-brick text-sm">
           Gas estimation failed, join our{' '}
           <ExternalLink
             href="https://discord.com/invite/ZpZuw7p"
@@ -171,7 +172,7 @@ function ErrorMessage({
     case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
     case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
       return (
-        <div className="text-sm text-brick">
+        <div className="text-brick text-sm">
           <span>This token can&apos;t be bridged over.</span>
         </div>
       )
@@ -205,6 +206,7 @@ export const TransferPanelMainInput = React.memo(
     options,
     ...rest
   }: TransferPanelMainInputProps) => {
+    const { isConnected } = useAccount()
     const [localValue, setLocalValue] = useState(value)
     const selectedTokenDecimals = useSelectedTokenDecimals()
     const sanitizedAmount = sanitizeAmountQueryParam(
@@ -263,10 +265,10 @@ export const TransferPanelMainInput = React.memo(
 
     return (
       <>
-        <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
+        <div className={twMerge('shadow-2 flex flex-row rounded bg-black/40')}>
           <div
             className={twMerge(
-              'flex grow flex-row items-center justify-center'
+              'flex min-h-[83px] grow flex-row items-center justify-center'
             )}
           >
             <TransferPanelInputField
@@ -276,13 +278,15 @@ export const TransferPanelMainInput = React.memo(
             />
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
-              <div className="flex items-center space-x-1 px-3 pt-1 pb-2">
-                <SourceChainTokenBalance
-                  balanceOverride={options?.balance}
-                  symbolOverride={options?.symbol}
-                />
-                <MaxButton onClick={handleMaxButtonClick} />
-              </div>
+              {isConnected && (
+                <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                  <SourceChainTokenBalance
+                    balanceOverride={options?.balance}
+                    symbolOverride={options?.symbol}
+                  />
+                  <MaxButton onClick={handleMaxButtonClick} />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ export function useAmountBigNumber() {
 
   return useMemo(() => {
     try {
-      if (isNaN(Number(amount))) {
+      if (amount === '' || isNaN(Number(amount))) {
         return constants.Zero
       }
 

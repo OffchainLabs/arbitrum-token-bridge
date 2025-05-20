@@ -1,5 +1,7 @@
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
+import { Config } from 'wagmi'
+
 import { MergedTransaction } from '../state/app/state'
 import {
   GasEstimates,
@@ -14,7 +16,7 @@ type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
-export type TransferType = `${Asset}_${TxType}` | 'cctp' | 'oftV2'
+export type TransferType = `${Asset}_${TxType}` | 'cctp' | 'oftV2' | 'lifi'
 
 export type MergedTransactionCctp = MergedTransaction & {
   messageBytes: Address | null
@@ -48,6 +50,7 @@ export type TransferEstimateGasProps = {
   amount: BigNumber
   from: string
   destinationAddress?: string
+  wagmiConfig?: Config
 }
 
 export type TransferOverrides = {

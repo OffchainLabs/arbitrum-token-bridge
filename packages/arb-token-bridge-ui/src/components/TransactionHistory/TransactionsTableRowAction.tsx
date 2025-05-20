@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
@@ -26,6 +27,23 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { Tooltip } from '../common/Tooltip'
 import { addressesEqual } from '../../util/AddressUtils'
+import { getTransactionType, isLifiTransfer } from './helpers'
+
+function ActionRowConnectButton() {
+  return (
+    <ConnectButton.Custom>
+      {({ openConnectModal }) => (
+        <Button
+          variant="primary"
+          className="w-14 rounded bg-lime-dark p-2 text-xs text-white"
+          onClick={openConnectModal}
+        >
+          Connect
+        </Button>
+      )}
+    </ConnectButton.Custom>
+  )
+}
 
 export function TransactionsTableRowAction({
   tx,
@@ -36,9 +54,8 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const { address: connectedAddress } = useAccount()
-  const { chain } = useNetwork()
-  const { switchNetworkAsync } = useSwitchNetworkWithConfig()
+  const { address: connectedAddress, chain, isConnected } = useAccount()
+  const { switchChainAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
   const searchedAddress = useTransactionHistoryAddressStore(
     state => state.sanitizedAddress
@@ -74,7 +91,7 @@ export function TransactionsTableRowAction({
   const handleRedeemRetryable = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchNetworkAsync?.(chainIdForRedeemingRetryable)
+        await switchChainAsync({ chainId: chainIdForRedeemingRetryable })
       }
 
       if (isTeleportTx(tx)) {
@@ -93,14 +110,14 @@ export function TransactionsTableRowAction({
     isConnectedToCorrectNetworkForAction,
     chainIdForRedeemingRetryable,
     redeem,
-    switchNetworkAsync,
+    switchChainAsync,
     teleporterRedeem
   ])
 
   const handleClaim = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchNetworkAsync?.(tx.destinationChainId)
+        await switchChainAsync({ chainId: tx.destinationChainId })
       }
 
       if (tx.isCctp) {
@@ -123,7 +140,7 @@ export function TransactionsTableRowAction({
     claim,
     claimCctp,
     isConnectedToCorrectNetworkForAction,
-    switchNetworkAsync,
+    switchChainAsync,
     tx,
     type
   ])
@@ -132,10 +149,17 @@ export function TransactionsTableRowAction({
     window.open(GET_HELP_LINK, '_blank')
 
     // track the button click
-    trackEvent('Tx Error: Get Help Click', { network: networkName })
+    trackEvent('Tx Error: Get Help Click', {
+      network: networkName,
+      transactionType: getTransactionType(tx)
+    })
   }
 
   if (isDepositReadyToRedeem(tx)) {
+    if (!isConnected) {
+      return <ActionRowConnectButton />
+    }
+
     // Failed retryable
     return isRedeeming ? (
       <span className="animate-pulse">Retrying...</span>
@@ -167,6 +191,14 @@ export function TransactionsTableRowAction({
 
   if (tx.status === 'Confirmed') {
     if (tx.isCctp && tx.resolvedAt) {
+      return null
+    }
+
+    if (!isConnected) {
+      return <ActionRowConnectButton />
+    }
+
+    if (isLifiTransfer(tx)) {
       return null
     }
 

@@ -25,11 +25,6 @@ export function getInfuraKeyFromEnv(chainId: InfuraSupportedChainId): string {
         env: process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA,
         fallback: defaultInfuraKey
       })
-    case ChainId.Holesky:
-      return loadEnvironmentVariableWithFallback({
-        env: process.env.NEXT_PUBLIC_INFURA_KEY_HOLESKY,
-        fallback: defaultInfuraKey
-      })
 
     // L2 Mainnet
     case ChainId.ArbitrumOne:
@@ -69,8 +64,6 @@ export function getInfuraRpcUrl(
     // L1 Testnet
     case ChainId.Sepolia:
       return `https://sepolia.infura.io/v3/${infuraKey}`
-    case ChainId.Holesky:
-      return `https://holesky.infura.io/v3/${infuraKey}`
 
     // L2 Mainnet
     case ChainId.ArbitrumOne:

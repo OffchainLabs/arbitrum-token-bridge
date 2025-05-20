@@ -22,8 +22,8 @@ import {
   useTransactionHistory
 } from '../../hooks/useTransactionHistory'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
-import { OftTransactionHistoryDisclaimer } from './OftTransactionHistoryDisclaimer'
 import { shallow } from 'zustand/shallow'
+import { TransactionHistoryDisclaimer } from './TransactionHistoryDisclaimer'
 
 function useTransactionHistoryUpdater() {
   const sanitizedAddress = useTransactionHistoryAddressStore(
@@ -66,6 +66,9 @@ export function TransactionHistorySearchResults() {
   )
   const searchError = useTransactionHistoryAddressStore(
     state => state.searchError
+  )
+  const txHistoryAddress = useTransactionHistoryAddressStore(
+    state => state.sanitizedAddress
   )
 
   const oldestTxTimeAgoString = useMemo(() => {
@@ -122,7 +125,9 @@ export function TransactionHistorySearchResults() {
         <TransactionStatusInfo />
       </div>
 
-      <OftTransactionHistoryDisclaimer />
+      <div className="mb-4">
+        <TransactionHistoryDisclaimer />
+      </div>
 
       <Tab.Group as="div" className="h-full overflow-hidden rounded md:pr-0">
         <Tab.List className="mb-4 flex border-b border-white/30">
@@ -140,7 +145,7 @@ export function TransactionHistorySearchResults() {
           </TabButton>
         </Tab.List>
 
-        {!forceFetchReceived && (
+        {!forceFetchReceived && typeof txHistoryAddress !== 'undefined' && (
           <div className="mb-2 text-xs text-white">
             Missing a transaction after sending to or receiving from a different
             address? Click{' '}

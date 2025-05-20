@@ -61,10 +61,6 @@ describe('Deposit native token', () => {
       ...txData
     })
 
-    cy.findTransactionInTransactionHistory({
-      duration: depositTime,
-      ...txData
-    })
     cy.openTransactionDetails(txData)
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')

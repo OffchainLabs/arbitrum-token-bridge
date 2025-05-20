@@ -8,13 +8,20 @@ import { useTransferReadiness } from './useTransferReadiness'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getNetworkName } from '../../util/networks'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useRouteStore } from './hooks/useRouteStore'
 
-export function MoveFundsButton({
-  onClick
-}: Pick<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>) {
+type MoveFundsButtonProps = Pick<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'onClick'
+>
+export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
+  const signer = useEthersSigner()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
+  const [{ amount }] = useArbQueryParams()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
 
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
@@ -23,9 +30,8 @@ export function MoveFundsButton({
   )
   const { isSmartContractWallet } = useAccountType()
   const { transferReady } = useTransferReadiness()
-  const selectedRoute = useRouteStore(state => state.selectedRoute)
   const isDisabled =
-    selectedRoute === undefined ||
+    !signer ||
     (isDepositMode ? !transferReady.deposit : !transferReady.withdrawal)
 
   return (
@@ -44,7 +50,9 @@ export function MoveFundsButton({
         'lg:text-2xl'
       )}
     >
-      {isSmartContractWallet && isTransferring
+      {!selectedRoute && Number(amount) > 0
+        ? 'Select route'
+        : isSmartContractWallet && isTransferring
         ? 'Sending request...'
         : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
     </Button>

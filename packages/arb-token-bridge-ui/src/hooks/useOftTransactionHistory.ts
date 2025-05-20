@@ -1,13 +1,16 @@
 import { ethers, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
-import { MergedTransaction } from '../state/app/state'
-import { getChainIdFromEid } from '../token-bridge-sdk/oftUtils'
+import {
+  getChainIdFromEid,
+  getOftV2TransferDecodedData
+} from '../token-bridge-sdk/oftUtils'
+import { LayerZeroTransaction } from '../state/app/state'
 import { isDepositMode } from '../util/isDepositMode'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { isNetwork } from '../util/networks'
-import { oftV2Abi } from '../token-bridge-sdk/oftV2Abi'
+import { CommonAddress } from '../util/CommonAddressUtils'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
@@ -20,17 +23,6 @@ export const LayerZeroMessageStatus = {
   FAILED: 'failed',
   BLOCKED: 'failed'
 } as const
-
-/*
- * LayerZero API returns LayerZeroTransaction` without `asset` and `value`.
- * `updateAdditionalLayerZeroData()` fills these gaps, returning `MergedTransaction` for tx history.
- */
-export type LayerZeroTransaction = Omit<
-  MergedTransaction,
-  'asset' | 'value' | 'tokenAddress'
-> & {
-  isOft: true
-}
 
 /**
  * Response of LayerZero API for a wallet address
@@ -165,13 +157,23 @@ const getOftTransactionStatus = (message: LayerZeroMessage) => {
 /**
  * Validate a LayerZero tx received from LzScan API: check source and destination chain ids, and double check that protocol is USDT0 (to filter out Lifi transfers routed through LayerZero)
  */
-function validateLayerZeroMessage(message: LayerZeroMessage) {
+async function validateLayerZeroMessage(message: LayerZeroMessage) {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
-  const isProtocolUsdt0 = message.pathway?.sender?.id === 'usdt0'
+  if (sourceChainId && destinationChainId) {
+    try {
+      const isOftDataDecodable = !!(await getOftV2TransferDecodedData(
+        message.source.tx.txHash,
+        getProviderForChainId(sourceChainId)
+      ))
+      return isOftDataDecodable
+    } catch (e) {
+      // invalid oft transfer (OFT message is probably triggered by a SC/protocol (internal tx), rather than the user)
+    }
+  }
 
-  return sourceChainId && destinationChainId && isProtocolUsdt0
+  return false
 }
 
 function mapLayerZeroMessageToLayerZeroTransaction(
@@ -215,26 +217,27 @@ function mapLayerZeroMessageToLayerZeroTransaction(
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
     sourceChainId,
     destinationChainId,
-    oftData: {
-      destinationTxHash
-    }
+    destinationTxHash,
+    asset: 'USDT',
+    value: '0',
+    tokenAddress: isDeposit
+      ? CommonAddress.Ethereum.USDT
+      : CommonAddress.ArbitrumOne.USDT
   }
 }
 
 export async function updateAdditionalLayerZeroData(
   tx: LayerZeroTransaction
-): Promise<MergedTransaction> {
+): Promise<LayerZeroTransaction> {
   const { txId } = tx
   const updatedTx = { ...tx }
 
   const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
 
   // extract destination address
-  const sourceChainTx = await sourceChainProvider.getTransaction(txId)
-  const oftInterface = new ethers.utils.Interface(oftV2Abi)
-  const decodedInputData = oftInterface.decodeFunctionData(
-    'send',
-    sourceChainTx.data
+  const decodedInputData = await getOftV2TransferDecodedData(
+    txId,
+    sourceChainProvider
   )
   updatedTx.destination = utils.hexValue(decodedInputData[0][1])
 
@@ -296,9 +299,14 @@ export function useOftTransactionHistory({
 
     const layerZeroResponse: LayerZeroResponse = await response.json()
 
-    return layerZeroResponse.data
-      .filter(validateLayerZeroMessage) // filter out transactions that don't have Arbitrum supported chain ids, and USDT0 protocol
-      .map(mapLayerZeroMessageToLayerZeroTransaction)
+    const validMessages = []
+    for (const message of layerZeroResponse.data) {
+      if (await validateLayerZeroMessage(message)) {
+        validMessages.push(message)
+      }
+    }
+
+    return validMessages.map(mapLayerZeroMessageToLayerZeroTransaction)
   }
 
   const { data, error, isLoading } = useSWRImmutable(
@@ -321,8 +329,8 @@ export function useOftTransactionHistory({
 }
 
 export async function getUpdatedOftTransfer(
-  tx: MergedTransaction
-): Promise<MergedTransaction> {
+  tx: LayerZeroTransaction
+): Promise<LayerZeroTransaction> {
   const isTestnetTransfer = isNetwork(tx.sourceChainId).isTestnet
 
   const LAYERZERO_API_URL = isTestnetTransfer
@@ -342,9 +350,7 @@ export async function getUpdatedOftTransfer(
       status,
       resolvedAt:
         status === 'pending' ? null : new Date(message.updated).getTime(),
-      oftData: {
-        destinationTxHash
-      }
+      destinationTxHash
     }
   } catch (error) {
     console.error('Error fetching updated OFT transfer for tx:', tx.txId, error)

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Tab } from '@headlessui/react'
+import { TabGroup, TabList, TabPanel } from '@headlessui/react'
 import dayjs from 'dayjs'
 import Image from 'next/image'
 
@@ -22,6 +22,7 @@ import { SecurityGuaranteed, SecurityNotGuaranteed } from './SecurityLabels'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
 import { getConfirmationTime } from '../../util/WithdrawalUtils'
+import { isLifiEnabled } from '../../util/featureFlag'
 
 function getCalendarUrl(
   withdrawalDate: dayjs.Dayjs,
@@ -84,8 +85,6 @@ export function WithdrawalConfirmationDialog(
 
   const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
 
-  const isFastBridgesTab = isArbitrumOne && selectedIndex === 0
-
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
 
@@ -94,6 +93,10 @@ export function WithdrawalConfirmationDialog(
     setCheckbox3Checked(false)
     setSelectedIndex(0)
   }
+
+  const showFastBridgesTab = isArbitrumOne && !isLifiEnabled()
+  const isFastBridgesTab =
+    showFastBridgesTab && isArbitrumOne && selectedIndex === 0
 
   return (
     <Dialog
@@ -107,14 +110,16 @@ export function WithdrawalConfirmationDialog(
       }}
     >
       <div className="flex flex-col pt-4">
-        <Tab.Group onChange={setSelectedIndex}>
-          <Tab.List className="border-b border-gray-dark">
-            {isArbitrumOne && <TabButton>Third party bridge</TabButton>}
-            <TabButton>Arbitrum’s bridge</TabButton>
-          </Tab.List>
+        <TabGroup onChange={setSelectedIndex}>
+          {showFastBridgesTab && (
+            <TabList className="border-b border-gray-dark">
+              <TabButton>Third party bridge</TabButton>
+              <TabButton>Arbitrum’s bridge</TabButton>
+            </TabList>
+          )}
 
-          {isArbitrumOne && (
-            <Tab.Panel className="flex flex-col space-y-4 py-4">
+          {showFastBridgesTab && (
+            <TabPanel className="flex flex-col space-y-4 py-4">
               <div className="flex flex-col space-y-4">
                 <p className="font-light">
                   Get your funds in under 30 min with a fast exit bridge.
@@ -123,10 +128,10 @@ export function WithdrawalConfirmationDialog(
 
               <BridgesTable bridgeList={fastBridges} />
               <SecurityNotGuaranteed />
-            </Tab.Panel>
+            </TabPanel>
           )}
 
-          <Tab.Panel className="flex flex-col justify-between">
+          <TabPanel className="flex flex-col justify-between">
             <div className="flex flex-col space-y-4 py-4">
               <div className="flex flex-col space-y-4">
                 <p className="font-light">
@@ -225,8 +230,8 @@ export function WithdrawalConfirmationDialog(
                 </div>
               </div>
             </div>
-          </Tab.Panel>
-        </Tab.Group>
+          </TabPanel>
+        </TabGroup>
       </div>
     </Dialog>
   )
