@@ -1256,7 +1256,7 @@
         "sequencerInbox": "0xf0d96B3a783F04620D5CBbf2829E70CEe396403F"
       },
       "explorerUrl": "https://testnet.explorer.rarichain.org",
-      "rpcUrl": "https://testnet.rpc.rarichain.org/http",
+      "rpcUrl": "https://rari-testnet.calderachain.xyz/http",
       "isCustom": true,
       "isTestnet": true,
       "name": "RARI Testnet",
