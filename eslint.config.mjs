@@ -63,6 +63,29 @@ export default [
       "zustand-rules/enforce-use-setstate": "error",
     },
   },
+  {
+    files: ["**/tests/e2e/**/*.ts"],
+    languageOptions: {
+      sourceType: "module",
+      parserOptions: {
+        project: path.resolve(
+          "./packages/arb-token-bridge-ui/tests/e2e/tsconfig.json"
+        ),
+      },
+    },
+    rules: {
+      // Cypress awaiting by default
+      "no-debugger": 0,
+      "no-console": 0,
+      "testing-library/no-debugging-utils": 0,
+      "testing-library/prefer-screen-queries": 0,
+      "turbo/no-undeclared-env-vars": 0,
+      "@typescript-eslint/no-unused-vars": "error",
+      "testing-library/await-async-query": "off",
+      "@typescript-eslint/no-empty-function": "off",
+    },
+  },
+
   globalIgnores([
     "**/node_modules",
     "**/dist",
@@ -70,6 +93,5 @@ export default [
     "**/tailwind.config.js",
     "**/build/",
     ".github/",
-    "**/tests/",
   ]),
 ];
