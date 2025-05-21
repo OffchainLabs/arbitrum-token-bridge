@@ -1,5 +1,5 @@
 import { useAccount } from 'wagmi'
-import { QueueListIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 import {
   DialogProps,
   DialogWrapper,
@@ -13,6 +13,7 @@ import { ConnectWalletButton } from '../TransferPanel/ConnectWalletButton'
 import { TransferPanelMain } from '../TransferPanel/TransferPanelMain'
 import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
 import { UseDialogProps } from '../common/Dialog'
+import WidgetTxHistoryIcon from '@/images/WidgetTxHistoryIcon.svg'
 
 type WidgetTransferPanelProps = {
   moveFundsButtonOnClick: () => void
@@ -48,8 +49,12 @@ export function WidgetTransferPanel({
             {/* widget transaction history */}
             <div className="flex flex-row gap-2 text-sm">
               {isConnected && (
-                <QueueListIcon
-                  className="h-4 w-4 cursor-pointer text-gray-400 hover:text-white"
+                <Image
+                  height={20}
+                  width={20}
+                  alt="Tx history logo"
+                  src={WidgetTxHistoryIcon}
+                  className="h-7 w-7 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-white/20"
                   onClick={() => openDialog('widget_transaction_history')}
                 />
               )}
