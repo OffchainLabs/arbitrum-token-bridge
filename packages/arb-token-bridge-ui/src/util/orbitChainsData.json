@@ -2030,6 +2030,53 @@
           "logoUrl": "/images/WylerchainSepolia_Logo.png"
         }
       }
+    },
+    {
+      "chainId": 323432,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0x28C3C1FC243DCCDD5Ae2Aa9081fA01b64D69cD21",
+        "inbox": "0xa5099f144FA1ed4A74a6E6dFc6Bb1B4E514FD061",
+        "outbox": "0x193cc92D190D5d9d593A8b9242449e1f5AA8a678",
+        "rollup": "0x30FDF7506264aD964067eb1E049C44b00dfd631f",
+        "sequencerInbox": "0x96729ffcea2d26CdB4e72d4d67448416f5f96C89"
+      },
+      "nativeToken": "0x84285795BFed8A757Dac4659163f549449AF7115",
+      "explorerUrl": "https://testnet-explorer.worldmobile.net/",
+      "rpcUrl": "https://worldmobile-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "WorldMobile Testnet",
+      "slug": "worldmobile-testnet",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0x75454ff5Bd9fa80859711268c218f9566034Bf3F",
+        "parentErc20Gateway": "0xC837bDe6dBEDE5Fd5EB2A5678f9634985D91E5DD",
+        "parentGatewayRouter": "0x2dbc704a564975811AbB70991B6E4A281cafe01F",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8D13A9fA39A6e45A904c75E8F7d9832368f900a1",
+        "childErc20Gateway": "0x0271a5d09ca43C0E6d95422EaB3F83a581Fac66C",
+        "childGatewayRouter": "0x186f8022a1Cd5D13E92876FA2A63DF45ce40b7C7",
+        "childMultiCall": "0xbE7664381a214e5AD528dbC3843CbdD5Ffba3d97",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#fffa2a",
+        "network": {
+          "name": "WorldMobile Testnet",
+          "logo": "/images/WorldMobileTestnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "WOMOX",
+          "symbol": "WOMOX",
+          "logoUrl": "/images/WorldMobileTestnet_NativeTokenLogo.svg"
+        }
+      }
     }
   ]
 }
