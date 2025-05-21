@@ -2093,8 +2093,8 @@
       "rpcUrl": "https://galactica-cassiopeia.g.alchemy.com/public",
       "isCustom": true,
       "isTestnet": true,
-      "name": "Galactica Cassiopeia",
-      "slug": "galactica-cassiopeia",
+      "name": "Galactica Cassiopeia Testnet",
+      "slug": "galactica-cassiopeia-testnet",
       "parentChainId": 11155111,
       "tokenBridge": {
         "parentCustomGateway": "0x470e1D6d5698872C8Bf34d649b83F5305cD412Fa",
@@ -2115,13 +2115,13 @@
       "bridgeUiConfig": {
         "color": "#F49756",
         "network": {
-          "name": "Galactica Cassiopeia",
+          "name": "Galactica Cassiopeia Testnet",
           "logo": "/images/GalacticaCassiopeia_Logo.svg"
         },
         "nativeTokenData": {
           "name": "GNET",
           "symbol": "GNET",
-          "logoUrl": "/images/GalacticaCassiopeia_NativeTokenLogo.svg"
+          "logoUrl": "/images/GalacticaCassiopeia_Logo.svg"
         }
       }
     }
