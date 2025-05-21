@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import * as fs from "fs";
 import { addOrbitChain } from "./addOrbitChain";
-import { validateOrbitChainsList } from "./addOrbitChain/schemas";
 
 const program = new Command();
 

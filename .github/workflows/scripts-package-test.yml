@@ -28,7 +28,6 @@ jobs:
     outputs:
       run_tests: ${{ steps.check-files.outputs.run_tests }}
       test_scripts: ${{ steps.check-files.outputs.test_scripts }}
-      validate_orbit_chains: ${{ steps.check-files.outputs.validate_orbit_chains }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/check-files
