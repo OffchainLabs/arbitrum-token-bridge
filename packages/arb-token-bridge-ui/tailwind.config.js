@@ -4,6 +4,7 @@ module.exports = {
     './src/**/*.{js,ts,jsx,tsx}',
     '../../node_modules/@offchainlabs/cobalt/**/*.{js,ts,jsx,tsx}'
   ],
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require('@headlessui/tailwindcss')],
   theme: {
     extend: {

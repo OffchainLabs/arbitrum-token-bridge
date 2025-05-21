@@ -62,6 +62,11 @@ export default [
       "zustand-rules/use-store-selectors": "error",
       "zustand-rules/no-state-mutation": "error",
       "zustand-rules/enforce-use-setstate": "error",
+
+      "@next/next/no-html-link-for-pages": [
+        "error",
+        path.join(__dirname, "/packages/arb-token-bridge-ui/src/pages"),
+      ],
     },
   },
   {
@@ -85,12 +90,6 @@ export default [
   globalIgnores([
     "**/node_modules",
     "**/dist",
-    "**/synpress.config.ts",
-    "**/tailwind.config.js",
-    "**/postcss.config.js",
-    "**/prettier.config.js",
-    "**/next.config.js",
-    "**/*.d.ts",
     "**/build/",
     ".github/",
     "**/cypress/",
