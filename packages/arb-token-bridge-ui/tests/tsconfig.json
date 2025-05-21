@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": "../../../../",
+    "baseUrl": "../../../",
     "types": [
-      "./cypress.d.ts",
+      "./e2e/cypress.d.ts",
       "@synthetixio/synpress/support",
       "cypress-wait-until",
       "@testing-library/cypress"

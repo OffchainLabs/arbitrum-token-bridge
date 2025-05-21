@@ -1,11 +1,11 @@
-import { globalIgnores, defineConfig } from "eslint/config";
+import { globalIgnores } from "eslint/config";
 import path from "path";
 import { fileURLToPath } from "url";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import zustandRules from "eslint-plugin-zustand-rules";
 import tsParser from "@typescript-eslint/parser";
 import prettierRecommended from "eslint-plugin-prettier/recommended";
-import js from "@eslint/js";
+import { flatConfig as nextFlatConfig } from "@next/eslint-plugin-next";
 import tseslint from "typescript-eslint";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,8 +14,9 @@ const __dirname = path.dirname(__filename);
 export default [
   ...tseslint.configs.recommended,
   prettierRecommended,
+  nextFlatConfig.recommended,
   {
-    files: ["**/*.js", "**/*.ts", "**/*.tsx", "**/*.mjs", "**/*.jsx"],
+    files: ["**/*.{js,mjs,cjs,jsx,mjsx,ts,tsx,mtsx}"],
 
     plugins: {
       "@typescript-eslint": typescriptEslint,
@@ -27,7 +28,7 @@ export default [
       sourceType: "module",
 
       parserOptions: {
-        project: ["./tsconfig.eslint.json", "./packages/*/tsconfig.json"],
+        project: ["./tsconfig.eslint.json", "./packages/**/tsconfig.json"],
         tsconfigRootDir: __dirname,
       },
     },
@@ -43,9 +44,8 @@ export default [
     },
 
     rules: {
-      "@typescript-eslint/no-unused-vars": "error",
-      "react/jsx-uses-react": "off",
-      "react/react-in-jsx-scope": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/explicit-module-boundary-types": "off",
 
       "@typescript-eslint/ban-ts-comment": [
@@ -64,24 +64,19 @@ export default [
     },
   },
   {
-    files: ["**/tests/e2e/**/*.ts"],
+    files: ["**/tests/e2e/**/*.ts", "**/tests/support/**/*.js"],
     languageOptions: {
+      parser: tsParser,
       sourceType: "module",
       parserOptions: {
-        project: path.resolve(
-          "./packages/arb-token-bridge-ui/tests/e2e/tsconfig.json"
-        ),
+        project: ["packages/arb-token-bridge-ui/tests/tsconfig.json"],
       },
     },
     rules: {
       // Cypress awaiting by default
       "no-debugger": 0,
       "no-console": 0,
-      "testing-library/no-debugging-utils": 0,
-      "testing-library/prefer-screen-queries": 0,
-      "turbo/no-undeclared-env-vars": 0,
-      "@typescript-eslint/no-unused-vars": "error",
-      "testing-library/await-async-query": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-empty-function": "off",
     },
   },
@@ -91,7 +86,12 @@ export default [
     "**/dist",
     "**/synpress.config.ts",
     "**/tailwind.config.js",
+    "**/postcss.config.js",
+    "**/prettier.config.js",
+    "**/next.config.js",
+    "**/*.d.ts",
     "**/build/",
     ".github/",
+    "**/cypress/",
   ]),
 ];
