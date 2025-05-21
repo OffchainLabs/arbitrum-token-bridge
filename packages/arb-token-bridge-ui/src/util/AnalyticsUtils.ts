@@ -2,6 +2,7 @@ import posthog from 'posthog-js'
 
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
 import { isProductionEnvironment } from './CommonUtils'
+import { RouteType } from '../components/TransferPanel/hooks/useRouteStore'
 
 type AccountType = 'EOA' | 'Smart Contract'
 type AssetType = 'ETH' | 'ERC-20'
@@ -19,11 +20,15 @@ export type ProviderName =
   | 'Ledger'
   | 'Other'
 
+export type SimplifiedRouteType = Extract<
+  RouteType,
+  'arbitrum' | 'oftV2' | 'cctp' | 'lifi'
+>
 type AnalyticsEventMap = {
   'Transfer Button Click': {
     type: TransferDirection
-    isCctpTransfer: boolean
     isCustomDestinationTransfer: boolean
+    selectedRoute: RouteType
     tokenSymbol?: string
     assetType: AssetType
     parentChainErc20Address?: string
@@ -79,7 +84,10 @@ type AnalyticsEventMap = {
   'Redeem Retryable': { network: string }
   'Redeem Teleport Retryable': { network: string }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
-  'Tx Error: Get Help Click': { network: string }
+  'Tx Error: Get Help Click': {
+    network: string
+    transactionType: SimplifiedRouteType
+  }
   'Multiple Tx Error: Get Help Click': { network: string }
   'Address Block': { address: string }
   'Slow Bridge Click': undefined
@@ -108,6 +116,15 @@ type AnalyticsEventMap = {
     network: string
   }
   'OFT Transfer': {
+    tokenSymbol: string
+    assetType: string
+    accountType: string
+    network: string
+    amount: number
+    sourceChain: string
+    destinationChain: string
+  }
+  'Lifi Transfer': {
     tokenSymbol: string
     assetType: string
     accountType: string

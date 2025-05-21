@@ -18,8 +18,6 @@ describe('Batch Deposit', () => {
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
-  const zeroToLessThanOneNativeToken =
-    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   beforeEach(() => {
     getInitialERC20Balance({
@@ -154,16 +152,14 @@ describe('Batch Deposit', () => {
         `${ERC20TokenSymbol} balance amount on childChain`
       ).should($el => {
         const currentBalance = parseFloat($el.text())
-        expect(currentBalance).to.be.gt(Number(parentErc20Balance))
+        expect(currentBalance).to.be.gt(Number(childErc20Balance))
       })
 
       cy.findByLabelText(
         `${nativeTokenSymbol} balance amount on childChain`
       ).should($el => {
         const currentBalance = parseFloat($el.text())
-        expect(currentBalance).to.be.gt(
-          Number(parentNativeTokenBalance) + nativeCurrencyAmountToSend
-        )
+        expect(currentBalance).to.be.gt(Number(childNativeTokenBalance))
       })
 
       // the balance on the source chain should not be the same as before

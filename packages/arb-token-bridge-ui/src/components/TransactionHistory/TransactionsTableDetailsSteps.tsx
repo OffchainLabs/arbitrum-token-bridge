@@ -6,10 +6,15 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline'
 
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
+import {
+  DepositStatus,
+  MergedTransaction,
+  WithdrawalStatus
+} from '../../state/app/state'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import {
   getDestinationNetworkTxId,
+  isLifiTransfer,
   isTxClaimable,
   isTxCompleted,
   isTxExpired,
@@ -32,7 +37,7 @@ import {
 } from '../../hooks/useTransferDuration'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
-  if (tx.isOft) {
+  if (tx.isOft || isLifiTransfer(tx)) {
     return false
   }
 
@@ -151,6 +156,31 @@ export const TransactionFailedOnNetwork = ({
   </div>
 )
 
+function isSourceChainStatusFailure(tx: MergedTransaction) {
+  if (isLifiTransfer(tx)) {
+    return tx.status === WithdrawalStatus.FAILURE
+  }
+
+  return (
+    typeof tx.depositStatus !== 'undefined' &&
+    [DepositStatus.CREATION_FAILED, DepositStatus.L1_FAILURE].includes(
+      tx.depositStatus
+    )
+  )
+}
+
+function isDestinationChainStatusFailure(tx: MergedTransaction) {
+  if (isLifiTransfer(tx)) {
+    return tx.destinationStatus === WithdrawalStatus.FAILURE
+  }
+
+  if (isTeleportTx(tx)) {
+    return secondRetryableLegForTeleportRequiresRedeem(tx)
+  }
+
+  return !isSourceChainStatusFailure(tx) && isTxFailed(tx)
+}
+
 export const TransactionsTableDetailsSteps = ({
   tx
 }: {
@@ -162,17 +192,11 @@ export const TransactionsTableDetailsSteps = ({
 
   const sourceNetworkName = getNetworkName(sourceChainId)
 
-  const isSourceChainDepositFailure =
-    typeof tx.depositStatus !== 'undefined' &&
-    [DepositStatus.CREATION_FAILED, DepositStatus.L1_FAILURE].includes(
-      tx.depositStatus
-    )
+  const isSourceChainDepositFailure = isSourceChainStatusFailure(tx)
 
   const isTeleport = isTeleportTx(tx)
 
-  const isDestinationChainFailure = isTeleport
-    ? secondRetryableLegForTeleportRequiresRedeem(tx)
-    : !isSourceChainDepositFailure && isTxFailed(tx)
+  const isDestinationChainFailure = isDestinationChainStatusFailure(tx)
 
   const destinationChainTxText = useMemo(() => {
     const networkName = getNetworkName(tx.destinationChainId)

@@ -536,54 +536,6 @@
       }
     },
     {
-      "chainId": 63157,
-      "confirmPeriodBlocks": 274908,
-      "ethBridge": {
-        "bridge": "0x9F904Fea0efF79708B37B99960e05900fE310A8E",
-        "inbox": "0x32AB85A3F0C702EbE74f73C5934b7Fb8452B492f",
-        "outbox": "0x7cF0a5D0211AC30365bA8C1cB8CFD4caF64b2D60",
-        "rollup": "0x58E3fe88b1E8a7e2D578000aCD9C6d5989FE9e09",
-        "sequencerInbox": "0x400f7c5DaC37aAEe3cE007e43Db54424414743f5"
-      },
-      "nativeToken": "0xcD2F22236DD9Dfe2356D7C543161D4d260FD9BcB",
-      "explorerUrl": "https://geist-mainnet.explorer.alchemy.com",
-      "rpcUrl": "https://geist-mainnet.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": false,
-      "name": "Geist Mainnet",
-      "slug": "geist-mainnet",
-      "parentChainId": 8453,
-      "tokenBridge": {
-        "parentCustomGateway": "0xb2F230EC2E6c29F631614E1343b5a20a8CB86D7b",
-        "parentErc20Gateway": "0xcCc3f0920fb4e12241475dfB2Bf33EB7E7FeFF05",
-        "parentGatewayRouter": "0xD570870a6b8bFda7baC6bD0c424B5E9674c990A2",
-        "parentMultiCall": "0xb444317D808b5cFfE66495920D40A35E7D247cC4",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0xE281b9E84d52152D0C83B7AA18045057450c60E1",
-        "childErc20Gateway": "0x73031e600c05293c51Ccde9b4488f3DAd54982e0",
-        "childGatewayRouter": "0x8c34AFB2685a2B600498f81B50E4F145E1873b4E",
-        "childMultiCall": "0x67a910a43F74fA4aAc8Ffd9c120E2E7472945a89",
-        "childProxyAdmin": "0x25a7F575dD5C10a7FcCc4E3E3A49c85E0C76faa0",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#EB4A9D",
-        "network": {
-          "name": "Geist Mainnet",
-          "logo": "/images/GeistMainnetLogo.svg",
-          "description": ""
-        },
-        "nativeTokenData": {
-          "name": "Aavegotchi",
-          "symbol": "GHST",
-          "logoUrl": "/images/ghst.png"
-        }
-      }
-    },
-    {
       "chainId": 10058111,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
@@ -1380,54 +1332,6 @@
           "name": "tXR",
           "symbol": "tXR",
           "logoUrl": "/images/xrTokenLogo.png"
-        }
-      }
-    },
-    {
-      "chainId": 631571,
-      "confirmPeriodBlocks": 900,
-      "ethBridge": {
-        "bridge": "0x133634FA8F372e59422744759a67796F01428BDD",
-        "inbox": "0x81Bf51dEC736adA7E256ed6C092CAe24D62a1ca7",
-        "outbox": "0x020e1cb41cF68999D988c20Ef40E2C58e1947db2",
-        "rollup": "0xAFcb6cF53AB01ac39577A592E141F614171c9371",
-        "sequencerInbox": "0x2453eb0d6F58C01Adb87505A4348fB5EEceB007D"
-      },
-      "nativeToken": "0xe97f36a00058AA7DfC4E85d23532C3f70453a7aE",
-      "explorerUrl": "https://polter-testnet.explorer.alchemy.com",
-      "rpcUrl": "https://geist-polter.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Polter Testnet",
-      "slug": "polter-testnet",
-      "parentChainId": 84532,
-      "tokenBridge": {
-        "parentCustomGateway": "0x24e1e6375f0f0Eecd38266357cADE57cA3A348F3",
-        "parentErc20Gateway": "0x9014E7244116b965F0D1059f80e2bD8169957117",
-        "parentGatewayRouter": "0xE38553a7989feD9e240DE8B0f5ed166BF75a088A",
-        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x7965162499751ABf89b8e3C640f8229AD8EeB022",
-        "childErc20Gateway": "0xA8E8b5D957e4ad9335E504442e877E513BD50729",
-        "childGatewayRouter": "0xF654086B1118fE98ea045De8D6dC0F1C53Da5B76",
-        "childMultiCall": "0xb97c5bC7DB7532471726550480A855484a408d00",
-        "childProxyAdmin": "0xda11A4ecaAcA51b1f2e2109a2EEFaC438409b68D",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#03AB2A",
-        "network": {
-          "name": "Polter Testnet",
-          "logo": "/images/PolterTestnetLogo.webp",
-          "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
-        },
-        "nativeTokenData": {
-          "name": "Aavegotchi GHST Token",
-          "symbol": "GHST",
-          "logoUrl": "/images/ghst.png"
         }
       }
     },
