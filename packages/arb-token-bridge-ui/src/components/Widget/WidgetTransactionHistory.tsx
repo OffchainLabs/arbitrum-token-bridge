@@ -48,7 +48,7 @@ export const WidgetTransactionHistory = (props: UseDialogProps) => {
       </ExternalLink>
 
       <div className="my-3 flex flex-col gap-2">
-        <div className="mt-2 text-lg">Transaction Details</div>
+        <div className="mt-2 text-lg">Latest Transaction Details</div>
 
         {isLoading && <WidgetTransactionHistoryLoadingPlaceholder />}
 
