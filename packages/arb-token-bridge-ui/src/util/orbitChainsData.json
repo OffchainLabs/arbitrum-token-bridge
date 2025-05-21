@@ -2077,6 +2077,53 @@
           "logoUrl": "/images/WorldMobileTestnet_NativeTokenLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 843843,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xD522DC770E2452375AfceD3c3ec96eb784c75570",
+        "inbox": "0xb0579056c22aD1fF85a1288f82089B1205447613",
+        "outbox": "0xDE290348c15283a812E393DE59EC178Bb7D65de9",
+        "rollup": "0xF66e4186BCeAfCEF7d04024773D41864d9b07B1f",
+        "sequencerInbox": "0x0826aB1eF7AB293933d7e3cE1122b5d677A23e71"
+      },
+      "nativeToken": "0x37B8D1d8f7b718001ca4Ca1b2EC08010c16047Aa",
+      "explorerUrl": "https://galactica-cassiopeia.explorer.alchemy.com/",
+      "rpcUrl": "https://galactica-cassiopeia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Galactica Cassiopeia",
+      "slug": "galactica-cassiopeia",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x470e1D6d5698872C8Bf34d649b83F5305cD412Fa",
+        "parentErc20Gateway": "0xe557F0db287eD44f11630dCA4aDf850660f0B38E",
+        "parentGatewayRouter": "0x6E5d41f9a8aA672938f719cC6562676808f9bf60",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xe0732059b89bf07d1693d7A4A7b73fb3714778F0",
+        "childErc20Gateway": "0x2dc7DECb12Ceb18f69dC2AcA5ceADeBef88193e9",
+        "childGatewayRouter": "0x7FcB0fFecDB94922c1F8f23d64fA9F888Efa01Da",
+        "childMultiCall": "0x849e8Ff61581B1fE734C23D234Ac192377472C74",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#F49756",
+        "network": {
+          "name": "Galactica Cassiopeia",
+          "logo": "/images/GalacticaCassiopeia_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "GNET",
+          "symbol": "GNET",
+          "logoUrl": "/images/GalacticaCassiopeia_NativeTokenLogo.svg"
+        }
+      }
     }
   ]
 }
