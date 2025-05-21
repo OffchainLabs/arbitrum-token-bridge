@@ -178,7 +178,7 @@ export function findGasFeeSummary(
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy
-    .findByRole('button', { name: /move funds/i })
+    .findByRole('button', { name: /move funds|select route/i })
     .scrollIntoView()
     .should('be.visible')
 }
@@ -220,7 +220,7 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
   cy.selectTransactionsPanelTab(tab)
 
   cy.findByText(/Showing \d+ \w+ transactions made in/, {
-    timeout: 120_000
+    timeout: 150_000
   }).should('be.visible')
 }
 

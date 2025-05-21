@@ -27,6 +27,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { Tooltip } from '../common/Tooltip'
 import { addressesEqual } from '../../util/AddressUtils'
+import { getTransactionType, isLifiTransfer } from './helpers'
 
 function ActionRowConnectButton() {
   return (
@@ -148,7 +149,10 @@ export function TransactionsTableRowAction({
     window.open(GET_HELP_LINK, '_blank')
 
     // track the button click
-    trackEvent('Tx Error: Get Help Click', { network: networkName })
+    trackEvent('Tx Error: Get Help Click', {
+      network: networkName,
+      transactionType: getTransactionType(tx)
+    })
   }
 
   if (isDepositReadyToRedeem(tx)) {
@@ -192,6 +196,10 @@ export function TransactionsTableRowAction({
 
     if (!isConnected) {
       return <ActionRowConnectButton />
+    }
+
+    if (isLifiTransfer(tx)) {
+      return null
     }
 
     return isClaiming || isClaimingCctp ? (

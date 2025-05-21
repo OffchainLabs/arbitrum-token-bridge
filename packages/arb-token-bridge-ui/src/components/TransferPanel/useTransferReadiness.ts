@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import { utils } from 'ethers'
 import { useLocalStorage } from '@uidotdev/usehooks'
+import { BigNumber, constants, utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -33,6 +33,9 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { isLifiRoute, RouteContext, useRouteStore } from './hooks/useRouteStore'
+import { shallow } from 'zustand/shallow'
+import { addressesEqual } from '../../util/AddressUtils'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
@@ -113,6 +116,36 @@ function notReady(
   return { ...result, ...params }
 }
 
+export function getAmountToPay(selectedRouteContext: RouteContext) {
+  let amountToPay = BigNumber.from(0)
+  if (
+    addressesEqual(
+      selectedRouteContext.fee.token.address,
+      constants.AddressZero
+    )
+  ) {
+    amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
+  }
+  if (
+    addressesEqual(
+      selectedRouteContext.gas.token.address,
+      constants.AddressZero
+    )
+  ) {
+    amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
+  }
+  if (
+    addressesEqual(
+      selectedRouteContext.fromAmount.token.address,
+      constants.AddressZero
+    )
+  ) {
+    amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
+  }
+
+  return amountToPay
+}
+
 export type UseTransferReadinessTransferReady = {
   deposit: boolean
   withdrawal: boolean
@@ -137,6 +170,13 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
+  const { selectedRoute, selectedRouteContext } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      selectedRouteContext: state.context
+    }),
+    shallow
+  )
 
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
@@ -225,6 +265,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         isDepositMode
       }
     )
+
+    if (!selectedRoute) {
+      return notReady()
+    }
 
     const ethBalanceFloat = isDepositMode
       ? ethL1BalanceFloat
@@ -391,6 +435,34 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           })
         }
       })
+    }
+
+    /**
+     * Lifi: Prevent bridging if the total of bridge fee, gas fee and amount are greater than the user's balance
+     * This check needs to be after ERC20 check.
+     * In case of insufficient balance we want to show insufficient balance error message, not gas error
+     */
+    if (isLifiRoute(selectedRoute)) {
+      if (!selectedRouteContext) {
+        return notReady()
+      }
+
+      const amountToPay = parseFloat(
+        utils.formatUnits(getAmountToPay(selectedRouteContext), 18)
+      )
+
+      if (amountToPay > ethBalanceFloat) {
+        return notReady({
+          errorMessages: {
+            inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+              asset: ether.symbol,
+              chain: networks.sourceChain.name,
+              balance: formatAmount(ethBalanceFloat),
+              requiredBalance: formatAmount(amountToPay)
+            })
+          }
+        })
+      }
     }
 
     if (!tosAccepted) {
@@ -577,6 +649,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     isTeleportMode,
     isSelectedTokenWithdrawOnly,
     isSelectedTokenWithdrawOnlyLoading,
-    childChain.name
+    childChain.name,
+    selectedRoute,
+    selectedRouteContext
   ])
 }

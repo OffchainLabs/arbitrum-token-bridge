@@ -2,7 +2,6 @@ import { Fragment, useEffect, useMemo } from 'react'
 import { Dialog, DialogBackdrop, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { shallow } from 'zustand/shallow'
-
 import { useTxDetailsStore } from './TransactionHistory'
 import { TransactionDetailsContent } from './TransactionDetailsContent'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'

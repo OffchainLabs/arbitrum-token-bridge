@@ -5,6 +5,7 @@ import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
 import LayerZeroIcon from '@/images/LayerZeroIcon.png'
+import LifiLogo from '@/icons/lifi.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
@@ -18,7 +19,7 @@ import { TransactionsTableDetailsSteps } from './TransactionsTableDetailsSteps'
 import { Button } from '../common/Button'
 import { GET_HELP_LINK, ether } from '../../constants'
 import { shortenAddress } from '../../util/CommonUtils'
-import { isTxCompleted } from './helpers'
+import { getTransactionType, isLifiTransfer, isTxCompleted } from './helpers'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
@@ -26,8 +27,30 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
+import { trackEvent } from '../../util/AnalyticsUtils'
+import { SafeImage } from '../common/SafeImage'
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
+  if (isLifiTransfer(tx)) {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-row items-center gap-1">
+          <SafeImage
+            alt="Bridge logo"
+            src={tx.toolDetails.logoURI}
+            width={30}
+            height={30}
+          />
+          <span>{tx.toolDetails.name}</span>
+        </div>
+        <div className="flex flex-row items-center gap-1">
+          <Image alt="Lifi logo" src={LifiLogo} width={16} height={16} />
+          <span>Bridged via LiFi</span>
+        </div>
+      </div>
+    )
+  }
+
   let protocolLogo, protocolName, protocolDescription
 
   if (tx.isOft) {
@@ -222,9 +245,18 @@ export const TransactionDetailsContent = ({
       </DetailsBox>
 
       {!isTxCompleted(tx) && (
-        <div className="flex justify-end min-[850px]:col-span-2">
+        <div className="flex justify-end">
           <ExternalLink href={GET_HELP_LINK}>
-            <Button variant="secondary" className="border-white/30 text-xs">
+            <Button
+              variant="secondary"
+              className="border-white/30 text-xs"
+              onClick={() => {
+                trackEvent('Tx Error: Get Help Click', {
+                  network: getNetworkName(tx.sourceChainId),
+                  transactionType: getTransactionType(tx)
+                })
+              }}
+            >
               Get help
             </Button>
           </ExternalLink>

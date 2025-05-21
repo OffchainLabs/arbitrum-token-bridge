@@ -1,15 +1,16 @@
 import { ethers, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { AssetType } from './arbTokenBridge.types'
-import { MergedTransaction } from '../state/app/state'
 import {
   getChainIdFromEid,
   getOftV2TransferDecodedData
 } from '../token-bridge-sdk/oftUtils'
+import { LayerZeroTransaction } from '../state/app/state'
 import { isDepositMode } from '../util/isDepositMode'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { isNetwork } from '../util/networks'
+import { CommonAddress } from '../util/CommonAddressUtils'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'
@@ -22,17 +23,6 @@ export const LayerZeroMessageStatus = {
   FAILED: 'failed',
   BLOCKED: 'failed'
 } as const
-
-/*
- * LayerZero API returns LayerZeroTransaction` without `asset` and `value`.
- * `updateAdditionalLayerZeroData()` fills these gaps, returning `MergedTransaction` for tx history.
- */
-export type LayerZeroTransaction = Omit<
-  MergedTransaction,
-  'asset' | 'value' | 'tokenAddress'
-> & {
-  isOft: true
-}
 
 /**
  * Response of LayerZero API for a wallet address
@@ -227,15 +217,18 @@ function mapLayerZeroMessageToLayerZeroTransaction(
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
     sourceChainId,
     destinationChainId,
-    oftData: {
-      destinationTxHash
-    }
+    destinationTxHash,
+    asset: 'USDT',
+    value: '0',
+    tokenAddress: isDeposit
+      ? CommonAddress.Ethereum.USDT
+      : CommonAddress.ArbitrumOne.USDT
   }
 }
 
 export async function updateAdditionalLayerZeroData(
   tx: LayerZeroTransaction
-): Promise<MergedTransaction> {
+): Promise<LayerZeroTransaction> {
   const { txId } = tx
   const updatedTx = { ...tx }
 
@@ -337,8 +330,8 @@ export function useOftTransactionHistory({
 }
 
 export async function getUpdatedOftTransfer(
-  tx: MergedTransaction
-): Promise<MergedTransaction> {
+  tx: LayerZeroTransaction
+): Promise<LayerZeroTransaction> {
   const isTestnetTransfer = isNetwork(tx.sourceChainId).isTestnet
 
   const LAYERZERO_API_URL = isTestnetTransfer
@@ -358,9 +351,7 @@ export async function getUpdatedOftTransfer(
       status,
       resolvedAt:
         status === 'pending' ? null : new Date(message.updated).getTime(),
-      oftData: {
-        destinationTxHash
-      }
+      destinationTxHash
     }
   } catch (error) {
     console.error('Error fetching updated OFT transfer for tx:', tx.txId, error)

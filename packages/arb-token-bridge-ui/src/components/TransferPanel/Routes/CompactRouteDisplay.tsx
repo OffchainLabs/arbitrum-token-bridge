@@ -28,7 +28,6 @@ type CompactRouteDisplayProps = RouteProps & {
   isBatchTransferSupported: boolean
   amount2: string
   childNativeCurrency: NativeCurrency
-  name: string
 }
 export const CompactRouteDisplay = React.memo(
   ({

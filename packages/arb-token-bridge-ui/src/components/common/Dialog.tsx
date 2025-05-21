@@ -102,6 +102,7 @@ export function Dialog(props: DialogProps) {
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
   const [{ embedMode }] = useArbQueryParams()
+  const onClose = props.onClose
 
   // separate state to track transition state and have a smooth exit animation
   const [isClosing, setIsClosing] = useState(false)
@@ -115,7 +116,7 @@ export function Dialog(props: DialogProps) {
       setIsClosing(true)
 
       setTimeout(() => {
-        props.onClose(confirmed)
+        onClose(confirmed)
 
         // prevent flickering caused by race conditions
         setTimeout(() => {
@@ -125,7 +126,7 @@ export function Dialog(props: DialogProps) {
         // 200ms for the transition to finish
       }, 200)
     },
-    [closeable, props]
+    [closeable, onClose]
   )
 
   return (

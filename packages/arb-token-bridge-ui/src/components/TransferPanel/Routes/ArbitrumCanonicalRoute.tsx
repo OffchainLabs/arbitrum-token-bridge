@@ -1,15 +1,9 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { constants, utils } from 'ethers'
+import { utils } from 'ethers'
 import { Route, Token } from './Route'
-import {
-  UseGasSummaryResult,
-  useGasSummary
-} from '../../../hooks/TransferPanel/useGasSummary'
-import {
-  NativeCurrency,
-  useNativeCurrency
-} from '../../../hooks/useNativeCurrency'
+import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
+import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import {
   getOrbitDepositDuration,
@@ -22,9 +16,9 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
-import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { shallow } from 'zustand/shallow'
+import { getGasCostAndToken } from './getGasCostAndToken'
 
 const commonUsdcToken: Token = {
   decimals: 6,
@@ -75,117 +69,6 @@ function getDuration({
   }
 
   return getStandardDepositDuration(isTestnet)
-}
-
-function getGasCostAndToken({
-  childChainNativeCurrency,
-  parentChainNativeCurrency,
-  gasSummaryStatus,
-  estimatedChildChainGasFees,
-  estimatedParentChainGasFees,
-  isDepositMode,
-  selectedToken
-}: {
-  childChainNativeCurrency: NativeCurrency
-  parentChainNativeCurrency: NativeCurrency
-  gasSummaryStatus: UseGasSummaryResult['status']
-  estimatedChildChainGasFees: UseGasSummaryResult['estimatedChildChainGasFees']
-  estimatedParentChainGasFees: UseGasSummaryResult['estimatedParentChainGasFees']
-  isDepositMode: boolean
-  selectedToken: ERC20BridgeToken | null
-}): {
-  isLoading: boolean
-  gasCost: { gasCost: number; gasToken: Token }[] | null
-} {
-  const sameNativeCurrency =
-    childChainNativeCurrency.isCustom === parentChainNativeCurrency.isCustom
-  const estimatedTotalGasFees =
-    gasSummaryStatus === 'loading' ||
-    typeof estimatedChildChainGasFees == 'undefined' ||
-    typeof estimatedParentChainGasFees == 'undefined'
-      ? undefined
-      : estimatedParentChainGasFees + estimatedChildChainGasFees
-
-  const childChainNativeCurrencyWithAddress: Token =
-    'address' in childChainNativeCurrency
-      ? childChainNativeCurrency
-      : { ...childChainNativeCurrency, address: constants.AddressZero }
-
-  const parentChainNativeCurrencyWithAddress: Token =
-    'address' in parentChainNativeCurrency
-      ? parentChainNativeCurrency
-      : { ...parentChainNativeCurrency, address: constants.AddressZero }
-
-  if (typeof estimatedTotalGasFees === 'undefined') {
-    return {
-      gasCost: null,
-      isLoading: true
-    }
-  }
-
-  /**
-   * Same Native Currencies between Parent and Child chains
-   * 1. ETH/ER20 deposit: L1->L2
-   * 2. ETH/ERC20 withdrawal: L2->L1
-   * 3. ETH/ER20 deposit: L2->L3 (ETH as gas token)
-   * 4. ETH/ERC20 withdrawal: L3 (ETH as gas token)->L2
-   *
-   * x ETH
-   */
-  if (sameNativeCurrency) {
-    return {
-      isLoading: false,
-      gasCost: [
-        {
-          gasCost: estimatedTotalGasFees,
-          gasToken: childChainNativeCurrencyWithAddress
-        }
-      ]
-    }
-  }
-
-  /** Different Native Currencies between Parent and Child chains
-   *
-   *  Custom gas token deposit: L2->Xai
-   *  x ETH
-   *
-   *  ERC20 deposit: L2->Xai
-   *  x ETH and x XAI
-   *
-   *  Custom gas token/ERC20 withdrawal: L3->L2
-   *  only show child chain native currency
-   *  x XAI
-   */
-  if (isDepositMode) {
-    const gasCost: { gasCost: number; gasToken: Token }[] = [
-      {
-        gasCost: estimatedParentChainGasFees!,
-        gasToken: parentChainNativeCurrencyWithAddress
-      }
-    ]
-
-    if (selectedToken) {
-      gasCost.push({
-        gasCost: estimatedChildChainGasFees!,
-        gasToken: childChainNativeCurrencyWithAddress
-      })
-    }
-
-    return {
-      gasCost,
-      isLoading: false
-    }
-  }
-
-  return {
-    isLoading: false,
-    gasCost: [
-      {
-        gasCost: estimatedChildChainGasFees!,
-        gasToken: childChainNativeCurrencyWithAddress
-      }
-    ]
-  }
 }
 
 export function ArbitrumCanonicalRoute() {

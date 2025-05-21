@@ -13,9 +13,9 @@ import { CctpUsdcWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithd
 import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/CctpUsdcDepositConfirmationDialog'
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
+import { HighSlippageWarningDialog } from '../TransferPanel/HighSlippageWarningDialog'
 import { WidgetTransactionHistory } from '../Widget/WidgetTransactionHistory'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
-
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -46,6 +46,7 @@ export type DialogType =
   | 'confirm_cctp_withdrawal'
   | 'confirm_cctp_deposit'
   | 'confirm_usdc_deposit'
+  | 'high_slippage_warning'
   | 'widget_transaction_history'
   | 'token_selection'
 
@@ -142,6 +143,8 @@ export function DialogWrapper(props: DialogProps) {
           symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
         />
       )
+    case 'high_slippage_warning':
+      return <HighSlippageWarningDialog {...commonProps} />
     case 'widget_transaction_history':
       return <WidgetTransactionHistory {...commonProps} />
     case 'token_selection':

@@ -518,6 +518,8 @@ export function useCctpFetching({
               currentData.pending[index] = {
                 ...txData,
                 ...resultTxData,
+                isLifi: false,
+                isOft: false,
                 cctpData: {
                   ...cctpData,
                   ...resultCctpData

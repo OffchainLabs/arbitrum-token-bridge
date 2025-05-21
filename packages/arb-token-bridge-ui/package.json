@@ -10,6 +10,7 @@
     "@headlessui/react": "^2.2.2",
     "@headlessui/tailwindcss": "^0.2.2",
     "@heroicons/react": "^2.2.0",
+    "@lifi/sdk": "^3.7.0",
     "@offchainlabs/cobalt": "^0.4.0",
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@rehooks/local-storage": "^2.4.5",
