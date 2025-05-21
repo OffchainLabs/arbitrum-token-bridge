@@ -21,24 +21,6 @@ program
     });
   });
 
-program
-  .command("validate-orbit-chains-data")
-  .description("Validate the orbitChainsData.json file")
-  .argument("<file>", "Path to the orbitChainsData.json file")
-  .action((file: string) => {
-    try {
-      const data = fs.readFileSync(file, "utf8");
-      const orbitChainsList = JSON.parse(data);
-      validateOrbitChainsList(orbitChainsList).catch((error) => {
-        console.error(`Error in validateOrbitChainsList: ${error}`);
-        process.exit(1);
-      });
-    } catch (error) {
-      console.error("Error reading or parsing file:", error);
-      process.exit(1);
-    }
-  });
-
 // Add more commands here as needed, for example:
 // program
 //   .command('some-other-script')

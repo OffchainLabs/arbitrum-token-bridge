@@ -20,7 +20,6 @@ import {
   TESTNET_PARENT_CHAIN_IDS,
   validateIncomingChainData,
   validateOrbitChain,
-  validateOrbitChainsList,
 } from "./schemas";
 import { getProvider } from "./provider";
 import { ethers } from "ethers";
