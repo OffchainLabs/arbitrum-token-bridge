@@ -53,14 +53,16 @@ beforeAll(() => {
 
   registerCustomArbitrumNetwork(xaiTestnet)
 
-  const polterTestnetChainId = 631571
-  const polterTestnet = orbitTestnets[polterTestnetChainId]
+  const xmtpTestnetChainId = 241320161
+  const xmtpTestnet = orbitTestnets[xmtpTestnetChainId]
 
-  if (!polterTestnet) {
-    throw new Error(`Could not find Polter Testnet in the Orbit chains list.`)
+  if (!xmtpTestnet) {
+    throw new Error(
+      `Could not find XMTP Testnet Testnet in the Orbit chains list.`
+    )
   }
 
-  registerCustomArbitrumNetwork(polterTestnet)
+  registerCustomArbitrumNetwork(xmtpTestnet)
 })
 
 describe('getBlockNumberReferenceChainIdByChainId', () => {
@@ -269,7 +271,7 @@ describe('getDestinationChainIds', () => {
     const defaultChainId = destinationChainIds[0]
     const nonDefaultChainIds = destinationChainIds.slice(1)
 
-    expect(defaultChainId).toBe(631571)
+    expect(defaultChainId).toBe(241320161)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
   })
 
