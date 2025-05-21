@@ -5,7 +5,7 @@ import {
   processChainData,
   handleImages,
   createAndValidateOrbitChain,
-  updateAndValidateOrbitChainsList,
+  updateOrbitChainsList,
 } from "./transforms";
 
 /**
@@ -29,7 +29,7 @@ export async function addOrbitChain(targetJsonPath: string): Promise<void> {
       nativeTokenLogoPath
     );
 
-    await updateAndValidateOrbitChainsList(orbitChain, targetJsonPath);
+    await updateOrbitChainsList(orbitChain, targetJsonPath);
   } catch (error) {
     core.setFailed(`Error in addOrbitChain: ${error}`);
     throw error;

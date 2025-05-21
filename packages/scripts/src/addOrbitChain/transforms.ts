@@ -131,7 +131,7 @@ export const createAndValidateOrbitChain = async (
   return orbitChain;
 };
 
-export const updateAndValidateOrbitChainsList = async (
+export const updateOrbitChainsList = async (
   orbitChain: OrbitChain,
   targetJsonPath: string
 ) => {
@@ -143,9 +143,9 @@ export const updateAndValidateOrbitChainsList = async (
     orbitChain,
     targetJsonPath
   );
-  console.log("Orbit ChainsList updated, validating...");
-  await validateOrbitChainsList(updatedOrbitChainsList);
-  console.log("Orbit ChainsList validated successfully");
+  console.log("Validating new Orbit chain...");
+  await validateOrbitChain(orbitChain);
+  console.log("Orbit Chain validated successfully");
   core.endGroup();
   return updatedOrbitChainsList;
 };
