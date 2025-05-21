@@ -43,7 +43,7 @@ export function WidgetTransferPanel({
       <div className="relative m-auto grid w-full grid-cols-1 gap-4 rounded-lg bg-transparent p-4 text-white transition-all duration-300 min-[850px]:grid min-[850px]:grid-cols-2">
         {/* Left/Top panel */}
         <div className="flex h-full flex-col gap-1 overflow-hidden">
-          <div className="flex flex-row items-center justify-between text-lg">
+          <div className="mb-2 flex h-[30px] flex-row items-center justify-between text-lg">
             <WidgetHeaderAccountButton />
 
             {/* widget transaction history */}
@@ -54,7 +54,7 @@ export function WidgetTransferPanel({
                   width={20}
                   alt="Tx history logo"
                   src={WidgetTxHistoryIcon}
-                  className="h-7 w-7 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-white/20"
+                  className="h-7 w-7 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-white/10"
                   onClick={() => openDialog('widget_transaction_history')}
                 />
               )}
@@ -66,7 +66,7 @@ export function WidgetTransferPanel({
         {/* Right/Bottom panel */}
         <div className="flex h-full flex-col gap-1 min-[850px]:justify-between">
           <div className="flex flex-col gap-1">
-            <div className="h-[30px] text-lg">Receive</div>
+            <div className="mb-2 h-[30px] text-lg">Receive</div>
             <WidgetRoutes />
           </div>
 

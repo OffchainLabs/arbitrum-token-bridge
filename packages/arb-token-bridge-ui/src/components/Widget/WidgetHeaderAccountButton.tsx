@@ -1,9 +1,10 @@
 import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
+import { twMerge } from 'tailwind-merge'
 import {
   ArrowLeftEndOnRectangleIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline'
-import { Popover, Transition } from '@headlessui/react'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { Button } from '../common/Button'
@@ -27,36 +28,48 @@ export const WidgetHeaderAccountButton = () => {
   })
 
   return (
-    <div className="flex items-center gap-2 text-sm text-white">
+    <div className="flex items-center gap-2 text-base text-white">
       {isConnected && (
-        <Popover className="relative w-full px-4 text-white sm:w-max sm:p-0">
-          <Popover.Button className="flex items-center gap-2">
-            <SafeImage
-              src={ensAvatar || undefined}
-              className="h-6 w-6 rounded-full"
-              fallback={<CustomBoringAvatar size={20} name={address} />}
-            />{' '}
-            {shortenAddress(address ?? '')}
-            <ChevronDownIcon className="h-3 w-3" />
-          </Popover.Button>
-
-          <Transition>
-            <Popover.Panel className="flex w-full flex-col overflow-hidden rounded pb-2 sm:absolute sm:top-0 sm:bg-dark">
-              <div className="flex w-full flex-col justify-between sm:flex-col sm:items-end sm:px-0">
-                <button onClick={() => disconnect()}>
+        <Menu>
+          {({ open }) => (
+            <>
+              <MenuButton className="flex items-center gap-2 rounded-md p-1 hover:bg-white/10">
+                <SafeImage
+                  src={ensAvatar || undefined}
+                  className="h-6 w-6 rounded-full"
+                  fallback={<CustomBoringAvatar size={20} name={address} />}
+                />{' '}
+                {shortenAddress(address ?? '')}
+                <ChevronDownIcon
+                  className={twMerge(
+                    'h-3 w-3 transition-all',
+                    open && 'rotate-180'
+                  )}
+                />
+              </MenuButton>
+              <MenuItems
+                transition
+                anchor="bottom"
+                className="ml-2 mt-2 origin-top overflow-hidden rounded-md text-sm text-white transition"
+              >
+                <MenuItem
+                  as="button"
+                  className="flex cursor-pointer items-center gap-2 bg-dark p-2 px-3 hover:bg-[#303030]"
+                  onClick={() => disconnect()}
+                >
                   <ArrowLeftEndOnRectangleIcon className="h-3 w-3 text-white/60 sm:text-white" />
                   <span>Disconnect</span>
-                </button>
-              </div>
-            </Popover.Panel>
-          </Transition>
-        </Popover>
+                </MenuItem>
+              </MenuItems>
+            </>
+          )}
+        </Menu>
       )}
 
       {!isConnected && (
         <Button
           variant="primary"
-          className="flex w-full justify-between bg-lime-dark"
+          className="flex h-[35px] w-full justify-between bg-lime-dark"
           onClick={openConnectModal}
         >
           <div>Connect Wallet</div>
