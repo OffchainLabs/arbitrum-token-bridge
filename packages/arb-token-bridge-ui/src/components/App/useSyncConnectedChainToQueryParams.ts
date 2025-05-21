@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAccount, useDisconnect, useNetwork } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { sanitizeQueryParams } from '../../hooks/useNetworks'
@@ -8,16 +8,17 @@ import { addressIsSmartContract } from '../../util/AddressUtils'
 import { getNetworkName } from '../../util/networks'
 
 export function useSyncConnectedChainToQueryParams() {
-  const { address } = useAccount()
+  const { address, chain } = useAccount()
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
   const { disconnect } = useDisconnect({
-    onSettled: onDisconnectHandler
+    mutation: {
+      onSettled: onDisconnectHandler
+    }
   })
 
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
-  const { chain } = useNetwork()
 
   const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {

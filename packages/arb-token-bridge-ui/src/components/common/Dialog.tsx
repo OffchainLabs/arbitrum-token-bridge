@@ -1,5 +1,5 @@
-import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
-import { Fragment, useCallback, useRef, useState } from 'react'
+import { DialogBackdrop, Dialog as HeadlessUIDialog } from '@headlessui/react'
+import { useCallback, useRef, useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
@@ -100,107 +100,97 @@ export function Dialog(props: DialogProps) {
   const closeable = props.closeable ?? true
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
+  const onClose = props.onClose
 
   // separate state to track transition state and have a smooth exit animation
   const [isClosing, setIsClosing] = useState(false)
-  const [isConfirmed, setIsConfirmed] = useState(false)
 
-  const handleCloseStart = useCallback(
+  const handleClose = useCallback(
     (confirmed: boolean) => {
       if (!confirmed && !closeable) {
         return
       }
 
-      setIsConfirmed(confirmed)
       setIsClosing(true)
+
+      setTimeout(() => {
+        onClose(confirmed)
+
+        // prevent flickering caused by race conditions
+        setTimeout(() => {
+          setIsClosing(false)
+        }, 10)
+
+        // 200ms for the transition to finish
+      }, 200)
     },
-    [setIsClosing, setIsConfirmed, closeable]
+    [closeable, onClose]
   )
 
-  const handleCloseEnd = useCallback(() => {
-    props.onClose(isConfirmed)
-    // prevents race conditions that could cause a flicker of the dialog after close
-    setTimeout(() => {
-      setIsClosing(false)
-    }, 0)
-  }, [props, isConfirmed, setIsClosing])
-
   return (
-    <Transition show={props.isOpen && !isClosing} as={Fragment}>
-      <HeadlessUIDialog
-        as="div"
-        open={props.isOpen}
-        initialFocus={props.initialFocus || cancelButtonRef}
-        onClose={() => handleCloseStart(false)}
-        className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
+    <HeadlessUIDialog
+      as="div"
+      open={props.isOpen && !isClosing}
+      onClose={() => handleClose(false)}
+      transition
+      className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
+    >
+      <DialogBackdrop
+        transition
+        className={twMerge(
+          'fixed inset-0 bg-black opacity-80 transition-opacity',
+          'data-[closed]:opacity-0 data-[enter]:duration-400 data-[enter]:ease-out',
+          'data-[leave]:duration-200 data-[leave]:ease-in'
+        )}
+        aria-hidden="true"
+      />
+      <HeadlessUIDialog.Panel
+        transition
+        className={twMerge(
+          'z-10 max-h-screen w-screen scale-100 overflow-y-auto border border-gray-dark bg-gray-1 opacity-100 transition-[transform_opacity] md:max-w-[727px] md:rounded',
+          'data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:duration-400 data-[enter]:ease-out',
+          'data-[leave]:duration-200 data-[leave]:ease-in',
+          className
+        )}
       >
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-400"
-          enterFrom="opacity-0"
-          enterTo="opacity-80"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-80"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black" aria-hidden="true" />
-        </Transition.Child>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-400"
-          enterFrom="opacity-0 scale-95"
-          enterTo="opacity-100 scale-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-95"
-          afterLeave={handleCloseEnd}
-        >
-          <HeadlessUIDialog.Panel
-            className={twMerge(
-              'z-10 max-h-screen w-screen overflow-y-auto border border-gray-dark bg-gray-1 md:max-w-[727px] md:rounded',
-              className
-            )}
-          >
-            <div className="flex items-start justify-between px-6 pt-4">
-              <HeadlessUIDialog.Title className="text-xl text-gray-2">
-                {props.title}
-              </HeadlessUIDialog.Title>
-              {closeable && (
-                <button type="button" onClick={() => handleCloseStart(false)}>
-                  <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
-                </button>
-              )}
-            </div>
+        <div className="flex items-start justify-between px-6 pt-4">
+          <HeadlessUIDialog.Title className="text-xl text-gray-2">
+            {props.title}
+          </HeadlessUIDialog.Title>
+          {closeable && (
+            <button type="button" onClick={() => handleClose(false)}>
+              <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
+            </button>
+          )}
+        </div>
 
-            <div className="flex-grow px-6">{props.children}</div>
+        <div className="flex-grow px-6">{props.children}</div>
 
-            {!isFooterHidden && (
-              <div className="flex flex-row justify-end space-x-2 bg-[#3B3B3B] px-6 py-2">
-                {closeable && (
-                  <Button
-                    ref={cancelButtonRef}
-                    variant="tertiary"
-                    onClick={() => handleCloseStart(false)}
-                    aria-label="Dialog Cancel"
-                    className="text-white"
-                    {...(props.cancelButtonProps || {})}
-                  >
-                    Cancel
-                  </Button>
-                )}
-                <Button
-                  variant="primary"
-                  onClick={() => handleCloseStart(true)}
-                  {...(props.actionButtonProps || {})}
-                  aria-label={props.actionButtonTitle || 'Dialog Continue'}
-                >
-                  {props.actionButtonTitle || 'Continue'}
-                </Button>
-              </div>
+        {!isFooterHidden && (
+          <div className="flex flex-row justify-end space-x-2 bg-[#3B3B3B] px-6 py-2">
+            {closeable && (
+              <Button
+                ref={cancelButtonRef}
+                variant="tertiary"
+                onClick={() => handleClose(false)}
+                aria-label="Dialog Cancel"
+                className="text-white"
+                {...(props.cancelButtonProps || {})}
+              >
+                Cancel
+              </Button>
             )}
-          </HeadlessUIDialog.Panel>
-        </Transition.Child>
-      </HeadlessUIDialog>
-    </Transition>
+            <Button
+              variant="primary"
+              onClick={() => handleClose(true)}
+              {...(props.actionButtonProps || {})}
+              aria-label={props.actionButtonTitle || 'Dialog Continue'}
+            >
+              {props.actionButtonTitle || 'Continue'}
+            </Button>
+          </div>
+        )}
+      </HeadlessUIDialog.Panel>
+    </HeadlessUIDialog>
   )
 }

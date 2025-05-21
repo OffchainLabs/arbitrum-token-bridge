@@ -1,4 +1,4 @@
-import { Chain } from 'wagmi'
+import { Chain } from 'wagmi/chains'
 import * as chains from 'wagmi/chains'
 import {
   getCustomChainFromLocalStorageById,
@@ -17,9 +17,9 @@ const chainQueryParams = [
   'base',
   'arbitrum-sepolia',
   'base-sepolia',
-  'custom-localhost',
-  'arbitrum-localhost',
-  'l3-localhost'
+  'nitro-testnode-l1',
+  'nitro-testnode-l2',
+  'nitro-testnode-l3'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
@@ -64,13 +64,13 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'base-sepolia'
 
     case ChainId.Local:
-      return 'custom-localhost'
+      return 'nitro-testnode-l1'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-localhost'
+      return 'nitro-testnode-l2'
 
     case ChainId.L3Local:
-      return 'l3-localhost'
+      return 'nitro-testnode-l3'
 
     default:
       const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -116,13 +116,13 @@ export function getChainForChainKeyQueryParam(
     case 'base-sepolia':
       return customChains.baseSepolia
 
-    case 'custom-localhost':
+    case 'nitro-testnode-l1':
       return customChains.localL1Network
 
-    case 'arbitrum-localhost':
+    case 'nitro-testnode-l2':
       return customChains.localL2Network
 
-    case 'l3-localhost':
+    case 'nitro-testnode-l3':
       return customChains.localL3Network
 
     default:

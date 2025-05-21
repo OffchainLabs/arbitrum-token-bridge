@@ -8,6 +8,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getInitialETHBalance,
+  getNetworkSlug,
   getL1NetworkConfig,
   getL2NetworkConfig,
   visitAfterSomeDelay
@@ -56,8 +57,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'max',
-            sourceChain: getL1NetworkConfig().networkName,
-            destinationChain: getL2NetworkConfig().networkName
+            sourceChain: getNetworkSlug('parent'),
+            destinationChain: getNetworkSlug('child')
           }
         })
 
@@ -86,8 +87,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'MAX',
-            sourceChain: getL1NetworkConfig().networkName,
-            destinationChain: getL2NetworkConfig().networkName
+            sourceChain: getNetworkSlug('parent'),
+            destinationChain: getNetworkSlug('child')
           }
         })
 
@@ -119,8 +120,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: 'MaX',
-            sourceChain: getL1NetworkConfig().networkName,
-            destinationChain: getL2NetworkConfig().networkName
+            sourceChain: getNetworkSlug('parent'),
+            destinationChain: getNetworkSlug('child')
           }
         })
 
@@ -155,8 +156,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '56',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -166,8 +167,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '1.6678',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -177,8 +178,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '6',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -188,8 +189,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0.123',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -200,8 +201,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '-0.123',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -211,8 +212,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: 'asdfs',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -222,8 +223,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -233,8 +234,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '0.0001',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -244,8 +245,8 @@ describe('User enters site with query params on URL', () => {
       visitAfterSomeDelay('/', {
         qs: {
           amount: '123,3,43',
-          sourceChain: getL1NetworkConfig().networkName,
-          destinationChain: getL2NetworkConfig().networkName
+          sourceChain: getNetworkSlug('parent'),
+          destinationChain: getNetworkSlug('child')
         }
       })
 
@@ -257,8 +258,8 @@ describe('User enters site with query params on URL', () => {
         visitAfterSomeDelay('/', {
           qs: {
             amount: '0, 123.222, 0.3',
-            sourceChain: getL1NetworkConfig().networkName,
-            destinationChain: getL2NetworkConfig().networkName
+            sourceChain: getNetworkSlug('parent'),
+            destinationChain: getNetworkSlug('child')
           }
         })
 

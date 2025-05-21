@@ -28,6 +28,7 @@ import { useAmount2InputVisibility } from './SourceNetworkBox'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { useRouteStore } from '../hooks/useRouteStore'
 
 function BalanceRow({
   parentErc20Address,
@@ -119,10 +120,11 @@ function BalanceRow({
 
 function BalancesContainer() {
   const [networks] = useNetworks()
-  const { childChain, isDepositMode } = useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
   const [selectedToken] = useSelectedToken()
+  const selectedRoute = useRouteStore(state => state.selectedRoute)
 
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()
@@ -135,12 +137,14 @@ function BalancesContainer() {
     ? selectedTokenBalances.destinationBalance
     : nativeCurrencyBalances.destinationBalance
 
+  const showNativeUsdcBalance = isCctpTransfer && selectedRoute === 'cctp'
+
   return (
     <div
       className="rounded px-3 text-white [&>*+*]:border-t [&>*+*]:border-gray-600"
       style={{ backgroundColor: '#00000050' }}
     >
-      {isCctpTransfer && isDepositMode && (
+      {showNativeUsdcBalance ? (
         <BalanceRow
           parentErc20Address={
             isArbitrumOne
@@ -158,25 +162,27 @@ function BalancesContainer() {
           )}
           symbolOverride="USDC"
         />
+      ) : (
+        <BalanceRow
+          parentErc20Address={selectedToken?.address}
+          balance={
+            selectedTokenOrNativeCurrencyBalance
+              ? formatAmount(selectedTokenOrNativeCurrencyBalance, {
+                  decimals: selectedToken ? selectedToken.decimals : 18
+                })
+              : undefined
+          }
+          symbolOverride={
+            selectedToken
+              ? sanitizeTokenSymbol(selectedToken.symbol, {
+                  chainId: networks.destinationChain.id,
+                  erc20L1Address: selectedToken.address
+                })
+              : undefined
+          }
+        />
       )}
-      <BalanceRow
-        parentErc20Address={selectedToken?.address}
-        balance={
-          selectedTokenOrNativeCurrencyBalance
-            ? formatAmount(selectedTokenOrNativeCurrencyBalance, {
-                decimals: selectedToken ? selectedToken.decimals : 18
-              })
-            : undefined
-        }
-        symbolOverride={
-          selectedToken
-            ? sanitizeTokenSymbol(selectedToken.symbol, {
-                chainId: networks.destinationChain.id,
-                erc20L1Address: selectedToken.address
-              })
-            : undefined
-        }
-      />
+
       {isBatchTransferSupported && isAmount2InputVisible && (
         <BalanceRow
           balance={

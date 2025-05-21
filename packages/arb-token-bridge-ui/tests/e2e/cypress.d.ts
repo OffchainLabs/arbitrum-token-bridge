@@ -1,7 +1,7 @@
 /* global JQuery */
 import '@synthetixio/synpress/support/index.d.ts'
 import {
-  connectToApp,
+  acceptTnC,
   login,
   searchAndSelectToken,
   fillCustomDestinationAddress,
@@ -36,7 +36,7 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
-      connectToApp: typeof connectToApp
+      acceptTnC(): typeof acceptTnC
       // eslint-disable-next-line no-unused-vars
       login: typeof login
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
