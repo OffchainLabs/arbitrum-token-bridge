@@ -9,8 +9,7 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "start": "node dist/index.js",
-    "add-orbit-chain": "node dist/scripts.cjs.js add-orbit-chain",
-    "validate-orbit-chains-data": "node dist/scripts.cjs.js validate-orbit-chains-data"
+    "add-orbit-chain": "node dist/scripts.cjs.js add-orbit-chain"
   },
   "author": "",
   "license": "ISC",

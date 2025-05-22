@@ -102,7 +102,7 @@ export function TokenButton({
             <Transition
               // we don't unmount on leave here because otherwise transition won't work with virtualized lists
               options={{ unmountOnLeave: false }}
-              className="fixed right-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
+              className="fixed right-0 top-0 z-50 sm:absolute sm:top-[76px] sm:max-w-[466px]"
               afterLeave={onPopoverClose}
             >
               <Popover.Panel
