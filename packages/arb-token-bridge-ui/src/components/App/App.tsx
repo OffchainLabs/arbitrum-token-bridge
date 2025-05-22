@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAccount, WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
@@ -14,15 +14,13 @@ import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
-import { TokenListSyncer } from '../syncers/TokenListSyncer'
+import { useSyncTokenList } from '../syncers/useSyncTokenList'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 import React from 'react'
@@ -73,6 +71,7 @@ const AppContent = React.memo(() => {
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
 
   useArbTokenBridgeStoreSync()
+  useSyncTokenList()
 
   if (!tosAccepted) {
     return (
@@ -103,7 +102,6 @@ const AppContent = React.memo(() => {
       <Header>
         <HeaderAccountOrConnectWalletButton />
       </Header>
-      <TokenListSyncer />
       <MainContent />
     </>
   )

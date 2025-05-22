@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
-import { useAppState } from '../../state'
 import {
   addBridgeTokenListToBridge,
   BRIDGE_TOKEN_LISTS
@@ -11,7 +10,7 @@ import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
-const TokenListSyncer = (): JSX.Element => {
+export const useSyncTokenList = () => {
   const arbTokenBridge = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
@@ -37,8 +36,4 @@ const TokenListSyncer = (): JSX.Element => {
     arbTokenBridge.token,
     childChain.id
   ])
-
-  return <></>
 }
-
-export { TokenListSyncer }
