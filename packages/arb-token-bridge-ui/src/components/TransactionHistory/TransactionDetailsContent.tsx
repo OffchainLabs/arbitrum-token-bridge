@@ -8,6 +8,7 @@ import LayerZeroIcon from '@/images/LayerZeroIcon.png'
 import LifiLogo from '@/icons/lifi.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { twMerge } from 'tailwind-merge'
 
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
@@ -29,6 +30,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { SafeImage } from '../common/SafeImage'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
   if (isLifiTransfer(tx)) {
@@ -114,6 +116,8 @@ export const TransactionDetailsContent = ({
   const childProvider = getProviderForChainId(tx?.childChainId ?? 0)
   const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
+  const [{ embedMode }] = useArbQueryParams()
+
   if (!tx || !nativeCurrency) {
     return null
   }
@@ -140,7 +144,9 @@ export const TransactionDetailsContent = ({
   const destinationNetworkName = getNetworkName(destinationChainId)
 
   return (
-    <div className="grid gap-4 min-[850px]:grid-cols-2">
+    <div
+      className={twMerge('grid gap-4', embedMode && 'min-[850px]:grid-cols-2')}
+    >
       <DetailsBox>
         <div className="flex flex-col space-y-3">
           <div className="flex justify-between text-xs text-white">
