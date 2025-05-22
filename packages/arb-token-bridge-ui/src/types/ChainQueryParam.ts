@@ -127,7 +127,7 @@ export function getChainForChainKeyQueryParam(
 
     default:
       const orbitChain = getOrbitChains().find(
-        chain => chain.chainId === Number(chainKeyQueryParam)
+        chain => chain.slug === chainKeyQueryParam
       )
 
       if (orbitChain) {
