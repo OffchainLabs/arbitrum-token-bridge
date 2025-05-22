@@ -312,28 +312,6 @@ export const validateOrbitChain = async (chainData: unknown) => {
   return await chainSchema.parseAsync(chainData);
 };
 
-export const validateOrbitChainsList = async (
-  chainsList: unknown
-): Promise<void> => {
-  try {
-    await orbitChainsListSchema.parseAsync(chainsList);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error("OrbitChainsList Validation Errors:");
-      error.errors.forEach((err) => {
-        const path = err.path.join(".");
-        console.error(`Path: ${path}`);
-        console.error(`Error: ${err.message}`);
-        if (err.code === z.ZodIssueCode.custom) {
-          console.error(`Custom error: ${JSON.stringify(err.params)}`);
-        }
-        console.error("---");
-      });
-    }
-    throw error;
-  }
-};
-
 export const chainDataLabelToKey: Record<string, string> = {
   "Chain ID": "chainId",
   "Chain name": "name",

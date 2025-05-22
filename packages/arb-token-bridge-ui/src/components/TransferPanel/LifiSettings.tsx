@@ -262,7 +262,7 @@ export function LifiSettings() {
   const slippageIsTooLow = slippageValue && Number(slippageValue) <= 0.01
 
   return (
-    <Popover className="z-50 flex sm:relative">
+    <Popover className="z-40 flex sm:relative">
       {({ open }) => (
         <>
           <PopoverButton className="ml-auto">
