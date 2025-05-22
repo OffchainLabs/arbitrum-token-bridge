@@ -10,14 +10,12 @@ import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { useArbTokenBridge } from '../../../hooks/useArbTokenBridge'
 
 export function useUpdateUSDCTokenData() {
   const actions = useActions()
-  const {
-    app: {
-      arbTokenBridge: { token }
-    }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
+  const { token } = arbTokenBridge
   const [selectedToken, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)

@@ -6,7 +6,6 @@ import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { twMerge } from 'tailwind-merge'
 import useSWRImmutable from 'swr/immutable'
 
-import { useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
@@ -40,6 +39,7 @@ import { useBalances } from '../../hooks/useBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { addressesEqual } from '../../util/AddressUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -60,9 +60,7 @@ export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
 }
 
 function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
   const { bridgeTokens, token } = arbTokenBridge
 
   const toggleTokenList = useCallback(
@@ -76,10 +74,15 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
     [arbTokenBridge, token]
   )
 
-  const isActive = Object.keys(bridgeTokens ?? []).some(address => {
-    const token = bridgeTokens?.[address]
-    return token?.listIds.has(tokenList?.id)
-  })
+  const isActive = useMemo(() => {
+    if (!bridgeTokens) {
+      return false
+    }
+    return Object.keys(bridgeTokens).some(address => {
+      const token = bridgeTokens[address]
+      return token?.listIds.has(tokenList?.id)
+    })
+  }, [bridgeTokens])
 
   const switchOnClick = useCallback(
     () => toggleTokenList(tokenList, isActive),
@@ -168,11 +171,8 @@ function TokensPanel({
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
-  const {
-    app: {
-      arbTokenBridge: { token, bridgeTokens }
-    }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
+  const { token, bridgeTokens } = arbTokenBridge
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
@@ -398,6 +398,7 @@ function TokensPanel({
         return bal1.gt(bal2) ? -1 : 1
       })
   }, [
+    arbTokenBridge.bridgeTokens,
     newToken,
     tokensFromUser,
     tokensFromLists,
@@ -568,11 +569,8 @@ export function TokenSearch({
   close: () => void
 }) {
   const { setAmount2 } = useSetInputAmount()
-  const {
-    app: {
-      arbTokenBridge: { token, bridgeTokens }
-    }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
+  const { token, bridgeTokens } = arbTokenBridge
   const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChain, parentChainProvider } = useNetworksRelationship(networks)

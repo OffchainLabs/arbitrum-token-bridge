@@ -96,6 +96,7 @@ import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTra
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -125,11 +126,11 @@ export function TransferPanel() {
     useState(false)
 
   const {
-    app: {
-      arbTokenBridge: { token },
-      warningTokens
-    }
+    app: { warningTokens }
   } = useAppState()
+
+  const arbTokenBridge = useArbTokenBridge()
+  const { token } = arbTokenBridge
   const { address: walletAddress, chain, isConnected } = useAccount()
   const [selectedToken, setSelectedToken] = useSelectedToken()
   const { switchChainAsync } = useSwitchNetworkWithConfig({
@@ -161,7 +162,7 @@ export function TransferPanel() {
   const { isSmartContractWallet } = useAccountType()
 
   const { current: signer } = useLatest(
-    useEthersSigner({ chainId: networks.sourceChain.id })
+    useEthersSigner({ chainId: latestNetworks.current.sourceChain.id })
   )
   const wagmiConfig = useConfig()
 

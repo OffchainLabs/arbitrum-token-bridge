@@ -7,13 +7,11 @@ import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
 import { useBalances } from '../../hooks/useBalances'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 // Updates all balances periodically
 export function useBalanceUpdater() {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
-
+  const arbTokenBridge = useArbTokenBridge()
   const [selectedToken] = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const latestTokenBridge = useLatest(arbTokenBridge)

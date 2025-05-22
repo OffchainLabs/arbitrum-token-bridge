@@ -20,6 +20,7 @@ import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { addressesEqual } from '../../util/AddressUtils'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 enum ImportStatus {
   LOADING,
@@ -61,11 +62,8 @@ export function TokenImportDialog({
   onClose,
   tokenAddress
 }: TokenImportDialogProps): JSX.Element {
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens, token }
-    }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
+  const { bridgeTokens, token } = arbTokenBridge
   const [selectedToken, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider } =

@@ -7,21 +7,16 @@ import {
   addBridgeTokenListToBridge,
   BRIDGE_TOKEN_LISTS
 } from '../../util/TokenListUtils'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
 const TokenListSyncer = (): JSX.Element => {
-  const {
-    app: { arbTokenBridge, arbTokenBridgeLoaded }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
 
   useEffect(() => {
-    if (!arbTokenBridgeLoaded) {
-      return
-    }
-
     const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
       // Always load the Arbitrum Token token list
       if (bridgeTokenList.isArbitrumTokenTokenList) {
@@ -39,8 +34,8 @@ const TokenListSyncer = (): JSX.Element => {
     })
   }, [
     // arbTokenBridge.token is not a memoized object, adding it here would cause infinite loop
-    childChain.id,
-    arbTokenBridgeLoaded
+    arbTokenBridge.token,
+    childChain.id
   ])
 
   return <></>
