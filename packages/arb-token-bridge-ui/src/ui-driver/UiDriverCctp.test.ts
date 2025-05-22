@@ -59,10 +59,12 @@ it(`
   user actions:
     1. user rejects "confirm_cctp_deposit" dialog
 `, async () => {
-  const generator = stepGeneratorForCctp({
+  const context: UiDriverContext = {
     isDepositMode: true,
     isSmartContractWallet: false
-  } as UiDriverContext)
+  } as UiDriverContext
+
+  const generator = stepGeneratorForCctp(context)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -82,10 +84,12 @@ it(`
   user actions:
     1. user rejects "confirm_cctp_withdrawal" dialog
 `, async () => {
-  const generator = stepGeneratorForCctp({
+  const context: UiDriverContext = {
     isDepositMode: false,
     isSmartContractWallet: false
-  } as UiDriverContext)
+  } as UiDriverContext
+
+  const generator = stepGeneratorForCctp(context)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -225,12 +229,14 @@ it(`
     1. user confirms "confirm_cctp_deposit" dialog
     2. user rejects "scw_custom_destination_address" dialog
 `, async () => {
-  const generator = stepGeneratorForCctp({
+  const context: UiDriverContext = {
     isDepositMode: true,
     isSmartContractWallet: true,
     walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
     destinationAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
-  } as UiDriverContext)
+  } as UiDriverContext
+
+  const generator = stepGeneratorForCctp(context)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
