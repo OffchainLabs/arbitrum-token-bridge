@@ -33,7 +33,7 @@ export const WidgetHeaderAccountButton = () => {
         <Menu>
           {({ open }) => (
             <>
-              <MenuButton className="flex items-center gap-2 rounded-md p-1 outline-none hover:bg-white/10">
+              <MenuButton className="flex items-center gap-2 rounded-md p-1 hover:bg-white/10 focus-visible:!outline-none">
                 <SafeImage
                   src={ensAvatar || undefined}
                   className="h-6 w-6 rounded-full"
@@ -54,7 +54,7 @@ export const WidgetHeaderAccountButton = () => {
               >
                 <MenuItem
                   as="button"
-                  className="flex cursor-pointer items-center gap-2 bg-dark p-2 px-3 outline-none hover:bg-[#303030]"
+                  className="flex cursor-pointer items-center gap-2 bg-dark p-2 px-3 hover:bg-[#303030] focus-visible:!outline-none"
                   onClick={() => disconnect()}
                 >
                   <ArrowLeftEndOnRectangleIcon className="h-3 w-3 text-white/60 sm:text-white" />
