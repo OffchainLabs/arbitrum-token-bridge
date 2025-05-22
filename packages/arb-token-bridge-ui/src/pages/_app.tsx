@@ -22,6 +22,7 @@ import {
 } from '../types/ChainQueryParam'
 import { isNetwork } from '../util/networks'
 import { initializeSentry } from '../util/SentryUtils'
+import { isProductionEnvironment } from '../util/CommonUtils'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
@@ -40,7 +41,7 @@ if (
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     api_host: 'https://app.posthog.com',
     loaded: posthog => {
-      if (process.env.NODE_ENV !== 'production') {
+      if (!isProductionEnvironment) {
         // when in dev, you can see data that would be sent in prod (in devtools)
         posthog.debug()
       }
