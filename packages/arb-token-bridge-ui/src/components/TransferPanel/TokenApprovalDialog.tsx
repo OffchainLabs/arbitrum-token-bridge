@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
-import { useSigner } from 'wagmi'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
@@ -26,9 +25,12 @@ import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
 import { useRouteStore } from './hooks/useRouteStore'
+import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
+import { shallow } from 'zustand/shallow'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -36,7 +38,7 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { address: walletAddress } = useAccount()
-  const { isOpen, token } = props
+  const { isOpen, token, onClose } = props
 
   const { ethToUSD } = useETHPrice()
 
@@ -58,11 +60,17 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
-  const { data: signer } = useSigner({
-    chainId
-  })
-  const selectedRoute = useRouteStore(state => state.selectedRoute)
+  const signer = useEthersSigner({ chainId })
+  const { selectedRoute, context } = useRouteStore(
+    state => ({
+      selectedRoute: state.selectedRoute,
+      context: state.context
+    }),
+    shallow
+  )
   const isCctp = selectedRoute === 'cctp'
+  const isLifi =
+    selectedRoute === 'lifi-cheapest' || selectedRoute === 'lifi-fastest'
   const isOft = selectedRoute === 'oftV2'
 
   const [checked, setChecked] = useState(false)
@@ -101,6 +109,20 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
       if (!signer) {
         gasEstimate = constants.Zero
+      } else if (isLifi) {
+        if (!context) {
+          throw new Error('Missing context data for Lifi transfer.')
+        }
+        const lifiTransferStarter = new LifiTransferStarter({
+          sourceChainProvider,
+          destinationChainProvider,
+          lifiData: context,
+          sourceChainErc20Address: token.address
+        })
+        gasEstimate = await lifiTransferStarter.approveTokenEstimateGas({
+          signer,
+          amount: constants.MaxUint256
+        })
       } else if (isCctp) {
         const cctpTransferStarter = new CctpTransferStarter({
           sourceChainProvider,
@@ -161,11 +183,22 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     destinationChainProvider,
     chainId,
     isCctp,
-    isOft
+    isOft,
+    isLifi,
+    context
   ])
 
   useEffect(() => {
     const getContractAddress = async function () {
+      if (isLifi) {
+        if (!context) {
+          throw new Error('Missing context data for Lifi transfer.')
+        }
+
+        setContractAddress(context.spenderAddress)
+        return
+      }
+
       if (isOft) {
         const oftTransferConfig = getOftV2TransferConfig({
           sourceChainId: sourceChain.id,
@@ -237,14 +270,24 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     sourceChain.id,
     destinationChain.id,
     isTeleportMode,
-    isOft
+    isOft,
+    isLifi,
+    context
   ])
 
-  function closeWithReset(confirmed: boolean) {
-    props.onClose(confirmed)
+  const closeWithReset = useCallback(
+    (confirmed: boolean) => {
+      onClose(confirmed)
+      setChecked(false)
+    },
+    [onClose]
+  )
 
-    setChecked(false)
-  }
+  useEffect(() => {
+    if (isLifi && !context) {
+      closeWithReset(false)
+    }
+  }, [context, closeWithReset, isLifi])
 
   return (
     <Dialog

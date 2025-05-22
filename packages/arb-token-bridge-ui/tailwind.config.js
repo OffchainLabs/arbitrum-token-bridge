@@ -25,6 +25,8 @@ module.exports = {
         brick: '#FFDDD6',
         orange: '#FFEED3',
         lime: '#E8FFE4',
+        lilac: '#754562',
+        blue: '#00FBFF',
 
         // SECONDARY
         'cyan-dark': '#11365E',
@@ -41,10 +43,11 @@ module.exports = {
         'gray-1': '#191919',
         'gray-2': '#E5E5E5',
         'gray-3': '#DADADA',
-        'gray-5': '#AEAEAE',
         'gray-4': '#CCCCCC',
+        'gray-5': '#AEAEAE',
         'gray-6': '#999999',
         'gray-7': '#BDBDBD',
+        'gray-8': '#262626',
         'gray-dark': '#6D6D6D',
         'line-gray': '#F4F4F4',
         dark: '#1A1C1D', // (or default-black)

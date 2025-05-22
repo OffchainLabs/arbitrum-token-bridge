@@ -7,7 +7,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
-import type { Chain } from 'wagmi'
+import type { Chain } from 'wagmi/chains'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'

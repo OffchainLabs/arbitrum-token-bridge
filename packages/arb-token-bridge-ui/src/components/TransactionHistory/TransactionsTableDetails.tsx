@@ -1,12 +1,13 @@
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import { Fragment, PropsWithChildren, useMemo } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, DialogBackdrop, Transition } from '@headlessui/react'
 import Image from 'next/image'
 import dayjs from 'dayjs'
 import CctpLogoColor from '@/images/CctpLogoColor.svg'
 import ArbitrumLogo from '@/images/ArbitrumLogo.svg'
 import LayerZeroIcon from '@/images/LayerZeroIcon.png'
+import LifiLogo from '@/icons/lifi.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
@@ -22,7 +23,7 @@ import { Button } from '../common/Button'
 import { GET_HELP_LINK, ether } from '../../constants'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
-import { isTxCompleted } from './helpers'
+import { getTransactionType, isLifiTransfer, isTxCompleted } from './helpers'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
@@ -32,6 +33,8 @@ import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar
 import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { shallow } from 'zustand/shallow'
+import { SafeImage } from '../common/SafeImage'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 const DetailsBox = ({
   children,
@@ -48,6 +51,26 @@ const DetailsBox = ({
 }
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
+  if (isLifiTransfer(tx)) {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-row items-center gap-1">
+          <SafeImage
+            alt="Bridge logo"
+            src={tx.toolDetails.logoURI}
+            width={30}
+            height={30}
+          />
+          <span>{tx.toolDetails.name}</span>
+        </div>
+        <div className="flex flex-row items-center gap-1">
+          <Image alt="Lifi logo" src={LifiLogo} width={16} height={16} />
+          <span>Bridged via LiFi</span>
+        </div>
+      </div>
+    )
+  }
+
   let protocolLogo, protocolName, protocolDescription
 
   if (tx.isOft) {
@@ -141,13 +164,13 @@ export const TransactionsTableDetails = () => {
   const destinationNetworkName = getNetworkName(destinationChainId)
 
   return (
-    <Transition show={isOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        open={typeof tx !== 'undefined'}
-        className="relative z-40"
-        onClose={close}
-      >
+    <Dialog
+      as="div"
+      open={typeof tx !== 'undefined'}
+      className="relative z-40"
+      onClose={close}
+    >
+      <Transition show={isOpen} as={Fragment}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-200"
@@ -157,7 +180,10 @@ export const TransactionsTableDetails = () => {
           leaveFrom="opacity-70"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black" aria-hidden="true" />
+          <DialogBackdrop
+            className="fixed inset-0 bg-black opacity-70"
+            aria-hidden="true"
+          />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -307,6 +333,12 @@ export const TransactionsTableDetails = () => {
                       <Button
                         variant="secondary"
                         className="border-white/30 text-xs"
+                        onClick={() => {
+                          trackEvent('Tx Error: Get Help Click', {
+                            network: getNetworkName(tx.sourceChainId),
+                            transactionType: getTransactionType(tx)
+                          })
+                        }}
                       >
                         Get help
                       </Button>
@@ -317,7 +349,7 @@ export const TransactionsTableDetails = () => {
             </Transition.Child>
           </div>
         </div>
-      </Dialog>
-    </Transition>
+      </Transition>
+    </Dialog>
   )
 }

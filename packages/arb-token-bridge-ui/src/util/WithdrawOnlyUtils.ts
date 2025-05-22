@@ -195,6 +195,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l1Address: '0x0B7f0e51Cd1739D6C96982D55aD8fA634dd43A9C',
       l2Address: '0x6Ab317237cc72B2cdb54EcfcC180b61E00F7df76'
     },
+    {
+      symbol: 'FLUID',
+      l2CustomAddr: '',
+      l1Address: '0x6f40d4a6237c257fff2db00fa0510deeecd303eb',
+      l2Address: '0xae7d4bf2bb00a2f4ade1c726819fcaca0e517a5b'
+    },
     // LayerZero tokens
     {
       symbol: 'GSWIFT',
