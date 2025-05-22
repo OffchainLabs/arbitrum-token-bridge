@@ -322,6 +322,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const sourceChainTransaction = await erc20Bridger.deposit({
       ...depositRequest,
       parentSigner: signer,
+      parentProvider: this.sourceChainProvider,
       childProvider: this.destinationChainProvider,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
