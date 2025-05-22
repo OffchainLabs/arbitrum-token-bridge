@@ -11,10 +11,7 @@ import {
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Batch Deposit', () => {
-  let parentNativeTokenBalance,
-    parentErc20Balance,
-    childNativeTokenBalance,
-    childErc20Balance: string
+  let parentErc20Balance, childNativeTokenBalance, childErc20Balance: string
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')

@@ -149,6 +149,7 @@ export function encodeChainQueryParam(
   try {
     const chain = getChainQueryParamForChain(chainId)
     return chain.toString()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return undefined
   }

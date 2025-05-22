@@ -11,6 +11,7 @@ export function useCCTPIsBlocked() {
     try {
       await fetchAttestation('0x')
       return false
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_) {
       return true
     }

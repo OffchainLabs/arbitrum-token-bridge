@@ -45,7 +45,7 @@ export default [
 
     rules: {
       "@typescript-eslint/no-non-null-assertion": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/explicit-module-boundary-types": "off",
 
@@ -82,7 +82,7 @@ export default [
       // Cypress awaiting by default
       "no-debugger": 0,
       "no-console": 0,
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/no-empty-function": "off",
     },
   },

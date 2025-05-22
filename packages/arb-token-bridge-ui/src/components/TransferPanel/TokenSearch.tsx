@@ -420,6 +420,7 @@ function TokensPanel({
       // Try to add the token as an L2-native token
       token.addL2NativeToken(newToken)
       isSuccessful = true
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       //
     }

@@ -158,6 +158,7 @@ export class EnhancedProvider extends StaticJsonRpcProvider {
     if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
       try {
         addTxReceiptToCache(this.storage, chainId, receipt)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
         // in case storage is full
       }

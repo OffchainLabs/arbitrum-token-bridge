@@ -33,6 +33,7 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
   })
   try {
     return await UDresolution.reverse(address)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return null
   }

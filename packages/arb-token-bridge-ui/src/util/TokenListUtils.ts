@@ -211,6 +211,7 @@ export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
     }
 
     return { isValid, data }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     console.warn('Token List URL Invalid', tokenListURL)
     return { isValid: false, data: undefined }

@@ -106,6 +106,7 @@ export function getBlockNumberReferenceChainIdByChainId({
 
   try {
     currentParentChain = getArbitrumNetwork(chainId)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return chainId
   }
@@ -355,6 +356,7 @@ export async function registerLocalNetwork() {
       if (data.symbol === 'TN') {
         isLocalCustomNativeToken = true
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // not the native token
       isLocalCustomNativeToken = false
@@ -383,7 +385,8 @@ function isTestnetChain(chainId: ChainId) {
 
   try {
     return getArbitrumNetwork(chainId).isTestnet
-  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
     // users could have data in local storage for chains that aren't supported anymore, avoid app error
     return true
   }
@@ -392,6 +395,7 @@ function isTestnetChain(chainId: ChainId) {
 function getIsArbitrumChain(chainId: ChainId) {
   try {
     return !!getArbitrumNetwork(chainId).parentChainId
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return false
   }

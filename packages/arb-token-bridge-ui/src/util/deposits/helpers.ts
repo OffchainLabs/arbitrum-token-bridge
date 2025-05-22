@@ -585,7 +585,8 @@ export async function fetchTeleporterDepositStatusData({
       l1ToL2MsgData,
       l2ToL3MsgData
     }
-  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
     // in case fetching teleport status fails (happens sometimes when you fetch before l1 confirmation), return the default data
     console.log('Error fetching status for teleporter tx', txId)
     return {

@@ -561,6 +561,7 @@ export function TransferPanel() {
       setTransferring(false)
       clearAmountInput()
       clearRoute()
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
     } finally {
       setTransferring(false)

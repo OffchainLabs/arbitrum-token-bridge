@@ -130,6 +130,7 @@ export async function getOutgoingMessageState(
     }
 
     return status
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
   }

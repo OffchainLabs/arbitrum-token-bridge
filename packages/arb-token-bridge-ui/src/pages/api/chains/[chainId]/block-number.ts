@@ -72,6 +72,7 @@ export default async function handler(
       meta: { source: getSourceFromSubgraphClient(subgraphClient) },
       data: result.data._meta.block.number
     })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(200).json({ data: 0 })
   }

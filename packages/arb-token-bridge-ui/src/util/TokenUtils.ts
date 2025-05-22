@@ -194,6 +194,7 @@ export async function isValidErc20({
     ])
 
     return true
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return false
   }
@@ -251,6 +252,7 @@ export async function getL1ERC20Address({
   try {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
     return await erc20Bridger.getParentErc20Address(erc20L2Address, l2Provider)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return null
   }
