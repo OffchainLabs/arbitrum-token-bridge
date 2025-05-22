@@ -2,33 +2,8 @@ import { useCallback } from 'react'
 import * as Sentry from '@sentry/react'
 import { useNetworks } from './useNetworks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
-
-/**
- * Categories for classifying errors
- */
-export type ErrorCategory =
-  | 'token_validation'
-  | 'token_approval'
-  | 'token_transfer'
-  | 'contract_interaction'
-  | 'contract_revert'
-  | 'gas_estimation'
-  | 'transaction_signing'
-  | 'transaction_submission'
-  | 'transaction_confirmation'
-  | 'claim'
-  | 'allowance_check'
-  | 'network_request'
-  | 'network_response'
-  | 'bridge_validation'
-  | 'bridge_operation'
-  | 'user_input_validation'
-  | 'user_interface'
-  | 'user_rejection'
-  | 'wallet_connection'
-  | 'configuration_error'
-  | 'system'
-  | 'unknown'
+import type { ErrorCategory, EthersError } from '../util/SentryUtils'
+import { isEthersError } from '../util/SentryUtils'
 
 /**
  * Categories of errors that should be automatically ignored for Sentry reporting
@@ -90,43 +65,6 @@ export function useError() {
   }, [networks])
 
   /**
-   * Generates a Sentry fingerprint based on context and error details.
-   */
-  const _generateFingerprint = (
-    error: unknown,
-    category: ErrorCategory,
-    label: string
-  ): string[] => {
-    const fingerprint = ['{{ default }}', category, label]
-    const errorObj = error instanceof Error ? error : new Error(String(error))
-
-    if (isEthersError(errorObj)) {
-      // Prioritize specific codes/reasons for better grouping
-      if (errorObj.code) {
-        fingerprint.push(`code:${errorObj.code}`)
-      } else if (errorObj.reason) {
-        // Basic normalization: limit length, remove unique identifiers
-        const normalizedReason = errorObj.reason
-          .replace(/0x[a-fA-F0-9]{40}/g, 'ADDRESS') // Replace addresses
-          .replace(/0x[a-fA-F0-9]+/g, 'HASH_OR_VALUE') // Replace other hex
-          .replace(/\d+/g, 'NUMBER') // Replace numbers
-          .substring(0, 80) // Limit length
-        fingerprint.push(`reason:${normalizedReason}`)
-      } else {
-        // Fallback to name if no code/reason
-        fingerprint.push(`name:${errorObj.name}`)
-      }
-    } else {
-      // For generic errors, use the error name
-      fingerprint.push(`name:${errorObj.name}`)
-    }
-
-    // Avoid adding the full error.message as it's often too unique
-
-    return fingerprint
-  }
-
-  /**
    * Logs error details directly to Sentry based on caller-provided parameters.
    */
   const _logToSentry = (
@@ -156,13 +94,6 @@ export function useError() {
       scope.setExtra('errorName', errorObj.name)
       scope.setExtra('errorStack', errorObj.stack)
       scope.setExtra('originalError', error)
-
-      const fingerprint = _generateFingerprint(
-        error,
-        mergedData.category,
-        params.label
-      )
-      scope.setFingerprint(fingerprint)
 
       scope.setContext('Error Context', {
         ...mergedData,
@@ -244,23 +175,4 @@ export function useError() {
   return {
     handleError
   }
-}
-
-/**
- * Interface for Ethers errors that might have specific properties
- */
-interface EthersError extends Error {
-  code?: string | number
-  reason?: string
-}
-
-/**
- * Helper to check if an error appears to be an Ethers error
- */
-function isEthersError(error: unknown): error is EthersError {
-  return (
-    error instanceof Error &&
-    (typeof (error as EthersError).code !== 'undefined' ||
-      typeof (error as EthersError).reason !== 'undefined')
-  )
 }
