@@ -128,8 +128,7 @@ export function getChainForChainKeyQueryParam(
     default:
       const orbitChain = getOrbitChains().find(
         chain =>
-          // @ts-ignore - chainKeyQueryParam will be altered when Orbit chains are added
-          chain.slug === chainKeyQueryParam ??
+          chain.slug === chainKeyQueryParam ||
           chain.chainId === Number(chainKeyQueryParam)
       )
 
