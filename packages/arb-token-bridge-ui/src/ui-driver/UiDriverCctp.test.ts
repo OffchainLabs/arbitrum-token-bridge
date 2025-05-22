@@ -13,33 +13,42 @@ const mockedApproveTokenTxRequest = {
   value: BigNumber.from(0)
 }
 
-async function expectStepsForApproveToken(
+async function expectStepsForTokenApproval(
   generator: ReturnType<typeof stepGeneratorForCctp>,
+  context: UiDriverContext,
   options?: {
-    shouldDialogReject?: boolean
+    shouldUserRejectDialog?: boolean
     shouldTxError?: boolean
   }
 ) {
-  const step1 = await nextStep(generator, [true])
-  expectStep(step1).hasType('dialog').hasPayload('approve_token')
+  const dialogStep = await nextStep(generator, [true])
+  expectStep(dialogStep).hasType('dialog').hasPayload('approve_token')
 
-  if (options?.shouldDialogReject ?? false) {
-    const step2 = await nextStep(generator, [false])
-    expectStep(step2).hasType('return')
+  if (options?.shouldUserRejectDialog ?? false) {
+    const returnStep = await nextStep(generator, [false])
+    expectStep(returnStep).hasType('return')
+
     return
   }
 
-  const step2 = await nextStep(generator, [true])
-  expectStep(step2).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
+  // confirm dialog
+  let variableStep = await nextStep(generator, [true])
+
+  if (context.isSmartContractWallet) {
+    expectStep(variableStep).hasType('scw_tooltip')
+    variableStep = await nextStep(generator)
+  }
+
+  expectStep(variableStep).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
 
   if (options?.shouldTxError ?? false) {
-    const payload = { error: new Error() }
-    const step5 = await nextStep(generator, [payload])
-    expectStep(step5).hasType('return')
-  } else {
-    const payload = { data: {} as TransactionReceipt }
-    const step5 = await nextStep(generator, [payload])
+    const returnStep = await nextStep(generator, [{ error: new Error() }])
+    expectStep(returnStep).hasType('return')
+
+    return
   }
+
+  await nextStep(generator, [{ data: {} as TransactionReceipt }])
 }
 
 it(`
@@ -102,7 +111,7 @@ it(`
     1. user confirms "confirm_cctp_deposit" dialog
     2. user rejects "approve_token" dialog
 `, async () => {
-  const generator = stepGeneratorForCctp({
+  const context: UiDriverContext = {
     amountBigNumber: BigNumber.from(1),
     isDepositMode: true,
     isSmartContractWallet: false,
@@ -111,7 +120,9 @@ it(`
     transferStarter: {
       requiresTokenApproval: () => true
     } as unknown as BridgeTransferStarter
-  })
+  }
+
+  const generator = stepGeneratorForCctp(context)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -119,11 +130,9 @@ it(`
   const step2 = await nextStep(generator)
   expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
 
-  const step3 = await nextStep(generator, [true])
-  expectStep(step3).hasType('dialog').hasPayload('approve_token')
-
-  const step4 = await nextStep(generator, [false])
-  expectStep(step4).hasType('return')
+  await expectStepsForTokenApproval(generator, context, {
+    shouldUserRejectDialog: true
+  })
 })
 
 it(`
@@ -141,7 +150,7 @@ it(`
     2. user confirms "approve_token" dialog
     3. token approval tx fails
 `, async () => {
-  const generator = stepGeneratorForCctp({
+  const context: UiDriverContext = {
     amountBigNumber: BigNumber.from(1),
     isDepositMode: true,
     isSmartContractWallet: false,
@@ -151,7 +160,9 @@ it(`
       requiresTokenApproval: () => true,
       approveTokenPrepareTxRequest: () => mockedApproveTokenTxRequest
     } as unknown as BridgeTransferStarter
-  })
+  }
+
+  const generator = stepGeneratorForCctp(context)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -159,14 +170,7 @@ it(`
   const step2 = await nextStep(generator)
   expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
 
-  const step3 = await nextStep(generator, [true])
-  expectStep(step3).hasType('dialog').hasPayload('approve_token')
-
-  const step4 = await nextStep(generator, [true])
-  expectStep(step4).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
-
-  const step5 = await nextStep(generator, [{ error: new Error() }])
-  expectStep(step5).hasType('return')
+  await expectStepsForTokenApproval(generator, context, { shouldTxError: true })
 })
 
 it(`
@@ -184,7 +188,7 @@ it(`
     2. user confirms "approve_token" dialog
     3. token approval tx is successful
 `, async () => {
-  const generator = stepGeneratorForCctp({
+  const context: UiDriverContext = {
     amountBigNumber: BigNumber.from(1),
     isDepositMode: true,
     isSmartContractWallet: false,
@@ -194,7 +198,9 @@ it(`
       requiresTokenApproval: () => true,
       approveTokenPrepareTxRequest: () => mockedApproveTokenTxRequest
     } as unknown as BridgeTransferStarter
-  })
+  }
+
+  const generator = stepGeneratorForCctp(context)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -202,14 +208,10 @@ it(`
   const step2 = await nextStep(generator)
   expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
 
-  const step3 = await nextStep(generator, [true])
-  expectStep(step3).hasType('dialog').hasPayload('approve_token')
+  await expectStepsForTokenApproval(generator, context)
 
-  const step4 = await nextStep(generator, [true])
-  expectStep(step4).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
-
-  const step5 = await nextStep(generator, [{ data: {} as TransactionReceipt }])
-  expectStep(step5).doesNotExist()
+  const step3 = await nextStep(generator)
+  expectStep(step3).doesNotExist()
 })
 
 it(`
@@ -261,7 +263,7 @@ it(`
     3. user confirms "approve_token" dialog
     4. token approval tx is successful
 `, async () => {
-  const generator = stepGeneratorForCctp({
+  const context: UiDriverContext = {
     amountBigNumber: BigNumber.from(1),
     isDepositMode: true,
     isSmartContractWallet: true,
@@ -271,7 +273,9 @@ it(`
       requiresTokenApproval: () => true,
       approveTokenPrepareTxRequest: () => mockedApproveTokenTxRequest
     } as unknown as BridgeTransferStarter
-  })
+  }
+
+  const generator = stepGeneratorForCctp(context)
 
   const step1 = await nextStep(generator)
   expectStep(step1).hasType('start')
@@ -284,15 +288,5 @@ it(`
     .hasType('dialog')
     .hasPayload('scw_custom_destination_address')
 
-  const step4 = await nextStep(generator, [true])
-  expectStep(step4).hasType('dialog').hasPayload('approve_token')
-
-  const step5 = await nextStep(generator, [true])
-  expectStep(step5).hasType('scw_tooltip')
-
-  const step6 = await nextStep(generator, [true])
-  expectStep(step6).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
-
-  const step7 = await nextStep(generator, [{ data: {} as TransactionReceipt }])
-  expectStep(step7).doesNotExist()
+  await expectStepsForTokenApproval(generator, context)
 })
