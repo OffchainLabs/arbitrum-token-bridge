@@ -11,10 +11,7 @@ import {
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Batch Deposit', () => {
-  let parentNativeTokenBalance: string,
-    parentErc20Balance: string,
-    childNativeTokenBalance: string,
-    childErc20Balance: string
+  let parentErc20Balance, childNativeTokenBalance, childErc20Balance: string
 
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
@@ -31,11 +28,6 @@ describe('Batch Deposit', () => {
       Cypress.env('ARB_RPC_URL'),
       Cypress.env('ADDRESS')
     ).then(val => (childNativeTokenBalance = formatAmount(val)))
-
-    getInitialETHBalance(
-      Cypress.env('ETH_RPC_URL'),
-      Cypress.env('ADDRESS')
-    ).then(val => (parentNativeTokenBalance = formatAmount(val)))
 
     getInitialERC20Balance({
       tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN'),

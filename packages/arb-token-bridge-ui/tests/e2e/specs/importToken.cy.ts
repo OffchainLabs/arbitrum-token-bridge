@@ -192,7 +192,7 @@ describe('Import token', () => {
         })
 
         // waiting for URL to resolve correctly
-        // eslint-disable-next-line
+
         cy.wait(3000)
 
         // Modal is displayed
@@ -225,7 +225,7 @@ describe('Import token', () => {
         })
 
         // waiting for URL to resolve correctly
-        // eslint-disable-next-line
+
         cy.wait(3000)
 
         // Modal is displayed

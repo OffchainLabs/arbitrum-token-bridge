@@ -1,4 +1,3 @@
-/* global JQuery */
 import '@synthetixio/synpress/support/index.d.ts'
 import {
   acceptTnC,
@@ -37,7 +36,6 @@ declare global {
        * @example cy.login()
        */
       acceptTnC(): typeof acceptTnC
-      // eslint-disable-next-line no-unused-vars
       login: typeof login
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       searchAndSelectToken({

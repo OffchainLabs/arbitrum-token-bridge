@@ -383,7 +383,7 @@ function isTestnetChain(chainId: ChainId) {
 
   try {
     return getArbitrumNetwork(chainId).isTestnet
-  } catch {
+  } catch (error) {
     // users could have data in local storage for chains that aren't supported anymore, avoid app error
     return true
   }

@@ -10,7 +10,6 @@ import {
   getInitialETHBalance,
   getNetworkSlug,
   getL1NetworkConfig,
-  getL2NetworkConfig,
   visitAfterSomeDelay
 } from '../../support/common'
 

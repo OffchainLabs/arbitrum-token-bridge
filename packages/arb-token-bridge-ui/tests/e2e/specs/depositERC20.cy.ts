@@ -35,8 +35,6 @@ describe('Deposit Token', () => {
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
-  const zeroToLessThanOneNativeToken =
-    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   // Happy Path
   Object.keys(depositTestCases).forEach(tokenType => {

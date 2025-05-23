@@ -65,7 +65,6 @@ describe('Withdraw USDC through CCTP', () => {
 
     confirmAndApproveCctpWithdrawal()
     cy.confirmSpending(USDCAmountToSend)
-    // eslint-disable-next-line
     cy.wait(40_000)
     cy.confirmTransaction({ gasSetting: 'aggressive' })
     cy.findTransactionInTransactionHistory({
@@ -100,7 +99,6 @@ describe('Withdraw USDC through CCTP', () => {
     confirmAndApproveCctpWithdrawal()
     cy.confirmSpending(USDCAmountToSend)
 
-    // eslint-disable-next-line
     cy.wait(10_000)
     cy.confirmTransaction(undefined)
     const txData = {
