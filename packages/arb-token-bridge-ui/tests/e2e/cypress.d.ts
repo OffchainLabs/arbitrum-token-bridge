@@ -36,7 +36,6 @@ declare global {
        * @example cy.login()
        */
       acceptTnC(): typeof acceptTnC
-
       login: typeof login
       selectTransactionsPanelTab: typeof selectTransactionsPanelTab
       searchAndSelectToken({

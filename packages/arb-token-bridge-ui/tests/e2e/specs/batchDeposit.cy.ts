@@ -29,11 +29,6 @@ describe('Batch Deposit', () => {
       Cypress.env('ADDRESS')
     ).then(val => (childNativeTokenBalance = formatAmount(val)))
 
-    getInitialETHBalance(
-      Cypress.env('ETH_RPC_URL'),
-      Cypress.env('ADDRESS')
-    ).then(val => (parentNativeTokenBalance = formatAmount(val)))
-
     getInitialERC20Balance({
       tokenAddress: Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN'),
       multiCallerAddress: getL1NetworkConfig().multiCall,
