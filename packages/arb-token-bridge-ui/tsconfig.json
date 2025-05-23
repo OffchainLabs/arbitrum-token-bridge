@@ -3,6 +3,9 @@
   "include": [
     "src",
     "additional.d.ts",
+    "postcss.config.js",
+    "prettier.config.js",
+    "tailwind.config.js",
     "next.config.js",
     "next-env.d.ts",
     ".next/types/**/*.ts",

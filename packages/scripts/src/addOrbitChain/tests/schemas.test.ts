@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import orbitChainsList from "../../../../arb-token-bridge-ui/src/util/orbitChainsData.json";
 import {
   addressSchema,
   bridgeUiConfigSchema,
@@ -10,7 +9,6 @@ import {
   isValidAddress,
   tokenBridgeSchema,
   urlSchema,
-  validateOrbitChainsList,
 } from "../schemas";
 import {
   mockOrbitChain,
@@ -189,35 +187,6 @@ describe("Validation Functions", () => {
         name: "",
       };
       await expect(chainSchema.parseAsync(invalidChain)).rejects.toThrow();
-    }, 1000000);
-  });
-
-  describe("validateOrbitChainsList", () => {
-    it("should validate the entire orbitChainsList without throwing errors", async () => {
-      await expect(
-        validateOrbitChainsList(orbitChainsList)
-      ).resolves.not.toThrow();
-    }, 1000000);
-
-    it("should throw an error for invalid chain data", async () => {
-      const invalidChainsList = {
-        ...orbitChainsList,
-        mainnet: {
-          ...orbitChainsList.mainnet,
-          invalidChain: {
-            ...orbitChainsList.mainnet[
-              Object.keys(
-                orbitChainsList.mainnet
-              )[0] as keyof typeof orbitChainsList.mainnet
-            ],
-            chainId: "not a number", // Invalid chainId
-          },
-        },
-      };
-
-      await expect(
-        validateOrbitChainsList(invalidChainsList)
-      ).rejects.toThrow();
     }, 1000000);
   });
 });

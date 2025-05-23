@@ -1,5 +1,5 @@
-import { useSwitchNetwork } from 'wagmi'
-import { SwitchNetworkArgs } from '@wagmi/core'
+import { SwitchChainParameters } from '@wagmi/core'
+import { useSwitchChain } from 'wagmi'
 
 import { getNetworkName, isNetwork } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
@@ -34,7 +34,7 @@ const handleSwitchNetworkNotSupported = (
  */
 function handleSwitchNetworkError(
   error: any,
-  { chainId }: SwitchNetworkArgs,
+  { chainId }: SwitchChainParameters,
   context: unknown = { isSwitchingNetworkBeforeTx: false }
 ) {
   const { isSwitchingNetworkBeforeTx } = context as {
@@ -59,24 +59,23 @@ function handleSwitchNetworkError(
 export function useSwitchNetworkWithConfig({
   isSwitchingNetworkBeforeTx = false
 }: SwitchNetworkConfig = {}) {
-  const config = {
-    throwForSwitchChainNotSupported: true,
-    /**
-     * onMutate:
-     * The return value will be the `context` param received by the error
-     * handler of `switchNetwork`.
-     *
-     * Function fires before switch network function and is passed same
-     * variables switch network function would receive.
-     * Value returned from this function will be passed to both `onError` and
-     * `onSettled` functions in event of a switch network failure.
-     * https://wagmi.sh/react/hooks/useSwitchNetwork#onmutate-optional
-     *
-     * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
-     */
-    onMutate: () => ({ isSwitchingNetworkBeforeTx }),
-    onError: handleSwitchNetworkError
-  }
-
-  return useSwitchNetwork(config)
+  return useSwitchChain({
+    mutation: {
+      /**
+       * onMutate:
+       * The return value will be the `context` param received by the error
+       * handler of `switchChain`.
+       *
+       * Function fires before switch network function and is passed same
+       * variables switch network function would receive.
+       * Value returned from this function will be passed to both `onError` and
+       * `onSettled` functions in event of a switch network failure.
+       * https://wagmi.sh/react/api/hooks/useSwitchChain#onmutate
+       *
+       * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
+       */
+      onMutate: () => ({ isSwitchingNetworkBeforeTx }),
+      onError: handleSwitchNetworkError
+    }
+  })
 }

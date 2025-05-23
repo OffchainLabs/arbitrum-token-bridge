@@ -9,7 +9,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { fetchErc20Data } from './TokenUtils'
+import { Erc20Data, fetchErc20Data } from './TokenUtils'
 import { orbitChains } from './orbitChainsList'
 import { ChainId } from '../types/ChainId'
 import { getRpcUrl } from './rpc/getRpcUrl'
@@ -18,6 +18,7 @@ import {
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
+import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -57,6 +58,7 @@ const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   }
 }
 
+// TODO: load only once
 export const getChains = () => {
   const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
@@ -87,6 +89,7 @@ export type ChainWithRpcUrl = ArbitrumNetwork & {
   rpcUrl: string
   explorerUrl: string
   slug?: string
+  nativeTokenData?: Erc20Data
 }
 
 export function getBlockNumberReferenceChainIdByChainId({
@@ -201,7 +204,26 @@ export const supportedCustomOrbitParentChains = [
   ChainId.BaseSepolia
 ]
 
-export const rpcURLs: { [chainId: number]: string } = {
+const defaultL1Network: BlockNumberReferenceNetwork = {
+  blockTime: 10,
+  chainId: 1337,
+  isTestnet: true
+}
+
+export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
+  fallback: 'http://127.0.0.1:8545'
+})
+export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
+  fallback: 'http://127.0.0.1:8547'
+})
+export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
+  fallback: 'http://127.0.0.1:3347'
+})
+
+const defaultRpcUrls: { [chainId: number]: string } = {
   // L1 Mainnet
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM,
@@ -235,6 +257,16 @@ export const rpcURLs: { [chainId: number]: string } = {
     fallback: getRpcUrl(ChainId.BaseSepolia)
   })
 }
+
+export const rpcURLs: { [chainId: number]: string } =
+  !isProductionEnvironment || isE2eTestingEnvironment
+    ? {
+        ...defaultRpcUrls,
+        [defaultL1Network.chainId]: localL1NetworkRpcUrl,
+        [defaultL2Network.chainId]: localL2NetworkRpcUrl,
+        [defaultL3Network.chainId]: localL3NetworkRpcUrl
+      }
+    : defaultRpcUrls
 
 export const explorerUrls: { [chainId: number]: string } = {
   // L1
@@ -304,25 +336,6 @@ export const l2UsdcGatewayAddresses: { [chainId: number]: string } = {
   // Superposition
   55244: '0xF70ae1Af7D49dA0f7D66Bb55469caC9da336181b'
 }
-
-const defaultL1Network: BlockNumberReferenceNetwork = {
-  blockTime: 10,
-  chainId: 1337,
-  isTestnet: true
-}
-
-export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L1,
-  fallback: 'http://127.0.0.1:8545'
-})
-export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L2,
-  fallback: 'http://127.0.0.1:8547'
-})
-export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-  env: process.env.NEXT_PUBLIC_RPC_URL_NITRO_TESTNODE_L3,
-  fallback: 'http://127.0.0.1:3347'
-})
 
 export async function registerLocalNetwork() {
   try {

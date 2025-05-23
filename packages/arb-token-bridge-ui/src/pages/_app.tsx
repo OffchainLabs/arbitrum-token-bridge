@@ -1,13 +1,12 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
-import * as Sentry from '@sentry/react'
 import posthog from 'posthog-js'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
-import type { Chain } from 'wagmi'
+import type { Chain } from 'wagmi/chains'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -21,62 +20,19 @@ import {
   ChainKeyQueryParam,
   getChainForChainKeyQueryParam
 } from '../types/ChainQueryParam'
-import { isUserRejectedError } from '../util/isUserRejectedError'
 import { isNetwork } from '../util/networks'
+import { initializeSentry } from '../util/SentryUtils'
+import { isProductionEnvironment } from '../util/CommonUtils'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
 dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
 
-Sentry.init({
-  environment: process.env.NODE_ENV,
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  integrations: [Sentry.browserTracingIntegration()],
-  tracesSampleRate: 0.025,
-  maxValueLength: 0,
-  // https://docs.sentry.io/platforms/javascript/guides/react/configuration/filtering/#filtering-error-events
-  ignoreErrors: [
-    // Ignore events related to failed `eth_gasPrice` calls
-    /eth_gasPrice/i,
-    // Ignore events related to failed `eth_getBalance` calls
-    /eth_getBalance/i,
-    // Ignore events related to failed walletConnect calls
-    /Attempt to connect to relay via/i,
-    // Ignore events about window.propertyX being redefined accross multiple extensions
-    /Cannot redefine property/i,
-    // Ignore WC bug until we can update to the latest version, see FS-677
-    /^WebSocket connection failed for host: wss:\/\/relay.walletconnect.org$/i,
-    // Add common user rejection messages
-    'User rejected the request',
-    'User denied transaction signature',
-    'User rejected the transaction'
-  ],
-  beforeSend: (event: Sentry.ErrorEvent, hint: Sentry.EventHint) => {
-    if (!hint.originalException) {
-      return event
-    }
-
-    const exception = hint.originalException
-
-    if (isUserRejectedError(exception)) {
-      return null // Drop the event
-    }
-
-    // Only apply if useError didn't already set a fingerprint
-    if (!event.fingerprint || event.fingerprint.length === 0) {
-      if (exception instanceof Error) {
-        // Basic fallback: Group by default rules + error name for unhandled errors
-        event.fingerprint = ['{{ default }}', 'unhandled-error', exception.name]
-      } else {
-        // Fallback for non-Error exceptions
-        event.fingerprint = ['{{ default }}', 'unhandled-non-error']
-      }
-    }
-
-    return event
-  }
-})
+/**
+ * Initialize Sentry for error tracking
+ */
+initializeSentry(process.env.NEXT_PUBLIC_SENTRY_DSN)
 
 if (
   typeof window !== 'undefined' &&
@@ -85,7 +41,7 @@ if (
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     api_host: 'https://app.posthog.com',
     loaded: posthog => {
-      if (process.env.NODE_ENV !== 'production') {
+      if (!isProductionEnvironment) {
         // when in dev, you can see data that would be sent in prod (in devtools)
         posthog.debug()
       }

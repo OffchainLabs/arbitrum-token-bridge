@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import { useInterval } from 'react-use'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount, useConfig } from 'wagmi'
+import { shallow } from 'zustand/shallow'
 import dayjs from 'dayjs'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
@@ -11,6 +12,7 @@ import { ChainId } from '../types/ChainId'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { normalizeTimestamp } from './app/utils'
+
 import {
   ChainDomain,
   CompletedCCTPTransfer,
@@ -24,7 +26,7 @@ import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
-import { shallow } from 'zustand/shallow'
+import { useEthersSigner } from '../util/wagmi/useEthersSigner'
 import { useNetworks } from '../hooks/useNetworks'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
@@ -516,6 +518,8 @@ export function useCctpFetching({
               currentData.pending[index] = {
                 ...txData,
                 ...resultTxData,
+                isLifi: false,
+                isOft: false,
                 cctpData: {
                   ...cctpData,
                   ...resultCctpData
@@ -558,10 +562,9 @@ export function useClaimCctp(tx: MergedTransaction) {
     sourceChainId: tx.cctpData?.sourceChainId
   })
   const { isSmartContractWallet } = useAccountType()
+  const wagmiConfig = useConfig()
 
-  const { data: signer } = useSigner({
-    chainId: tx.destinationChainId
-  })
+  const signer = useEthersSigner({ chainId: tx.destinationChainId })
 
   const claim = useCallback(async () => {
     if (!tx.cctpData?.attestationHash || !tx.cctpData.messageBytes || !signer) {
@@ -571,11 +574,12 @@ export function useClaimCctp(tx: MergedTransaction) {
     setIsClaiming(true)
     try {
       const attestation = await waitForAttestation(tx.cctpData.attestationHash)
-      const receiveTx = await receiveMessage({
+      const { hash: receiveTxHash } = await receiveMessage({
         attestation,
         messageBytes: tx.cctpData.messageBytes as Address,
-        signer
+        wagmiConfig
       })
+      const receiveTx = await signer.provider.getTransaction(receiveTxHash)
       const receiveReceiptTx = await receiveTx.wait()
 
       const resolvedAt =

@@ -66,14 +66,11 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  const step1 = await nextStep(generator)
-  expectStep(step1).hasType('start')
-
-  const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
-
-  const step3 = await nextStep(generator, [false])
-  expectStep(step3).hasType('return')
+  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_deposit')
+  expectStep(await nextStep(generator, [false])).hasType('return')
 })
 
 it(`
@@ -91,14 +88,11 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  const step1 = await nextStep(generator)
-  expectStep(step1).hasType('start')
-
-  const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_withdrawal')
-
-  const step3 = await nextStep(generator, [false])
-  expectStep(step3).hasType('return')
+  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_withdrawal')
+  expectStep(await nextStep(generator, [false])).hasType('return')
 })
 
 it(`
@@ -238,19 +232,14 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  const step1 = await nextStep(generator)
-  expectStep(step1).hasType('start')
-
-  const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
-
-  const step3 = await nextStep(generator, [true])
-  expectStep(step3)
+  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_deposit')
+  expectStep(await nextStep(generator, [true]))
     .hasType('dialog')
     .hasPayload('scw_custom_destination_address')
-
-  const step4 = await nextStep(generator, [false])
-  expectStep(step4).hasType('return')
+  expectStep(await nextStep(generator, [false])).hasType('return')
 })
 
 it(`
@@ -283,14 +272,11 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  const step1 = await nextStep(generator)
-  expectStep(step1).hasType('start')
-
-  const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
-
-  const step3 = await nextStep(generator, [true])
-  expectStep(step3)
+  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_deposit')
+  expectStep(await nextStep(generator, [true]))
     .hasType('dialog')
     .hasPayload('scw_custom_destination_address')
 

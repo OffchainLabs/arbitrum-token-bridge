@@ -1,4 +1,9 @@
-import { ChangeEventHandler, useCallback, useEffect, useMemo } from 'react'
+import React, {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useMemo
+} from 'react'
 import { utils } from 'ethers'
 import Image from 'next/image'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
@@ -37,20 +42,17 @@ import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 
-function Amount2ToggleButton({
-  onClick
-}: {
-  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
-}) {
+function Amount2ToggleButton() {
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const { showAmount2Input } = useAmount2InputVisibility()
 
   return (
     <Button
       variant="secondary"
-      className="border-white/30 shadow-2"
-      onClick={onClick}
+      className="border-none bg-black/40 shadow-2"
+      onClick={showAmount2Input}
     >
       <div
         aria-label="Add native currency button"
@@ -75,37 +77,14 @@ export const useAmount2InputVisibility = create<{
   }
 }))
 
-export function SourceNetworkBox() {
-  const { isAmount2InputVisible, showAmount2Input } =
-    useAmount2InputVisibility()
-
-  const [networks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
-  const [selectedToken] = useSelectedToken()
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const [{ amount, amount2 }] = useArbQueryParams()
-  const { setAmount, setAmount2 } = useSetInputAmount()
-  const { maxAmount, maxAmount2 } = useMaxAmount()
-  const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
-    useDialog()
-  const isBatchTransferSupported = useIsBatchTransferSupported()
+const Input1 = React.memo(() => {
+  const [{ amount }] = useArbQueryParams()
+  const { setAmount } = useSetInputAmount()
+  const { maxAmount } = useMaxAmount()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
-  const nativeCurrencyBalances = useNativeCurrencyBalances()
-  const nativeCurrencyDecimalsOnSourceChain =
-    useSourceChainNativeCurrencyDecimals()
-
-  const isCctpTransfer = useIsCctpTransfer()
-
-  const isOft = useIsOftV2Transfer()
-
-  const {
-    network: { logo: networkLogo }
-  } = getBridgeUiConfigForChain(networks.sourceChain.id)
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
-  const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
 
   // covers MAX string from query params
   useEffect(() => {
@@ -113,6 +92,45 @@ export function SourceNetworkBox() {
       setAmount(maxAmount)
     }
   }, [amount, maxAmount, isMaxAmount, setAmount])
+
+  const maxButtonOnClick = useCallback(() => {
+    if (typeof maxAmount !== 'undefined') {
+      setAmount(maxAmount)
+    }
+  }, [maxAmount, setAmount])
+
+  const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    e => setAmount(e.target.value),
+    [setAmount]
+  )
+
+  return (
+    <TransferPanelMainInput
+      maxButtonOnClick={maxButtonOnClick}
+      errorMessage={errorMessages?.inputAmount1}
+      value={isMaxAmount ? '' : amount}
+      onChange={handleAmountChange}
+      maxAmount={maxAmount}
+      isMaxAmount={isMaxAmount}
+      decimals={decimals}
+    />
+  )
+})
+Input1.displayName = 'Input1'
+
+const Input2 = React.memo(() => {
+  const { showAmount2Input } = useAmount2InputVisibility()
+
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const [{ amount2 }] = useArbQueryParams()
+  const { setAmount2 } = useSetInputAmount()
+  const { maxAmount2 } = useMaxAmount()
+  const isBatchTransferSupported = useIsBatchTransferSupported()
+  const { errorMessages } = useTransferReadiness()
+
+  const isMaxAmount2 = amount2 === AmountQueryParamEnum.MAX
 
   useEffect(() => {
     if (isMaxAmount2 && typeof maxAmount2 !== 'undefined') {
@@ -126,28 +144,21 @@ export function SourceNetworkBox() {
     }
   }, [isBatchTransferSupported, amount2, showAmount2Input])
 
-  const maxButtonOnClick = useCallback(() => {
-    if (typeof maxAmount !== 'undefined') {
-      setAmount(maxAmount)
-    }
-  }, [maxAmount, setAmount])
-
   const amount2MaxButtonOnClick = useCallback(() => {
     if (typeof maxAmount2 !== 'undefined') {
       setAmount2(maxAmount2)
     }
   }, [maxAmount2, setAmount2])
 
-  const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    e => setAmount(e.target.value),
-    [setAmount]
-  )
   const handleAmount2Change: ChangeEventHandler<HTMLInputElement> = useCallback(
     e => {
       setAmount2(e.target.value)
     },
     [setAmount2]
   )
+  const nativeCurrencyBalances = useNativeCurrencyBalances()
+  const nativeCurrencyDecimalsOnSourceChain =
+    useSourceChainNativeCurrencyDecimals()
 
   const tokenButtonOptionsAmount2 = useMemo(
     () => ({
@@ -171,6 +182,39 @@ export function SourceNetworkBox() {
   )
 
   return (
+    <TransferPanelMainInput
+      maxButtonOnClick={amount2MaxButtonOnClick}
+      errorMessage={errorMessages?.inputAmount2}
+      value={amount2}
+      onChange={handleAmount2Change}
+      options={tokenButtonOptionsAmount2}
+      maxAmount={maxAmount2}
+      isMaxAmount={isMaxAmount2}
+      decimals={nativeCurrency.decimals}
+      aria-label="Amount2 input"
+    />
+  )
+})
+Input2.displayName = 'Input2'
+
+export function SourceNetworkBox() {
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+  const [selectedToken] = useSelectedToken()
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
+    useDialog()
+  const { isAmount2InputVisible } = useAmount2InputVisibility()
+  const isBatchTransferSupported = useIsBatchTransferSupported()
+  const isCctpTransfer = useIsCctpTransfer()
+  const isOft = useIsOftV2Transfer()
+
+  const {
+    network: { logo: networkLogo }
+  } = getBridgeUiConfigForChain(networks.sourceChain.id)
+
+  return (
     <>
       <NetworkContainer network={networks.sourceChain}>
         <div className="flex justify-between">
@@ -189,35 +233,16 @@ export function SourceNetworkBox() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <TransferPanelMainInput
-            maxButtonOnClick={maxButtonOnClick}
-            errorMessage={errorMessages?.inputAmount1}
-            value={isMaxAmount ? '' : amount}
-            onChange={handleAmountChange}
-            maxAmount={maxAmount}
-            isMaxAmount={isMaxAmount}
-            decimals={decimals}
-          />
-
+          <Input1 />
           {isBatchTransferSupported && !isAmount2InputVisible && (
             <div className="flex justify-end">
-              <Amount2ToggleButton onClick={showAmount2Input} />
+              <Amount2ToggleButton />
             </div>
           )}
 
           {isBatchTransferSupported && isAmount2InputVisible && (
             <>
-              <TransferPanelMainInput
-                maxButtonOnClick={amount2MaxButtonOnClick}
-                errorMessage={errorMessages?.inputAmount2}
-                value={amount2}
-                onChange={handleAmount2Change}
-                options={tokenButtonOptionsAmount2}
-                maxAmount={maxAmount2}
-                isMaxAmount={isMaxAmount2}
-                decimals={nativeCurrency.decimals}
-                aria-label="Amount2 input"
-              />
+              <Input2 />
               <p className="mt-1 text-xs font-light text-white">
                 You can transfer {nativeCurrency.symbol} in the same transaction
                 if you wish to.

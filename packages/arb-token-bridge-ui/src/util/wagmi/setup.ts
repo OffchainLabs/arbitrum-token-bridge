@@ -1,7 +1,11 @@
-import { createClient, configureChains } from 'wagmi'
-import { mainnet, arbitrum } from '@wagmi/core/chains'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
+import { mainnet, arbitrum } from 'wagmi/chains'
+import { createConfig, http } from 'wagmi'
+import {
+  Chain,
+  connectorsForWallets,
+  getDefaultConfig,
+  getDefaultWallets
+} from '@rainbow-me/rainbowkit'
 import {
   trustWallet,
   okxWallet,
@@ -26,6 +30,7 @@ import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
 import { ChainId } from '../../types/ChainId'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
+import { _chains } from '@rainbow-me/rainbowkit/dist/config/getDefaultConfig'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)
@@ -34,7 +39,7 @@ const wagmiOrbitChains = getOrbitChains().map(chain =>
   getWagmiChain(chain.chainId)
 )
 
-const defaultChains = [
+const defaultChains: readonly [Chain, ...Chain[]] = [
   // mainnet, arb1, & arb nova are for network switch tests
   mainnet,
   arbitrum,
@@ -46,7 +51,7 @@ const defaultChains = [
   baseSepolia
 ]
 
-const getChainList = () => {
+function getChainList(): readonly [Chain, ...Chain[]] {
   // for E2E tests, only have local + minimal required chains
   if (isE2eTestingEnvironment) {
     return [
@@ -147,58 +152,52 @@ function getChains(targetChainKey: TargetChainKey) {
   const target = chainList.filter(chain => chain.id === targetChainId)
   const others = chainList.filter(chain => chain.id !== targetChainId)
 
-  return [...target, ...others]
+  return [...target, ...others] as unknown as _chains
 }
 
+let cachedProps: ReturnType<typeof createConfig>
 export function getProps(targetChainKey: string | null) {
-  const { chains, provider } = configureChains(
+  if (cachedProps) {
+    return cachedProps
+  }
+
+  const config = getDefaultConfig({
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-    getChains(sanitizeTargetChainKey(targetChainKey)),
+    ...appInfo,
+    chains: getChains(sanitizeTargetChainKey(targetChainKey))
+  })
+
+  const { wallets } = getDefaultWallets()
+
+  wallets[0]?.wallets.push(okxWallet)
+
+  const connectors = connectorsForWallets(
     [
-      jsonRpcProvider({
-        rpc: chain => {
-          const rpcUrl = rpcURLs[chain.id]
-
-          if (typeof rpcUrl === 'undefined') {
-            throw Error(`[wagmi/setup] no rpc url found for chain ${chain.id}`)
-          }
-
-          return { http: rpcUrl }
-        }
-      })
-    ]
+      ...wallets,
+      {
+        groupName: 'More',
+        wallets: [trustWallet, rabbyWallet]
+      }
+    ],
+    appInfo
   )
 
-  const { wallets } = getDefaultWallets({
-    ...appInfo,
-    chains
-  })
+  const transports = Object.keys(rpcURLs).reduce((acc, chainId) => {
+    const chainIdNumber = Number(chainId)
+    acc[chainIdNumber] = http(rpcURLs[chainIdNumber])
+    return acc
+  }, {} as Record<number, ReturnType<typeof http>>)
 
-  wallets[0]?.wallets.push(okxWallet({ chains, projectId }))
-
-  const connectors = connectorsForWallets([
-    ...wallets,
-    {
-      groupName: 'More',
-      wallets: [trustWallet({ chains, projectId }), rabbyWallet({ chains })]
-    }
-  ])
-
-  const client = createClient({
-    autoConnect: true,
+  const wagmiConfig = createConfig({
+    ...config,
+    batch: { multicall: true },
+    ssr: true,
     connectors,
-    provider
+    transports
   })
 
-  return {
-    rainbowKitProviderProps: {
-      appInfo,
-      chains
-    },
-    wagmiConfigProps: {
-      client
-    }
-  }
+  cachedProps = wagmiConfig
+  return cachedProps
 }

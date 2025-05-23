@@ -43,16 +43,15 @@ export function login({
   // if networkName is not specified we connect to default network from config
   const network =
     networkType === 'parentChain' ? getL1NetworkConfig() : getL2NetworkConfig()
-  const networkNameWithDefault = networkName ?? network.networkName
+  const networkNameWithDefault = networkName ?? network.name
 
   function _startWebApp() {
-    const sourceChain =
-      networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
+    const sourceChain = networkNameWithDefault.toLowerCase().replace(/ /g, '-')
 
     // when testing Orbit chains we want to set destination chain to L3
     const destinationChain =
       networkType === 'parentChain' && network.chainId === 412346
-        ? 'l3-localhost'
+        ? 'nitro-testnode-l3'
         : ''
     startWebApp(url, {
       query: { ...query, sourceChain, destinationChain },
@@ -65,15 +64,11 @@ export function login({
   })
 }
 
-export const connectToApp = (connectMetamask: boolean) => {
+export const acceptTnC = () => {
   // initial modal prompts which come in the web-app
   cy.findByText(/Agree to Terms and Continue/i)
     .should('be.visible')
     .click()
-  if (connectMetamask) {
-    cy.findAllByText('Connect Wallet').first().should('be.visible').click()
-    cy.findByText('MetaMask').should('be.visible').click()
-  }
 }
 
 export const selectTransactionsPanelTab = (tab: 'pending' | 'settled') => {
@@ -183,7 +178,7 @@ export function findGasFeeSummary(
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy
-    .findByRole('button', { name: /move funds/i })
+    .findByRole('button', { name: /move funds|select route/i })
     .scrollIntoView()
     .should('be.visible')
 }
@@ -197,7 +192,10 @@ export function clickMoveFundsButton({
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
   if (shouldConfirmInMetamask) {
-    cy.confirmMetamaskTransaction()
+    cy.confirmMetamaskTransaction({
+      gasConfig: 'market',
+      shouldWaitForPopupClosure: true
+    })
   }
 }
 
@@ -222,7 +220,7 @@ export function switchToTransactionHistoryTab(tab: 'pending' | 'settled') {
   cy.selectTransactionsPanelTab(tab)
 
   cy.findByText(/Showing \d+ \w+ transactions made in/, {
-    timeout: 120_000
+    timeout: 150_000
   }).should('be.visible')
 }
 
@@ -362,7 +360,7 @@ export function selectRoute(type: 'arbitrum' | 'oftV2' | 'cctp') {
 }
 
 Cypress.Commands.addAll({
-  connectToApp,
+  acceptTnC,
   login,
   selectTransactionsPanelTab,
   searchAndSelectToken,
