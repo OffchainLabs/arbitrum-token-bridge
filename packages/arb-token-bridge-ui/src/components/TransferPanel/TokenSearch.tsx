@@ -76,15 +76,10 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
     [arbTokenBridge, token]
   )
 
-  const isActive = useMemo(() => {
-    if (!bridgeTokens) {
-      return false
-    }
-    return Object.keys(bridgeTokens).some(address => {
-      const token = bridgeTokens[address]
-      return token?.listIds.has(tokenList?.id)
-    })
-  }, [bridgeTokens])
+  const isActive = Object.keys(bridgeTokens ?? []).some(address => {
+    const token = bridgeTokens?.[address]
+    return token?.listIds.has(tokenList?.id)
+  })
 
   const switchOnClick = useCallback(
     () => toggleTokenList(tokenList, isActive),
