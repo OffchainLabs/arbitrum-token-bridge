@@ -33,8 +33,8 @@
     "lodash-es": "^4.17.21",
     "next": "^15.3.2",
     "next-query-params": "^5.1.0",
-    "overmind": "^28.0.4",
-    "overmind-react": "^29.0.6",
+    "overmind": "^28.0.1",
+    "overmind-react": "^29.0.1",
     "posthog-js": "^1.236.5",
     "query-string": "^9.1.1",
     "react": "^19.1.0",
@@ -126,9 +126,5 @@
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.32.1",
     "vitest": "^3.1.1"
-  },
-  "resolutions": {
-    "@types/react": "19.1.2",
-    "@types/react-dom": "19.1.2"
   }
 }

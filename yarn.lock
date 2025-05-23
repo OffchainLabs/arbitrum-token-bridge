@@ -11523,7 +11523,7 @@ ospath@^1.2.2:
   resolved "https://registry.npmjs.org/ospath/-/ospath-1.2.2.tgz"
   integrity sha512-o6E5qJV5zkAbIDNhGSIlyOhScKXgQrSRMilfph0clDfM0nEnBOlKlH4sWDmG95BW/CvwNz0vmm7dJVtU2KlMiA==
 
-overmind-react@^29.0.6:
+overmind-react@^29.0.1:
   version "29.0.6"
   resolved "https://registry.yarnpkg.com/overmind-react/-/overmind-react-29.0.6.tgz#c0a553b5cc4dfe5573d6c92e5c2069eadfabe50c"
   integrity sha512-Bv8KSaXvawiDurh8D6akvcJUl86JHW1+EylxDAG7WC+UerzQFXNxfOiJjTMruH3bUZ48RNxJSEqxkN+m+5S/qA==
@@ -11531,7 +11531,7 @@ overmind-react@^29.0.6:
     overmind "28.0.4"
     tslib "^2.8.1"
 
-overmind@28.0.4, overmind@^28.0.4:
+overmind@28.0.4, overmind@^28.0.1:
   version "28.0.4"
   resolved "https://registry.yarnpkg.com/overmind/-/overmind-28.0.4.tgz#871c70be62d701909c2836ca70faeab2d09d64d9"
   integrity sha512-yxr1Ki1hJGoWCNfO6gk/Vem2frck1ky7cD4aEsVJkzwqjzjCPm5j3h6aTetzEHQ3oU4v0RJVXVWbF+COd8G/Qw==
