@@ -91,7 +91,7 @@ const AppContent = React.memo(() => {
         // ignoring until we use the package
         // https://github.com/OffchainLabs/config-monorepo/pull/11
         //
-        // eslint-disable-next-line
+
         onClose={() => {}}
       />
     )
