@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useAccount } from 'wagmi'
 
-import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
@@ -17,6 +16,7 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useTransactionHistoryAddressStore } from '../components/TransactionHistory/TransactionHistorySearchBar'
 import { useEthersSigner } from '../util/wagmi/useEthersSigner'
+import { useArbTokenBridge } from './useArbTokenBridge'
 
 export type UseClaimWithdrawalResult = {
   claim: () => Promise<void>
@@ -26,9 +26,7 @@ export type UseClaimWithdrawalResult = {
 export function useClaimWithdrawal(
   tx: MergedTransaction
 ): UseClaimWithdrawalResult {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
   const { address } = useAccount()
   const sanitizedAddress = useTransactionHistoryAddressStore(
     state => state.sanitizedAddress
