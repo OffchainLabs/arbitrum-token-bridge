@@ -46,31 +46,26 @@ type Result<T> =
   | { data: T; error?: undefined }
   | { data?: undefined; error: Error }
 
-export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
-  TStep extends { type: 'start' }
+export type UiDriverStepResultFor<TStepType extends UiDriverStepType> =
+  TStepType extends 'start'
     ? void
-    : //
-    TStep extends { type: 'return' }
+    : TStepType extends 'return'
     ? void
-    : //
-    TStep extends { type: 'dialog' }
+    : TStepType extends 'dialog'
     ? boolean
-    : //
-    TStep extends { type: 'scw_tooltip' }
+    : TStepType extends 'scw_tooltip'
     ? void
-    : //
-    TStep extends { type: 'tx' }
+    : TStepType extends 'tx'
     ? Result<providers.TransactionReceipt>
-    : //
-      never
+    : never
 
 export type UiDriverStepGenerator<TStep extends UiDriverStep = UiDriverStep> = (
   context: UiDriverContext
-) => AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep>>
+) => AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep['type']>>
 
 export type UiDriverStepExecutor<TStep extends UiDriverStep = UiDriverStep> = (
   step: TStep
-) => Promise<UiDriverStepResultFor<TStep>>
+) => Promise<UiDriverStepResultFor<TStep['type']>>
 
 // TypeScript doesn't to the greatest job with generators
 // This 2nd generator helps with types both for params and result when yielding a step
@@ -78,8 +73,8 @@ export async function* step<TStep extends UiDriverStep>(
   step: TStep
 ): AsyncGenerator<
   TStep,
-  UiDriverStepResultFor<TStep>,
-  UiDriverStepResultFor<TStep>
+  UiDriverStepResultFor<TStep['type']>,
+  UiDriverStepResultFor<TStep['type']>
 > {
   return yield step
 }

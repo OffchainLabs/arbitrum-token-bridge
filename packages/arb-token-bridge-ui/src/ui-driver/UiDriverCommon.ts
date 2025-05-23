@@ -15,7 +15,7 @@ export type UiDriverStepGeneratorForDialog<
   TStep extends UiDriverStep = UiDriverStep
 > = (
   dialog: Dialog
-) => AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep>>
+) => AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep['type']>>
 
 export const stepGeneratorForDialog: UiDriverStepGeneratorForDialog =
   async function* (payload: Dialog) {
@@ -44,7 +44,7 @@ export type UiDriverStepGeneratorForTransaction<
 ) => AsyncGenerator<
   TStep,
   providers.TransactionReceipt | void,
-  UiDriverStepResultFor<TStep>
+  UiDriverStepResultFor<TStep['type']>
 >
 
 export const stepGeneratorForTransaction: UiDriverStepGeneratorForTransaction =

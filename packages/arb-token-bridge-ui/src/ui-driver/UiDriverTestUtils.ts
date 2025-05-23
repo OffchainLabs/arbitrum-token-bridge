@@ -3,8 +3,8 @@ import { expect } from 'vitest'
 import { UiDriverStep, UiDriverStepResultFor } from './UiDriver'
 
 export async function nextStep<TStep extends UiDriverStep>(
-  generator: AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep>>,
-  nextStepInputs: [] | [UiDriverStepResultFor<TStep>] = []
+  generator: AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep['type']>>,
+  nextStepInputs: [] | [UiDriverStepResultFor<TStep['type']>] = []
 ) {
   return (await generator.next(...nextStepInputs)).value
 }
