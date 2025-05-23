@@ -13,6 +13,8 @@ import { CctpUsdcWithdrawalConfirmationDialog } from '../TransferPanel/USDCWithd
 import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/CctpUsdcDepositConfirmationDialog'
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
+import { HighSlippageWarningDialog } from '../TransferPanel/HighSlippageWarningDialog'
+import { TokenSearch } from '../TransferPanel/TokenSearch'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -23,7 +25,9 @@ type WaitForInputFunction = () => Promise<[boolean, unknown]>
 /**
  * Opens the dialog and returns a function which can be called to retrieve a {@link WaitForInputFunction}.
  */
-type OpenDialogFunction = (dialogType: DialogType) => WaitForInputFunction
+export type OpenDialogFunction = (
+  dialogType: DialogType
+) => WaitForInputFunction
 
 /**
  * Returns an array containing {@link DialogProps} and {@link OpenDialogFunction}.
@@ -41,6 +45,9 @@ export type DialogType =
   | 'confirm_cctp_withdrawal'
   | 'confirm_cctp_deposit'
   | 'confirm_usdc_deposit'
+  | 'high_slippage_warning'
+  | 'widget_transaction_history'
+  | 'token_selection'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef = useRef<
@@ -79,7 +86,7 @@ export function useDialog2(): UseDialogResult {
   return [{ openedDialogType, onClose: closeDialog }, openDialog]
 }
 
-type DialogProps = {
+export type DialogProps = {
   openedDialogType: DialogType | null
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
 }
@@ -134,6 +141,10 @@ export function DialogWrapper(props: DialogProps) {
           symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
         />
       )
+    case 'high_slippage_warning':
+      return <HighSlippageWarningDialog {...commonProps} />
+    case 'token_selection':
+      return <TokenSearch {...commonProps} />
     default:
       return null
   }

@@ -57,7 +57,7 @@ export const SearchPanelTable = ({
       </form>
       <div
         className={twMerge(
-          'sm:shadow-search-panel h-[calc(100vh_-_200px)] rounded border border-gray-dark bg-black/30 md:h-[calc(100vh_-_390px)]',
+          'sm:shadow-search-panel h-[calc(100vh_-_200px)] min-h-[180px] rounded border border-gray-dark bg-black/30 md:h-[calc(100vh_-_390px)]',
           isDialog ? 'md:max-h-[700px]' : 'md:max-h-[400px]'
         )}
         data-cy={dataCy}
