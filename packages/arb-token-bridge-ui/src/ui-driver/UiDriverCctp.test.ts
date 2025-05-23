@@ -201,6 +201,44 @@ it(`
 it(`
   context:
     isDepositMode=true
+    isSmartContractWallet=false
+    walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+
+  additional context:
+    1. token does not require approval
+
+  user actions:
+    1. user confirms "confirm_cctp_deposit" dialog
+`, async () => {
+  const context: UiDriverContext = {
+    amountBigNumber: BigNumber.from(1),
+    isDepositMode: true,
+    isSmartContractWallet: false,
+    walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+    destinationAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+    transferStarter: {
+      requiresTokenApproval: () => false,
+      approveTokenPrepareTxRequest: () => mockedApproveTokenTxRequest
+    } as unknown as BridgeTransferStarter
+  }
+
+  const generator = stepGeneratorForCctp(context)
+
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_deposit')
+  expectStep(await nextStep(generator, [true]))
+    //
+    .doesNotExist()
+})
+
+it(`
+  context:
+    isDepositMode=true
     isSmartContractWallet=true
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
