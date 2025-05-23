@@ -45,6 +45,7 @@ export function CctpRoute() {
       gasCost={undefined}
       selected={selectedRoute === 'cctp'}
       onSelectedRouteClick={setSelectedRoute}
+      tag="best-deal"
     />
   )
 }

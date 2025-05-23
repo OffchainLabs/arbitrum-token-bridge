@@ -11,7 +11,9 @@ function isUserRejectedError(error: any) {
     error?.code === 4001 ||
     error?.code === 'ACTION_REJECTED' ||
     error?.message?.match(/User Cancelled/) ||
-    error instanceof UserRejectedRequestError
+    error instanceof UserRejectedRequestError ||
+    error?.details ===
+      'MetaMask Tx Signature: User denied transaction signature.'
   )
 }
 export { isUserRejectedError }

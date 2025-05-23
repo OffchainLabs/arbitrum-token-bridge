@@ -1,12 +1,13 @@
 import dayjs from 'dayjs'
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
-import { utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useConfig } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
+import { shallow } from 'zustand/shallow'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -15,7 +16,11 @@ import {
   TokenImportDialog,
   useTokenImportDialogStore
 } from './TokenImportDialog'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  TabParamEnum,
+  tabToIndex,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -28,7 +33,12 @@ import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { AdvancedSettings } from './AdvancedSettings'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
+import {
+  DepositStatus,
+  LifiMergedTransaction,
+  MergedTransaction,
+  WithdrawalStatus
+} from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   AssetType,
@@ -68,19 +78,24 @@ import { MoveFundsButton } from './MoveFundsButton'
 import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
-import { useMainContentTabs } from '../MainContent/MainContent'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
-import { highlightOftTransactionHistoryDisclaimer } from '../TransactionHistory/OftTransactionHistoryDisclaimer'
+import { highlightTransactionHistoryDisclaimer } from '../TransactionHistory/TransactionHistoryDisclaimer'
 import { useDialog2, DialogWrapper, DialogType } from '../common/Dialog2'
 import { addressesEqual } from '../../util/AddressUtils'
 import { drive, UiDriverStepExecutor } from '../../ui-driver/UiDriver'
 import { stepGeneratorForCctp } from '../../ui-driver/UiDriverCctp'
 import { ConnectWalletButton } from './ConnectWalletButton'
-import { Routes, useDefaultSelectedRoute } from './Routes/Routes'
-import { useRouteStore } from './hooks/useRouteStore'
+import { Routes } from './Routes/Routes'
 import { useError } from '../../hooks/useError'
-import { shallow } from 'zustand/shallow'
+import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
+import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
+import { getFromAndToTokenAddresses } from './LifiSettings'
+import { getAmountLoss } from './HighSlippageWarningDialog'
+import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTransactionCacheStore'
+import { getStepTransaction } from '@lifi/sdk'
+import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
+import { getAmountToPay } from './useTransferReadiness'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -98,7 +113,12 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
+  // Link the amount state directly to the amount in query params -  no need of useState
+  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
+  const [
+    { amount, amount2, destinationAddress, token: tokenFromSearchParams },
+    setQueryParams
+  ] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
@@ -146,23 +166,20 @@ export function TransferPanel() {
   const wagmiConfig = useConfig()
 
   const { setTransferring } = useAppContextActions()
-  const switchToTransactionHistoryTab = useMainContentTabs(
-    state => state.switchToTransactionHistoryTab
-  )
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
-  const { selectedRoute, clearRoute } = useRouteStore(
+  const { selectedRoute, clearRoute, context } = useRouteStore(
     state => ({
       selectedRoute: state.selectedRoute,
-      clearRoute: state.clearRoute
+      clearRoute: state.clearRoute,
+      context: state.context
     }),
     shallow
   )
+  const addLifiTransactionToCache = useLifiMergedTransactionCacheStore(
+    state => state.addTransaction
+  )
 
   const isTransferAllowed = useLatest(useIsTransferAllowed())
-
-  // Link the amount state directly to the amount in query params -  no need of useState
-  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount, amount2, destinationAddress }] = useArbQueryParams()
 
   const { setAmount, setAmount2 } = useSetInputAmount()
 
@@ -192,6 +209,14 @@ export function TransferPanel() {
 
   const { handleError } = useError()
 
+  const switchToTransactionHistoryTab = useCallback(
+    () =>
+      setQueryParams({
+        tab: tabToIndex[TabParamEnum.TX_HISTORY]
+      }),
+    [setQueryParams]
+  )
+
   useEffect(() => {
     // hide Project listing when networks are changed
     setShowProjectsListing(false)
@@ -216,11 +241,6 @@ export function TransferPanel() {
     setAmount('')
     setAmount2('')
   }
-
-  useEffect(() => {
-    clearRoute()
-  }, [selectedToken, clearRoute])
-  useDefaultSelectedRoute()
 
   const isTokenAlreadyImported = useMemo(() => {
     if (typeof tokenFromSearchParams === 'undefined') {
@@ -341,6 +361,16 @@ export function TransferPanel() {
       setTransferring(false)
       setShowSmartContractWalletTooltip(true)
     }, 3000)
+
+  const confirmCustomDestinationAddress = async () => {
+    // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
+    // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
+    if (isSmartContractWallet && areSenderAndCustomDestinationAddressesEqual) {
+      return confirmDialog('scw_custom_destination_address')
+    }
+
+    return true
+  }
 
   const stepExecutor: UiDriverStepExecutor = async step => {
     if (process.env.NODE_ENV === 'development') {
@@ -537,6 +567,184 @@ export function TransferPanel() {
     }
   }
 
+  const transferLifi = async () => {
+    try {
+      if (!signer) {
+        throw new Error(signerUndefinedError)
+      }
+      if (!isTransferAllowed) {
+        throw new Error(transferNotAllowedError)
+      }
+      if (!context) {
+        return
+      }
+
+      setTransferring(true)
+
+      /**
+       * If the amount received is less than 90% of the sent amount, we show a warning dialog
+       * We multiply by 100 before dividing to avoid BigNumber stripping the value to 0
+       */
+      const { lossPercentage } = getAmountLoss({
+        fromAmount: getAmountToPay(context),
+        toAmount: context.toAmount.amount
+      })
+
+      if (lossPercentage.gt(10)) {
+        const confirmation = await confirmDialog('high_slippage_warning')
+        if (!confirmation) return
+      }
+
+      if (!(await confirmCustomDestinationAddress())) {
+        return
+      }
+
+      const { sourceChainProvider, destinationChainProvider } = networks
+
+      const { fromToken, toToken } = getFromAndToTokenAddresses({
+        isDepositMode,
+        selectedToken,
+        sourceChainId: networks.sourceChain.id
+      })
+
+      const { transactionRequest } = await getStepTransaction(context.step)
+      if (!isValidTransactionRequest(transactionRequest)) {
+        return
+      }
+
+      const lifiTransferStarter = new LifiTransferStarter({
+        destinationChainProvider,
+        sourceChainProvider,
+        destinationChainErc20Address: toToken,
+        sourceChainErc20Address: fromToken,
+        lifiData: {
+          ...context,
+          transactionRequest
+        }
+      })
+
+      // Check for allowance
+      if (
+        await lifiTransferStarter.requiresTokenApproval({
+          amount: amountBigNumber,
+          owner: await signer.getAddress()
+        })
+      ) {
+        const userConfirmation = await confirmDialog('approve_token')
+        if (!userConfirmation) return false
+
+        if (isSmartContractWallet) {
+          showDelayedSmartContractTxRequest()
+        }
+
+        try {
+          const tx = await lifiTransferStarter.approveToken({
+            signer,
+            amount: amountBigNumber
+          })
+          if (tx) await tx.wait()
+        } catch (error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+          handleError({
+            error,
+            label: 'lifi_approve_token',
+            category: 'token_approval'
+          })
+          errorToast(
+            `Lifi token approval transaction failed: ${
+              (error as Error)?.message ?? error
+            }`
+          )
+          return
+        }
+      }
+
+      if (isSmartContractWallet) {
+        showDelayedSmartContractTxRequest()
+      }
+
+      const transfer = await lifiTransferStarter.transfer({
+        amount: amountBigNumber,
+        signer,
+        destinationAddress,
+        wagmiConfig
+      })
+
+      trackEvent('Lifi Transfer', {
+        tokenSymbol: selectedToken?.symbol || 'ETH',
+        assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        network: getNetworkName(networks.sourceChain.id),
+        amount: Number(amount),
+        sourceChain: getNetworkName(networks.sourceChain.id),
+        destinationChain: getNetworkName(networks.destinationChain.id)
+      })
+
+      if (isSmartContractWallet) {
+        // show the warning in case of SCW since we cannot show Lifi tx history for SCW
+        switchToTransactionHistoryTab()
+        setTimeout(() => {
+          highlightTransactionHistoryDisclaimer()
+        }, 100)
+      } else {
+        const newTransfer: LifiMergedTransaction = {
+          txId: transfer.sourceChainTransaction.hash,
+          asset: selectedToken?.symbol || 'ETH',
+          assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
+          blockNum: null,
+          createdAt: dayjs().valueOf(),
+          direction: 'withdraw',
+          isWithdrawal: true,
+          resolvedAt: null,
+          status: WithdrawalStatus.UNCONFIRMED,
+          destinationStatus: WithdrawalStatus.UNCONFIRMED,
+          uniqueId: null,
+          value: amount,
+          depositStatus: DepositStatus.LIFI_DEFAULT_STATE,
+          destination: destinationAddress ?? walletAddress,
+          sender: walletAddress,
+          isLifi: true,
+          tokenAddress: selectedToken?.address || constants.AddressZero,
+          parentChainId: parentChain.id,
+          childChainId: childChain.id,
+          sourceChainId: networks.sourceChain.id,
+          destinationChainId: networks.destinationChain.id,
+          toolDetails: context.toolDetails,
+          durationMs: context.durationMs,
+          fromAmount: context.fromAmount,
+          toAmount: context.toAmount,
+          destinationTxId: null,
+          transactionRequest
+        }
+        addPendingTransaction(newTransfer)
+        addLifiTransactionToCache(newTransfer)
+        switchToTransactionHistoryTab()
+      }
+
+      clearAmountInput()
+      clearRoute()
+    } catch (error) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+
+      handleError({
+        error,
+        label: 'lifi_transfer',
+        category: 'token_transfer'
+      })
+      errorToast(
+        `Lifi withdrawal transaction failed: ${
+          (error as Error)?.message ?? error
+        }`
+      )
+    } finally {
+      setTransferring(false)
+    }
+  }
+
   const transferOft = async () => {
     if (!selectedToken) {
       return
@@ -554,15 +762,8 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider } =
         latestNetworks.current
 
-      // confirm if the user is certain about the custom destination address for SCW
-      if (
-        isSmartContractWallet &&
-        areSenderAndCustomDestinationAddressesEqual
-      ) {
-        const confirmation = await confirmDialog(
-          'scw_custom_destination_address'
-        )
-        if (!confirmation) return false
+      if (!(await confirmCustomDestinationAddress())) {
+        return
       }
 
       const oftTransferStarter = new OftV2TransferStarter({
@@ -638,7 +839,7 @@ export function TransferPanel() {
       if (isSmartContractWallet) {
         // show the warning in case of SCW since we don't cannot show OFT tx history
         setTimeout(() => {
-          highlightOftTransactionHistoryDisclaimer()
+          highlightTransactionHistoryDisclaimer()
         }, 100)
       } else {
         // for EOA, show the transaction in tx history
@@ -769,16 +970,8 @@ export function TransferPanel() {
 
       const destinationAddress = latestDestinationAddress.current
 
-      // confirm if the user is certain about the custom destination address, especially if it matches the connected SCW address.
-      // this ensures that user funds do not end up in the destination chain's address that matches their source-chain wallet address, which they may not control.
-      if (
-        isSmartContractWallet &&
-        areSenderAndCustomDestinationAddressesEqual
-      ) {
-        const confirmation = await confirmDialog(
-          'scw_custom_destination_address'
-        )
-        if (!confirmation) return false
+      if (!(await confirmCustomDestinationAddress())) {
+        return
       }
 
       const isCustomNativeTokenAmount2 =
@@ -1062,7 +1255,7 @@ export function TransferPanel() {
         : isDepositMode
         ? 'Deposit'
         : 'Withdrawal',
-      isCctpTransfer: selectedRoute === 'cctp',
+      selectedRoute,
       tokenSymbol: selectedToken?.symbol,
       assetType: selectedToken ? 'ERC-20' : 'ETH',
       accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -1132,6 +1325,9 @@ export function TransferPanel() {
     }
     if (selectedRoute === 'cctp') {
       return transferCctp()
+    }
+    if (isLifiRoute(selectedRoute)) {
+      return transferLifi()
     }
     if (selectedRoute === 'arbitrum' && isDepositMode && selectedToken) {
       return depositToken()

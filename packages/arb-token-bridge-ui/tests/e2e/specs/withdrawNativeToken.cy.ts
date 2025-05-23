@@ -52,7 +52,6 @@ describe('Withdraw native token', () => {
           cy.login({ networkType: 'childChain' })
           cy.typeAmount(ETHToWithdraw)
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
-          cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
           // the Continue withdrawal button should be disabled at first
           cy.findByRole('button', {
@@ -137,7 +136,6 @@ describe('Withdraw native token', () => {
       cy.typeAmount(ETHToWithdraw)
       cy.fillCustomDestinationAddress()
       cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
-      cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
       // the Continue withdrawal button should be disabled at first
       cy.findByRole('button', {

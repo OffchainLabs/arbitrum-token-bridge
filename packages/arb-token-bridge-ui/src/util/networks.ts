@@ -9,7 +9,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { fetchErc20Data } from './TokenUtils'
+import { Erc20Data, fetchErc20Data } from './TokenUtils'
 import { orbitChains } from './orbitChainsList'
 import { ChainId } from '../types/ChainId'
 import { getRpcUrl } from './rpc/getRpcUrl'
@@ -18,6 +18,7 @@ import {
   defaultL3Network,
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
+import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -57,6 +58,7 @@ const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   }
 }
 
+// TODO: load only once
 export const getChains = () => {
   const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
@@ -87,6 +89,7 @@ export type ChainWithRpcUrl = ArbitrumNetwork & {
   rpcUrl: string
   explorerUrl: string
   slug?: string
+  nativeTokenData?: Erc20Data
 }
 
 export function getBlockNumberReferenceChainIdByChainId({
@@ -256,7 +259,7 @@ const defaultRpcUrls: { [chainId: number]: string } = {
 }
 
 export const rpcURLs: { [chainId: number]: string } =
-  process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_IS_E2E_TEST
+  !isProductionEnvironment || isE2eTestingEnvironment
     ? {
         ...defaultRpcUrls,
         [defaultL1Network.chainId]: localL1NetworkRpcUrl,

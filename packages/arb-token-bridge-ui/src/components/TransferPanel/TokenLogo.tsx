@@ -16,10 +16,12 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
  */
 export const TokenLogo = ({
   srcOverride,
-  className
+  className,
+  fallback
 }: {
   srcOverride?: string | null
   className?: string
+  fallback?: JSX.Element
 }) => {
   const [selectedToken] = useSelectedToken()
   const tokensFromLists = useTokensFromLists()
@@ -60,6 +62,7 @@ export const TokenLogo = ({
       src={src}
       alt="Token logo"
       className={twMerge('h-5 w-5 shrink-0', className)}
+      fallback={fallback}
     />
   )
 }

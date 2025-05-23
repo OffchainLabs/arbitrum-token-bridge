@@ -128,7 +128,8 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
         network: {
           name: customChain ? customChain.name : 'Unknown',
           logo: '/images/OrbitLogo.svg'
-        }
+        },
+        nativeTokenData: customChain?.nativeTokenData
       }
     }
   }
