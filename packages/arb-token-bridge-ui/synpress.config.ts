@@ -58,7 +58,7 @@ const l1WethGateway = isOrbitTest
   ? l3Network.tokenBridge!.parentWethGateway
   : defaultL2Network.tokenBridge!.parentWethGateway
 
-let l1WethAddress = isOrbitTest
+const l1WethAddress = isOrbitTest
   ? l3Network.tokenBridge!.parentWeth
   : defaultL2Network.tokenBridge!.parentWeth
 
