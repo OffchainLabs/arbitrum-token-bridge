@@ -536,54 +536,6 @@
       }
     },
     {
-      "chainId": 63157,
-      "confirmPeriodBlocks": 274908,
-      "ethBridge": {
-        "bridge": "0x9F904Fea0efF79708B37B99960e05900fE310A8E",
-        "inbox": "0x32AB85A3F0C702EbE74f73C5934b7Fb8452B492f",
-        "outbox": "0x7cF0a5D0211AC30365bA8C1cB8CFD4caF64b2D60",
-        "rollup": "0x58E3fe88b1E8a7e2D578000aCD9C6d5989FE9e09",
-        "sequencerInbox": "0x400f7c5DaC37aAEe3cE007e43Db54424414743f5"
-      },
-      "nativeToken": "0xcD2F22236DD9Dfe2356D7C543161D4d260FD9BcB",
-      "explorerUrl": "https://geist-mainnet.explorer.alchemy.com",
-      "rpcUrl": "https://geist-mainnet.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": false,
-      "name": "Geist Mainnet",
-      "slug": "geist-mainnet",
-      "parentChainId": 8453,
-      "tokenBridge": {
-        "parentCustomGateway": "0xb2F230EC2E6c29F631614E1343b5a20a8CB86D7b",
-        "parentErc20Gateway": "0xcCc3f0920fb4e12241475dfB2Bf33EB7E7FeFF05",
-        "parentGatewayRouter": "0xD570870a6b8bFda7baC6bD0c424B5E9674c990A2",
-        "parentMultiCall": "0xb444317D808b5cFfE66495920D40A35E7D247cC4",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0xE281b9E84d52152D0C83B7AA18045057450c60E1",
-        "childErc20Gateway": "0x73031e600c05293c51Ccde9b4488f3DAd54982e0",
-        "childGatewayRouter": "0x8c34AFB2685a2B600498f81B50E4F145E1873b4E",
-        "childMultiCall": "0x67a910a43F74fA4aAc8Ffd9c120E2E7472945a89",
-        "childProxyAdmin": "0x25a7F575dD5C10a7FcCc4E3E3A49c85E0C76faa0",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#EB4A9D",
-        "network": {
-          "name": "Geist Mainnet",
-          "logo": "/images/GeistMainnetLogo.svg",
-          "description": ""
-        },
-        "nativeTokenData": {
-          "name": "Aavegotchi",
-          "symbol": "GHST",
-          "logoUrl": "/images/ghst.png"
-        }
-      }
-    },
-    {
       "chainId": 10058111,
       "confirmPeriodBlocks": 45818,
       "ethBridge": {
@@ -1304,7 +1256,7 @@
         "sequencerInbox": "0xf0d96B3a783F04620D5CBbf2829E70CEe396403F"
       },
       "explorerUrl": "https://testnet.explorer.rarichain.org",
-      "rpcUrl": "https://testnet.rpc.rarichain.org/http",
+      "rpcUrl": "https://rari-testnet.calderachain.xyz/http",
       "isCustom": true,
       "isTestnet": true,
       "name": "RARI Testnet",
@@ -1380,54 +1332,6 @@
           "name": "tXR",
           "symbol": "tXR",
           "logoUrl": "/images/xrTokenLogo.png"
-        }
-      }
-    },
-    {
-      "chainId": 631571,
-      "confirmPeriodBlocks": 900,
-      "ethBridge": {
-        "bridge": "0x133634FA8F372e59422744759a67796F01428BDD",
-        "inbox": "0x81Bf51dEC736adA7E256ed6C092CAe24D62a1ca7",
-        "outbox": "0x020e1cb41cF68999D988c20Ef40E2C58e1947db2",
-        "rollup": "0xAFcb6cF53AB01ac39577A592E141F614171c9371",
-        "sequencerInbox": "0x2453eb0d6F58C01Adb87505A4348fB5EEceB007D"
-      },
-      "nativeToken": "0xe97f36a00058AA7DfC4E85d23532C3f70453a7aE",
-      "explorerUrl": "https://polter-testnet.explorer.alchemy.com",
-      "rpcUrl": "https://geist-polter.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Polter Testnet",
-      "slug": "polter-testnet",
-      "parentChainId": 84532,
-      "tokenBridge": {
-        "parentCustomGateway": "0x24e1e6375f0f0Eecd38266357cADE57cA3A348F3",
-        "parentErc20Gateway": "0x9014E7244116b965F0D1059f80e2bD8169957117",
-        "parentGatewayRouter": "0xE38553a7989feD9e240DE8B0f5ed166BF75a088A",
-        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x7965162499751ABf89b8e3C640f8229AD8EeB022",
-        "childErc20Gateway": "0xA8E8b5D957e4ad9335E504442e877E513BD50729",
-        "childGatewayRouter": "0xF654086B1118fE98ea045De8D6dC0F1C53Da5B76",
-        "childMultiCall": "0xb97c5bC7DB7532471726550480A855484a408d00",
-        "childProxyAdmin": "0xda11A4ecaAcA51b1f2e2109a2EEFaC438409b68D",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#03AB2A",
-        "network": {
-          "name": "Polter Testnet",
-          "logo": "/images/PolterTestnetLogo.webp",
-          "description": "A gaming testnet for Aavegotchi's Geist Mainnet."
-        },
-        "nativeTokenData": {
-          "name": "Aavegotchi GHST Token",
-          "symbol": "GHST",
-          "logoUrl": "/images/ghst.png"
         }
       }
     },
@@ -2077,6 +1981,147 @@
           "name": "T-Rex Testnet",
           "logo": "/images/T-Rex_Logo.png",
           "description": "Invisible blockchain bridging everyday digital interactions into real-world rewards."
+        }
+      }
+    },
+    {
+      "chainId": 1712,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xA5Bcd72e7D4D99A95F6eB83fda3AD2E0B9A4744B",
+        "inbox": "0x00ef4932Df17a0227F643d565AFAf9564eB219C6",
+        "outbox": "0x3b7C01Ab11260f8e1403c03B9CdA58713Ee60742",
+        "rollup": "0xbc0Dc54832621cdebb7DdF364F9C18A0daB2132f",
+        "sequencerInbox": "0x675e73C895E004117797AeD42899d21419e5CfeF"
+      },
+      "nativeToken": "0x809050Eb1575364DB42Fb7a1D32ceD95c65950f3",
+      "explorerUrl": "https://wylerchain-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://wylerchain-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Wylerchain Sepolia",
+      "slug": "wylerchain-sepolia",
+      "parentChainId": 421614,
+      "tokenBridge": {
+        "parentCustomGateway": "0x1f024B64325BeF11B5E5e3cFaC66d863b6ce5cb7",
+        "parentErc20Gateway": "0x1f024B64325BeF11B5E5e3cFaC66d863b6ce5cb7",
+        "parentGatewayRouter": "0xE4709D109BF0BD219cB19f8c50cD1135FFE11C23",
+        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x21323a391B765725032F3E58c4f782466Ae40696",
+        "childErc20Gateway": "0x8Ed5bb22aE040Cce4e760e9b705c12a0fdF6167B",
+        "childGatewayRouter": "0x8d2bd0BCEe3d787568a7927c01f8431a440F5E8B",
+        "childMultiCall": "0xeD67d0abffd0fa6E344Ac52838A2C54eEE47dfd1",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#925eff",
+        "network": {
+          "name": "Wylerchain Sepolia",
+          "logo": "/images/WylerchainSepolia_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Wyler",
+          "symbol": "WYLER",
+          "logoUrl": "/images/WylerchainSepolia_Logo.png"
+        }
+      }
+    },
+    {
+      "chainId": 323432,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0x28C3C1FC243DCCDD5Ae2Aa9081fA01b64D69cD21",
+        "inbox": "0xa5099f144FA1ed4A74a6E6dFc6Bb1B4E514FD061",
+        "outbox": "0x193cc92D190D5d9d593A8b9242449e1f5AA8a678",
+        "rollup": "0x30FDF7506264aD964067eb1E049C44b00dfd631f",
+        "sequencerInbox": "0x96729ffcea2d26CdB4e72d4d67448416f5f96C89"
+      },
+      "nativeToken": "0x84285795BFed8A757Dac4659163f549449AF7115",
+      "explorerUrl": "https://testnet-explorer.worldmobile.net/",
+      "rpcUrl": "https://worldmobile-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "WorldMobile Testnet",
+      "slug": "worldmobile-testnet",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0x75454ff5Bd9fa80859711268c218f9566034Bf3F",
+        "parentErc20Gateway": "0xC837bDe6dBEDE5Fd5EB2A5678f9634985D91E5DD",
+        "parentGatewayRouter": "0x2dbc704a564975811AbB70991B6E4A281cafe01F",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x8D13A9fA39A6e45A904c75E8F7d9832368f900a1",
+        "childErc20Gateway": "0x0271a5d09ca43C0E6d95422EaB3F83a581Fac66C",
+        "childGatewayRouter": "0x186f8022a1Cd5D13E92876FA2A63DF45ce40b7C7",
+        "childMultiCall": "0xbE7664381a214e5AD528dbC3843CbdD5Ffba3d97",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#fffa2a",
+        "network": {
+          "name": "WorldMobile Testnet",
+          "logo": "/images/WorldMobileTestnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "WOMOX",
+          "symbol": "WOMOX",
+          "logoUrl": "/images/WorldMobileTestnet_NativeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 843843,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xD522DC770E2452375AfceD3c3ec96eb784c75570",
+        "inbox": "0xb0579056c22aD1fF85a1288f82089B1205447613",
+        "outbox": "0xDE290348c15283a812E393DE59EC178Bb7D65de9",
+        "rollup": "0xF66e4186BCeAfCEF7d04024773D41864d9b07B1f",
+        "sequencerInbox": "0x0826aB1eF7AB293933d7e3cE1122b5d677A23e71"
+      },
+      "nativeToken": "0x37B8D1d8f7b718001ca4Ca1b2EC08010c16047Aa",
+      "explorerUrl": "https://galactica-cassiopeia.explorer.alchemy.com/",
+      "rpcUrl": "https://galactica-cassiopeia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Galactica Cassiopeia Testnet",
+      "slug": "galactica-cassiopeia-testnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x470e1D6d5698872C8Bf34d649b83F5305cD412Fa",
+        "parentErc20Gateway": "0xe557F0db287eD44f11630dCA4aDf850660f0B38E",
+        "parentGatewayRouter": "0x6E5d41f9a8aA672938f719cC6562676808f9bf60",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xe0732059b89bf07d1693d7A4A7b73fb3714778F0",
+        "childErc20Gateway": "0x2dc7DECb12Ceb18f69dC2AcA5ceADeBef88193e9",
+        "childGatewayRouter": "0x7FcB0fFecDB94922c1F8f23d64fA9F888Efa01Da",
+        "childMultiCall": "0x849e8Ff61581B1fE734C23D234Ac192377472C74",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#F49756",
+        "network": {
+          "name": "Galactica Cassiopeia Testnet",
+          "logo": "/images/GalacticaCassiopeia_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "GNET",
+          "symbol": "GNET",
+          "logoUrl": "/images/GalacticaCassiopeia_Logo.svg"
         }
       }
     }

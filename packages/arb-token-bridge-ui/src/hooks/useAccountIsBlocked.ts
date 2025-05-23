@@ -5,6 +5,10 @@ import useSWRImmutable from 'swr/immutable'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { Address } from '../util/AddressUtils'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import {
+  isE2eTestingEnvironment,
+  isProductionEnvironment
+} from '../util/CommonUtils'
 
 /**
  * Checks if an address is blocked using the external Screenings API service.
@@ -13,10 +17,7 @@ import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
  */
 async function isBlocked(address: Address): Promise<boolean> {
   try {
-    if (
-      process.env.NODE_ENV !== 'production' ||
-      process.env.NEXT_PUBLIC_IS_E2E_TEST
-    ) {
+    if (!isProductionEnvironment || isE2eTestingEnvironment) {
       return false
     }
 
