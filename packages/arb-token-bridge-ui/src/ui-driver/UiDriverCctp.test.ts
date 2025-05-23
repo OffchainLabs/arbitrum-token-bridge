@@ -28,11 +28,15 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
-  expectStep(await nextStep(generator, [false])).hasType('return')
+  expectStep(await nextStep(generator, [false]))
+    //
+    .hasType('return')
 })
 
 it(`
@@ -50,11 +54,15 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_withdrawal')
-  expectStep(await nextStep(generator, [false])).hasType('return')
+  expectStep(await nextStep(generator, [false]))
+    //
+    .hasType('return')
 })
 
 it(`
@@ -84,14 +92,18 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
   expectStep(await nextStep(generator, [true]))
     .hasType('dialog')
     .hasPayload('approve_token')
-  expectStep(await nextStep(generator, [false])).hasType('return')
+  expectStep(await nextStep(generator, [false]))
+    //
+    .hasType('return')
 })
 
 it(`
@@ -169,7 +181,9 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
@@ -248,7 +262,9 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
@@ -258,7 +274,9 @@ it(`
   expectStep(await nextStep(generator, [true]))
     .hasType('dialog')
     .hasPayload('approve_token')
-  expectStep(await nextStep(generator, [true])).hasType('scw_tooltip')
+  expectStep(await nextStep(generator, [true]))
+    //
+    .hasType('scw_tooltip')
   expectStep(await nextStep(generator))
     .hasType('tx')
     .hasPayload(mockedApproveTokenTxRequest)
