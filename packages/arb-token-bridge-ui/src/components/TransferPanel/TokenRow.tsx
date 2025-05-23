@@ -6,7 +6,6 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { Loader } from '../common/atoms/Loader'
-import { useAppState } from '../../state'
 import {
   listIdsToNames,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID

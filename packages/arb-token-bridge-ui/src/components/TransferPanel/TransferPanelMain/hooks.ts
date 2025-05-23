@@ -4,7 +4,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../../util/TokenUtils'
-import { useActions, useAppState } from '../../../state'
+import { useActions } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { CommonAddress } from '../../../util/CommonAddressUtils'

@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { useInterval, useLatest, useDebounce } from 'react-use'
 import { useAccount } from 'wagmi'
 
-import { useAppState } from '../../state'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'

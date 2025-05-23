@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useAccount } from 'wagmi'
 
-import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
