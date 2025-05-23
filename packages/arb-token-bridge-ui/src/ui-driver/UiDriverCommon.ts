@@ -54,9 +54,9 @@ export const stepGeneratorForTransaction: UiDriverStepGeneratorForTransaction =
 
     const { error, data } = yield* step({ type: 'tx', payload: txRequest })
 
-    if (typeof error === 'undefined') {
+    if (typeof error !== 'undefined') {
+      yield* step({ type: 'return' })
+    } else {
       return data
     }
-
-    yield* step({ type: 'return' })
   }
