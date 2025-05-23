@@ -50,10 +50,9 @@ export type DialogType =
   | 'token_selection'
 
 export function useDialog2(): UseDialogResult {
-  const resolveRef =
-    useRef<
-      (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
-    >()
+  const resolveRef = useRef<
+    (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
+  >(() => {})
 
   // Whether the dialog is currently open
   const [openedDialogType, setOpenedDialogType] = useState<DialogType | null>(
