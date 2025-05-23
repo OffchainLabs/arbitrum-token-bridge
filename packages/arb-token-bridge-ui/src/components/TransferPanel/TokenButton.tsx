@@ -1,25 +1,18 @@
 import { useMemo } from 'react'
 import { utils } from 'ethers'
-import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
-import { twMerge } from 'tailwind-merge'
 
-import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import {
-  onPopoverButtonClick,
-  onPopoverClose,
-  panelWrapperClassnames
-} from '../common/SearchPanel/SearchPanelUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { Transition } from '../common/Transition'
 import { TokenLogo } from './TokenLogo'
 import { Loader } from '../common/atoms/Loader'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { Button } from '../common/Button'
+import { DialogWrapper, useDialog2 } from '../common/Dialog2'
 
 export type TokenButtonOptions = {
   symbol?: string
@@ -34,6 +27,8 @@ export function TokenButton({
 }): JSX.Element {
   const [selectedToken] = useSelectedToken()
   const disabled = options?.disabled ?? false
+
+  const [dialogProps, openDialog] = useDialog2()
 
   const [networks] = useNetworks()
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
@@ -70,56 +65,29 @@ export function TokenButton({
 
   return (
     <>
-      <Popover className="relative">
-        {({ open }) => (
-          <>
-            <Popover.Button
-              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 pb-1 pt-2 text-white"
-              aria-label="Select Token"
-              onClick={onPopoverButtonClick}
-              disabled={disabled}
-            >
-              <div className="flex items-center gap-2">
-                {isLoadingToken ? (
-                  <Loader size="small" color="white" />
-                ) : (
-                  <>
-                    <TokenLogo srcOverride={options?.logoSrc} />
-                    <span className="text-xl font-light">{tokenSymbol}</span>
-                    {!disabled && (
-                      <ChevronDownIcon
-                        className={twMerge(
-                          'h-3 w-3 text-gray-6 transition-transform duration-200',
-                          open ? '-rotate-180' : 'rotate-0'
-                        )}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-            </Popover.Button>
+      <DialogWrapper {...dialogProps} />
 
-            <Transition
-              // we don't unmount on leave here because otherwise transition won't work with virtualized lists
-              options={{ unmountOnLeave: false }}
-              className="fixed right-0 top-0 z-50 sm:absolute sm:top-[76px] sm:max-w-[466px]"
-              afterLeave={onPopoverClose}
-            >
-              <Popover.Panel
-                className={twMerge(panelWrapperClassnames, 'px-5 py-4')}
-              >
-                {({ close }) => {
-                  function onClose() {
-                    onPopoverClose()
-                    close()
-                  }
-                  return <TokenSearch close={onClose} />
-                }}
-              </Popover.Panel>
-            </Transition>
-          </>
-        )}
-      </Popover>
+      <Button
+        variant="primary"
+        className="arb-hover h-full w-max rounded-bl rounded-tl border-0 bg-transparent px-3 pb-1 pt-2 text-white"
+        aria-label="Select Token"
+        onClick={() => openDialog('token_selection')}
+        disabled={disabled}
+      >
+        <div className="flex items-center gap-2">
+          {isLoadingToken ? (
+            <Loader size="small" color="white" />
+          ) : (
+            <>
+              <TokenLogo srcOverride={options?.logoSrc} />
+              <span className="text-xl font-light">{tokenSymbol}</span>
+              {!disabled && (
+                <ChevronDownIcon className="h-3 w-3 text-gray-6 transition-transform duration-200" />
+              )}
+            </>
+          )}
+        </div>
+      </Button>
     </>
   )
 }

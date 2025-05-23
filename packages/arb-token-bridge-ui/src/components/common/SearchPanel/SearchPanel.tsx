@@ -14,7 +14,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { Loader } from '../atoms/Loader'
 
-enum Panel {
+export enum Panel {
   MAIN,
   SECONDARY
 }
@@ -120,27 +120,6 @@ function SearchPanelMainPage({
   )
 }
 SearchPanel.MainPage = SearchPanelMainPage
-
-function SearchPanelPageTitle({
-  title,
-  children,
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { title: string }) {
-  return (
-    <div
-      className={twMerge(
-        'flex flex-row items-center justify-between pb-4',
-        className
-      )}
-      {...props}
-    >
-      <span className="text-xl">{title}</span>
-      {children}
-    </div>
-  )
-}
-SearchPanel.PageTitle = SearchPanelPageTitle
 
 function SearchPanelSecondaryPage({
   children,
