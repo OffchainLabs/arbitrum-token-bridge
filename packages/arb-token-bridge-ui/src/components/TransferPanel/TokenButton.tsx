@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { utils } from 'ethers'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
@@ -24,7 +24,7 @@ export function TokenButton({
   options
 }: {
   options?: TokenButtonOptions
-}): React.ReactNode {
+}): React.JSX.Element {
   const [selectedToken] = useSelectedToken()
   const disabled = options?.disabled ?? false
 

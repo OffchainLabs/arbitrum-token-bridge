@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
@@ -60,7 +60,7 @@ type TokenImportDialogProps = Omit<UseDialogProps, 'isOpen'> & {
 export function TokenImportDialog({
   onClose,
   tokenAddress
-}: TokenImportDialogProps): React.ReactNode {
+}: TokenImportDialogProps): React.JSX.Element {
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token }

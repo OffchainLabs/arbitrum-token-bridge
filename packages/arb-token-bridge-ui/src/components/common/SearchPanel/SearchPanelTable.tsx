@@ -6,7 +6,7 @@ type SearchPanelTableProps = {
   searchInputPlaceholder: string
   searchInputValue: string
   searchInputOnChange: React.ChangeEventHandler<HTMLInputElement>
-  SearchInputButton?: React.ReactNode
+  SearchInputButton?: React.JSX.Element
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
   dataCy?: string

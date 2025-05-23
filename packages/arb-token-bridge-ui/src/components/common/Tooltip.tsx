@@ -16,7 +16,7 @@ export function Tooltip({
   theme = 'dark',
   tippyProps = {},
   children
-}: TooltipProps): React.ReactNode {
+}: TooltipProps): React.JSX.Element | null {
   if (!content) {
     return null
   }

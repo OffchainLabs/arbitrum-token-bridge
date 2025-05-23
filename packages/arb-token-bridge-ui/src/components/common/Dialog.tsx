@@ -1,5 +1,5 @@
 import { Dialog as HeadlessUIDialog, DialogBackdrop } from '@headlessui/react'
-import { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
@@ -83,7 +83,7 @@ export function useDialog(params?: UseDialogParams): UseDialogResult {
 export type DialogProps = {
   isOpen: boolean
   closeable?: boolean
-  title?: React.ReactNode
+  title?: string | React.JSX.Element
   initialFocus?: React.MutableRefObject<HTMLElement | null>
   cancelButtonProps?: Partial<ButtonProps>
   actionButtonProps?: Partial<ButtonProps>

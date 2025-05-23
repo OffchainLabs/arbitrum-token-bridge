@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -21,7 +21,7 @@ export const TokenLogo = ({
 }: {
   srcOverride?: string | null
   className?: string
-  fallback?: JSX.Element
+  fallback?: React.JSX.Element
 }) => {
   const [selectedToken] = useSelectedToken()
   const tokensFromLists = useTokensFromLists()

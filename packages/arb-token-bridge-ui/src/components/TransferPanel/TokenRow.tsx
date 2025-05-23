@@ -325,7 +325,7 @@ export function TokenRow({
   style,
   onTokenSelected,
   token
-}: TokenRowProps): React.ReactNode {
+}: TokenRowProps): React.JSX.Element {
   const {
     name: tokenName,
     symbol: tokenSymbol,
