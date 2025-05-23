@@ -66,7 +66,7 @@ export const SidePanel = ({
         aria-hidden="true"
       />
 
-      <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
+      <div className="fixed inset-0 top-0 right-0 flex h-full w-full items-start justify-end">
         <Dialog.Panel
           transition
           className={twMerge(

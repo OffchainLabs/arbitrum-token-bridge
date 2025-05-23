@@ -71,7 +71,7 @@ const TableHeader = ({
 }: PropsWithChildren<{ className?: string }>) => (
   <div
     className={twMerge(
-      'h-full w-full pb-2 pt-4 text-left text-sm font-normal',
+      'h-full w-full pt-4 pb-2 text-left text-sm font-normal',
       className
     )}
   >

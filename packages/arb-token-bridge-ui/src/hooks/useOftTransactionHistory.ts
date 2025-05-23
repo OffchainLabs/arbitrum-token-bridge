@@ -242,9 +242,8 @@ export async function updateAdditionalLayerZeroData(
   updatedTx.destination = utils.hexValue(decodedInputData[0][1])
 
   // extract token and value
-  const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
-    txId
-  )
+  const sourceChainTxReceipt =
+    await sourceChainProvider.getTransactionReceipt(txId)
   const tokenAddress = sourceChainTxReceipt.logs[0]?.address
 
   if (!tokenAddress) {

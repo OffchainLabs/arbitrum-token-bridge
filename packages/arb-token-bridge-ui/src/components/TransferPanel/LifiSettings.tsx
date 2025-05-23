@@ -282,9 +282,9 @@ export function LifiSettings() {
           >
             <PopoverPanel
               className={twMerge(
-                'flex flex-col gap-4 border-black bg-gray-8 p-4 text-sm text-gray-2',
-                'sm:absolute sm:left-auto sm:top-auto sm:mt-6 sm:h-auto sm:max-w-[700px] sm:-translate-x-full sm:rounded sm:border sm:p-6',
-                'fixed left-0 top-0 mt-0 h-screen w-screen' // mobile design
+                'bg-gray-8 flex flex-col gap-4 border-black p-4 text-sm text-gray-2',
+                'sm:absolute sm:top-auto sm:left-auto sm:mt-6 sm:h-auto sm:max-w-[700px] sm:-translate-x-full sm:rounded sm:border sm:p-6',
+                'fixed top-0 left-0 mt-0 h-screen w-screen' // mobile design
               )}
             >
               <div className="flex items-center text-xl">
@@ -320,12 +320,12 @@ export function LifiSettings() {
                       }
                     }}
                     className={twMerge(
-                      'ml-1 w-12 rounded border border-gray-dark bg-black py-1 pl-2 pr-5 text-center text-sm text-gray-4',
+                      'ml-1 w-12 rounded border border-gray-dark bg-black py-1 pr-5 pl-2 text-center text-sm text-gray-4',
                       (slippageIsTooHigh || slippageIsTooLow) &&
                         'border-orange-dark bg-orange-dark'
                     )}
                   />
-                  <div className="absolute bottom-0 right-2 top-0 flex items-center">
+                  <div className="absolute top-0 right-2 bottom-0 flex items-center">
                     %
                   </div>
                 </span>

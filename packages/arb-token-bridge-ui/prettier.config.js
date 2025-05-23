@@ -6,8 +6,9 @@ module.exports = {
   bracketSpacing: true,
   arrowParens: 'avoid',
   trailingComma: 'none',
+  tailwindStylesheet: './src/styles/tailwind.css',
+  tailwindFunctions: ['twMerge'],
 
   // Plugins
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  plugins: [require('prettier-plugin-tailwindcss')]
+  plugins: [import('prettier-plugin-tailwindcss')]
 }

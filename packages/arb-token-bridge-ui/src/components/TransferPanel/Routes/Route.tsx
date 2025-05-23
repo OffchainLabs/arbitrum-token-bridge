@@ -310,7 +310,7 @@ export const Route = React.memo(
         </div>
 
         {tag ? (
-          <div className="invisible absolute right-2 top-2 flex gap-1 md:visible">
+          <div className="invisible absolute top-2 right-2 flex gap-1 md:visible">
             {getBadges(tag)}
           </div>
         ) : null}
