@@ -379,11 +379,8 @@ export function TransferPanel() {
         } catch (error) {
           // capture error and show toast for anything that's not user rejecting error
           if (!isUserRejectedError(error)) {
-            captureSentryErrorWithExtraData({
-              error,
-              originFunction: 'stepExecutor.tx'
-            })
-
+            // todo: what to add here?
+            // handleError({ error })
             errorToast(`${(error as Error)?.message ?? error}`)
           }
 
