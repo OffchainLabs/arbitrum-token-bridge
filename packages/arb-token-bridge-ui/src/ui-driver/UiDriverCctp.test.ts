@@ -21,12 +21,12 @@ async function expectStepsForTokenApproval(
     shouldTxError?: boolean
   }
 ) {
-  const dialogStep = await nextStep(generator, [true])
-  expectStep(dialogStep).hasType('dialog').hasPayload('approve_token')
+  expectStep(await nextStep(generator, [true]))
+    .hasType('dialog')
+    .hasPayload('approve_token')
 
   if (options?.shouldUserRejectDialog ?? false) {
-    const returnStep = await nextStep(generator, [false])
-    expectStep(returnStep).hasType('return')
+    expectStep(await nextStep(generator, [false])).hasType('return')
 
     return
   }
@@ -42,8 +42,9 @@ async function expectStepsForTokenApproval(
   expectStep(variableStep).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
 
   if (options?.shouldTxError ?? false) {
-    const returnStep = await nextStep(generator, [{ error: new Error() }])
-    expectStep(returnStep).hasType('return')
+    expectStep(await nextStep(generator, [{ error: new Error() }]))
+      //
+      .hasType('return')
 
     return
   }
@@ -122,11 +123,10 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  const step1 = await nextStep(generator)
-  expectStep(step1).hasType('start')
-
-  const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
+  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_deposit')
 
   await expectStepsForTokenApproval(generator, context, {
     shouldUserRejectDialog: true
@@ -162,11 +162,10 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  const step1 = await nextStep(generator)
-  expectStep(step1).hasType('start')
-
-  const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
+  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_deposit')
 
   await expectStepsForTokenApproval(generator, context, { shouldTxError: true })
 })
@@ -200,16 +199,14 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  const step1 = await nextStep(generator)
-  expectStep(step1).hasType('start')
-
-  const step2 = await nextStep(generator)
-  expectStep(step2).hasType('dialog').hasPayload('confirm_cctp_deposit')
+  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    .hasType('dialog')
+    .hasPayload('confirm_cctp_deposit')
 
   await expectStepsForTokenApproval(generator, context)
 
-  const step3 = await nextStep(generator)
-  expectStep(step3).doesNotExist()
+  expectStep(await nextStep(generator)).doesNotExist()
 })
 
 it(`
