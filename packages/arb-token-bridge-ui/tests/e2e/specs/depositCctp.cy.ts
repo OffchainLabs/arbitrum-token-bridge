@@ -70,7 +70,7 @@ describe('Deposit USDC through CCTP', () => {
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpDeposit()
-    cy.confirmSpending(USDCAmountToSend.toString())
+    cy.confirmSpending(USDCAmountToSend)
 
     /**
      * Currently synpress cy.confirmMetamaskTransaction doesn't work on Sepolia
@@ -89,7 +89,7 @@ describe('Deposit USDC through CCTP', () => {
 
     // We have setup deposit transactions before running tests
     cy.wait(40_000)
-    cy.rejectMetamaskTransaction()
+    cy.rejectTransaction()
   })
 
   it('should claim deposit', () => {
@@ -106,17 +106,17 @@ describe('Deposit USDC through CCTP', () => {
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
     confirmAndApproveCctpDeposit()
 
-    cy.confirmSpending(USDCAmountToSend.toString())
+    cy.confirmSpending(USDCAmountToSend)
 
     cy.wait(40_000)
-    cy.confirmMetamaskTransaction(undefined)
+    cy.confirmTransaction(undefined)
     const txData = { amount: USDCAmountToSend, symbol: 'USDC' }
     cy.wait(15_000)
     cy.findTransactionInTransactionHistory({
       duration: 'a minute',
       ...txData
     })
-    cy.openTransactionDetails(txData)
+    cy.openTransactionHistoryDetails(txData)
     cy.findTransactionDetailsCustomDestinationAddress(
       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
     )

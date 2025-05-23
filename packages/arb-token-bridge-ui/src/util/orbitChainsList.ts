@@ -3,7 +3,7 @@ import { ChainId } from '../types/ChainId'
 import { addressesEqual } from './AddressUtils'
 import { isE2eTestingEnvironment } from './CommonUtils'
 import { ChainWithRpcUrl } from './networks'
-import orbitChainsData from './orbitChainsData.json'
+import orbitChainsData from './orbitChainsData.json' assert { type: 'json' }
 
 export type NetworkType =
   | 'Ethereum'
