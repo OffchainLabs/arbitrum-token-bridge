@@ -108,7 +108,6 @@ export async function depositEthEstimateGas(
         estimatedChildChainSubmissionCost:
           depositToRequest.retryableData.maxSubmissionCost
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_) {
       // we use retryables so we may not be able to fetch gas if the current approval doesn't cover gas costs
       return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({

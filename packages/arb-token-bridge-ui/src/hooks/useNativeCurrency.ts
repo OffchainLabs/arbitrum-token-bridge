@@ -61,7 +61,6 @@ export async function fetchNativeCurrency({
 
   try {
     chain = await getArbitrumNetwork(provider)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // This will only throw for L1s, so we can safely assume that the native currency is ETH
     return nativeCurrencyEther

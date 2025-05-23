@@ -299,7 +299,6 @@ async function isLayerZeroToken(
   try {
     const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
     return !!_isLayerZeroToken
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return false
   }

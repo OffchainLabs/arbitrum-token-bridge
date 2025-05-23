@@ -29,7 +29,6 @@ export function useAmountBigNumber() {
       }
 
       return utils.parseUnits(sanitizedAmount, selectedTokenDecimals)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       return constants.Zero
     }

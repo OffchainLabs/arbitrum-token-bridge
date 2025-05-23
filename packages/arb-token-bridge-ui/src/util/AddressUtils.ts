@@ -16,7 +16,6 @@ export async function addressIsSmartContract(address: string, chainId: number) {
   const provider = getProviderForChainId(chainId)
   try {
     return (await provider.getCode(address)).length > 2
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_) {
     return false
   }

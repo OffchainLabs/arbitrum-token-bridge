@@ -168,7 +168,6 @@ async function validateLayerZeroMessage(message: LayerZeroMessage) {
         getProviderForChainId(sourceChainId)
       ))
       return isOftDataDecodable
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // invalid oft transfer (OFT message is probably triggered by a SC/protocol (internal tx), rather than the user)
     }

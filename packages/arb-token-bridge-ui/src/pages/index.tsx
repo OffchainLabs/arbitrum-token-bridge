@@ -159,7 +159,6 @@ function addOrbitChainsToArbitrumSDK() {
       try {
         registerCustomArbitrumNetwork(chain)
         mapCustomChainToNetworkData(chain)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
         // already added
       }

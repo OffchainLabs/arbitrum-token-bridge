@@ -90,7 +90,6 @@ export const getRetryableTicketExpiration = async ({
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
 
     if (daysUntilExpired >= 0) isExpired = false
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_) {
     isLoadingError = true
   }
