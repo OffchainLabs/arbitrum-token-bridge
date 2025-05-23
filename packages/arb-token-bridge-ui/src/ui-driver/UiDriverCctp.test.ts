@@ -72,8 +72,8 @@ it(`
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 
-  more context:
-    requires token approval
+  additional context:
+    1. token requires approval
 
   user actions:
     1. user confirms "confirm_cctp_deposit" dialog
@@ -113,8 +113,8 @@ it(`
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 
-  more context:
-    requires token approval
+  additional context:
+    1. token requires approval
 
   user actions:
     1. user confirms "confirm_cctp_deposit" dialog
@@ -159,8 +159,8 @@ it(`
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 
-  more context:
-    requires token approval
+  additional context:
+    1. token requires approval
 
   user actions:
     1. user confirms "confirm_cctp_deposit" dialog
@@ -239,8 +239,8 @@ it(`
     walletAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
     destinationAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 
-  more context:
-    requires token approval
+  additional context:
+    1. token requires approval
 
   user actions:
     1. user confirms "confirm_cctp_deposit" dialog
