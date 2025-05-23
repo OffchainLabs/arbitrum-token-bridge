@@ -3,12 +3,16 @@ import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useSelectedToken } from '../useSelectedToken'
 import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
+import { useArbQueryParams } from '../useArbQueryParams'
 
 export const useIsBatchTransferSupported = () => {
   const [networks] = useNetworks()
   const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
   const [selectedToken] = useSelectedToken()
   const isOftTransfer = useIsOftV2Transfer()
+  const [{ allowBatchTransfers }] = useArbQueryParams()
+
+  if (!allowBatchTransfers) return false
 
   if (!selectedToken) {
     return false

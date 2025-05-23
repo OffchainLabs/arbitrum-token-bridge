@@ -69,7 +69,10 @@ export const useArbQueryParams = () => {
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
     txHistory: withDefault(BooleanParam, true), // enable/disable tx history
-    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]) // which tab is active
+    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
+    embedMode: withDefault(BooleanParam, false), // enable/disable embed mode
+    allowBatchTransfers: withDefault(BooleanParam, true), // allow batch transfers
+    allowSwitchingNetworkPair: withDefault(BooleanParam, true) // allow switching networks
   })
 }
 

@@ -117,6 +117,7 @@ export function NetworkButton({
   const { isSmartContractWallet, isLoading } = useAccountType()
   const isSource = type === 'source'
   const chains = useChainIdsForNetworkSelection({ isSource })
+  const [{ allowSwitchingNetworkPair }] = useArbQueryParams()
 
   const selectedChainId = isSource
     ? networks.sourceChain.id
@@ -127,7 +128,8 @@ export function NetworkButton({
   const disabled =
     hasOneOrLessChain ||
     (isSmartContractWallet && type === 'source') ||
-    isLoading
+    isLoading ||
+    !allowSwitchingNetworkPair
 
   const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
 
@@ -251,6 +253,7 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
+  const [{ embedMode }] = useArbQueryParams()
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -396,10 +399,12 @@ function NetworksPanel({
           )}
         </AutoSizer>
       </SearchPanelTable>
-      <div className="flex justify-between pb-2">
-        <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
-        <AddCustomOrbitChainButton closeDialog={close} />
-      </div>
+      {!embedMode && (
+        <div className="flex justify-between pb-2">
+          <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
+          <AddCustomOrbitChainButton closeDialog={close} />
+        </div>
+      )}
     </div>
   )
 }

@@ -22,6 +22,7 @@ import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
+import { CompactRouteDisplay } from './CompactRouteDisplay'
 
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
 export type Token = {
@@ -125,7 +126,7 @@ export const Route = React.memo(
       provider: childChainProvider
     })
     const [_token] = useSelectedToken()
-    const [{ amount2, destinationAddress }] = useArbQueryParams()
+    const [{ amount2, destinationAddress, embedMode }] = useArbQueryParams()
     const isBatchTransferSupported = useIsBatchTransferSupported()
 
     const token = overrideToken || _token || childNativeCurrency
@@ -149,6 +150,34 @@ export const Route = React.memo(
       !isTestnet &&
       bridgeFee &&
       bridgeFee.token.address === constants.AddressZero
+
+    if (embedMode) {
+      return (
+        <CompactRouteDisplay
+          {...{
+            type,
+            bridge,
+            bridgeIconURI,
+            durationMs,
+            amountReceived,
+            isLoadingGasEstimate,
+            gasCost,
+            selected,
+            bridgeFee,
+            tag,
+            onSelectedRouteClick,
+            token,
+            showUsdValueForReceivedToken,
+            ethToUSD,
+            gasEth,
+            showUSDValueForBridgeFee,
+            isBatchTransferSupported,
+            amount2,
+            childNativeCurrency
+          }}
+        />
+      )
+    }
 
     return (
       <button

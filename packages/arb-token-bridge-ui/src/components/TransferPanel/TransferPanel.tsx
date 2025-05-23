@@ -96,6 +96,7 @@ import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTra
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
+import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -116,7 +117,13 @@ export function TransferPanel() {
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [
-    { amount, amount2, destinationAddress, token: tokenFromSearchParams },
+    {
+      amount,
+      amount2,
+      destinationAddress,
+      token: tokenFromSearchParams,
+      embedMode
+    },
     setQueryParams
   ] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
@@ -1335,6 +1342,19 @@ export function TransferPanel() {
     return transfer()
   }
 
+  if (embedMode) {
+    return (
+      <WidgetTransferPanel
+        openDialog={openDialog}
+        dialogProps={dialogProps}
+        moveFundsButtonOnClick={moveFundsButtonOnClick}
+        isTokenAlreadyImported={isTokenAlreadyImported}
+        tokenFromSearchParams={tokenFromSearchParams}
+        tokenImportDialogProps={tokenImportDialogProps}
+        closeWithResetTokenImportDialog={closeWithResetTokenImportDialog}
+      />
+    )
+  }
   return (
     <>
       <DialogWrapper {...dialogProps} />
