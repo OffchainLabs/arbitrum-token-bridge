@@ -13,45 +13,6 @@ const mockedApproveTokenTxRequest = {
   value: BigNumber.from(0)
 }
 
-async function expectStepsForTokenApproval(
-  generator: ReturnType<typeof stepGeneratorForCctp>,
-  context: UiDriverContext,
-  options?: {
-    shouldUserRejectDialog?: boolean
-    shouldTxError?: boolean
-  }
-) {
-  expectStep(await nextStep(generator, [true]))
-    .hasType('dialog')
-    .hasPayload('approve_token')
-
-  if (options?.shouldUserRejectDialog ?? false) {
-    expectStep(await nextStep(generator, [false])).hasType('return')
-
-    return
-  }
-
-  // confirm dialog
-  let variableStep = await nextStep(generator, [true])
-
-  if (context.isSmartContractWallet) {
-    expectStep(variableStep).hasType('scw_tooltip')
-    variableStep = await nextStep(generator)
-  }
-
-  expectStep(variableStep).hasType('tx').hasPayload(mockedApproveTokenTxRequest)
-
-  if (options?.shouldTxError ?? false) {
-    expectStep(await nextStep(generator, [{ error: new Error() }]))
-      //
-      .hasType('return')
-
-    return
-  }
-
-  await nextStep(generator, [{ data: {} as TransactionReceipt }])
-}
-
 it(`
   context:
     isDepositMode=true
@@ -127,10 +88,10 @@ it(`
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
-
-  await expectStepsForTokenApproval(generator, context, {
-    shouldUserRejectDialog: true
-  })
+  expectStep(await nextStep(generator, [true]))
+    .hasType('dialog')
+    .hasPayload('approve_token')
+  expectStep(await nextStep(generator, [false])).hasType('return')
 })
 
 it(`
@@ -162,12 +123,21 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
-
-  await expectStepsForTokenApproval(generator, context, { shouldTxError: true })
+  expectStep(await nextStep(generator, [true]))
+    .hasType('dialog')
+    .hasPayload('approve_token')
+  expectStep(await nextStep(generator, [true]))
+    .hasType('tx')
+    .hasPayload(mockedApproveTokenTxRequest)
+  expectStep(await nextStep(generator, [{ error: new Error() }]))
+    //
+    .hasType('return')
 })
 
 it(`
@@ -203,10 +173,15 @@ it(`
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
-
-  await expectStepsForTokenApproval(generator, context)
-
-  expectStep(await nextStep(generator)).doesNotExist()
+  expectStep(await nextStep(generator, [true]))
+    .hasType('dialog')
+    .hasPayload('approve_token')
+  expectStep(await nextStep(generator, [true]))
+    .hasType('tx')
+    .hasPayload(mockedApproveTokenTxRequest)
+  expectStep(await nextStep(generator, [{ data: {} as TransactionReceipt }]))
+    //
+    .doesNotExist()
 })
 
 it(`
@@ -229,14 +204,18 @@ it(`
 
   const generator = stepGeneratorForCctp(context)
 
-  expectStep(await nextStep(generator)).hasType('start')
+  expectStep(await nextStep(generator))
+    //
+    .hasType('start')
   expectStep(await nextStep(generator))
     .hasType('dialog')
     .hasPayload('confirm_cctp_deposit')
   expectStep(await nextStep(generator, [true]))
     .hasType('dialog')
     .hasPayload('scw_custom_destination_address')
-  expectStep(await nextStep(generator, [false])).hasType('return')
+  expectStep(await nextStep(generator, [false]))
+    //
+    .hasType('return')
 })
 
 it(`
@@ -276,6 +255,14 @@ it(`
   expectStep(await nextStep(generator, [true]))
     .hasType('dialog')
     .hasPayload('scw_custom_destination_address')
-
-  await expectStepsForTokenApproval(generator, context)
+  expectStep(await nextStep(generator, [true]))
+    .hasType('dialog')
+    .hasPayload('approve_token')
+  expectStep(await nextStep(generator, [true])).hasType('scw_tooltip')
+  expectStep(await nextStep(generator))
+    .hasType('tx')
+    .hasPayload(mockedApproveTokenTxRequest)
+  expectStep(await nextStep(generator, [{ data: {} as TransactionReceipt }]))
+    //
+    .doesNotExist()
 })
