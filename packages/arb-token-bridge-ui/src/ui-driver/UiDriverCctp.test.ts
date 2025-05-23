@@ -1,6 +1,9 @@
 import { it } from 'vitest'
 import { BigNumber } from 'ethers'
-import { TransactionReceipt } from '@ethersproject/providers'
+import {
+  TransactionRequest,
+  TransactionReceipt
+} from '@ethersproject/providers'
 import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 
 import { UiDriverContext } from './UiDriver'
@@ -11,6 +14,13 @@ const mockedApproveTokenTxRequest = {
   to: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
   data: '0x095ea7b30000000000000000000000009f3b8679c73c2fef8b59b4f3444d4e156fb70aa5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
   value: BigNumber.from(0)
+}
+
+function approveTokenPayload(txRequest: TransactionRequest) {
+  return {
+    txRequest,
+    txRequestLabel: 'stepGeneratorForCctp.approveToken'
+  }
 }
 
 it(`
@@ -146,7 +156,7 @@ it(`
     .hasPayload('approve_token')
   expectStep(await nextStep(generator, [true]))
     .hasType('tx')
-    .hasPayload(mockedApproveTokenTxRequest)
+    .hasPayload(approveTokenPayload(mockedApproveTokenTxRequest))
   expectStep(await nextStep(generator, [{ error: new Error() }]))
     //
     .hasType('return')
@@ -192,7 +202,7 @@ it(`
     .hasPayload('approve_token')
   expectStep(await nextStep(generator, [true]))
     .hasType('tx')
-    .hasPayload(mockedApproveTokenTxRequest)
+    .hasPayload(approveTokenPayload(mockedApproveTokenTxRequest))
   expectStep(await nextStep(generator, [{ data: {} as TransactionReceipt }]))
     //
     .doesNotExist()
@@ -317,7 +327,7 @@ it(`
     .hasType('scw_tooltip')
   expectStep(await nextStep(generator))
     .hasType('tx')
-    .hasPayload(mockedApproveTokenTxRequest)
+    .hasPayload(approveTokenPayload(mockedApproveTokenTxRequest))
   expectStep(await nextStep(generator, [{ data: {} as TransactionReceipt }]))
     //
     .doesNotExist()

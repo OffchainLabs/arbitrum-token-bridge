@@ -3,6 +3,7 @@ import { providers } from 'ethers'
 import {
   step,
   UiDriverStep,
+  UiDriverStepPayloadFor,
   UiDriverStepResultFor,
   UiDriverStepGenerator,
   UiDriverContext,
@@ -39,7 +40,7 @@ export type UiDriverStepGeneratorForTransaction<
   TStep extends UiDriverStep = UiDriverStep
 > = (
   context: UiDriverContext,
-  txRequest: providers.TransactionRequest
+  payload: UiDriverStepPayloadFor<'tx'>
 ) => AsyncGenerator<
   TStep,
   providers.TransactionReceipt | void,
@@ -47,12 +48,12 @@ export type UiDriverStepGeneratorForTransaction<
 >
 
 export const stepGeneratorForTransaction: UiDriverStepGeneratorForTransaction =
-  async function* (context, txRequest) {
+  async function* (context, payload) {
     if (context.isSmartContractWallet) {
       yield* step({ type: 'scw_tooltip' })
     }
 
-    const { error, data } = yield* step({ type: 'tx', payload: txRequest })
+    const { error, data } = yield* step({ type: 'tx', payload })
 
     if (typeof error !== 'undefined') {
       yield* step({ type: 'return' })

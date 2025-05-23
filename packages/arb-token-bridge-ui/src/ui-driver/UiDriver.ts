@@ -25,7 +25,22 @@ export type UiDriverStep =
   | { type: 'return' }
   | { type: 'dialog'; payload: Dialog }
   | { type: 'scw_tooltip' }
-  | { type: 'tx'; payload: providers.TransactionRequest }
+  | {
+      type: 'tx'
+      payload: {
+        txRequest: providers.TransactionRequest
+        txRequestLabel: string
+      }
+    }
+
+export type UiDriverStepType = UiDriverStep['type']
+
+export type UiDriverStepPayloadFor<TStepType extends UiDriverStepType> =
+  Extract<UiDriverStep, { type: TStepType }> extends {
+    payload: infer TPayload
+  }
+    ? TPayload
+    : never
 
 type Result<T> =
   | { data: T; error?: undefined }

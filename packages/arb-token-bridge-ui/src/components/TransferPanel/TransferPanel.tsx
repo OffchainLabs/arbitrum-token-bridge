@@ -400,15 +400,19 @@ export function TransferPanel() {
 
       case 'tx': {
         try {
-          const tx = await signer!.sendTransaction(step.payload)
+          const tx = await signer!.sendTransaction(step.payload.txRequest)
           const txReceipt = await tx.wait()
 
           return { data: txReceipt }
         } catch (error) {
           // capture error and show toast for anything that's not user rejecting error
           if (!isUserRejectedError(error)) {
-            // todo: what to add here?
-            // handleError({ error })
+            handleError({
+              error,
+              label: step.payload.txRequestLabel,
+              category: 'transaction_signing'
+            })
+
             errorToast(`${(error as Error)?.message ?? error}`)
           }
 

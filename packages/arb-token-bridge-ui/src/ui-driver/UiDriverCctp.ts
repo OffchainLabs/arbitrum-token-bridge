@@ -27,6 +27,9 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
       amount: context.amountBigNumber
     })
 
-    yield* stepGeneratorForTransaction(context, request)
+    yield* stepGeneratorForTransaction(context, {
+      txRequest: request,
+      txRequestLabel: 'stepGeneratorForCctp.approveToken'
+    })
   }
 }
