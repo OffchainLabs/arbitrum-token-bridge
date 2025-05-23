@@ -637,9 +637,7 @@ export function TokenSearch(props: UseDialogProps) {
       title={activePanel === Panel.MAIN ? 'Select Token' : 'Manage Token Lists'}
       actionButtonProps={{ hidden: true }}
       isFooterHidden={true}
-      className={twMerge(
-        'h-screen overflow-hidden md:h-[calc(100vh_-_175px)] md:max-h-[900px] md:max-w-[500px]'
-      )}
+      className="h-screen overflow-hidden md:h-[calc(100vh_-_175px)] md:max-h-[900px] md:max-w-[500px]"
     >
       <div className="mt-4 flex flex-col gap-4">
         {activePanel === Panel.MAIN && (

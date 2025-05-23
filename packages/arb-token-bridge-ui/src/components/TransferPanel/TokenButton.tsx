@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { utils } from 'ethers'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
-import { twMerge } from 'tailwind-merge'
 
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -83,11 +82,7 @@ export function TokenButton({
               <TokenLogo srcOverride={options?.logoSrc} />
               <span className="text-xl font-light">{tokenSymbol}</span>
               {!disabled && (
-                <ChevronDownIcon
-                  className={twMerge(
-                    'h-3 w-3 text-gray-6 transition-transform duration-200'
-                  )}
-                />
+                <ChevronDownIcon className="h-3 w-3 text-gray-6 transition-transform duration-200" />
               )}
             </>
           )}
