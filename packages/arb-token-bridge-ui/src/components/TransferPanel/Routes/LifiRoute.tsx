@@ -100,7 +100,7 @@ export function LifiRoutes({
       return (
         <>
           <LifiSettings />
-          <div className="rounded border border-lilac bg-lilac/50 p-3 text-sm text-white">
+          <div className="border-lilac bg-lilac/50 rounded border p-3 text-sm text-white">
             Want more route options? Consider adjusting your slippage in
             Settings.
           </div>

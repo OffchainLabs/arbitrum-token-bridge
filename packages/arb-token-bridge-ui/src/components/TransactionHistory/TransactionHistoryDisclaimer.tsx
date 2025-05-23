@@ -59,7 +59,7 @@ export function TransactionHistoryDisclaimer() {
 
   return (
     <div
-      className="flex flex-col gap-2 rounded-md bg-blue/20 p-2 text-sm text-white"
+      className="bg-blue/20 flex flex-col gap-2 rounded-md p-2 text-sm text-white"
       id="tx-history-disclaimer"
     >
       <span className="font-bold">Don&apos;t see your transaction?</span>

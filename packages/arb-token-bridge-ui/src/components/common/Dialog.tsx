@@ -139,7 +139,7 @@ export function Dialog(props: DialogProps) {
         transition
         className={twMerge(
           'fixed inset-0 bg-black opacity-80 transition-opacity',
-          'data-[enter]:duration-400 data-[closed]:opacity-0 data-[enter]:ease-out',
+          'data-[closed]:opacity-0 data-[enter]:duration-400 data-[enter]:ease-out',
           'data-[leave]:duration-200 data-[leave]:ease-in'
         )}
         aria-hidden="true"
@@ -147,19 +147,19 @@ export function Dialog(props: DialogProps) {
       <HeadlessUIDialog.Panel
         transition
         className={twMerge(
-          'border-gray-dark bg-gray-1 z-10 max-h-screen w-screen scale-100 overflow-y-auto border opacity-100 transition-[transform_opacity] md:max-w-[727px] md:rounded',
-          'data-[enter]:duration-400 data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:ease-out',
+          'z-10 max-h-screen w-screen scale-100 overflow-y-auto border border-gray-dark bg-gray-1 opacity-100 transition-[transform_opacity] md:max-w-[727px] md:rounded',
+          'data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:duration-400 data-[enter]:ease-out',
           'data-[leave]:duration-200 data-[leave]:ease-in',
           className
         )}
       >
         <div className="flex items-start justify-between px-6 pt-4">
-          <HeadlessUIDialog.Title className="text-gray-2 text-xl">
+          <HeadlessUIDialog.Title className="text-xl text-gray-2">
             {props.title}
           </HeadlessUIDialog.Title>
           {closeable && (
             <button type="button" onClick={() => handleClose(false)}>
-              <XMarkIcon className="arb-hover text-gray-7 h-6 w-6" />
+              <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
             </button>
           )}
         </div>

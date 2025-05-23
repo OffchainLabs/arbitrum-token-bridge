@@ -178,7 +178,7 @@ export const Route = React.memo(
               <TokenLogo
                 srcOverride={'logoURI' in token ? token.logoURI : null}
                 fallback={
-                  <div className="bg-gray-dark h-5 w-5 min-w-5 rounded-full" />
+                  <div className="h-5 w-5 min-w-5 rounded-full bg-gray-dark" />
                 }
               />
               {formatAmount(Number(amountReceived))} {token.symbol}
@@ -195,7 +195,7 @@ export const Route = React.memo(
                 <TokenLogo
                   srcOverride={null}
                   fallback={
-                    <div className="bg-gray-dark h-5 w-5 min-w-5 rounded-full" />
+                    <div className="h-5 w-5 min-w-5 rounded-full bg-gray-dark" />
                   }
                 />
                 {formatAmount(Number(amount2), {
@@ -233,7 +233,7 @@ export const Route = React.memo(
                 alt="bridge"
                 className="max-h-3 max-w-3 rounded-full"
                 fallback={
-                  <div className="bg-gray-dark h-3 w-3 min-w-3 rounded-full" />
+                  <div className="h-3 w-3 min-w-3 rounded-full bg-gray-dark" />
                 }
               />
               <div className="truncate">
@@ -310,7 +310,7 @@ export const Route = React.memo(
         </div>
 
         {tag ? (
-          <div className="invisible absolute right-2 top-2 flex gap-1 md:visible">
+          <div className="invisible absolute top-2 right-2 flex gap-1 md:visible">
             {getBadges(tag)}
           </div>
         ) : null}

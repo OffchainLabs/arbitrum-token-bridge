@@ -53,8 +53,8 @@ export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
       {!selectedRoute && Number(amount) > 0
         ? 'Select route'
         : isSmartContractWallet && isTransferring
-        ? 'Sending request...'
-        : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
+          ? 'Sending request...'
+          : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
     </Button>
   )
 }

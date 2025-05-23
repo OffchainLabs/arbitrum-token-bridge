@@ -59,18 +59,18 @@ export const SidePanel = ({
       <DialogBackdrop
         transition
         className={twMerge(
-          'bg-dark fixed inset-0 opacity-80 transition-opacity',
+          'fixed inset-0 bg-dark opacity-80 transition-opacity',
           'data-[closed]:opacity-0 data-[enter]:duration-200 data-[enter]:ease-out',
           'data-[leave]:duration-200 data-[leave]:ease-in'
         )}
         aria-hidden="true"
       />
 
-      <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
+      <div className="fixed inset-0 top-0 right-0 flex h-full w-full items-start justify-end">
         <Dialog.Panel
           transition
           className={twMerge(
-            'side-panel border-gray-dark flex h-full w-screen max-w-[1000px] translate-x-0 flex-col border-l bg-black opacity-100 transition-[transform_opacity]',
+            'side-panel flex h-full w-screen max-w-[1000px] translate-x-0 flex-col border-l border-gray-dark bg-black opacity-100 transition-[transform_opacity]',
             'data-[closed]:translate-x-full data-[closed]:opacity-0 data-[enter]:duration-200 data-[enter]:ease-out',
             'data-[leave]:duration-200 data-[leave]:ease-in',
             panelClassNameOverrides,

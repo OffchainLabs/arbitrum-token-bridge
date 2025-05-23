@@ -24,7 +24,7 @@ export function useNativeCurrencyBalances(): {
 
   const customFeeTokenParentBalance =
     'address' in nativeCurrency
-      ? erc20ParentBalances?.[nativeCurrency.address] ?? null
+      ? (erc20ParentBalances?.[nativeCurrency.address] ?? null)
       : null
   const customFeeTokenChildBalance = ethChildBalance
 

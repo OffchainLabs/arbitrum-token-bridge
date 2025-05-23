@@ -56,7 +56,7 @@ function MaxButton({
     <button
       type="button"
       className={twMerge(
-        'rounded bg-white/30 px-1 py-0.5 text-right text-xs font-medium leading-none text-white opacity-80 transition-opacity hover:opacity-60',
+        'rounded bg-white/30 px-1 py-0.5 text-right text-xs leading-none font-medium text-white opacity-80 transition-opacity hover:opacity-60',
         className
       )}
       {...rest}
@@ -105,7 +105,7 @@ function SourceChainTokenBalance({
       <>
         <span className="text-sm font-light text-white">Balance: </span>
         <span
-          className="whitespace-nowrap text-sm text-white"
+          className="text-sm whitespace-nowrap text-white"
           aria-label={`${symbol} balance amount on ${
             isDepositMode ? 'parentChain' : 'childChain'
           }`}
@@ -151,13 +151,13 @@ function ErrorMessage({
   }
 
   if (typeof errorMessage === 'string') {
-    return <span className="text-brick text-sm">{errorMessage}</span>
+    return <span className="text-sm text-brick">{errorMessage}</span>
   }
 
   switch (errorMessage) {
     case TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE:
       return (
-        <span className="text-brick text-sm">
+        <span className="text-sm text-brick">
           Gas estimation failed, join our{' '}
           <ExternalLink
             href="https://discord.com/invite/ZpZuw7p"
@@ -172,7 +172,7 @@ function ErrorMessage({
     case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
     case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
       return (
-        <div className="text-brick text-sm">
+        <div className="text-sm text-brick">
           <span>This token can&apos;t be bridged over.</span>
         </div>
       )
@@ -265,7 +265,7 @@ export const TransferPanelMainInput = React.memo(
 
     return (
       <>
-        <div className={twMerge('shadow-2 flex flex-row rounded bg-black/40')}>
+        <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
           <div
             className={twMerge(
               'flex min-h-[83px] grow flex-row items-center justify-center'
@@ -279,7 +279,7 @@ export const TransferPanelMainInput = React.memo(
             <div className="flex flex-col items-end">
               <TokenButton options={options} />
               {isConnected && (
-                <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                <div className="flex items-center space-x-1 px-3 pt-1 pb-2">
                   <SourceChainTokenBalance
                     balanceOverride={options?.balance}
                     symbolOverride={options?.symbol}

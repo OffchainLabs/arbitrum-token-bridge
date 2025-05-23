@@ -10,5 +10,5 @@ module.exports = {
   tailwindFunctions: ['twMerge'],
 
   // Plugins
-  plugins: ['prettier-plugin-tailwindcss']
+  plugins: [import('prettier-plugin-tailwindcss')]
 }
