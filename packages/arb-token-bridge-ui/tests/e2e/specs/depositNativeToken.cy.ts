@@ -12,8 +12,6 @@ describe('Deposit native token', () => {
   const ETHAmountToDeposit = Number((Math.random() * 0.001).toFixed(5))
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')
   const zeroToLessThanOneEth = getZeroToLessThanOneToken('ETH')
-  const zeroToLessThanOneNativeToken =
-    getZeroToLessThanOneToken(nativeTokenSymbol)
 
   const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
   const depositTime = isOrbitTest ? 'Less than a minute' : '9 minutes'

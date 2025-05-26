@@ -14,7 +14,6 @@ const initialState: AppContextState = {
 
 type AppContextValue = [AppContextState, Dispatch<Action>]
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 const AppContext = createContext<AppContextValue>([initialState, () => {}])
 
 type Action = { type: 'layout.set_is_transferring'; payload: boolean }
