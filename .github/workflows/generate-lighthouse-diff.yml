@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  add_orbit_chain:
+  generate_lighthouse_diff:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
