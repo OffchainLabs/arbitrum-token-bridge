@@ -39,6 +39,20 @@ jobs:
       - name: Build scripts
         run: yarn workspace scripts build
 
+      - name: Install linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+          fluxbox \
+          xvfb
+
+      - name: Run xvfb and fluxbox
+        run: |
+          Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
+
       - name: Run generateLighthouseDiff script
         run: yarn workspace scripts generate-lighthouse-diff
         env:
