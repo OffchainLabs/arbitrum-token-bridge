@@ -75,7 +75,9 @@ export const AdvancedSettings = ({
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 
-  const [inputLocked, setInputLocked] = useState(!destinationAddress)
+  const [inputLocked, setInputLocked] = useState(
+    !destinationAddress && !isSmartContractWallet
+  )
 
   const { destinationAddressError: error } =
     useDestinationAddressError(destinationAddress)
@@ -104,7 +106,7 @@ export const AdvancedSettings = ({
 
   return (
     <div className="mb-6 flex flex-col items-end">
-      <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
+      <div className="mt-2 w-full rounded border border-white/30 bg-brick-dark p-2 text-white">
         <p className="text-sm font-light">
           {isEOA ? (
             <>

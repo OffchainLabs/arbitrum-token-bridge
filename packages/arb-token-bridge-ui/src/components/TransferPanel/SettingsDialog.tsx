@@ -7,10 +7,8 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import useSWRImmutable from 'swr/immutable'
 import React, { useCallback, useState } from 'react'
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { Checkbox } from '../common/Checkbox'
 import { Loader } from '../common/atoms/Loader'
-import { Transition } from '../common/Transition'
 import { SafeImage } from '../common/SafeImage'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { constants } from 'ethers'
@@ -21,16 +19,16 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
-  Cog8ToothIcon,
   ExclamationCircleIcon,
-  InformationCircleIcon,
-  XMarkIcon
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { shallow } from 'zustand/shallow'
 import { ExternalLink } from '../common/ExternalLink'
 import { AdvancedSettings } from './AdvancedSettings'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { useAccountType } from '../../hooks/useAccountType'
+import { Dialog, UseDialogProps } from '../common/Dialog'
 
 export function getFromAndToTokenAddresses({
   isDepositMode,
@@ -225,7 +223,7 @@ function Tools({
   )
 }
 
-export const Settings = React.memo(() => {
+export const SettingsDialog = React.memo((props: UseDialogProps) => {
   const { isLoading, isSupported } = useIsLifiSupported()
   const { data: tools, isLoading: isLoadingTools } = useTools()
   const {
@@ -251,6 +249,8 @@ export const Settings = React.memo(() => {
   )
   const { destinationAddressError } =
     useDestinationAddressError(destinationAddress)
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const [slippageValue, setSlippageValue] = useState(slippage)
   const [disabledBridges, setDisabledBridges] = useState(storeDisabledBridges)
@@ -267,159 +267,136 @@ export const Settings = React.memo(() => {
   const slippageIsTooLow = slippageValue && Number(slippageValue) <= 0.01
 
   return (
-    <Popover className="flex">
-      {({ open }) => (
-        <>
-          <PopoverButton className="ml-auto">
-            <Cog8ToothIcon
-              width={30}
-              className="arb-hover text-white"
-              aria-label="Open Settings"
-            />
-          </PopoverButton>
-          <Transition
-            isOpen={open}
-            afterLeave={() => {
-              // When user leave, persist settings to zustand store
-              setSlippage(slippageValue)
-              setDisabledBridgesToStore(disabledBridges)
-              if (destinationAddressError) {
-                setQueryParams({ destinationAddress: undefined })
-                setDestinationAddress(undefined)
-              } else {
-                setQueryParams({ destinationAddress })
-              }
-            }}
-            options={{
-              unmountOnLeave: false
-            }}
-            className="max-sm:transform-none" // Remove Transition from the stacking context
-          >
-            <PopoverPanel
-              className={twMerge(
-                'flex flex-col gap-4 border-black bg-gray-8 p-4 text-sm text-gray-2',
-                'sm:absolute sm:left-auto sm:top-auto sm:mt-6 sm:h-auto sm:max-w-[700px] sm:-translate-x-full sm:rounded sm:border sm:p-6',
-                'fixed left-0 top-0 mt-0 h-screen w-screen' // mobile design
-              )}
-            >
-              <div className="flex items-center text-xl">
-                <span>Settings</span>
-                <PopoverButton className="ml-auto">
-                  <XMarkIcon
-                    className="arb-hover h-6 w-6 text-gray-7"
-                    aria-label="Close Settings"
+    <Dialog
+      {...props}
+      title={<div className="text-xl">Settings</div>}
+      onClose={(confirmed: boolean) => {
+        // When user leave, persist settings to zustand store
+        setSlippage(slippageValue)
+        setDisabledBridgesToStore(disabledBridges)
+        if (isSmartContractWallet) {
+          return
+        }
+
+        if (destinationAddressError) {
+          setQueryParams({ destinationAddress: undefined })
+          setDestinationAddress(undefined)
+        } else {
+          setQueryParams({ destinationAddress })
+        }
+        props.onClose(confirmed)
+      }}
+      isFooterHidden
+    >
+      <div className="mt-4 flex flex-col gap-4 pb-6 text-sm text-gray-2">
+        {!isLoading &&
+          isSupported &&
+          useLifiSettingsStore.persist.hasHydrated() && (
+            <>
+              <div className="flex flex-col justify-center gap-1">
+                <span className="relative mr-auto">
+                  Maximum slippage:{' '}
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={defaultSlippage}
+                    value={slippageValue}
+                    onChange={e => {
+                      const value = e.target.value
+                      setSlippageValue(formatSlippage(value))
+                    }}
+                    onFocus={e => {
+                      // On focus, if the current value is equal to the default slippage, clear the input
+                      if (e.target.value === defaultSlippage) {
+                        setSlippageValue('')
+                        e.target.value = ''
+                      }
+                    }}
+                    onBlur={e => {
+                      const value = e.target.value
+                      if (Number.parseFloat(value) === 0 || !value) {
+                        setSlippageValue(defaultSlippage)
+                      }
+                    }}
+                    className={twMerge(
+                      'ml-1 w-12 rounded border border-gray-dark bg-black py-1 pl-2 pr-5 text-center text-sm text-gray-4',
+                      (slippageIsTooHigh || slippageIsTooLow) &&
+                        'border-orange-dark bg-orange-dark'
+                    )}
                   />
-                </PopoverButton>
+                  <div className="absolute bottom-0 right-2 top-0 flex items-center">
+                    %
+                  </div>
+                </span>
+                <div className="flex items-center gap-1">
+                  {slippageIsTooLow && (
+                    <>
+                      <ExclamationCircleIcon
+                        height={20}
+                        className="text-orange"
+                      />
+                      <span className="text-sm text-orange">
+                        Slippage amount is low. You may see very limited route
+                        options.
+                      </span>
+                    </>
+                  )}
+                  {slippageIsTooHigh && (
+                    <>
+                      <ExclamationCircleIcon
+                        height={20}
+                        className="text-orange"
+                      />
+                      <span className="text-sm text-orange">
+                        Slippage amount is high. Industry recommendation is 0.5%
+                        or less.
+                      </span>
+                    </>
+                  )}
+                  {!slippageIsTooHigh && !slippageIsTooLow && (
+                    <>
+                      <InformationCircleIcon
+                        height={20}
+                        className="text-white/80"
+                      />
+                      <span className="md:flex md:items-center md:gap-1">
+                        0.5% - 1% is the recommended range for slippage.{' '}
+                        <ExternalLink
+                          href="https://www.ledger.com/academy/what-is-slippage-in-crypto"
+                          className="arb-hover flex items-center underline"
+                        >
+                          Read more
+                          <ArrowTopRightOnSquareIcon className="ml-[2px] h-3 w-3 text-white/60 sm:text-white" />
+                        </ExternalLink>
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {!isLoading &&
-                isSupported &&
-                useLifiSettingsStore.persist.hasHydrated() && (
-                  <>
-                    <div className="flex flex-col justify-center gap-1">
-                      <span className="relative mr-auto">
-                        Maximum slippage:{' '}
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          placeholder={defaultSlippage}
-                          value={slippageValue}
-                          onChange={e => {
-                            const value = e.target.value
-                            setSlippageValue(formatSlippage(value))
-                          }}
-                          onFocus={e => {
-                            // On focus, if the current value is equal to the default slippage, clear the input
-                            if (e.target.value === defaultSlippage) {
-                              setSlippageValue('')
-                              e.target.value = ''
-                            }
-                          }}
-                          onBlur={e => {
-                            const value = e.target.value
-                            if (Number.parseFloat(value) === 0 || !value) {
-                              setSlippageValue(defaultSlippage)
-                            }
-                          }}
-                          className={twMerge(
-                            'ml-1 w-12 rounded border border-gray-dark bg-black py-1 pl-2 pr-5 text-center text-sm text-gray-4',
-                            (slippageIsTooHigh || slippageIsTooLow) &&
-                              'border-orange-dark bg-orange-dark'
-                          )}
-                        />
-                        <div className="absolute bottom-0 right-2 top-0 flex items-center">
-                          %
-                        </div>
-                      </span>
-                      <div className="flex items-center gap-1">
-                        {slippageIsTooLow && (
-                          <>
-                            <ExclamationCircleIcon
-                              height={20}
-                              className="text-orange"
-                            />
-                            <span className="text-sm text-orange">
-                              Slippage amount is low. You may see very limited
-                              route options.
-                            </span>
-                          </>
-                        )}
-                        {slippageIsTooHigh && (
-                          <>
-                            <ExclamationCircleIcon
-                              height={20}
-                              className="text-orange"
-                            />
-                            <span className="text-sm text-orange">
-                              Slippage amount is high. Industry recommendation
-                              is 0.5% or less.
-                            </span>
-                          </>
-                        )}
-                        {!slippageIsTooHigh && !slippageIsTooLow && (
-                          <>
-                            <InformationCircleIcon
-                              height={20}
-                              className="text-white/80"
-                            />
-                            <span className="md:flex md:items-center md:gap-1">
-                              0.5% - 1% is the recommended range for slippage.{' '}
-                              <ExternalLink
-                                href="https://www.ledger.com/academy/what-is-slippage-in-crypto"
-                                className="arb-hover flex items-center underline"
-                              >
-                                Read more
-                                <ArrowTopRightOnSquareIcon className="ml-[2px] h-3 w-3 text-white/60 sm:text-white" />
-                              </ExternalLink>
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2">
-                      <div>Supported Bridges</div>
-                      {isLoadingTools && <Loader size="small" color="white" />}
-                      {tools && tools.bridges.length > 0 && (
-                        <Tools
-                          tools={tools.bridges}
-                          toggle={toggleBridge}
-                          disabledTools={disabledBridges}
-                        />
-                      )}
-                    </div>
-                  </>
+              <div className="grid gap-2">
+                <div>Supported Bridges</div>
+                {isLoadingTools && <Loader size="small" color="white" />}
+                {tools && tools.bridges.length > 0 && (
+                  <Tools
+                    tools={tools.bridges}
+                    toggle={toggleBridge}
+                    disabledTools={disabledBridges}
+                  />
                 )}
-              <AdvancedSettings
-                destinationAddress={destinationAddress}
-                onDestinationAddressChange={setDestinationAddress}
-              />
-            </PopoverPanel>
-          </Transition>
-        </>
-      )}
-    </Popover>
+              </div>
+            </>
+          )}
+        {!isLoadingAccountType && !isSmartContractWallet && (
+          // For SCW, destination address is shown outside of settings panel
+          <AdvancedSettings
+            destinationAddress={destinationAddress}
+            onDestinationAddressChange={setDestinationAddress}
+          />
+        )}
+      </div>
+    </Dialog>
   )
 })
 
-Settings.displayName = 'Settings'
+SettingsDialog.displayName = 'SettingsDialog'

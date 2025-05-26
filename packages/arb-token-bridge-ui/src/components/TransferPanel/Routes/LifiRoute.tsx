@@ -18,7 +18,7 @@ import {
   defaultSlippage,
   useLifiSettingsStore
 } from '../hooks/useLifiSettingsStore'
-import { getFromAndToTokenAddresses } from '../Settings'
+import { getFromAndToTokenAddresses } from '../SettingsDialog'
 import { Loader } from '../../common/atoms/Loader'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
