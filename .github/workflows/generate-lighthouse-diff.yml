@@ -55,8 +55,8 @@ jobs:
       - name: Build scripts
         run: yarn workspace scripts build
 
-      - name: Build and start bridge
-        run: yarn build && yarn start &
+      - name: Build the bridge
+        run: yarn build
         env:
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
@@ -66,7 +66,31 @@ jobs:
           NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
-          
+      - name: Start the bridge
+        run: yarn start &
+        env:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_SEPOLIA: https://sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE: https://arbitrum-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Server is up!"
+              break
+            fi
+            echo "Waiting for server..."
+            sleep 1
+          done
+
+          echo "Server did not start in time."
+          exit 1
+
       - name: Install linux dependencies
         run: |
           sudo apt-get update
