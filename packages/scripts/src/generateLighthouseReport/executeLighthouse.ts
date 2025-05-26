@@ -64,5 +64,8 @@ export async function executeLighthouseFlow() {
     await browser.close();
     core.endGroup();
     return file;
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    core.setFailed(error);
+  }
 }
