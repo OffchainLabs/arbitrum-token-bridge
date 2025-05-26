@@ -87,47 +87,30 @@ export async function depositEthEstimateGas(
     })
   }
 
-  if (isDifferentDestinationAddress) {
-    try {
-      const depositToRequest = await ethBridger.getDepositToRequest({
-        amount,
-        from: address,
-        parentProvider: parentChainProvider,
-        childProvider: childChainProvider,
-        // we know it's defined
-        destinationAddress: String(destinationAddress)
-      })
+  try {
+    const depositToRequest = await ethBridger.getDepositToRequest({
+      amount,
+      from: address,
+      parentProvider: parentChainProvider,
+      childProvider: childChainProvider,
+      // we know it's defined
+      destinationAddress: destinationAddress ?? address
+    })
 
-      const estimatedParentChainGas = await parentChainProvider.estimateGas(
-        depositToRequest.txRequest
-      )
+    const estimatedParentChainGas = await parentChainProvider.estimateGas(
+      depositToRequest.txRequest
+    )
 
-      return {
-        estimatedParentChainGas,
-        estimatedChildChainGas: depositToRequest.retryableData.gasLimit,
-        estimatedChildChainSubmissionCost:
-          depositToRequest.retryableData.maxSubmissionCost
-      }
-    } catch (_) {
-      // we use retryables so we may not be able to fetch gas if the current approval doesn't cover gas costs
-      return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({
-        isCustomDestinationAddressTx: isDifferentDestinationAddress
-      })
+    return {
+      estimatedParentChainGas,
+      estimatedChildChainGas: depositToRequest.retryableData.gasLimit,
+      estimatedChildChainSubmissionCost:
+        depositToRequest.retryableData.maxSubmissionCost
     }
-  }
-
-  const depositRequest = await ethBridger.getDepositRequest({
-    amount,
-    from: address
-  })
-
-  const estimatedParentChainGas = await parentChainProvider.estimateGas(
-    depositRequest.txRequest
-  )
-
-  return {
-    estimatedParentChainGas,
-    estimatedChildChainGas: constants.Zero,
-    estimatedChildChainSubmissionCost: constants.Zero
+  } catch (_) {
+    // we use retryables so we may not be able to fetch gas if the current approval doesn't cover gas costs
+    return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({
+      isCustomDestinationAddressTx: isDifferentDestinationAddress
+    })
   }
 }
