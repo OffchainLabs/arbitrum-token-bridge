@@ -6,7 +6,10 @@ export async function executeLighthouseFlow() {
   try {
     core.startGroup("Lighthouse execution");
     // Setup the browser and Lighthouse.
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({
+      headless: false,
+      args: ["--no-sandbox"],
+    });
     const page = await browser.newPage();
 
     const flow = await startFlow(page, {
