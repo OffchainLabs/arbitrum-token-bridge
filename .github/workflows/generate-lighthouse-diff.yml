@@ -1,0 +1,57 @@
+name: Run Lighthouse Diff
+
+on:
+  pull_request:
+    branches: ["master"]
+    types:
+      - opened
+      - reopened
+      - synchronize
+      # we skip ci for draft PRs
+      # https://github.com/reviewdog/action-eslint/issues/29#issuecomment-985939887
+      - ready_for_review
+  workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  add_orbit_chain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
+
+      - name: Build scripts
+        run: yarn workspace scripts build
+
+      - name: Run generateLighthouseDiff script
+        run: yarn workspace scripts generate-lighthouse-diff
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+
+      # - name: Create comment
+      #   uses: peter-evans/create-or-update-comment@v4
+      #   with:
+      #     issue-number: ${{ github.event.number }}
+      #     body: |
+      #       This is a multi-line test comment
+      #       - With GitHub **Markdown** :sparkles:
+      #       - Created by [create-or-update-comment][1]
+
+      #       [1]: https://github.com/peter-evans/create-or-update-comment
