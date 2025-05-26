@@ -16,9 +16,8 @@ export async function executeLighthouseFlow() {
       executablePath: join(
         workspaceRoot,
         config.chromePath,
-        "/chrome/linux-",
-        config.chromeVersion,
-        "/chrome-linux64/chrome"
+        `/chrome/linux-${config.chromeVersion}`,
+        "chrome-linux64/chrome"
       ),
     });
     const page = await browser.newPage();
