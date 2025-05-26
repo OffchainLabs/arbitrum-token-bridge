@@ -2,6 +2,7 @@ import puppeteer from "puppeteer";
 import * as core from "@actions/core";
 import { startFlow, desktopConfig } from "lighthouse";
 import { join, resolve } from "path";
+import { config } from "../../../../package.json";
 
 const workspaceRoot = resolve(process.cwd(), "../..");
 export async function executeLighthouseFlow() {
@@ -11,9 +12,13 @@ export async function executeLighthouseFlow() {
     const browser = await puppeteer.launch({
       headless: false,
       args: ["--no-sandbox"],
+      // "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
       executablePath: join(
         workspaceRoot,
-        "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
+        config.chromePath,
+        "/chrome/linux-",
+        config.chromeVersion,
+        "/chrome-linux64/chrome"
       ),
     });
     const page = await browser.newPage();

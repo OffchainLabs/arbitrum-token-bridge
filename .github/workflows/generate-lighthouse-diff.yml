@@ -62,15 +62,15 @@ jobs:
           fluxbox \
           xvfb
 
-      - name: Run xvfb and fluxbox
-        run: |
-          Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
-          fluxbox &
-        env:
-          DISPLAY: :0.0
+      # - name: Run xvfb and fluxbox
+      #   run: |
+      #     Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
+      #     fluxbox &
+      #   env:
+      #     DISPLAY: :0.0
 
       - name: Run generateLighthouseDiff script
-        run: yarn workspace scripts generate-lighthouse-diff
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' yarn workspace scripts generate-lighthouse-diff
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
