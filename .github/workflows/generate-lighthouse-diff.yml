@@ -82,7 +82,7 @@ jobs:
           for i in {1..20}; do
             if curl -s http://localhost:3000 > /dev/null; then
               echo "Server is up!"
-              break
+              exit 0
             fi
             echo "Waiting for server..."
             sleep 1
