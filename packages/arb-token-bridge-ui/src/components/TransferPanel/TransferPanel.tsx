@@ -94,7 +94,7 @@ import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTra
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
-import { SettingsDialog, getFromAndToTokenAddresses } from './SettingsDialog'
+import { getFromAndToTokenAddresses } from './SettingsDialog'
 import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
