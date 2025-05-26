@@ -44,7 +44,7 @@
     "vitest": "^0.34.0"
   },
   "config": {
-    "chromeVersion": "128.0.6613.137",
-    "chromePath": "node_modules/.cache/synpress"
+    "chromeVersion": "136.0.7103.94",
+    "chromePath": "node_modules/.cache/puppeteer"
   }
 }
