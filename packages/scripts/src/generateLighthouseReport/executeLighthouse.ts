@@ -1,7 +1,9 @@
 import puppeteer from "puppeteer";
 import * as core from "@actions/core";
 import { startFlow, desktopConfig } from "lighthouse";
+import { join, resolve } from "path";
 
+const workspaceRoot = resolve(process.cwd(), "../..");
 export async function executeLighthouseFlow() {
   try {
     core.startGroup("Lighthouse execution");
@@ -9,6 +11,10 @@ export async function executeLighthouseFlow() {
     const browser = await puppeteer.launch({
       headless: false,
       args: ["--no-sandbox"],
+      executablePath: join(
+        workspaceRoot,
+        "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
+      ),
     });
     const page = await browser.newPage();
 
