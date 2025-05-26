@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
 import { Dialog, DialogBackdrop, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { shallow } from 'zustand/shallow'
@@ -41,13 +41,6 @@ export const TransactionsTableDetails = () => {
 
   const childProvider = getProviderForChainId(tx?.childChainId ?? 0)
   const nativeCurrency = useNativeCurrency({ provider: childProvider })
-
-  useEffect(() => {
-    // Reset the transaction details when the component unmounts
-    return () => {
-      reset()
-    }
-  }, [reset])
 
   if (!tx || !sanitizedAddress || !nativeCurrency) {
     return null
