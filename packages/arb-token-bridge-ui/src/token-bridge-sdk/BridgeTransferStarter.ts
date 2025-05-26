@@ -155,6 +155,7 @@ export abstract class BridgeTransferStarter {
   // only cctp is going to override it for now, and we'll do the same for others one by one
   // finally, once we have all implementations we'll mark it as abstract
   public async approveTokenPrepareTxRequest(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     props?: ApproveTokenPrepareTxRequestProps
   ): Promise<TransactionRequest> {
     return {} as TransactionRequest
