@@ -55,6 +55,18 @@ jobs:
       - name: Build scripts
         run: yarn workspace scripts build
 
+      - name: Build and start bridge
+        run: yarn build && yarn start
+        env:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_SEPOLIA: https://sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE: https://arbitrum-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+
+          
       - name: Install linux dependencies
         run: |
           sudo apt-get update
@@ -75,13 +87,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           DISPLAY: :0.0
-          TEST_FILE: ${{ matrix.test.file }}
-          SKIP_METAMASK_SETUP: true
-          CYPRESS_RECORD_VIDEO: ${{ matrix.test.recordVideo }}
-          PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
-          PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
-          PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
-          NEXT_PUBLIC_IS_E2E_TEST: true
 
       # - name: Create comment
       #   uses: peter-evans/create-or-update-comment@v4
