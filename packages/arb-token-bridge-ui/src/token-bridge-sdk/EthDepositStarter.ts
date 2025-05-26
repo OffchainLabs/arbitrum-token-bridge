@@ -163,21 +163,13 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const isCustomDestinationAddress = !!destinationAddress
-
-    const depositRequest = isCustomDestinationAddress
-      ? await ethBridger.getDepositToRequest({
-          amount,
-          from: address,
-          parentProvider: this.sourceChainProvider,
-          childProvider: this.destinationChainProvider,
-          // we know it's defined
-          destinationAddress: String(destinationAddress)
-        })
-      : await ethBridger.getDepositRequest({
-          amount,
-          from: address
-        })
+    const depositRequest = await ethBridger.getDepositToRequest({
+      amount,
+      from: address,
+      parentProvider: this.sourceChainProvider,
+      childProvider: this.destinationChainProvider,
+      destinationAddress: destinationAddress ?? address
+    })
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest

@@ -93,7 +93,6 @@ export async function depositEthEstimateGas(
       from: address,
       parentProvider: parentChainProvider,
       childProvider: childChainProvider,
-      // we know it's defined
       destinationAddress: destinationAddress ?? address
     })
 
