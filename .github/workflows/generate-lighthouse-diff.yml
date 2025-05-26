@@ -55,9 +55,6 @@ jobs:
       - name: Build scripts
         run: yarn workspace scripts build
 
-      - name: Build bridge
-        run: yarn build
-
       - name: Install linux dependencies
         run: |
           sudo apt-get update
@@ -65,14 +62,26 @@ jobs:
           fluxbox \
           xvfb
 
-      - name: Start server
-        run: yarn start
+      - name: Run xvfb and fluxbox
+        run: |
+          Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
 
       - name: Run generateLighthouseDiff script
-        run: xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' yarn workspace scripts generate-lighthouse-diff
+        run: yarn workspace scripts generate-lighthouse-diff
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          DISPLAY: :0.0
+          TEST_FILE: ${{ matrix.test.file }}
+          SKIP_METAMASK_SETUP: true
+          CYPRESS_RECORD_VIDEO: ${{ matrix.test.recordVideo }}
+          PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
+          PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          PRIVATE_KEY_CCTP: ${{ secrets.E2E_PRIVATE_KEY_CCTP }}
+          NEXT_PUBLIC_IS_E2E_TEST: true
 
       # - name: Create comment
       #   uses: peter-evans/create-or-update-comment@v4
