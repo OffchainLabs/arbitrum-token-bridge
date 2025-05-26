@@ -9,7 +9,8 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "start": "node dist/index.js",
-    "add-orbit-chain": "node dist/scripts.cjs.js add-orbit-chain"
+    "add-orbit-chain": "node dist/scripts.cjs.js add-orbit-chain",
+    "generate-lighthouse-diff": "node dist/scripts.cjs.js generate-lighthouse-report"
   },
   "author": "",
   "license": "ISC",
