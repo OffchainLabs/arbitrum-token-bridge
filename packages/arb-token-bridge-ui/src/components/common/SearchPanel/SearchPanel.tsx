@@ -36,7 +36,6 @@ function usePanel(panel: Panel) {
 const SearchPanelContext = createContext<{
   currentPanel: Panel
   setCurrentPanel: (panel: Panel) => void
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
 }>({ currentPanel: Panel.MAIN, setCurrentPanel: () => {} })
 
 function SearchPanel({ children }: { children: React.ReactNode }) {
