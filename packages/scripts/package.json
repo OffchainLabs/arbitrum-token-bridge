@@ -10,7 +10,7 @@
     "coverage": "vitest run --coverage",
     "start": "node dist/index.js",
     "add-orbit-chain": "node dist/scripts.cjs.js add-orbit-chain",
-    "generate-lighthouse-diff": "node dist/scripts.cjs.js generate-lighthouse-report",
+    "generate-lighthouse-diff": "DEBUG=puppeteer:browsers:launcher node dist/scripts.cjs.js generate-lighthouse-report",
     "postinstall": "npx puppeteer browsers install chrome"
   },
   "author": "",
