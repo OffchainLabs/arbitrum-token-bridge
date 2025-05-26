@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   generate_lighthouse_diff:
+    name: "Generate lighthouse diff"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
