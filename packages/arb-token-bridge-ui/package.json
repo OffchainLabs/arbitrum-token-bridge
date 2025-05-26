@@ -3,7 +3,6 @@
   "version": "3.3.0",
   "license": "Apache-2.0",
   "private": true,
-  "type": "module",
   "dependencies": {
     "@apollo/client": "^3.13.8",
     "@arbitrum/sdk": "^4.0.3",
@@ -65,7 +64,7 @@
     "start": "next start",
     "test": "vitest --config vitest.config.ts --watch",
     "test:ci": "vitest --config vitest.config.ts --run",
-    "test:perf": "ts-node --project ./tests/perf/tsconfig.json ./tests/perf/switchNetwork.ts",
+    "test:perf": "ts-node  ./tests/perf/switchNetwork.mts",
     "lint": "tsc && eslint",
     "lint:fix": "tsc && eslint --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
