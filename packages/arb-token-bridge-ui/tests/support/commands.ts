@@ -130,7 +130,7 @@ export const fillCustomDestinationAddress = () => {
     .should('be.visible')
     .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 
-  cy.findByLabelText('Close Settings').should('be.visible').click()
+  cy.findByLabelText('Close Dialog').should('be.visible').click()
 }
 
 export function findAmountInput(): Cypress.Chainable<JQuery<HTMLElement>> {
