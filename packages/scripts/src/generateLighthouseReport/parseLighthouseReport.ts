@@ -1,5 +1,4 @@
 import { FlowResult, Result } from "lighthouse";
-import * as core from "@actions/core";
 
 type Metric = {
   /** Number from 0 to 1 */
@@ -145,11 +144,6 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
 export function parseLighthouseReport(
   report: FlowResult
 ): [NavigationResult, TimespanResult] {
-  core.info("Parsing navigation result");
-  const navigationResult = parseNavigationResult(report.steps[0]);
-  core.info("Parsing timespan result");
-  const timespanResult = parseNavigationResult(report.steps[0]);
-  core.info("Parsing executed");
   return [
     parseNavigationResult(report.steps[0]),
     parseTimespanResult(report.steps[1]),
