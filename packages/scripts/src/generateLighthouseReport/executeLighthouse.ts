@@ -5,6 +5,14 @@ import { join, resolve } from "path";
 import { config } from "../../../../package.json";
 
 const workspaceRoot = resolve(process.cwd(), "../..");
+// "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
+const chromePath = join(
+  workspaceRoot,
+  config.chromePath,
+  `/chrome/linux-${config.chromeVersion}`,
+  "chrome-linux64/chrome"
+);
+
 export async function executeLighthouseFlow() {
   try {
     core.startGroup("Lighthouse execution");
@@ -13,27 +21,18 @@ export async function executeLighthouseFlow() {
       headless: false,
       args: ["--no-sandbox"],
       dumpio: true,
-      // "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
-      executablePath: join(
-        workspaceRoot,
-        config.chromePath,
-        `/chrome/linux-${config.chromeVersion}`,
-        "chrome-linux64/chrome"
-      ),
+      executablePath: chromePath,
     });
     const page = await browser.newPage();
+
     await page.goto(
-      // "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
-      "https://www.google.com/"
+      "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge",
+      { waitUntil: "networkidle0", timeout: 60_000 }
     );
 
     // const flow = await startFlow(page, {
     //   config: desktopConfig,
     // });
-
-    await new Promise((resolve) => {
-      setTimeout(() => resolve(void 0), 5_000);
-    });
 
     const screenshot = await page.screenshot({
       encoding: "base64",
