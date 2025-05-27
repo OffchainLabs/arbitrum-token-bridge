@@ -15,13 +15,11 @@ const chromePath = join(
 );
 export async function generateLighthouseReport() {
   try {
-    const { report, longTasks } = await executeLighthouseFlow(chromePath);
+    const report = await executeLighthouseFlow(chromePath);
 
-    const longTasksTotal = longTasks.reduce((sum, longTask) => {
-      return sum + longTask.duration;
-    }, 0);
     core.startGroup("Parse lighthouse report");
-    const parsedReport = parseLighthouseReport(report);
+    const [parsedNavigationReport, parsedTimespanReport] =
+      parseLighthouseReport(report);
     core.endGroup();
 
     core.startGroup("Post comment");
@@ -31,24 +29,35 @@ export async function generateLighthouseReport() {
       ...context.repo,
       issue_number: context.issue.number,
       // Identation needs to be on the same level, otherwise github doesn't format it properly
+      // prettier-ignore
       body: `
 <details>
 <summary>❌ Lighthouse: Regression found</summary>
 
 <!-- Leave a blank line after summary, but do NOT use <br> -->
 
+Navigation:
 | Name                       | Result                          |
 |----------------------------|---------------------------------|
-| Performance                | ${parsedReport[0].performance * 100}  |
-| Accessibility              | ${parsedReport[0].accessibility * 100}   |
-| Best Practices             | ${parsedReport[0]["best_practices"] * 100}  |
-| SEO                        | ${parsedReport[0].seo * 100}   |
-| First Contentful Paint     | ${parsedReport[0].fcp.displayValue}  |
-| Largest Contentful Paint   | ${parsedReport[0].lcp.displayValue}  |
-| Total Blocking Time        | ${parsedReport[0].tbt.displayValue}  |
-| Cumulative Layout Shift    | ${parsedReport[0].cls.displayValue}  |
-| Speed Index                | ${parsedReport[0].speed.displayValue}  |
-| Long tasks | ${longTasks.length} (${longTasksTotal}ms)
+| Performance                | ${parsedNavigationReport.performance * 100}  |
+| Accessibility              | ${parsedNavigationReport.accessibility * 100}   |
+| Best Practices             | ${parsedNavigationReport["best_practices"] * 100}  |
+| SEO                        | ${parsedNavigationReport.seo * 100}   |
+| First Contentful Paint     | ${parsedNavigationReport.fcp.score * 100} (${parsedNavigationReport.fcp.displayValue})  |
+| Largest Contentful Paint   | ${parsedNavigationReport.lcp.score * 100} (${parsedNavigationReport.lcp.displayValue})  |
+| Total Blocking Time        | ${parsedNavigationReport.tbt.score * 100} (${parsedNavigationReport.tbt.displayValue}) |
+| Cumulative Layout Shift    | ${parsedNavigationReport.cls.score * 100} (${parsedNavigationReport.cls.displayValue}) |
+| Speed Index                | ${parsedNavigationReport.speed.score * 100} (${parsedNavigationReport.speed.displayValue}) |
+
+Timespan:
+| Name                       | Result                          |
+|----------------------------|---------------------------------|
+| Performance                | ${parsedTimespanReport.performance.total * 100}  |
+| Total Blocking Time        | ${parsedTimespanReport.performance.tbt.score * 100} (${parsedTimespanReport.performance.tbt.displayValue}) |
+| Cumulative Layout Shift    | ${parsedTimespanReport.performance.cls.score * 100} (${parsedTimespanReport.performance.cls.displayValue}) |
+| Interaction to Next Paint  | ${parsedTimespanReport.performance.inp.score * 100} (${parsedTimespanReport.performance.inp.displayValue}) |
+| Best practices | ${parsedTimespanReport.best_practices}   |
+| Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs}ms)   |
 
 </details>
       `,

@@ -1,7 +1,6 @@
 import puppeteer from "puppeteer";
 import * as core from "@actions/core";
 import { startFlow, desktopConfig } from "lighthouse";
-import { PerformanceEntry } from "perf_hooks";
 
 export async function executeLighthouseFlow(chromePath?: string) {
   core.startGroup("Lighthouse execution");
@@ -26,19 +25,6 @@ export async function executeLighthouseFlow(chromePath?: string) {
   page.on("pageError", (err) => {
     core.error(`[err] ${err}`);
   });
-
-  const longTasks: PerformanceEntry[] = [];
-  const observer = new PerformanceObserver((list) => {
-    list.getEntries().forEach((entry) => {
-      longTasks.push(entry);
-    });
-  });
-
-  /**
-   * longtask is supported as a type
-   * see https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming
-   */
-  observer.observe({ type: "longtask", buffered: true });
 
   await flow.navigate(
     "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge&txHistory=0"
@@ -91,8 +77,5 @@ export async function executeLighthouseFlow(chromePath?: string) {
   await browser.close();
   core.endGroup();
 
-  return {
-    report,
-    longTasks,
-  };
+  return report;
 }
