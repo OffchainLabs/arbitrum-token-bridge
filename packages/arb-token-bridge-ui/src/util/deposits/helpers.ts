@@ -34,7 +34,7 @@ export function isEthDepositMessage(
     | ParentToChildMessageReader
     | ParentToChildMessageReaderClassic
 ): message is EthDepositMessage {
-  return 'calculateDepositTxId' in message
+  return !('retryableCreationId' in message)
 }
 
 export const updateAdditionalDepositData = async (
