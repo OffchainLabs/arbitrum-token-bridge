@@ -14,11 +14,6 @@ export async function executeLighthouseFlow(chromePath?: string) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1366, height: 768 });
 
-  // await page.goto(
-  //   "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge",
-  //   { waitUntil: "networkidle0", timeout: 60_000 }
-  // );
-
   const flow = await startFlow(page, {
     config: desktopConfig,
   });
