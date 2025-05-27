@@ -15,8 +15,11 @@ const chromePath = join(
 );
 export async function generateLighthouseReport() {
   try {
-    const report = await executeLighthouseFlow(chromePath);
+    const { report, longTasks } = await executeLighthouseFlow(chromePath);
 
+    const longTasksTotal = longTasks.reduce((sum, longTask) => {
+      return sum + longTask.duration;
+    }, 0);
     core.startGroup("Parse lighthouse report");
     const parsedReport = parseLighthouseReport(report);
     core.endGroup();
@@ -24,30 +27,31 @@ export async function generateLighthouseReport() {
     core.startGroup("Post comment");
     const github = getOctokit(process.env.GITHUB_TOKEN || "");
 
-    core.info(`perfscore: ${parsedReport[0].performance.toString()}`);
     const { data: comment } = await github.rest.issues.createComment({
       ...context.repo,
       issue_number: context.issue.number,
-      body: `<details>
-      <summary>❌ Lighthouse: Regression found </summary>
+      // Identation needs to be on the same level, otherwise github doesn't format it properly
+      body: `
+<details>
+<summary>❌ Lighthouse: Regression found</summary>
 
-    <br>
+<!-- Leave a blank line after summary, but do NOT use <br> -->
 
-    <!-- use a blank line and then Markdown table below -->
+| Name                       | Result                          |
+|----------------------------|---------------------------------|
+| Performance                | ${parsedReport[0].performance * 100}  |
+| Accessibility              | ${parsedReport[0].accessibility * 100}   |
+| Best Practices             | ${parsedReport[0]["best_practices"] * 100}  |
+| SEO                        | ${parsedReport[0].seo * 100}   |
+| First Contentful Paint     | ${parsedReport[0].fcp.displayValue}  |
+| Largest Contentful Paint   | ${parsedReport[0].lcp.displayValue}  |
+| Total Blocking Time        | ${parsedReport[0].tbt.displayValue}  |
+| Cumulative Layout Shift    | ${parsedReport[0].cls.displayValue}  |
+| Speed Index                | ${parsedReport[0].speed.displayValue}  |
+| Long tasks | ${longTasks.length} (${longTasksTotal}ms)
 
-    | Name                     | Result |
-    |--------------------------|--------|
-    | Performance     | ${parsedReport[0].performance}  |
-    | Accessibility     | ${parsedReport[0].accessibility}   |
-    | Best Practices    | ${parsedReport[0]["best_practices"]}  |
-    | SEO     | ${parsedReport[0].seo}   |
-    | First Contentful Paint     | ${parsedReport[0].fcp.displayValue}  |
-    | Largest Contentful Paint     | ${parsedReport[0].cls.displayValue}  |
-    | Total Blocking Time     | ${parsedReport[0].tbt.displayValue}  |
-    | Cumulative Layout Shift     | ${parsedReport[0].cls.displayValue}  |
-    | Speed Index     | ${parsedReport[0].speed.displayValue}  |
-
-    </details>`,
+</details>
+      `,
     });
 
     core.info(
