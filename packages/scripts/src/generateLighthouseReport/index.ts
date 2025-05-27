@@ -17,48 +17,42 @@ export async function generateLighthouseReport() {
   try {
     const report = await executeLighthouseFlow(chromePath);
 
-    //     core.setOutput("img", report);
-    //     if (!report) {
-    //       core.setFailed("Report wasn't generated");
-    //       throw new Error("Report wasn't generated");
-    //     }
+    core.startGroup("Parse lighthouse report");
+    const parsedReport = parseLighthouseReport(report);
+    core.endGroup();
 
-    //     core.startGroup("Parse lighthouse report");
-    //     const parsedReport = parseLighthouseReport(report);
-    //     core.endGroup();
+    core.startGroup("Post comment");
+    const github = getOctokit(process.env.GITHUB_TOKEN || "");
 
-    //     core.startGroup("Post comment");
-    //     const github = getOctokit(process.env.GITHUB_TOKEN || "");
-    //     // const octokit = getOctokit(core.getInput("token"));
+    core.info(`perfscore: ${parsedReport[0].performance.toString()}`);
+    const { data: comment } = await github.rest.issues.createComment({
+      ...context.repo,
+      issue_number: context.issue.number,
+      body: `<details>
+      <summary>❌ Lighthouse: Regression found </summary>
 
-    //     const { data: comment } = await github.rest.issues.createComment({
-    //       ...context.repo,
-    //       issue_number: context.issue.number,
-    //       body: `<details>
-    //   <summary>❌ Lighthouse: Regression found </summary>
+    <br>
 
-    // <br>
+    <!-- use a blank line and then Markdown table below -->
 
-    // <!-- use a blank line and then Markdown table below -->
+    | Name                     | Result |
+    |--------------------------|--------|
+    | Performance     | ${parsedReport[0].performance}  |
+    | Accessibility     | ${parsedReport[0].accessibility}   |
+    | Best Practices    | ${parsedReport[0]["best_practices"]}  |
+    | SEO     | ${parsedReport[0].seo}   |
+    | First Contentful Paint     | ${parsedReport[0].fcp.displayValue}  |
+    | Largest Contentful Paint     | ${parsedReport[0].cls.displayValue}  |
+    | Total Blocking Time     | ${parsedReport[0].tbt.displayValue}  |
+    | Cumulative Layout Shift     | ${parsedReport[0].cls.displayValue}  |
+    | Speed Index     | ${parsedReport[0].speed.displayValue}  |
 
-    // | Name                     | Result | Regression |
-    // |--------------------------|--------|------------|
-    // | Performance              | 30     | yes ❌       |
-    // | Accessibility            | 90     | no ✅       |
-    // | Best Practices           | 90     | no ✅       |
-    // | SEO                      | 90     | no ✅       |
-    // | First Contentful Paint   | 1.1s   | no ✅       |
-    // | Largest Contentful Paint | 2s     | yes ❌       |
-    // | Total Blocking Time      | 2s     | yes ❌       |
-    // | Cumulative Layout Shift  | 0.0015s| yes ✅       |
-    // | Speed Index              | 25     | yes ❌       |
+    </details>`,
+    });
 
-    // </details>`,
-    //     });
-
-    //     core.info(
-    //       `Created comment id '${comment.id}' on issue '${context.issue.number}'.`
-    //     );
+    core.info(
+      `Created comment id '${comment.id}' on issue '${context.issue.number}'.`
+    );
     core.endGroup();
   } catch (error) {
     console.log(error);
