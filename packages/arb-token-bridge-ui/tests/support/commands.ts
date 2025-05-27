@@ -119,6 +119,11 @@ export const fillCustomDestinationAddress = () => {
     .should('be.visible')
     .click()
 
+  cy.wait(1_000)
+  cy.findByLabelText('Custom Destination Address Input')
+    .scrollIntoView()
+    .should('be.disabled')
+
   // unlock custom destination address input
   cy.findByLabelText('Custom destination input lock')
     .scrollIntoView()
@@ -128,6 +133,7 @@ export const fillCustomDestinationAddress = () => {
   cy.findByLabelText('Custom Destination Address Input')
     .scrollIntoView()
     .should('be.visible')
+    .should('be.enabled')
     .type(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 
   cy.findByLabelText('Close Dialog').should('be.visible').click()
@@ -175,7 +181,10 @@ export function findDestinationChainButton(
 export function findGasFeeSummary(
   amount: string | number | RegExp
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findByLabelText('Route gas').should('contain', amount)
+  return cy
+    .findByLabelText('Route gas')
+    .should('contain', amount)
+    .should('exist')
 }
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
