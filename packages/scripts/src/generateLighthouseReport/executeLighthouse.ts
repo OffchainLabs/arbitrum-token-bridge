@@ -12,6 +12,7 @@ export async function executeLighthouseFlow() {
     const browser = await puppeteer.launch({
       headless: false,
       args: ["--no-sandbox"],
+      dumpio: true,
       // "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
       executablePath: join(
         workspaceRoot,
@@ -30,6 +31,10 @@ export async function executeLighthouseFlow() {
     await flow.navigate(
       "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
     );
+
+    await new Promise((resolve) => {
+      setTimeout(() => resolve(void 0), 5_000);
+    });
 
     const screenshot = await page.screenshot({ encoding: "base64" });
     return screenshot;
