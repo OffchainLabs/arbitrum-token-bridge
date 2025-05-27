@@ -16,7 +16,6 @@ import {
 import { isTeleportTx, Transaction } from '../types/Transactions'
 import { MergedTransaction } from '../state/app/state'
 import {
-  isCustomDestinationAddressTx,
   normalizeTimestamp,
   transformDeposit,
   transformWithdrawal
