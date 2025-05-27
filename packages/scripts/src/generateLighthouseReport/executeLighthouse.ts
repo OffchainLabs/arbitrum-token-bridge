@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import puppeteer, { BoundingBox } from "puppeteer";
 import * as core from "@actions/core";
 import { startFlow, desktopConfig } from "lighthouse";
 import { join, resolve } from "path";
@@ -36,7 +36,11 @@ export async function executeLighthouseFlow() {
       setTimeout(() => resolve(void 0), 5_000);
     });
 
-    const screenshot = await page.screenshot({ encoding: "base64" });
+    const body = await page.$("body");
+    const screenshot = await page.screenshot({
+      encoding: "base64",
+      clip: (await body!.boundingBox()) as BoundingBox,
+    });
     return screenshot;
     // core.setOutput("image", JSON.stringify(screenshot, null, 2));
 
