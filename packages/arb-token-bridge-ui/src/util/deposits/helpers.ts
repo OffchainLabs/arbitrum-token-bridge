@@ -26,10 +26,16 @@ import {
   isValidTeleportChainPair
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import {
-  isCustomDestinationAddressTx,
-  normalizeTimestamp
-} from '../../state/app/utils'
+import { normalizeTimestamp } from '../../state/app/utils'
+
+export function isEthDepositMessage(
+  message:
+    | EthDepositMessage
+    | ParentToChildMessageReader
+    | ParentToChildMessageReaderClassic
+): message is EthDepositMessage {
+  return !('retryableCreationId' in message)
+}
 
 export const updateAdditionalDepositData = async (
   depositTx: Transaction
@@ -60,24 +66,17 @@ export const updateAdditionalDepositData = async (
 
   const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
-  const isRetryableDeposit =
-    depositTx.assetType === AssetType.ERC20 ||
-    // we use `depositTo` from arbitrum-sdk to send native token to a different destination address
-    // it uses retryables so technically it's not ETH deposit
-    (depositTx.assetType === AssetType.ETH &&
-      isCustomDestinationAddressTx({
-        sender: depositTx.sender,
-        destination: depositTx.destination
-      }))
-
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: depositTx.txID,
       parentProvider,
       childProvider,
-      isRetryableDeposit,
       isClassic
     })
+
+  if (!parentToChildMsg) {
+    return depositTx
+  }
 
   if (
     // txns fetched through subgraph will not have `l2ToL3MsgData`. So `isTeleportTx` will not pass here.
@@ -108,17 +107,15 @@ export const updateAdditionalDepositData = async (
     return updateClassicDepositStatusData({
       depositTx,
       parentToChildMsg: parentToChildMsg as ParentToChildMessageReaderClassic,
-      isRetryableDeposit,
       timestampCreated,
       childProvider
     })
   }
 
-  // Check if deposit is ETH (to the same address)
-  if (!isRetryableDeposit) {
+  if (isEthDepositMessage(parentToChildMsg)) {
     return updateETHDepositStatusData({
       depositTx,
-      ethDepositMessage: parentToChildMsg as EthDepositMessage,
+      ethDepositMessage: parentToChildMsg,
       childProvider,
       timestampCreated
     })
@@ -376,14 +373,12 @@ const updateTokenDepositStatusData = async ({
 const updateClassicDepositStatusData = async ({
   depositTx,
   parentToChildMsg,
-  isRetryableDeposit,
   timestampCreated,
   childProvider
 }: {
   depositTx: Transaction
   timestampCreated: string
   childProvider: Provider
-  isRetryableDeposit: boolean
   parentToChildMsg: ParentToChildMessageReaderClassic
 }): Promise<Transaction> => {
   const updatedDepositTx = {
@@ -394,7 +389,7 @@ const updateClassicDepositStatusData = async ({
   const status = await parentToChildMsg.status()
 
   const isCompletedEthDeposit =
-    !isRetryableDeposit &&
+    depositTx.assetType === AssetType.ETH &&
     status >= ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
 
   const childTxId = (() => {
@@ -585,7 +580,7 @@ export async function fetchTeleporterDepositStatusData({
       l1ToL2MsgData,
       l2ToL3MsgData
     }
-  } catch (e) {
+  } catch (error) {
     // in case fetching teleport status fails (happens sometimes when you fetch before l1 confirmation), return the default data
     console.log('Error fetching status for teleporter tx', txId)
     return {
@@ -600,14 +595,12 @@ export async function fetchTeleporterDepositStatusData({
 
 export const getParentToChildMessageDataFromParentTxHash = async ({
   depositTxId,
-  isRetryableDeposit,
   parentProvider,
   childProvider,
   isClassic // optional: if we already know if tx is classic (eg. through subgraph) then no need to re-check in this fn
 }: {
   depositTxId: string
   parentProvider: Provider
-  isRetryableDeposit: boolean
   childProvider: Provider
   isClassic?: boolean
 }): Promise<{
@@ -638,23 +631,26 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
   }
 
   const getNitroDepositMessage = async () => {
-    // post-nitro handling
-    if (!isRetryableDeposit) {
-      // nitro eth deposit (to the same address)
-      const [ethDepositMessage] =
-        await parentTxReceipt.getEthDeposits(childProvider)
+    // deposits via retryables
+    const [parentToChildMsg] = await parentTxReceipt.getParentToChildMessages(
+      childProvider
+    )
+
+    if (parentToChildMsg) {
       return {
         isClassic: false,
-        parentToChildMsg: ethDepositMessage
+        parentToChildMsg
       }
     }
 
-    // Else, nitro retryable (token deposit or eth deposit to a custom destination)
-    const [parentToChildMsg] =
-      await parentTxReceipt.getParentToChildMessages(childProvider)
+    // nitro eth deposit (to the same address)
+    const [ethDepositMessage] = await parentTxReceipt.getEthDeposits(
+      childProvider
+    )
+
     return {
       isClassic: false,
-      parentToChildMsg
+      parentToChildMsg: ethDepositMessage
     }
   }
 
