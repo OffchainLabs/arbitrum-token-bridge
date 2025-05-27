@@ -31,6 +31,15 @@ import {
   normalizeTimestamp
 } from '../../state/app/utils'
 
+function isEthDepositMessage(
+  message:
+    | EthDepositMessage
+    | ParentToChildMessageReader
+    | ParentToChildMessageReaderClassic
+): message is EthDepositMessage {
+  return 'calculateDepositTxId' in message
+}
+
 export const updateAdditionalDepositData = async (
   depositTx: Transaction
 ): Promise<Transaction | TeleporterTransaction> => {
@@ -102,14 +111,10 @@ export const updateAdditionalDepositData = async (
     })
   }
 
-  if (depositTx.assetType === AssetType.ETH) {
-  }
-
-  // Check if deposit is ETH (to the same address)
-  if (!isRetryableDeposit) {
+  if (parentToChildMsg && isEthDepositMessage(parentToChildMsg)) {
     return updateETHDepositStatusData({
       depositTx,
-      ethDepositMessage: parentToChildMsg as EthDepositMessage,
+      ethDepositMessage: parentToChildMsg,
       childProvider,
       timestampCreated
     })
