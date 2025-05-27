@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer";
 import * as core from "@actions/core";
 import { startFlow, desktopConfig } from "lighthouse";
+import { PerformanceEntry } from "perf_hooks";
 
 export async function executeLighthouseFlow(chromePath?: string) {
   core.startGroup("Lighthouse execution");
@@ -13,9 +14,6 @@ export async function executeLighthouseFlow(chromePath?: string) {
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 1366, height: 768 });
-  await page.setUserAgent(
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-  );
 
   const flow = await startFlow(page, {
     config: desktopConfig,
@@ -28,6 +26,19 @@ export async function executeLighthouseFlow(chromePath?: string) {
   page.on("pageError", (err) => {
     core.error(`[err] ${err}`);
   });
+
+  const longTasks: PerformanceEntry[] = [];
+  const observer = new PerformanceObserver((list) => {
+    list.getEntries().forEach((entry) => {
+      longTasks.push(entry);
+    });
+  });
+
+  /**
+   * longtask is supported as a type
+   * see https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming
+   */
+  observer.observe({ type: "longtask", buffered: true });
 
   await flow.navigate(
     "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge&txHistory=0"
@@ -75,12 +86,13 @@ export async function executeLighthouseFlow(chromePath?: string) {
   await flow.snapshot();
 
   // Get the comprehensive flow report.
-  // writeFileSync("report.html", await flow.generateReport());
-  // Save results as JSON.
-  // const file = JSON.stringify(await flow.createFlowResult(), null, 2);
-  const file = await flow.createFlowResult();
+  const report = await flow.createFlowResult();
   // Cleanup.
   await browser.close();
   core.endGroup();
-  return file;
+
+  return {
+    report,
+    longTasks,
+  };
 }
