@@ -139,11 +139,9 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
   };
 }
 
-export function parseLighthouseReport(
-  report: FlowResult
-): [NavigationResult, TimespanResult] {
+export function parseLighthouseReport(report: FlowResult): [NavigationResult] {
   return [
     parseNavigationResult(report.steps[0]),
-    parseTimespanResult(report.steps[1]),
+    // parseTimespanResult(report.steps[1]),
   ] as const;
 }
