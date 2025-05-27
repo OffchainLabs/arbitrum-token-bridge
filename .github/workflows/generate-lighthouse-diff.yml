@@ -79,7 +79,8 @@ jobs:
           NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+          THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
 
       # - name: Wait for server to be ready
       #   run: |
