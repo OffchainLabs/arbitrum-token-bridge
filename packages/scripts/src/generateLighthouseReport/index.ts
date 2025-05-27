@@ -18,8 +18,7 @@ export async function generateLighthouseReport() {
     const report = await executeLighthouseFlow(chromePath);
 
     core.startGroup("Parse lighthouse report");
-    const [parsedNavigationReport, parsedTimespanReport] =
-      parseLighthouseReport(report);
+    const [parsedNavigationReport] = parseLighthouseReport(report);
     core.endGroup();
 
     core.startGroup("Post comment");
@@ -48,16 +47,6 @@ Navigation:
 | Total Blocking Time        | ${parsedNavigationReport.tbt.score * 100} (${parsedNavigationReport.tbt.displayValue}) |
 | Cumulative Layout Shift    | ${parsedNavigationReport.cls.score * 100} (${parsedNavigationReport.cls.displayValue}) |
 | Speed Index                | ${parsedNavigationReport.speed.score * 100} (${parsedNavigationReport.speed.displayValue}) |
-
-Timespan:
-| Name                       | Result                          |
-|----------------------------|---------------------------------|
-| Performance                | ${parsedTimespanReport.performance.total * 100}  |
-| Total Blocking Time        | ${parsedTimespanReport.performance.tbt.score * 100} (${parsedTimespanReport.performance.tbt.displayValue}) |
-| Cumulative Layout Shift    | ${parsedTimespanReport.performance.cls.score * 100} (${parsedTimespanReport.performance.cls.displayValue}) |
-| Interaction to Next Paint  | ${parsedTimespanReport.performance.inp.score * 100} (${parsedTimespanReport.performance.inp.displayValue}) |
-| Best practices | ${parsedTimespanReport.best_practices}   |
-| Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs}ms)   |
 
 
 </details>
