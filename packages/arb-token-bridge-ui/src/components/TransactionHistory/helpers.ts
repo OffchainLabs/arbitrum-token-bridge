@@ -420,16 +420,7 @@ export async function getUpdatedEthDeposit(
 export async function getUpdatedRetryableDeposit(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
-
-  if (
-    !isTxPending(tx) ||
-    // ETH transfer to the same address
-    // ETH sent to a custom destination uses retryables so we allow it in this flow
-    (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) ||
-    tx.isWithdrawal ||
-    tx.isCctp
-  ) {
+  if (!isTxPending(tx) || tx.isWithdrawal || tx.isCctp) {
     return tx
   }
 
