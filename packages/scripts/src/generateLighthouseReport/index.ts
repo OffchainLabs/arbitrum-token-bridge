@@ -57,7 +57,7 @@ Timespan:
 | Total Blocking Time        | ${parsedTimespanReport.performance.tbt.score * 100} (${parsedTimespanReport.performance.tbt.displayValue}) |
 | Cumulative Layout Shift    | ${parsedTimespanReport.performance.cls.score * 100} (${parsedTimespanReport.performance.cls.displayValue}) |
 | Interaction to Next Paint  | ${parsedTimespanReport.performance.inp.score * 100} (${parsedTimespanReport.performance.inp.displayValue}) |
-| Best practices | ${parsedTimespanReport.best_practices}   |
+| Best practices | ${parsedTimespanReport.best_practices * 100} |
 | Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs}ms)   |
 
 

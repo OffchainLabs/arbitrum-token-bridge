@@ -1,5 +1,4 @@
 import { FlowResult, Result } from "lighthouse";
-import * as core from "@actions/core";
 
 type Metric = {
   /** Number from 0 to 1 */
@@ -85,12 +84,8 @@ function parseNavigationResult(
 }
 
 function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
-  core.info("parsetimespan");
   const tbt = parse(timespanResult, "total-blocking-time");
-  core.info("tbt");
-  core.info(JSON.stringify(tbt));
   const cls = parse(timespanResult, "cumulative-layout-shift");
-  core.info("cls");
   const longTasks = (
     timespanResult.lhr.audits["long-tasks"].details! as unknown as {
       items: {
@@ -101,12 +96,6 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
     }
   ).items;
   const inp = timespanResult.lhr.audits["interaction-to-next-paint"];
-
-  core.info("timespanResult.lhr.categories.performance");
-  core.info(JSON.stringify(timespanResult.lhr.categories.performance));
-
-  core.info("timespanResult.lhr.categories['best-practices']");
-  core.info(JSON.stringify(timespanResult.lhr.categories["best-practices"]));
 
   return {
     performance: {
