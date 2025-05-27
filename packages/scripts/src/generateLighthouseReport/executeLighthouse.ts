@@ -19,8 +19,12 @@ export async function executeLighthouseFlow(chromePath?: string) {
   });
 
   await flow.navigate(
-    "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
+    "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge&txHistory=0"
   );
+
+  await page.waitForNetworkIdle({ timeout: 50_000 });
+
+  await flow.startTimespan();
 
   const screenshot = await page.screenshot({
     encoding: "base64",
@@ -29,14 +33,9 @@ export async function executeLighthouseFlow(chromePath?: string) {
   core.info(JSON.stringify(screenshot, null, 2));
   core.setOutput("image", JSON.stringify(screenshot, null, 2));
 
-  await flow.startTimespan();
-
   // Accept ToS
   const tosButton = await page.waitForSelector(
-    '[aria-label="Agree to Terms and Continue"]',
-    {
-      timeout: 80_000,
-    }
+    '[aria-label="Agree to Terms and Continue"]'
   );
   await tosButton?.click();
 
