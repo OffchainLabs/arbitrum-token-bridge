@@ -36,23 +36,23 @@ export async function generateLighthouseReport() {
       ...context.repo,
       issue_number: context.issue.number,
       body: `<details>
-  <summary>🗼 Click to expand performance result</summary>
+  <summary>❌ Lighthouse: Regression found </summary>
 
 <br>
 
 <!-- use a blank line and then Markdown table below -->
 
-| Name                     | Result |
-|--------------------------|--------|
-| Performance              | 30     |
-| Accessibility            | 90     |
-| Best Practices           | 90     |
-| SEO                      | 90     |
-| First Contentful Paint   | 1.1s   |
-| Largest Contentful Paint | 2s     |
-| Total Blocking Time      | 2s     |
-| Cumulative Layout Shift  | 0.0015s|
-| Speed Index              | 25     |
+| Name                     | Result | Regression |
+|--------------------------|--------|------------|
+| Performance              | 30     | yes ❌       |
+| Accessibility            | 90     | no ✅       |
+| Best Practices           | 90     | no ✅       |
+| SEO                      | 90     | no ✅       |
+| First Contentful Paint   | 1.1s   | no ✅       |
+| Largest Contentful Paint | 2s     | yes ❌       |
+| Total Blocking Time      | 2s     | yes ❌       |
+| Cumulative Layout Shift  | 0.0015s| yes ✅       |
+| Speed Index              | 25     | yes ❌       |
 
 </details>`,
     });
