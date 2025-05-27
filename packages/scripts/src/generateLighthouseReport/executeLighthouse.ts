@@ -22,7 +22,7 @@ export async function executeLighthouseFlow(chromePath?: string) {
   });
 
   page.on("console", (log) => {
-    core.info(`[log] ${log.text}`);
+    core.info(`[log] ${log.text()}`);
   });
 
   page.on("pageError", (err) => {
