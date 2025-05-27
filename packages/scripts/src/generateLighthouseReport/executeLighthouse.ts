@@ -30,17 +30,9 @@ export async function executeLighthouseFlow() {
       config: desktopConfig,
     });
 
-    // Exact URL, we don't want redirection that would change the result
-    // await flow.navigate(
-    //   "https://www.google.com"
-    //   // "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
-    // );
-    // await page.setViewport({ width: 810, height: 415 });
-    // await page.goto("https://www.google.com");
-
     await new Promise((resolve) => {
       setTimeout(() => resolve(void 0), 5_000);
-    // });
+    });
 
     const screenshot = await page.screenshot({
       encoding: "base64",
