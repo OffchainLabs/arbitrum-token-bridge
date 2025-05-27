@@ -1,4 +1,5 @@
 import { FlowResult, Result } from "lighthouse";
+import * as core from "@actions/core";
 
 type Metric = {
   /** Number from 0 to 1 */
@@ -62,31 +63,31 @@ function commonParse(result: FlowResult.Step): {
     fcp: {
       score: fcp.score!,
       displayValue: fcp.displayValue!,
-      // numericValue: fcp.numericUnit!,
+      numericValue: fcp.numericUnit!,
       scoringOptions: fcp.scoringOptions!,
     },
     lcp: {
       score: lcp.score!,
       displayValue: lcp.displayValue!,
-      // numericValue: lcp.numericUnit!,
+      numericValue: lcp.numericUnit!,
       scoringOptions: lcp.scoringOptions!,
     },
     tbt: {
       score: tbt.score!,
       displayValue: tbt.displayValue!,
-      // numericValue: tbt.numericUnit!,
+      numericValue: tbt.numericUnit!,
       scoringOptions: tbt.scoringOptions!,
     },
     cls: {
       score: cls.score!,
       displayValue: cls.displayValue!,
-      // numericValue: cls.numericUnit!,
+      numericValue: cls.numericUnit!,
       scoringOptions: cls.scoringOptions!,
     },
     speed: {
       score: speed.score!,
       displayValue: speed.displayValue!,
-      // numericValue: speed.numericUnit!,
+      numericValue: speed.numericUnit!,
       scoringOptions: speed.scoringOptions!,
     },
   };
@@ -144,6 +145,11 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
 export function parseLighthouseReport(
   report: FlowResult
 ): [NavigationResult, TimespanResult] {
+  core.info("Parsing navigation result");
+  const navigationResult = parseNavigationResult(report.steps[0]);
+  core.info("Parsing timespan result");
+  const timespanResult = parseNavigationResult(report.steps[0]);
+  core.info("Parsing executed");
   return [
     parseNavigationResult(report.steps[0]),
     parseTimespanResult(report.steps[1]),
