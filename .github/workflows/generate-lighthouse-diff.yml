@@ -77,19 +77,23 @@ jobs:
           NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
-      - name: Wait for server to be ready
+      - name: Start server and wait
         run: |
-          for i in {1..20}; do
-            if curl -s http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge > /dev/null; then
-              echo "Server is up!"
-              exit 0
-            fi
-            echo "Waiting for server..."
-            sleep 1
-          done
+          yarn start & npx wait-on http://localhost:3000
 
-          echo "Server did not start in time."
-          exit 1
+      # - name: Wait for server to be ready
+      #   run: |
+      #     for i in {1..20}; do
+      #       if curl -s http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge > /dev/null; then
+      #         echo "Server is up!"
+      #         exit 0
+      #       fi
+      #       echo "Waiting for server..."
+      #       sleep 1
+      #     done
+
+      #     echo "Server did not start in time."
+      #     exit 1
 
       - name: Install linux dependencies
         run: |

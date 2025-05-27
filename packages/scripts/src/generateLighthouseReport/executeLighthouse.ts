@@ -13,9 +13,20 @@ export async function executeLighthouseFlow(chromePath?: string) {
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 1366, height: 768 });
+  await page.setUserAgent(
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+  );
 
   const flow = await startFlow(page, {
     config: desktopConfig,
+  });
+
+  page.on("console", (log) => {
+    core.info(`[log] ${log.text}`);
+  });
+
+  page.on("pageError", (err) => {
+    core.error(`[err] ${err}`);
   });
 
   await flow.navigate(
@@ -33,8 +44,7 @@ export async function executeLighthouseFlow(chromePath?: string) {
 
   // Accept ToS
   const tosButton = await page.waitForSelector(
-    '[aria-label="Agree to Terms and Continue"]',
-    { timeout: 300_000 }
+    '[aria-label="Agree to Terms and Continue"]'
   );
   await tosButton?.click();
 
