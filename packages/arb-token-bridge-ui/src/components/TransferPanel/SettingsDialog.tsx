@@ -274,6 +274,8 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
         // When user leave, persist settings to zustand store
         setSlippage(slippageValue)
         setDisabledBridgesToStore(disabledBridges)
+        props.onClose(confirmed)
+
         if (isSmartContractWallet) {
           return
         }
@@ -284,7 +286,6 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
         } else {
           setQueryParams({ destinationAddress })
         }
-        props.onClose(confirmed)
       }}
       isFooterHidden
     >
