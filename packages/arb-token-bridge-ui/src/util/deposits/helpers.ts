@@ -26,10 +26,7 @@ import {
   isValidTeleportChainPair
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import {
-  isCustomDestinationAddressTx,
-  normalizeTimestamp
-} from '../../state/app/utils'
+import { normalizeTimestamp } from '../../state/app/utils'
 
 function isEthDepositMessage(
   message:
