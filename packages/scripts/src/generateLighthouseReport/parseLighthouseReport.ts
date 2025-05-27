@@ -94,8 +94,8 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
       }[];
     }
   ).items;
-
   const inp = timespanResult.lhr.audits["interaction-to-next-paint"];
+
   return {
     performance: {
       total: timespanResult.lhr.categories.performance.score!,
@@ -107,7 +107,7 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
         displayValue: inp.displayValue!,
       },
     },
-    best_practices: timespanResult.lhr.categories.best_practices.score!,
+    best_practices: timespanResult.lhr.categories["best-practices"].score!,
     longTasks: {
       total: longTasks.length,
       durationMs: longTasks.reduce((sum, task) => sum + task.duration, 0),
