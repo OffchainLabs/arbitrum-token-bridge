@@ -74,6 +74,10 @@ export const updateAdditionalDepositData = async (
       isClassic
     })
 
+  if (!parentToChildMsg) {
+    return depositTx
+  }
+
   if (
     // txns fetched through subgraph will not have `l2ToL3MsgData`. So `isTeleportTx` will not pass here.
     // since this is a deposit tx flow, the `parent` and `child` chain will always be `source` and `destination`
@@ -108,7 +112,7 @@ export const updateAdditionalDepositData = async (
     })
   }
 
-  if (parentToChildMsg && isEthDepositMessage(parentToChildMsg)) {
+  if (isEthDepositMessage(parentToChildMsg)) {
     return updateETHDepositStatusData({
       depositTx,
       ethDepositMessage: parentToChildMsg,
