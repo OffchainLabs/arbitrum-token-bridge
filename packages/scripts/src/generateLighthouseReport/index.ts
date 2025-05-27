@@ -32,34 +32,31 @@ export async function generateLighthouseReport() {
     const github = getOctokit(process.env.GITHUB_TOKEN || "");
     // const octokit = getOctokit(core.getInput("token"));
 
-    console.log(context.issue.number, context.repo);
     const { data: comment } = await github.rest.issues.createComment({
       ...context.repo,
       issue_number: context.issue.number,
-      body: "test",
+      body: `<details>
+      <summary>🗼 Click to expand performance result</summary>
+
+      <br>
+
+      | Name       | Result  |
+      |------------|---------|
+      | Performance     | 30  |
+      | Accessibility     | 90  |
+      | Best Practices    | 90  |
+      | SEO     | 90   |
+      | First Contentful Paint     | 1.1s |
+      | Largest Contentful Paint     | 2s  |
+      | Total Blocking Time     | 2s  |
+      | Cumulative Layout Shift     | 0.0015s  |
+      | Speed Index     | 25  |
+
+      </details>`,
     });
-    console.log(comment);
-    //   body: `<details>
-    // <summary>🗼 Click to expand performance result</summary>
 
-    // <br>
-
-    // | Name       | Result  |
-    // |------------|---------|
-    // | Performance     | 30  |
-    // | Accessibility     | 90  |
-    // | Best Practices    | 90  |
-    // | SEO     | 90   |
-    // | First Contentful Paint     | 1.1s |
-    // | Largest Contentful Paint     | 2s  |
-    // | Total Blocking Time     | 2s  |
-    // | Cumulative Layout Shift     | 0.0015s  |
-    // | Speed Index     | 25  |
-
-    // </details>`,
-    // });
     core.info(
-      `Created comment id '${comment.id}' on issue '${github.context.issue.number}'.`
+      `Created comment id '${comment.id}' on issue '${context.issue.number}'.`
     );
     core.endGroup();
   } catch (error) {
