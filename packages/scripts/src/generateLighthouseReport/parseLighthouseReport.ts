@@ -50,13 +50,11 @@ function commonParse(result: FlowResult.Step): {
   lcp: Metric;
   tbt: Metric;
   cls: Metric;
-  speed: Metric;
 } {
   const fcp = result.lhr.audits["first-contentful-paint"];
   const lcp = result.lhr.audits["largest-contentful-paint"];
   const tbt = result.lhr.audits["total-blocking-time"];
   const cls = result.lhr.audits["first-contentful-paint"];
-  const speed = result.lhr.audits["speed-index"];
 
   return {
     fcp: {
@@ -83,25 +81,26 @@ function commonParse(result: FlowResult.Step): {
       numericValue: cls.numericUnit!,
       scoringOptions: cls.scoringOptions!,
     },
-    speed: {
-      score: speed.score!,
-      displayValue: speed.displayValue!,
-      numericValue: speed.numericUnit!,
-      scoringOptions: speed.scoringOptions!,
-    },
   };
 }
 
 function parseNavigationResult(
   navigationResult: FlowResult.Step
 ): NavigationResult {
-  const { fcp, lcp, tbt, cls, speed } = commonParse(navigationResult);
+  core;
+  const { fcp, lcp, tbt, cls } = commonParse(navigationResult);
+  const speed = navigationResult.lhr.audits["speed-index"];
   return {
     fcp,
     lcp,
     tbt,
     cls,
-    speed,
+    speed: {
+      score: speed.score!,
+      displayValue: speed.displayValue!,
+      numericValue: speed.numericUnit!,
+      scoringOptions: speed.scoringOptions!,
+    },
     performance: navigationResult.lhr.categories.performance.score!,
     accessibility: navigationResult.lhr.categories.accessibility.score!,
     best_practices: navigationResult.lhr.categories["best-practices"].score!,
