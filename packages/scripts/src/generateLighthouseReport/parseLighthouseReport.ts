@@ -45,49 +45,24 @@ type SnapshotResult = {
   seo: Result;
 };
 
-function commonParse(result: FlowResult.Step): {
-  fcp: Metric;
-  lcp: Metric;
-  tbt: Metric;
-  cls: Metric;
-} {
-  const fcp = result.lhr.audits["first-contentful-paint"];
-  const lcp = result.lhr.audits["largest-contentful-paint"];
-  const tbt = result.lhr.audits["total-blocking-time"];
-  const cls = result.lhr.audits["first-contentful-paint"];
+function parse(result: FlowResult.Step, metricName: string): Metric {
+  const metric = result.lhr.audits[metricName];
 
   return {
-    fcp: {
-      score: fcp.score!,
-      displayValue: fcp.displayValue!,
-      numericValue: fcp.numericUnit!,
-      scoringOptions: fcp.scoringOptions!,
-    },
-    lcp: {
-      score: lcp.score!,
-      displayValue: lcp.displayValue!,
-      numericValue: lcp.numericUnit!,
-      scoringOptions: lcp.scoringOptions!,
-    },
-    tbt: {
-      score: tbt.score!,
-      displayValue: tbt.displayValue!,
-      numericValue: tbt.numericUnit!,
-      scoringOptions: tbt.scoringOptions!,
-    },
-    cls: {
-      score: cls.score!,
-      displayValue: cls.displayValue!,
-      numericValue: cls.numericUnit!,
-      scoringOptions: cls.scoringOptions!,
-    },
+    score: metric.score!,
+    displayValue: metric.displayValue!,
+    numericValue: metric.numericUnit!,
+    scoringOptions: metric.scoringOptions!,
   };
 }
 
 function parseNavigationResult(
   navigationResult: FlowResult.Step
 ): NavigationResult {
-  const { fcp, lcp, tbt, cls } = commonParse(navigationResult);
+  const fcp = parse(navigationResult, "fcp");
+  const lcp = parse(navigationResult, "fcp");
+  const tbt = parse(navigationResult, "fcp");
+  const cls = parse(navigationResult, "fcp");
   const speed = navigationResult.lhr.audits["speed-index"];
   return {
     fcp,
@@ -108,7 +83,8 @@ function parseNavigationResult(
 }
 
 function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
-  const { tbt, cls } = commonParse(timespanResult);
+  const tbt = parse(timespanResult, "fcp");
+  const cls = parse(timespanResult, "fcp");
   const longTasks = (
     timespanResult.lhr.audits["long-tasks"].details! as unknown as {
       items: {
@@ -139,9 +115,11 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
   };
 }
 
-export function parseLighthouseReport(report: FlowResult): [NavigationResult] {
+export function parseLighthouseReport(
+  report: FlowResult
+): [NavigationResult, TimespanResult] {
   return [
     parseNavigationResult(report.steps[0]),
-    // parseTimespanResult(report.steps[1]),
+    parseTimespanResult(report.steps[1]),
   ] as const;
 }
