@@ -632,9 +632,8 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
 
   const getNitroDepositMessage = async () => {
     // deposits via retryables
-    const [parentToChildMsg] = await parentTxReceipt.getParentToChildMessages(
-      childProvider
-    )
+    const [parentToChildMsg] =
+      await parentTxReceipt.getParentToChildMessages(childProvider)
 
     if (parentToChildMsg) {
       return {
@@ -644,9 +643,8 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
     }
 
     // nitro eth deposit (to the same address)
-    const [ethDepositMessage] = await parentTxReceipt.getEthDeposits(
-      childProvider
-    )
+    const [ethDepositMessage] =
+      await parentTxReceipt.getEthDeposits(childProvider)
 
     return {
       isClassic: false,
