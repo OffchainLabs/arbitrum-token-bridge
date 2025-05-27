@@ -7,6 +7,8 @@ export async function generateLighthouseReport() {
   try {
     const report = await executeLighthouseFlow();
 
+    console.log(report);
+    core.setOutput("img", report);
     //     if (!report) {
     //       core.setFailed("Report wasn't generated");
     //       throw new Error("Report wasn't generated");

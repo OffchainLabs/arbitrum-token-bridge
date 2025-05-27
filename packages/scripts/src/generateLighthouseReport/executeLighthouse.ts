@@ -31,8 +31,9 @@ export async function executeLighthouseFlow() {
       "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
     );
 
-    const screenshot = page.screenshot();
-    core.setOutput("image", JSON.stringify(screenshot, null, 2));
+    const screenshot = await page.screenshot({ encoding: "base64" });
+    return screenshot;
+    // core.setOutput("image", JSON.stringify(screenshot, null, 2));
 
     // await flow.startTimespan();
 
