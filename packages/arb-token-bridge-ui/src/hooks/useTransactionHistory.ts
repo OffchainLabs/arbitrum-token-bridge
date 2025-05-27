@@ -773,14 +773,14 @@ export const useTransactionHistory = (
         return
       }
 
-      // eth deposits
+      // eth deposits (either via eth deposit messages or retryable tickets)
       if (tx.assetType === AssetType.ETH) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
         updateCachedTransaction(updatedEthDeposit)
         return
       }
 
-      // Token deposit or ETH deposit to a different destination address
+      // token deposits (via retryable tickets)
       const updatedRetryableDeposit = await getUpdatedRetryableDeposit(tx)
       updateCachedTransaction(updatedRetryableDeposit)
     },
