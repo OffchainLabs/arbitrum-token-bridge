@@ -61,5 +61,7 @@ export async function generateLighthouseReport() {
       `Created comment id '${comment.id}' on issue '${github.context.issue.number}'.`
     );
     core.endGroup();
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 }
