@@ -60,22 +60,11 @@ export const updateAdditionalDepositData = async (
 
   const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
-  const isRetryableDeposit =
-    depositTx.assetType === AssetType.ERC20 ||
-    // we use `depositTo` from arbitrum-sdk to send native token to a different destination address
-    // it uses retryables so technically it's not ETH deposit
-    (depositTx.assetType === AssetType.ETH &&
-      isCustomDestinationAddressTx({
-        sender: depositTx.sender,
-        destination: depositTx.destination
-      }))
-
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: depositTx.txID,
       parentProvider,
       childProvider,
-      isRetryableDeposit,
       isClassic
     })
 
@@ -108,7 +97,6 @@ export const updateAdditionalDepositData = async (
     return updateClassicDepositStatusData({
       depositTx,
       parentToChildMsg: parentToChildMsg as ParentToChildMessageReaderClassic,
-      isRetryableDeposit,
       timestampCreated,
       childProvider
     })
@@ -379,14 +367,12 @@ const updateTokenDepositStatusData = async ({
 const updateClassicDepositStatusData = async ({
   depositTx,
   parentToChildMsg,
-  isRetryableDeposit,
   timestampCreated,
   childProvider
 }: {
   depositTx: Transaction
   timestampCreated: string
   childProvider: Provider
-  isRetryableDeposit: boolean
   parentToChildMsg: ParentToChildMessageReaderClassic
 }): Promise<Transaction> => {
   const updatedDepositTx = {
@@ -397,7 +383,7 @@ const updateClassicDepositStatusData = async ({
   const status = await parentToChildMsg.status()
 
   const isCompletedEthDeposit =
-    !isRetryableDeposit &&
+    depositTx.assetType === AssetType.ETH &&
     status >= ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
 
   const childTxId = (() => {
@@ -603,14 +589,12 @@ export async function fetchTeleporterDepositStatusData({
 
 export const getParentToChildMessageDataFromParentTxHash = async ({
   depositTxId,
-  isRetryableDeposit,
   parentProvider,
   childProvider,
   isClassic // optional: if we already know if tx is classic (eg. through subgraph) then no need to re-check in this fn
 }: {
   depositTxId: string
   parentProvider: Provider
-  isRetryableDeposit: boolean
   childProvider: Provider
   isClassic?: boolean
 }): Promise<{
