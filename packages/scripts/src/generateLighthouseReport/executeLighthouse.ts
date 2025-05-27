@@ -22,20 +22,19 @@ export async function executeLighthouseFlow(chromePath?: string) {
     "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge&txHistory=0"
   );
 
-  await page.waitForNetworkIdle({ timeout: 50_000 });
-
   await flow.startTimespan();
 
-  const screenshot = await page.screenshot({
-    encoding: "base64",
-    fullPage: true,
-  });
-  core.info(JSON.stringify(screenshot, null, 2));
-  core.setOutput("image", JSON.stringify(screenshot, null, 2));
+  // const screenshot = await page.screenshot({
+  //   encoding: "base64",
+  //   fullPage: true,
+  // });
+  // core.info(JSON.stringify(screenshot, null, 2));
+  // core.setOutput("image", JSON.stringify(screenshot, null, 2));
 
   // Accept ToS
   const tosButton = await page.waitForSelector(
-    '[aria-label="Agree to Terms and Continue"]'
+    '[aria-label="Agree to Terms and Continue"]',
+    { timeout: 120_000 }
   );
   await tosButton?.click();
 
