@@ -87,7 +87,6 @@ function commonParse(result: FlowResult.Step): {
 function parseNavigationResult(
   navigationResult: FlowResult.Step
 ): NavigationResult {
-  core;
   const { fcp, lcp, tbt, cls } = commonParse(navigationResult);
   const speed = navigationResult.lhr.audits["speed-index"];
   return {
