@@ -34,7 +34,7 @@ export async function executeLighthouseFlow(chromePath?: string) {
   // Accept ToS
   const tosButton = await page.waitForSelector(
     '[aria-label="Agree to Terms and Continue"]',
-    { timeout: 120_000 }
+    { timeout: 300_000 }
   );
   await tosButton?.click();
 
