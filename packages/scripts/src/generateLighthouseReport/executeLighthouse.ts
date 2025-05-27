@@ -35,13 +35,6 @@ export async function executeLighthouseFlow(chromePath?: string) {
 
   await flow.startTimespan();
 
-  // const screenshot = await page.screenshot({
-  //   encoding: "base64",
-  //   fullPage: true,
-  // });
-  // core.info(JSON.stringify(screenshot, null, 2));
-  // core.setOutput("image", JSON.stringify(screenshot, null, 2));
-
   // Accept ToS
   const tosButton = await page.waitForSelector(
     '[aria-label="Agree to Terms and Continue"]'
@@ -84,10 +77,10 @@ export async function executeLighthouseFlow(chromePath?: string) {
   // Get the comprehensive flow report.
   // writeFileSync("report.html", await flow.generateReport());
   // Save results as JSON.
-  const file = JSON.stringify(await flow.createFlowResult(), null, 2);
-  // const file = await flow.createFlowResult();
+  // const file = JSON.stringify(await flow.createFlowResult(), null, 2);
+  const file = await flow.createFlowResult();
   // Cleanup.
   await browser.close();
   core.endGroup();
-  // return file;
+  return file;
 }
