@@ -55,70 +55,59 @@ jobs:
       - name: Build scripts
         run: yarn workspace scripts build
 
-      # - name: Build the bridge
-      #   run: yarn build
-      #   env:
-      #     NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_SEPOLIA: https://sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE: https://arbitrum-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+      - name: Build the bridge
+        run: yarn build
+        env:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_SEPOLIA: https://sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE: https://arbitrum-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
-      # - name: Start the bridge
-      #   run: yarn start &
-      #   env:
-      #     NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_SEPOLIA: https://sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE: https://arbitrum-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-      #     NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+      - name: Start the bridge
+        run: yarn start &
+        env:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_SEPOLIA: https://sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE: https://arbitrum-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
-      # - name: Wait for server to be ready
-      #   run: |
-      #     for i in {1..20}; do
-      #       if curl -s http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge > /dev/null; then
-      #         echo "Server is up!"
-      #         exit 0
-      #       fi
-      #       echo "Waiting for server..."
-      #       sleep 1
-      #     done
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge > /dev/null; then
+              echo "Server is up!"
+              exit 0
+            fi
+            echo "Waiting for server..."
+            sleep 1
+          done
 
-      #     echo "Server did not start in time."
-      #     exit 1
+          echo "Server did not start in time."
+          exit 1
 
-      # - name: Install linux dependencies
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install --no-install-recommends -y \
-      #     fluxbox \
-      #     xvfb
+      - name: Install linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+          fluxbox \
+          xvfb
 
-      # - name: Run xvfb and fluxbox
-      #   run: |
-      #     Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
-      #     fluxbox &
-      #   env:
-      #     DISPLAY: :0.0
+      - name: Run xvfb and fluxbox
+        run: |
+          Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
 
       - name: Run generateLighthouseDiff script
         run: yarn workspace scripts generate-lighthouse-diff
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          # DISPLAY: :0.0
-
-      # - name: Create comment
-      #   uses: peter-evans/create-or-update-comment@v4
-      #   with:
-      #     issue-number: ${{ github.event.number }}
-      #     body: |
-      #       This is a multi-line test comment
-      #       - With GitHub **Markdown** :sparkles:
-      #       - Created by [create-or-update-comment][1]
-
-      #       [1]: https://github.com/peter-evans/create-or-update-comment
+          DISPLAY: :0.0
