@@ -22,12 +22,13 @@ export async function executeLighthouseFlow(chromePath?: string) {
     "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
   );
 
-  // const screenshot = await page.screenshot({
-  //   encoding: "base64",
-  //   fullPage: true,
-  // });
+  const screenshot = await page.screenshot({
+    encoding: "base64",
+    fullPage: true,
+  });
   // return screenshot;
-  // core.setOutput("image", JSON.stringify(screenshot, null, 2));
+  core.info(JSON.stringify(screenshot, null, 2));
+  core.setOutput("image", JSON.stringify(screenshot, null, 2));
 
   await flow.startTimespan();
 
