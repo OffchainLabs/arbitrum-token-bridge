@@ -36,23 +36,25 @@ export async function generateLighthouseReport() {
       ...context.repo,
       issue_number: context.issue.number,
       body: `<details>
-      <summary>🗼 Click to expand performance result</summary>
+  <summary>🗼 Click to expand performance result</summary>
 
-      <br>
+<br>
 
-      | Name       | Result  |
-      |------------|---------|
-      | Performance     | 30  |
-      | Accessibility     | 90  |
-      | Best Practices    | 90  |
-      | SEO     | 90   |
-      | First Contentful Paint     | 1.1s |
-      | Largest Contentful Paint     | 2s  |
-      | Total Blocking Time     | 2s  |
-      | Cumulative Layout Shift     | 0.0015s  |
-      | Speed Index     | 25  |
+<!-- use a blank line and then Markdown table below -->
 
-      </details>`,
+| Name                     | Result |
+|--------------------------|--------|
+| Performance              | 30     |
+| Accessibility            | 90     |
+| Best Practices           | 90     |
+| SEO                      | 90     |
+| First Contentful Paint   | 1.1s   |
+| Largest Contentful Paint | 2s     |
+| Total Blocking Time      | 2s     |
+| Cumulative Layout Shift  | 0.0015s|
+| Speed Index              | 25     |
+
+</details>`,
     });
 
     core.info(
