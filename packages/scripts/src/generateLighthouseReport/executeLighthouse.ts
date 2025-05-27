@@ -26,7 +26,6 @@ export async function executeLighthouseFlow(chromePath?: string) {
     encoding: "base64",
     fullPage: true,
   });
-  // return screenshot;
   core.info(JSON.stringify(screenshot, null, 2));
   core.setOutput("image", JSON.stringify(screenshot, null, 2));
 
@@ -34,7 +33,10 @@ export async function executeLighthouseFlow(chromePath?: string) {
 
   // Accept ToS
   const tosButton = await page.waitForSelector(
-    '[aria-label="Agree to Terms and Continue"]'
+    '[aria-label="Agree to Terms and Continue"]',
+    {
+      timeout: 80_000,
+    }
   );
   await tosButton?.click();
 
