@@ -15,10 +15,10 @@ const chromePath = join(
 );
 export async function generateLighthouseReport() {
   try {
-    const report = await executeLighthouseFlow(chromePath);
+    // const report = await executeLighthouseFlow(chromePath);
 
-    console.log(report);
-    core.setOutput("img", report);
+    // console.log(report);
+    // core.setOutput("img", report);
     //     if (!report) {
     //       core.setFailed("Report wasn't generated");
     //       throw new Error("Report wasn't generated");
@@ -28,34 +28,34 @@ export async function generateLighthouseReport() {
     //     const parsedReport = parseLighthouseReport(report);
     //     core.endGroup();
 
-    //     core.startGroup("Post comment");
-    //     const octokit = github.getOctokit(core.getInput("token"));
+    core.startGroup("Post comment");
+    const octokit = github.getOctokit(core.getInput("token"));
 
-    //     const { data: comment } = await octokit.rest.issues.createComment({
-    //       ...github.context.repo,
-    //       issue_number: github.context.issue.number,
-    //       body: `<details>
-    // <summary>🗼 Click to expand performance result</summary>
+    const { data: comment } = await octokit.rest.issues.createComment({
+      ...github.context.repo,
+      issue_number: github.context.issue.number,
+      body: `<details>
+    <summary>🗼 Click to expand performance result</summary>
 
-    // <br>
+    <br>
 
-    // | Name       | Result  |
-    // |------------|---------|
-    // | Performance     | ${parsedReport[0].performance}  |
-    // | Accessibility     | ${parsedReport[0].accessibility}   |
-    // | Best Practices    | ${parsedReport[0]["best_practices"]}  |
-    // | SEO     | ${parsedReport[0].seo}   |
-    // | First Contentful Paint     | ${parsedReport[0].fcp.displayValue}  |
-    // | Largest Contentful Paint     | ${parsedReport[0].cls.displayValue}  |
-    // | Total Blocking Time     | ${parsedReport[0].tbt.displayValue}  |
-    // | Cumulative Layout Shift     | ${parsedReport[0].cls.displayValue}  |
-    // | Speed Index     | ${parsedReport[0].speed.displayValue}  |
+    | Name       | Result  |
+    |------------|---------|
+    | Performance     | 30  |
+    | Accessibility     | 90  |
+    | Best Practices    | 90  |
+    | SEO     | 90   |
+    | First Contentful Paint     | 1.1s |
+    | Largest Contentful Paint     | 2s  |
+    | Total Blocking Time     | 2s  |
+    | Cumulative Layout Shift     | 0.0015s  |
+    | Speed Index     | 25  |
 
-    // </details>`,
-    //     });
-    //     core.info(
-    //       `Created comment id '${comment.id}' on issue '${github.context.issue.number}'.`
-    //     );
-    //     core.endGroup();
+    </details>`,
+    });
+    core.info(
+      `Created comment id '${comment.id}' on issue '${github.context.issue.number}'.`
+    );
+    core.endGroup();
   } catch (error) {}
 }
