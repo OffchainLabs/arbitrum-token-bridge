@@ -1,4 +1,5 @@
 import { FlowResult, Result } from "lighthouse";
+import * as core from "@actions/core";
 
 type Metric = {
   /** Number from 0 to 1 */
@@ -59,11 +60,12 @@ function parse(result: FlowResult.Step, metricName: string): Metric {
 function parseNavigationResult(
   navigationResult: FlowResult.Step
 ): NavigationResult {
-  const fcp = parse(navigationResult, "fcp");
-  const lcp = parse(navigationResult, "fcp");
-  const tbt = parse(navigationResult, "fcp");
-  const cls = parse(navigationResult, "fcp");
+  const fcp = parse(navigationResult, "first-contentful-paint");
+  const lcp = parse(navigationResult, "largest-contentful-paint");
+  const tbt = parse(navigationResult, "total-blocking-time");
+  const cls = parse(navigationResult, "cumulative-layout-shift");
   const speed = navigationResult.lhr.audits["speed-index"];
+
   return {
     fcp,
     lcp,
@@ -83,8 +85,12 @@ function parseNavigationResult(
 }
 
 function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
-  const tbt = parse(timespanResult, "fcp");
-  const cls = parse(timespanResult, "fcp");
+  core.info("parsetimespan");
+  const tbt = parse(timespanResult, "total-blocking-time");
+  core.info("tbt");
+  core.info(JSON.stringify(tbt));
+  const cls = parse(timespanResult, "cumulative-layout-shift");
+  core.info("cls");
   const longTasks = (
     timespanResult.lhr.audits["long-tasks"].details! as unknown as {
       items: {
@@ -95,6 +101,12 @@ function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
     }
   ).items;
   const inp = timespanResult.lhr.audits["interaction-to-next-paint"];
+
+  core.info("timespanResult.lhr.categories.performance");
+  core.info(JSON.stringify(timespanResult.lhr.categories.performance));
+
+  core.info("timespanResult.lhr.categories['best-practices']");
+  core.info(JSON.stringify(timespanResult.lhr.categories["best-practices"]));
 
   return {
     performance: {
