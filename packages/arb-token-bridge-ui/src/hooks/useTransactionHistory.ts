@@ -774,10 +774,8 @@ export const useTransactionHistory = (
         return
       }
 
-      const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
-
-      // ETH deposit to the same address
-      if (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) {
+      // eth deposits
+      if (tx.assetType === AssetType.ETH) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
         updateCachedTransaction(updatedEthDeposit)
         return

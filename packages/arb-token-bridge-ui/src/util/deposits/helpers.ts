@@ -28,7 +28,7 @@ import {
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 import { normalizeTimestamp } from '../../state/app/utils'
 
-function isEthDepositMessage(
+export function isEthDepositMessage(
   message:
     | EthDepositMessage
     | ParentToChildMessageReader
