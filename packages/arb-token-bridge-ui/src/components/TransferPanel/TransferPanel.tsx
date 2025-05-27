@@ -1365,12 +1365,11 @@ export function TransferPanel() {
           (!isLoadingAccountType && !isSmartContractWallet)) && (
           // Hide the settings if it's not a lifi route AND if it's a SCW
           <div className="z-50 mb-2 ml-auto sm:relative">
-            <button onClick={() => openDialog('settings')}>
-              <Cog8ToothIcon
-                width={30}
-                className="arb-hover text-white"
-                aria-label="Open Settings"
-              />
+            <button
+              onClick={() => openDialog('settings')}
+              aria-label="Open Settings"
+            >
+              <Cog8ToothIcon width={30} className="arb-hover text-white" />
             </button>
           </div>
         )}

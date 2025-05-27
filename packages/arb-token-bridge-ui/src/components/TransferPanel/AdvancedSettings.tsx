@@ -82,21 +82,24 @@ export const AdvancedSettings = ({
   const { destinationAddressError: error } =
     useDestinationAddressError(destinationAddress)
   const { data: warning } = useSWRImmutable(
-    [
-      destinationAddress,
-      isDepositMode,
-      isEOA,
-      childChainProvider,
-      parentChainProvider,
-      childChain.id,
-      parentChain.id,
-      networks.destinationChain.id
-    ],
-    () =>
+    destinationAddress
+      ? [
+          destinationAddress,
+          isEOA,
+          networks.destinationChain.id,
+          isDepositMode,
+          childChainProvider,
+          parentChainProvider,
+          childChain.id,
+          parentChain.id,
+          'useDestinationAddressWarning'
+        ]
+      : null,
+    ([_destinationAddress, _isEOA, _destinationChainId]) =>
       getDestinationAddressWarning({
-        destinationAddress,
-        isEOA,
-        destinationChainId: networks.destinationChain.id
+        destinationAddress: _destinationAddress,
+        isEOA: _isEOA,
+        destinationChainId: _destinationChainId
       })
   )
 
