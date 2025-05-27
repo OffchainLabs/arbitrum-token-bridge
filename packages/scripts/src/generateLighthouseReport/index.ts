@@ -18,8 +18,10 @@ export async function generateLighthouseReport() {
     const report = await executeLighthouseFlow(chromePath);
 
     core.startGroup("Parse lighthouse report");
+    core.info("befoer parsing");
     const [parsedNavigationReport, parsedTimespanReport] =
       parseLighthouseReport(report);
+    core.info("after parsing");
     core.endGroup();
 
     core.startGroup("Post comment");
