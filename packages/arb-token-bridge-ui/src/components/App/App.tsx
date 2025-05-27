@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAccount, WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
@@ -9,22 +9,18 @@ import { createOvermind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
-import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
-import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
-import { TokenListSyncer } from '../syncers/TokenListSyncer'
+import { useSyncTokenList } from '../syncers/useSyncTokenList'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 import React from 'react'
@@ -46,51 +42,14 @@ const rainbowkitTheme = merge(darkTheme(), {
 
 const queryClient = new QueryClient()
 
-const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
+const useArbTokenBridgeStoreSync = () => {
   const actions = useActions()
-  const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
 
   useSyncConnectedChainToAnalytics()
   useSyncConnectedChainToQueryParams()
-
-  const [tokenBridgeParams, setTokenBridgeParams] =
-    useState<TokenBridgeParams | null>(null)
-
-  // Listen for account and network changes
-  useEffect(() => {
-    // Any time one of those changes
-    setTokenBridgeParams(null)
-
-    actions.app.reset()
-    actions.app.setChainIds({
-      l1NetworkChainId: parentChain.id,
-      l2NetworkChainId: childChain.id
-    })
-
-    setTokenBridgeParams({
-      l1: {
-        network: parentChain,
-        provider: parentChainProvider
-      },
-      l2: {
-        network: childChain,
-        provider: childChainProvider
-      }
-    })
-  }, [
-    networks.sourceChain.id,
-    parentChain.id,
-    childChain.id,
-    parentChain,
-    childChain,
-    parentChainProvider,
-    childChainProvider
-  ])
 
   useEffect(() => {
     axios
@@ -104,18 +63,15 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
         console.warn('Failed to fetch warning tokens:', err)
       })
   }, [])
-
-  if (!tokenBridgeParams) {
-    return null
-  }
-
-  return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
 const AppContent = React.memo(() => {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
+
+  useArbTokenBridgeStoreSync()
+  useSyncTokenList()
 
   if (!tosAccepted) {
     return (
@@ -146,8 +102,6 @@ const AppContent = React.memo(() => {
       <Header>
         <HeaderAccountOrConnectWalletButton />
       </Header>
-      <TokenListSyncer />
-      <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
     </>
   )
