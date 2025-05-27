@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Collection of utility scripts",
   "main": "dist/index.js",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "build": "vite build",
     "test": "vitest",
