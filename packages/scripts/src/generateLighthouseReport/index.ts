@@ -2,10 +2,20 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { executeLighthouseFlow } from "./executeLighthouse";
 import { parseLighthouseReport } from "./parseLighthouseReport";
+import { join, resolve } from "path";
+import { config } from "../../../../package.json";
 
+const workspaceRoot = resolve(process.cwd(), "../..");
+// "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
+const chromePath = join(
+  workspaceRoot,
+  config.chromePath,
+  `/chrome/linux-${config.chromeVersion}`,
+  "chrome-linux64/chrome"
+);
 export async function generateLighthouseReport() {
   try {
-    const report = await executeLighthouseFlow();
+    const report = await executeLighthouseFlow(chromePath);
 
     console.log(report);
     core.setOutput("img", report);
