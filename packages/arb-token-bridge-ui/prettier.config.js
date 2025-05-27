@@ -1,3 +1,7 @@
+/**
+ * @see https://prettier.io/docs/configuration
+ * @type {import("prettier").Config}
+ */
 module.exports = {
   tabWidth: 2,
   useTabs: false,
@@ -6,8 +10,9 @@ module.exports = {
   bracketSpacing: true,
   arrowParens: 'avoid',
   trailingComma: 'none',
+  tailwindStylesheet: './src/styles/tailwind.css',
+  tailwindFunctions: ['twMerge'],
 
   // Plugins
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  plugins: [require('prettier-plugin-tailwindcss')]
+  plugins: [import('prettier-plugin-tailwindcss')]
 }

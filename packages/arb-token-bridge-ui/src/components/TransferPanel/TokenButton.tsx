@@ -69,7 +69,7 @@ export function TokenButton({
 
       <Button
         variant="primary"
-        className="arb-hover h-full w-max rounded-bl rounded-tl border-0 bg-transparent px-3 pb-1 pt-2 text-white"
+        className="arb-hover h-full w-max rounded-tl rounded-bl border-0 bg-transparent px-3 pt-2 pb-1 text-white"
         aria-label="Select Token"
         onClick={() => openDialog('token_selection')}
         disabled={disabled}

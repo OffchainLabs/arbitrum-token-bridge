@@ -14,10 +14,13 @@ function createTokenLogoMapFromTokenLists(
     return {}
   }
   const arrayOfTokens = tokenLists.flatMap(tkn => tkn.tokens) || []
-  return arrayOfTokens.reduce((acc, tkn) => {
-    acc[tkn.address.toLowerCase()] = tkn.logoURI
-    return acc
-  }, {} as { [key in string]: string | undefined })
+  return arrayOfTokens.reduce(
+    (acc, tkn) => {
+      acc[tkn.address.toLowerCase()] = tkn.logoURI
+      return acc
+    },
+    {} as { [key in string]: string | undefined }
+  )
 }
 
 export const TransactionsTableTokenImage = ({

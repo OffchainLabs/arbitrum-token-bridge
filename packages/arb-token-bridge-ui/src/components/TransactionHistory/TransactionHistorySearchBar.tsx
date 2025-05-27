@@ -80,7 +80,7 @@ export function TransactionHistorySearchBar() {
         )}
         onSubmit={event => event.preventDefault()}
       >
-        <MagnifyingGlassIcon className="absolute left-2 top-1/2 -mt-[7px] h-3 w-3" />
+        <MagnifyingGlassIcon className="absolute top-1/2 left-2 -mt-[7px] h-3 w-3" />
         <Tooltip
           content="Search any wallet address to view transactions and claim withdrawals for them. The funds will arrive at the destination wallet address specified by the original withdrawal transaction."
           wrapperClassName="h-full w-full"
@@ -95,7 +95,7 @@ export function TransactionHistorySearchBar() {
             inputMode="search"
             placeholder="Search any wallet address"
             aria-label="Transaction history wallet address input"
-            className="h-full w-full bg-transparent py-1 pl-6 pr-3 text-sm font-light placeholder:text-white/60"
+            className="h-full w-full bg-transparent py-1 pr-3 pl-6 text-sm font-light placeholder:text-white/60"
             // stop password managers from autofilling
             data-1p-ignore
             data-lpignore="true"
@@ -106,7 +106,7 @@ export function TransactionHistorySearchBar() {
           type="submit"
           variant="secondary"
           className={twMerge(
-            'select-none rounded-l-none border-y-0 border-r-0 border-gray-dark bg-black py-[7px]',
+            'rounded-l-none border-y-0 border-r-0 border-gray-dark bg-black py-[7px] select-none',
             'hover:bg-white/20 hover:opacity-100',
             'disabled:border-y-0 disabled:border-r-0 disabled:border-l-gray-dark'
           )}
