@@ -114,6 +114,9 @@ export const updateAdditionalDepositData = async (
     })
   }
 
+  if (depositTx.assetType === AssetType.ETH) {
+  }
+
   // Check if deposit is ETH (to the same address)
   if (!isRetryableDeposit) {
     return updateETHDepositStatusData({
@@ -639,25 +642,26 @@ export const getParentToChildMessageDataFromParentTxHash = async ({
   }
 
   const getNitroDepositMessage = async () => {
-    // post-nitro handling
-    if (!isRetryableDeposit) {
-      // nitro eth deposit (to the same address)
-      const [ethDepositMessage] = await parentTxReceipt.getEthDeposits(
-        childProvider
-      )
-      return {
-        isClassic: false,
-        parentToChildMsg: ethDepositMessage
-      }
-    }
-
-    // Else, nitro retryable (token deposit or eth deposit to a custom destination)
+    // deposits via retryables
     const [parentToChildMsg] = await parentTxReceipt.getParentToChildMessages(
       childProvider
     )
+
+    if (parentToChildMsg) {
+      return {
+        isClassic: false,
+        parentToChildMsg
+      }
+    }
+
+    // nitro eth deposit (to the same address)
+    const [ethDepositMessage] = await parentTxReceipt.getEthDeposits(
+      childProvider
+    )
+
     return {
       isClassic: false,
-      parentToChildMsg
+      parentToChildMsg: ethDepositMessage
     }
   }
 
