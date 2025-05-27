@@ -15,10 +15,9 @@ const chromePath = join(
 );
 export async function generateLighthouseReport() {
   try {
-    // const report = await executeLighthouseFlow(chromePath);
+    const report = await executeLighthouseFlow(chromePath);
 
-    // console.log(report);
-    // core.setOutput("img", report);
+    //     core.setOutput("img", report);
     //     if (!report) {
     //       core.setFailed("Report wasn't generated");
     //       throw new Error("Report wasn't generated");
@@ -28,38 +27,38 @@ export async function generateLighthouseReport() {
     //     const parsedReport = parseLighthouseReport(report);
     //     core.endGroup();
 
-    core.startGroup("Post comment");
-    const github = getOctokit(process.env.GITHUB_TOKEN || "");
-    // const octokit = getOctokit(core.getInput("token"));
+    //     core.startGroup("Post comment");
+    //     const github = getOctokit(process.env.GITHUB_TOKEN || "");
+    //     // const octokit = getOctokit(core.getInput("token"));
 
-    const { data: comment } = await github.rest.issues.createComment({
-      ...context.repo,
-      issue_number: context.issue.number,
-      body: `<details>
-  <summary>❌ Lighthouse: Regression found </summary>
+    //     const { data: comment } = await github.rest.issues.createComment({
+    //       ...context.repo,
+    //       issue_number: context.issue.number,
+    //       body: `<details>
+    //   <summary>❌ Lighthouse: Regression found </summary>
 
-<br>
+    // <br>
 
-<!-- use a blank line and then Markdown table below -->
+    // <!-- use a blank line and then Markdown table below -->
 
-| Name                     | Result | Regression |
-|--------------------------|--------|------------|
-| Performance              | 30     | yes ❌       |
-| Accessibility            | 90     | no ✅       |
-| Best Practices           | 90     | no ✅       |
-| SEO                      | 90     | no ✅       |
-| First Contentful Paint   | 1.1s   | no ✅       |
-| Largest Contentful Paint | 2s     | yes ❌       |
-| Total Blocking Time      | 2s     | yes ❌       |
-| Cumulative Layout Shift  | 0.0015s| yes ✅       |
-| Speed Index              | 25     | yes ❌       |
+    // | Name                     | Result | Regression |
+    // |--------------------------|--------|------------|
+    // | Performance              | 30     | yes ❌       |
+    // | Accessibility            | 90     | no ✅       |
+    // | Best Practices           | 90     | no ✅       |
+    // | SEO                      | 90     | no ✅       |
+    // | First Contentful Paint   | 1.1s   | no ✅       |
+    // | Largest Contentful Paint | 2s     | yes ❌       |
+    // | Total Blocking Time      | 2s     | yes ❌       |
+    // | Cumulative Layout Shift  | 0.0015s| yes ✅       |
+    // | Speed Index              | 25     | yes ❌       |
 
-</details>`,
-    });
+    // </details>`,
+    //     });
 
-    core.info(
-      `Created comment id '${comment.id}' on issue '${context.issue.number}'.`
-    );
+    //     core.info(
+    //       `Created comment id '${comment.id}' on issue '${context.issue.number}'.`
+    //     );
     core.endGroup();
   } catch (error) {
     console.log(error);
