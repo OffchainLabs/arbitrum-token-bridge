@@ -23,12 +23,13 @@ export async function executeLighthouseFlow() {
     });
     const page = await browser.newPage();
     await page.goto(
-      "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
+      // "http://localhost:3000/?sourceChain=ethereum&destinationChain=arbitrum-one&tab=bridge"
+      "https://www.google.com/"
     );
 
-    const flow = await startFlow(page, {
-      config: desktopConfig,
-    });
+    // const flow = await startFlow(page, {
+    //   config: desktopConfig,
+    // });
 
     await new Promise((resolve) => {
       setTimeout(() => resolve(void 0), 5_000);
