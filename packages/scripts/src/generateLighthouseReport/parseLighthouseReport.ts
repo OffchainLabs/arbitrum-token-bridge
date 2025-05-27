@@ -26,9 +26,17 @@ type TimespanResult = {
     total: number;
     tbt: Metric;
     cls: Metric;
-    inp: Metric;
+    inp: {
+      score: number;
+      numericValue: number;
+      displayValue: string;
+    };
   };
   best_practices: number;
+  longTasks: {
+    total: number;
+    durationMs: number;
+  };
 };
 type SnapshotResult = {
   performance: number;
@@ -37,46 +45,63 @@ type SnapshotResult = {
   seo: Result;
 };
 
-function parseNavigationResult(
-  navigationResult: FlowResult.Step
-): NavigationResult {
-  const fcp = navigationResult.lhr.audits["first-contentful-paint"];
-  const lcp = navigationResult.lhr.audits["largest-contentful-paint"];
-  const tbt = navigationResult.lhr.audits["total-blocking-time"];
-  const cls = navigationResult.lhr.audits["first-contentful-paint"];
-  const speed = navigationResult.lhr.audits["speed-index"];
+function commonParse(result: FlowResult.Step): {
+  fcp: Metric;
+  lcp: Metric;
+  tbt: Metric;
+  cls: Metric;
+  speed: Metric;
+} {
+  const fcp = result.lhr.audits["first-contentful-paint"];
+  const lcp = result.lhr.audits["largest-contentful-paint"];
+  const tbt = result.lhr.audits["total-blocking-time"];
+  const cls = result.lhr.audits["first-contentful-paint"];
+  const speed = result.lhr.audits["speed-index"];
 
   return {
     fcp: {
       score: fcp.score!,
       displayValue: fcp.displayValue!,
-      numericValue: fcp.numericUnit!,
+      // numericValue: fcp.numericUnit!,
       scoringOptions: fcp.scoringOptions!,
     },
     lcp: {
       score: lcp.score!,
       displayValue: lcp.displayValue!,
-      numericValue: lcp.numericUnit!,
+      // numericValue: lcp.numericUnit!,
       scoringOptions: lcp.scoringOptions!,
     },
     tbt: {
       score: tbt.score!,
       displayValue: tbt.displayValue!,
-      numericValue: tbt.numericUnit!,
+      // numericValue: tbt.numericUnit!,
       scoringOptions: tbt.scoringOptions!,
     },
     cls: {
       score: cls.score!,
       displayValue: cls.displayValue!,
-      numericValue: cls.numericUnit!,
+      // numericValue: cls.numericUnit!,
       scoringOptions: cls.scoringOptions!,
     },
     speed: {
       score: speed.score!,
       displayValue: speed.displayValue!,
-      numericValue: speed.numericUnit!,
+      // numericValue: speed.numericUnit!,
       scoringOptions: speed.scoringOptions!,
     },
+  };
+}
+
+function parseNavigationResult(
+  navigationResult: FlowResult.Step
+): NavigationResult {
+  const { fcp, lcp, tbt, cls, speed } = commonParse(navigationResult);
+  return {
+    fcp,
+    lcp,
+    tbt,
+    cls,
+    speed,
     performance: navigationResult.lhr.categories.performance.score!,
     accessibility: navigationResult.lhr.categories.accessibility.score!,
     best_practices: navigationResult.lhr.categories["best-practices"].score!,
@@ -84,6 +109,43 @@ function parseNavigationResult(
   };
 }
 
-export function parseLighthouseReport(report: FlowResult): [NavigationResult] {
-  return [parseNavigationResult(report.steps[0])];
+function parseTimespanResult(timespanResult: FlowResult.Step): TimespanResult {
+  const { tbt, cls } = commonParse(timespanResult);
+  const longTasks = (
+    timespanResult.lhr.audits["long-tasks"].details! as unknown as {
+      items: {
+        url: string;
+        duration: number;
+        startTime: number;
+      }[];
+    }
+  ).items;
+
+  const inp = timespanResult.lhr.audits["interaction-to-next-paint"];
+  return {
+    performance: {
+      total: timespanResult.lhr.categories.performance.score!,
+      tbt,
+      cls,
+      inp: {
+        score: inp.score!,
+        numericValue: inp.numericValue!,
+        displayValue: inp.displayValue!,
+      },
+    },
+    best_practices: timespanResult.lhr.categories.best_practices.score!,
+    longTasks: {
+      total: longTasks.length,
+      durationMs: longTasks.reduce((sum, task) => sum + task.duration, 0),
+    },
+  };
+}
+
+export function parseLighthouseReport(
+  report: FlowResult
+): [NavigationResult, TimespanResult] {
+  return [
+    parseNavigationResult(report.steps[0]),
+    parseTimespanResult(report.steps[1]),
+  ] as const;
 }
