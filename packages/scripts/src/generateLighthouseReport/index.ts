@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import * as github from "@actions/github";
+import { getOctokit, context } from "@actions/github";
 import { executeLighthouseFlow } from "./executeLighthouse";
 import { parseLighthouseReport } from "./parseLighthouseReport";
 import { join, resolve } from "path";
@@ -29,12 +29,13 @@ export async function generateLighthouseReport() {
     //     core.endGroup();
 
     core.startGroup("Post comment");
-    const octokit = github.getOctokit(core.getInput("token"));
+    const github = getOctokit(process.env.GITHUB_TOKEN || "");
+    // const octokit = getOctokit(core.getInput("token"));
 
-    console.log(github.context.issue.number, github.context.repo);
-    const { data: comment } = await octokit.rest.issues.createComment({
-      ...github.context.repo,
-      issue_number: github.context.issue.number,
+    console.log(context.issue.number, context.repo);
+    const { data: comment } = await github.rest.issues.createComment({
+      ...context.repo,
+      issue_number: context.issue.number,
       body: "test",
     });
     console.log(comment);
