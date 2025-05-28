@@ -101,27 +101,22 @@ export const sanitizeDisabledFeaturesQueryParam = (
   }
 
   const features = disabledFeatures.split('_')
-  const validFeatures = features.filter(feature => {
-    const normalizedFeature = feature.toLowerCase()
-    return Object.values(DisabledFeatures).some(
-      validFeature => validFeature.toLowerCase() === normalizedFeature
-    )
-  })
+  const validFeatures = new Set(
+    features
+      .map(feature => {
+        const normalizedFeature = feature.toLowerCase()
+        return Object.values(DisabledFeatures).find(
+          validFeature => validFeature.toLowerCase() === normalizedFeature
+        )
+      })
+      .filter((feature): feature is DisabledFeatures => feature !== undefined)
+  )
 
-  if (validFeatures.length === 0) {
+  if (validFeatures.size === 0) {
     return undefined
   }
 
-  // Map back to the canonical case from the enum
-  return validFeatures
-    .map(feature => {
-      const normalizedFeature = feature.toLowerCase()
-      return Object.values(DisabledFeatures).find(
-        validFeature => validFeature.toLowerCase() === normalizedFeature
-      )
-    })
-    .filter((feature): feature is DisabledFeatures => feature !== undefined)
-    .join('_')
+  return Array.from(validFeatures).join('_')
 }
 
 function getDestinationWithSanitizedQueryParams(
