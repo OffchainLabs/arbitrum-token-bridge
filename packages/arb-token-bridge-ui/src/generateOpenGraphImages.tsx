@@ -4,7 +4,7 @@ import sharp from 'sharp'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
-import yargs from 'yargs'
+import yargs, { Arguments, InferredOptionTypes } from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 // this has to be called before import from "networks.ts"
@@ -355,32 +355,30 @@ async function generate(argv: any) {
   }
 }
 
-async function main() {
-  await yargs(hideBin(process.argv))
-    .command({
-      command: 'generate',
-      handler: async (argv: any) => {
-        await generate(argv)
-      }
-    })
-    .option('core', {
-      alias: 'c',
-      type: 'boolean',
-      description: 'Generate images for core chains',
-      default: false
-    })
-    .option('orbit', {
-      alias: 'o',
-      type: 'boolean',
-      description: 'Generate images for orbit chains',
-      default: true
-    })
-    .parse()
-}
+const generateOptions = {
+  core: {
+    alias: 'c',
+    type: 'boolean',
+    description: 'Generate images for core chains',
+    default: false
+  },
+  orbit: {
+    alias: 'o',
+    type: 'boolean',
+    description: 'Generate images for orbit chains',
+    default: true
+  }
+} as const
 
-main()
-  .then(() => process.exit(0))
-  .catch(error => {
-    console.error(error)
-    process.exit(1)
+type Args = Arguments<InferredOptionTypes<typeof generateOptions>>
+
+yargs(hideBin(process.argv))
+  .command<Args>({
+    command: 'generate',
+    describe: 'Generate OpenGraph images',
+    handler: async argv => {
+      await generate(argv)
+    }
   })
+  .options(generateOptions)
+  .parse()
