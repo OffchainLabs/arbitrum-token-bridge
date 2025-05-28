@@ -397,10 +397,27 @@ describe('sanitizeDisabledFeaturesQueryParam', () => {
     ).toEqual(DisabledFeatures.TX_HISTORY)
   })
 
-  it('should be case sensitive', () => {
-    expect(
-      sanitizeDisabledFeaturesQueryParam('batch-transfers')
-    ).toBeUndefined()
-    expect(sanitizeDisabledFeaturesQueryParam('tx-history')).toBeUndefined()
+  it('should be case insensitive and return canonical case', () => {
+    expect(sanitizeDisabledFeaturesQueryParam('batch-transfers')).toEqual(
+      DisabledFeatures.BATCH_TRANSFERS
+    )
+    expect(sanitizeDisabledFeaturesQueryParam('tx-history')).toEqual(
+      DisabledFeatures.TX_HISTORY
+    )
+    expect(sanitizeDisabledFeaturesQueryParam('BATCH-TRANSFERS')).toEqual(
+      DisabledFeatures.BATCH_TRANSFERS
+    )
+    expect(sanitizeDisabledFeaturesQueryParam('TX-HISTORY')).toEqual(
+      DisabledFeatures.TX_HISTORY
+    )
+  })
+
+  it('should handle mixed case in the same query', () => {
+    const result = sanitizeDisabledFeaturesQueryParam(
+      'batch-transfers_TX-HISTORY_Batch-Transfers'
+    )
+    expect(result).toEqual(
+      `${DisabledFeatures.BATCH_TRANSFERS}_${DisabledFeatures.TX_HISTORY}`
+    )
   })
 })
