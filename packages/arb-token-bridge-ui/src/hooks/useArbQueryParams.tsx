@@ -39,6 +39,11 @@ export enum TabParamEnum {
   TX_HISTORY = 'tx_history'
 }
 
+export enum DisabledFeatures {
+  BATCH_TRANSFER = 'batch-transfer',
+  TX_HISTORY = 'tx-history'
+}
+
 export enum AmountQueryParamEnum {
   MAX = 'max'
 }
@@ -52,6 +57,25 @@ export const indexToTab = {
   0: TabParamEnum.BRIDGE,
   1: TabParamEnum.TX_HISTORY
 } as const satisfies Record<number, TabParamEnum>
+
+// Add this before the useArbQueryParams function
+const DisabledFeaturesParam = {
+  encode: (features: DisabledFeatures[] | undefined) => {
+    if (!features?.length) return undefined
+    return features.join('_')
+  },
+  decode: (features: string | (string | null)[] | null | undefined) => {
+    if (!features) return []
+    const featuresStr = features.toString()
+    if (!featuresStr) return []
+
+    return featuresStr
+      .split('_')
+      .filter((feature): feature is DisabledFeatures =>
+        Object.values(DisabledFeatures).includes(feature as DisabledFeatures)
+      )
+  }
+}
 
 export const useArbQueryParams = () => {
   /*
@@ -68,8 +92,8 @@ export const useArbQueryParams = () => {
     destinationAddress: withDefault(StringParam, undefined),
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
-    txHistory: withDefault(BooleanParam, true), // enable/disable tx history
-    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]) // which tab is active
+    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
+    disabledFeatures: withDefault(DisabledFeaturesParam, []) // disabled features in the bridge
   })
 }
 
