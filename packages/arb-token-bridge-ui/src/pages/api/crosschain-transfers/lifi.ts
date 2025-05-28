@@ -182,13 +182,6 @@ function findFastestRoute(
   return fastestRoute
 }
 
-const INTEGRATOR_ID = 'arbitrum'
-
-createConfig({
-  integrator: INTEGRATOR_ID,
-  apiKey: process.env.LIFI_KEY
-})
-
 type LifiCrossTransfersRoutesResponse =
   | {
       message: string
@@ -212,6 +205,13 @@ export default async function handler(
   req: NextApiRequestWithLifiParams,
   res: NextApiResponse<LifiCrossTransfersRoutesResponse>
 ) {
+  const INTEGRATOR_ID = 'arbitrum'
+
+  createConfig({
+    integrator: INTEGRATOR_ID,
+    apiKey: process.env.LIFI_KEY
+  })
+
   const {
     fromToken,
     toToken,

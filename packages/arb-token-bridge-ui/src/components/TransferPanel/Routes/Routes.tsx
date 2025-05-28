@@ -17,9 +17,9 @@ import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { ChainId } from '../../../types/ChainId'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
-import { getFromAndToTokenAddresses } from '../LifiSettings'
 import { allowedSourceTokens } from '../../../pages/api/crosschain-transfers/lifi'
 import { constants } from 'ethers'
+import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 
 function Wrapper({ children }: PropsWithChildren) {
   return <div className="mb-2 flex flex-col gap-2">{children}</div>

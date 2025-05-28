@@ -1,7 +1,6 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
-import { act } from 'react-dom/test-utils'
 import {
   DepositStatus,
   LifiMergedTransaction,
