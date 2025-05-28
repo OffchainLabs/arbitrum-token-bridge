@@ -18,7 +18,6 @@ import {
   defaultSlippage,
   useLifiSettingsStore
 } from '../hooks/useLifiSettingsStore'
-import { getFromAndToTokenAddresses, LifiSettings } from '../LifiSettings'
 import { Loader } from '../../common/atoms/Loader'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
@@ -26,6 +25,7 @@ import { shallow } from 'zustand/shallow'
 import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { Address } from 'viem'
+import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 
 export function LifiRoutes({
   cheapestTag,
@@ -82,12 +82,9 @@ export function LifiRoutes({
 
   if (isLoading) {
     return (
-      <>
-        <LifiSettings />
-        <div className="flex items-center justify-center">
-          <Loader color="white" size="small" />
-        </div>
-      </>
+      <div className="flex items-center justify-center">
+        <Loader color="white" size="small" />
+      </div>
     )
   }
 
@@ -98,13 +95,9 @@ export function LifiRoutes({
       disabledBridges.length > 0
     ) {
       return (
-        <>
-          <LifiSettings />
-          <div className="rounded border border-lilac bg-lilac/50 p-3 text-sm text-white">
-            Want more route options? Consider adjusting your slippage in
-            Settings.
-          </div>
-        </>
+        <div className="rounded border border-lilac bg-lilac/50 p-3 text-sm text-white">
+          Want more route options? Consider adjusting your slippage in Settings.
+        </div>
       )
     }
 
@@ -127,17 +120,11 @@ export function LifiRoutes({
     if (cheapestTag) {
       tags.push(cheapestTag)
     }
-    return (
-      <>
-        <LifiSettings />
-        <LifiRoute type="lifi" route={route} tag={tags} />
-      </>
-    )
+    return <LifiRoute type="lifi" route={route} tag={tags} />
   }
 
   return (
     <>
-      <LifiSettings />
       {cheapestRoute && (
         <LifiRoute
           type="lifi-cheapest"
