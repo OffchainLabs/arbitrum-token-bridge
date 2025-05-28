@@ -15,15 +15,10 @@ const chromePath = join(
 );
 export async function generateLighthouseReport() {
   try {
-    const reports = await Promise.all([
-      executeLighthouseFlow(chromePath),
-      executeLighthouseFlow(chromePath),
-      executeLighthouseFlow(chromePath),
-      executeLighthouseFlow(chromePath),
-      executeLighthouseFlow(chromePath),
-    ]);
+    const report = await executeLighthouseFlow(chromePath);
+    const report1 = await executeLighthouseFlow(chromePath);
+    const report2 = await executeLighthouseFlow(chromePath);
 
-    const report = reports[0];
     core.startGroup("Parse lighthouse report");
     const [parsedNavigationReport, parsedTimespanReport] =
       parseLighthouseReport(report);
