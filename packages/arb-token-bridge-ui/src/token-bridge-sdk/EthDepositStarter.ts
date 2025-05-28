@@ -163,21 +163,13 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const isCustomDestinationAddress = !!destinationAddress
-
-    const depositRequest = isCustomDestinationAddress
-      ? await ethBridger.getDepositToRequest({
-          amount,
-          from: address,
-          parentProvider: this.sourceChainProvider,
-          childProvider: this.destinationChainProvider,
-          // we know it's defined
-          destinationAddress: String(destinationAddress)
-        })
-      : await ethBridger.getDepositRequest({
-          amount,
-          from: address
-        })
+    const depositRequest = await ethBridger.getDepositToRequest({
+      amount,
+      from: address,
+      parentProvider: this.sourceChainProvider,
+      childProvider: this.destinationChainProvider,
+      destinationAddress: destinationAddress ?? address
+    })
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest
@@ -187,24 +179,18 @@ export class EthDepositStarter extends BridgeTransferStarter {
       gasLimit: percentIncrease(gasLimit, BigNumber.from(5))
     }
 
-    const sourceChainTransaction = isCustomDestinationAddress
-      ? await ethBridger.depositTo({
-          amount,
-          parentSigner: signer,
-          childProvider: this.destinationChainProvider,
-          destinationAddress: String(destinationAddress),
-          overrides: parentChainOverrides,
-          retryableGasOverrides: {
-            // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
-            // the 30% gas limit increase should cover the difference
-            gasLimit: { percentIncrease: BigNumber.from(30) }
-          }
-        })
-      : await ethBridger.deposit({
-          amount,
-          parentSigner: signer,
-          overrides: parentChainOverrides
-        })
+    const sourceChainTransaction = await ethBridger.depositTo({
+      amount,
+      parentSigner: signer,
+      childProvider: this.destinationChainProvider,
+      destinationAddress: destinationAddress ?? address,
+      overrides: parentChainOverrides,
+      retryableGasOverrides: {
+        // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+        // the 30% gas limit increase should cover the difference
+        gasLimit: { percentIncrease: BigNumber.from(30) }
+      }
+    })
 
     return {
       transferType: this.transferType,
