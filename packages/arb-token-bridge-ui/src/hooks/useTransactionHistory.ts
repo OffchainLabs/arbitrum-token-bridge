@@ -16,7 +16,6 @@ import {
 import { isTeleportTx, Transaction } from '../types/Transactions'
 import { MergedTransaction } from '../state/app/state'
 import {
-  isCustomDestinationAddressTx,
   normalizeTimestamp,
   transformDeposit,
   transformWithdrawal
@@ -774,16 +773,14 @@ export const useTransactionHistory = (
         return
       }
 
-      const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
-
-      // ETH deposit to the same address
-      if (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) {
+      // eth deposits (either via eth deposit messages or retryable tickets)
+      if (tx.assetType === AssetType.ETH) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
         updateCachedTransaction(updatedEthDeposit)
         return
       }
 
-      // Token deposit or ETH deposit to a different destination address
+      // token deposits (via retryable tickets)
       const updatedRetryableDeposit = await getUpdatedRetryableDeposit(tx)
       updateCachedTransaction(updatedRetryableDeposit)
     },
