@@ -278,8 +278,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { isFeatureDisabled } = useDisabledFeatures()
   const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
 
-  console.log('xxxx isTxHistoryEnabled', isTxHistoryEnabled)
-
   const forceFetchReceived = useForceFetchReceived(
     state => state.forceFetchReceived
   )
