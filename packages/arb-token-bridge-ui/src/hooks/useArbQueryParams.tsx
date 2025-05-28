@@ -40,7 +40,7 @@ export enum TabParamEnum {
 }
 
 export enum DisabledFeatures {
-  BATCH_TRANSFER = 'batch-transfer',
+  BATCH_TRANSFERS = 'batch-transfers',
   TX_HISTORY = 'tx-history'
 }
 

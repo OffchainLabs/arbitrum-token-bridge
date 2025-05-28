@@ -2,9 +2,18 @@ import { describe, it, expect } from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
-import { AmountQueryParam, ChainParam, TabParam } from '../useArbQueryParams'
+import {
+  AmountQueryParam,
+  ChainParam,
+  TabParam,
+  DisabledFeatures
+} from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
-import { sanitizeTabQueryParam, sanitizeTokenQueryParam } from '../../pages'
+import {
+  sanitizeTabQueryParam,
+  sanitizeTokenQueryParam,
+  sanitizeDisabledFeaturesQueryParam
+} from '../../pages'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
@@ -353,5 +362,45 @@ describe('sanitizeTabQueryParam', () => {
     expect(result2).toEqual('bridge')
     expect(result3).toEqual('bridge')
     expect(result4).toEqual('bridge')
+  })
+})
+
+describe('sanitizeDisabledFeaturesQueryParam', () => {
+  it('should return undefined if value is null or undefined', () => {
+    expect(sanitizeDisabledFeaturesQueryParam(null)).toBeUndefined()
+    expect(sanitizeDisabledFeaturesQueryParam(undefined)).toBeUndefined()
+  })
+
+  it('should return undefined if no valid features are provided', () => {
+    expect(
+      sanitizeDisabledFeaturesQueryParam('invalid-feature')
+    ).toBeUndefined()
+    expect(sanitizeDisabledFeaturesQueryParam('random_feature')).toBeUndefined()
+    expect(sanitizeDisabledFeaturesQueryParam('')).toBeUndefined()
+  })
+
+  it('should keep only valid features and maintain the underscore delimiter', () => {
+    const result = sanitizeDisabledFeaturesQueryParam(
+      `${DisabledFeatures.BATCH_TRANSFERS}_invalid_feature_${DisabledFeatures.TX_HISTORY}`
+    )
+    expect(result).toEqual(
+      `${DisabledFeatures.BATCH_TRANSFERS}_${DisabledFeatures.TX_HISTORY}`
+    )
+  })
+
+  it('should handle single valid feature', () => {
+    expect(
+      sanitizeDisabledFeaturesQueryParam(DisabledFeatures.BATCH_TRANSFERS)
+    ).toEqual(DisabledFeatures.BATCH_TRANSFERS)
+    expect(
+      sanitizeDisabledFeaturesQueryParam(DisabledFeatures.TX_HISTORY)
+    ).toEqual(DisabledFeatures.TX_HISTORY)
+  })
+
+  it('should be case sensitive', () => {
+    expect(
+      sanitizeDisabledFeaturesQueryParam('batch-transfers')
+    ).toBeUndefined()
+    expect(sanitizeDisabledFeaturesQueryParam('tx-history')).toBeUndefined()
   })
 })

@@ -16,7 +16,8 @@ import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
   encodeChainQueryParam,
-  TabParamEnum
+  TabParamEnum,
+  DisabledFeatures
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 import {
@@ -92,6 +93,21 @@ export const sanitizeTabQueryParam = (
   return TabParamEnum.BRIDGE
 }
 
+export const sanitizeDisabledFeaturesQueryParam = (
+  disabledFeatures: string | null | undefined
+): string | undefined => {
+  if (!disabledFeatures) {
+    return undefined
+  }
+
+  const features = disabledFeatures.split('_')
+  const validFeatures = features.filter(feature =>
+    Object.values(DisabledFeatures).includes(feature as DisabledFeatures)
+  )
+
+  return validFeatures.length > 0 ? validFeatures.join('_') : undefined
+}
+
 function getDestinationWithSanitizedQueryParams(
   sanitized: {
     sourceChainId: number
@@ -99,6 +115,7 @@ function getDestinationWithSanitizedQueryParams(
     experiments: string | undefined
     token: string | undefined
     tab: string
+    disabledFeatures: string | undefined
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -111,7 +128,8 @@ function getDestinationWithSanitizedQueryParams(
       key === 'destinationChain' ||
       key === 'experiments' ||
       key === 'token' ||
-      key === 'tab'
+      key === 'tab' ||
+      key === 'disabledFeatures'
     ) {
       continue
     }
@@ -129,6 +147,7 @@ function getDestinationWithSanitizedQueryParams(
   const encodedExperiments = encodeString(sanitized.experiments)
   const encodedToken = encodeString(sanitized.token)
   const encodedTab = encodeString(sanitized.tab)
+  const encodedDisabledFeatures = encodeString(sanitized.disabledFeatures)
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -148,6 +167,10 @@ function getDestinationWithSanitizedQueryParams(
 
   if (encodedTab) {
     params.set('tab', encodedTab)
+  }
+
+  if (encodedDisabledFeatures) {
+    params.set('disabledFeatures', encodedDisabledFeatures)
   }
 
   return `/?${params.toString()}`
@@ -176,6 +199,7 @@ export async function getServerSideProps({
   const experiments = decodeString(query.experiments)
   const token = decodeString(query.token)
   const tab = decodeString(query.tab)
+  const disabledFeatures = decodeString(query.disabledFeatures)
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -202,7 +226,8 @@ export async function getServerSideProps({
       token,
       destinationChainId: sanitizedChainIds.destinationChainId
     }),
-    tab: sanitizeTabQueryParam(tab)
+    tab: sanitizeTabQueryParam(tab),
+    disabledFeatures: sanitizeDisabledFeaturesQueryParam(disabledFeatures)
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
@@ -211,14 +236,15 @@ export async function getServerSideProps({
     destinationChainId !== sanitized.destinationChainId ||
     experiments !== sanitized.experiments ||
     token !== sanitized.token ||
-    tab !== sanitized.tab
+    tab !== sanitized.tab ||
+    disabledFeatures !== sanitized.disabledFeatures
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
-      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab} (before)`
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab}&disabledFeatures=${disabledFeatures} (before)`
     )
     console.log(
-      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab} (after)`
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab}&disabledFeatures=${sanitized.disabledFeatures} (after)`
     )
     return {
       redirect: {

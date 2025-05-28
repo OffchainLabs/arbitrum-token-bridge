@@ -13,7 +13,7 @@ export const useIsBatchTransferSupported = () => {
   const isOftTransfer = useIsOftV2Transfer()
   const { isFeatureDisabled } = useDisabledFeatures()
 
-  if (isFeatureDisabled(DisabledFeatures.BATCH_TRANSFER)) {
+  if (isFeatureDisabled(DisabledFeatures.BATCH_TRANSFERS)) {
     return false
   }
   if (!selectedToken) {
