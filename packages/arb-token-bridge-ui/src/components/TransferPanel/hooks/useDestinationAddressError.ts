@@ -39,8 +39,9 @@ export async function getDestinationAddressError({
   return null
 }
 
-export function useDestinationAddressError() {
-  const [{ destinationAddress }] = useArbQueryParams()
+export function useDestinationAddressError(destinationAddress?: string) {
+  const [{ destinationAddress: destinationAddressFromQueryParams }] =
+    useArbQueryParams()
   const [networks] = useNetworks()
   const { address } = useAccount()
   const { isTeleportMode } = useNetworksRelationship(networks)
@@ -50,7 +51,7 @@ export function useDestinationAddressError() {
   const { data: destinationAddressError } = useSWRImmutable(
     [
       address?.toLowerCase(),
-      destinationAddress?.toLowerCase(),
+      (destinationAddress ?? destinationAddressFromQueryParams)?.toLowerCase(),
       isSenderSmartContractWallet,
       isTeleportMode,
       'useDestinationAddressError'
