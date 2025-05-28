@@ -4,6 +4,8 @@ import sharp from 'sharp'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 // this has to be called before import from "networks.ts"
 // to ensure that the environment variables are loaded
@@ -338,17 +340,47 @@ async function generateSvg(
   console.log(`Generated ${filePath}`)
 }
 
-async function main() {
+async function generate(argv: any) {
   for (const combination of configs) {
     const { isCoreChain: isChildChainCoreChain } = isNetwork(combination[1])
 
-    if (!isChildChainCoreChain) {
+    if (argv.orbit && !isChildChainCoreChain) {
       await generateSvg(combination[1])
-    } else {
+    }
+
+    if (argv.core && isChildChainCoreChain) {
       await generateSvg({ from: combination[0], to: combination[1] })
       await generateSvg({ from: combination[1], to: combination[0] })
     }
   }
 }
 
+async function main() {
+  await yargs(hideBin(process.argv))
+    .command({
+      command: 'generate',
+      handler: async (argv: any) => {
+        await generate(argv)
+      }
+    })
+    .option('core', {
+      alias: 'c',
+      type: 'boolean',
+      description: 'Generate images for core chains',
+      default: false
+    })
+    .option('orbit', {
+      alias: 'o',
+      type: 'boolean',
+      description: 'Generate images for orbit chains',
+      default: true
+    })
+    .parse()
+}
+
 main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error)
+    process.exit(1)
+  })
