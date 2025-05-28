@@ -62,7 +62,7 @@ import {
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
-import { useArbQueryParams, DisabledFeatures } from './useArbQueryParams'
+import { DisabledFeatures } from './useArbQueryParams'
 import {
   getUpdatedOftTransfer,
   updateAdditionalLayerZeroData,
