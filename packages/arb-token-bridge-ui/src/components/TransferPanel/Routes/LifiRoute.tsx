@@ -18,7 +18,6 @@ import {
   defaultSlippage,
   useLifiSettingsStore
 } from '../hooks/useLifiSettingsStore'
-import { getFromAndToTokenAddresses } from '../SettingsDialog'
 import { Loader } from '../../common/atoms/Loader'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
@@ -26,6 +25,7 @@ import { shallow } from 'zustand/shallow'
 import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { Address } from 'viem'
+import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 
 export function LifiRoutes({
   cheapestTag,

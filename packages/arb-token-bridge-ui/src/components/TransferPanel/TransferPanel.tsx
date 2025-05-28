@@ -94,10 +94,10 @@ import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTra
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
-import { getFromAndToTokenAddresses } from './SettingsDialog'
 import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
+import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -1346,6 +1346,18 @@ export function TransferPanel() {
     return transfer()
   }
 
+  /**
+   * Show settings if we're displaying lifi routes
+   * or if it's an EOA (to display custom destination address input)
+   */
+  const showSettingsButton =
+    isLifiTransferAllowed({
+      selectedToken,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    }) ||
+    (!isLoadingAccountType && !isSmartContractWallet)
+
   return (
     <>
       <DialogWrapper {...dialogProps} />
@@ -1357,13 +1369,7 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
-        {(isLifiTransferAllowed({
-          selectedToken,
-          sourceChainId: networks.sourceChain.id,
-          destinationChainId: networks.destinationChain.id
-        }) ||
-          (!isLoadingAccountType && !isSmartContractWallet)) && (
-          // Hide the settings if it's not a lifi route AND if it's a SCW
+        {showSettingsButton && (
           <div className="z-50 mb-2 ml-auto sm:relative">
             <button
               onClick={() => openDialog('settings')}
