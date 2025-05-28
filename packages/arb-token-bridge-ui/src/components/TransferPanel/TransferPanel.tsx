@@ -75,7 +75,6 @@ import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { ExternalLink } from '../common/ExternalLink'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
-import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
@@ -203,8 +202,6 @@ export function TransferPanel() {
 
   const { destinationAddressError } = useDestinationAddressError()
 
-  const [showProjectsListing, setShowProjectsListing] = useState(false)
-
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
   const { handleError } = useError()
@@ -216,11 +213,6 @@ export function TransferPanel() {
       }),
     [setQueryParams]
   )
-
-  useEffect(() => {
-    // hide Project listing when networks are changed
-    setShowProjectsListing(false)
-  }, [childChain.id, parentChain.id])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -1229,11 +1221,6 @@ export function TransferPanel() {
     clearRoute()
     clearAmountInput()
 
-    // for custom orbit pages, show Projects' listing after transfer
-    if (isDepositMode && isNetwork(childChain.id).isOrbitChain) {
-      setShowProjectsListing(true)
-    }
-
     await (sourceChainTransaction as TransactionResponse).wait()
 
     // tx confirmed, update balances
@@ -1389,8 +1376,6 @@ export function TransferPanel() {
           </Tippy>
         )}
       </div>
-
-      {showProjectsListing && <ProjectsListing />}
     </>
   )
 }
