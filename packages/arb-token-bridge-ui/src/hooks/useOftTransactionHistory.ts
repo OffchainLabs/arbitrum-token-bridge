@@ -229,48 +229,52 @@ function mapLayerZeroMessageToLayerZeroTransaction(
 export async function updateAdditionalLayerZeroData(
   tx: LayerZeroTransaction
 ): Promise<LayerZeroTransaction> {
-  const { txId } = tx
-  const updatedTx = { ...tx }
+  try {
+    const { txId } = tx
+    const updatedTx = { ...tx }
 
-  const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
+    const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
 
-  // extract destination address
-  const decodedInputData = await getOftV2TransferDecodedData(
-    txId,
-    sourceChainProvider
-  )
-  updatedTx.destination = utils.hexValue(decodedInputData[0][1])
+    // extract destination address
+    const decodedInputData = await getOftV2TransferDecodedData(
+      txId,
+      sourceChainProvider
+    )
+    updatedTx.destination = utils.hexValue(decodedInputData[0][1])
 
-  // extract token and value
-  const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
-    txId
-  )
-  const tokenAddress = sourceChainTxReceipt.logs[0]?.address
+    // extract token and value
+    const sourceChainTxReceipt =
+      await sourceChainProvider.getTransactionReceipt(txId)
+    const tokenAddress = sourceChainTxReceipt.logs[0]?.address
 
-  if (!tokenAddress) {
-    throw new Error('No token address found for OFT transaction')
-  }
+    if (!tokenAddress) {
+      throw new Error('No token address found for OFT transaction')
+    }
 
-  const { symbol, decimals } = await fetchErc20Data({
-    address: tokenAddress,
-    provider: sourceChainProvider
-  })
+    const { symbol, decimals } = await fetchErc20Data({
+      address: tokenAddress,
+      provider: sourceChainProvider
+    })
 
-  const transferInterface = new ethers.utils.Interface([
-    'event Transfer(address indexed from, address indexed to, uint value)'
-  ])
-  const decodedTransferLogs = transferInterface.parseLog(
-    sourceChainTxReceipt.logs[0]!
-  )
+    const transferInterface = new ethers.utils.Interface([
+      'event Transfer(address indexed from, address indexed to, uint value)'
+    ])
+    const decodedTransferLogs = transferInterface.parseLog(
+      sourceChainTxReceipt.logs[0]!
+    )
 
-  return {
-    ...updatedTx,
-    asset: symbol,
-    tokenAddress,
-    value: ethers.utils
-      .formatUnits(decodedTransferLogs.args.value, decimals)
-      .toString(),
-    blockNum: sourceChainTxReceipt.blockNumber
+    return {
+      ...updatedTx,
+      asset: symbol,
+      tokenAddress,
+      value: ethers.utils
+        .formatUnits(decodedTransferLogs.args.value, decimals)
+        .toString(),
+      blockNum: sourceChainTxReceipt.blockNumber
+    }
+  } catch (e) {
+    console.error('Error updating data for OFT transaction:', tx.txId, e)
+    return tx
   }
 }
 
