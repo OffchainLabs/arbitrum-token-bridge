@@ -302,14 +302,12 @@ export function useOftTransactionHistory({
 
     const layerZeroResponse: LayerZeroResponse = await response.json()
 
-    const validMessages = await Promise.all(
-      layerZeroResponse.data.map(async message => {
-        const isValid = await validateLayerZeroMessage(message)
-        return isValid ? message : null
-      })
-    ).then(results =>
-      results.filter((message): message is LayerZeroMessage => message !== null)
-    )
+    const validMessages = []
+    for (const message of layerZeroResponse.data) {
+      if (await validateLayerZeroMessage(message)) {
+        validMessages.push(message)
+      }
+    }
 
     return validMessages.map(mapLayerZeroMessageToLayerZeroTransaction)
   }
