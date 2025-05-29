@@ -1,46 +1,46 @@
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
+import { utils } from 'ethers'
+import Image from 'next/image'
 import React, {
   ChangeEventHandler,
   useCallback,
   useEffect,
   useMemo
 } from 'react'
-import { utils } from 'ethers'
-import Image from 'next/image'
-import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'
 
-import { getNetworkName } from '../../../util/networks'
-import {
-  NetworkButton,
-  NetworkSelectionContainer
-} from '../../common/NetworkSelectionContainer'
-import { NetworkContainer } from '../TransferPanelMain'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import {
   ETH_BALANCE_ARTICLE_LINK,
   USDC_LEARN_MORE_LINK
 } from '../../../constants'
-import { ExternalLink } from '../../common/ExternalLink'
-import { TransferPanelMainInput } from '../TransferPanelMainInput'
-import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
+import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
 } from '../../../hooks/useArbQueryParams'
-import { useMaxAmount } from './useMaxAmount'
-import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
-import { useDialog } from '../../common/Dialog'
-import { useTransferReadiness } from '../useTransferReadiness'
-import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
-import { Button } from '../../common/Button'
-import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
-import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
-import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
+import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
+import { getNetworkName } from '../../../util/networks'
+import { Button } from '../../common/Button'
+import { useDialog } from '../../common/Dialog'
+import { ExternalLink } from '../../common/ExternalLink'
+import {
+  NetworkButton,
+  NetworkSelectionContainer
+} from '../../common/NetworkSelectionContainer'
+import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
+import { NetworkContainer } from '../TransferPanelMain'
+import { TransferPanelMainInput } from '../TransferPanelMainInput'
+import { useTransferReadiness } from '../useTransferReadiness'
+import { useMaxAmount } from './useMaxAmount'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 function Amount2ToggleButton() {
   const [networks] = useNetworks()

@@ -2,15 +2,15 @@ import {
   BridgeTransferStarter,
   BridgeTransferStarterPropsWithChainIds
 } from './BridgeTransferStarter'
-import { EthDepositStarter } from './EthDepositStarter'
 import { Erc20DepositStarter } from './Erc20DepositStarter'
-import { EthWithdrawalStarter } from './EthWithdrawalStarter'
-import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
-import { EthTeleportStarter } from './EthTeleportStarter'
 import { Erc20TeleportStarter } from './Erc20TeleportStarter'
-import { getBridgeTransferProperties, getProviderForChainId } from './utils'
+import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
+import { EthDepositStarter } from './EthDepositStarter'
+import { EthTeleportStarter } from './EthTeleportStarter'
+import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
+import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`

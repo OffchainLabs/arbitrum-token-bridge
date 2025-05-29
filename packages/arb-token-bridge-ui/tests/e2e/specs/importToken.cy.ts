@@ -1,9 +1,9 @@
 import {
-  getInitialETHBalance,
-  invalidTokenAddress,
   ERC20TokenName,
   ERC20TokenSymbol,
+  getInitialETHBalance,
   importTokenThroughUI,
+  invalidTokenAddress,
   visitAfterSomeDelay
 } from '../../support/common'
 

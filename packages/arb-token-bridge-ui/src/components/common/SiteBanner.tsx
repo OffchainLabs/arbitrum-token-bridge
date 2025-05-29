@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
-import { ExternalLink } from './ExternalLink'
+import { useEffect, useState } from 'react'
+
 import { ArbitrumStatusResponse } from '../../pages/api/status'
 import { getAPIBaseUrl } from '../../util'
+import { ExternalLink } from './ExternalLink'
 
 const SiteBannerArbiscanIncident = ({
   type

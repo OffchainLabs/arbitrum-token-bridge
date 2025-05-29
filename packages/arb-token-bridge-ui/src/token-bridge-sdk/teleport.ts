@@ -1,18 +1,19 @@
 // utils for teleport type transactions
 
-import { Provider } from '@ethersproject/providers'
 import {
   Erc20L1L3Bridger,
   EthL1L3Bridger,
   getArbitrumNetwork
 } from '@arbitrum/sdk'
-import { L1GatewayRouter__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L1GatewayRouter__factory'
-import { IInbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IInbox__factory'
 import { IBridge__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IBridge__factory'
+import { IInbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IInbox__factory'
 import { IRollupCore__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IRollupCore__factory'
-import { getChainIdFromProvider, getProviderForChainId } from './utils'
-import { TELEPORT_ALLOWLIST } from '../util/networks'
+import { L1GatewayRouter__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L1GatewayRouter__factory'
+import { Provider } from '@ethersproject/providers'
+
 import { addressIsSmartContract } from '../util/AddressUtils'
+import { TELEPORT_ALLOWLIST } from '../util/networks'
+import { getChainIdFromProvider, getProviderForChainId } from './utils'
 
 export const isValidTeleportChainPair = ({
   sourceChainId,

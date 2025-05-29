@@ -1,11 +1,11 @@
+import { addressesEqual } from '../util/AddressUtils'
 import {
+  Dialog,
   step,
   UiDriverStep,
-  UiDriverStepResultFor,
   UiDriverStepGenerator,
-  Dialog
+  UiDriverStepResultFor
 } from './UiDriver'
-import { addressesEqual } from '../util/AddressUtils'
 
 export type UiDriverStepGeneratorForDialog<
   TStep extends UiDriverStep = UiDriverStep

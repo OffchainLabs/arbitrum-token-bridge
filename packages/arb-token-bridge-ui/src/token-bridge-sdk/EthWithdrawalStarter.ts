@@ -1,5 +1,7 @@
-import { BigNumber } from 'ethers'
 import { EthBridger } from '@arbitrum/sdk'
+import { BigNumber } from 'ethers'
+
+import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import {
   BridgeTransferStarter,
   TransferEstimateGasProps,
@@ -7,7 +9,6 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { getAddressFromSigner, percentIncrease } from './utils'
-import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'

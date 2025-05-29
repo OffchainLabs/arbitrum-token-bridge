@@ -1,13 +1,14 @@
-import { Fragment, useMemo } from 'react'
 import { Dialog, DialogBackdrop, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Fragment, useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
-import { useTxDetailsStore } from './TransactionHistory'
-import { TransactionDetailsContent } from './TransactionDetailsContent'
+
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
+import { TransactionDetailsContent } from './TransactionDetailsContent'
+import { useTxDetailsStore } from './TransactionHistory'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 export const TransactionsTableDetails = () => {
   const sanitizedAddress = useTransactionHistoryAddressStore(

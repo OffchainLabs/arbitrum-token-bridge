@@ -1,13 +1,12 @@
-import { constants } from 'ethers'
-import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger } from '@arbitrum/sdk'
+import { BlockTag, Provider } from '@ethersproject/providers'
+import { constants } from 'ethers'
 
+import { backOff, wait } from '../ExponentialBackoffUtils'
 import {
   fetchTokenWithdrawalsFromEventLogs,
   FetchTokenWithdrawalsFromEventLogsParams
 } from './fetchTokenWithdrawalsFromEventLogs'
-
-import { backOff, wait } from '../ExponentialBackoffUtils'
 
 type FetchTokenWithdrawalsFromEventLogsQuery = {
   params: FetchTokenWithdrawalsFromEventLogsParams

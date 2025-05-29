@@ -1,20 +1,26 @@
-import { useMemo, useState } from 'react'
-import { useInterval } from 'react-use'
-import { twMerge } from 'tailwind-merge'
-import dayjs from 'dayjs'
 import {
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
-import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
+import dayjs from 'dayjs'
 import Image from 'next/image'
+import { useMemo, useState } from 'react'
+import { useInterval } from 'react-use'
+import { twMerge } from 'tailwind-merge'
+
+import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { formatAmount } from '../../util/NumberUtils'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { formatAmount } from '../../util/NumberUtils'
+import { isBatchTransfer } from '../../util/TokenDepositUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { Button } from '../common/Button'
+import { ExternalLink } from '../common/ExternalLink'
 import { NetworkImage } from '../common/NetworkImage'
 import {
   getDestinationNetworkTxId,
@@ -23,16 +29,11 @@ import {
   isTxFailed,
   isTxPending
 } from './helpers'
-import { ExternalLink } from '../common/ExternalLink'
-import { Button } from '../common/Button'
-import { TransactionsTableRowAction } from './TransactionsTableRowAction'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
-import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
-import { isBatchTransfer } from '../../util/TokenDepositUtils'
 import { BatchTransferNativeTokenTooltip } from './TransactionHistoryTable'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
+import { TransactionsTableRowAction } from './TransactionsTableRowAction'
+import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   const { sourceChainId, destinationChainId } = tx

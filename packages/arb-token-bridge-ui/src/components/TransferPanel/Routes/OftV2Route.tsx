@@ -1,15 +1,16 @@
+import { constants, utils } from 'ethers'
+import { useMemo } from 'react'
+import { shallow } from 'zustand/shallow'
+
+import { ether } from '../../../constants'
+import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
+import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEstimates'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { constants, utils } from 'ethers'
-import { Route } from './Route'
-import { ether } from '../../../constants'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEstimates'
 import { useRouteStore } from '../hooks/useRouteStore'
-import { useMemo } from 'react'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
-import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
-import { shallow } from 'zustand/shallow'
+import { Route } from './Route'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {

@@ -1,19 +1,21 @@
-import { utils } from 'ethers'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { RetryableMessageParams } from '@arbitrum/sdk'
+import { utils } from 'ethers'
+
 import {
   fetchTeleportInputParametersFromTxId,
   getL3ChainIdFromTeleportEvents
 } from '@/token-bridge-sdk/teleport'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transfer } from '../../hooks/useTransactionHistory'
 import { MergedTransaction } from '../../state/app/state'
-import { FetchEthTeleportsFromSubgraphResult } from './fetchEthTeleportsFromSubgraph'
-import { TeleportFromSubgraph } from './fetchTeleports'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../types/Transactions'
 import { transformDeposit } from '../../state/app/utils'
+import { Transaction } from '../../types/Transactions'
 import { updateAdditionalDepositData } from '../deposits/helpers'
 import { fetchErc20Data } from '../TokenUtils'
+import { FetchEthTeleportsFromSubgraphResult } from './fetchEthTeleportsFromSubgraph'
+import { TeleportFromSubgraph } from './fetchTeleports'
 
 export function isTransferTeleportFromSubgraph(
   tx: Transfer

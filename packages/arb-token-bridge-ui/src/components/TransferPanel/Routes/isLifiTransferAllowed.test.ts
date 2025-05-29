@@ -1,12 +1,12 @@
-import { it, expect, describe } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import { isLifiTransferAllowed } from './isLifiTransferAllowed'
-import { ChainId } from '../../../types/ChainId'
 import {
   ERC20BridgeToken,
   TokenType
 } from '../../../hooks/arbTokenBridge.types'
+import { ChainId } from '../../../types/ChainId'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { isLifiTransferAllowed } from './isLifiTransferAllowed'
 
 const mockToken: Omit<ERC20BridgeToken, 'address'> = {
   type: TokenType.ERC20,

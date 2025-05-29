@@ -1,10 +1,11 @@
-import {
-  getQueryCoveringClassicOnlyWithoutResults,
-  getQueryCoveringClassicOnlyWithResults,
-  getQueryCoveringClassicAndNitroWithResults
-} from './fetchDepositsTestHelpers'
+import { describe, expect, it } from 'vitest'
+
 import { fetchDepositsFromSubgraph } from '../fetchDepositsFromSubgraph'
-import { describe, it, expect } from 'vitest'
+import {
+  getQueryCoveringClassicAndNitroWithResults,
+  getQueryCoveringClassicOnlyWithoutResults,
+  getQueryCoveringClassicOnlyWithResults
+} from './fetchDepositsTestHelpers'
 
 describe('fetchDepositsFromSubgraph', () => {
   it('fetches no deposits from subgraph pre-nitro', async () => {

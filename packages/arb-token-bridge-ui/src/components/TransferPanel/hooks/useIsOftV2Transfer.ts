@@ -1,8 +1,9 @@
 import useSWRImmutable from 'swr/immutable'
+
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { getOftV2TransferConfig } from '../../../token-bridge-sdk/oftUtils'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { getOftV2TransferConfig } from '../../../token-bridge-sdk/oftUtils'
 
 export const useIsOftV2Transfer = function () {
   const [selectedToken] = useSelectedToken()

@@ -2,24 +2,24 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useAppState } from '../../state'
+import { addressesEqual } from '../../util/AddressUtils'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
   isValidErc20
 } from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
-import { Dialog, UseDialogProps } from '../common/Dialog'
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { TokenInfo } from './TokenInfo'
+import { Dialog, UseDialogProps } from '../common/Dialog'
 import { NoteBox } from '../common/NoteBox'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { addressesEqual } from '../../util/AddressUtils'
+import { TokenInfo } from './TokenInfo'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 enum ImportStatus {
   LOADING,

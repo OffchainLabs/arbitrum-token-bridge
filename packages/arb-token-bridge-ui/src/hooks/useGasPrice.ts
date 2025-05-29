@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
 import { BigNumber, constants, providers } from 'ethers'
+import { useMemo } from 'react'
 import useSWR from 'swr'
 
 import { useChainId } from './useChainId'

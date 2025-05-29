@@ -1,5 +1,6 @@
 import { Provider } from '@ethersproject/providers'
 import useSWRImmutable from 'swr/immutable'
+
 import { getL1ERC20Address } from '../util/TokenUtils'
 
 /**

@@ -1,3 +1,4 @@
+import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   ERC20TokenSymbol,
   getInitialERC20Balance,
@@ -8,7 +9,6 @@ import {
   getL2NetworkName,
   getZeroToLessThanOneToken
 } from '../../support/common'
-import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Batch Deposit', () => {
   let parentErc20Balance, childNativeTokenBalance, childErc20Balance: string

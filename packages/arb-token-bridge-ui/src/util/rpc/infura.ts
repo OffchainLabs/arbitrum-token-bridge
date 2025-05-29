@@ -1,5 +1,5 @@
-import { loadEnvironmentVariableWithFallback } from '..'
 import { ChainId } from '../../types/ChainId'
+import { loadEnvironmentVariableWithFallback } from '..'
 import { ProductionChainId } from './getRpcUrl'
 
 export type InfuraSupportedChainId = Exclude<

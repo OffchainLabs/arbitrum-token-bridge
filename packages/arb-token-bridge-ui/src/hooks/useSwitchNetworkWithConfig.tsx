@@ -1,9 +1,9 @@
 import { SwitchChainParameters } from '@wagmi/core'
 import { useSwitchChain } from 'wagmi'
 
-import { getNetworkName, isNetwork } from '../util/networks'
-import { isUserRejectedError } from '../util/isUserRejectedError'
 import { warningToast } from '../components/common/atoms/Toast'
+import { isUserRejectedError } from '../util/isUserRejectedError'
+import { getNetworkName, isNetwork } from '../util/networks'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 type SwitchNetworkConfig = {

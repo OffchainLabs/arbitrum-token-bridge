@@ -1,32 +1,32 @@
 import {
-  ParentTransactionReceipt,
-  ParentToChildMessageStatus,
+  Erc20L1L3DepositStatus,
   EthDepositMessage,
   EthDepositMessageStatus,
+  EthL1L3DepositStatus,
   ParentToChildMessageReader,
   ParentToChildMessageReaderClassic,
-  EthL1L3DepositStatus,
-  Erc20L1L3DepositStatus
+  ParentToChildMessageStatus,
+  ParentTransactionReceipt
 } from '@arbitrum/sdk'
+import { Provider, TransactionReceipt } from '@ethersproject/providers'
 import { utils } from 'ethers'
 
-import { Provider, TransactionReceipt } from '@ethersproject/providers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { normalizeTimestamp } from '../../state/app/utils'
 import {
-  ParentToChildMessageData,
-  L2ToL3MessageData,
-  Transaction,
-  TxnStatus,
-  TeleporterTransaction
-} from '../../types/Transactions'
-import { fetchErc20Data } from '../TokenUtils'
-import {
-  getL2ConfigForTeleport,
   fetchTeleportStatusFromTxId,
+  getL2ConfigForTeleport,
   isValidTeleportChainPair
 } from '../../token-bridge-sdk/teleport'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
-import { normalizeTimestamp } from '../../state/app/utils'
+import {
+  L2ToL3MessageData,
+  ParentToChildMessageData,
+  TeleporterTransaction,
+  Transaction,
+  TxnStatus
+} from '../../types/Transactions'
+import { fetchErc20Data } from '../TokenUtils'
 
 export function isEthDepositMessage(
   message:

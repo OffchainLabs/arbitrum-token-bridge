@@ -1,16 +1,16 @@
 import { BigNumber, constants } from 'ethers'
 import { useMemo } from 'react'
 
-import { useNetworks } from '../useNetworks'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { isNetwork } from '../../util/networks'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
-import { CommonAddress } from '../../util/CommonAddressUtils'
-import { isNetwork } from '../../util/networks'
-import { useSelectedToken } from '../useSelectedToken'
 import { useBalances } from '../useBalances'
+import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
+import { useSelectedToken } from '../useSelectedToken'
 
 export type Balances = {
   sourceBalance: BigNumber | null

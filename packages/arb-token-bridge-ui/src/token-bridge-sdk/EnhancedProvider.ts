@@ -4,8 +4,9 @@ import {
   TransactionReceipt
 } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import { ChainId } from '../types/ChainId'
 import { ConnectionInfo } from 'ethers/lib/utils.js'
+
+import { ChainId } from '../types/ChainId'
 import { isNetwork } from '../util/networks'
 
 interface Storage {

@@ -1,18 +1,18 @@
 import { StaticImageData } from 'next/image'
 
-import Hop from '@/images/bridge/hop.png'
+import Across from '@/images/bridge/across.png'
 import Celer from '@/images/bridge/celer.png'
 import Connext from '@/images/bridge/connext.png'
-import Across from '@/images/bridge/across.png'
+import deBridge from '@/images/bridge/deBridge.svg'
+import Hop from '@/images/bridge/hop.png'
+// import LIFI from '@/images/bridge/lifi.webp'
+import Router from '@/images/bridge/router.webp'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
 import Wormhole from '@/images/bridge/wormhole.svg'
-// import LIFI from '@/images/bridge/lifi.webp'
-import Router from '@/images/bridge/router.webp'
-import deBridge from '@/images/bridge/deBridge.svg'
 
-import { ChainId } from '../types/ChainId'
 import { USDC_LEARN_MORE_LINK } from '../constants'
+import { ChainId } from '../types/ChainId'
 
 export enum FastBridgeNames {
   Hop = 'Hop',

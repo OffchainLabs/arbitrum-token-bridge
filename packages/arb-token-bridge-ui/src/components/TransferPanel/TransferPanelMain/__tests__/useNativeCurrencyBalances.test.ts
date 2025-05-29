@@ -1,13 +1,14 @@
-import { BigNumber } from 'ethers'
-import { vi, describe, beforeAll, it, expect } from 'vitest'
 import { renderHook } from '@testing-library/react'
+import { BigNumber } from 'ethers'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 
-import { useNetworks } from '../../../../hooks/useNetworks'
-import { useBalances } from '../../../../hooks/useBalances'
-import { useNativeCurrencyBalances } from '../useNativeCurrencyBalances'
-import { getWagmiChain } from '../../../../util/wagmi/getWagmiChain'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
+import { useBalances } from '../../../../hooks/useBalances'
+import { useNetworks } from '../../../../hooks/useNetworks'
 import { ChainId } from '../../../../types/ChainId'
+import { getWagmiChain } from '../../../../util/wagmi/getWagmiChain'
+import { useNativeCurrencyBalances } from '../useNativeCurrencyBalances'
 
 vi.mock('../../../../hooks/useNetworks', () => ({
   useNetworks: vi.fn()

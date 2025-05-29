@@ -1,28 +1,28 @@
-import { ComponentType, useEffect, useState } from 'react'
-import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
-import dynamic from 'next/dynamic'
-import { decodeString, encodeString } from 'use-query-params'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { constants } from 'ethers'
+import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
+import dynamic from 'next/dynamic'
+import { ComponentType, useEffect, useState } from 'react'
+import { decodeString, encodeString } from 'use-query-params'
 
 import { Loader } from '../components/common/atoms/Loader'
+import {
+  decodeChainQueryParam,
+  encodeChainQueryParam,
+  TabParamEnum
+} from '../hooks/useArbQueryParams'
+import { sanitizeQueryParams } from '../hooks/useNetworks'
+import { sanitizeExperimentalFeaturesQueryParam } from '../util'
+import {
+  isE2eTestingEnvironment,
+  isProductionEnvironment
+} from '../util/CommonUtils'
 import {
   getCustomChainsFromLocalStorage,
   mapCustomChainToNetworkData,
   registerLocalNetwork
 } from '../util/networks'
 import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
-import { sanitizeQueryParams } from '../hooks/useNetworks'
-import {
-  decodeChainQueryParam,
-  encodeChainQueryParam,
-  TabParamEnum
-} from '../hooks/useArbQueryParams'
-import { sanitizeExperimentalFeaturesQueryParam } from '../util'
-import {
-  isE2eTestingEnvironment,
-  isProductionEnvironment
-} from '../util/CommonUtils'
 
 const App = dynamic(
   () => {

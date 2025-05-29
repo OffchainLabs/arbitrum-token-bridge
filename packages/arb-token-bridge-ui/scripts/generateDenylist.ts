@@ -1,7 +1,7 @@
-import fs from 'fs'
-import axios from 'axios'
-import { TokenList } from '@uniswap/token-lists'
 import { getArbitrumNetworks } from '@arbitrum/sdk'
+import { TokenList } from '@uniswap/token-lists'
+import axios from 'axios'
+import fs from 'fs'
 
 const tokenListsUrls = [
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',

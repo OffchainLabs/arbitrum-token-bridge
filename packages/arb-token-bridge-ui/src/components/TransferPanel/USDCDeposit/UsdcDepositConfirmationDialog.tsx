@@ -1,18 +1,19 @@
 import { useState } from 'react'
+
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { Dialog, UseDialogProps } from '../../common/Dialog'
-import { SecurityGuaranteed } from '../SecurityLabels'
-import { USDCDepositConfirmationDialogCheckbox } from './UsdcDepositConfirmationDialogCheckbox'
+import { trackEvent } from '../../../util/AnalyticsUtils'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { SpecialTokenSymbol } from '../../../util/fastBridges'
 import {
   getExplorerUrl,
   getNetworkName,
   isNetwork
 } from '../../../util/networks'
-import { trackEvent } from '../../../util/AnalyticsUtils'
-import { SpecialTokenSymbol } from '../../../util/fastBridges'
+import { Dialog, UseDialogProps } from '../../common/Dialog'
 import { ExternalLink } from '../../common/ExternalLink'
-import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { SecurityGuaranteed } from '../SecurityLabels'
+import { USDCDepositConfirmationDialogCheckbox } from './UsdcDepositConfirmationDialogCheckbox'
 
 export function UsdcDepositConfirmationDialog(props: UseDialogProps) {
   const [networks] = useNetworks()

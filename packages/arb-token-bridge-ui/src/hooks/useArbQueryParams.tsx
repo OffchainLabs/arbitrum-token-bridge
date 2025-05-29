@@ -13,26 +13,26 @@
     `setQueryParams(newAmount)`
 
 */
-import React from 'react'
 import NextAdapterPages from 'next-query-params/pages'
 import queryString from 'query-string'
+import React from 'react'
 import {
   BooleanParam,
-  QueryParamProvider,
-  StringParam,
   decodeNumber,
   decodeString,
+  QueryParamProvider,
+  StringParam,
   useQueryParams,
   withDefault
 } from 'use-query-params'
 
+import { ChainId } from '../types/ChainId'
 import {
   ChainKeyQueryParam,
   getChainForChainKeyQueryParam,
   getChainQueryParamForChain,
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
-import { ChainId } from '../types/ChainId'
 
 export enum TabParamEnum {
   BRIDGE = 'bridge',

@@ -1,11 +1,11 @@
-import { ethers, BigNumber } from 'ethers'
+import { Provider } from '@ethersproject/providers'
+import { Config, readContract, type ReadContractReturnType } from '@wagmi/core'
+import { BigNumber, ethers } from 'ethers'
 import { Address } from 'viem'
-import { Config, type ReadContractReturnType, readContract } from '@wagmi/core'
 
 import { ChainId } from '../types/ChainId'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { oftV2Abi } from './oftV2Abi'
-import { Provider } from '@ethersproject/providers'
 
 // from https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 const oftProtocolConfig: {

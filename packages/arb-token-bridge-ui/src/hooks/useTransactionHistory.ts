@@ -1,58 +1,45 @@
-import { useAccount } from 'wagmi'
+import dayjs from 'dayjs'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import dayjs from 'dayjs'
+import { useAccount } from 'wagmi'
+import { create } from 'zustand'
 
-import { getChains, getChildChainIds, isNetwork } from '../util/networks'
-import { ChainId } from '../types/ChainId'
-import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
-import { fetchDeposits } from '../util/deposits/fetchDeposits'
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
 import {
-  AssetType,
-  L2ToL1EventResultPlus,
-  WithdrawalInitiated
-} from './arbTokenBridge.types'
-import { isTeleportTx, Transaction } from '../types/Transactions'
+  getDepositsWithoutStatusesFromCache,
+  getUpdatedCctpTransfer,
+  getUpdatedEthDeposit,
+  getUpdatedLifiTransfer,
+  getUpdatedRetryableDeposit,
+  getUpdatedTeleportTransfer,
+  getUpdatedWithdrawal,
+  isCctpTransfer,
+  isLifiTransfer,
+  isOftTransfer,
+  isSameTransaction,
+  isTxPending
+} from '../components/TransactionHistory/helpers'
 import { MergedTransaction } from '../state/app/state'
 import {
   normalizeTimestamp,
   transformDeposit,
   transformWithdrawal
 } from '../state/app/utils'
-import {
-  EthWithdrawal,
-  isTokenWithdrawal,
-  mapETHWithdrawalToL2ToL1EventResult,
-  mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
-  mapWithdrawalFromSubgraphToL2ToL1EventResult
-} from '../util/withdrawals/helpers'
-import { WithdrawalFromSubgraph } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
-import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
-import {
-  getDepositsWithoutStatusesFromCache,
-  getUpdatedCctpTransfer,
-  getUpdatedEthDeposit,
-  getUpdatedTeleportTransfer,
-  getUpdatedRetryableDeposit,
-  getUpdatedWithdrawal,
-  isCctpTransfer,
-  isSameTransaction,
-  isTxPending,
-  isOftTransfer,
-  getUpdatedLifiTransfer,
-  isLifiTransfer
-} from '../components/TransactionHistory/helpers'
-import { useIsTestnetMode } from './useIsTestnetMode'
-import { useAccountType } from './useAccountType'
+import { ChainId } from '../types/ChainId'
+import { isTeleportTx, Transaction } from '../types/Transactions'
+import { Address } from '../util/AddressUtils'
+import { fetchDeposits } from '../util/deposits/fetchDeposits'
+import { updateAdditionalDepositData } from '../util/deposits/helpers'
+import { getChains, getChildChainIds, isNetwork } from '../util/networks'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
-import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { Address } from '../util/AddressUtils'
 import {
   fetchTeleports,
   TeleportFromSubgraph
@@ -61,15 +48,29 @@ import {
   isTransferTeleportFromSubgraph,
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
-import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
+import { WithdrawalFromSubgraph } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
+import {
+  EthWithdrawal,
+  isTokenWithdrawal,
+  mapETHWithdrawalToL2ToL1EventResult,
+  mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
+  mapWithdrawalFromSubgraphToL2ToL1EventResult
+} from '../util/withdrawals/helpers'
+import {
+  AssetType,
+  L2ToL1EventResultPlus,
+  WithdrawalInitiated
+} from './arbTokenBridge.types'
+import { useAccountType } from './useAccountType'
 import { useArbQueryParams } from './useArbQueryParams'
+import { useIsTestnetMode } from './useIsTestnetMode'
+import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import {
   getUpdatedOftTransfer,
   updateAdditionalLayerZeroData,
   useOftTransactionHistory
 } from './useOftTransactionHistory'
-import { create } from 'zustand'
-import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]

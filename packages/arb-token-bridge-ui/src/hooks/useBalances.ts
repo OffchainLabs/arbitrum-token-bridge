@@ -1,11 +1,11 @@
+import { useMemo } from 'react'
 import { Address } from 'viem'
 import { useAccount } from 'wagmi'
-import { useMemo } from 'react'
 
+import { useArbQueryParams } from './useArbQueryParams'
 import { useBalance } from './useBalance'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
-import { useArbQueryParams } from './useArbQueryParams'
 
 export function useBalances({
   parentWalletAddress,

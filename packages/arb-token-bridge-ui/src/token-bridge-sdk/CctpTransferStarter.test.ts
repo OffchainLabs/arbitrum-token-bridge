@@ -1,9 +1,9 @@
-import { it, expect } from 'vitest'
-import { BigNumber } from 'ethers'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber } from 'ethers'
+import { expect, it } from 'vitest'
 
-import { CctpTransferStarter } from './CctpTransferStarter'
 import { CommonAddress } from '../util/CommonAddressUtils'
+import { CctpTransferStarter } from './CctpTransferStarter'
 
 const starter = new CctpTransferStarter({
   sourceChainProvider: new StaticJsonRpcProvider(

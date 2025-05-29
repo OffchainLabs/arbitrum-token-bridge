@@ -2,9 +2,9 @@ import { EthBridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
-import { fetchErc20Allowance } from './TokenUtils'
-import { DepositTxEstimateGasParams } from './TokenDepositUtils'
 import { isCustomDestinationAddressTx } from '../state/app/utils'
+import { DepositTxEstimateGasParams } from './TokenDepositUtils'
+import { fetchErc20Allowance } from './TokenUtils'
 
 function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({
   isCustomDestinationAddressTx

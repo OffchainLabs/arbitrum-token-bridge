@@ -1,10 +1,9 @@
+import { useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
-
-import { Switch } from './atoms/Switch'
-import { useCallback } from 'react'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { Switch } from './atoms/Switch'
 
 export const TestnetToggle = ({
   className,

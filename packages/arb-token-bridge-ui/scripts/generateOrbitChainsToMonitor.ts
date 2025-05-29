@@ -1,4 +1,5 @@
 import fs from 'fs'
+
 import { getOrbitChains } from '../src/util/orbitChainsList'
 import { getChainToMonitor } from './utils'
 

@@ -1,12 +1,13 @@
 import dayjs, { Dayjs } from 'dayjs'
+
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 
+import { isLifiTransfer } from '../components/TransactionHistory/helpers'
 import { MergedTransaction } from '../state/app/state'
 import { useRemainingTimeCctp } from '../state/cctpState'
+import { getBoldInfo, getDifferenceInSeconds } from '../util/BoLDUtils'
 import { isNetwork } from '../util/networks'
 import { getConfirmationTime } from '../util/WithdrawalUtils'
-import { getBoldInfo, getDifferenceInSeconds } from '../util/BoLDUtils'
-import { isLifiTransfer } from '../components/TransactionHistory/helpers'
 
 const DEPOSIT_TIME_MINUTES = {
   mainnet: 15,

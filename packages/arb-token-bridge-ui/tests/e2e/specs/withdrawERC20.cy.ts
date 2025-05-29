@@ -4,13 +4,13 @@
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
+  ERC20TokenSymbol,
   getInitialERC20Balance,
   getL1NetworkConfig,
-  getL2NetworkConfig,
   getL1NetworkName,
+  getL2NetworkConfig,
   getL2NetworkName,
-  getZeroToLessThanOneToken,
-  ERC20TokenSymbol
+  getZeroToLessThanOneToken
 } from '../../support/common'
 
 const withdrawalTestCases = {

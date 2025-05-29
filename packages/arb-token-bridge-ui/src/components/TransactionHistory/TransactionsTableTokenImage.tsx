@@ -1,10 +1,11 @@
-import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import Image from 'next/image'
 
+import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
+
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { MergedTransaction } from '../../state/app/state'
 import { orbitChains } from '../../util/orbitChainsList'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TokenListWithId } from '../../util/TokenListUtils'
 
 function createTokenLogoMapFromTokenLists(

@@ -1,6 +1,7 @@
-import { getRpcUrl } from './getRpcUrl'
+import { expect, it } from 'vitest'
+
 import { ChainId } from '../../types/ChainId'
-import { it, expect } from 'vitest'
+import { getRpcUrl } from './getRpcUrl'
 
 it('returns correct rpc for ethereum mainnet (infura)', () => {
   expect(getRpcUrl(ChainId.Ethereum, 'infura', 'infura-key')).toEqual(

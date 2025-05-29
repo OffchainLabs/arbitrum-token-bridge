@@ -3,10 +3,11 @@ import {
   TransactionReceipt
 } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { ChainId } from '../../types/ChainId'
 import { rpcURLs } from '../../util/networks'
 import { EnhancedProvider, shouldCacheTxReceipt } from '../EnhancedProvider'
-import { vi, describe, beforeEach, expect, it } from 'vitest'
 
 class TestStorage {
   private store: Record<string, string> = {}

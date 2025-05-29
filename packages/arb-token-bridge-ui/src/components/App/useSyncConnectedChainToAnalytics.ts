@@ -1,6 +1,6 @@
+import * as Sentry from '@sentry/react'
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
-import * as Sentry from '@sentry/react'
 
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'

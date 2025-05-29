@@ -4,14 +4,14 @@ import {
   simulateContract,
   writeContract
 } from '@wagmi/core'
-import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
-import { ChainDomain } from '../pages/api/cctp/[type]'
 
-import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
+import { ChainDomain } from '../pages/api/cctp/[type]'
 import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../types/ChainId'
-import { CommonAddress } from '../util/CommonAddressUtils'
 import { Address } from '../util/AddressUtils'
+import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
+import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
+import { CommonAddress } from '../util/CommonAddressUtils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {

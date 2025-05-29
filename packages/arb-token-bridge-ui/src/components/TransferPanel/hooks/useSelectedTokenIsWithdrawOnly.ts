@@ -1,10 +1,10 @@
-import useSWRImmutable from 'swr/immutable'
 import { useMemo } from 'react'
+import useSWRImmutable from 'swr/immutable'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { isWithdrawOnlyToken } from '../../../util/WithdrawOnlyUtils'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { isWithdrawOnlyToken } from '../../../util/WithdrawOnlyUtils'
 
 export function useSelectedTokenIsWithdrawOnly() {
   const [selectedToken] = useSelectedToken()

@@ -1,18 +1,19 @@
 // the conversion layer for making bridge-sdk results compatible with our current ui code
 
-import { BigNumber, utils } from 'ethers'
-import dayjs from 'dayjs'
 import { TransactionResponse } from '@ethersproject/providers'
+import dayjs from 'dayjs'
+import { BigNumber, utils } from 'ethers'
 
 import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
+
+import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { NativeCurrency } from '../../hooks/useNativeCurrency'
+import { Deposit } from '../../hooks/useTransactionHistory'
 import {
   DepositStatus,
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { Deposit } from '../../hooks/useTransactionHistory'
-import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import { NativeCurrency } from '../../hooks/useNativeCurrency'
 
 type SdkToUiConversionProps = {
   bridgeTransfer: BridgeTransfer

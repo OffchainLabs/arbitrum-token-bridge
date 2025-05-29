@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/providers'
 
-import { getAPIBaseUrl } from '.'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
+import { getAPIBaseUrl } from '.'
 
 export type Address = `0x${string}`
 

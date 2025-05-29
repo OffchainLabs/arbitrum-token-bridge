@@ -1,12 +1,12 @@
-import { useMemo } from 'react'
 import { constants, utils } from 'ethers'
+import { useMemo } from 'react'
 
+import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 import {
   sanitizeAmountQueryParam,
   useArbQueryParams
 } from '../../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../../util/NumberUtils'
-import { useSelectedTokenDecimals } from '../../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 export function useAmountBigNumber() {
   const [{ amount }, setQueryParams] = useArbQueryParams()

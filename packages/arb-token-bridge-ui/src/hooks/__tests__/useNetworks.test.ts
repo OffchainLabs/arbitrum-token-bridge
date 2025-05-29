@@ -1,15 +1,16 @@
-import {
-  vi,
-  describe,
-  beforeAll,
-  afterAll,
-  it,
-  expect,
-  MockInstance
-} from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import { customChainLocalStorageKey } from '../../util/networks'
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  MockInstance,
+  vi
+} from 'vitest'
+
 import { ChainId } from '../../types/ChainId'
+import { customChainLocalStorageKey } from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'
 

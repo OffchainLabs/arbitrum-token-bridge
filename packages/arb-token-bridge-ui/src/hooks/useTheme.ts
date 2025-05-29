@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import useLocalStorage from '@rehooks/local-storage'
+import { useEffect } from 'react'
 
 export const themeLocalStorageKey = 'arbitrum:bridge:preferences:theme'
 

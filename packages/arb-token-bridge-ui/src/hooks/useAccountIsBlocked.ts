@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
-import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
+import { useAccount } from 'wagmi'
 
-import { trackEvent } from '../util/AnalyticsUtils'
 import { Address } from '../util/AddressUtils'
-import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
+import { trackEvent } from '../util/AnalyticsUtils'
 import {
   isE2eTestingEnvironment,
   isProductionEnvironment
 } from '../util/CommonUtils'
+import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 /**
  * Checks if an address is blocked using the external Screenings API service.

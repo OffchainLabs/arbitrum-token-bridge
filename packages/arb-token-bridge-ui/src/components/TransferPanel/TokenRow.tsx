@@ -1,35 +1,35 @@
-import { useMemo } from 'react'
-import { twMerge } from 'tailwind-merge'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
-import { Loader } from '../common/atoms/Loader'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useAppState } from '../../state'
+import { getNetworkName } from '../../util/networks'
+import { formatAmount } from '../../util/NumberUtils'
 import {
   listIdsToNames,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
-import { formatAmount } from '../../util/NumberUtils'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   sanitizeTokenName,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
+import { Loader } from '../common/atoms/Loader'
 import { SafeImage } from '../common/SafeImage'
-import { getNetworkName } from '../../util/networks'
-import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import { useAccountType } from '../../hooks/useAccountType'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { Tooltip } from '../common/Tooltip'
 import { TokenLogoFallback } from './TokenInfo'
-import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
-import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { BlockExplorerTokenLink } from './TokenInfoTooltip'
 
 function tokenListIdsToNames(ids: string[]): string {

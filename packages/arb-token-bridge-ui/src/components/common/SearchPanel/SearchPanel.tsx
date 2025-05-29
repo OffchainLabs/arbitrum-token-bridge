@@ -1,3 +1,8 @@
+import {
+  ArrowRightIcon,
+  ArrowSmallLeftIcon,
+  XMarkIcon
+} from '@heroicons/react/24/outline'
 import React, {
   createContext,
   useCallback,
@@ -5,11 +10,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import {
-  ArrowRightIcon,
-  ArrowSmallLeftIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { Loader } from '../atoms/Loader'

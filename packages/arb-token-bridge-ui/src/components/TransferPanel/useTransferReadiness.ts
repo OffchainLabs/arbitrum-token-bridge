@@ -1,40 +1,40 @@
+import { BigNumber, constants, utils } from 'ethers'
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import { BigNumber, constants, utils } from 'ethers'
+import { shallow } from 'zustand/shallow'
 
-import { useAccountType } from '../../hooks/useAccountType'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { ether } from '../../constants'
 import {
-  isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC
+  useGasSummary,
+  UseGasSummaryResult
+} from '../../hooks/TransferPanel/useGasSummary'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useBalances } from '../../hooks/useBalances'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { addressesEqual } from '../../util/AddressUtils'
+import { isNetwork } from '../../util/networks'
+import { formatAmount } from '../../util/NumberUtils'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { useAppContextState } from '../App/AppContext'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import { isLifiRoute, RouteContext, useRouteStore } from './hooks/useRouteStore'
+import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import {
-  TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
   getSmartContractWalletTeleportTransfersNotSupportedErrorMessage,
-  getWithdrawOnlyChainErrorMessage
+  getWithdrawOnlyChainErrorMessage,
+  TransferReadinessRichErrorMessage
 } from './useTransferReadinessUtils'
-import { ether } from '../../constants'
-import {
-  UseGasSummaryResult,
-  useGasSummary
-} from '../../hooks/TransferPanel/useGasSummary'
-import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
-import { isNetwork } from '../../util/networks'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { useBalances } from '../../hooks/useBalances'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { formatAmount } from '../../util/NumberUtils'
-import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
-import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { isLifiRoute, RouteContext, useRouteStore } from './hooks/useRouteStore'
-import { shallow } from 'zustand/shallow'
-import { addressesEqual } from '../../util/AddressUtils'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel

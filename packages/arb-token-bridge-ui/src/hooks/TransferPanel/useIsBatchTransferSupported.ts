@@ -1,8 +1,8 @@
+import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useSelectedToken } from '../useSelectedToken'
-import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 
 export const useIsBatchTransferSupported = () => {
   const [networks] = useNetworks()
