@@ -76,7 +76,7 @@ describe('Withdraw native token', () => {
             .should('be.enabled')
             .click()
 
-          cy.confirmMetamaskTransaction()
+          cy.confirmTransaction()
 
           cy.findTransactionInTransactionHistory({
             duration: 'Less than a minute',
@@ -103,7 +103,7 @@ describe('Withdraw native token', () => {
             })
           )
 
-          cy.confirmMetamaskTransaction()
+          cy.confirmTransaction()
 
           cy.findByLabelText('show settled transactions')
             .should('be.visible')
@@ -160,7 +160,7 @@ describe('Withdraw native token', () => {
         .should('be.enabled')
         .click()
 
-      cy.confirmMetamaskTransaction()
+      cy.confirmTransaction()
 
       const txData = {
         amount: ETHToWithdraw,
@@ -171,7 +171,7 @@ describe('Withdraw native token', () => {
         duration: 'Less than a minute',
         ...txData
       })
-      cy.openTransactionDetails(txData)
+      cy.openTransactionHistoryDetails(txData)
       cy.findTransactionDetailsCustomDestinationAddress(
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )

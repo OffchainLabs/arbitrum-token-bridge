@@ -6,11 +6,13 @@ import { Transaction } from '../../../src/types/Transactions'
 type MockClassicDepositTransactionParams = {
   txID: string
   value: string
-} & Partial<Transaction>
+  assetType?: AssetType
+  assetName?: string
+}
 
 function mockClassicDepositTransaction(
   params: MockClassicDepositTransactionParams
-): Transaction {
+) {
   const dateNow = new Date()
   const dateYearAgo = new Date(dateNow.setFullYear(dateNow.getFullYear() - 1))
 

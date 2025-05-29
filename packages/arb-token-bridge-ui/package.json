@@ -65,10 +65,11 @@
     "lint": "tsc && eslint",
     "lint:fix": "tsc && eslint --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
-    "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
-    "generateOpenGraphImages": "ts-node --project ./scripts/tsconfig.json ./src/generateOpenGraphImages.tsx",
-    "generateCoreChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateCoreChainsToMonitor.ts",
-    "generateOrbitChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts"
+    "generateDenylist": "env-cmd --silent --file .env tsx ./scripts/generateDenylist.ts",
+    "generateOpenGraphImages": "env-cmd --silent --file .env tsx ./scripts/generateOpenGraphImages.tsx",
+    "generateCoreChainsToMonitor": "env-cmd --silent --file .env tsx ./scripts/generateCoreChainsToMonitor.ts",
+    "generateOrbitChainsToMonitor": "env-cmd --silent --file .env tsx ./scripts/generateOrbitChainsToMonitor.ts",
+    "test:e2e:build-wallet-cache": "synpress build-wallet-cache ./tests/wallet-setup/basic.setup.ts"
   },
   "browserslist": {
     "production": [

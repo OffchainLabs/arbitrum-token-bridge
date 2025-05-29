@@ -227,7 +227,7 @@ describe('Batch Deposit', () => {
         ...txData,
         duration: depositTime
       })
-      cy.openTransactionDetails(txData)
+      cy.openTransactionHistoryDetails(txData)
       cy.findTransactionDetailsCustomDestinationAddress(
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
@@ -243,7 +243,7 @@ describe('Batch Deposit', () => {
         duration: 'a few seconds ago',
         ...txData
       })
-      cy.openTransactionDetails(txData)
+      cy.openTransactionHistoryDetails(txData)
       cy.findTransactionDetailsCustomDestinationAddress(
         Cypress.env('CUSTOM_DESTINATION_ADDRESS')
       )
