@@ -15,6 +15,7 @@ import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/Usdc
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
 import { HighSlippageWarningDialog } from '../TransferPanel/HighSlippageWarningDialog'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
+import { SettingsDialog } from '../TransferPanel/SettingsDialog'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -48,6 +49,7 @@ export type DialogType =
   | 'high_slippage_warning'
   | 'widget_transaction_history'
   | 'token_selection'
+  | 'settings'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef =
@@ -146,6 +148,8 @@ export function DialogWrapper(props: DialogProps) {
       return <HighSlippageWarningDialog {...commonProps} />
     case 'token_selection':
       return <TokenSearch {...commonProps} />
+    case 'settings':
+      return <SettingsDialog {...commonProps} />
     default:
       return null
   }
