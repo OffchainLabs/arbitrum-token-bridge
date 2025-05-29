@@ -161,7 +161,9 @@ async function validateLayerZeroMessage(message: LayerZeroMessage) {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
-  if (sourceChainId && destinationChainId) {
+  const isProtocolUsdt0 = message.pathway?.sender?.id === 'usdt0'
+
+  if (sourceChainId && destinationChainId && isProtocolUsdt0) {
     try {
       const isOftDataDecodable = !!(await getOftV2TransferDecodedData(
         message.source.tx.txHash,
@@ -229,52 +231,48 @@ function mapLayerZeroMessageToLayerZeroTransaction(
 export async function updateAdditionalLayerZeroData(
   tx: LayerZeroTransaction
 ): Promise<LayerZeroTransaction> {
-  try {
-    const { txId } = tx
-    const updatedTx = { ...tx }
+  const { txId } = tx
+  const updatedTx = { ...tx }
 
-    const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
+  const sourceChainProvider = getProviderForChainId(tx.sourceChainId)
 
-    // extract destination address
-    const decodedInputData = await getOftV2TransferDecodedData(
-      txId,
-      sourceChainProvider
-    )
-    updatedTx.destination = utils.hexValue(decodedInputData[0][1])
+  // extract destination address
+  const decodedInputData = await getOftV2TransferDecodedData(
+    txId,
+    sourceChainProvider
+  )
+  updatedTx.destination = utils.hexValue(decodedInputData[0][1])
 
-    // extract token and value
-    const sourceChainTxReceipt =
-      await sourceChainProvider.getTransactionReceipt(txId)
-    const tokenAddress = sourceChainTxReceipt.logs[0]?.address
+  // extract token and value
+  const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
+    txId
+  )
+  const tokenAddress = sourceChainTxReceipt.logs[0]?.address
 
-    if (!tokenAddress) {
-      throw new Error('No token address found for OFT transaction')
-    }
+  if (!tokenAddress) {
+    throw new Error('No token address found for OFT transaction')
+  }
 
-    const { symbol, decimals } = await fetchErc20Data({
-      address: tokenAddress,
-      provider: sourceChainProvider
-    })
+  const { symbol, decimals } = await fetchErc20Data({
+    address: tokenAddress,
+    provider: sourceChainProvider
+  })
 
-    const transferInterface = new ethers.utils.Interface([
-      'event Transfer(address indexed from, address indexed to, uint value)'
-    ])
-    const decodedTransferLogs = transferInterface.parseLog(
-      sourceChainTxReceipt.logs[0]!
-    )
+  const transferInterface = new ethers.utils.Interface([
+    'event Transfer(address indexed from, address indexed to, uint value)'
+  ])
+  const decodedTransferLogs = transferInterface.parseLog(
+    sourceChainTxReceipt.logs[0]!
+  )
 
-    return {
-      ...updatedTx,
-      asset: symbol,
-      tokenAddress,
-      value: ethers.utils
-        .formatUnits(decodedTransferLogs.args.value, decimals)
-        .toString(),
-      blockNum: sourceChainTxReceipt.blockNumber
-    }
-  } catch (e) {
-    console.error('Error updating data for OFT transaction:', tx.txId, e)
-    return tx
+  return {
+    ...updatedTx,
+    asset: symbol,
+    tokenAddress,
+    value: ethers.utils
+      .formatUnits(decodedTransferLogs.args.value, decimals)
+      .toString(),
+    blockNum: sourceChainTxReceipt.blockNumber
   }
 }
 
@@ -304,12 +302,14 @@ export function useOftTransactionHistory({
 
     const layerZeroResponse: LayerZeroResponse = await response.json()
 
-    const validMessages = []
-    for (const message of layerZeroResponse.data) {
-      if (await validateLayerZeroMessage(message)) {
-        validMessages.push(message)
-      }
-    }
+    const validMessages = await Promise.all(
+      layerZeroResponse.data.map(async message => {
+        const isValid = await validateLayerZeroMessage(message)
+        return isValid ? message : null
+      })
+    ).then(results =>
+      results.filter((message): message is LayerZeroMessage => message !== null)
+    )
 
     return validMessages.map(mapLayerZeroMessageToLayerZeroTransaction)
   }
