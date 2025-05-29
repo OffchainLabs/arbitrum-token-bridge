@@ -46,7 +46,7 @@ const rainbowkitTheme = merge(darkTheme(), {
 
 const queryClient = new QueryClient()
 
-const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
+const ArbTokenBridgeStoreSyncWrapper = (): React.ReactNode => {
   const actions = useActions()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =

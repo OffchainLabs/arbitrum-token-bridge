@@ -1,3 +1,5 @@
+export * from '@rainbow-me/rainbowkit'
+
 declare module '*.svg' {
   import Image from 'next/image'
   const content: Image['src']
@@ -20,4 +22,21 @@ declare module '*.webp' {
 declare module '*.json' {
   const value: any
   export default value
+}
+
+declare module '@rainbow-me/rainbowkit' {
+  function RainbowKitProvider({
+    appInfo,
+    avatar,
+    chains,
+    children,
+    coolMode,
+    id,
+    initialChain,
+    modalSize,
+    showRecentTransactions,
+    theme
+  }: RainbowKitProviderProps): React.ReactElement
+
+  export { RainbowKitProvider }
 }
