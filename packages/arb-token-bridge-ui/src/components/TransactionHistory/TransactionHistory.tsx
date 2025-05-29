@@ -26,7 +26,7 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
       }))
     }, 0)
   },
-  close: () => set({ isOpen: false }),
+  close: () => set({ isOpen: false, tx: null }),
   reset: () => set({ tx: null })
 }))
 

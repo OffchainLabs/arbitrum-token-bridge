@@ -39,9 +39,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant,
       loading,
       loadingProps,
-      // eslint-disable-next-line react/prop-types
       disabled,
-      // eslint-disable-next-line react/prop-types
       className: customClassName,
       children,
       ...props

@@ -170,9 +170,15 @@ export function Dialog(props: DialogProps) {
           {closeable && (
             <button type="button" onClick={() => handleClose(false)}>
               {embedMode ? (
-                <ChevronLeftIcon className="arb-hover h-4 w-4 text-gray-7" />
+                <ChevronLeftIcon
+                  className="arb-hover h-4 w-4 text-gray-7"
+                  aria-label="Close Dialog"
+                />
               ) : (
-                <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
+                <XMarkIcon
+                  className="arb-hover h-6 w-6 text-gray-7"
+                  aria-label="Close Dialog"
+                />
               )}
             </button>
           )}

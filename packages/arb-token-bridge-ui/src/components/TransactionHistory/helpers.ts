@@ -22,7 +22,8 @@ import { ChainId } from '../../types/ChainId'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import {
   getParentToChildMessageDataFromParentTxHash,
-  fetchTeleporterDepositStatusData
+  fetchTeleporterDepositStatusData,
+  isEthDepositMessage
 } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
@@ -369,7 +370,6 @@ export async function getUpdatedEthDeposit(
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
-      isRetryableDeposit: false,
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })
@@ -386,53 +386,47 @@ export async function getUpdatedEthDeposit(
     return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
   }
 
-  const status = await parentToChildMsg?.status()
-  const isDeposited = status === EthDepositMessageStatus.DEPOSITED
+  if (isEthDepositMessage(parentToChildMsg)) {
+    const status = await parentToChildMsg?.status()
+    const isDeposited = status === EthDepositMessageStatus.DEPOSITED
 
-  const newDeposit: MergedTransaction = {
-    ...tx,
-    status: 'success',
-    resolvedAt: isDeposited ? dayjs().valueOf() : null,
-    parentToChildMsgData: {
-      fetchingUpdate: false,
-      status: isDeposited
-        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
-        : ParentToChildMessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: (parentToChildMsg as EthDepositMessage)
-        .childTxHash,
-      // Only show `childTxId` after the deposit is confirmed
-      childTxId: isDeposited
-        ? (parentToChildMsg as EthDepositMessage).childTxHash
-        : undefined
+    const newDeposit: MergedTransaction = {
+      ...tx,
+      status: 'success',
+      resolvedAt: isDeposited ? dayjs().valueOf() : null,
+      parentToChildMsgData: {
+        fetchingUpdate: false,
+        status: isDeposited
+          ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
+          : ParentToChildMessageStatus.NOT_YET_CREATED,
+        retryableCreationTxID: (parentToChildMsg as EthDepositMessage)
+          .childTxHash,
+        // Only show `childTxId` after the deposit is confirmed
+        childTxId: isDeposited
+          ? (parentToChildMsg as EthDepositMessage).childTxHash
+          : undefined
+      }
+    }
+
+    return {
+      ...newDeposit,
+      depositStatus: getDepositStatus(newDeposit)
     }
   }
 
-  return {
-    ...newDeposit,
-    depositStatus: getDepositStatus(newDeposit)
-  }
+  return getUpdatedRetryableDeposit(tx)
 }
 
 export async function getUpdatedRetryableDeposit(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  const isDifferentDestinationAddress = isCustomDestinationAddressTx(tx)
-
-  if (
-    !isTxPending(tx) ||
-    // ETH transfer to the same address
-    // ETH sent to a custom destination uses retryables so we allow it in this flow
-    (tx.assetType === AssetType.ETH && !isDifferentDestinationAddress) ||
-    tx.isWithdrawal ||
-    tx.isCctp
-  ) {
+  if (!isTxPending(tx) || tx.isWithdrawal || tx.isCctp) {
     return tx
   }
 
   const { parentToChildMsg } =
     await getParentToChildMessageDataFromParentTxHash({
       depositTxId: tx.txId,
-      isRetryableDeposit: true,
       parentProvider: getProviderForChainId(tx.parentChainId),
       childProvider: getProviderForChainId(tx.childChainId)
     })
@@ -492,7 +486,7 @@ export async function getUpdatedWithdrawal(
   const childChainProvider = getProviderForChainId(tx.childChainId)
   const txReceipt = await getTxReceipt(tx)
   const childTxReceipt = new ChildTransactionReceipt(txReceipt)
-  const [withdrawalEvent] = await childTxReceipt.getChildToParentEvents()
+  const [withdrawalEvent] = childTxReceipt.getChildToParentEvents()
 
   if (childTxReceipt) {
     const newStatus = withdrawalEvent

@@ -9,7 +9,6 @@ import LifiLogo from '@/icons/lifi.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { twMerge } from 'tailwind-merge'
-
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'

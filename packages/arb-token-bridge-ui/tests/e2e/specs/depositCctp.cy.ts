@@ -2,7 +2,6 @@
  * When user wants to bridge USDC through CCTP from L1 to L2
  */
 
-import { getZeroToLessThanOneToken } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 
 // common function for this cctp deposit
@@ -51,7 +50,6 @@ const confirmAndApproveCctpDeposit = () => {
 describe('Deposit USDC through CCTP', () => {
   // Happy Path
   const USDCAmountToSend = 0.0001
-  const zeroToLessThanOneETH = getZeroToLessThanOneToken('ETH')
 
   beforeEach(() => {
     cy.login({ networkType: 'parentChain', networkName: 'Sepolia' })
