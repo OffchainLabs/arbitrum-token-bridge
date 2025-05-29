@@ -56,27 +56,38 @@ export const indexToTab = {
   1: TabParamEnum.TX_HISTORY
 } as const satisfies Record<number, TabParamEnum>
 
+export const isValidDisabledFeature = (feature: string) => {
+  return Object.values(DisabledFeatures).includes(feature as DisabledFeatures)
+}
+
 // Add this before the useArbQueryParams function
 export const DisabledFeaturesParam = {
-  encode: (features: DisabledFeatures[] | undefined) => {
-    if (!features?.length) return undefined
+  encode: (disabledFeatures: string[] | undefined) => {
+    if (!disabledFeatures) {
+      return undefined
+    }
+
     const url = new URLSearchParams()
-    features.forEach(feature => {
-      url.append('disabledFeatures', feature)
-    })
+    for (let disabledFeature of disabledFeatures) {
+      if (isValidDisabledFeature(disabledFeature)) {
+        url.append('disabledFeatures', disabledFeature)
+      }
+    }
+
     return url.toString()
   },
   decode: (value: string | (string | null)[] | null | undefined) => {
     if (!value) return []
-    try {
-      const url = new URLSearchParams(typeof value === 'string' ? value : '')
-      const features = url.getAll('disabledFeatures').filter(Boolean).join(',')
-      if (!features) return []
-      const sanitized = sanitizeDisabledFeaturesQueryParam(features)
-      return sanitized ? sanitized.split(',') : []
-    } catch {
-      return []
+    const url = new URLSearchParams(typeof value === 'string' ? value : '')
+    if (typeof value !== 'string') {
+      for (let val of value) {
+        if (val) url.append('disabledFeatures', val)
+      }
     }
+
+    return url
+      .getAll('disabledFeatures')
+      .filter(disabledFeature => isValidDisabledFeature(disabledFeature))
   }
 }
 

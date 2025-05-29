@@ -17,7 +17,7 @@ import {
   decodeChainQueryParam,
   encodeChainQueryParam,
   TabParamEnum,
-  sanitizeDisabledFeaturesQueryParam
+  DisabledFeaturesParam
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 import {
@@ -100,7 +100,7 @@ function getDestinationWithSanitizedQueryParams(
     experiments: string | undefined
     token: string | undefined
     tab: string
-    disabledFeatures: string | undefined
+    disabledFeatures: string[] | undefined
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -132,7 +132,6 @@ function getDestinationWithSanitizedQueryParams(
   const encodedExperiments = encodeString(sanitized.experiments)
   const encodedToken = encodeString(sanitized.token)
   const encodedTab = encodeString(sanitized.tab)
-  const encodedDisabledFeatures = encodeString(sanitized.disabledFeatures)
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -154,8 +153,10 @@ function getDestinationWithSanitizedQueryParams(
     params.set('tab', encodedTab)
   }
 
-  if (encodedDisabledFeatures) {
-    params.set('disabledFeatures', encodedDisabledFeatures)
+  if (sanitized.disabledFeatures) {
+    for (let disabledFeature of sanitized.disabledFeatures) {
+      params.append('disabledFeatures', disabledFeature)
+    }
   }
 
   return `/?${params.toString()}`
@@ -184,7 +185,11 @@ export async function getServerSideProps({
   const experiments = decodeString(query.experiments)
   const token = decodeString(query.token)
   const tab = decodeString(query.tab)
-  const disabledFeatures = decodeString(query.disabledFeatures)
+  // Parse disabled features string/array to array
+  const disabledFeatures =
+    typeof query.disabledFeatures === 'string'
+      ? [query.disabledFeatures]
+      : query.disabledFeatures
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -212,7 +217,7 @@ export async function getServerSideProps({
       destinationChainId: sanitizedChainIds.destinationChainId
     }),
     tab: sanitizeTabQueryParam(tab),
-    disabledFeatures: sanitizeDisabledFeaturesQueryParam(disabledFeatures)
+    disabledFeatures: DisabledFeaturesParam.decode(disabledFeatures)
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
@@ -222,7 +227,7 @@ export async function getServerSideProps({
     experiments !== sanitized.experiments ||
     token !== sanitized.token ||
     tab !== sanitized.tab ||
-    disabledFeatures !== sanitized.disabledFeatures
+    (disabledFeatures?.length || 0) !== sanitized.disabledFeatures.length
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
