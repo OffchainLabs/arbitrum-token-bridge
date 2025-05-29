@@ -17,7 +17,7 @@ import {
   decodeChainQueryParam,
   encodeChainQueryParam,
   TabParamEnum,
-  DisabledFeatures
+  sanitizeDisabledFeaturesQueryParam
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 import {
@@ -91,32 +91,6 @@ export const sanitizeTabQueryParam = (
   }
 
   return TabParamEnum.BRIDGE
-}
-
-export const sanitizeDisabledFeaturesQueryParam = (
-  disabledFeatures: string | null | undefined
-): string | undefined => {
-  if (!disabledFeatures) {
-    return undefined
-  }
-
-  const features = disabledFeatures.split('_')
-  const validFeatures = new Set(
-    features
-      .map(feature => {
-        const normalizedFeature = feature.toLowerCase()
-        return Object.values(DisabledFeatures).find(
-          validFeature => validFeature.toLowerCase() === normalizedFeature
-        )
-      })
-      .filter((feature): feature is DisabledFeatures => feature !== undefined)
-  )
-
-  if (validFeatures.size === 0) {
-    return undefined
-  }
-
-  return Array.from(validFeatures).join('_')
 }
 
 function getDestinationWithSanitizedQueryParams(

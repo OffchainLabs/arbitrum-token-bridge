@@ -1,13 +1,15 @@
+import { useCallback } from 'react'
 import { useArbQueryParams, DisabledFeatures } from './useArbQueryParams'
 
-export function useDisabledFeatures() {
+export const useDisabledFeatures = () => {
   const [{ disabledFeatures }] = useArbQueryParams()
 
-  const isFeatureDisabled = (feature: DisabledFeatures) => {
-    return (disabledFeatures as DisabledFeatures[]).includes(feature)
-  }
+  const isFeatureDisabled = useCallback(
+    (feature: DisabledFeatures) => {
+      return (disabledFeatures as DisabledFeatures[]).includes(feature)
+    },
+    [disabledFeatures]
+  )
 
-  return {
-    isFeatureDisabled
-  }
+  return { isFeatureDisabled }
 }

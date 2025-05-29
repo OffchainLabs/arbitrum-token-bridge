@@ -6,14 +6,11 @@ import {
   AmountQueryParam,
   ChainParam,
   TabParam,
-  DisabledFeatures
+  DisabledFeatures,
+  DisabledFeaturesParam
 } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
-import {
-  sanitizeTabQueryParam,
-  sanitizeTokenQueryParam,
-  sanitizeDisabledFeaturesQueryParam
-} from '../../pages'
+import { sanitizeTabQueryParam, sanitizeTokenQueryParam } from '../../pages'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
@@ -365,59 +362,65 @@ describe('sanitizeTabQueryParam', () => {
   })
 })
 
-describe('sanitizeDisabledFeaturesQueryParam', () => {
-  it('should return undefined if value is null or undefined', () => {
-    expect(sanitizeDisabledFeaturesQueryParam(null)).toBeUndefined()
-    expect(sanitizeDisabledFeaturesQueryParam(undefined)).toBeUndefined()
+describe('DisabledFeaturesParam', () => {
+  describe('encode', () => {
+    it('should return undefined if features is undefined or empty', () => {
+      expect(DisabledFeaturesParam.encode(undefined)).toBeUndefined()
+      expect(DisabledFeaturesParam.encode([])).toBeUndefined()
+    })
+
+    it('should encode valid features', () => {
+      expect(
+        DisabledFeaturesParam.encode([
+          DisabledFeatures.BATCH_TRANSFERS,
+          DisabledFeatures.TX_HISTORY
+        ])
+      ).toEqual('batch-transfers,tx-history')
+    })
   })
 
-  it('should return undefined if no valid features are provided', () => {
-    expect(
-      sanitizeDisabledFeaturesQueryParam('invalid-feature')
-    ).toBeUndefined()
-    expect(sanitizeDisabledFeaturesQueryParam('random_feature')).toBeUndefined()
-    expect(sanitizeDisabledFeaturesQueryParam('')).toBeUndefined()
-  })
+  describe('decode', () => {
+    it('should return empty array if value is null or undefined', () => {
+      expect(DisabledFeaturesParam.decode(null)).toEqual([])
+      expect(DisabledFeaturesParam.decode(undefined)).toEqual([])
+    })
 
-  it('should keep only valid features and maintain the underscore delimiter', () => {
-    const result = sanitizeDisabledFeaturesQueryParam(
-      `${DisabledFeatures.BATCH_TRANSFERS}_invalid_feature_${DisabledFeatures.TX_HISTORY}`
-    )
-    expect(result).toEqual(
-      `${DisabledFeatures.BATCH_TRANSFERS}_${DisabledFeatures.TX_HISTORY}`
-    )
-  })
+    it('should return empty array if no valid features are provided', () => {
+      expect(DisabledFeaturesParam.decode('invalid-feature')).toEqual([])
+      expect(DisabledFeaturesParam.decode('random_feature')).toEqual([])
+      expect(DisabledFeaturesParam.decode('')).toEqual([])
+    })
 
-  it('should handle single valid feature', () => {
-    expect(
-      sanitizeDisabledFeaturesQueryParam(DisabledFeatures.BATCH_TRANSFERS)
-    ).toEqual(DisabledFeatures.BATCH_TRANSFERS)
-    expect(
-      sanitizeDisabledFeaturesQueryParam(DisabledFeatures.TX_HISTORY)
-    ).toEqual(DisabledFeatures.TX_HISTORY)
-  })
+    it('should keep only valid features', () => {
+      const result = DisabledFeaturesParam.decode(
+        `${DisabledFeatures.BATCH_TRANSFERS},invalid_feature,${DisabledFeatures.TX_HISTORY}`
+      )
+      expect(result).toEqual([
+        DisabledFeatures.BATCH_TRANSFERS,
+        DisabledFeatures.TX_HISTORY
+      ])
+    })
 
-  it('should be case insensitive and return canonical case', () => {
-    expect(sanitizeDisabledFeaturesQueryParam('batch-transfers')).toEqual(
-      DisabledFeatures.BATCH_TRANSFERS
-    )
-    expect(sanitizeDisabledFeaturesQueryParam('tx-history')).toEqual(
-      DisabledFeatures.TX_HISTORY
-    )
-    expect(sanitizeDisabledFeaturesQueryParam('BATCH-TRANSFERS')).toEqual(
-      DisabledFeatures.BATCH_TRANSFERS
-    )
-    expect(sanitizeDisabledFeaturesQueryParam('TX-HISTORY')).toEqual(
-      DisabledFeatures.TX_HISTORY
-    )
-  })
+    it('should handle single valid feature', () => {
+      expect(
+        DisabledFeaturesParam.decode(DisabledFeatures.BATCH_TRANSFERS)
+      ).toEqual([DisabledFeatures.BATCH_TRANSFERS])
+    })
 
-  it('should handle mixed case in the same query', () => {
-    const result = sanitizeDisabledFeaturesQueryParam(
-      'batch-transfers_TX-HISTORY_Batch-Transfers'
-    )
-    expect(result).toEqual(
-      `${DisabledFeatures.BATCH_TRANSFERS}_${DisabledFeatures.TX_HISTORY}`
-    )
+    it('should be case insensitive and return canonical case', () => {
+      expect(DisabledFeaturesParam.decode('BATCH-TRANSFERS')).toEqual([
+        DisabledFeatures.BATCH_TRANSFERS
+      ])
+    })
+
+    it('should handle mixed case in the same query', () => {
+      const result = DisabledFeaturesParam.decode(
+        'batch-transfers,TX-HISTORY,Batch-Transfers'
+      )
+      expect(result).toEqual([
+        DisabledFeatures.BATCH_TRANSFERS,
+        DisabledFeatures.TX_HISTORY
+      ])
+    })
   })
 })

@@ -59,22 +59,44 @@ export const indexToTab = {
 } as const satisfies Record<number, TabParamEnum>
 
 // Add this before the useArbQueryParams function
-const DisabledFeaturesParam = {
+export const DisabledFeaturesParam = {
   encode: (features: DisabledFeatures[] | undefined) => {
     if (!features?.length) return undefined
-    return features.join('_')
+    return features.join(',')
   },
-  decode: (features: string | (string | null)[] | null | undefined) => {
-    if (!features) return []
-    const featuresStr = features.toString()
-    if (!featuresStr) return []
-
-    return featuresStr
-      .split('_')
-      .filter((feature): feature is DisabledFeatures =>
-        Object.values(DisabledFeatures).includes(feature as DisabledFeatures)
-      )
+  decode: (value: string | (string | null)[] | null | undefined) => {
+    if (!value) return []
+    const sanitized = sanitizeDisabledFeaturesQueryParam(
+      typeof value === 'string' ? value : undefined
+    )
+    return sanitized ? sanitized.split(',') : []
   }
+}
+
+export const sanitizeDisabledFeaturesQueryParam = (
+  disabledFeatures: string | null | undefined
+): string | undefined => {
+  if (!disabledFeatures) {
+    return undefined
+  }
+
+  const features = disabledFeatures.split(',')
+  const validFeatures = new Set(
+    features
+      .map(feature => {
+        const normalizedFeature = feature.toLowerCase()
+        return Object.values(DisabledFeatures).find(
+          validFeature => validFeature.toLowerCase() === normalizedFeature
+        )
+      })
+      .filter((feature): feature is DisabledFeatures => feature !== undefined)
+  )
+
+  if (validFeatures.size === 0) {
+    return undefined
+  }
+
+  return Array.from(validFeatures).join(',')
 }
 
 export const useArbQueryParams = () => {
