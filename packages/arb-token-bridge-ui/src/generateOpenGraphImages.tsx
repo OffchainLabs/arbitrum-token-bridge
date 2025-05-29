@@ -340,21 +340,6 @@ async function generateSvg(
   console.log(`Generated ${filePath}`)
 }
 
-async function generate(argv: any) {
-  for (const combination of configs) {
-    const { isCoreChain: isChildChainCoreChain } = isNetwork(combination[1])
-
-    if (argv.orbit && !isChildChainCoreChain) {
-      await generateSvg(combination[1])
-    }
-
-    if (argv.core && isChildChainCoreChain) {
-      await generateSvg({ from: combination[0], to: combination[1] })
-      await generateSvg({ from: combination[1], to: combination[0] })
-    }
-  }
-}
-
 const generateOptions = {
   core: {
     alias: 'c',
@@ -371,6 +356,21 @@ const generateOptions = {
 } as const
 
 type Args = Arguments<InferredOptionTypes<typeof generateOptions>>
+
+async function generate(argv: Args) {
+  for (const combination of configs) {
+    const { isCoreChain: isChildChainCoreChain } = isNetwork(combination[1])
+
+    if (argv.orbit && !isChildChainCoreChain) {
+      await generateSvg(combination[1])
+    }
+
+    if (argv.core && isChildChainCoreChain) {
+      await generateSvg({ from: combination[0], to: combination[1] })
+      await generateSvg({ from: combination[1], to: combination[0] })
+    }
+  }
+}
 
 yargs(hideBin(process.argv))
   .command<Args>({
