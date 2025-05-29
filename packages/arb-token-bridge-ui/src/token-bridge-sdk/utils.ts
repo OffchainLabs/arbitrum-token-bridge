@@ -88,7 +88,7 @@ export const getBridger = async ({
   const destinationChainProvider = getProviderForChainId(destinationChainId)
 
   if (isValidTeleportChainPair({ sourceChainId, destinationChainId })) {
-    const l3Network = await getArbitrumNetwork(destinationChainId)
+    const l3Network = getArbitrumNetwork(destinationChainId)
 
     return isNativeCurrencyTransfer
       ? new EthL1L3Bridger(l3Network)

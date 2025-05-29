@@ -59,6 +59,7 @@ export default [
       ],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/await-thenable": "error",
 
       "@typescript-eslint/ban-ts-comment": [
         "error",

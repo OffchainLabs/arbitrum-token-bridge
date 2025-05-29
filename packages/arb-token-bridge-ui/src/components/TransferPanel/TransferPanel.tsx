@@ -327,10 +327,10 @@ export function TransferPanel() {
     return confirmed
   }
 
-  const showDelayInSmartContractTransaction = async () => {
+  const showDelayInSmartContractTransaction = () => {
     // a custom 3 second delay to show a tooltip after SC transaction goes through
     // to give a visual feedback to the user that something happened
-    await setTimeout(() => {
+    setTimeout(() => {
       setShowSmartContractWalletTooltip(true)
     }, 3000)
     return true
