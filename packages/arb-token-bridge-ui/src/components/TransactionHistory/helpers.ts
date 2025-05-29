@@ -486,7 +486,7 @@ export async function getUpdatedWithdrawal(
   const childChainProvider = getProviderForChainId(tx.childChainId)
   const txReceipt = await getTxReceipt(tx)
   const childTxReceipt = new ChildTransactionReceipt(txReceipt)
-  const [withdrawalEvent] = await childTxReceipt.getChildToParentEvents()
+  const [withdrawalEvent] = childTxReceipt.getChildToParentEvents()
 
   if (childTxReceipt) {
     const newStatus = withdrawalEvent

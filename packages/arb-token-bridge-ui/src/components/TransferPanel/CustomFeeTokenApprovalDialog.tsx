@@ -71,14 +71,12 @@ export function CustomFeeTokenApprovalDialog(
           2. we are assuming deposits only (withdrawals will return `requiresNativeCurrencyApproval` as false)
           These will need to be supported on a case-by-case basis later, with checks like in `TokenApprovalDialogue.tsx`
         */
-        const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
-          {
-            sourceChainId: sourceChain.id,
-            sourceChainErc20Address: selectedToken?.address,
-            destinationChainId: destinationChain.id,
-            destinationChainErc20Address: selectedToken?.l2Address
-          }
-        )
+        const bridgeTransferStarter = BridgeTransferStarterFactory.create({
+          sourceChainId: sourceChain.id,
+          sourceChainErc20Address: selectedToken?.address,
+          destinationChainId: destinationChain.id,
+          destinationChainErc20Address: selectedToken?.l2Address
+        })
 
         const estimatedGas =
           await bridgeTransferStarter.approveNativeCurrencyEstimateGas({

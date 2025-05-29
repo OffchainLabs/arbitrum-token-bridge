@@ -68,6 +68,8 @@ export default [
         },
       ],
 
+      "@typescript-eslint/await-thenable": "error",
+
       "zustand-rules/use-store-selectors": "error",
       "zustand-rules/no-state-mutation": "error",
       "zustand-rules/enforce-use-setstate": "error",
