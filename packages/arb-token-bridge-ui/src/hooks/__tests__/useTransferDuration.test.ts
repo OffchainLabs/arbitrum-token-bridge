@@ -1,8 +1,8 @@
-import dayjs from 'dayjs'
-import { describe, beforeAll, it, expect } from 'vitest'
-import { renderHook } from '@testing-library/react'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import { MergedTransaction } from '../../state/app/state'
+import { renderHook } from '@testing-library/react'
+import dayjs from 'dayjs'
+import { beforeAll, describe, expect, it } from 'vitest'
+
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
   getCctpTransferDuration,
@@ -10,6 +10,7 @@ import {
   getStandardDepositDuration,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
+import { MergedTransaction } from '../../state/app/state'
 import { getOrbitChains } from '../../util/orbitChainsList'
 
 const DAY_IN_MINUTES = 24 * 60

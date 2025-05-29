@@ -1,17 +1,29 @@
-import { ReactNode, useMemo } from 'react'
-import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import { ReactNode, useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
+import {
+  minutesToHumanReadableTime,
+  useTransferDuration
+} from '../../hooks/useTransferDuration'
 import {
   DepositStatus,
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
+import { isDepositReadyToRedeem } from '../../state/app/utils'
+import { isTeleportTx } from '../../types/Transactions'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import {
+  firstRetryableLegRequiresRedeem,
+  secondRetryableLegForTeleportRequiresRedeem
+} from '../../util/RetryableUtils'
+import { ExternalLink } from '../common/ExternalLink'
+import { TransferCountdown } from '../common/TransferCountdown'
 import {
   getDestinationNetworkTxId,
   isLifiTransfer,
@@ -21,20 +33,8 @@ import {
   isTxFailed,
   isTxPending
 } from './helpers'
-import { TransactionsTableRowAction } from './TransactionsTableRowAction'
-import { ExternalLink } from '../common/ExternalLink'
-import { TransferCountdown } from '../common/TransferCountdown'
-import { isDepositReadyToRedeem } from '../../state/app/utils'
-import { isTeleportTx } from '../../types/Transactions'
-import {
-  firstRetryableLegRequiresRedeem,
-  secondRetryableLegForTeleportRequiresRedeem
-} from '../../util/RetryableUtils'
 import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDetailsTeleporterSteps'
-import {
-  minutesToHumanReadableTime,
-  useTransferDuration
-} from '../../hooks/useTransferDuration'
+import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 
 function needsToClaimTransfer(tx: MergedTransaction) {
   if (tx.isOft || isLifiTransfer(tx)) {

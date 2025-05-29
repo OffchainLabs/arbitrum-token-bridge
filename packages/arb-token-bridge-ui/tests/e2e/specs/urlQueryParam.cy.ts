@@ -2,14 +2,15 @@
  * When user enters the page with query params on URL
  */
 
-import { utils } from 'ethers'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
+import { utils } from 'ethers'
+
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getInitialETHBalance,
-  getNetworkSlug,
   getL1NetworkConfig,
+  getNetworkSlug,
   visitAfterSomeDelay
 } from '../../support/common'
 

@@ -1,11 +1,12 @@
-import useSWRImmutable from 'swr/immutable'
 import { SWRResponse } from 'swr'
+import useSWRImmutable from 'swr/immutable'
+
+import { isNetwork } from '../util/networks'
 import {
   BRIDGE_TOKEN_LISTS,
   fetchTokenListFromURL,
   TokenListWithId
 } from '../util/TokenListUtils'
-import { isNetwork } from '../util/networks'
 
 export function fetchTokenLists(
   forL2ChainId: number

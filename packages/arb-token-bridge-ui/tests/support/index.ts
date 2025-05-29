@@ -1,4 +1,6 @@
 import '@synthetixio/synpress/support'
+import './commands'
+
 import logCollector from 'cypress-terminal-report/src/installLogsCollector'
 
 import {
@@ -6,7 +8,6 @@ import {
   getL2NetworkConfig,
   getL2TestnetNetworkConfig
 } from './common'
-import './commands'
 
 logCollector({
   collectTypes: [

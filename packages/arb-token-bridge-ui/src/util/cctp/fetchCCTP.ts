@@ -1,11 +1,12 @@
-import { ChainId } from '../../types/ChainId'
-import { getAPIBaseUrl, sanitizeQueryParams } from '..'
+import { utils } from 'ethers'
+
 import {
   CompletedCCTPTransfer,
   PendingCCTPTransfer,
   Response
 } from '../../pages/api/cctp/[type]'
-import { utils } from 'ethers'
+import { ChainId } from '../../types/ChainId'
+import { getAPIBaseUrl, sanitizeQueryParams } from '..'
 
 export type FetchParams = {
   walletAddress: string

@@ -1,9 +1,9 @@
-import { useCallback } from 'react'
 import { useLocalStorage } from '@uidotdev/usehooks'
+import { useCallback } from 'react'
 
-import { ExternalLink } from '../common/ExternalLink'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { Button } from '../common/Button'
+import { ExternalLink } from '../common/ExternalLink'
 
 export function WelcomeDialog() {
   const [, setTosAccepted] = useLocalStorage<boolean>(

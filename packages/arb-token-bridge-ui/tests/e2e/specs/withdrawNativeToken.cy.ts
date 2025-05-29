@@ -2,13 +2,13 @@
  * When user wants to bridge native token from L2 to L1
  */
 
+import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
   getL1NetworkName,
   getL2NetworkName,
   getZeroToLessThanOneToken
 } from '../../support/common'
-import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw native token', () => {
   const nativeTokenSymbol = Cypress.env('NATIVE_TOKEN_SYMBOL')

@@ -1,16 +1,16 @@
-import { utils } from 'ethers'
-import { useBlockNumber } from 'wagmi'
-import Image from 'next/image'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useLocalStorage } from '@uidotdev/usehooks'
+import { utils } from 'ethers'
+import Image from 'next/image'
+import { useBlockNumber } from 'wagmi'
 
-import { getNetworkName, isNetwork } from '../../util/networks'
-import { useNetworkTPS } from '../../hooks/useNetworkTPS'
-import { useGasPrice } from '../../hooks/useGasPrice'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useGasPrice } from '../../hooks/useGasPrice'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { useNetworkTPS } from '../../hooks/useNetworkTPS'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { getNetworkName, isNetwork } from '../../util/networks'
 
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 

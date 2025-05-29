@@ -1,11 +1,12 @@
-import { vi } from 'vitest'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
-import { ChainWithRpcUrl } from '../../util/networks'
 import {
   PartialLocation,
   QueryParamAdapter,
   QueryParamAdapterComponent
 } from 'use-query-params'
+import { vi } from 'vitest'
+
+import { ChainWithRpcUrl } from '../../util/networks'
 
 export function createMockOrbitChain({
   chainId,

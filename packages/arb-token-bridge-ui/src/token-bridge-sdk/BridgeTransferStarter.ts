@@ -2,11 +2,11 @@ import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { Config } from 'wagmi'
 
-import { MergedTransaction } from '../state/app/state'
 import {
-  GasEstimates,
-  DepositGasEstimates
+  DepositGasEstimates,
+  GasEstimates
 } from '../hooks/arbTokenBridge.types'
+import { MergedTransaction } from '../state/app/state'
 import { Address } from '../util/AddressUtils'
 import { getChainIdFromProvider } from './utils'
 

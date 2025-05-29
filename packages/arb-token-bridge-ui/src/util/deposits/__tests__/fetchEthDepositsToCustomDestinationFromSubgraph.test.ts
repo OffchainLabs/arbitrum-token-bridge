@@ -1,9 +1,10 @@
-import {
-  getQueryCoveringNitroWithResults,
-  getQueryCoveringNitroWithoutResults
-} from './fetchEthDepositsToCustomDestinationTestHelpers'
+import { describe, expect, it } from 'vitest'
+
 import { fetchEthDepositsToCustomDestinationFromSubgraph } from '../fetchEthDepositsToCustomDestinationFromSubgraph'
-import { describe, it, expect } from 'vitest'
+import {
+  getQueryCoveringNitroWithoutResults,
+  getQueryCoveringNitroWithResults
+} from './fetchEthDepositsToCustomDestinationTestHelpers'
 
 describe('fetchEthDepositsToCustomDestinationFromSubgraph', () => {
   it('fetches deposits from subgraph with zero results', async () => {

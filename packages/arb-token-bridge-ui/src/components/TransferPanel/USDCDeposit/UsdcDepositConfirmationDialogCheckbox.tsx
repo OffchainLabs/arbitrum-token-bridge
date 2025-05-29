@@ -1,10 +1,11 @@
-import { ExternalLink } from '../../common/ExternalLink'
-import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
-import { isNetwork } from '../../../util/networks'
 import { useAccount } from 'wagmi'
+
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { minutesToHumanReadableTime } from '../../../hooks/useTransferDuration'
+import { isNetwork } from '../../../util/networks'
+import { Checkbox } from '../../common/Checkbox'
+import { ExternalLink } from '../../common/ExternalLink'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,

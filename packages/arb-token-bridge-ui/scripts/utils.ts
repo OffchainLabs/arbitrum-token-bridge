@@ -1,6 +1,7 @@
 import { ArbitrumNetwork } from '@arbitrum/sdk'
-import { OrbitChainConfig } from '../src/util/orbitChainsList'
+
 import { getExplorerUrl, rpcURLs } from '../src/util/networks'
+import { OrbitChainConfig } from '../src/util/orbitChainsList'
 
 export interface ChainToMonitor extends ArbitrumNetwork {
   parentRpcUrl: string

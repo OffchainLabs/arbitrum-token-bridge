@@ -1,5 +1,6 @@
-import { config as packageConfig } from '../../../../package.json'
 import { join, resolve } from 'path'
+
+import { config as packageConfig } from '../../../../package.json'
 
 const getBrowserPath = () => {
   const workspaceRoot = resolve(process.cwd(), '../..')

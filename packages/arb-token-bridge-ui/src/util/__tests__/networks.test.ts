@@ -1,12 +1,12 @@
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import { it, expect, describe, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 
+import { ChainId } from '../../types/ChainId'
 import {
   getBlockNumberReferenceChainIdByChainId,
   getDestinationChainIds,
   getSupportedChainIds
 } from '../networks'
-import { ChainId } from '../../types/ChainId'
 import { orbitTestnets } from '../orbitChainsList'
 
 const xaiTestnetChainId = 37714555429

@@ -1,16 +1,8 @@
-import { useState } from 'react'
 import { TabGroup, TabList, TabPanel } from '@headlessui/react'
 import dayjs from 'dayjs'
 import Image from 'next/image'
+import { useState } from 'react'
 
-import { Dialog, UseDialogProps } from '../common/Dialog'
-import { Checkbox } from '../common/Checkbox'
-import { ExternalLink } from '../common/ExternalLink'
-import { TabButton } from '../common/Tab'
-import { BridgesTable } from '../common/BridgesTable'
-import { trackEvent } from '../../util/AnalyticsUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
-import { getFastBridges } from '../../util/fastBridges'
 import {
   CONFIRMATION_PERIOD_ARTICLE_LINK,
   FAST_WITHDRAWAL_DOCS_ARTICLE_LINK
@@ -18,11 +10,19 @@ import {
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { SecurityGuaranteed, SecurityNotGuaranteed } from './SecurityLabels'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
-import { getConfirmationTime } from '../../util/WithdrawalUtils'
+import { trackEvent } from '../../util/AnalyticsUtils'
+import { getFastBridges } from '../../util/fastBridges'
 import { isLifiEnabled } from '../../util/featureFlag'
+import { getNetworkName, isNetwork } from '../../util/networks'
+import { getConfirmationTime } from '../../util/WithdrawalUtils'
+import { BridgesTable } from '../common/BridgesTable'
+import { Checkbox } from '../common/Checkbox'
+import { Dialog, UseDialogProps } from '../common/Dialog'
+import { ExternalLink } from '../common/ExternalLink'
+import { TabButton } from '../common/Tab'
+import { SecurityGuaranteed, SecurityNotGuaranteed } from './SecurityLabels'
 
 function getCalendarUrl(
   withdrawalDate: dayjs.Dayjs,

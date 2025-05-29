@@ -1,6 +1,6 @@
-import { DialogBackdrop, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { useCallback, useRef, useState } from 'react'
+import { Dialog as HeadlessUIDialog, DialogBackdrop } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { useCallback, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'

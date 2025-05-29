@@ -1,3 +1,8 @@
+import {
+  ChevronDownIcon,
+  ShieldExclamationIcon
+} from '@heroicons/react/24/outline'
+import { useDebounce } from '@uidotdev/usehooks'
 import React, {
   CSSProperties,
   useCallback,
@@ -6,33 +11,28 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Chain } from 'wagmi/chains'
-import { useDebounce } from '@uidotdev/usehooks'
-import {
-  ChevronDownIcon,
-  ShieldExclamationIcon
-} from '@heroicons/react/24/outline'
-import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { twMerge } from 'tailwind-merge'
+import { Chain } from 'wagmi/chains'
 import { hex } from 'wcag-contrast'
 
-import { isNetwork, getNetworkName } from '../../util/networks'
-import { ChainId } from '../../types/ChainId'
+import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { ChainId } from '../../types/ChainId'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { getNetworkName, isNetwork } from '../../util/networks'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
+import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
+import { Dialog, useDialog, UseDialogProps } from './Dialog'
+import { NetworkImage } from './NetworkImage'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { NetworkImage } from './NetworkImage'
-import { Dialog, UseDialogProps, useDialog } from './Dialog'
-import { useNetworks } from '../../hooks/useNetworks'
-import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
-import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
-import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
-import { useAccountType } from '../../hooks/useAccountType'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 

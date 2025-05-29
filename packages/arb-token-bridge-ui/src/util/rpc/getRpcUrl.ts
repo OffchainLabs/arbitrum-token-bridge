@@ -1,7 +1,6 @@
 import { ChainId } from '../../types/ChainId'
-
-import { getInfuraRpcUrl } from './infura'
 import { getAlchemyRpcUrl } from './alchemy'
+import { getInfuraRpcUrl } from './infura'
 
 type RpcProvider = 'infura' | 'alchemy'
 

@@ -1,18 +1,18 @@
-import useLocalStorage from '@rehooks/local-storage'
-import Image from 'next/image'
 import {
-  StarIcon as StarIconOutline,
-  ArrowTopRightOnSquareIcon
+  ArrowTopRightOnSquareIcon,
+  StarIcon as StarIconOutline
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import useLocalStorage from '@rehooks/local-storage'
+import Image from 'next/image'
 
-import { ExternalLink } from './ExternalLink'
+import { trackEvent } from '../../util/AnalyticsUtils'
 import {
   FastBridgeInfo,
   FastBridgeNames,
   SpecialTokenSymbol
 } from '../../util/fastBridges'
-import { trackEvent } from '../../util/AnalyticsUtils'
+import { ExternalLink } from './ExternalLink'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]

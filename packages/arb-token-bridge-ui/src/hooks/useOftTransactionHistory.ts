@@ -1,16 +1,17 @@
 import { ethers, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
-import { AssetType } from './arbTokenBridge.types'
+
+import { LayerZeroTransaction } from '../state/app/state'
 import {
   getChainIdFromEid,
   getOftV2TransferDecodedData
 } from '../token-bridge-sdk/oftUtils'
-import { LayerZeroTransaction } from '../state/app/state'
-import { isDepositMode } from '../util/isDepositMode'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
-import { fetchErc20Data } from '../util/TokenUtils'
-import { isNetwork } from '../util/networks'
 import { CommonAddress } from '../util/CommonAddressUtils'
+import { isDepositMode } from '../util/isDepositMode'
+import { isNetwork } from '../util/networks'
+import { fetchErc20Data } from '../util/TokenUtils'
+import { AssetType } from './arbTokenBridge.types'
 
 const LAYERZERO_API_URL_MAINNET = 'https://scan.layerzero-api.com/v1'
 const LAYERZERO_API_URL_TESTNET = 'https://scan-testnet.layerzero-api.com/v1'

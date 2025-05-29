@@ -1,11 +1,11 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+import { NextApiRequest, NextApiResponse } from 'next'
 
-import { WithdrawalFromSubgraph } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import {
   getL2SubgraphClient,
   getSourceFromSubgraphClient
 } from '../../api-utils/ServerSubgraphUtils'
+import { WithdrawalFromSubgraph } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
 
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {

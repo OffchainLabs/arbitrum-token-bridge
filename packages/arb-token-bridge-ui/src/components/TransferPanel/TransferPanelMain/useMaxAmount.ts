@@ -1,15 +1,15 @@
-import { useMemo } from 'react'
 import { utils } from 'ethers'
+import { useMemo } from 'react'
 
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { defaultErc20Decimals } from '../../../defaults'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
+import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
-import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
+import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 
 export function useMaxAmount() {
   const [selectedToken] = useSelectedToken()

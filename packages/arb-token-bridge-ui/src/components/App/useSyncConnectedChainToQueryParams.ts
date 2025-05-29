@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
 
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { sanitizeQueryParams } from '../../hooks/useNetworks'
-import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { getNetworkName } from '../../util/networks'
+import { onDisconnectHandler } from '../../util/walletConnectUtils'
 
 export function useSyncConnectedChainToQueryParams() {
   const { address, chain } = useAccount()

@@ -1,15 +1,13 @@
-import { utils } from 'ethers'
-import { Provider } from '@ethersproject/providers'
-import { BigNumber } from '@ethersproject/bignumber'
 import {
   ChildToParentMessageReader,
   ChildTransactionReceipt,
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
+import { BigNumber } from '@ethersproject/bignumber'
+import { Provider } from '@ethersproject/providers'
 import dayjs from 'dayjs'
+import { utils } from 'ethers'
 
-import { WithdrawalFromSubgraph } from './fetchWithdrawalsFromSubgraph'
-import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
@@ -21,6 +19,8 @@ import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import { getWithdrawalConfirmationDate } from '../../hooks/useTransferDuration'
 import { addToLocalStorageObjectSequentially } from '../CommonUtils'
+import { fetchErc20Data } from '../TokenUtils'
+import { WithdrawalFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 
 /**
  * `l2TxHash` exists on result from subgraph

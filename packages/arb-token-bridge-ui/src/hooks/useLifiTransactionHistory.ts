@@ -1,5 +1,5 @@
-import useSWRImmutable from 'swr/immutable'
 import { getTransactionHistory } from '@lifi/sdk'
+import useSWRImmutable from 'swr/immutable'
 
 export function useLifiTransactionHistory({
   walletAddress

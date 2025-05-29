@@ -1,7 +1,7 @@
 import { it } from 'vitest'
 
 import { stepGeneratorForCctp } from './UiDriverCctp'
-import { nextStep, expectStep } from './UiDriverTestUtils'
+import { expectStep, nextStep } from './UiDriverTestUtils'
 
 it(`
   context:

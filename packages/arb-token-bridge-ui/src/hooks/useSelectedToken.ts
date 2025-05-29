@@ -1,13 +1,19 @@
-import { useCallback } from 'react'
-import { utils } from 'ethers'
-import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
+import { utils } from 'ethers'
+import { useCallback } from 'react'
+import useSWRImmutable from 'swr/immutable'
+
 import {
   getChainIdFromProvider,
   getProviderForChainId
 } from '@/token-bridge-sdk/utils'
 
-import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
+import {
+  useTokensFromLists,
+  useTokensFromUser
+} from '../components/TransferPanel/TokenSearchUtils'
+import { CommonAddress } from '../util/CommonAddressUtils'
+import { isNetwork } from '../util/networks'
 import {
   getL2ERC20Address,
   isTokenArbitrumOneNativeUSDC,
@@ -16,15 +22,10 @@ import {
   isTokenNativeUSDC,
   isTokenSepoliaUSDC
 } from '../util/TokenUtils'
-import { useNetworks } from './useNetworks'
-import { isNetwork } from '../util/networks'
-import { CommonAddress } from '../util/CommonAddressUtils'
-import { useNetworksRelationship } from './useNetworksRelationship'
-import {
-  useTokensFromLists,
-  useTokensFromUser
-} from '../components/TransferPanel/TokenSearchUtils'
+import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
 import { useArbQueryParams } from './useArbQueryParams'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 const commonUSDC = {
   name: 'USD Coin',

@@ -1,5 +1,5 @@
-import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
+import { useAccount } from 'wagmi'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
 import { useNetworks } from './useNetworks'

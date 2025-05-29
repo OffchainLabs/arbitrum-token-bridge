@@ -1,7 +1,9 @@
-import { LifiData } from '@/token-bridge-sdk/LifiTransferStarter'
-import { create } from 'zustand'
-import { MergedTransactionLifiData } from '../../../state/app/state'
 import { LiFiStep } from '@lifi/sdk'
+import { create } from 'zustand'
+
+import { LifiData } from '@/token-bridge-sdk/LifiTransferStarter'
+
+import { MergedTransactionLifiData } from '../../../state/app/state'
 
 export type RouteType =
   | 'arbitrum'

@@ -1,25 +1,26 @@
+import { useDebounce } from '@uidotdev/usehooks'
 import { BigNumber, utils } from 'ethers'
 import { useMemo } from 'react'
-import { useDebounce } from '@uidotdev/usehooks'
 
-import { useGasPrice } from '../useGasPrice'
-import {
-  isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC
-} from '../../util/TokenUtils'
-import { useNetworksRelationship } from '../useNetworksRelationship'
-import { useNetworks } from '../useNetworks'
-import { useGasEstimates } from './useGasEstimates'
-import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
-import { DepositGasEstimates } from '../arbTokenBridge.types'
-import { percentIncrease } from '@/token-bridge-sdk/utils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
-import { useSelectedToken } from '../useSelectedToken'
+import { percentIncrease } from '@/token-bridge-sdk/utils'
+
+import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
 import {
   isWithdrawalFromArbOneToEthereum,
   isWithdrawalFromArbSepoliaToSepolia
 } from '../../util/networks'
-import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC
+} from '../../util/TokenUtils'
+import { DepositGasEstimates } from '../arbTokenBridge.types'
+import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
+import { useGasPrice } from '../useGasPrice'
+import { useNetworks } from '../useNetworks'
+import { useNetworksRelationship } from '../useNetworksRelationship'
+import { useSelectedToken } from '../useSelectedToken'
+import { useGasEstimates } from './useGasEstimates'
 
 export type GasEstimationStatus =
   | 'loading'

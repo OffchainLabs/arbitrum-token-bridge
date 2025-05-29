@@ -1,14 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
-import { vi, it, expect } from 'vitest'
-import { useAmountBigNumber } from './useAmountBigNumber'
+import React, { PropsWithChildren } from 'react'
 import {
   EncodedQuery,
   QueryParamAdapter,
   QueryParamOptions,
   QueryParamProvider
 } from 'use-query-params'
-import React, { PropsWithChildren } from 'react'
+import { expect, it, vi } from 'vitest'
+
 import { makeMockAdapter } from '../../../hooks/__tests__/helpers'
+import { useAmountBigNumber } from './useAmountBigNumber'
 
 const mocks = vi.hoisted(() => {
   return {

@@ -1,14 +1,15 @@
+import 'react-toastify/dist/ReactToastify.css'
+
 import localFont from 'next/font/local'
+import Image from 'next/image'
 import React from 'react'
 import { twMerge } from 'tailwind-merge'
-import Image from 'next/image'
+
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
-import { SiteBanner } from './SiteBanner'
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
-
-import 'react-toastify/dist/ReactToastify.css'
+import { SiteBanner } from './SiteBanner'
 
 const unica = localFont({
   src: [

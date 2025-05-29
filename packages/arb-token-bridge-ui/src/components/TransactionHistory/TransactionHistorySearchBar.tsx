@@ -1,11 +1,10 @@
-import { create } from 'zustand'
-import { useAccount } from 'wagmi'
-import { Address, isAddress } from 'viem'
-import { shallow } from 'zustand/shallow'
-import { useCallback, useEffect } from 'react'
-
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { useCallback, useEffect } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { Address, isAddress } from 'viem'
+import { useAccount } from 'wagmi'
+import { create } from 'zustand'
+import { shallow } from 'zustand/shallow'
 
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'

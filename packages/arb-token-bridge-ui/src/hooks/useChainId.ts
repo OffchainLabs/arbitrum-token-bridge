@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
 import { providers } from 'ethers'
+import { useEffect, useState } from 'react'
 
 export function useChainId({ provider }: { provider: providers.Provider }) {
   const [chainId, setChainId] = useState<number | undefined>(undefined)

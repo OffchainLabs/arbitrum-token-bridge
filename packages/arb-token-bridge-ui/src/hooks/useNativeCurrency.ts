@@ -1,11 +1,11 @@
+import { ArbitrumNetwork, EthBridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { EthBridger, ArbitrumNetwork, getArbitrumNetwork } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
-import { ETHER_TOKEN_LOGO, ether } from '../constants'
+import { ether, ETHER_TOKEN_LOGO } from '../constants'
+import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 import { rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
-import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 
 export type NativeCurrencyBase = {
   name: string

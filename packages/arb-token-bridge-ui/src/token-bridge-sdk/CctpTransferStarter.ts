@@ -1,8 +1,12 @@
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { TransactionRequest } from '@ethersproject/providers'
 import { Config, simulateContract, writeContract } from '@wagmi/core'
 import { BigNumber, constants, utils } from 'ethers'
-import { TransactionRequest } from '@ethersproject/providers'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
+import { Address } from '../util/AddressUtils'
+import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
+import { formatAmount } from '../util/NumberUtils'
+import { fetchErc20Allowance } from '../util/TokenUtils'
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -10,12 +14,8 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { formatAmount } from '../util/NumberUtils'
 import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
 import { getAddressFromSigner } from './utils'
-import { fetchErc20Allowance } from '../util/TokenUtils'
-import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
-import { Address } from '../util/AddressUtils'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'cctp'

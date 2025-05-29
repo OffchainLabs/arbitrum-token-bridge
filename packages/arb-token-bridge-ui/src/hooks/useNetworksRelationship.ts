@@ -2,9 +2,10 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useMemo } from 'react'
 import { Chain } from 'wagmi/chains'
 
-import { UseNetworksState } from './useNetworks'
-import { isDepositMode } from '../util/isDepositMode'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+
+import { isDepositMode } from '../util/isDepositMode'
+import { UseNetworksState } from './useNetworks'
 
 type UseNetworksRelationshipState = {
   childChain: Chain

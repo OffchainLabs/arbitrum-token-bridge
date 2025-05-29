@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
 import axios from 'axios'
+import { useCallback } from 'react'
 import useSWR, { KeyedMutator } from 'swr'
 
 export type UseETHPriceResult = {

@@ -1,47 +1,48 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
-import { useAccount } from 'wagmi'
+import React, { FormEventHandler, useCallback, useMemo, useState } from 'react'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
-import { twMerge } from 'tailwind-merge'
 import useSWRImmutable from 'swr/immutable'
+import { twMerge } from 'tailwind-merge'
+import { useAccount } from 'wagmi'
 
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
+import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useBalances } from '../../hooks/useBalances'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { getUsdcToken, useSelectedToken } from '../../hooks/useSelectedToken'
+import { useTokenLists } from '../../hooks/useTokenLists'
 import { useAppState } from '../../state'
+import { addressesEqual } from '../../util/AddressUtils'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import {
+  addBridgeTokenListToBridge,
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  addBridgeTokenListToBridge,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
 import {
   fetchErc20Data,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneUSDCe,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenNativeUSDC
 } from '../../util/TokenUtils'
-import { Button } from '../common/Button'
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
-import { useTokenLists } from '../../hooks/useTokenLists'
-import { warningToast } from '../common/atoms/Toast'
-import { CommonAddress } from '../../util/CommonAddressUtils'
-import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
-import { Panel, SearchPanel } from '../common/SearchPanel/SearchPanel'
-import { TokenRow } from './TokenRow'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Switch } from '../common/atoms/Switch'
-import { getUsdcToken, useSelectedToken } from '../../hooks/useSelectedToken'
-import { useBalances } from '../../hooks/useBalances'
-import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { addressesEqual } from '../../util/AddressUtils'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { warningToast } from '../common/atoms/Toast'
+import { Button } from '../common/Button'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { Panel, SearchPanel } from '../common/SearchPanel/SearchPanel'
+import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
+import { TokenRow } from './TokenRow'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,

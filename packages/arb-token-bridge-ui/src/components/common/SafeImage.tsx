@@ -1,7 +1,7 @@
 import { ImgHTMLAttributes } from 'react'
+import useSWR from 'swr'
 
 import { sanitizeImageSrc } from '../../util'
-import useSWR from 'swr'
 
 export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   fallback?: JSX.Element

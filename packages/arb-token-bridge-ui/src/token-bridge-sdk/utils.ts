@@ -1,10 +1,3 @@
-import { BigNumber, Signer } from 'ethers'
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-
-import { isNetwork, rpcURLs } from '../util/networks'
-import { ChainId } from '../types/ChainId'
-import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
-import { isValidTeleportChainPair } from './teleport'
 import {
   Erc20Bridger,
   Erc20L1L3Bridger,
@@ -12,8 +5,15 @@ import {
   EthL1L3Bridger,
   getArbitrumNetwork
 } from '@arbitrum/sdk'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber, Signer } from 'ethers'
+
+import { ChainId } from '../types/ChainId'
 import { isDepositMode } from '../util/isDepositMode'
+import { isNetwork, rpcURLs } from '../util/networks'
+import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 import { EnhancedProvider } from './EnhancedProvider'
+import { isValidTeleportChainPair } from './teleport'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()

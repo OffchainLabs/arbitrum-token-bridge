@@ -1,11 +1,11 @@
 import { Disclosure } from '@headlessui/react'
 import {
-  InformationCircleIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 
-import { ExternalLink } from '../common/ExternalLink'
 import { DOCS_DOMAIN } from '../../constants'
+import { ExternalLink } from '../common/ExternalLink'
 
 export function PendingDepositWarning() {
   return (

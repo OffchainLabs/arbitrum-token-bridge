@@ -1,9 +1,10 @@
-import { useCallback } from 'react'
 import * as Sentry from '@sentry/react'
-import { useNetworks } from './useNetworks'
+import { useCallback } from 'react'
+
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import type { ErrorCategory, EthersError } from '../util/SentryUtils'
 import { isEthersError } from '../util/SentryUtils'
+import { useNetworks } from './useNetworks'
 
 /**
  * Categories of errors that should be automatically ignored for Sentry reporting

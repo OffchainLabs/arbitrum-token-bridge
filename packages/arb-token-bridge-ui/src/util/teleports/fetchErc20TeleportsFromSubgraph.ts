@@ -1,5 +1,5 @@
-import { hasTeleporterSubgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from '../index'
+import { hasTeleporterSubgraph } from '../SubgraphUtils'
 
 export type FetchErc20TeleportsFromSubgraphResult = {
   id: string

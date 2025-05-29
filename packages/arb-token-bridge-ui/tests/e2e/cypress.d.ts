@@ -1,31 +1,32 @@
 import '@synthetixio/synpress/support/index.d.ts'
+
 import {
   acceptTnC,
-  login,
-  searchAndSelectToken,
+  claimCctp,
+  clickClaimButton,
+  clickMoveFundsButton,
+  closeTransactionDetails,
+  confirmSpending,
   fillCustomDestinationAddress,
-  typeAmount,
-  typeAmount2,
-  findAmountInput,
   findAmount2Input,
-  findSourceChainButton,
+  findAmountInput,
+  findClaimButton,
   findDestinationChainButton,
   findGasFeeSummary,
   findMoveFundsButton,
-  clickMoveFundsButton,
   findSelectTokenButton,
-  openTransactionDetails,
-  closeTransactionDetails,
+  findSourceChainButton,
   findTransactionDetailsCustomDestinationAddress,
   findTransactionInTransactionHistory,
-  findClaimButton,
-  clickClaimButton,
+  login,
+  openTransactionDetails,
+  searchAndSelectToken,
+  selectRoute,
   selectTransactionsPanelTab,
-  confirmSpending,
-  claimCctp,
-  switchToTransferPanelTab,
   switchToTransactionHistoryTab,
-  selectRoute
+  switchToTransferPanelTab,
+  typeAmount,
+  typeAmount2
 } from '../support/commands'
 
 declare global {

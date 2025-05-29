@@ -1,13 +1,14 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { useState, useEffect, useMemo } from 'react'
 import Resolution from '@unstoppabledomains/resolution'
+import { useEffect, useMemo, useState } from 'react'
+import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
 
-import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi'
-import { useArbQueryParams } from './useArbQueryParams'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
+import { ChainId } from '../types/ChainId'
 import { shortenAddress } from '../util/CommonUtils'
 import { onDisconnectHandler } from '../util/walletConnectUtils'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { ChainId } from '../types/ChainId'
+import { useArbQueryParams } from './useArbQueryParams'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }

@@ -1,8 +1,8 @@
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
+import { GET_HELP_LINK } from '../../constants'
 import { Dialog, DialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
-import { GET_HELP_LINK } from '../../constants'
 
 export function BlockedDialog(props: DialogProps & { address: string }) {
   return (

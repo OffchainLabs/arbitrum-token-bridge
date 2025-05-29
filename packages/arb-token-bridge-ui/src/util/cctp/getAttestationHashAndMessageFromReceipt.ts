@@ -1,5 +1,6 @@
 import { TransactionReceipt } from '@ethersproject/providers'
 import { utils } from 'ethers'
+
 import { Address } from '../AddressUtils'
 
 export function getAttestationHashAndMessageFromReceipt(

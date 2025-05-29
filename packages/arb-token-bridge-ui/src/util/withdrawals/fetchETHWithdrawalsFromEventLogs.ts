@@ -1,5 +1,5 @@
-import { Provider, BlockTag } from '@ethersproject/providers'
 import { ChildToParentMessageReader } from '@arbitrum/sdk'
+import { BlockTag, Provider } from '@ethersproject/providers'
 
 /**
  * Fetches initiated ETH withdrawals from event logs in range of [fromBlock, toBlock].

@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { SafeImage } from '../common/SafeImage'
-import { twMerge } from 'tailwind-merge'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { SafeImage } from '../common/SafeImage'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 /**
  * Shows the selected token logo by default.

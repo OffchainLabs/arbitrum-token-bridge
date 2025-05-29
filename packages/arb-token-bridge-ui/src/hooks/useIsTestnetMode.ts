@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
-import { useNetworks } from './useNetworks'
-import { isNetwork } from '../util/networks'
+
 import { ChainId } from '../types/ChainId'
+import { isNetwork } from '../util/networks'
+import { useNetworks } from './useNetworks'
 
 export const useIsTestnetMode = () => {
   const [networks, setNetworks] = useNetworks()

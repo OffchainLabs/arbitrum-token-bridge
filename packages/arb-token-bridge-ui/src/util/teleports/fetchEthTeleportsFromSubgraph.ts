@@ -1,6 +1,6 @@
 import { isValidTeleportChainPair } from '../../token-bridge-sdk/teleport'
-import { hasL1Subgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from '../index'
+import { hasL1Subgraph } from '../SubgraphUtils'
 
 export type FetchEthTeleportsFromSubgraphResult = {
   transactionHash: string

@@ -2,26 +2,26 @@ import React, {
   ChangeEventHandler,
   useCallback,
   useEffect,
-  useState,
-  useMemo
+  useMemo,
+  useState
 } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 
-import { TokenButton, TokenButtonOptions } from './TokenButton'
+import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
-import { ExternalLink } from '../common/ExternalLink'
 import { formatAmount } from '../../util/NumberUtils'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { Loader } from '../common/atoms/Loader'
-import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { Loader } from '../common/atoms/Loader'
+import { ExternalLink } from '../common/ExternalLink'
+import { TokenButton, TokenButtonOptions } from './TokenButton'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
-import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 
 function MaxButton({
   className = '',

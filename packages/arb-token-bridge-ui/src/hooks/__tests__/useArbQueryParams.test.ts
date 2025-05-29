@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import { customChainLocalStorageKey } from '../../util/networks'
+import { describe, expect, it } from 'vitest'
+
+import { sanitizeTabQueryParam, sanitizeTokenQueryParam } from '../../pages'
 import { ChainId } from '../../types/ChainId'
+import { customChainLocalStorageKey } from '../../util/networks'
 import { AmountQueryParam, ChainParam, TabParam } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
-import { sanitizeTabQueryParam, sanitizeTokenQueryParam } from '../../pages'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {

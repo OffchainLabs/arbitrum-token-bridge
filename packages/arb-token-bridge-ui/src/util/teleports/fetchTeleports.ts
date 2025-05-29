@@ -1,18 +1,18 @@
 import { Provider } from '@ethersproject/providers'
-import {
-  fetchEthTeleportsFromSubgraph,
-  FetchEthTeleportsFromSubgraphResult
-} from './fetchEthTeleportsFromSubgraph'
 
-import {
-  fetchErc20TeleportsFromSubgraph,
-  FetchErc20TeleportsFromSubgraphResult
-} from './fetchErc20TeleportsFromSubgraph'
 import {
   getL2ConfigForTeleport,
   isValidTeleportChainPair
 } from '../../token-bridge-sdk/teleport'
 import { getChainIdFromProvider } from '../../token-bridge-sdk/utils'
+import {
+  fetchErc20TeleportsFromSubgraph,
+  FetchErc20TeleportsFromSubgraphResult
+} from './fetchErc20TeleportsFromSubgraph'
+import {
+  fetchEthTeleportsFromSubgraph,
+  FetchEthTeleportsFromSubgraphResult
+} from './fetchEthTeleportsFromSubgraph'
 
 export type FetchTeleportsParams = {
   sender?: string

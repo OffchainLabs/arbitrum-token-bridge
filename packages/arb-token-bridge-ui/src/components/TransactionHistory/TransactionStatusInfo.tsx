@@ -4,8 +4,9 @@
 */
 
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
+import { twMerge } from 'tailwind-merge'
+
 import ArrowsIcon from '@/images/arrows.svg'
 
 import { useTransactionReminderInfo } from './useTransactionReminderInfo'

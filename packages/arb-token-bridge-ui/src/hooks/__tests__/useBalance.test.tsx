@@ -1,11 +1,11 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import React from 'react'
-import { act, renderHook, waitFor } from '@testing-library/react'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
-import { SWRConfig } from 'swr'
-import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { BigNumber } from 'ethers'
+import React from 'react'
+import { PropsWithChildren } from 'react'
+import { SWRConfig } from 'swr'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useBalance } from '../useBalance'
 

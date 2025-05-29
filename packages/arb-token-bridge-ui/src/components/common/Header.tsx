@@ -1,14 +1,15 @@
-import React from 'react'
 import Image from 'next/image'
+import React from 'react'
 import { twMerge } from 'tailwind-merge'
-import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
 import { useAccount } from 'wagmi'
 
-import { isNetwork } from '../../util/networks'
-import { useNetworks } from '../../hooks/useNetworks'
+import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
+
 import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
-import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
+import { useNetworks } from '../../hooks/useNetworks'
 import { isExperimentalModeEnabled } from '../../util'
+import { isNetwork } from '../../util/networks'
+import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 

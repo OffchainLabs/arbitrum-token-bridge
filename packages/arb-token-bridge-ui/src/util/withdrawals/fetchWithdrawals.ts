@@ -1,26 +1,24 @@
-import { Provider } from '@ethersproject/providers'
-
-import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
-
-import {
-  WithdrawalFromSubgraph,
-  fetchWithdrawalsFromSubgraph
-} from './fetchWithdrawalsFromSubgraph'
-import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
-
-import { Withdrawal } from '../../hooks/useTransactionHistory'
-import { attachTimestampToTokenWithdrawal } from './helpers'
-import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
-import {
-  Query,
-  fetchTokenWithdrawalsFromEventLogsSequentially
-} from './fetchTokenWithdrawalsFromEventLogsSequentially'
-import { backOff, wait } from '../ExponentialBackoffUtils'
-import { isAlchemyChain, isNetwork } from '../networks'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
-import { fetchL2Gateways } from '../fetchL2Gateways'
+import { Provider } from '@ethersproject/providers'
 import { constants } from 'ethers'
+
+import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
+import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { getNonce } from '../AddressUtils'
+import { backOff, wait } from '../ExponentialBackoffUtils'
+import { fetchL2Gateways } from '../fetchL2Gateways'
+import { isAlchemyChain, isNetwork } from '../networks'
+import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
+import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
+import {
+  fetchTokenWithdrawalsFromEventLogsSequentially,
+  Query
+} from './fetchTokenWithdrawalsFromEventLogsSequentially'
+import {
+  fetchWithdrawalsFromSubgraph,
+  WithdrawalFromSubgraph
+} from './fetchWithdrawalsFromSubgraph'
+import { attachTimestampToTokenWithdrawal } from './helpers'
 
 async function getGateways(provider: Provider): Promise<{
   standardGateway: string

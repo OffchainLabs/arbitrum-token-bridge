@@ -1,8 +1,9 @@
 import { constants } from 'ethers'
-import { Token } from './Route'
+
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { UseGasSummaryResult } from '../../../hooks/TransferPanel/useGasSummary'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
-import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { Token } from './Route'
 
 export function getGasCostAndToken({
   childChainNativeCurrency,

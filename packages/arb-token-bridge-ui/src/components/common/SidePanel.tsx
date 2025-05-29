@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
 import { Dialog, DialogBackdrop } from '@headlessui/react'
-import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { useCallback, useEffect, useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 type SidePanelProps = {
   heading?: string

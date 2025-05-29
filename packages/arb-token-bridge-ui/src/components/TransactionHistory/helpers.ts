@@ -1,14 +1,18 @@
-import dayjs from 'dayjs'
-import { Provider } from '@ethersproject/providers'
 import {
+  ChildToParentTransactionEvent,
+  ChildTransactionReceipt,
   EthDepositMessage,
   EthDepositMessageStatus,
-  ParentToChildMessageStatus,
   ParentToChildMessageReader,
-  ChildTransactionReceipt,
-  ChildToParentTransactionEvent
+  ParentToChildMessageStatus
 } from '@arbitrum/sdk'
+import { Provider } from '@ethersproject/providers'
+import { getStatus } from '@lifi/sdk'
+import dayjs from 'dayjs'
 
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import {
   DepositStatus,
   LayerZeroTransaction,
@@ -17,27 +21,23 @@ import {
   TeleporterMergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { getL1BlockTime, isNetwork } from '../../util/networks'
-import { ChainId } from '../../types/ChainId'
-import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
-import {
-  getParentToChildMessageDataFromParentTxHash,
-  fetchTeleporterDepositStatusData,
-  isEthDepositMessage
-} from '../../util/deposits/helpers'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
   getDepositStatus,
   isCustomDestinationAddressTx
 } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
-import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
-import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { getProviderForChainId } from '../../token-bridge-sdk/utils'
+import { ChainId } from '../../types/ChainId'
 import { isTeleportTx } from '../../types/Transactions'
-import { getStatus } from '@lifi/sdk'
 import { SimplifiedRouteType } from '../../util/AnalyticsUtils'
+import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import {
+  fetchTeleporterDepositStatusData,
+  getParentToChildMessageDataFromParentTxHash,
+  isEthDepositMessage
+} from '../../util/deposits/helpers'
+import { getL1BlockTime, isNetwork } from '../../util/networks'
+import { getOutgoingMessageState } from '../../util/withdrawals/helpers'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'

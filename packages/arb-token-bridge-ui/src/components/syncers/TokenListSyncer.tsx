@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
+
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-
 import { useAppState } from '../../state'
 import {
   addBridgeTokenListToBridge,

@@ -1,14 +1,14 @@
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { Tooltip } from '../common/Tooltip'
-import { TokenLogo } from './TokenLogo'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { ExternalLink } from '../common/ExternalLink'
+import { ChainId } from '../../types/ChainId'
 import { shortenAddress } from '../../util/CommonUtils'
 import { getExplorerUrl } from '../../util/networks'
-import { ChainId } from '../../types/ChainId'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { ExternalLink } from '../common/ExternalLink'
+import { Tooltip } from '../common/Tooltip'
+import { TokenLogo } from './TokenLogo'
 
 export function BlockExplorerTokenLink({
   chainId,

@@ -1,11 +1,12 @@
+import { useMemo } from 'react'
+
+import { ChainId } from '../../types/ChainId'
 import {
   getDestinationChainIds,
   getSupportedChainIds
 } from '../../util/networks'
-import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../useIsTestnetMode'
 import { useNetworks } from '../useNetworks'
-import { useMemo } from 'react'
 
 export function useChainIdsForNetworkSelection({
   isSource

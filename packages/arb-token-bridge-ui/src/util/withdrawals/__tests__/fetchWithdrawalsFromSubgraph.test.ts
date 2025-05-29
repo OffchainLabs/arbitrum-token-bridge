@@ -1,11 +1,12 @@
 // Covers both ETH and Token withdrawals from subgraph
+import { describe, expect, it } from 'vitest'
+
 import { fetchWithdrawalsFromSubgraph } from '../fetchWithdrawalsFromSubgraph'
 import {
+  getQueryCoveringClassicAndNitroWithResults,
   getQueryCoveringClassicOnlyWithoutResults,
-  getQueryCoveringClassicOnlyWithResults,
-  getQueryCoveringClassicAndNitroWithResults
+  getQueryCoveringClassicOnlyWithResults
 } from './fetchWithdrawalsTestHelpers'
-import { describe, it, expect } from 'vitest'
 
 describe('fetchTokenWithdrawalsFromSubgraph', () => {
   it('fetches no withdrawals from subgraph pre-nitro', async () => {

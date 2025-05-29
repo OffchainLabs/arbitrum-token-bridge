@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
+import { describe, expect, it } from 'vitest'
+
 import { formatAmount } from '../NumberUtils'
-import { describe, it, expect } from 'vitest'
 
 describe('formatAmount', () => {
   describe('for short token symbol', () => {

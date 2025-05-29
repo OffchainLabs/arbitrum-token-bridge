@@ -1,28 +1,26 @@
+import 'tippy.js/dist/tippy.css'
+import 'tippy.js/themes/light.css'
+import '@rainbow-me/rainbowkit/styles.css'
+import '../styles/tailwind.css'
+
+import dayjs from 'dayjs'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import timeZone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import posthog from 'posthog-js'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import advancedFormat from 'dayjs/plugin/advancedFormat'
-import timeZone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
 import type { Chain } from 'wagmi/chains'
 
-import 'tippy.js/dist/tippy.css'
-import 'tippy.js/themes/light.css'
-
-import '@rainbow-me/rainbowkit/styles.css'
-
 import { Layout } from '../components/common/Layout'
-
-import '../styles/tailwind.css'
 import {
   ChainKeyQueryParam,
   getChainForChainKeyQueryParam
 } from '../types/ChainQueryParam'
+import { isProductionEnvironment } from '../util/CommonUtils'
 import { isNetwork } from '../util/networks'
 import { initializeSentry } from '../util/SentryUtils'
-import { isProductionEnvironment } from '../util/CommonUtils'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTime)

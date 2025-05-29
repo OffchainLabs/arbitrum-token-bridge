@@ -1,41 +1,42 @@
-import { useCallback, useState, useMemo } from 'react'
-import { useAccount } from 'wagmi'
-import { Chain } from 'viem'
-import { BigNumber } from 'ethers'
+import {
+  ChildToParentMessage,
+  ChildToParentTransactionEvent,
+  EventArgs
+} from '@arbitrum/sdk'
+import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import {
-  EventArgs,
-  ChildToParentMessage,
-  ChildToParentTransactionEvent
-} from '@arbitrum/sdk'
-import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+import { BigNumber } from 'ethers'
+import { useCallback, useMemo, useState } from 'react'
+import { Chain } from 'viem'
+import { useAccount } from 'wagmi'
 
-import {
-  ArbTokenBridge,
-  ContractStorage,
-  ERC20BridgeToken,
-  L2ToL1EventResultPlus,
-  TokenType,
-  L2ToL1EventResult
-} from './arbTokenBridge.types'
-import { useBalance } from './useBalance'
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
+import { CommonAddress } from '../util/CommonAddressUtils'
+import { getL2NativeToken } from '../util/L2NativeUtils'
+import { isNetwork } from '../util/networks'
 import {
   fetchErc20Data,
   getL1ERC20Address,
   getL2ERC20Address,
-  l1TokenIsDisabled,
+  getL3ERC20Address,
   isValidErc20,
-  getL3ERC20Address
+  l1TokenIsDisabled
 } from '../util/TokenUtils'
-import { getL2NativeToken } from '../util/L2NativeUtils'
-import { CommonAddress } from '../util/CommonAddressUtils'
-import { isNetwork } from '../util/networks'
-import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import {
+  ArbTokenBridge,
+  ContractStorage,
+  ERC20BridgeToken,
+  L2ToL1EventResult,
+  L2ToL1EventResultPlus,
+  TokenType
+} from './arbTokenBridge.types'
 import { useArbQueryParams } from './useArbQueryParams'
+import { useBalance } from './useBalance'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))

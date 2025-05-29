@@ -1,15 +1,15 @@
 import { useEffect } from 'react'
 
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { useActions, useAppState } from '../../../state'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { isNetwork } from '../../../util/networks'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../../util/TokenUtils'
-import { useActions, useAppState } from '../../../state'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { isNetwork } from '../../../util/networks'
-import { useSelectedToken } from '../../../hooks/useSelectedToken'
 
 export function useUpdateUSDCTokenData() {
   const actions = useActions()

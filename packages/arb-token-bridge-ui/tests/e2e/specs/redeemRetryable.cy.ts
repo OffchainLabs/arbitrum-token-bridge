@@ -1,6 +1,6 @@
-import { formatAmount } from '../../../src/util/NumberUtils'
-import { Transaction } from '../../../src/types/Transactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
+import { Transaction } from '../../../src/types/Transactions'
+import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getL2NetworkConfig

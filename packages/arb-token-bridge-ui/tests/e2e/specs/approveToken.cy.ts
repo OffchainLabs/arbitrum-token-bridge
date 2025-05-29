@@ -1,8 +1,8 @@
 import {
-  importTokenThroughUI,
   ERC20TokenName,
   ERC20TokenSymbol,
-  getZeroToLessThanOneToken
+  getZeroToLessThanOneToken,
+  importTokenThroughUI
 } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_PARENT_CHAIN')

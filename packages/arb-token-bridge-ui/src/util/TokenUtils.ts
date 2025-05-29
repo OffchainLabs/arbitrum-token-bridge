@@ -1,27 +1,27 @@
-import { constants } from 'ethers'
-import { Provider } from '@ethersproject/providers'
 import {
   Erc20Bridger,
   Erc20L1L3Bridger,
   EthBridger,
   EthL1L3Bridger,
-  MultiCaller,
-  getArbitrumNetwork
+  getArbitrumNetwork,
+  MultiCaller
 } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Provider } from '@ethersproject/providers'
+import { constants } from 'ethers'
 
-import { CommonAddress } from './CommonAddressUtils'
-import { isNetwork } from './networks'
-import { ChainId } from '../types/ChainId'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
-import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
 import {
   getL2ConfigForTeleport,
   isValidTeleportChainPair
 } from '../token-bridge-sdk/teleport'
-import { captureSentryErrorWithExtraData } from './SentryUtils'
+import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
+import { ChainId } from '../types/ChainId'
 import { addressesEqual } from './AddressUtils'
+import { CommonAddress } from './CommonAddressUtils'
+import { isNetwork } from './networks'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()

@@ -1,22 +1,23 @@
-import { BigNumber, Contract, Wallet, utils } from 'ethers'
-import { Address } from 'viem'
-import { defineConfig } from 'cypress'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
+import { defineConfig } from 'cypress'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
+import { BigNumber, Contract, utils, Wallet } from 'ethers'
+import { Address } from 'viem'
+
+import { ChainDomain } from './src/pages/api/cctp/[type]'
+import { TokenMessengerAbi } from './src/util/cctp/TokenMessengerAbi'
+import { CommonAddress } from './src/util/CommonAddressUtils'
+import { browserConfig } from './tests/e2e/browser.config'
+import specFiles from './tests/e2e/cctp.json'
 import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
 import {
-  setupCypressTasks,
   fundEth,
   getCustomDestinationAddress,
-  NetworkType
+  NetworkType,
+  setupCypressTasks
 } from './tests/support/common'
-import specFiles from './tests/e2e/cctp.json'
-import { CommonAddress } from './src/util/CommonAddressUtils'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { TokenMessengerAbi } from './src/util/cctp/TokenMessengerAbi'
-import { ChainDomain } from './src/pages/api/cctp/[type]'
-import { browserConfig } from './tests/e2e/browser.config'
 
 export async function fundUsdc({
   address, // wallet address where funding is required

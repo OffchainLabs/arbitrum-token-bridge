@@ -1,13 +1,15 @@
-import { useCallback, useMemo } from 'react'
-import { BigNumber, utils } from 'ethers'
-import useSWR, {
-  useSWRConfig,
-  unstable_serialize,
-  Middleware,
-  SWRHook
-} from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
+import { BigNumber, utils } from 'ethers'
+import { useCallback, useMemo } from 'react'
+import useSWR, {
+  Middleware,
+  SWRHook,
+  unstable_serialize,
+  useSWRConfig
+} from 'swr'
+
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 
 type Erc20Balances = {

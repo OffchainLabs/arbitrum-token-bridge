@@ -1,6 +1,7 @@
 import Image from 'next/image'
-import { ExternalLink } from './ExternalLink'
+
 import { PORTAL_API_ENDPOINT } from '../../constants'
+import { ExternalLink } from './ExternalLink'
 
 export type PortalProject = {
   chains: string[]

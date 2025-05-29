@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
-import { useAppState } from '../../../state'
 import { useNetworks } from '../../../hooks/useNetworks'
+import { useAppState } from '../../../state'
 import { useDestinationAddressError } from './useDestinationAddressError'
 
 export function useIsTransferAllowed() {

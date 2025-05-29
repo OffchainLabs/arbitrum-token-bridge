@@ -1,8 +1,9 @@
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { allowedSourceTokens } from '../../../pages/api/crosschain-transfers/lifi'
-import { isNetwork } from '../../../util/networks'
 import { isDepositMode as isDepositModeUtil } from '../../../util/isDepositMode'
-import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+import { isNetwork } from '../../../util/networks'
 
 /**
  * Lifi transfers are allowed for {@link} allowedSourceTokens from ArbitrumOne to Mainnet

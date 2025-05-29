@@ -1,12 +1,14 @@
+import { Tab } from '@headlessui/react'
 import dayjs from 'dayjs'
 import { useEffect, useMemo } from 'react'
-import { Tab } from '@headlessui/react'
+import { shallow } from 'zustand/shallow'
 
-import { MergedTransaction } from '../../state/app/state'
 import {
-  ContentWrapper,
-  TransactionHistoryTable
-} from './TransactionHistoryTable'
+  useForceFetchReceived,
+  useTransactionHistory
+} from '../../hooks/useTransactionHistory'
+import { MergedTransaction } from '../../state/app/state'
+import { TabButton } from '../common/Tab'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import {
   isTxClaimable,
@@ -15,15 +17,13 @@ import {
   isTxFailed,
   isTxPending
 } from './helpers'
-import { TabButton } from '../common/Tab'
-import { TransactionsTableDetails } from './TransactionsTableDetails'
-import {
-  useForceFetchReceived,
-  useTransactionHistory
-} from '../../hooks/useTransactionHistory'
-import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
-import { shallow } from 'zustand/shallow'
 import { TransactionHistoryDisclaimer } from './TransactionHistoryDisclaimer'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
+import {
+  ContentWrapper,
+  TransactionHistoryTable
+} from './TransactionHistoryTable'
+import { TransactionsTableDetails } from './TransactionsTableDetails'
 
 function useTransactionHistoryUpdater() {
   const sanitizedAddress = useTransactionHistoryAddressStore(

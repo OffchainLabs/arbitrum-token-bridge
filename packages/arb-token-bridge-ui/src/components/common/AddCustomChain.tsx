@@ -1,32 +1,33 @@
-import { useState } from 'react'
-import { isAddress } from 'ethers/lib/utils'
-import { Popover } from '@headlessui/react'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
+import { RollupAdminLogic__factory } from '@arbitrum/sdk/dist/lib/abi/factories/RollupAdminLogic__factory'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Popover } from '@headlessui/react'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
-import { z } from 'zod'
-import { RollupAdminLogic__factory } from '@arbitrum/sdk/dist/lib/abi/factories/RollupAdminLogic__factory'
+import { isAddress } from 'ethers/lib/utils'
+import { useState } from 'react'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { stackoverflowDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
+import { z } from 'zod'
 
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
+import { ChainId } from '../../types/ChainId'
 import {
   ChainWithRpcUrl,
-  getCustomChainsFromLocalStorage,
   getCustomChainFromLocalStorageById,
+  getCustomChainsFromLocalStorage,
   getNetworkName,
+  isNetwork,
   removeCustomChainFromLocalStorage,
-  saveCustomChainToLocalStorage,
-  supportedCustomOrbitParentChains,
   rpcURLs,
-  isNetwork
+  saveCustomChainToLocalStorage,
+  supportedCustomOrbitParentChains
 } from '../../util/networks'
-import { ChainId } from '../../types/ChainId'
-import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { Transition } from './Transition'
+import { Loader } from './atoms/Loader'
 import { Button } from './Button'
+import { Transition } from './Transition'
 
 const orbitConfigsLocalStorageKey = 'arbitrum:orbit:configs'
 

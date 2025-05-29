@@ -1,17 +1,18 @@
-import { useMemo } from 'react'
-import axios from 'axios'
-import useSWRImmutable from 'swr/immutable'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
-import { useNetworks } from '../../hooks/useNetworks'
-import { getNetworkName, isNetwork } from '../../util/networks'
-import { PortalProject, Project } from './PortalProject'
+import axios from 'axios'
+import { useMemo } from 'react'
+import useSWRImmutable from 'swr/immutable'
+
 import { PORTAL_API_ENDPOINT } from '../../constants'
-import { ExternalLink } from './ExternalLink'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { useNetworks } from '../../hooks/useNetworks'
 import { getChainQueryParamForChain } from '../../types/ChainQueryParam'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { isDevelopmentEnvironment } from '../../util/CommonUtils'
+import { getNetworkName, isNetwork } from '../../util/networks'
+import { ExternalLink } from './ExternalLink'
+import { PortalProject, Project } from './PortalProject'
 
 const shuffleArray = (array: PortalProject[]) => {
   return array.sort(() => Math.random() - 0.5)

@@ -7,6 +7,7 @@ import tsParser from "@typescript-eslint/parser";
 import prettierRecommended from "eslint-plugin-prettier/recommended";
 import { flatConfig as nextFlatConfig } from "@next/eslint-plugin-next";
 import tseslint from "typescript-eslint";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +22,7 @@ export default [
     plugins: {
       "@typescript-eslint": typescriptEslint,
       "zustand-rules": zustandRules,
+      "simple-import-sort": simpleImportSort,
     },
 
     languageOptions: {
@@ -67,6 +69,9 @@ export default [
           "ts-check": "allow-with-description",
         },
       ],
+
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
 
       "zustand-rules/use-store-selectors": "error",
       "zustand-rules/no-state-mutation": "error",

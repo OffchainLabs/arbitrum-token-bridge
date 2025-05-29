@@ -1,16 +1,16 @@
-import { useAccount } from 'wagmi'
 import { BigNumber, constants } from 'ethers'
+import { useAccount } from 'wagmi'
 
-import { useBalance } from './useBalance'
-import { useNetworksRelationship } from './useNetworksRelationship'
-import { useNetworks } from './useNetworks'
-import { ERC20BridgeToken } from './arbTokenBridge.types'
 import { useNativeCurrencyBalances } from '../components/TransferPanel/TransferPanelMain/useNativeCurrencyBalances'
+import { isNetwork } from '../util/networks'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../util/TokenUtils'
-import { isNetwork } from '../util/networks'
+import { ERC20BridgeToken } from './arbTokenBridge.types'
+import { useBalance } from './useBalance'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 /**
  * Balance of the child chain's native currency or ERC20 token

@@ -1,6 +1,6 @@
-import { getCustomChainFromLocalStorageById } from './networks'
 import { ChainId } from '../types/ChainId'
-import { orbitChains, BridgeUiConfig } from './orbitChainsList'
+import { getCustomChainFromLocalStorageById } from './networks'
+import { BridgeUiConfig, orbitChains } from './orbitChainsList'
 
 export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
   type BaseBridgeUiConfig = Omit<BridgeUiConfig, 'network'> & {

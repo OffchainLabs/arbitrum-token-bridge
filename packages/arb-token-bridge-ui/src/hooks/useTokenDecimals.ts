@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
-import { ArbTokenBridge } from './arbTokenBridge.types'
 import { defaultErc20Decimals } from '../defaults'
+import { ArbTokenBridge } from './arbTokenBridge.types'
 
 const useTokenDecimals = (
   bridgeTokens: ArbTokenBridge['bridgeTokens'],

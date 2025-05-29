@@ -1,12 +1,12 @@
-import { Signer } from '@ethersproject/abstract-signer'
-import { BigNumber, ContractReceipt } from 'ethers'
-import { TokenList } from '@uniswap/token-lists'
 import {
-  EventArgs,
   ChildToParentMessageStatus as OutgoingMessageState,
-  ChildToParentTransactionEvent
+  ChildToParentTransactionEvent,
+  EventArgs
 } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
+import { Signer } from '@ethersproject/abstract-signer'
+import { TokenList } from '@uniswap/token-lists'
+import { BigNumber, ContractReceipt } from 'ethers'
 
 export { OutgoingMessageState }
 

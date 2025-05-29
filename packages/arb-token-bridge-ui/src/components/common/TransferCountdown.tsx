@@ -1,11 +1,11 @@
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import {
   getOrbitDepositDuration,
   minutesToHumanReadableTime,
   useTransferDuration
 } from '../../hooks/useTransferDuration'
-import { isNetwork } from '../../util/networks'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { isTeleportTx } from '../../types/Transactions'
+import { isNetwork } from '../../util/networks'
 
 /**
  * Displays a transfer countdown for a deposit, withdrawal, or cctp.

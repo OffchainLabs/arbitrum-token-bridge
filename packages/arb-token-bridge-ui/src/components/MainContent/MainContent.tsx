@@ -1,14 +1,14 @@
-import { useLocalStorage } from '@uidotdev/usehooks'
 import { Tab } from '@headlessui/react'
-import { useCallback, Fragment } from 'react'
+import { useLocalStorage } from '@uidotdev/usehooks'
+import { Fragment, useCallback } from 'react'
 
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { SettingsDialog } from '../common/SettingsDialog'
+import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
+import { TopNavBar } from '../TopNavBar'
+import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
-import { SettingsDialog } from '../common/SettingsDialog'
-import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
-import { TopNavBar } from '../TopNavBar'
-import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function MainContent() {
   const [isArbitrumStatsVisible] =

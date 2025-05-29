@@ -1,10 +1,11 @@
-import { useAccount } from 'wagmi'
-import { useAccountType } from '../../hooks/useAccountType'
 import { useMemo } from 'react'
-import { ChainId } from '../../types/ChainId'
+import { useAccount } from 'wagmi'
+
+import { useAccountType } from '../../hooks/useAccountType'
 import { useBalance } from '../../hooks/useBalance'
-import { CommonAddress } from '../../util/CommonAddressUtils'
 import { useLifiTransactionHistory } from '../../hooks/useLifiTransactionHistory'
+import { ChainId } from '../../types/ChainId'
+import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ExternalLink } from '../common/ExternalLink'
 
 export const highlightTransactionHistoryDisclaimer = () => {

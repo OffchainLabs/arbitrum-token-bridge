@@ -10,15 +10,15 @@ import { useState } from 'react'
 import { useCopyToClipboard, useMedia } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
+import { useAccountMenu } from '../../hooks/useAccountMenu'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 import { useNetworks } from '../../hooks/useNetworks'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
-import { useAccountMenu } from '../../hooks/useAccountMenu'
+import { CustomBoringAvatar } from './CustomBoringAvatar'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { Transition } from './Transition'
-import { CustomBoringAvatar } from './CustomBoringAvatar'
-import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
 
 export function HeaderAccountPopover({
   isCorrectNetworkConnected = true

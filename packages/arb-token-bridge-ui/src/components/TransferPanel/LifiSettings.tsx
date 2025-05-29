@@ -1,20 +1,4 @@
-import { ChainType, getConnections, getTools } from '@lifi/sdk'
-import {
-  defaultSlippage,
-  useLifiSettingsStore
-} from './hooks/useLifiSettingsStore'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import useSWRImmutable from 'swr/immutable'
-import { useCallback, useState } from 'react'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { Checkbox } from '../common/Checkbox'
-import { Loader } from '../common/atoms/Loader'
-import { Transition } from '../common/Transition'
-import { SafeImage } from '../common/SafeImage'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { constants } from 'ethers'
-import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
   Cog8ToothIcon,
@@ -22,8 +6,25 @@ import {
   InformationCircleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { ChainType, getConnections, getTools } from '@lifi/sdk'
+import { constants } from 'ethers'
+import { useCallback, useState } from 'react'
+import useSWRImmutable from 'swr/immutable'
+import { twMerge } from 'tailwind-merge'
 import { shallow } from 'zustand/shallow'
+
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { Loader } from '../common/atoms/Loader'
+import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
+import { SafeImage } from '../common/SafeImage'
+import { Transition } from '../common/Transition'
+import {
+  defaultSlippage,
+  useLifiSettingsStore
+} from './hooks/useLifiSettingsStore'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 
 function useIsLifiSupported() {

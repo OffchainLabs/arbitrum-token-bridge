@@ -5,6 +5,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import dynamic from 'next/dynamic'
 import { usePostHog } from 'posthog-js/react'
 import { useAccount } from 'wagmi'
+
 import { AccountMenuItem } from './AccountMenuItem'
 
 // Dynamically import the MobileSidebar component with SSR disabled

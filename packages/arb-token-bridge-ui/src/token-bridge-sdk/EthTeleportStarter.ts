@@ -1,6 +1,7 @@
 import { EthL1L3Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
-import { BigNumber, constants } from 'ethers'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber, constants } from 'ethers'
+
 import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,

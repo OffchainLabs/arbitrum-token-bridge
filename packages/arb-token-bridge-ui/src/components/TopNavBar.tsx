@@ -1,8 +1,9 @@
 import { Tab } from '@headlessui/react'
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 import { PropsWithChildren } from 'react'
 import { twMerge } from 'tailwind-merge'
-import Image from 'next/image'
+
 import { useTransactionReminderInfo } from './TransactionHistory/useTransactionReminderInfo'
 
 function StyledTab({ children, ...props }: PropsWithChildren) {

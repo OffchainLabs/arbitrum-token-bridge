@@ -1,28 +1,29 @@
-import { getTools } from '@lifi/sdk'
-import {
-  defaultSlippage,
-  useLifiSettingsStore
-} from './hooks/useLifiSettingsStore'
-import { useNetworks } from '../../hooks/useNetworks'
-import useSWRImmutable from 'swr/immutable'
-import React, { useCallback, useMemo, useState } from 'react'
-import { Checkbox } from '../common/Checkbox'
-import { Loader } from '../common/atoms/Loader'
-import { SafeImage } from '../common/SafeImage'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
   ExclamationCircleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
+import { getTools } from '@lifi/sdk'
+import React, { useCallback, useMemo, useState } from 'react'
+import useSWRImmutable from 'swr/immutable'
+import { twMerge } from 'tailwind-merge'
 import { shallow } from 'zustand/shallow'
-import { ExternalLink } from '../common/ExternalLink'
-import { AdvancedSettings } from './AdvancedSettings'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+
 import { useAccountType } from '../../hooks/useAccountType'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { Loader } from '../common/atoms/Loader'
+import { Checkbox } from '../common/Checkbox'
 import { Dialog, UseDialogProps } from '../common/Dialog'
+import { ExternalLink } from '../common/ExternalLink'
+import { SafeImage } from '../common/SafeImage'
+import { AdvancedSettings } from './AdvancedSettings'
+import { useDestinationAddressError } from './hooks/useDestinationAddressError'
+import {
+  defaultSlippage,
+  useLifiSettingsStore
+} from './hooks/useLifiSettingsStore'
 import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 
 function useTools() {
