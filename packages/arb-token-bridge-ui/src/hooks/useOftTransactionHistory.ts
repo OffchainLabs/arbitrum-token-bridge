@@ -161,7 +161,9 @@ async function validateLayerZeroMessage(message: LayerZeroMessage) {
   const sourceChainId = getChainIdFromEid(message.pathway.srcEid)
   const destinationChainId = getChainIdFromEid(message.pathway.dstEid)
 
-  if (sourceChainId && destinationChainId) {
+  const isProtocolUsdt0 = message.pathway?.sender?.id === 'usdt0'
+
+  if (sourceChainId && destinationChainId && isProtocolUsdt0) {
     try {
       const isOftDataDecodable = !!(await getOftV2TransferDecodedData(
         message.source.tx.txHash,
