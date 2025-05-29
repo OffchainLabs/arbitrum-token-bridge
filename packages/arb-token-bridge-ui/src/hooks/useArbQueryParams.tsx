@@ -13,8 +13,6 @@
     `setQueryParams(newAmount)`
 
 */
-import React from 'react'
-import NextAdapterPages from 'next-query-params/pages'
 import queryString from 'query-string'
 import {
   BooleanParam,
@@ -62,14 +60,23 @@ export const indexToTab = {
 export const DisabledFeaturesParam = {
   encode: (features: DisabledFeatures[] | undefined) => {
     if (!features?.length) return undefined
-    return features.join(',')
+    const url = new URLSearchParams()
+    features.forEach(feature => {
+      url.append('disabledFeatures', feature)
+    })
+    return url.toString()
   },
   decode: (value: string | (string | null)[] | null | undefined) => {
     if (!value) return []
-    const sanitized = sanitizeDisabledFeaturesQueryParam(
-      typeof value === 'string' ? value : undefined
-    )
-    return sanitized ? sanitized.split(',') : []
+    try {
+      const url = new URLSearchParams(typeof value === 'string' ? value : '')
+      const features = url.getAll('disabledFeatures').filter(Boolean).join(',')
+      if (!features) return []
+      const sanitized = sanitizeDisabledFeaturesQueryParam(features)
+      return sanitized ? sanitized.split(',') : []
+    } catch {
+      return []
+    }
   }
 }
 
@@ -269,6 +276,8 @@ export function ArbQueryParamProvider({
 }: {
   children: React.ReactNode
 }) {
+  // Import NextAdapterPages here since it's only used in this component
+  const NextAdapterPages = require('next-query-params/pages').default
   return (
     <QueryParamProvider
       adapter={NextAdapterPages}

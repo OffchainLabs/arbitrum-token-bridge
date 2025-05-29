@@ -375,7 +375,7 @@ describe('DisabledFeaturesParam', () => {
           DisabledFeatures.BATCH_TRANSFERS,
           DisabledFeatures.TX_HISTORY
         ])
-      ).toEqual('batch-transfers,tx-history')
+      ).toEqual('disabledFeatures=batch-transfers&disabledFeatures=tx-history')
     })
   })
 
@@ -386,14 +386,18 @@ describe('DisabledFeaturesParam', () => {
     })
 
     it('should return empty array if no valid features are provided', () => {
-      expect(DisabledFeaturesParam.decode('invalid-feature')).toEqual([])
-      expect(DisabledFeaturesParam.decode('random_feature')).toEqual([])
+      expect(
+        DisabledFeaturesParam.decode('disabledFeatures=invalid-feature')
+      ).toEqual([])
+      expect(
+        DisabledFeaturesParam.decode('disabledFeatures=random_feature')
+      ).toEqual([])
       expect(DisabledFeaturesParam.decode('')).toEqual([])
     })
 
     it('should keep only valid features', () => {
       const result = DisabledFeaturesParam.decode(
-        `${DisabledFeatures.BATCH_TRANSFERS},invalid_feature,${DisabledFeatures.TX_HISTORY}`
+        `disabledFeatures=${DisabledFeatures.BATCH_TRANSFERS}&disabledFeatures=invalid_feature&disabledFeatures=${DisabledFeatures.TX_HISTORY}`
       )
       expect(result).toEqual([
         DisabledFeatures.BATCH_TRANSFERS,
@@ -403,24 +407,32 @@ describe('DisabledFeaturesParam', () => {
 
     it('should handle single valid feature', () => {
       expect(
-        DisabledFeaturesParam.decode(DisabledFeatures.BATCH_TRANSFERS)
+        DisabledFeaturesParam.decode(
+          `disabledFeatures=${DisabledFeatures.BATCH_TRANSFERS}`
+        )
       ).toEqual([DisabledFeatures.BATCH_TRANSFERS])
     })
 
     it('should be case insensitive and return canonical case', () => {
-      expect(DisabledFeaturesParam.decode('BATCH-TRANSFERS')).toEqual([
-        DisabledFeatures.BATCH_TRANSFERS
-      ])
+      expect(
+        DisabledFeaturesParam.decode('disabledFeatures=BATCH-TRANSFERS')
+      ).toEqual([DisabledFeatures.BATCH_TRANSFERS])
     })
 
     it('should handle mixed case in the same query', () => {
       const result = DisabledFeaturesParam.decode(
-        'batch-transfers,TX-HISTORY,Batch-Transfers'
+        'disabledFeatures=batch-transfers&disabledFeatures=TX-HISTORY&disabledFeatures=Batch-Transfers'
       )
       expect(result).toEqual([
         DisabledFeatures.BATCH_TRANSFERS,
         DisabledFeatures.TX_HISTORY
       ])
+    })
+
+    it('should handle invalid URL values', () => {
+      expect(DisabledFeaturesParam.decode('disabledFeatures=')).toEqual([])
+      expect(DisabledFeaturesParam.decode('?disabledFeatures=')).toEqual([])
+      expect(DisabledFeaturesParam.decode('randomInvalidValue')).toEqual([])
     })
   })
 })
