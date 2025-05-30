@@ -16,7 +16,8 @@ import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
   encodeChainQueryParam,
-  TabParamEnum
+  TabParamEnum,
+  DisabledFeaturesParam
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 import {
@@ -99,6 +100,7 @@ function getDestinationWithSanitizedQueryParams(
     experiments: string | undefined
     token: string | undefined
     tab: string
+    disabledFeatures: string[] | undefined
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -111,7 +113,8 @@ function getDestinationWithSanitizedQueryParams(
       key === 'destinationChain' ||
       key === 'experiments' ||
       key === 'token' ||
-      key === 'tab'
+      key === 'tab' ||
+      key === 'disabledFeatures'
     ) {
       continue
     }
@@ -150,6 +153,12 @@ function getDestinationWithSanitizedQueryParams(
     params.set('tab', encodedTab)
   }
 
+  if (sanitized.disabledFeatures) {
+    for (const disabledFeature of sanitized.disabledFeatures) {
+      params.append('disabledFeatures', disabledFeature)
+    }
+  }
+
   return `/?${params.toString()}`
 }
 
@@ -176,6 +185,11 @@ export async function getServerSideProps({
   const experiments = decodeString(query.experiments)
   const token = decodeString(query.token)
   const tab = decodeString(query.tab)
+  // Parse disabled features string/array to array
+  const disabledFeatures =
+    typeof query.disabledFeatures === 'string'
+      ? [query.disabledFeatures]
+      : query.disabledFeatures
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -202,7 +216,8 @@ export async function getServerSideProps({
       token,
       destinationChainId: sanitizedChainIds.destinationChainId
     }),
-    tab: sanitizeTabQueryParam(tab)
+    tab: sanitizeTabQueryParam(tab),
+    disabledFeatures: DisabledFeaturesParam.decode(disabledFeatures)
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
@@ -211,14 +226,15 @@ export async function getServerSideProps({
     destinationChainId !== sanitized.destinationChainId ||
     experiments !== sanitized.experiments ||
     token !== sanitized.token ||
-    tab !== sanitized.tab
+    tab !== sanitized.tab ||
+    (disabledFeatures?.length || 0) !== sanitized.disabledFeatures.length
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
-      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab} (before)`
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab}&disabledFeatures=${disabledFeatures} (before)`
     )
     console.log(
-      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab} (after)`
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab}&disabledFeatures=${sanitized.disabledFeatures} (after)`
     )
     return {
       redirect: {

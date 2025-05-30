@@ -62,7 +62,7 @@ import {
   transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
-import { useArbQueryParams } from './useArbQueryParams'
+import { DisabledFeatures } from './useArbQueryParams'
 import {
   getUpdatedOftTransfer,
   updateAdditionalLayerZeroData,
@@ -70,6 +70,7 @@ import {
 } from './useOftTransactionHistory'
 import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
+import { useDisabledFeatures } from './useDisabledFeatures'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -274,7 +275,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType(address)
-  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
+  const { isFeatureDisabled } = useDisabledFeatures()
+  const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
+
   const forceFetchReceived = useForceFetchReceived(
     state => state.forceFetchReceived
   )
@@ -499,7 +502,10 @@ export const useTransactionHistory = (
   const { chain } = useAccount()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType(address)
-  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
+
+  const { isFeatureDisabled } = useDisabledFeatures()
+  const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
+
   const lifiTransactions = useLifiMergedTransactionCacheStore(
     state => state.transactions
   )
