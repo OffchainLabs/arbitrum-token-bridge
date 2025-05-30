@@ -1,29 +1,29 @@
-import dayjs from 'dayjs'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
+import dayjs from 'dayjs'
 import { ethers } from 'ethers'
 
-import {
-  DepositStatus,
-  MergedTransaction,
-  TeleporterMergedTransaction
-} from './state'
 import {
   AssetType,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
+import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import {
   isTeleportTx,
   TeleporterTransaction,
   Transaction
 } from '../../types/Transactions'
-import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { addressesEqual } from '../../util/AddressUtils'
 import {
   firstRetryableLegRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
-import { addressesEqual } from '../../util/AddressUtils'
+import {
+  DepositStatus,
+  MergedTransaction,
+  TeleporterMergedTransaction
+} from './state'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
