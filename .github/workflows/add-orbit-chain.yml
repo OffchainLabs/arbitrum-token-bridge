@@ -24,7 +24,7 @@ jobs:
           ref: ${{ github.ref_name }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'yarn'
@@ -75,10 +75,13 @@ jobs:
       - name: Format files
         run: yarn prettier --write "packages/arb-token-bridge-ui/src/**/*.{ts,tsx,js,jsx,json}"
 
+      - name: Generate OG image
+        run: yarn generateOpenGraphImages:orbit
+
       - name: Commit changes
         run: |
           git add "packages/arb-token-bridge-ui/src/**/*"
-          git add "packages/arb-token-bridge-ui/public/**/*" ":!public/images/__auto-generated/**"
+          git add "packages/arb-token-bridge-ui/public/**/*"
           git status
           git commit -m "feat: add ${{ steps.issue.outputs.result }}"
           git push origin ${{ steps.branch.outputs.name }}
