@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { customChainLocalStorageKey } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
-import { AmountQueryParam, ChainParam, TabParam } from '../useArbQueryParams'
+import {
+  AmountQueryParam,
+  ChainParam,
+  TabParam,
+  DisabledFeatures,
+  DisabledFeaturesParam
+} from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
 import { sanitizeTabQueryParam, sanitizeTokenQueryParam } from '../../pages'
 
@@ -353,5 +359,78 @@ describe('sanitizeTabQueryParam', () => {
     expect(result2).toEqual('bridge')
     expect(result3).toEqual('bridge')
     expect(result4).toEqual('bridge')
+  })
+})
+
+describe('DisabledFeaturesParam', () => {
+  describe('encode', () => {
+    it('should return undefined if features is undefined or empty', () => {
+      expect(DisabledFeaturesParam.encode(undefined)).toBeUndefined()
+      expect(DisabledFeaturesParam.encode([])).toBeUndefined()
+    })
+
+    it('should encode valid features', () => {
+      expect(
+        DisabledFeaturesParam.encode([
+          DisabledFeatures.BATCH_TRANSFERS,
+          DisabledFeatures.TX_HISTORY
+        ])
+      ).toEqual('disabledFeatures=batch-transfers&disabledFeatures=tx-history')
+    })
+  })
+
+  describe('decode', () => {
+    it('should return empty array if value is null or undefined', () => {
+      expect(DisabledFeaturesParam.decode(null)).toEqual([])
+      expect(DisabledFeaturesParam.decode(undefined)).toEqual([])
+    })
+
+    it('should return empty array if no valid features are provided', () => {
+      expect(DisabledFeaturesParam.decode('invalid-feature')).toEqual([])
+      expect(DisabledFeaturesParam.decode('random_feature')).toEqual([])
+      expect(DisabledFeaturesParam.decode('')).toEqual([])
+    })
+
+    it('should keep only valid features', () => {
+      const result = DisabledFeaturesParam.decode([
+        DisabledFeatures.BATCH_TRANSFERS,
+        'invalid_feature',
+        DisabledFeatures.TX_HISTORY
+      ])
+      expect(result).toEqual([
+        DisabledFeatures.BATCH_TRANSFERS,
+        DisabledFeatures.TX_HISTORY
+      ])
+    })
+
+    it('should handle single valid feature', () => {
+      expect(
+        DisabledFeaturesParam.decode(DisabledFeatures.BATCH_TRANSFERS)
+      ).toEqual([DisabledFeatures.BATCH_TRANSFERS])
+    })
+
+    it('should be case insensitive and return canonical case', () => {
+      expect(DisabledFeaturesParam.decode('BATCH-TRANSFERS')).toEqual([
+        DisabledFeatures.BATCH_TRANSFERS
+      ])
+    })
+
+    it('should handle mixed case in the same query', () => {
+      const result = DisabledFeaturesParam.decode([
+        DisabledFeatures.BATCH_TRANSFERS,
+        'TX-HISTORY',
+        'Batch-Transfers'
+      ])
+      expect(result).toEqual([
+        DisabledFeatures.BATCH_TRANSFERS,
+        DisabledFeatures.TX_HISTORY
+      ])
+    })
+
+    it('should handle invalid URL values', () => {
+      expect(DisabledFeaturesParam.decode('disabledFeatures=')).toEqual([])
+      expect(DisabledFeaturesParam.decode('?disabledFeatures=')).toEqual([])
+      expect(DisabledFeaturesParam.decode('randomInvalidValue')).toEqual([])
+    })
   })
 })
