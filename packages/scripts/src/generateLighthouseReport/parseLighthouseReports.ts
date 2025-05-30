@@ -251,7 +251,7 @@ export function parseLighthouseReports(
   reports: FlowResult[]
 ): [NavigationResult, TimespanResult] {
   const navigationReports = reports.map((report) => report.steps[0]);
-  const timespanReports = reports.map((report) => report.steps[0]);
+  const timespanReports = reports.map((report) => report.steps[1]);
 
   return [
     parseNavigationResults(navigationReports),
