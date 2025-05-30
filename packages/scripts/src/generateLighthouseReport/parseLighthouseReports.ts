@@ -17,12 +17,10 @@ export type NavigationResult = {
   seo: number;
 };
 export type TimespanResult = {
-  performance: {
-    total: number;
-    tbt: Metric;
-    cls: Metric;
-    inp: Metric;
-  };
+  performance: number;
+  tbt: Metric;
+  cls: Metric;
+  inp: Metric;
   best_practices: number;
   longTasks: {
     total: number;
@@ -40,12 +38,36 @@ function parse(result: FlowResult.Step, metricName: string): Metric {
   const metric = result.lhr.audits[metricName];
 
   return {
-    score: metric.score!,
-    numericValue: Number(metric.numericUnit)!,
+    score: metric.score || 0,
+    numericValue: metric.numericValue || 0,
   };
 }
 
-function parseNavigationResults(
+function parseToFixedNumber(num: number, fractionDigits: number) {
+  return Number(num.toFixed(fractionDigits));
+}
+
+function generateMetric<TKey extends string>({
+  key,
+  length,
+  report,
+}: {
+  key: TKey;
+  length: number;
+  report: {
+    [key in TKey]: {
+      numericValue: number;
+      score: number;
+    };
+  };
+}) {
+  return {
+    numericValue: parseToFixedNumber(report[key].numericValue / length, 3),
+    score: parseToFixedNumber((report[key].score / length) * 100, 2),
+  };
+}
+
+export function parseNavigationResults(
   navigationReports: FlowResult.Step[]
 ): NavigationResult {
   const mergedReports = navigationReports.reduce(
@@ -77,12 +99,14 @@ function parseNavigationResults(
           numericValue: acc.speed.numericValue + (speed.numericValue || 0),
           score: acc.speed.score + (speed.score || 0),
         },
-        performance: acc.performance + report.lhr.categories.performance.score!,
+        performance:
+          acc.performance + (report.lhr.categories.performance.score || 0),
         accessibility:
-          acc.accessibility + report.lhr.categories.accessibility.score!,
+          acc.accessibility + (report.lhr.categories.accessibility.score || 0),
         best_practices:
-          acc.best_practices + report.lhr.categories["best-practices"].score!,
-        seo: acc.seo + report.lhr.categories.seo.score!,
+          acc.best_practices +
+          (report.lhr.categories["best-practices"].score || 0),
+        seo: acc.seo + (report.lhr.categories.seo.score || 0),
       };
     },
     {
@@ -115,34 +139,28 @@ function parseNavigationResults(
 
   const length = navigationReports.length;
   return {
-    fcp: {
-      numericValue: mergedReports.fcp.numericValue / length,
-      score: mergedReports.fcp.score / length,
-    },
-    lcp: {
-      numericValue: mergedReports.lcp.numericValue / length,
-      score: mergedReports.lcp.score / length,
-    },
-    tbt: {
-      numericValue: mergedReports.tbt.numericValue / length,
-      score: mergedReports.tbt.score / length,
-    },
-    cls: {
-      numericValue: mergedReports.cls.numericValue / length,
-      score: mergedReports.cls.score / length,
-    },
-    speed: {
-      numericValue: mergedReports.speed.numericValue / length,
-      score: mergedReports.speed.score / length,
-    },
-    performance: mergedReports.performance / length,
-    accessibility: mergedReports.accessibility / length,
-    best_practices: mergedReports.best_practices / length,
-    seo: mergedReports.seo / length,
+    fcp: generateMetric({ key: "fcp", length, report: mergedReports }),
+    lcp: generateMetric({ key: "lcp", length, report: mergedReports }),
+    tbt: generateMetric({ key: "tbt", length, report: mergedReports }),
+    cls: generateMetric({ key: "cls", length, report: mergedReports }),
+    speed: generateMetric({ key: "speed", length, report: mergedReports }),
+    performance: parseToFixedNumber(
+      (mergedReports.performance / length) * 100,
+      2
+    ),
+    accessibility: parseToFixedNumber(
+      (mergedReports.accessibility / length) * 100,
+      2
+    ),
+    best_practices: parseToFixedNumber(
+      (mergedReports.best_practices / length) * 100,
+      2
+    ),
+    seo: parseToFixedNumber((mergedReports.seo / length) * 100, 2),
   };
 }
 
-function parseTimespanResults(
+export function parseTimespanResults(
   timespanReports: FlowResult.Step[]
 ): TimespanResult {
   const mergedReports = timespanReports.reduce(
@@ -161,22 +179,19 @@ function parseTimespanResults(
       ).items;
 
       return {
-        performance: {
-          total:
-            acc.performance.total +
-            (report.lhr.categories.performance.score || 0),
-          tbt: {
-            numericValue: acc.performance.tbt.numericValue + tbt.numericValue,
-            score: acc.performance.tbt.score + tbt.score,
-          },
-          cls: {
-            numericValue: acc.performance.cls.numericValue + cls.numericValue,
-            score: acc.performance.cls.score + cls.score,
-          },
-          inp: {
-            numericValue: acc.performance.inp.numericValue + inp.numericValue,
-            score: acc.performance.inp.score + inp.score,
-          },
+        performance:
+          acc.performance + (report.lhr.categories.performance.score || 0),
+        tbt: {
+          numericValue: acc.tbt.numericValue + tbt.numericValue,
+          score: acc.tbt.score + tbt.score,
+        },
+        cls: {
+          numericValue: acc.cls.numericValue + cls.numericValue,
+          score: acc.cls.score + cls.score,
+        },
+        inp: {
+          numericValue: acc.inp.numericValue + inp.numericValue,
+          score: acc.inp.score + inp.score,
         },
         best_practices:
           acc.best_practices +
@@ -191,18 +206,16 @@ function parseTimespanResults(
       };
     },
     {
-      performance: {
-        total: 0,
-        tbt: {
-          numericValue: 0,
-          score: 0,
-        },
-        cls: {
-          numericValue: 0,
-          score: 0,
-        },
-        inp: { numericValue: 0, score: 0 },
+      performance: 0,
+      tbt: {
+        numericValue: 0,
+        score: 0,
       },
+      cls: {
+        numericValue: 0,
+        score: 0,
+      },
+      inp: { numericValue: 0, score: 0 },
       best_practices: 0,
       longTasks: {
         total: 0,
@@ -213,25 +226,23 @@ function parseTimespanResults(
 
   const length = timespanReports.length;
   return {
-    performance: {
-      total: mergedReports.performance.total / length,
-      tbt: {
-        numericValue: mergedReports.performance.tbt.numericValue,
-        score: mergedReports.performance.tbt.numericValue,
-      },
-      cls: {
-        numericValue: mergedReports.performance.cls.numericValue,
-        score: mergedReports.performance.cls.numericValue,
-      },
-      inp: {
-        numericValue: mergedReports.performance.inp.numericValue,
-        score: mergedReports.performance.inp.numericValue,
-      },
-    },
-    best_practices: mergedReports.best_practices / length,
+    performance: parseToFixedNumber(
+      (mergedReports.performance / length) * 100,
+      2
+    ),
+    tbt: generateMetric({ key: "tbt", length, report: mergedReports }),
+    cls: generateMetric({ key: "cls", length, report: mergedReports }),
+    inp: generateMetric({ key: "inp", length, report: mergedReports }),
+    best_practices: parseToFixedNumber(
+      (mergedReports.best_practices / length) * 100,
+      2
+    ),
     longTasks: {
-      total: mergedReports.longTasks.total / length,
-      durationMs: mergedReports.longTasks.durationMs / length,
+      total: parseToFixedNumber(mergedReports.longTasks.total / length, 0),
+      durationMs: parseToFixedNumber(
+        mergedReports.longTasks.durationMs / length,
+        3
+      ),
     },
   };
 }

@@ -26,26 +26,26 @@ export async function postComment({
 Navigation:
 | Name                       | Result                          |
 |----------------------------|---------------------------------|
-| Performance                | ${(parsedNavigationReport.performance * 100).toFixed(0)}  |
-| Accessibility              | ${(parsedNavigationReport.accessibility * 100).toFixed(0)}   |
-| Best Practices             | ${(parsedNavigationReport["best_practices"] * 100).toFixed(0)}  |
-| SEO                        | ${(parsedNavigationReport.seo * 100).toFixed(0)}   |
-| First Contentful Paint     | ${(parsedNavigationReport.fcp.score * 100).toFixed(0)} ((${parsedNavigationReport.fcp.numericValue.toFixed(3)})s)  |
-| Largest Contentful Paint   | ${(parsedNavigationReport.lcp.score * 100).toFixed(0)} (${parsedNavigationReport.lcp.numericValue.toFixed(3)}s)  |
-| Total Blocking Time        | ${(parsedNavigationReport.tbt.score * 100).toFixed(0)} (${parsedNavigationReport.tbt.numericValue.toFixed(3)}ms) |
-| Cumulative Layout Shift    | ${(parsedNavigationReport.cls.score * 100).toFixed(0)} (${parsedNavigationReport.cls.numericValue.toFixed(3)}) |
-| Speed Index                | ${(parsedNavigationReport.speed.score * 100).toFixed(0)} (${parsedNavigationReport.speed.numericValue.toFixed(3)}s) |
+| Performance                | ${parsedNavigationReport.performance}  |
+| Accessibility              | ${parsedNavigationReport.accessibility}   |
+| Best Practices             | ${parsedNavigationReport["best_practices"]}  |
+| SEO                        | ${parsedNavigationReport.seo}   |
+| First Contentful Paint     | ${parsedNavigationReport.fcp.score} (${parsedNavigationReport.fcp.numericValue})s)  |
+| Largest Contentful Paint   | ${parsedNavigationReport.lcp.score} (${parsedNavigationReport.lcp.numericValue}s)  |
+| Total Blocking Time        | ${parsedNavigationReport.tbt.score} (${parsedNavigationReport.tbt.numericValue}ms) |
+| Cumulative Layout Shift    | ${parsedNavigationReport.cls.score} (${parsedNavigationReport.cls.numericValue}) |
+| Speed Index                | ${parsedNavigationReport.speed.score} (${parsedNavigationReport.speed.numericValue}s) |
 
 
 Timespan:
 | Name                       | Result                          |
 |----------------------------|---------------------------------|
-| Performance                | ${(parsedTimespanReport.performance.total * 100).toFixed(0)}  |
-| Total Blocking Time        | ${(parsedTimespanReport.performance.tbt.score * 100).toFixed(0)} (${parsedTimespanReport.performance.tbt.numericValue}ms) |
-| Cumulative Layout Shift    | ${(parsedTimespanReport.performance.cls.score * 100).toFixed(0)} (${parsedTimespanReport.performance.cls.numericValue}) |
-| Interaction to Next Paint  | ${(parsedTimespanReport.performance.inp.score * 100).toFixed(0)} (${parsedTimespanReport.performance.inp.numericValue}ms) |
-| Best practices | ${(parsedTimespanReport.best_practices * 100).toFixed(0)} |
-| Long tasks | ${(parsedTimespanReport.longTasks.total).toFixed(0)} (${(parsedTimespanReport.longTasks.durationMs).toFixed(2)}ms) |
+| Performance                | ${parsedTimespanReport.performance}  |
+| Total Blocking Time        | ${parsedTimespanReport.tbt.score} (${parsedTimespanReport.tbt.numericValue}ms) |
+| Cumulative Layout Shift    | ${parsedTimespanReport.cls.score} (${parsedTimespanReport.cls.numericValue}) |
+| Interaction to Next Paint  | ${parsedTimespanReport.inp.score} (${parsedTimespanReport.inp.numericValue}ms) |
+| Best practices | ${parsedTimespanReport.best_practices} |
+| Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs}ms) |
 
 
 </details>
