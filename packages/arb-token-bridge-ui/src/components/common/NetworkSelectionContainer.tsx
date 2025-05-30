@@ -22,7 +22,10 @@ import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  DisabledFeatures,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from './NetworkImage'
@@ -33,6 +36,7 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -116,7 +120,10 @@ export function NetworkButton({
   const { isSmartContractWallet, isLoading } = useAccountType()
   const isSource = type === 'source'
   const chains = useChainIdsForNetworkSelection({ isSource })
-  const [{ allowSwitchingNetworkPair }] = useArbQueryParams()
+  const { isFeatureDisabled } = useDisabledFeatures()
+  const allowSwitchingNetworkPair = !isFeatureDisabled(
+    DisabledFeatures.SWITCHING_NETWORK_PAIR
+  )
 
   const selectedChainId = isSource
     ? networks.sourceChain.id

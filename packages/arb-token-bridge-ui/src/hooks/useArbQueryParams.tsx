@@ -13,9 +13,8 @@
     `setQueryParams(newAmount)`
 
 */
-import React from 'react'
-import NextAdapterPages from 'next-query-params/pages'
 import queryString from 'query-string'
+import NextAdapterPages from 'next-query-params/pages'
 import {
   BooleanParam,
   QueryParamProvider,
@@ -39,6 +38,12 @@ export enum TabParamEnum {
   TX_HISTORY = 'tx_history'
 }
 
+export enum DisabledFeatures {
+  BATCH_TRANSFERS = 'batch-transfers',
+  TX_HISTORY = 'tx-history',
+  SWITCHING_NETWORK_PAIR = 'switching-network-pair'
+}
+
 export enum AmountQueryParamEnum {
   MAX = 'max'
 }
@@ -52,6 +57,53 @@ export const indexToTab = {
   0: TabParamEnum.BRIDGE,
   1: TabParamEnum.TX_HISTORY
 } as const satisfies Record<number, TabParamEnum>
+
+export const isValidDisabledFeature = (feature: string) => {
+  return Object.values(DisabledFeatures).includes(
+    feature.toLowerCase() as DisabledFeatures
+  )
+}
+
+export const DisabledFeaturesParam = {
+  encode: (disabledFeatures: string[] | undefined) => {
+    if (!disabledFeatures?.length) {
+      return undefined
+    }
+
+    const url = new URLSearchParams()
+    const dedupedFeatures = new Set(
+      disabledFeatures
+        .map(feature => feature.toLowerCase())
+        .filter(feature => isValidDisabledFeature(feature))
+    )
+
+    for (const feature of dedupedFeatures) {
+      url.append('disabledFeatures', feature)
+    }
+
+    return url.toString()
+  },
+  decode: (value: string | (string | null)[] | null | undefined) => {
+    if (!value) return []
+
+    // Handle both string and array inputs
+    const features =
+      typeof value === 'string'
+        ? [value]
+        : value.filter((val): val is string => val !== null)
+
+    // Normalize, validate and deduplicate in one pass
+    const dedupedFeatures = new Set<string>()
+    for (const feature of features) {
+      const normalized = feature.toLowerCase()
+      if (isValidDisabledFeature(normalized)) {
+        dedupedFeatures.add(normalized)
+      }
+    }
+
+    return Array.from(dedupedFeatures)
+  }
+}
 
 export const useArbQueryParams = () => {
   /*
@@ -70,9 +122,8 @@ export const useArbQueryParams = () => {
     settingsOpen: withDefault(BooleanParam, false),
     txHistory: withDefault(BooleanParam, true), // enable/disable tx history
     tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
-    embedMode: withDefault(BooleanParam, false), // enable/disable embed mode
-    allowBatchTransfers: withDefault(BooleanParam, true), // allow batch transfers
-    allowSwitchingNetworkPair: withDefault(BooleanParam, true) // allow switching networks
+    disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
+    embedMode: withDefault(BooleanParam, false) // enable/disable embed mode
   })
 }
 
