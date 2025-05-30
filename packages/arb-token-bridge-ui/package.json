@@ -114,6 +114,7 @@
     "eslint-plugin-prettier": "^5.4.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-zustand-rules": "https://github.com/OffchainLabs/eslint-plugin-zustand-rules",
     "happy-dom": "^17.4.4",
     "patch-package": "^8.0.0",
