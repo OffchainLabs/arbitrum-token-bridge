@@ -30,9 +30,9 @@ Navigation:
 | Accessibility              | ${parsedNavigationReport.accessibility}   |
 | Best Practices             | ${parsedNavigationReport["best_practices"]}  |
 | SEO                        | ${parsedNavigationReport.seo}   |
-| First Contentful Paint     | ${parsedNavigationReport.fcp.score} (${parsedNavigationReport.fcp.numericValue})s)  |
-| Largest Contentful Paint   | ${parsedNavigationReport.lcp.score} (${parsedNavigationReport.lcp.numericValue}s)  |
-| Total Blocking Time        | ${parsedNavigationReport.tbt.score} (${parsedNavigationReport.tbt.numericValue}ms) |
+| First Contentful Paint     | ${parsedNavigationReport.fcp.score} (${parsedNavigationReport.fcp.numericValue} ms)  |
+| Largest Contentful Paint   | ${parsedNavigationReport.lcp.score} (${parsedNavigationReport.lcp.numericValue} s)  |
+| Total Blocking Time        | ${parsedNavigationReport.tbt.score} (${parsedNavigationReport.tbt.numericValue} ms) |
 | Cumulative Layout Shift    | ${parsedNavigationReport.cls.score} (${parsedNavigationReport.cls.numericValue}) |
 | Speed Index                | ${parsedNavigationReport.speed.score} (${parsedNavigationReport.speed.numericValue}s) |
 
@@ -41,11 +41,11 @@ Timespan:
 | Name                       | Result                          |
 |----------------------------|---------------------------------|
 | Performance                | ${parsedTimespanReport.performance}  |
-| Total Blocking Time        | ${parsedTimespanReport.tbt.score} (${parsedTimespanReport.tbt.numericValue}ms) |
+| Total Blocking Time        | ${parsedTimespanReport.tbt.score} (${parsedTimespanReport.tbt.numericValue} ms) |
 | Cumulative Layout Shift    | ${parsedTimespanReport.cls.score} (${parsedTimespanReport.cls.numericValue}) |
-| Interaction to Next Paint  | ${parsedTimespanReport.inp.score} (${parsedTimespanReport.inp.numericValue}ms) |
+| Interaction to Next Paint  | ${parsedTimespanReport.inp.score} (${parsedTimespanReport.inp.numericValue} ms) |
 | Best practices | ${parsedTimespanReport.best_practices} |
-| Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs}ms) |
+| Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs} ms) |
 
 
 </details>
