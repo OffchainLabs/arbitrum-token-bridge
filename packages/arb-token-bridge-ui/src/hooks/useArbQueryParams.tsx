@@ -89,6 +89,7 @@ export const DisabledFeaturesParam = {
 
     return url.toString()
   },
+  // value is either an array ['feature1', 'feature2'] or a string `feature1`
   decode: (value: string | (string | null)[] | null | undefined) => {
     if (!value) return []
 

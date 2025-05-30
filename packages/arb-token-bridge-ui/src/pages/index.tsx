@@ -154,7 +154,7 @@ function getDestinationWithSanitizedQueryParams(
   }
 
   if (sanitized.disabledFeatures) {
-    for (let disabledFeature of sanitized.disabledFeatures) {
+    for (const disabledFeature of sanitized.disabledFeatures) {
       params.append('disabledFeatures', disabledFeature)
     }
   }
