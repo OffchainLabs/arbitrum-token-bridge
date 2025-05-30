@@ -92,7 +92,9 @@ export const DisabledFeaturesParam = {
   decode: (value: string | (string | null)[] | null | undefined) => {
     if (!value) return []
 
-    const url = new URLSearchParams(typeof value === 'string' ? value : '')
+    const url = new URLSearchParams(
+      typeof value === 'string' ? `disabledFeatures=${value}` : ''
+    )
     if (typeof value !== 'string') {
       for (const val of value) {
         if (val) url.append('disabledFeatures', val)

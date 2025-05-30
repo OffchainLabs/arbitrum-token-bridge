@@ -11,7 +11,5 @@ export const useDisabledFeatures = () => {
     [disabledFeatures]
   )
 
-  console.log('xxx disabledFeatures', disabledFeatures)
-
   return { isFeatureDisabled }
 }
