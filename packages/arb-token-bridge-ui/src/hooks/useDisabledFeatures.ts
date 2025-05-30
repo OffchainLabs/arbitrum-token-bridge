@@ -6,10 +6,12 @@ export const useDisabledFeatures = () => {
 
   const isFeatureDisabled = useCallback(
     (feature: DisabledFeatures) => {
-      return (disabledFeatures as DisabledFeatures[]).includes(feature)
+      return (disabledFeatures as readonly DisabledFeatures[]).includes(feature)
     },
     [disabledFeatures]
   )
+
+  console.log('xxx disabledFeatures', disabledFeatures)
 
   return { isFeatureDisabled }
 }

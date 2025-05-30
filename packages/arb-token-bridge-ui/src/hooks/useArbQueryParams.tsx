@@ -14,6 +14,7 @@
 
 */
 import queryString from 'query-string'
+import NextAdapterPages from 'next-query-params/pages'
 import {
   BooleanParam,
   QueryParamProvider,
@@ -57,64 +58,65 @@ export const indexToTab = {
 } as const satisfies Record<number, TabParamEnum>
 
 export const isValidDisabledFeature = (feature: string) => {
-  return Object.values(DisabledFeatures).includes(feature as DisabledFeatures)
+  return Object.values(DisabledFeatures).includes(
+    feature.toLowerCase() as DisabledFeatures
+  )
 }
 
-// Add this before the useArbQueryParams function
 export const DisabledFeaturesParam = {
   encode: (disabledFeatures: string[] | undefined) => {
-    if (!disabledFeatures) {
+    if (!disabledFeatures?.length) {
       return undefined
     }
 
     const url = new URLSearchParams()
-    for (let disabledFeature of disabledFeatures) {
-      if (isValidDisabledFeature(disabledFeature)) {
-        url.append('disabledFeatures', disabledFeature)
-      }
+    // Use a Set to deduplicate features
+    const uniqueFeatures = new Set(
+      disabledFeatures
+        .map(feature => feature.toLowerCase())
+        .filter(feature => isValidDisabledFeature(feature))
+        .map(feature =>
+          Object.values(DisabledFeatures).find(
+            validFeature => validFeature.toLowerCase() === feature
+          )
+        )
+        .filter((feature): feature is DisabledFeatures => feature !== undefined)
+    )
+
+    for (const feature of uniqueFeatures) {
+      url.append('disabledFeatures', feature)
     }
 
     return url.toString()
   },
   decode: (value: string | (string | null)[] | null | undefined) => {
     if (!value) return []
+
     const url = new URLSearchParams(typeof value === 'string' ? value : '')
     if (typeof value !== 'string') {
-      for (let val of value) {
+      for (const val of value) {
         if (val) url.append('disabledFeatures', val)
       }
     }
 
-    return url
-      .getAll('disabledFeatures')
-      .filter(disabledFeature => isValidDisabledFeature(disabledFeature))
+    // Use a Set to deduplicate features
+    return Array.from(
+      new Set(
+        url
+          .getAll('disabledFeatures')
+          .map(feature => feature.toLowerCase())
+          .filter(feature => isValidDisabledFeature(feature))
+          .map(feature =>
+            Object.values(DisabledFeatures).find(
+              validFeature => validFeature.toLowerCase() === feature
+            )
+          )
+          .filter(
+            (feature): feature is DisabledFeatures => feature !== undefined
+          )
+      )
+    )
   }
-}
-
-export const sanitizeDisabledFeaturesQueryParam = (
-  disabledFeatures: string | null | undefined
-): string | undefined => {
-  if (!disabledFeatures) {
-    return undefined
-  }
-
-  const features = disabledFeatures.split(',')
-  const validFeatures = new Set(
-    features
-      .map(feature => {
-        const normalizedFeature = feature.toLowerCase()
-        return Object.values(DisabledFeatures).find(
-          validFeature => validFeature.toLowerCase() === normalizedFeature
-        )
-      })
-      .filter((feature): feature is DisabledFeatures => feature !== undefined)
-  )
-
-  if (validFeatures.size === 0) {
-    return undefined
-  }
-
-  return Array.from(validFeatures).join(',')
 }
 
 export const useArbQueryParams = () => {
@@ -287,8 +289,6 @@ export function ArbQueryParamProvider({
 }: {
   children: React.ReactNode
 }) {
-  // Import NextAdapterPages here since it's only used in this component
-  const NextAdapterPages = require('next-query-params/pages').default
   return (
     <QueryParamProvider
       adapter={NextAdapterPages}
