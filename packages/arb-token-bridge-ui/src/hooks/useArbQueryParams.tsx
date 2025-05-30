@@ -70,17 +70,10 @@ export const DisabledFeaturesParam = {
     }
 
     const url = new URLSearchParams()
-    // Use a Set to deduplicate features
     const uniqueFeatures = new Set(
       disabledFeatures
         .map(feature => feature.toLowerCase())
         .filter(feature => isValidDisabledFeature(feature))
-        .map(feature =>
-          Object.values(DisabledFeatures).find(
-            validFeature => validFeature.toLowerCase() === feature
-          )
-        )
-        .filter((feature): feature is DisabledFeatures => feature !== undefined)
     )
 
     for (const feature of uniqueFeatures) {
@@ -89,36 +82,25 @@ export const DisabledFeaturesParam = {
 
     return url.toString()
   },
-  // value is either an array ['feature1', 'feature2'] or a string `feature1`
   decode: (value: string | (string | null)[] | null | undefined) => {
     if (!value) return []
 
-    const url = new URLSearchParams(
-      typeof value === 'string' ? `disabledFeatures=${value}` : ''
-    )
-    if (typeof value !== 'string') {
-      for (const val of value) {
-        if (val) url.append('disabledFeatures', val)
+    // Handle both string and array inputs
+    const features =
+      typeof value === 'string'
+        ? [value]
+        : value.filter((val): val is string => val !== null)
+
+    // Normalize, validate and deduplicate in one pass
+    const uniqueFeatures = new Set<string>()
+    for (const feature of features) {
+      const normalized = feature.toLowerCase()
+      if (isValidDisabledFeature(normalized)) {
+        uniqueFeatures.add(normalized)
       }
     }
 
-    // Use a Set to deduplicate features
-    return Array.from(
-      new Set(
-        url
-          .getAll('disabledFeatures')
-          .map(feature => feature.toLowerCase())
-          .filter(feature => isValidDisabledFeature(feature))
-          .map(feature =>
-            Object.values(DisabledFeatures).find(
-              validFeature => validFeature.toLowerCase() === feature
-            )
-          )
-          .filter(
-            (feature): feature is DisabledFeatures => feature !== undefined
-          )
-      )
-    )
+    return Array.from(uniqueFeatures)
   }
 }
 
