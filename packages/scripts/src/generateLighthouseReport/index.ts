@@ -1,9 +1,9 @@
 import * as core from "@actions/core";
-import { getOctokit, context } from "@actions/github";
 import { executeLighthouseFlow } from "./executeLighthouse";
-import { parseLighthouseReport } from "./parseLighthouseReport";
+import { parseLighthouseReports } from "./parseLighthouseReports";
 import { join, resolve } from "path";
 import { config } from "../../../../package.json";
+import { postComment } from "./postComment";
 
 const workspaceRoot = resolve(process.cwd(), "../..");
 // "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
@@ -15,62 +15,17 @@ const chromePath = join(
 );
 export async function generateLighthouseReport() {
   try {
-    const report = await executeLighthouseFlow(chromePath);
+    // Reports need to be run sequentially
     const report1 = await executeLighthouseFlow(chromePath);
     const report2 = await executeLighthouseFlow(chromePath);
+    const report3 = await executeLighthouseFlow(chromePath);
 
     core.startGroup("Parse lighthouse report");
     const [parsedNavigationReport, parsedTimespanReport] =
-      parseLighthouseReport(report);
+      parseLighthouseReports([report1, report2, report3]);
     core.endGroup();
 
-    core.startGroup("Post comment");
-    const github = getOctokit(process.env.GITHUB_TOKEN || "");
-
-    const { data: comment } = await github.rest.issues.createComment({
-      ...context.repo,
-      issue_number: context.issue.number,
-      // Identation needs to be on the same level, otherwise github doesn't format it properly
-      // prettier-ignore
-      body: `
-<details>
-<summary>❌ Lighthouse: Regression found</summary>
-
-<!-- Leave a blank line after summary, but do NOT use <br> -->
-
-Navigation:
-| Name                       | Result                          |
-|----------------------------|---------------------------------|
-| Performance                | ${parsedNavigationReport.performance * 100}  |
-| Accessibility              | ${parsedNavigationReport.accessibility * 100}   |
-| Best Practices             | ${parsedNavigationReport["best_practices"] * 100}  |
-| SEO                        | ${parsedNavigationReport.seo * 100}   |
-| First Contentful Paint     | ${parsedNavigationReport.fcp.score * 100} (${parsedNavigationReport.fcp.displayValue})  |
-| Largest Contentful Paint   | ${parsedNavigationReport.lcp.score * 100} (${parsedNavigationReport.lcp.displayValue})  |
-| Total Blocking Time        | ${parsedNavigationReport.tbt.score * 100} (${parsedNavigationReport.tbt.displayValue}) |
-| Cumulative Layout Shift    | ${parsedNavigationReport.cls.score * 100} (${parsedNavigationReport.cls.displayValue}) |
-| Speed Index                | ${parsedNavigationReport.speed.score * 100} (${parsedNavigationReport.speed.displayValue}) |
-
-
-Timespan:
-| Name                       | Result                          |
-|----------------------------|---------------------------------|
-| Performance                | ${parsedTimespanReport.performance.total * 100}  |
-| Total Blocking Time        | ${parsedTimespanReport.performance.tbt.score * 100} (${parsedTimespanReport.performance.tbt.displayValue}) |
-| Cumulative Layout Shift    | ${parsedTimespanReport.performance.cls.score * 100} (${parsedTimespanReport.performance.cls.displayValue}) |
-| Interaction to Next Paint  | ${parsedTimespanReport.performance.inp.score * 100} (${parsedTimespanReport.performance.inp.displayValue}) |
-| Best practices | ${parsedTimespanReport.best_practices * 100} |
-| Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs}ms)   |
-
-
-</details>
-      `,
-    });
-
-    core.info(
-      `Created comment id '${comment.id}' on issue '${context.issue.number}'.`
-    );
-    core.endGroup();
+    await postComment({ parsedNavigationReport, parsedTimespanReport });
   } catch (error) {
     console.log(error);
   }
