@@ -4,6 +4,7 @@ import { TransactionRequest } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import {
+  ApproveTokenPrepareTxRequestProps,
   ApproveTokenProps,
   BridgeTransferStarter,
   RequiresTokenApprovalProps,
@@ -50,9 +51,9 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return allowance.lt(amount)
   }
 
-  public async approveTokenPrepareTxRequest(params?: {
-    amount: BigNumber | undefined
-  }): Promise<TransactionRequest> {
+  public async approveTokenPrepareTxRequest(
+    props?: ApproveTokenPrepareTxRequestProps
+  ): Promise<TransactionRequest> {
     const {
       //
       usdcContractAddress,
@@ -63,7 +64,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       to: usdcContractAddress,
       data: ERC20__factory.createInterface().encodeFunctionData('approve', [
         tokenMessengerContractAddress,
-        params?.amount ?? constants.MaxUint256
+        props?.amount ?? constants.MaxUint256
       ]),
       value: BigNumber.from(0)
     }
