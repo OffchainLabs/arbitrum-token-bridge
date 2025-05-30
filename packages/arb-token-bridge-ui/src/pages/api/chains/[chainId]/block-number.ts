@@ -1,12 +1,12 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+import { NextApiRequest, NextApiResponse } from 'next'
 
-import { ChainId } from '../../../../types/ChainId'
 import {
   getL1SubgraphClient,
   getL2SubgraphClient,
   getSourceFromSubgraphClient
 } from '../../../../api-utils/ServerSubgraphUtils'
+import { ChainId } from '../../../../types/ChainId'
 
 function getSubgraphClient(chainId: number) {
   switch (chainId) {

@@ -1,4 +1,5 @@
 import Image from 'next/image'
+
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 
 export default function Custom404Page() {

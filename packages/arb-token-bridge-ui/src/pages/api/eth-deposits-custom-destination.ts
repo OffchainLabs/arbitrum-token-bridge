@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+import { NextApiRequest, NextApiResponse } from 'next'
 
 import {
   getL1SubgraphClient,

@@ -1,13 +1,12 @@
 import { gql } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { ChainId } from '../../../types/ChainId'
-import { Address } from '../../../util/AddressUtils'
-
 import {
   getCctpSubgraphClient,
   getSourceFromSubgraphClient
 } from '../../../api-utils/ServerSubgraphUtils'
+import { ChainId } from '../../../types/ChainId'
+import { Address } from '../../../util/AddressUtils'
 
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
