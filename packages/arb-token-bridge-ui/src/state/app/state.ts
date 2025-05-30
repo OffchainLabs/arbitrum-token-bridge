@@ -1,19 +1,21 @@
+import { TransactionRequest } from '@lifi/sdk'
 import { BigNumber } from 'ethers'
+
+import { AmountWithToken } from '@/token-bridge-sdk/LifiTransferStarter'
+
 import {
   ArbTokenBridge,
   AssetType,
   NodeBlockDeadlineStatus
 } from '../../hooks/arbTokenBridge.types'
 import {
-  ParentToChildMessageData,
   ChildToParentMessageData,
   L2ToL3MessageData,
+  ParentToChildMessageData,
   TxnType
 } from '../../types/Transactions'
-import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
-import { AmountWithToken } from '@/token-bridge-sdk/LifiTransferStarter'
-import { TransactionRequest } from '@lifi/sdk'
+import { CCTPSupportedChainId } from '../cctpState'
 
 export enum DepositStatus {
   L1_PENDING = 1,
