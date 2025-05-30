@@ -70,13 +70,13 @@ export const DisabledFeaturesParam = {
     }
 
     const url = new URLSearchParams()
-    const uniqueFeatures = new Set(
+    const dedupedFeatures = new Set(
       disabledFeatures
         .map(feature => feature.toLowerCase())
         .filter(feature => isValidDisabledFeature(feature))
     )
 
-    for (const feature of uniqueFeatures) {
+    for (const feature of dedupedFeatures) {
       url.append('disabledFeatures', feature)
     }
 
@@ -92,15 +92,15 @@ export const DisabledFeaturesParam = {
         : value.filter((val): val is string => val !== null)
 
     // Normalize, validate and deduplicate in one pass
-    const uniqueFeatures = new Set<string>()
+    const dedupedFeatures = new Set<string>()
     for (const feature of features) {
       const normalized = feature.toLowerCase()
       if (isValidDisabledFeature(normalized)) {
-        uniqueFeatures.add(normalized)
+        dedupedFeatures.add(normalized)
       }
     }
 
-    return Array.from(uniqueFeatures)
+    return Array.from(dedupedFeatures)
   }
 }
 
