@@ -1,0 +1,53 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ParseLighthouseReports > Parse the navigation result 1`] = `
+{
+  "accessibility": 90,
+  "best_practices": 96,
+  "cls": {
+    "numericValue": 0,
+    "score": 100,
+  },
+  "fcp": {
+    "numericValue": 442.245,
+    "score": 100,
+  },
+  "lcp": {
+    "numericValue": 6386.566,
+    "score": 3,
+  },
+  "performance": 36,
+  "seo": 100,
+  "speed": {
+    "numericValue": 5786.938,
+    "score": 1,
+  },
+  "tbt": {
+    "numericValue": 2630,
+    "score": 0,
+  },
+}
+`;
+
+exports[`ParseLighthouseReports > Parse the timesmapn result 1`] = `
+{
+  "best_practices": 95,
+  "cls": {
+    "numericValue": 0.104,
+    "score": 89,
+  },
+  "inp": {
+    "numericValue": 352,
+    "score": 68,
+  },
+  "longTasks": {
+    "durationMs": 2817.872,
+    "total": 20,
+  },
+  "performance": 40,
+  "tbt": {
+    "numericValue": 1839.541,
+    "score": 0,
+  },
+}
+`;
