@@ -205,7 +205,7 @@ export default async function handler(
   req: NextApiRequestWithLifiParams,
   res: NextApiResponse<LifiCrossTransfersRoutesResponse>
 ) {
-  const INTEGRATOR_ID = 'arbitrum'
+  const INTEGRATOR_ID = '_arbitrum'
 
   createConfig({
     integrator: INTEGRATOR_ID,
