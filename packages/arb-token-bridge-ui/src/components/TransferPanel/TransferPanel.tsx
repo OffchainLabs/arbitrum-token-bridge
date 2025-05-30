@@ -30,7 +30,6 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import { AdvancedSettings } from './AdvancedSettings'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import {
@@ -90,12 +89,15 @@ import { Routes } from './Routes/Routes'
 import { useError } from '../../hooks/useError'
 import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
-import { getFromAndToTokenAddresses } from './LifiSettings'
 import { getAmountLoss } from './HighSlippageWarningDialog'
 import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTransactionCacheStore'
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
+import { AdvancedSettings } from './AdvancedSettings'
+import { Cog8ToothIcon } from '@heroicons/react/24/outline'
+import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
+import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -158,7 +160,8 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const { current: signer } = useLatest(
     useEthersSigner({ chainId: networks.sourceChain.id })
@@ -213,6 +216,14 @@ export function TransferPanel() {
     () =>
       setQueryParams({
         tab: tabToIndex[TabParamEnum.TX_HISTORY]
+      }),
+    [setQueryParams]
+  )
+
+  const setDestinationAddress = useCallback(
+    (newDestinationAddress: string) =>
+      setQueryParams({
+        destinationAddress: newDestinationAddress
       }),
     [setQueryParams]
   )
@@ -315,10 +326,10 @@ export function TransferPanel() {
     return confirmed
   }
 
-  const showDelayInSmartContractTransaction = async () => {
+  const showDelayInSmartContractTransaction = () => {
     // a custom 3 second delay to show a tooltip after SC transaction goes through
     // to give a visual feedback to the user that something happened
-    await setTimeout(() => {
+    setTimeout(() => {
       setShowSmartContractWalletTooltip(true)
     }, 3000)
     return true
@@ -1329,6 +1340,18 @@ export function TransferPanel() {
     return transfer()
   }
 
+  /**
+   * Show settings if we're displaying lifi routes
+   * or if it's an EOA (to display custom destination address input)
+   */
+  const showSettingsButton =
+    isLifiTransferAllowed({
+      selectedToken,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    }) ||
+    (!isLoadingAccountType && !isSmartContractWallet)
+
   return (
     <>
       <DialogWrapper {...dialogProps} />
@@ -1340,8 +1363,23 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
+        {showSettingsButton && (
+          <div className="z-50 mb-2 ml-auto sm:relative">
+            <button
+              onClick={() => openDialog('settings')}
+              aria-label="Open Settings"
+            >
+              <Cog8ToothIcon width={30} className="arb-hover text-white" />
+            </button>
+          </div>
+        )}
         <Routes />
-        <AdvancedSettings />
+        {!isLoadingAccountType && isSmartContractWallet && (
+          <AdvancedSettings
+            destinationAddress={destinationAddress}
+            onDestinationAddressChange={setDestinationAddress}
+          />
+        )}
 
         {isConnected ? (
           <MoveFundsButton onClick={moveFundsButtonOnClick} />

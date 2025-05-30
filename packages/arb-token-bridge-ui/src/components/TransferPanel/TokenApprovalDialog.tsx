@@ -145,18 +145,16 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           signer
         })
       } else {
-        const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
-          {
-            sourceChainId: sourceChain.id,
-            sourceChainErc20Address: isDepositMode
-              ? token.address
-              : token.l2Address,
-            destinationChainId: destinationChain.id,
-            destinationChainErc20Address: isDepositMode
-              ? token.l2Address
-              : token.address
-          }
-        )
+        const bridgeTransferStarter = BridgeTransferStarterFactory.create({
+          sourceChainId: sourceChain.id,
+          sourceChainErc20Address: isDepositMode
+            ? token.address
+            : token.l2Address,
+          destinationChainId: destinationChain.id,
+          destinationChainErc20Address: isDepositMode
+            ? token.l2Address
+            : token.address
+        })
 
         gasEstimate = await bridgeTransferStarter.approveTokenEstimateGas({
           signer

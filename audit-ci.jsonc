@@ -7,6 +7,15 @@
     // GHSA-3gc7-fjrx-p6mg|arb-token-bridge-ui>wagmi>@wagmi/core>@wagmi/connectors>@coinbase/wallet-sdk>@solana/web3.js>bigint-buffer
     // we don't use @solana/web3.js so we won't use bigint-buffer
     // also as of 7 Apr 2025, there's no patched version for this yet
-    "GHSA-3gc7-fjrx-p6mg"
+    "GHSA-3gc7-fjrx-p6mg",
+    // https://github.com/advisories/GHSA-3h52-269p-cp9r
+    // Information exposure in Next.js dev server due to lack of origin verification
+    // Details: a bad actor can access the source code of client components,
+    //   if a user was to visit a malicious link while having the Next.js dev server running.
+    //
+    // Reason to ignore: This is a development server issue, not a production one.
+    // It's not a concern for us when we are developing, so we can ignore it.
+    // GHSA-3h52-269p-cp9r|arb-token-bridge-ui>next
+    "GHSA-3h52-269p-cp9r"
   ]
 }
