@@ -1,0 +1,93 @@
+import { useAccount } from 'wagmi'
+import Image from 'next/image'
+import {
+  DialogProps,
+  DialogWrapper,
+  OpenDialogFunction
+} from '../common/Dialog2'
+import { WidgetHeaderAccountButton } from './WidgetHeaderAccountButton'
+import { WidgetRoutes } from './WidgetRoutes'
+import { WidgetTosConfirmationCheckbox } from './WidgetTosConfirmationCheckbox'
+import { MoveFundsButton } from '../TransferPanel/MoveFundsButton'
+import { ConnectWalletButton } from '../TransferPanel/ConnectWalletButton'
+import { TransferPanelMain } from '../TransferPanel/TransferPanelMain'
+import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
+import { UseDialogProps } from '../common/Dialog'
+import WidgetTxHistoryIcon from '@/images/WidgetTxHistoryIcon.svg'
+
+type WidgetTransferPanelProps = {
+  moveFundsButtonOnClick: () => void
+  isTokenAlreadyImported?: boolean
+  tokenFromSearchParams?: string
+  tokenImportDialogProps: UseDialogProps
+  openDialog: OpenDialogFunction
+  dialogProps: DialogProps
+  closeWithResetTokenImportDialog: () => void
+}
+
+export function WidgetTransferPanel({
+  dialogProps,
+  openDialog,
+  moveFundsButtonOnClick,
+  isTokenAlreadyImported,
+  tokenFromSearchParams,
+  tokenImportDialogProps,
+  closeWithResetTokenImportDialog
+}: WidgetTransferPanelProps) {
+  const { isConnected } = useAccount()
+
+  return (
+    <>
+      <DialogWrapper {...dialogProps} />
+
+      <div className="relative m-auto grid w-full grid-cols-1 gap-4 rounded-lg bg-transparent p-4 text-white transition-all duration-300 min-[850px]:grid min-[850px]:grid-cols-2">
+        {/* Left/Top panel */}
+        <div className="flex h-full flex-col gap-1 overflow-hidden">
+          <div className="mb-2 flex h-[30px] flex-row items-center justify-between text-lg">
+            <WidgetHeaderAccountButton />
+
+            {/* widget transaction history */}
+            <div className="flex flex-row gap-2 text-sm">
+              {isConnected && (
+                <Image
+                  height={20}
+                  width={20}
+                  alt="Tx history logo"
+                  src={WidgetTxHistoryIcon}
+                  className="h-7 w-7 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-white/10"
+                  onClick={() => openDialog('widget_transaction_history')}
+                />
+              )}
+            </div>
+          </div>
+          <TransferPanelMain />
+        </div>
+
+        {/* Right/Bottom panel */}
+        <div className="flex h-full flex-col gap-1 min-[850px]:justify-between">
+          <div className="flex flex-col gap-1">
+            <div className="mb-2 h-[30px] text-lg">Receive</div>
+            <WidgetRoutes />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <WidgetTosConfirmationCheckbox />
+            {isConnected ? (
+              <MoveFundsButton onClick={moveFundsButtonOnClick} />
+            ) : (
+              <ConnectWalletButton />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isTokenAlreadyImported === false && tokenFromSearchParams && (
+        <TokenImportDialog
+          {...tokenImportDialogProps}
+          onClose={closeWithResetTokenImportDialog}
+          tokenAddress={tokenFromSearchParams}
+        />
+      )}
+    </>
+  )
+}
