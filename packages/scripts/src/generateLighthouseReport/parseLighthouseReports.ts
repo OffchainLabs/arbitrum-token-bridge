@@ -49,7 +49,7 @@ function parseNavigationResults(
   navigationReports: FlowResult.Step[]
 ): NavigationResult {
   const mergedReports = navigationReports.reduce(
-    (acc, report) => {
+    function parseNavigationResultsReduce(acc, report) {
       const fcp = parse(report, "first-contentful-paint");
       const lcp = parse(report, "largest-contentful-paint");
       const tbt = parse(report, "total-blocking-time");
@@ -146,7 +146,7 @@ function parseTimespanResults(
   timespanReports: FlowResult.Step[]
 ): TimespanResult {
   const mergedReports = timespanReports.reduce(
-    (acc, report) => {
+    function parseTimespanResultsReduce(acc, report) {
       const tbt = parse(report, "total-blocking-time");
       const cls = parse(report, "cumulative-layout-shift");
       const inp = parse(report, "interaction-to-next-paint");
@@ -159,6 +159,7 @@ function parseTimespanResults(
           }[];
         }
       ).items;
+
       return {
         performance: {
           total:
