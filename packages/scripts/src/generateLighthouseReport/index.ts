@@ -1,0 +1,32 @@
+import * as core from "@actions/core";
+import { executeLighthouseFlow } from "./executeLighthouse";
+import { parseLighthouseReports } from "./parseLighthouseReports";
+import { join, resolve } from "path";
+import { config } from "../../../../package.json";
+import { postComment } from "./postComment";
+
+const workspaceRoot = resolve(process.cwd(), "../..");
+// "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
+const chromePath = join(
+  workspaceRoot,
+  config.chromePath,
+  `/chrome/linux-${config.chromeVersion}`,
+  "chrome-linux64/chrome"
+);
+export async function generateLighthouseReport() {
+  try {
+    // Reports need to be run sequentially
+    const report1 = await executeLighthouseFlow(chromePath);
+    const report2 = await executeLighthouseFlow(chromePath);
+    const report3 = await executeLighthouseFlow(chromePath);
+
+    core.startGroup("Parse lighthouse report");
+    const [parsedNavigationReport, parsedTimespanReport] =
+      parseLighthouseReports([report1, report2, report3]);
+    core.endGroup();
+
+    await postComment({ parsedNavigationReport, parsedTimespanReport });
+  } catch (error) {
+    console.log(error);
+  }
+}
