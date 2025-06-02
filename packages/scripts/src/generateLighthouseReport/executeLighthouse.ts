@@ -77,8 +77,10 @@ export async function executeLighthouseFlow(chromePath?: string) {
   // Get the comprehensive flow report.
   const report = await flow.createFlowResult();
 
-  core.info(`Creating lighthouse report at ./lhreport.html"}`);
-  writeFileSync("./lhreport.html", await flow.generateReport());
+  writeFileSync(
+    join(workspaceRoot, "./lhreport.html"),
+    await flow.generateReport()
+  );
 
   // Cleanup.
   await browser.close();
