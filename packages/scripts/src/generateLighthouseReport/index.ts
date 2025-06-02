@@ -52,6 +52,7 @@ export async function generateLighthouseReport() {
       parsedNavigationReport,
       parsedTimespanReport,
       parsedSnapshotReport,
+      ...diff,
     });
   } catch (error) {
     console.log(error);
