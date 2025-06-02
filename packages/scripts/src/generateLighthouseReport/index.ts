@@ -40,8 +40,9 @@ export async function generateLighthouseReport() {
     core.info(JSON.stringify(diff));
     core.endGroup();
 
+    core.info(join(workspaceRoot, "./output.json"));
     writeFileSync(
-      join("output.json"),
+      join(workspaceRoot, "./output.json"),
       JSON.stringify([
         parsedNavigationReport,
         parsedTimespanReport,
