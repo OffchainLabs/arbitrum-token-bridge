@@ -13,7 +13,6 @@ export async function postComment({
   navigationDiff,
   timespanDiff,
   snapshotDiff,
-  artifactPath,
 }: {
   parsedNavigationReport: NavigationResult;
   parsedTimespanReport: TimespanResult;
@@ -21,7 +20,6 @@ export async function postComment({
   navigationDiff: NavigationResult;
   timespanDiff: TimespanResult;
   snapshotDiff: SnapshotResult;
-  artifactPath: string;
 }) {
   core.startGroup("Post comment");
   const github = getOctokit(process.env.GITHUB_TOKEN || "");
@@ -70,8 +68,6 @@ Snapshot:
 | SEO                        | ${parsedSnapshotReport.seo} | ${snapshotDiff.seo} |
 
 </details>
-
-Report: ${artifactPath}
       `,
   });
 
