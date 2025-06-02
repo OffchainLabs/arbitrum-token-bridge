@@ -51,9 +51,6 @@ jobs:
           NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
           THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
-
-      # - name: Start the bridge
-      #   run: yarn start &
         
       - name: Start server and wait
         run: yarn start & npx wait-on http://localhost:3000
@@ -76,13 +73,15 @@ jobs:
         run: yarn workspace scripts generate-lighthouse-diff
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_RUNTIME_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_RUNTIME_URL: ${{ runner.env.ACTIONS_RUNTIME_URL }}
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           DISPLAY: :0.0
 
       # - name: Upload reports
       #   uses: actions/upload-artifact@v4
       #   with:
-      #     name: lighthouse-reports-${{ github.sha }}-${{ matrix.test.name }}-${{ matrix.test.type }}
+      #     name: lighthouse-reports-${{ github.sha }}
       #     path: |
       #       ./lhreport.html
       #     if-no-files-found: 'ignore'
