@@ -1110,8 +1110,8 @@
         "sequencerInbox": "0x85eC1b9138a8b9659A51e2b51bb0861901040b59"
       },
       "nativeToken": "0x4C1746A800D224393fE2470C70A35717eD4eA5F1",
-      "explorerUrl": "https://phoenix-explorer.plumenetwork.xyz/",
-      "rpcUrl": "https://phoenix-rpc.plumenetwork.xyz",
+      "explorerUrl": "https://explorer.plume.org",
+      "rpcUrl": "https://rpc.plume.org",
       "isCustom": true,
       "isTestnet": false,
       "name": "Plume Mainnet",
@@ -1949,7 +1949,7 @@
         "bridge": "0x5b1b3C2B531caac8b7A50E65A8d954aDCf8CBc24",
         "inbox": "0xCb47f0bb29f44e00fbb00324f0E104330Ee1072F",
         "outbox": "0x8aB6FA23Ebb58FAa105C108b7F6c27C110828781",
-        "rollup": "0x456a1A88fC8ae1BA2387e9979499c7A4CaE73Bc3",
+        "rollup": "0x82ea947bB006690667225099cDf87D03A2dd56dC",
         "sequencerInbox": "0xb688051CE65A9c886E717ab058F1Ec8c0C7b9582"
       },
       "explorerUrl": "https://testnet.trex.xyz",
