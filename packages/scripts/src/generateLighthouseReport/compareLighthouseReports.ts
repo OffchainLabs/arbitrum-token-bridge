@@ -3,6 +3,7 @@ import {
   SnapshotResult,
   TimespanResult,
 } from "./parseLighthouseReports";
+import { parseToFixedNumber } from "./parseToFixedNumber";
 
 export async function compareLighthouseReports({
   prevReportUrl,
@@ -24,42 +25,73 @@ export async function compareLighthouseReports({
   const navigationResult = results[0];
   const navigationDiff = {
     fcp: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevNavigationResult.fcp.numericValue -
-        navigationResult.fcp.numericValue,
-      score: prevNavigationResult.fcp.score - navigationResult.fcp.score,
+          navigationResult.fcp.numericValue,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevNavigationResult.fcp.score - navigationResult.fcp.score,
+        2
+      ),
     },
     lcp: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevNavigationResult.lcp.numericValue -
-        navigationResult.lcp.numericValue,
-      score: prevNavigationResult.lcp.score - navigationResult.lcp.score,
+          navigationResult.lcp.numericValue,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevNavigationResult.lcp.score - navigationResult.lcp.score,
+        2
+      ),
     },
     tbt: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevNavigationResult.tbt.numericValue -
-        navigationResult.tbt.numericValue,
-      score: prevNavigationResult.tbt.score - navigationResult.tbt.score,
+          navigationResult.tbt.numericValue,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevNavigationResult.tbt.score - navigationResult.tbt.score,
+        2
+      ),
     },
     cls: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevNavigationResult.cls.numericValue -
-        navigationResult.cls.numericValue,
-      score: prevNavigationResult.cls.score - navigationResult.cls.score,
+          navigationResult.cls.numericValue,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevNavigationResult.cls.score - navigationResult.cls.score,
+        2
+      ),
     },
     speed: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevNavigationResult.speed.numericValue -
-        navigationResult.speed.numericValue,
-      score: prevNavigationResult.speed.score - navigationResult.speed.score,
+          navigationResult.speed.numericValue,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevNavigationResult.speed.score - navigationResult.speed.score,
+        2
+      ),
     },
-    performance:
+    performance: parseToFixedNumber(
       prevNavigationResult.performance - navigationResult.performance,
-    accessibility:
+      2
+    ),
+    accessibility: parseToFixedNumber(
       prevNavigationResult.accessibility - navigationResult.accessibility,
-    best_practices:
+      2
+    ),
+    best_practices: parseToFixedNumber(
       prevNavigationResult.best_practices - navigationResult.best_practices,
-    seo: prevNavigationResult.seo - navigationResult.seo,
+      2
+    ),
+    seo: parseToFixedNumber(prevNavigationResult.seo - navigationResult.seo, 2),
   } satisfies NavigationResult;
 
   // Compare Timespan Results
@@ -67,42 +99,73 @@ export async function compareLighthouseReports({
   const timespanResult = results[1];
   const timespanDiff = {
     tbt: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevTimespanResult.tbt.numericValue - timespanResult.tbt.numericValue,
-      score: prevTimespanResult.tbt.score - timespanResult.tbt.score,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevTimespanResult.tbt.score - timespanResult.tbt.score,
+        2
+      ),
     },
     cls: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevTimespanResult.cls.numericValue - timespanResult.cls.numericValue,
-      score: prevTimespanResult.cls.score - timespanResult.cls.score,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevTimespanResult.cls.score - timespanResult.cls.score,
+        2
+      ),
     },
     inp: {
-      numericValue:
+      numericValue: parseToFixedNumber(
         prevTimespanResult.inp.numericValue - timespanResult.inp.numericValue,
-      score: prevTimespanResult.inp.score - timespanResult.inp.score,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevTimespanResult.inp.score - timespanResult.inp.score,
+        2
+      ),
     },
-    best_practices:
+    best_practices: parseToFixedNumber(
       prevTimespanResult.best_practices - timespanResult.best_practices,
+      2
+    ),
     longTasks: {
-      durationMs:
+      durationMs: parseToFixedNumber(
         prevTimespanResult.longTasks.durationMs -
-        timespanResult.longTasks.durationMs,
-      total:
+          timespanResult.longTasks.durationMs,
+        3
+      ),
+      total: parseToFixedNumber(
         prevTimespanResult.longTasks.total - timespanResult.longTasks.total,
+        2
+      ),
     },
-    performance: prevTimespanResult.performance - timespanResult.performance,
+    performance: parseToFixedNumber(
+      prevTimespanResult.performance - timespanResult.performance,
+      2
+    ),
   } satisfies TimespanResult;
 
   // Compare Snapshot Result
   const prevSnapshotResult = prevReport[2];
   const snapshotResult = results[2];
   const snapshotDiff = {
-    performance: prevSnapshotResult.performance - snapshotResult.performance,
-    accessibility:
+    performance: parseToFixedNumber(
+      prevSnapshotResult.performance - snapshotResult.performance,
+      2
+    ),
+    accessibility: parseToFixedNumber(
       prevSnapshotResult.accessibility - snapshotResult.accessibility,
-    best_practices:
+      2
+    ),
+    best_practices: parseToFixedNumber(
       prevSnapshotResult.best_practices - snapshotResult.best_practices,
-    seo: prevSnapshotResult.seo - snapshotResult.seo,
+      2
+    ),
+    seo: parseToFixedNumber(prevSnapshotResult.seo - snapshotResult.seo, 2),
   } satisfies SnapshotResult;
 
   return {
