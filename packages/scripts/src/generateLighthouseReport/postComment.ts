@@ -1,13 +1,19 @@
 import * as core from "@actions/core";
 import { getOctokit, context } from "@actions/github";
-import { NavigationResult, TimespanResult } from "./parseLighthouseReports";
+import {
+  NavigationResult,
+  SnapshotResult,
+  TimespanResult,
+} from "./parseLighthouseReports";
 
 export async function postComment({
   parsedNavigationReport,
   parsedTimespanReport,
+  parsedSnapshotReport,
 }: {
   parsedNavigationReport: NavigationResult;
   parsedTimespanReport: TimespanResult;
+  parsedSnapshotReport: SnapshotResult;
 }) {
   core.startGroup("Post comment");
   const github = getOctokit(process.env.GITHUB_TOKEN || "");
@@ -47,6 +53,13 @@ Timespan:
 | Best practices | ${parsedTimespanReport.best_practices} |
 | Long tasks | ${parsedTimespanReport.longTasks.total} (${parsedTimespanReport.longTasks.durationMs} ms) |
 
+Snapshot:
+| Name                       | Result                          |
+|----------------------------|---------------------------------|
+| Performance                | ${parsedSnapshotReport.performance}  |
+| Accessibility              | ${parsedSnapshotReport.accessibility} |
+| Best practices             | ${parsedSnapshotReport.best_practices}  |
+| SEO                        | ${parsedSnapshotReport.seo} |
 
 </details>
       `,

@@ -31,7 +31,7 @@ export type SnapshotResult = {
   performance: number;
   accessibility: number;
   best_practices: number;
-  seo: Result;
+  seo: number;
 };
 
 function parse(result: FlowResult.Step, metricName: string): Metric {
@@ -247,14 +247,59 @@ export function parseTimespanResults(
   };
 }
 
+export function parseSnapshotResults(
+  snapshotReports: FlowResult.Step[]
+): SnapshotResult {
+  const mergedReports = snapshotReports.reduce(
+    function parseSnapshotResultsReduce(acc, report) {
+      return {
+        performance:
+          acc.performance + (report.lhr.categories.performance.score || 0),
+        best_practices:
+          acc.best_practices +
+          (report.lhr.categories["best-practices"].score || 0),
+        accessibility:
+          acc.accessibility +
+          (report.lhr.categories["accessibility"].score || 0),
+        seo: acc.seo + (report.lhr.categories["seo"].score || 0),
+      };
+    },
+    {
+      performance: 0,
+      best_practices: 0,
+      accessibility: 0,
+      seo: 0,
+    } satisfies SnapshotResult
+  );
+
+  const length = snapshotReports.length;
+  return {
+    performance: parseToFixedNumber(
+      (mergedReports.performance / length) * 100,
+      2
+    ),
+    best_practices: parseToFixedNumber(
+      (mergedReports.best_practices / length) * 100,
+      2
+    ),
+    accessibility: parseToFixedNumber(
+      (mergedReports.accessibility / length) * 100,
+      2
+    ),
+    seo: parseToFixedNumber((mergedReports.seo / length) * 100, 2),
+  };
+}
+
 export function parseLighthouseReports(
   reports: FlowResult[]
-): [NavigationResult, TimespanResult] {
+): [NavigationResult, TimespanResult, SnapshotResult] {
   const navigationReports = reports.map((report) => report.steps[0]);
   const timespanReports = reports.map((report) => report.steps[1]);
+  const SnapshotReports = reports.map((report) => report.steps[2]);
 
   return [
     parseNavigationResults(navigationReports),
     parseTimespanResults(timespanReports),
+    parseNavigationResults(SnapshotReports),
   ] as const;
 }

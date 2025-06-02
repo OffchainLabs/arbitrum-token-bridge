@@ -29,6 +29,15 @@ exports[`ParseLighthouseReports > Parse the navigation result 1`] = `
 }
 `;
 
+exports[`ParseLighthouseReports > Parse the snapshot result 1`] = `
+{
+  "accessibility": 91,
+  "best_practices": 100,
+  "performance": 0,
+  "seo": 100,
+}
+`;
+
 exports[`ParseLighthouseReports > Parse the timesmapn result 1`] = `
 {
   "best_practices": 95,
