@@ -66,20 +66,8 @@ export const updateAdditionalDepositData = async (
 
   const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
-  const { parentToChildMsg } =
-    await getParentToChildMessageDataFromParentTxHash({
-      depositTxId: depositTx.txID,
-      parentProvider,
-      childProvider,
-      isClassic
-    })
-
-  if (!parentToChildMsg) {
-    return depositTx
-  }
-
   if (
-    // txns fetched through subgraph will not have `l2ToL3MsgData`. So `isTeleportTx` will not pass here.
+    // txns fetched through subgraph will not have `l2ToL3MsgData` or `parentToChildMsg`. So `isTeleportTx` will not pass here.
     // since this is a deposit tx flow, the `parent` and `child` chain will always be `source` and `destination`
     isValidTeleportChainPair({
       sourceChainId: depositTx.parentChainId,
@@ -101,6 +89,18 @@ export const updateAdditionalDepositData = async (
       l1ToL2MsgData,
       l2ToL3MsgData
     }
+  }
+
+  const { parentToChildMsg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: depositTx.txID,
+      parentProvider,
+      childProvider,
+      isClassic
+    })
+
+  if (!parentToChildMsg) {
+    return depositTx
   }
 
   if (isClassic) {
