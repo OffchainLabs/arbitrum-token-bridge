@@ -77,10 +77,12 @@ export async function executeLighthouseFlow(chromePath?: string) {
   // Get the comprehensive flow report.
   const report = await flow.createFlowResult();
 
-  core.info(join(workspaceRoot, "./lhreport.html"));
+  core.info(
+    `Creating lighthouse workflow at ${join(workspaceRoot, "./lhreport.html")}`
+  );
   writeFileSync(
     join(workspaceRoot, "./lhreport.html"),
-    JSON.stringify(await flow.generateReport(), null, 2)
+    await flow.generateReport()
   );
 
   // Cleanup.

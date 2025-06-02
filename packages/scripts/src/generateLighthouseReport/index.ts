@@ -5,7 +5,9 @@ import { join, resolve } from "path";
 import { config } from "../../../../package.json";
 import { postComment } from "./postComment";
 import { compareLighthouseReports } from "./compareLighthouseReports";
+import { DefaultArtifactClient } from "@actions/artifact";
 
+const artifact = new DefaultArtifactClient();
 const workspaceRoot = resolve(process.cwd(), "../..");
 // "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
 const chromePath = join(
@@ -36,23 +38,24 @@ export async function generateLighthouseReport() {
         parsedSnapshotReport,
       ],
     });
-    core.info(JSON.stringify(diff));
     core.endGroup();
 
-    // core.info(join(workspaceRoot, "./output.json"));
-    // writeFileSync(
-    //   join(workspaceRoot, "./output.json"),
-    //   JSON.stringify([
-    //     parsedNavigationReport,
-    //     parsedTimespanReport,
-    //     parsedSnapshotReport,
-    //   ])
-    // );
+    core.startGroup("Upload lighthouse report");
+    const { id } = await artifact.uploadArtifact(
+      "lhreport",
+      ["./lhreport.html"],
+      workspaceRoot
+    );
+    const { downloadPath } = await artifact.downloadArtifact(id);
+    core.info(`Created artifact with id: ${id}, (${downloadPath})`);
+    core.endGroup();
+
     await postComment({
       parsedNavigationReport,
       parsedTimespanReport,
       parsedSnapshotReport,
       ...diff,
+      artifactPath: downloadPath,
     });
   } catch (error) {
     console.log(error);
