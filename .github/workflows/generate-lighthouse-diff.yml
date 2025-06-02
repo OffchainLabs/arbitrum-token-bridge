@@ -84,6 +84,6 @@ jobs:
         with:
           name: lighthouse-reports-${{ github.sha }}-${{ matrix.test.name }}-${{ matrix.test.type }}
           path: |
-            ./output.json
+            ./lhreport.html
           if-no-files-found: 'ignore'
         continue-on-error: true
