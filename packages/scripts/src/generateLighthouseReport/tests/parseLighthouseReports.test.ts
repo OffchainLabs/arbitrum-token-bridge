@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import report from "./__mocks__/output.json";
 import {
   parseNavigationResults,
+  parseSnapshotResults,
   parseTimespanResults,
 } from "../parseLighthouseReports";
 import { FlowResult } from "lighthouse";
@@ -32,6 +33,20 @@ describe("ParseLighthouseReports", () => {
       mock.steps[1],
       mock.steps[1],
       mock.steps[1],
+    ]);
+    expect(multipleReports).toEqual(parsedReport);
+  });
+
+  it("Parse the snapshot result", () => {
+    const parsedReport = parseSnapshotResults([mock.steps[2]]);
+    expect(parsedReport).toMatchSnapshot();
+
+    const multipleReports = parseSnapshotResults([
+      mock.steps[2],
+      mock.steps[2],
+      mock.steps[2],
+      mock.steps[2],
+      mock.steps[2],
     ]);
     expect(multipleReports).toEqual(parsedReport);
   });
