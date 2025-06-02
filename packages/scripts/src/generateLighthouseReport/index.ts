@@ -21,11 +21,15 @@ export async function generateLighthouseReport() {
     const report3 = await executeLighthouseFlow(chromePath);
 
     core.startGroup("Parse lighthouse report");
-    const [parsedNavigationReport, parsedTimespanReport] =
+    const [parsedNavigationReport, parsedTimespanReport, parsedSnapshotReport] =
       parseLighthouseReports([report1, report2, report3]);
     core.endGroup();
 
-    await postComment({ parsedNavigationReport, parsedTimespanReport });
+    await postComment({
+      parsedNavigationReport,
+      parsedTimespanReport,
+      parsedSnapshotReport,
+    });
   } catch (error) {
     console.log(error);
   }
