@@ -72,7 +72,7 @@ import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
 
-const RAW_TX_FETCH_TIMEOUT_SECONDS = 15_000
+const RAW_TX_FETCH_TIMEOUT_SECONDS = 30_000
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
