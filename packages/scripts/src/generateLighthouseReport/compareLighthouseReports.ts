@@ -10,7 +10,11 @@ export async function compareLighthouseReports({
 }: {
   prevReportUrl: string;
   results: [NavigationResult, TimespanResult, SnapshotResult];
-}) {
+}): Promise<{
+  navigationDiff: NavigationResult;
+  timespanDiff: TimespanResult;
+  snapshotDiff: SnapshotResult;
+}> {
   const prevReport = (await fetch(prevReportUrl).then((response) =>
     response.json()
   )) as [NavigationResult, TimespanResult, SnapshotResult];
