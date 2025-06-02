@@ -2,6 +2,10 @@ import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import '../styles/tailwind.css'
+import 'tippy.js/dist/tippy.css'
+import 'tippy.js/themes/light.css'
+import '@rainbow-me/rainbowkit/styles.css'
+import '../styles/tailwind.css'
 
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
@@ -13,7 +17,6 @@ import Head from 'next/head'
 import posthog from 'posthog-js'
 import type { Chain } from 'wagmi/chains'
 
-import { Layout } from '../components/common/Layout'
 import {
   ChainKeyQueryParam,
   getChainForChainKeyQueryParam
@@ -152,9 +155,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
         {/* title must be here because it doesn't render if it's in DynamicMetaData */}
         <title>{siteTitle}</title>
       </Head>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <Component {...pageProps} />
     </>
   )
 }
