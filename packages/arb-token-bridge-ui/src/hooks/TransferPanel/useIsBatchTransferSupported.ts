@@ -1,5 +1,7 @@
 import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { DisabledFeatures } from '../useArbQueryParams'
+import { useDisabledFeatures } from '../useDisabledFeatures'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useSelectedToken } from '../useSelectedToken'
@@ -9,7 +11,11 @@ export const useIsBatchTransferSupported = () => {
   const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
   const [selectedToken] = useSelectedToken()
   const isOftTransfer = useIsOftV2Transfer()
+  const { isFeatureDisabled } = useDisabledFeatures()
 
+  if (isFeatureDisabled(DisabledFeatures.BATCH_TRANSFERS)) {
+    return false
+  }
   if (!selectedToken) {
     return false
   }

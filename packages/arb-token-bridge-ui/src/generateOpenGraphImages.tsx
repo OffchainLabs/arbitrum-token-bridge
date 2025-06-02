@@ -4,6 +4,8 @@ import path from 'path'
 import React from 'react'
 import satori, { Font } from 'satori'
 import sharp from 'sharp'
+import yargs, { Arguments, InferredOptionTypes } from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 // this has to be called before import from "networks.ts"
 // to ensure that the environment variables are loaded
@@ -338,17 +340,45 @@ async function generateSvg(
   console.log(`Generated ${filePath}`)
 }
 
-async function main() {
+const generateOptions = {
+  core: {
+    alias: 'c',
+    type: 'boolean',
+    description: 'Generate images for core chains',
+    default: false
+  },
+  orbit: {
+    alias: 'o',
+    type: 'boolean',
+    description: 'Generate images for orbit chains',
+    default: true
+  }
+} as const
+
+type Args = Arguments<InferredOptionTypes<typeof generateOptions>>
+
+async function generate(argv: Args) {
   for (const combination of configs) {
     const { isCoreChain: isChildChainCoreChain } = isNetwork(combination[1])
 
-    if (!isChildChainCoreChain) {
+    if (argv.orbit && !isChildChainCoreChain) {
       await generateSvg(combination[1])
-    } else {
+    }
+
+    if (argv.core && isChildChainCoreChain) {
       await generateSvg({ from: combination[0], to: combination[1] })
       await generateSvg({ from: combination[1], to: combination[0] })
     }
   }
 }
 
-main()
+yargs(hideBin(process.argv))
+  .command<Args>({
+    command: 'generate',
+    describe: 'Generate OpenGraph images',
+    handler: async argv => {
+      await generate(argv)
+    }
+  })
+  .options(generateOptions)
+  .parse()

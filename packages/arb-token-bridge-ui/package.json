@@ -54,9 +54,9 @@
     "zustand": "^4.3.9"
   },
   "scripts": {
-    "predev": "yarn generateDenylist && yarn generateOpenGraphImages",
+    "predev": "yarn generateDenylist",
     "dev": "next dev",
-    "prebuild": "yarn generateDenylist && yarn generateOpenGraphImages",
+    "prebuild": "yarn generateDenylist",
     "postinstall": "patch-package",
     "build": "next build",
     "start": "next start",
@@ -66,7 +66,9 @@
     "lint:fix": "tsc && eslint --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
-    "generateOpenGraphImages": "ts-node --project ./scripts/tsconfig.json ./src/generateOpenGraphImages.tsx",
+    "generateOpenGraphImages": "ts-node --project ./scripts/tsconfig.json ./src/generateOpenGraphImages.tsx generate",
+    "generateOpenGraphImages:core": "yarn generateOpenGraphImages --core",
+    "generateOpenGraphImages:orbit": "yarn generateOpenGraphImages --orbit",
     "generateCoreChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateCoreChainsToMonitor.ts",
     "generateOrbitChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts"
   },
@@ -98,6 +100,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/react-virtualized": "^9.22.2",
     "@types/wcag-contrast": "^3.0.3",
+    "@types/yargs": "^17.0.33",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "autoprefixer": "^10.4.13",
@@ -125,6 +128,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.32.1",
-    "vitest": "^3.1.1"
+    "vitest": "^3.1.1",
+    "yargs": "^18.0.0"
   }
 }

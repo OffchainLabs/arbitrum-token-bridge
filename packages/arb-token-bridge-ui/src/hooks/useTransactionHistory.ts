@@ -63,7 +63,8 @@ import {
   WithdrawalInitiated
 } from './arbTokenBridge.types'
 import { useAccountType } from './useAccountType'
-import { useArbQueryParams } from './useArbQueryParams'
+import { DisabledFeatures } from './useArbQueryParams'
+import { useDisabledFeatures } from './useDisabledFeatures'
 import { useIsTestnetMode } from './useIsTestnetMode'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import {
@@ -275,7 +276,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType(address)
-  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
+  const { isFeatureDisabled } = useDisabledFeatures()
+  const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
+
   const forceFetchReceived = useForceFetchReceived(
     state => state.forceFetchReceived
   )
@@ -500,7 +503,10 @@ export const useTransactionHistory = (
   const { chain } = useAccount()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType(address)
-  const [{ txHistory: isTxHistoryEnabled }] = useArbQueryParams()
+
+  const { isFeatureDisabled } = useDisabledFeatures()
+  const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
+
   const lifiTransactions = useLifiMergedTransactionCacheStore(
     state => state.transactions
   )

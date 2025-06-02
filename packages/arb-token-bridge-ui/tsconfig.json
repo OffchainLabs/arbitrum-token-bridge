@@ -10,7 +10,8 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "build/types/**/*.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "src/generateOpenGraphImages.tsx"
   ],
   "compilerOptions": {
     "noEmit": true,
