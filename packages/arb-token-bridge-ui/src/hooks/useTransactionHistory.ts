@@ -71,8 +71,7 @@ import {
 import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
-
-const RAW_TX_FETCH_TIMEOUT_SECONDS = 30_000
+import { withTimeout } from '../util/withTimeout'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -137,16 +136,6 @@ function getTransactionTimestamp(tx: Transfer) {
   }
 
   return normalizeTimestamp(tx.timestamp?.toNumber() ?? 0)
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Request timed out')), ms)
-    promise
-      .then(resolve)
-      .catch(reject)
-      .finally(() => clearTimeout(timer))
-  })
 }
 
 function sortByTimestampDescending(a: Transfer, b: Transfer) {
@@ -346,7 +335,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
       if (!chain) {
-        return Promise.resolve([])
+        return []
       }
 
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
@@ -406,8 +395,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                     ),
                     pageNumber: 0,
                     pageSize: 1000
-                  }),
-                  RAW_TX_FETCH_TIMEOUT_SECONDS
+                  })
                 )
               }
 
@@ -421,8 +409,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                   pageNumber: 0,
                   pageSize: 1000,
                   forceFetchReceived
-                }),
-                RAW_TX_FETCH_TIMEOUT_SECONDS
+                })
               )
             } catch {
               addFailedChainPair(prevFailedChainPairs => {
