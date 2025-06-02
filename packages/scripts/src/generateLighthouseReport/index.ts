@@ -43,7 +43,7 @@ export async function generateLighthouseReport() {
     core.startGroup("Upload lighthouse report");
     const { id } = await artifact.uploadArtifact(
       "lhreport",
-      ["/lhreport.html"],
+      [`${process.cwd()}/lhreport.html`],
       process.cwd()
     );
     const { downloadPath } = await artifact.downloadArtifact(id);
