@@ -6,20 +6,16 @@ import {
 import { parseToFixedNumber } from "./parseToFixedNumber";
 
 export async function compareLighthouseReports({
-  prevReportUrl,
+  prevReport,
   results,
 }: {
-  prevReportUrl: string;
+  prevReport: [NavigationResult, TimespanResult, SnapshotResult];
   results: [NavigationResult, TimespanResult, SnapshotResult];
 }): Promise<{
   navigationDiff: NavigationResult;
   timespanDiff: TimespanResult;
   snapshotDiff: SnapshotResult;
 }> {
-  const prevReport = (await fetch(prevReportUrl).then((response) =>
-    response.json()
-  )) as [NavigationResult, TimespanResult, SnapshotResult];
-
   // Compare Navigation Results
   const prevNavigationResult = prevReport[0];
   const navigationResult = results[0];
