@@ -2,7 +2,9 @@ import puppeteer from "puppeteer";
 import * as core from "@actions/core";
 import { startFlow, desktopConfig } from "lighthouse";
 import { writeFileSync } from "fs";
+import { join, resolve } from "path";
 
+const workspaceRoot = resolve(process.cwd(), "../..");
 export async function executeLighthouseFlow(chromePath?: string) {
   core.startGroup("Lighthouse execution");
   // Setup the browser and Lighthouse.
@@ -75,7 +77,11 @@ export async function executeLighthouseFlow(chromePath?: string) {
   // Get the comprehensive flow report.
   const report = await flow.createFlowResult();
 
-  writeFileSync("lhreport.html", await flow.generateReport());
+  core.info(join(workspaceRoot, "./lhreport.html"));
+  writeFileSync(
+    join(workspaceRoot, "./lhreport.html"),
+    JSON.stringify(await flow.generateReport(), null, 2)
+  );
 
   // Cleanup.
   await browser.close();
