@@ -5,7 +5,6 @@ import { join, resolve } from "path";
 import { config } from "../../../../package.json";
 import { postComment } from "./postComment";
 import { compareLighthouseReports } from "./compareLighthouseReports";
-import { writeFile, writeFileSync } from "fs";
 
 const workspaceRoot = resolve(process.cwd(), "../..");
 // "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
@@ -30,7 +29,7 @@ export async function generateLighthouseReport() {
     core.startGroup("Compare lighthouse results");
     const diff = await compareLighthouseReports({
       prevReportUrl:
-        "https://bibi-lighthouse.s3.us-east-1.amazonaws.com/output.json?response-content-disposition=inline&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjECgaCXVzLWVhc3QtMSJHMEUCIQDYVvbsUJQBvJb4cQOGHODWFfuYratAXjcNH8JF%2FB03dgIgA7LiKokri%2Ff90eqpoXqYhBOlX1KV9Sh9tkFdPP39YJ8qvgMI8P%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARABGgw4MTMyNjQyMDc5MzYiDDdRdm5mArGn3cKXryqSAyuYl2vBajEXiTWj5zLf%2BD42ES46704LxwyjjB%2FvzQ5XlcMuQrfPjAVag3lQcofFCDC%2FSmyjfxv7smgkyHQobGrxXhXzPa4I%2B1mRM%2B6Yv8YejmIOf03FdTaFexSZ8KepBgxek%2F3qgRhLirLs7hvcPGZnglIL3hUtNLOEHoyqqpd8oYebPB7Ppi5oxA44CAHJuUrylGAIQdgY3RpikiK9NZGIHh6ISFUhVv9YsynQIr3WcZmzBWm2EHtd2l5KPyyX4tsf2Qyhvlh9otc%2B661vL1OyUIXHzxMO6YIi1HWkVFnScH%2Bn4vKMb%2Fa%2By1C13bmocWeuaqIozRyJ6siDzwyyw%2BcbAUfy9swg75kBgwtxX863JyCDJd6zc2Srtty1%2FN5QgHBkNbTU1pa4Zg7mR3Wqr2ehtwhkxiHzqL0E7UWzfLdbFMpA8k50eDdXgpSq8gT6IymDE7MSAGeZsfYF1POQ8gWR3NN3L%2B4KdrCTgajdtIlM6I2bdKKSGomQhEHxq45mwIBgQ9EXJjuGOfDcvTuc0zlXmDCx8%2FbBBjreAsM5LGbFpoubMzCdIaokI2ip76ui901uTAvyb4Cyg%2F2eP9EVQTPjDyuSuR40tzpGgL6%2F4zsClIzrx2ngOHwjLTYndGbt%2FcOYPi4AxB%2FG8zawhpdLoOtnU528JDcFbOjZfLmsJgqyh9OZHmYCo%2FRhMAf%2FS6pV4rZGOEF9sFJpKFgYUYVQRfB6JV%2BSlm78COFLIrK92XTcq2dt0Lsy1ZqdNJU%2BS4eAAlLjYoTbHh%2Fd2voT%2FymNf%2B16Rzk3%2BltLT8Qig%2FiWnOZNysXzbW0hHZNdQykAqE4gms33DRS7HKUlf7R9%2By6wOmU8TC1N9zU0DMuokPHM3nwM2Ltw56DGhFEdF1Wgn8EaejSjXqa2lHOsfivF4JqEHsV3c5hhgoo4JXfH4opqxtNJe0GT2Jba2Cppe%2F0xK%2BRN%2FCDS9N09U5lnX2RCzE%2FX8Q49eLPDpHVEMrzjNknc0GU7YkcYNIcziCCN&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIA32WSTABAFFU4Y3O7%2F20250602%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250602T151108Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=host&X-Amz-Signature=85bb9415d78efe8c430a46045ce221b9b173e3f4053bd7cd8cffb1b86358d90c",
+        "https://bibi-lighthouse.s3.us-east-1.amazonaws.com/output.json?response-content-disposition=inline&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjECgaCXVzLWVhc3QtMSJIMEYCIQCSGvEtdDdPH1t3CSYZj0t%2Bb7m3EasIGenn2%2FzKMyKjKQIhAJv8f%2F%2Fb0hCmhoZdfuYyUR1X7L%2Fr%2BjsGsEuGiHSCM9boKr4DCPH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMODEzMjY0MjA3OTM2IgyhGGjJi9Y8htvZwjUqkgMd4rnuSYrl%2Bawn%2F9DT3sIqywosdN9VbqqmWdFjrMzeys3jXwRwt1ii5OHCzd3AaHnUJJgFMdc%2BDn%2FuLaR0Z4QyD9nVUkZ2mkRWCaOIy%2BHF5GBL1OgGGHCDcdnBgJFpx28m8MCC3YQ%2BOOsnR4qD0I1RPpBZ%2B0%2B50KsZdM%2FS1%2BPxkCEfPqcquDkpiriraIFG0bSGODM3gzzeja4H9kLFgkPeWRyp82948sadxncs%2B%2FHgLdaABrsnQayofemGHw%2BjanE3dYWiabMz7OBCL4uarocdXkDFlnRy53PX06deS75XSrbzgzKGxTXAX8xfJ2g0BVLsMkEjbGmdX17NRjMjlf1qzPaApXo4FXGZl%2FSVhRlb%2BkR9uwbiykX4bSNHolIVxYd3VOMHDIJIQrafy7f6XqZH5ABncG8mhatrMwdAETk1CmA7q1vtEQ2BBq2LLRpxydFCbMGVH%2FjfAtMkT%2F%2FDJ%2BKgIw6EmOQ0SVjaMq6Z6g8o8lh0h8%2BTlcfX2garKS%2FHKdush5TJa%2BK%2BU%2BUTZ1m4oNLKk%2BYwsfP2wQY63QJ506Bt0JVlGD37qHnuRLXMKuKTPcRwcMW%2BZ%2Fn87qxps%2FJrexg8qUkmPxEIJWV2FltIA52pOLCN14%2BuCq56%2FDPRHIF%2BLIBRTX9qnAzRBDkip2YMU6vxwtyAGz15BTVzvMDcRXHXrvSHTgcWjLsHug86J1gausbO%2BrTQj4EHWthiXKPVMTWmScHwpZCw%2BY95LWsbAa3kew2x7w4lAnpaY2y%2FHi1XDcxTpaJb9kAwTd1SNS3z3bigN9H1060d7M1VePjiexYk%2FRohT6rN5U7RVKQaSnlTjcqAtF5PVyvz7mukDEK3QaQaozaBwRUe8UV0Pp4IEinBEYnIRwuvZJudoGNcUFjS812lFFmNFmQeN51V96PbgXOXb8WJmWPUnrOQtpNooIbBT4Jx%2BF1v1szSqDnnsO0XknKb4nUpZVx26ZxDxPBJQ3EBPiA1phsAndN7MCjOpahkPQe7xfKKExEz&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIA32WSTABANCYDZXAQ%2F20250602%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250602T155001Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=host&X-Amz-Signature=6e4681bb5f3b431bd4f5e5801f6f31b1e5a7c7708782713d82796d11137d33c9",
       results: [
         parsedNavigationReport,
         parsedTimespanReport,
@@ -40,15 +39,15 @@ export async function generateLighthouseReport() {
     core.info(JSON.stringify(diff));
     core.endGroup();
 
-    core.info(join(workspaceRoot, "./output.json"));
-    writeFileSync(
-      join(workspaceRoot, "./output.json"),
-      JSON.stringify([
-        parsedNavigationReport,
-        parsedTimespanReport,
-        parsedSnapshotReport,
-      ])
-    );
+    // core.info(join(workspaceRoot, "./output.json"));
+    // writeFileSync(
+    //   join(workspaceRoot, "./output.json"),
+    //   JSON.stringify([
+    //     parsedNavigationReport,
+    //     parsedTimespanReport,
+    //     parsedSnapshotReport,
+    //   ])
+    // );
     await postComment({
       parsedNavigationReport,
       parsedTimespanReport,

@@ -1,7 +1,5 @@
-import { FlowResult } from "lighthouse";
 import {
   NavigationResult,
-  parseLighthouseReports,
   SnapshotResult,
   TimespanResult,
 } from "./parseLighthouseReports";
@@ -15,102 +13,92 @@ export async function compareLighthouseReports({
 }) {
   const prevReport = (await fetch(prevReportUrl).then((response) =>
     response.json()
-  )) as FlowResult;
-
-  const [
-    prevParsedNavigationReport,
-    prevParsedTimespanReport,
-    prevParsedSnapshotReport,
-  ] = parseLighthouseReports([prevReport]);
+  )) as [NavigationResult, TimespanResult, SnapshotResult];
 
   // Compare Navigation Results
+  const prevNavigationResult = prevReport[0];
   const navigationResult = results[0];
   const navigationDiff = {
     fcp: {
       numericValue:
-        prevParsedNavigationReport.fcp.numericValue -
+        prevNavigationResult.fcp.numericValue -
         navigationResult.fcp.numericValue,
-      score: prevParsedNavigationReport.fcp.score - navigationResult.fcp.score,
+      score: prevNavigationResult.fcp.score - navigationResult.fcp.score,
     },
     lcp: {
       numericValue:
-        prevParsedNavigationReport.lcp.numericValue -
+        prevNavigationResult.lcp.numericValue -
         navigationResult.lcp.numericValue,
-      score: prevParsedNavigationReport.lcp.score - navigationResult.lcp.score,
+      score: prevNavigationResult.lcp.score - navigationResult.lcp.score,
     },
     tbt: {
       numericValue:
-        prevParsedNavigationReport.tbt.numericValue -
+        prevNavigationResult.tbt.numericValue -
         navigationResult.tbt.numericValue,
-      score: prevParsedNavigationReport.tbt.score - navigationResult.tbt.score,
+      score: prevNavigationResult.tbt.score - navigationResult.tbt.score,
     },
     cls: {
       numericValue:
-        prevParsedNavigationReport.cls.numericValue -
+        prevNavigationResult.cls.numericValue -
         navigationResult.cls.numericValue,
-      score: prevParsedNavigationReport.cls.score - navigationResult.cls.score,
+      score: prevNavigationResult.cls.score - navigationResult.cls.score,
     },
     speed: {
       numericValue:
-        prevParsedNavigationReport.speed.numericValue -
+        prevNavigationResult.speed.numericValue -
         navigationResult.speed.numericValue,
-      score:
-        prevParsedNavigationReport.speed.score - navigationResult.speed.score,
+      score: prevNavigationResult.speed.score - navigationResult.speed.score,
     },
     performance:
-      prevParsedNavigationReport.performance - navigationResult.performance,
+      prevNavigationResult.performance - navigationResult.performance,
     accessibility:
-      prevParsedNavigationReport.accessibility - navigationResult.accessibility,
+      prevNavigationResult.accessibility - navigationResult.accessibility,
     best_practices:
-      prevParsedNavigationReport.best_practices -
-      navigationResult.best_practices,
-    seo: prevParsedNavigationReport.seo - navigationResult.seo,
+      prevNavigationResult.best_practices - navigationResult.best_practices,
+    seo: prevNavigationResult.seo - navigationResult.seo,
   } satisfies NavigationResult;
 
-  // Same for timespan result and snapshot result
+  // Compare Timespan Results
+  const prevTimespanResult = prevReport[1];
   const timespanResult = results[1];
   const timespanDiff = {
     tbt: {
       numericValue:
-        prevParsedTimespanReport.tbt.numericValue -
-        timespanResult.tbt.numericValue,
-      score: prevParsedTimespanReport.tbt.score - timespanResult.tbt.score,
+        prevTimespanResult.tbt.numericValue - timespanResult.tbt.numericValue,
+      score: prevTimespanResult.tbt.score - timespanResult.tbt.score,
     },
     cls: {
       numericValue:
-        prevParsedTimespanReport.cls.numericValue -
-        timespanResult.cls.numericValue,
-      score: prevParsedTimespanReport.cls.score - timespanResult.cls.score,
+        prevTimespanResult.cls.numericValue - timespanResult.cls.numericValue,
+      score: prevTimespanResult.cls.score - timespanResult.cls.score,
     },
     inp: {
       numericValue:
-        prevParsedTimespanReport.inp.numericValue -
-        timespanResult.inp.numericValue,
-      score: prevParsedTimespanReport.inp.score - timespanResult.inp.score,
+        prevTimespanResult.inp.numericValue - timespanResult.inp.numericValue,
+      score: prevTimespanResult.inp.score - timespanResult.inp.score,
     },
     best_practices:
-      prevParsedTimespanReport.best_practices - timespanResult.best_practices,
+      prevTimespanResult.best_practices - timespanResult.best_practices,
     longTasks: {
       durationMs:
-        prevParsedTimespanReport.longTasks.durationMs -
+        prevTimespanResult.longTasks.durationMs -
         timespanResult.longTasks.durationMs,
       total:
-        prevParsedTimespanReport.longTasks.total -
-        timespanResult.longTasks.total,
+        prevTimespanResult.longTasks.total - timespanResult.longTasks.total,
     },
-    performance:
-      prevParsedTimespanReport.performance - timespanResult.performance,
+    performance: prevTimespanResult.performance - timespanResult.performance,
   } satisfies TimespanResult;
 
+  // Compare Snapshot Result
+  const prevSnapshotResult = prevReport[2];
   const snapshotResult = results[2];
   const snapshotDiff = {
-    performance:
-      prevParsedSnapshotReport.performance - snapshotResult.performance,
+    performance: prevSnapshotResult.performance - snapshotResult.performance,
     accessibility:
-      prevParsedSnapshotReport.accessibility - snapshotResult.accessibility,
+      prevSnapshotResult.accessibility - snapshotResult.accessibility,
     best_practices:
-      prevParsedSnapshotReport.best_practices - snapshotResult.best_practices,
-    seo: prevParsedSnapshotReport.seo - snapshotResult.seo,
+      prevSnapshotResult.best_practices - snapshotResult.best_practices,
+    seo: prevSnapshotResult.seo - snapshotResult.seo,
   } satisfies SnapshotResult;
 
   return {
