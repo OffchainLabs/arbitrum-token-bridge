@@ -1,4 +1,4 @@
-import { FlowResult, Result } from "lighthouse";
+import { FlowResult } from "lighthouse";
 
 type Metric = {
   /** Number from 0 to 1 */
