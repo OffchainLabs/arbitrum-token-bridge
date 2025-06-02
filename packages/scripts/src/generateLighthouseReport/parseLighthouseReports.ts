@@ -1,4 +1,5 @@
 import { FlowResult } from "lighthouse";
+import { parseToFixedNumber } from "./parseToFixedNumber";
 
 type Metric = {
   /** Number from 0 to 1 */
@@ -41,10 +42,6 @@ function parse(result: FlowResult.Step, metricName: string): Metric {
     score: metric.score || 0,
     numericValue: metric.numericValue || 0,
   };
-}
-
-function parseToFixedNumber(num: number, fractionDigits: number) {
-  return Number(num.toFixed(fractionDigits));
 }
 
 function generateMetric<TKey extends string>({
@@ -238,7 +235,7 @@ export function parseTimespanResults(
       2
     ),
     longTasks: {
-      total: parseToFixedNumber(mergedReports.longTasks.total / length, 0),
+      total: parseToFixedNumber(mergedReports.longTasks.total / length, 2),
       durationMs: parseToFixedNumber(
         mergedReports.longTasks.durationMs / length,
         3
