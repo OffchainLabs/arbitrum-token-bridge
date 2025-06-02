@@ -1,15 +1,15 @@
-import { ReactNode, useMemo } from 'react'
-import { Provider as OvermindProvider } from 'overmind-react'
-import { WagmiProvider } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import merge from 'lodash-es/merge'
 import { createOvermind } from 'overmind'
+import { Provider as OvermindProvider } from 'overmind-react'
+import { ReactNode, useMemo } from 'react'
+import { WagmiProvider } from 'wagmi'
 
-import { config } from '../../state'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
-import { AppContextProvider } from './AppContext'
+import { config } from '../../state'
 import { getProps } from '../../util/wagmi/setup'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AppContextProvider } from './AppContext'
 
 const rainbowkitTheme = merge(darkTheme(), {
   colors: {
