@@ -12,6 +12,7 @@ export default defineConfig({
       external: [
         "@actions/core",
         "@actions/github",
+        "@actions/artifact",
         "axios",
         "fs",
         "commander",
