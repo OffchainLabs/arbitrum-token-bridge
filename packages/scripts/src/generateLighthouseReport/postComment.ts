@@ -25,7 +25,7 @@ export async function postComment({
     // prettier-ignore
     body: `
 <details>
-<summary>❌ Lighthouse: Regression found</summary>
+<summary>Lighthouse results</summary>
 
 <!-- Leave a blank line after summary, but do NOT use <br> -->
 
