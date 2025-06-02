@@ -1110,8 +1110,8 @@
         "sequencerInbox": "0x85eC1b9138a8b9659A51e2b51bb0861901040b59"
       },
       "nativeToken": "0x4C1746A800D224393fE2470C70A35717eD4eA5F1",
-      "explorerUrl": "https://phoenix-explorer.plumenetwork.xyz/",
-      "rpcUrl": "https://phoenix-rpc.plumenetwork.xyz",
+      "explorerUrl": "https://explorer.plume.org",
+      "rpcUrl": "https://rpc.plume.org",
       "isCustom": true,
       "isTestnet": false,
       "name": "Plume Mainnet",
