@@ -44,7 +44,7 @@ export async function generateLighthouseReport() {
     const { id } = await artifact.uploadArtifact(
       "lhreport",
       ["/lhreport.html"],
-      "."
+      process.cwd()
     );
     const { downloadPath } = await artifact.downloadArtifact(id);
     core.info(`Created artifact with id: ${id}, (${downloadPath})`);
