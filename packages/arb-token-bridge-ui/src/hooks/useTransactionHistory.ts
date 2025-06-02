@@ -72,6 +72,8 @@ import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
 
+const RAW_TX_FETCH_TIMEOUT_SECONDS = 15_000
+
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
   loading: boolean
@@ -135,6 +137,16 @@ function getTransactionTimestamp(tx: Transfer) {
   }
 
   return normalizeTimestamp(tx.timestamp?.toNumber() ?? 0)
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Request timed out')), ms)
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => clearTimeout(timer))
+  })
 }
 
 function sortByTimestampDescending(a: Transfer, b: Transfer) {
@@ -334,7 +346,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
       if (!chain) {
-        return []
+        return Promise.resolve([])
       }
 
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
@@ -382,30 +394,36 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 // teleporter does not support withdrawals
                 if (type === 'withdrawals') return []
 
-                return await fetchTeleports({
-                  sender: includeSentTxs ? address : undefined,
-                  receiver: includeReceivedTxs ? address : undefined,
-                  parentChainProvider: getProviderForChainId(
-                    chainPair.parentChainId
-                  ),
-                  childChainProvider: getProviderForChainId(
-                    chainPair.childChainId
-                  ),
-                  pageNumber: 0,
-                  pageSize: 1000
-                })
+                return await withTimeout(
+                  fetchTeleports({
+                    sender: includeSentTxs ? address : undefined,
+                    receiver: includeReceivedTxs ? address : undefined,
+                    parentChainProvider: getProviderForChainId(
+                      chainPair.parentChainId
+                    ),
+                    childChainProvider: getProviderForChainId(
+                      chainPair.childChainId
+                    ),
+                    pageNumber: 0,
+                    pageSize: 1000
+                  }),
+                  RAW_TX_FETCH_TIMEOUT_SECONDS
+                )
               }
 
               // else, fetch deposits or withdrawals
-              return await fetcherFn({
-                sender: includeSentTxs ? address : undefined,
-                receiver: includeReceivedTxs ? address : undefined,
-                l1Provider: getProviderForChainId(chainPair.parentChainId),
-                l2Provider: getProviderForChainId(chainPair.childChainId),
-                pageNumber: 0,
-                pageSize: 1000,
-                forceFetchReceived
-              })
+              return await withTimeout<Transaction[] | Withdrawal[]>(
+                fetcherFn({
+                  sender: includeSentTxs ? address : undefined,
+                  receiver: includeReceivedTxs ? address : undefined,
+                  l1Provider: getProviderForChainId(chainPair.parentChainId),
+                  l2Provider: getProviderForChainId(chainPair.childChainId),
+                  pageNumber: 0,
+                  pageSize: 1000,
+                  forceFetchReceived
+                }),
+                RAW_TX_FETCH_TIMEOUT_SECONDS
+              )
             } catch {
               addFailedChainPair(prevFailedChainPairs => {
                 if (!prevFailedChainPairs) {
