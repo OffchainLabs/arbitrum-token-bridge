@@ -1,9 +1,10 @@
 import { PropsWithChildren } from 'react'
+
 import { CCTP_DOCUMENTATION } from '../../constants'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
-import { ExternalLink } from '../common/ExternalLink'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { CCTPSupportedChainId, getUSDCAddresses } from '../../state/cctpState'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 
 export const CctpTabContent = ({
   destinationChainId,

@@ -1,24 +1,25 @@
+import dayjs from 'dayjs'
+import { utils } from 'ethers'
+import { useMemo } from 'react'
+import { shallow } from 'zustand/shallow'
+
+import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { utils } from 'ethers'
-import { Route, Token } from './Route'
-import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
-import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
-import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import {
   getOrbitDepositDuration,
   getStandardDepositDuration,
   getWithdrawalDuration
 } from '../../../hooks/useTransferDuration'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { isNetwork } from '../../../util/networks'
-import dayjs from 'dayjs'
-import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
-import { useMemo } from 'react'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
-import { shallow } from 'zustand/shallow'
 import { getGasCostAndToken } from './getGasCostAndToken'
+import { Route, Token } from './Route'
 
 const commonUsdcToken: Token = {
   decimals: 6,

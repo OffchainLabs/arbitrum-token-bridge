@@ -1,16 +1,16 @@
 import { twMerge } from 'tailwind-merge'
 
-import { useNetworks } from '../../hooks/useNetworks'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import { useAppContextState } from '../App/AppContext'
-import { Button } from '../common/Button'
-import { useTransferReadiness } from './useTransferReadiness'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getNetworkName } from '../../util/networks'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useAppContextState } from '../App/AppContext'
+import { Button } from '../common/Button'
 import { useRouteStore } from './hooks/useRouteStore'
+import { useTransferReadiness } from './useTransferReadiness'
 
 type MoveFundsButtonProps = Pick<
   React.ButtonHTMLAttributes<HTMLButtonElement>,

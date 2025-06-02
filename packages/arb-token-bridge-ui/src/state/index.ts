@@ -1,6 +1,6 @@
 import { IContext } from 'overmind'
-import { createActionsHook, createStateHook } from 'overmind-react'
 import { namespaced } from 'overmind/config'
+import { createActionsHook, createStateHook } from 'overmind-react'
 
 import * as app from './app'
 

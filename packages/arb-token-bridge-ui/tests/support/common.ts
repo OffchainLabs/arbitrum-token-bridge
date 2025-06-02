@@ -2,14 +2,15 @@
   All the utility functions and configs related to our testing
 */
 
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber, Signer, Wallet, ethers, utils } from 'ethers'
 import { EthBridger, MultiCaller } from '@arbitrum/sdk'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber, ethers, Signer, utils, Wallet } from 'ethers'
+
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import {
   defaultL2Network,
-  defaultL3Network,
-  defaultL3CustomGasTokenNetwork
+  defaultL3CustomGasTokenNetwork,
+  defaultL3Network
 } from '../../src/util/networksNitroTestnode'
 
 export type NetworkType = 'parentChain' | 'childChain'

@@ -1,5 +1,5 @@
-import { BigNumber } from 'ethers'
 import { ParentToChildMessageStatus } from '@arbitrum/sdk'
+import { BigNumber } from 'ethers'
 
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import {

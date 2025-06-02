@@ -1,12 +1,13 @@
 import { Chain } from 'wagmi/chains'
 import * as chains from 'wagmi/chains'
+
+import { ChainId } from '../types/ChainId'
 import {
   getCustomChainFromLocalStorageById,
   getSupportedChainIds
 } from '../util/networks'
-import { ChainId } from '../types/ChainId'
-import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
 import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
+import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
 import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [

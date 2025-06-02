@@ -1,6 +1,14 @@
 import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
-import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { BigNumber, constants } from 'ethers'
+
+import { addressIsSmartContract } from '../util/AddressUtils'
+import {
+  fetchErc20Allowance,
+  fetchErc20L2GatewayAddress,
+  getL1ERC20Address
+} from '../util/TokenUtils'
+import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -11,17 +19,10 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import {
-  fetchErc20Allowance,
-  fetchErc20L2GatewayAddress,
-  getL1ERC20Address
-} from '../util/TokenUtils'
-import {
   getAddressFromSigner,
   getChainIdFromProvider,
   percentIncrease
 } from './utils'
-import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
-import { addressIsSmartContract } from '../util/AddressUtils'
 
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'

@@ -3,6 +3,10 @@ import {
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
 import { BigNumber, Signer } from 'ethers'
+
+import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
+import { depositEthEstimateGas } from '../util/EthDepositUtils'
+import { fetchErc20Allowance } from '../util/TokenUtils'
 import {
   ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
@@ -12,11 +16,8 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { getAddressFromSigner, percentIncrease } from './utils'
-import { depositEthEstimateGas } from '../util/EthDepositUtils'
-import { fetchErc20Allowance } from '../util/TokenUtils'
 import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from './Erc20DepositStarter'
-import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
+import { getAddressFromSigner, percentIncrease } from './utils'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'

@@ -1,15 +1,16 @@
 import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
-import { useAppState } from '../../state'
+
 import {
   ContractStorage,
   ERC20BridgeToken,
   TokenType
 } from '../../hooks/arbTokenBridge.types'
-import { useTokenLists } from '../../hooks/useTokenLists'
-import { TokenListWithId } from '../../util/TokenListUtils'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useTokenLists } from '../../hooks/useTokenLists'
+import { useAppState } from '../../state'
+import { TokenListWithId } from '../../util/TokenListUtils'
 
 // keeps the reference stable
 const emptyData = {}

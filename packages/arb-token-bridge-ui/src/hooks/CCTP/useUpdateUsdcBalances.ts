@@ -1,14 +1,15 @@
 import { useCallback } from 'react'
-import { Address } from 'viem'
 import useSWRImmutable from 'swr/immutable'
+import { Address } from 'viem'
+
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 import { CommonAddress } from '../../util/CommonAddressUtils'
+import { isNetwork } from '../../util/networks'
 import { getL2ERC20Address } from '../../util/TokenUtils'
+import { useBalances } from '../useBalances'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
-import { isNetwork } from '../../util/networks'
-import { useBalances } from '../useBalances'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export async function getChildUsdcAddress({
   parentChainId,

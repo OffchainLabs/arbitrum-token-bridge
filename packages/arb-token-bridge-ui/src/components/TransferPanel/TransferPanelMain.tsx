@@ -1,34 +1,33 @@
-import React, { useEffect, useMemo } from 'react'
-import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
-import { twMerge } from 'tailwind-merge'
+import { ArrowDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { utils } from 'ethers'
+import React, { useEffect, useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { Chain } from 'wagmi/chains'
 
-import { getExplorerUrl } from '../../util/networks'
-import { ExternalLink } from '../common/ExternalLink'
-
-import { useAccountType } from '../../hooks/useAccountType'
-import {
-  isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  isTokenSepoliaUSDC,
-  isTokenMainnetUSDC
-} from '../../util/TokenUtils'
 import { useUpdateUsdcBalances } from '../../hooks/CCTP/useUpdateUsdcBalances'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useBalances } from '../../hooks/useBalances'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { TransferDisabledDialog } from './TransferDisabledDialog'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { useBalances } from '../../hooks/useBalances'
-import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
-import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { addressesEqual } from '../../util/AddressUtils'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { getExplorerUrl } from '../../util/networks'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
+  isTokenMainnetUSDC,
+  isTokenSepoliaUSDC
+} from '../../util/TokenUtils'
+import { ExternalLink } from '../common/ExternalLink'
+import { TransferDisabledDialog } from './TransferDisabledDialog'
+import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
+import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
+import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>

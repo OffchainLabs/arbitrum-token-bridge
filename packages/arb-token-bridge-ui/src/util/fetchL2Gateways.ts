@@ -1,5 +1,5 @@
-import { Provider } from '@ethersproject/providers'
 import { getArbitrumNetwork } from '@arbitrum/sdk'
+import { Provider } from '@ethersproject/providers'
 
 import {
   l2ArbReverseGatewayAddresses,

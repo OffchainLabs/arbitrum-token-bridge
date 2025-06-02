@@ -2,13 +2,14 @@ import { BigNumber, constants, utils } from 'ethers'
 import useSWR from 'swr'
 import { Config, useAccount, useConfig } from 'wagmi'
 
+import { TransferEstimateGasResult } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
+import { useArbQueryParams } from '../useArbQueryParams'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
-import { useArbQueryParams } from '../useArbQueryParams'
-import { TransferEstimateGasResult } from '@/token-bridge-sdk/BridgeTransferStarter'
 
 async function fetcher([
   walletAddress,

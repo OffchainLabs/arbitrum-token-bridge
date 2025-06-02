@@ -1,10 +1,11 @@
-import { Dialog, UseDialogProps } from '../common/Dialog'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useRouteStore } from './hooks/useRouteStore'
-import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { useETHPrice } from '../../hooks/useETHPrice'
 import { BigNumber, constants, utils } from 'ethers'
+
+import { useETHPrice } from '../../hooks/useETHPrice'
 import { Token } from '../../pages/api/crosschain-transfers/types'
+import { formatAmount, formatUSD } from '../../util/NumberUtils'
+import { Dialog, UseDialogProps } from '../common/Dialog'
+import { useRouteStore } from './hooks/useRouteStore'
 import { getAmountToPay } from './useTransferReadiness'
 
 type AmountProps = {

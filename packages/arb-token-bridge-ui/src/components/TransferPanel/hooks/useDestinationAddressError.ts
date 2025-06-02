@@ -1,13 +1,13 @@
-import useSWRImmutable from 'swr/immutable'
 import { isAddress } from 'ethers/lib/utils'
+import useSWRImmutable from 'swr/immutable'
 import { useAccount } from 'wagmi'
 
-import { DestinationAddressErrors } from '../AdvancedSettings'
-import { addressIsDenylisted } from '../../../util/AddressUtils'
 import { useAccountType } from '../../../hooks/useAccountType'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { addressIsDenylisted } from '../../../util/AddressUtils'
+import { DestinationAddressErrors } from '../AdvancedSettings'
 
 export async function getDestinationAddressError({
   destinationAddress,

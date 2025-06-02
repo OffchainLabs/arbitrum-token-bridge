@@ -2,8 +2,14 @@ import {
   Erc20Bridger,
   scaleFrom18DecimalsToNativeTokenDecimals
 } from '@arbitrum/sdk'
-import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { BigNumber, constants, utils } from 'ethers'
+
+import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
+import {
+  fetchErc20Allowance,
+  fetchErc20ParentChainGatewayAddress
+} from '../util/TokenUtils'
 import {
   ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
@@ -16,12 +22,7 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import {
-  fetchErc20Allowance,
-  fetchErc20ParentChainGatewayAddress
-} from '../util/TokenUtils'
 import { getAddressFromSigner, percentIncrease } from './utils'
-import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
 // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
 export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)

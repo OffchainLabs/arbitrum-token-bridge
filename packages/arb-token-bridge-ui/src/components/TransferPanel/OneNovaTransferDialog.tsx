@@ -3,17 +3,17 @@ import { Fragment } from 'react'
 
 import Hop from '@/images/bridge/hop.png'
 
-import { TabButton } from '../common/Tab'
-import { BridgesTable } from '../common/BridgesTable'
-import { SecurityNotGuaranteed } from './SecurityLabels'
-import { Dialog, UseDialogProps } from '../common/Dialog'
-import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
-import { getNetworkName, isNetwork } from '../../util/networks'
-import { ChainId } from '../../types/ChainId'
 import { ether } from '../../constants'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { ChainId } from '../../types/ChainId'
+import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
+import { getNetworkName, isNetwork } from '../../util/networks'
+import { BridgesTable } from '../common/BridgesTable'
+import { Dialog, UseDialogProps } from '../common/Dialog'
+import { TabButton } from '../common/Tab'
+import { SecurityNotGuaranteed } from './SecurityLabels'
 
 /**
  * On the UI, user can select the pair Arbitrum One/Arbitrum Nova with the network selection dropdowns.

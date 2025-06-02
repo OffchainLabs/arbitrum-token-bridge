@@ -1,18 +1,18 @@
-import { useMemo } from 'react'
-import { utils } from 'ethers'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { utils } from 'ethers'
+import { useMemo } from 'react'
 
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { TokenLogo } from './TokenLogo'
-import { Loader } from '../common/atoms/Loader'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useTokenLists } from '../../hooks/useTokenLists'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { Loader } from '../common/atoms/Loader'
 import { Button } from '../common/Button'
 import { DialogWrapper, useDialog2 } from '../common/Dialog2'
+import { TokenLogo } from './TokenLogo'
 
 export type TokenButtonOptions = {
   symbol?: string

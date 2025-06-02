@@ -1,43 +1,43 @@
-import {
-  BigNumber,
-  Contract,
-  ContractFactory,
-  Wallet,
-  constants,
-  utils
-} from 'ethers'
-import { formatUnits, parseUnits } from 'ethers/lib/utils'
-import { defineConfig } from 'cypress'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import synpressPlugins from '@synthetixio/synpress/plugins'
+import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
-import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import synpressPlugins from '@synthetixio/synpress/plugins'
+import { defineConfig } from 'cypress'
 import logsPrinter from 'cypress-terminal-report/src/installLogsPrinter'
-import { getL2ERC20Address } from './src/util/TokenUtils'
-import specFiles from './tests/e2e/specfiles.json'
-import { contractAbi, contractByteCode } from './testErc20Token'
 import {
-  checkForAssertions,
-  generateActivityOnChains,
-  fundEth,
-  setupCypressTasks,
-  getCustomDestinationAddress,
-  ERC20TokenSymbol,
-  ERC20TokenDecimals,
-  ERC20TokenName,
-  getNativeTokenDecimals
-} from './tests/support/common'
+  BigNumber,
+  constants,
+  Contract,
+  ContractFactory,
+  utils,
+  Wallet
+} from 'ethers'
+import { formatUnits, parseUnits } from 'ethers/lib/utils'
 
+import { addressesEqual } from './src/util/AddressUtils'
 import { registerLocalNetwork } from './src/util/networks'
 import {
   defaultL2Network,
-  defaultL3Network,
-  defaultL3CustomGasTokenNetwork
+  defaultL3CustomGasTokenNetwork,
+  defaultL3Network
 } from './src/util/networksNitroTestnode'
-import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
+import { getL2ERC20Address } from './src/util/TokenUtils'
+import { contractAbi, contractByteCode } from './testErc20Token'
 import { browserConfig } from './tests/e2e/browser.config'
-import { addressesEqual } from './src/util/AddressUtils'
+import { getCommonSynpressConfig } from './tests/e2e/getCommonSynpressConfig'
+import specFiles from './tests/e2e/specfiles.json'
+import {
+  checkForAssertions,
+  ERC20TokenDecimals,
+  ERC20TokenName,
+  ERC20TokenSymbol,
+  fundEth,
+  generateActivityOnChains,
+  getCustomDestinationAddress,
+  getNativeTokenDecimals,
+  setupCypressTasks
+} from './tests/support/common'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]

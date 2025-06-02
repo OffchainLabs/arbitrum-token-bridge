@@ -1,33 +1,33 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { create } from 'zustand'
-import useSWRImmutable from 'swr/immutable'
-import { useInterval } from 'react-use'
-import { useAccount, useConfig } from 'wagmi'
-import { shallow } from 'zustand/shallow'
 import dayjs from 'dayjs'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useInterval } from 'react-use'
+import useSWRImmutable from 'swr/immutable'
+import { useAccount, useConfig } from 'wagmi'
+import { create } from 'zustand'
+import { shallow } from 'zustand/shallow'
 
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
-import { getL1BlockTime, getNetworkName, isNetwork } from '../util/networks'
-import { ChainId } from '../types/ChainId'
-import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
-import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
-import { normalizeTimestamp } from './app/utils'
 
+import { AssetType } from '../hooks/arbTokenBridge.types'
+import { useAccountType } from '../hooks/useAccountType'
+import { useNetworks } from '../hooks/useNetworks'
+import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import {
   ChainDomain,
   CompletedCCTPTransfer,
   PendingCCTPTransfer,
   Response
 } from '../pages/api/cctp/[type]'
-import { CommonAddress } from '../util/CommonAddressUtils'
-import { trackEvent } from '../util/AnalyticsUtils'
-import { useAccountType } from '../hooks/useAccountType'
-import { AssetType } from '../hooks/arbTokenBridge.types'
-import { useTransactionHistory } from '../hooks/useTransactionHistory'
+import { ChainId } from '../types/ChainId'
 import { Address } from '../util/AddressUtils'
+import { trackEvent } from '../util/AnalyticsUtils'
+import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
+import { CommonAddress } from '../util/CommonAddressUtils'
+import { getL1BlockTime, getNetworkName, isNetwork } from '../util/networks'
 import { captureSentryErrorWithExtraData } from '../util/SentryUtils'
 import { useEthersSigner } from '../util/wagmi/useEthersSigner'
-import { useNetworks } from '../hooks/useNetworks'
+import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
+import { normalizeTimestamp } from './app/utils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal

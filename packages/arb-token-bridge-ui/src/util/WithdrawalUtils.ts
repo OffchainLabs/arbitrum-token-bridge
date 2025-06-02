@@ -1,21 +1,21 @@
 import {
+  ChildToParentTransactionRequest,
   Erc20Bridger,
-  EthBridger,
-  ChildToParentTransactionRequest
+  EthBridger
 } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
-import { ChainId } from '../types/ChainId'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { ChainId } from '../types/ChainId'
 import { Address } from './AddressUtils'
-import { captureSentryErrorWithExtraData } from './SentryUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import {
   getBlockNumberReferenceChainIdByChainId,
   getConfirmPeriodBlocks,
   getL1BlockTime
 } from './networks'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 
 export async function withdrawInitTxEstimateGas({
   amount,

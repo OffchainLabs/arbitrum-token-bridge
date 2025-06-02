@@ -1,13 +1,14 @@
 import { useState } from 'react'
+
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { trackEvent } from '../../../util/AnalyticsUtils'
+import { SpecialTokenSymbol } from '../../../util/fastBridges'
+import { getNetworkName } from '../../../util/networks'
 import { Dialog, UseDialogProps } from '../../common/Dialog'
 import { CctpTabContent } from '../CctpTabContent'
 import { SecurityNotGuaranteed } from '../SecurityLabels'
 import { USDCDepositConfirmationDialogCheckbox } from './UsdcDepositConfirmationDialogCheckbox'
-import { getNetworkName } from '../../../util/networks'
-import { trackEvent } from '../../../util/AnalyticsUtils'
-import { SpecialTokenSymbol } from '../../../util/fastBridges'
 
 export function CctpUsdcDepositConfirmationDialog(props: UseDialogProps) {
   const [networks] = useNetworks()

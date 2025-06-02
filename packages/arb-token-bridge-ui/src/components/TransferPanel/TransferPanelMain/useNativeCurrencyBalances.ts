@@ -1,12 +1,12 @@
-import { useMemo } from 'react'
 import { BigNumber, constants } from 'ethers'
+import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useBalances } from '../../../hooks/useBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useBalances } from '../../../hooks/useBalances'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 export function useNativeCurrencyBalances(): {
   sourceBalance: BigNumber | null

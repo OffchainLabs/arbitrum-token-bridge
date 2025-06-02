@@ -1,8 +1,8 @@
+import { Transition } from '@headlessui/react'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { Fragment, PropsWithChildren, useState } from 'react'
 
 import { ExternalLink } from '../common/ExternalLink'
-import { Transition } from '@headlessui/react'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 
 export const TransactionsTableExternalLink = ({
   children,

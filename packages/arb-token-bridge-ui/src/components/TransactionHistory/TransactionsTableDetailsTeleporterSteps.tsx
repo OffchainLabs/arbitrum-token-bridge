@@ -1,9 +1,15 @@
-import { useMemo } from 'react'
-import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
+
+import {
+  getOrbitDepositDuration,
+  getStandardDepositDuration,
+  minutesToHumanReadableTime
+} from '../../hooks/useTransferDuration'
 import { TeleporterMergedTransaction } from '../../state/app/state'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
@@ -13,18 +19,13 @@ import {
   l2ForwarderRetryableRequiresRedeem,
   secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
-import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
+import { TransferCountdown } from '../common/TransferCountdown'
 import {
   Step,
   TransactionFailedOnNetwork
 } from './TransactionsTableDetailsSteps'
-import { TransferCountdown } from '../common/TransferCountdown'
-import {
-  getOrbitDepositDuration,
-  getStandardDepositDuration,
-  minutesToHumanReadableTime
-} from '../../hooks/useTransferDuration'
+import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 
 const TeleportMiddleStepFailureExplanationNote = ({
   tx

@@ -1,31 +1,32 @@
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { BigNumber, constants, utils } from 'ethers'
-import { BadgeType, Route } from './Route'
-import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { RouteType, useRouteStore } from '../hooks/useRouteStore'
+import { useCallback, useEffect, useMemo } from 'react'
+import { Address } from 'viem'
+import { useAccount } from 'wagmi'
+import { shallow } from 'zustand/shallow'
+
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
-import {
-  LifiCrosschainTransfersRoute,
-  Order
-} from '../../../pages/api/crosschain-transfers/lifi'
 import {
   useLifiCrossTransfersRoute,
   UseLifiCrossTransfersRouteParams
 } from '../../../hooks/useLifiCrossTransferRoute'
-import { useAccount } from 'wagmi'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import {
+  LifiCrosschainTransfersRoute,
+  Order
+} from '../../../pages/api/crosschain-transfers/lifi'
+import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
+import { isTokenNativeUSDC } from '../../../util/TokenUtils'
+import { Loader } from '../../common/atoms/Loader'
+import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import {
   defaultSlippage,
   useLifiSettingsStore
 } from '../hooks/useLifiSettingsStore'
-import { Loader } from '../../common/atoms/Loader'
-import { useCallback, useEffect, useMemo } from 'react'
-import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
-import { shallow } from 'zustand/shallow'
-import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
-import { isTokenNativeUSDC } from '../../../util/TokenUtils'
-import { Address } from 'viem'
+import { RouteType, useRouteStore } from '../hooks/useRouteStore'
 import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
+import { BadgeType, Route } from './Route'
 
 export function LifiRoutes({
   cheapestTag,

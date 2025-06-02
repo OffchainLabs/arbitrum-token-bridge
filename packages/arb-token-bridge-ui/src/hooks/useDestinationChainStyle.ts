@@ -1,5 +1,5 @@
-import { getOrbitChains } from '../util/orbitChainsList'
 import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
+import { getOrbitChains } from '../util/orbitChainsList'
 import { useNetworks } from './useNetworks'
 
 type DestinationChainStyle =

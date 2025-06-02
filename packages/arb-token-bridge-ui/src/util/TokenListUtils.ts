@@ -1,12 +1,14 @@
-import axios from 'axios'
 import { schema, TokenList } from '@uniswap/token-lists'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
+import axios from 'axios'
 import { ImageProps } from 'next/image'
-import UniswapLogo from '@/images/lists/uniswap.png'
+
+import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
 import CMCLogo from '@/images/lists/cmc.png'
 import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
-import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
+import UniswapLogo from '@/images/lists/uniswap.png'
+
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from '../types/ChainId'
 import orbitChainsData from './orbitChainsData.json'

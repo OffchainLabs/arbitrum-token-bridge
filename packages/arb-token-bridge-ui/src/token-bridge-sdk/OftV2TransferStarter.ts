@@ -1,31 +1,32 @@
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   Config,
   estimateGas,
   simulateContract,
   writeContract
 } from '@wagmi/core'
-import { Address, encodeFunctionData } from 'viem'
 import { BigNumber, constants } from 'ethers'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Address, encodeFunctionData } from 'viem'
+
+import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
+import { isNetwork } from '../util/networks'
+import { fetchErc20Allowance } from '../util/TokenUtils'
 import {
+  ApproveTokenProps,
   BridgeTransferStarter,
+  BridgeTransferStarterProps,
+  RequiresTokenApprovalProps,
   TransferEstimateGasProps,
   TransferProps,
-  TransferType,
-  ApproveTokenProps,
-  RequiresTokenApprovalProps,
-  BridgeTransferStarterProps
+  TransferType
 } from './BridgeTransferStarter'
-import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import {
-  getOftV2TransferConfig,
   buildSendParams,
-  getOftV2Quote
+  getOftV2Quote,
+  getOftV2TransferConfig
 } from './oftUtils'
 import { oftV2Abi } from './oftV2Abi'
-import { isNetwork } from '../util/networks'
-import { isDepositMode as isDepositModeUtil } from '../util/isDepositMode'
+import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 
 async function prepareTransferConfig({
   from,

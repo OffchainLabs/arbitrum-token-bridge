@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { isTxClaimable, isTxPending } from './helpers'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
+import { isTxClaimable, isTxPending } from './helpers'
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 export function useTransactionReminderInfo() {

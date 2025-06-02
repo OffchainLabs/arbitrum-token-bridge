@@ -1,33 +1,33 @@
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useCallback } from 'react'
 import { useAccount } from 'wagmi'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
-import { useClaimCctp } from '../../state/cctpState'
+import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
+import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import {
   DepositStatus,
   MergedTransaction,
   TeleporterMergedTransaction
 } from '../../state/app/state'
+import { isDepositReadyToRedeem } from '../../state/app/utils'
+import { useClaimCctp } from '../../state/cctpState'
+import { isTeleportTx } from '../../types/Transactions'
+import { addressesEqual } from '../../util/AddressUtils'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getNetworkName } from '../../util/networks'
+import { formatAmount } from '../../util/NumberUtils'
+import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { errorToast } from '../common/atoms/Toast'
 import { Button } from '../common/Button'
-import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { isDepositReadyToRedeem } from '../../state/app/utils'
-import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
-import { TransferCountdown } from '../common/TransferCountdown'
-import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
-import { isTeleportTx } from '../../types/Transactions'
-import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { formatAmount } from '../../util/NumberUtils'
-import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { Tooltip } from '../common/Tooltip'
-import { addressesEqual } from '../../util/AddressUtils'
+import { TransferCountdown } from '../common/TransferCountdown'
 import { getTransactionType, isLifiTransfer } from './helpers'
+import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 
 function ActionRowConnectButton() {
   return (

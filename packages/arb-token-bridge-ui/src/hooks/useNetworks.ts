@@ -1,27 +1,27 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { arbitrum, mainnet } from '@wagmi/core/chains'
 import { useCallback, useMemo } from 'react'
-import { mainnet, arbitrum } from '@wagmi/core/chains'
+import useSWRImmutable from 'swr/immutable'
 import { Chain } from 'wagmi/chains'
 
-import useSWRImmutable from 'swr/immutable'
-import { useArbQueryParams } from './useArbQueryParams'
-import { getCustomChainsFromLocalStorage } from '../util/networks'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+
 import { ChainId } from '../types/ChainId'
+import { getCustomChainsFromLocalStorage } from '../util/networks'
+import { getDestinationChainIds } from '../util/networks'
+import { getOrbitChains } from '../util/orbitChainsList'
+import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import {
-  sepolia,
   arbitrumNova,
   arbitrumSepolia,
+  base,
+  baseSepolia,
   localL1Network as local,
   localL2Network as arbitrumLocal,
   localL3Network as l3Local,
-  base,
-  baseSepolia
+  sepolia
 } from '../util/wagmi/wagmiAdditionalNetworks'
-
-import { getDestinationChainIds } from '../util/networks'
-import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { getOrbitChains } from '../util/orbitChainsList'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useArbQueryParams } from './useArbQueryParams'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined

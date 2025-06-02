@@ -1,33 +1,34 @@
 import {
-  ButtonHTMLAttributes,
-  PropsWithChildren,
-  useEffect,
-  useMemo,
-  useRef,
-  forwardRef
-} from 'react'
-import { twMerge } from 'tailwind-merge'
-import { Column, Table } from 'react-virtualized'
-import {
   ExclamationCircleIcon,
   PlusCircleIcon
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
+import {
+  ButtonHTMLAttributes,
+  forwardRef,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useRef
+} from 'react'
+import { Column, Table } from 'react-virtualized'
+import { twMerge } from 'tailwind-merge'
+
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import { isTokenDeposit } from '../../state/app/utils'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   ChainPair,
   UseTransactionHistoryResult
 } from '../../hooks/useTransactionHistory'
-import { Tooltip } from '../common/Tooltip'
+import { MergedTransaction } from '../../state/app/state'
+import { isTokenDeposit } from '../../state/app/utils'
 import { getNetworkName } from '../../util/networks'
+import { Tooltip } from '../common/Tooltip'
+import { EmptyTransactionHistory } from './EmptyTransactionHistory'
 import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
-import { EmptyTransactionHistory } from './EmptyTransactionHistory'
-import { MergedTransaction } from '../../state/app/state'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export const BatchTransferNativeTokenTooltip = ({
   children,

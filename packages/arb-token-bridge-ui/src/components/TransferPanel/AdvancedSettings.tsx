@@ -1,19 +1,18 @@
-import { useState } from 'react'
-import { twMerge } from 'tailwind-merge'
-import { useAccount } from 'wagmi'
-import { isAddress } from 'ethers/lib/utils'
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
-
-import { getExplorerUrl } from '../../util/networks'
-import { ExternalLink } from '../common/ExternalLink'
+import { isAddress } from 'ethers/lib/utils'
+import { useState } from 'react'
+import useSWRImmutable from 'swr/immutable'
+import { twMerge } from 'tailwind-merge'
+import { useAccount } from 'wagmi'
 
 import { useAccountType } from '../../hooks/useAccountType'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { addressIsSmartContract } from '../../util/AddressUtils'
+import { getExplorerUrl } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import useSWRImmutable from 'swr/immutable'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',

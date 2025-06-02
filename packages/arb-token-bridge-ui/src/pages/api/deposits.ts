@@ -1,11 +1,11 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+import { NextApiRequest, NextApiResponse } from 'next'
 
-import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
 import {
   getL1SubgraphClient,
   getSourceFromSubgraphClient
 } from '../../api-utils/ServerSubgraphUtils'
+import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {

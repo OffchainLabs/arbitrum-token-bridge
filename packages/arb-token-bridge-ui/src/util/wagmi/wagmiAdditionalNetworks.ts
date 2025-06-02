@@ -1,11 +1,11 @@
-import { sepolia as sepoliaDefault } from 'viem/chains'
 import { Chain } from '@rainbow-me/rainbowkit'
+import { sepolia as sepoliaDefault } from 'viem/chains'
 
 import { ether } from '../../constants'
-import { ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { NativeCurrencyBase } from '../../hooks/useNativeCurrency'
 import { ChainId } from '../../types/ChainId'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
-import { NativeCurrencyBase } from '../../hooks/useNativeCurrency'
+import { ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
   const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)

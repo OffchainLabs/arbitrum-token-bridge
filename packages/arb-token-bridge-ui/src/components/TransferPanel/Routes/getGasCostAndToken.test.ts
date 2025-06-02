@@ -1,9 +1,10 @@
-import { describe, expect, test } from 'vitest'
 import { constants } from 'ethers'
-import { getGasCostAndToken } from './getGasCostAndToken'
-import { NativeCurrency } from '../../../hooks/useNativeCurrency'
-import { GasEstimationStatus } from '../../../hooks/TransferPanel/useGasSummary'
+import { describe, expect, test } from 'vitest'
+
 import { TokenType } from '../../../hooks/arbTokenBridge.types'
+import { GasEstimationStatus } from '../../../hooks/TransferPanel/useGasSummary'
+import { NativeCurrency } from '../../../hooks/useNativeCurrency'
+import { getGasCostAndToken } from './getGasCostAndToken'
 
 describe('getGasCostAndToken', () => {
   const mockNativeCurrency: NativeCurrency & { address: string } = {

@@ -1,10 +1,10 @@
+import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { DisabledFeatures } from '../useArbQueryParams'
+import { useDisabledFeatures } from '../useDisabledFeatures'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useSelectedToken } from '../useSelectedToken'
-import { useIsOftV2Transfer } from '../../components/TransferPanel/hooks/useIsOftV2Transfer'
-import { useDisabledFeatures } from '../useDisabledFeatures'
-import { DisabledFeatures } from '../useArbQueryParams'
 
 export const useIsBatchTransferSupported = () => {
   const [networks] = useNetworks()

@@ -1,7 +1,9 @@
 import { Erc20L1L3Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { BigNumber, constants } from 'ethers'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber, constants } from 'ethers'
+
+import { fetchErc20Allowance } from '../util/TokenUtils'
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -11,9 +13,8 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner, percentIncrease } from './utils'
 import { getL2ConfigForTeleport } from './teleport'
+import { getAddressFromSigner, percentIncrease } from './utils'
 
 export class Erc20TeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_teleport'

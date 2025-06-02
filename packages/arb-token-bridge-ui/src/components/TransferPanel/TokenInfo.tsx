@@ -2,20 +2,20 @@ import { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import { ExternalLink } from '../common/ExternalLink'
-import { getExplorerUrl } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { shortenAddress } from '../../util/CommonUtils'
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import {
-  ARB_ONE_NATIVE_USDC_TOKEN,
-  ARB_SEPOLIA_NATIVE_USDC_TOKEN
-} from './TokenSearch'
+import { getExplorerUrl } from '../../util/networks'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
+import { ExternalLink } from '../common/ExternalLink'
 import { SafeImage } from '../common/SafeImage'
+import {
+  ARB_ONE_NATIVE_USDC_TOKEN,
+  ARB_SEPOLIA_NATIVE_USDC_TOKEN
+} from './TokenSearch'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 
 export function TokenLogoFallback({ className }: { className?: string }) {
   return (

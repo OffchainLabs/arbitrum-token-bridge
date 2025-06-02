@@ -1,14 +1,15 @@
-import { vi, describe, beforeAll, it, expect } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { BigNumber, constants } from 'ethers'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { useNetworks } from '../useNetworks'
-import { useBalances } from '../useBalances'
-import { useSelectedTokenBalances } from '../TransferPanel/useSelectedTokenBalances'
-import { useSelectedToken } from '../useSelectedToken'
+
 import { ChainId } from '../../types/ChainId'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { useSelectedTokenBalances } from '../TransferPanel/useSelectedTokenBalances'
+import { useBalances } from '../useBalances'
+import { useNetworks } from '../useNetworks'
+import { useSelectedToken } from '../useSelectedToken'
 
 type BridgeToken = NonNullable<ReturnType<typeof useSelectedToken>[0]>
 const Erc20Type = 'ERC20' as BridgeToken['type']

@@ -1,10 +1,11 @@
+import { describe, expect, it } from 'vitest'
+
 import { fetchTokenWithdrawalsFromEventLogs } from '../fetchTokenWithdrawalsFromEventLogs'
 import {
+  getQueryCoveringClassicAndNitroWithResults,
   getQueryCoveringClassicOnlyWithoutResults,
-  getQueryCoveringClassicOnlyWithResults,
-  getQueryCoveringClassicAndNitroWithResults
+  getQueryCoveringClassicOnlyWithResults
 } from './fetchWithdrawalsTestHelpers'
-import { describe, it, expect } from 'vitest'
 
 describe('fetchTokenWithdrawalsFromEventLogs', () => {
   it('fetches no token withdrawals from event logs pre-nitro', async () => {

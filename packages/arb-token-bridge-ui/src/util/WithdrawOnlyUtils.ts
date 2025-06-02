@@ -2,15 +2,16 @@
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
 import { ethers } from 'ethers'
+
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import { isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
+import { isNetwork } from '../util/networks'
+import { CommonAddress } from './CommonAddressUtils'
 import {
   isTokenArbitrumOneUSDCe,
   isTokenArbitrumSepoliaUSDCe
 } from './TokenUtils'
-import { CommonAddress } from './CommonAddressUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string

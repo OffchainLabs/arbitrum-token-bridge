@@ -1,16 +1,15 @@
-import { twMerge } from 'tailwind-merge'
 import useLocalStorage from '@rehooks/local-storage'
+import { twMerge } from 'tailwind-merge'
 
+import { ORBIT_QUICKSTART_LINK } from '../../constants'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { statsLocalStorageKey } from '../MainContent/ArbitrumStats'
 import { AddCustomChain } from './AddCustomChain'
 import { Switch } from './atoms/Switch'
-import { SidePanel } from './SidePanel'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { ExternalLink } from './ExternalLink'
-import { ORBIT_QUICKSTART_LINK } from '../../constants'
+import { SidePanel } from './SidePanel'
 import { TestnetToggle } from './TestnetToggle'
-
-import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 const SectionTitle = ({
   className,

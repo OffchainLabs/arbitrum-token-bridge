@@ -1,7 +1,10 @@
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { Config, sendTransaction } from '@wagmi/core'
 import { BigNumber, constants } from 'ethers'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Address } from 'viem'
 
+import { TransactionRequest } from '../pages/api/crosschain-transfers/lifi'
+import { fetchErc20Allowance } from '../util/TokenUtils'
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -10,9 +13,6 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { fetchErc20Allowance } from '../util/TokenUtils'
-import { Address } from 'viem'
-import { TransactionRequest } from '../pages/api/crosschain-transfers/lifi'
 
 type Token = {
   address: string

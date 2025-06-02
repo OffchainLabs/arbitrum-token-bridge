@@ -1,14 +1,13 @@
 import { useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
-import { useNetworks } from '../../../hooks/useNetworks'
-import { Route, Token } from './Route'
-import { isNetwork } from '../../../util/networks'
-
-import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
-import { useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
+import { isNetwork } from '../../../util/networks'
+import { useRouteStore } from '../hooks/useRouteStore'
+import { Route, Token } from './Route'
 
 export function CctpRoute() {
   const [{ amount }] = useArbQueryParams()

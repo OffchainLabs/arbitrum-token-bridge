@@ -1,11 +1,12 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { ChainId } from '../../types/ChainId'
 import { CommonAddress } from '../../util/CommonAddressUtils'
+import { getL2ERC20Address } from '../../util/TokenUtils'
 import {
   getChildUsdcAddress,
   getParentUsdcAddress
 } from '../CCTP/useUpdateUsdcBalances'
-import { getL2ERC20Address } from '../../util/TokenUtils'
-import { ChainId } from '../../types/ChainId'
-import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 vi.mock('../../util/TokenUtils', () => ({
   getL2ERC20Address: vi.fn()

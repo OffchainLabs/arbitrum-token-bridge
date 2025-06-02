@@ -1,36 +1,36 @@
-import { mainnet, arbitrum } from 'wagmi/chains'
-import { createConfig, http } from 'wagmi'
 import {
   Chain,
   connectorsForWallets,
   getDefaultConfig,
   getDefaultWallets
 } from '@rainbow-me/rainbowkit'
+import { _chains } from '@rainbow-me/rainbowkit/dist/config/getDefaultConfig'
 import {
-  trustWallet,
   okxWallet,
-  rabbyWallet
+  rabbyWallet,
+  trustWallet
 } from '@rainbow-me/rainbowkit/wallets'
+import { createConfig, http } from 'wagmi'
+import { arbitrum, mainnet } from 'wagmi/chains'
 
+import { ChainId } from '../../types/ChainId'
 import {
-  sepolia,
+  isDevelopmentEnvironment,
+  isE2eTestingEnvironment
+} from '../CommonUtils'
+import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
+import { getOrbitChains } from '../orbitChainsList'
+import { getWagmiChain } from './getWagmiChain'
+import {
   arbitrumNova,
   arbitrumSepolia,
+  base,
+  baseSepolia,
   localL1Network as local,
   localL2Network as arbitrumLocal,
   localL3Network as l3Local,
-  base,
-  baseSepolia
+  sepolia
 } from './wagmiAdditionalNetworks'
-import {
-  isE2eTestingEnvironment,
-  isDevelopmentEnvironment
-} from '../CommonUtils'
-import { getCustomChainsFromLocalStorage, rpcURLs } from '../networks'
-import { ChainId } from '../../types/ChainId'
-import { getOrbitChains } from '../orbitChainsList'
-import { getWagmiChain } from './getWagmiChain'
-import { _chains } from '@rainbow-me/rainbowkit/dist/config/getDefaultConfig'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainId)

@@ -3,16 +3,16 @@ import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__fact
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
+import { AssetType, DepositGasEstimates } from '../hooks/arbTokenBridge.types'
+import { MergedTransaction } from '../state/app/state'
+import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
+import { addressesEqual, addressIsSmartContract } from './AddressUtils'
+import { captureSentryErrorWithExtraData } from './SentryUtils'
 import {
   fetchErc20Allowance,
   fetchErc20ParentChainGatewayAddress,
   getL2ERC20Address
 } from './TokenUtils'
-import { AssetType, DepositGasEstimates } from '../hooks/arbTokenBridge.types'
-import { addressesEqual, addressIsSmartContract } from './AddressUtils'
-import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
-import { captureSentryErrorWithExtraData } from './SentryUtils'
-import { MergedTransaction } from '../state/app/state'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,

@@ -1,14 +1,14 @@
 import { Provider } from '@ethersproject/providers'
 import { utils } from 'ethers'
 
+import { defaultErc20Decimals } from '../../defaults'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+import { Transaction } from '../../types/Transactions'
 import {
   fetchDepositsFromSubgraph,
   FetchDepositsFromSubgraphResult
 } from './fetchDepositsFromSubgraph'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../types/Transactions'
-import { defaultErc20Decimals } from '../../defaults'
-import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   fetchEthDepositsToCustomDestinationFromSubgraph,
   FetchEthDepositsToCustomDestinationFromSubgraphResult

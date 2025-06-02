@@ -1,7 +1,8 @@
+import { expect, it } from 'vitest'
+
 import { ChainId } from '../../types/ChainId'
-import { ProductionChainId } from './getRpcUrl'
 import { getAlchemyRpcUrl } from './alchemy'
-import { it, expect } from 'vitest'
+import { ProductionChainId } from './getRpcUrl'
 
 it('successfully returns the correct url for the provided chain and key', () => {
   const key = '123456'

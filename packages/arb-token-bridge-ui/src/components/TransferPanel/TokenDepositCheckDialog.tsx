@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
-import { Dialog, UseDialogProps } from '../common/Dialog'
 import { DOCS_DOMAIN } from '../../constants'
-import { NoteBox } from '../common/NoteBox'
-import { ExternalLink } from '../common/ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { getNetworkName } from '../../util/networks'
+import { Dialog, UseDialogProps } from '../common/Dialog'
+import { ExternalLink } from '../common/ExternalLink'
+import { NoteBox } from '../common/NoteBox'
 
 export type TokenDepositCheckDialogType =
   | 'deposit_token_user_added_token'

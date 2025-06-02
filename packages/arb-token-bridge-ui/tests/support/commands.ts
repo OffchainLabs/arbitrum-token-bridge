@@ -8,16 +8,18 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+
 import { SelectorMatcherOptions } from '@testing-library/cypress'
-import {
-  NetworkType,
-  NetworkName,
-  startWebApp,
-  getL1NetworkConfig,
-  getL2NetworkConfig
-} from './common'
-import { shortenAddress } from '../../src/util/CommonUtils'
 import { formatAmount } from 'packages/arb-token-bridge-ui/src/util/NumberUtils'
+
+import { shortenAddress } from '../../src/util/CommonUtils'
+import {
+  getL1NetworkConfig,
+  getL2NetworkConfig,
+  NetworkName,
+  NetworkType,
+  startWebApp
+} from './common'
 
 /**
  * Visit the bridge UI with different query params, accepts the terms and conditions, and optionally connect to the bridge with MetaMask.

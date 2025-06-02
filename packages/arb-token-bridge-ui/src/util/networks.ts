@@ -1,24 +1,24 @@
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ArbitrumNetwork,
-  getChildrenForNetwork,
   getArbitrumNetwork,
   getArbitrumNetworks,
+  getChildrenForNetwork,
   registerCustomArbitrumNetwork
 } from '@arbitrum/sdk'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
-import { loadEnvironmentVariableWithFallback } from './index'
-import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { Erc20Data, fetchErc20Data } from './TokenUtils'
-import { orbitChains } from './orbitChainsList'
 import { ChainId } from '../types/ChainId'
-import { getRpcUrl } from './rpc/getRpcUrl'
+import { getBridgeUiConfigForChain } from './bridgeUiConfig'
+import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
+import { loadEnvironmentVariableWithFallback } from './index'
 import {
   defaultL2Network,
-  defaultL3Network,
-  defaultL3CustomGasTokenNetwork
+  defaultL3CustomGasTokenNetwork,
+  defaultL3Network
 } from './networksNitroTestnode'
-import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
+import { orbitChains } from './orbitChainsList'
+import { getRpcUrl } from './rpc/getRpcUrl'
+import { Erc20Data, fetchErc20Data } from './TokenUtils'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
