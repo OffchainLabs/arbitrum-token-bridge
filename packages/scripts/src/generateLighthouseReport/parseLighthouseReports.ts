@@ -259,9 +259,8 @@ export function parseSnapshotResults(
           acc.best_practices +
           (report.lhr.categories["best-practices"].score || 0),
         accessibility:
-          acc.accessibility +
-          (report.lhr.categories["accessibility"].score || 0),
-        seo: acc.seo + (report.lhr.categories["seo"].score || 0),
+          acc.accessibility + (report.lhr.categories.accessibility.score || 0),
+        seo: acc.seo + (report.lhr.categories.seo.score || 0),
       };
     },
     {
@@ -295,11 +294,11 @@ export function parseLighthouseReports(
 ): [NavigationResult, TimespanResult, SnapshotResult] {
   const navigationReports = reports.map((report) => report.steps[0]);
   const timespanReports = reports.map((report) => report.steps[1]);
-  const SnapshotReports = reports.map((report) => report.steps[2]);
+  const snapshotReports = reports.map((report) => report.steps[2]);
 
   return [
     parseNavigationResults(navigationReports),
     parseTimespanResults(timespanReports),
-    parseNavigationResults(SnapshotReports),
+    parseSnapshotResults(snapshotReports),
   ] as const;
 }
