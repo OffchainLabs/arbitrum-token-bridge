@@ -78,3 +78,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           DISPLAY: :0.0
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports-${{ github.sha }}-${{ matrix.test.name }}-${{ matrix.test.type }}
+          path: |
+            ./output.json
+          if-no-files-found: 'ignore'
+        continue-on-error: true

@@ -5,6 +5,7 @@ import { join, resolve } from "path";
 import { config } from "../../../../package.json";
 import { postComment } from "./postComment";
 import { compareLighthouseReports } from "./compareLighthouseReports";
+import { writeFile, writeFileSync } from "fs";
 
 const workspaceRoot = resolve(process.cwd(), "../..");
 // "node_modules/.cache/synpress/chrome/linux-128.0.6613.137/chrome-linux64/chrome"
@@ -39,6 +40,14 @@ export async function generateLighthouseReport() {
     core.info(JSON.stringify(diff));
     core.endGroup();
 
+    writeFileSync(
+      join("output.json"),
+      JSON.stringify([
+        parsedNavigationReport,
+        parsedTimespanReport,
+        parsedSnapshotReport,
+      ])
+    );
     await postComment({
       parsedNavigationReport,
       parsedTimespanReport,
