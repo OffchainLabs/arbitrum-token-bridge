@@ -43,7 +43,7 @@
     "react-toastify": "^9.1.1",
     "react-use": "^17.6.0",
     "react-virtualized": "^9.22.6",
-    "sharp": "^0.34.1",
+    "sharp": "0.34.2",
     "swr": "^2.3.3",
     "tailwind-merge": "^3.2.0",
     "use-query-params": "^2.2.1",
