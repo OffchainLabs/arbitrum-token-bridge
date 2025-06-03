@@ -71,6 +71,7 @@ import {
 import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
+import { withTimeout } from '../util/withTimeout'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -382,30 +383,34 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 // teleporter does not support withdrawals
                 if (type === 'withdrawals') return []
 
-                return await fetchTeleports({
-                  sender: includeSentTxs ? address : undefined,
-                  receiver: includeReceivedTxs ? address : undefined,
-                  parentChainProvider: getProviderForChainId(
-                    chainPair.parentChainId
-                  ),
-                  childChainProvider: getProviderForChainId(
-                    chainPair.childChainId
-                  ),
-                  pageNumber: 0,
-                  pageSize: 1000
-                })
+                return await withTimeout(
+                  fetchTeleports({
+                    sender: includeSentTxs ? address : undefined,
+                    receiver: includeReceivedTxs ? address : undefined,
+                    parentChainProvider: getProviderForChainId(
+                      chainPair.parentChainId
+                    ),
+                    childChainProvider: getProviderForChainId(
+                      chainPair.childChainId
+                    ),
+                    pageNumber: 0,
+                    pageSize: 1000
+                  })
+                )
               }
 
               // else, fetch deposits or withdrawals
-              return await fetcherFn({
-                sender: includeSentTxs ? address : undefined,
-                receiver: includeReceivedTxs ? address : undefined,
-                l1Provider: getProviderForChainId(chainPair.parentChainId),
-                l2Provider: getProviderForChainId(chainPair.childChainId),
-                pageNumber: 0,
-                pageSize: 1000,
-                forceFetchReceived
-              })
+              return await withTimeout<Transaction[] | Withdrawal[]>(
+                fetcherFn({
+                  sender: includeSentTxs ? address : undefined,
+                  receiver: includeReceivedTxs ? address : undefined,
+                  l1Provider: getProviderForChainId(chainPair.parentChainId),
+                  l2Provider: getProviderForChainId(chainPair.childChainId),
+                  pageNumber: 0,
+                  pageSize: 1000,
+                  forceFetchReceived
+                })
+              )
             } catch {
               addFailedChainPair(prevFailedChainPairs => {
                 if (!prevFailedChainPairs) {
