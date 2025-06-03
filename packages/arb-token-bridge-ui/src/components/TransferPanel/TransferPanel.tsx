@@ -516,7 +516,7 @@ export function TransferPanel() {
         try {
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
+              currentChainId: signer.provider.network.chainId,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
@@ -555,7 +555,7 @@ export function TransferPanel() {
         }
         if (
           !(await ensureCorrectNetwork({
-            currentChainId: latestChain.current?.id,
+            currentChainId: signer.provider.network.chainId,
             sourceChainId: latestNetworks.current.sourceChain.id,
             switchChainAsync
           }))
@@ -726,7 +726,7 @@ export function TransferPanel() {
         try {
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
+              currentChainId: signer.provider.network.chainId,,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
@@ -762,7 +762,7 @@ export function TransferPanel() {
 
       if (
         !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
+          currentChainId: signer.provider.network.chainId,,
           sourceChainId: latestNetworks.current.sourceChain.id,
           switchChainAsync
         }))
@@ -895,7 +895,7 @@ export function TransferPanel() {
         try {
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
+              currentChainId: signer.provider.network.chainId,,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
@@ -931,7 +931,7 @@ export function TransferPanel() {
 
       if (
         !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
+          currentChainId: signer.provider.network.chainId,,
           sourceChainId: latestNetworks.current.sourceChain.id,
           switchChainAsync
         }))
@@ -1120,7 +1120,7 @@ export function TransferPanel() {
 
         if (
           !(await ensureCorrectNetwork({
-            currentChainId: latestChain.current?.id,
+            currentChainId: signer.provider.network.chainId,,
             sourceChainId: latestNetworks.current.sourceChain.id,
             switchChainAsync
           }))
@@ -1205,7 +1205,7 @@ export function TransferPanel() {
           }
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
+              currentChainId: signer.provider.network.chainId,,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
@@ -1266,7 +1266,7 @@ export function TransferPanel() {
 
       if (
         !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
+          currentChainId: signer.provider.network.chainId,,
           sourceChainId: latestNetworks.current.sourceChain.id,
           switchChainAsync
         }))
@@ -1438,6 +1438,10 @@ export function TransferPanel() {
 
     trackTransferButtonClick()
 
+    if (!signer) {
+      throw new Error(signerUndefinedError)
+    }
+
     try {
       setTransferring(true)
       if (isConnectedToTheWrongChain) {
@@ -1457,7 +1461,7 @@ export function TransferPanel() {
         })
         if (
           !(await ensureCorrectNetwork({
-            currentChainId: latestChain.current?.id,
+            currentChainId: signer.provider.network.chainId,
             sourceChainId,
             switchChainAsync
           }))
