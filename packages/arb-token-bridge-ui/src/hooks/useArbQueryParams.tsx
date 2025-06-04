@@ -41,7 +41,7 @@ export enum TabParamEnum {
 export enum DisabledFeatures {
   BATCH_TRANSFERS = 'batch-transfers',
   TX_HISTORY = 'tx-history',
-  SWITCHING_NETWORK_PAIR = 'switching-network-pair'
+  NETWORK_SELECTION = 'network-selection'
 }
 
 export enum AmountQueryParamEnum {

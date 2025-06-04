@@ -23,8 +23,8 @@ import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
 import {
-  DisabledFeatures,
-  useArbQueryParams
+  useArbQueryParams,
+  DisabledFeatures
 } from '../../hooks/useArbQueryParams'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -121,8 +121,8 @@ export function NetworkButton({
   const isSource = type === 'source'
   const chains = useChainIdsForNetworkSelection({ isSource })
   const { isFeatureDisabled } = useDisabledFeatures()
-  const allowSwitchingNetworkPair = !isFeatureDisabled(
-    DisabledFeatures.SWITCHING_NETWORK_PAIR
+  const isNetworkSelectionDisabled = isFeatureDisabled(
+    DisabledFeatures.NETWORK_SELECTION
   )
 
   const selectedChainId = isSource
@@ -132,10 +132,10 @@ export function NetworkButton({
   const hasOneOrLessChain = chains.length <= 1
 
   const disabled =
+    isNetworkSelectionDisabled ||
     hasOneOrLessChain ||
     (isSmartContractWallet && type === 'source') ||
-    isLoading ||
-    !allowSwitchingNetworkPair
+    isLoading
 
   const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
 
