@@ -116,6 +116,12 @@ const networkConnectionWarningToast = () =>
     { autoClose: false }
   )
 
+const wrongChainDetectedWarningToast = (networkName: string) => {
+  warningToast(
+    <>Wrong chain detected. Please connect to {networkName} in your wallet.</>
+  )
+}
+
 // Returns false if user rejected the network switch and network is still incorrect
 async function ensureCorrectNetwork({
   switchChainAsync,
@@ -513,12 +519,14 @@ export function TransferPanel() {
         try {
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: signer.provider.network.chainId,
+              currentChainId: latestChain.current?.id,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
           ) {
-            return networkConnectionWarningToast()
+            return wrongChainDetectedWarningToast(
+              getNetworkName(latestNetworks.current.sourceChain.id)
+            )
           }
           const tx = await cctpTransferStarter.approveToken({
             signer,
@@ -552,12 +560,14 @@ export function TransferPanel() {
         }
         if (
           !(await ensureCorrectNetwork({
-            currentChainId: signer.provider.network.chainId,
+            currentChainId: latestChain.current?.id,
             sourceChainId: latestNetworks.current.sourceChain.id,
             switchChainAsync
           }))
         ) {
-          return networkConnectionWarningToast()
+          return wrongChainDetectedWarningToast(
+            getNetworkName(latestNetworks.current.sourceChain.id)
+          )
         }
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
@@ -671,17 +681,27 @@ export function TransferPanel() {
 
       const { sourceChainProvider, destinationChainProvider } = networks
 
-      const { fromToken, toToken } = getFromAndToTokenAddresses({
-        isDepositMode,
-        selectedToken,
-        sourceChainId: networks.sourceChain.id
-      })
-
       const { transactionRequest } = await getStepTransaction(context.step)
       if (!isValidTransactionRequest(transactionRequest)) {
         return
       }
 
+      if (
+        !(await ensureCorrectNetwork({
+          currentChainId: latestChain.current?.id,
+          sourceChainId: latestNetworks.current.sourceChain.id,
+          switchChainAsync
+        }))
+      ) {
+        return wrongChainDetectedWarningToast(
+          getNetworkName(latestNetworks.current.sourceChain.id)
+        )
+      }
+      const { fromToken, toToken } = getFromAndToTokenAddresses({
+        isDepositMode,
+        selectedToken,
+        sourceChainId: networks.sourceChain.id
+      })
       const lifiTransferStarter = new LifiTransferStarter({
         destinationChainProvider,
         sourceChainProvider,
@@ -710,12 +730,14 @@ export function TransferPanel() {
         try {
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: signer.provider.network.chainId,
+              currentChainId: latestChain.current?.id,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
           ) {
-            return networkConnectionWarningToast()
+            return wrongChainDetectedWarningToast(
+              getNetworkName(latestNetworks.current.sourceChain.id)
+            )
           }
           const tx = await lifiTransferStarter.approveToken({
             signer,
@@ -746,13 +768,16 @@ export function TransferPanel() {
 
       if (
         !(await ensureCorrectNetwork({
-          currentChainId: signer.provider.network.chainId,
+          currentChainId: latestChain.current?.id,
           sourceChainId: latestNetworks.current.sourceChain.id,
           switchChainAsync
         }))
       ) {
-        return networkConnectionWarningToast()
+        return wrongChainDetectedWarningToast(
+          getNetworkName(latestNetworks.current.sourceChain.id)
+        )
       }
+
       const transfer = await lifiTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
@@ -854,6 +879,17 @@ export function TransferPanel() {
         return
       }
 
+      if (
+        !(await ensureCorrectNetwork({
+          currentChainId: latestChain.current?.id,
+          sourceChainId: latestNetworks.current.sourceChain.id,
+          switchChainAsync
+        }))
+      ) {
+        return wrongChainDetectedWarningToast(
+          getNetworkName(latestNetworks.current.sourceChain.id)
+        )
+      }
       const oftTransferStarter = new OftV2TransferStarter({
         sourceChainProvider,
         sourceChainErc20Address: isDepositMode
@@ -879,12 +915,14 @@ export function TransferPanel() {
         try {
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: signer.provider.network.chainId,
+              currentChainId: latestChain.current?.id,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
           ) {
-            return networkConnectionWarningToast()
+            return wrongChainDetectedWarningToast(
+              getNetworkName(latestNetworks.current.sourceChain.id)
+            )
           }
           const tx = await oftTransferStarter.approveToken({
             signer,
@@ -915,12 +953,14 @@ export function TransferPanel() {
 
       if (
         !(await ensureCorrectNetwork({
-          currentChainId: signer.provider.network.chainId,
+          currentChainId: latestChain.current?.id,
           sourceChainId: latestNetworks.current.sourceChain.id,
           switchChainAsync
         }))
       ) {
-        return networkConnectionWarningToast()
+        return wrongChainDetectedWarningToast(
+          getNetworkName(latestNetworks.current.sourceChain.id)
+        )
       }
       const transfer = await oftTransferStarter.transfer({
         amount: amountBigNumber,
@@ -1012,8 +1052,6 @@ export function TransferPanel() {
       return
     }
 
-    const childChainName = getNetworkName(childChain.id)
-
     setTransferring(true)
 
     try {
@@ -1029,6 +1067,19 @@ export function TransferPanel() {
 
       const destinationChainId = latestNetworks.current.destinationChain.id
 
+      if (
+        !(await ensureCorrectNetwork({
+          currentChainId: latestChain.current?.id,
+          sourceChainId: latestNetworks.current.sourceChain.id,
+          switchChainAsync
+        }))
+      ) {
+        return wrongChainDetectedWarningToast(
+          getNetworkName(latestNetworks.current.sourceChain.id)
+        )
+      }
+      const childChainName = getNetworkName(childChain.id)
+
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
         : selectedToken?.l2Address
@@ -1036,7 +1087,6 @@ export function TransferPanel() {
       const destinationChainErc20Address = isDepositMode
         ? selectedToken?.l2Address
         : selectedToken?.address
-
       const bridgeTransferStarter = BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
@@ -1104,12 +1154,14 @@ export function TransferPanel() {
 
         if (
           !(await ensureCorrectNetwork({
-            currentChainId: signer.provider.network.chainId,
+            currentChainId: latestChain.current?.id,
             sourceChainId: latestNetworks.current.sourceChain.id,
             switchChainAsync
           }))
         ) {
-          return networkConnectionWarningToast()
+          return wrongChainDetectedWarningToast(
+            getNetworkName(latestNetworks.current.sourceChain.id)
+          )
         }
         const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
@@ -1189,12 +1241,14 @@ export function TransferPanel() {
           }
           if (
             !(await ensureCorrectNetwork({
-              currentChainId: signer.provider.network.chainId,
+              currentChainId: latestChain.current?.id,
               sourceChainId: latestNetworks.current.sourceChain.id,
               switchChainAsync
             }))
           ) {
-            return networkConnectionWarningToast()
+            return wrongChainDetectedWarningToast(
+              getNetworkName(latestNetworks.current.sourceChain.id)
+            )
           }
           const approvalTx = await bridgeTransferStarter.approveToken({
             signer,
@@ -1247,15 +1301,16 @@ export function TransferPanel() {
       }
 
       // finally, call the transfer function
-
       if (
         !(await ensureCorrectNetwork({
-          currentChainId: signer.provider.network.chainId,
+          currentChainId: latestChain.current?.id,
           sourceChainId: latestNetworks.current.sourceChain.id,
           switchChainAsync
         }))
       ) {
-        return networkConnectionWarningToast()
+        return wrongChainDetectedWarningToast(
+          getNetworkName(latestNetworks.current.sourceChain.id)
+        )
       }
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
@@ -1445,12 +1500,12 @@ export function TransferPanel() {
         })
         if (
           !(await ensureCorrectNetwork({
-            currentChainId: signer.provider.network.chainId,
+            currentChainId: latestChain.current?.id,
             sourceChainId,
             switchChainAsync
           }))
         ) {
-          return networkConnectionWarningToast()
+          return wrongChainDetectedWarningToast(getNetworkName(sourceChainId))
         }
       }
     } catch (error) {
