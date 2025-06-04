@@ -6,7 +6,10 @@ import dayjs from 'dayjs'
 
 import { getChains, getChildChainIds, isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
-import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
+import {
+  fetchWithdrawals,
+  FetchWithdrawalsParams
+} from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
   AssetType,
@@ -71,6 +74,10 @@ import {
 import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
+
+const BATCH_FETCH_CHAINS = [
+  33139 // ApeChain
+]
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -142,6 +149,13 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
 }
 
 function getMultiChainFetchList(): ChainPair[] {
+  return [
+    {
+      parentChainId: ChainId.ArbitrumOne,
+      childChainId: 33139 as ChainId
+    }
+  ]
+
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
@@ -267,6 +281,27 @@ function dedupeTransactions(txs: Transfer[]) {
   )
 }
 
+async function fetchBatchedWithdrawals(
+  params: FetchWithdrawalsParams & {
+    batchSizeBlocks?: number
+  }
+) {
+  const latestBlockNumber = await params.l2Provider.getBlockNumber()
+  const _batchSizeBlocks = params.batchSizeBlocks ?? 5_000_000
+  const batchCount = Math.ceil(latestBlockNumber / _batchSizeBlocks)
+
+  const promises = Array.from({ length: batchCount }, (_, i) => {
+    const fromBlock = i * _batchSizeBlocks
+    const toBlock = (i + 1) * _batchSizeBlocks
+
+    return fetchWithdrawals({ ...params, fromBlock, toBlock })
+  })
+
+  const results = await Promise.all(promises)
+
+  return results.flat().sort(sortByTimestampDescending)
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
@@ -287,7 +322,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Ethereum,
     l2ChainId: ChainId.ArbitrumOne,
     pageNumber: 0,
-    pageSize: 1000,
+    pageSize: 0,
     type: 'all'
   })
 
@@ -296,7 +331,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Sepolia,
     l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
-    pageSize: 1000,
+    pageSize: 0,
     type: 'all'
   })
 
@@ -336,8 +371,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       if (!chain) {
         return []
       }
-
-      const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
       return Promise.all(
         getMultiChainFetchList()
@@ -395,6 +428,15 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                   pageSize: 1000
                 })
               }
+
+              const withdrawalFn = BATCH_FETCH_CHAINS.includes(
+                chainPair.childChainId
+              )
+                ? fetchBatchedWithdrawals
+                : fetchWithdrawals
+
+              const fetcherFn =
+                type === 'deposits' ? fetchDeposits : withdrawalFn
 
               // else, fetch deposits or withdrawals
               return await fetcherFn({
@@ -472,9 +514,11 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     ...withdrawals,
     ...(isTestnetMode
       ? combinedCctpTestnetTransfers
-      : combinedCctpMainnetTransfers),
-    ...oftTransfers
+      : combinedCctpMainnetTransfers)
+    // ...oftTransfers
   ].flat()
+
+  console.log({ failedChainPairs })
 
   return {
     data: transactions,
@@ -482,8 +526,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       isLoadingAccountType ||
       depositsLoading ||
       withdrawalsLoading ||
-      cctpLoading ||
-      oftLoading,
+      cctpLoading,
+    // oftLoading,
     error: depositsError ?? withdrawalsError,
     failedChainPairs: failedChainPairs || []
   }
