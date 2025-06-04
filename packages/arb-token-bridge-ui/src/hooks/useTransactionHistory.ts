@@ -511,8 +511,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     ...oftTransfers
   ].flat()
 
-  console.log({ failedChainPairs })
-
   return {
     data: transactions,
     loading:
