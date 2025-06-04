@@ -1146,6 +1146,54 @@
           "logoUrl": "/images/PlumeMainnet_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 2911,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x73C6af7029E714DFf1F1554F88b79B335011Da68",
+        "inbox": "0xD6c596b7ca17870DD50D322393deCE6C2085a116",
+        "outbox": "0x0389E24A4Bc96518169f83F50FCDdA442dD8eAFd",
+        "rollup": "0x8f98f9ae2f2836Ed3a628c23311Ad9976B9fBF1B",
+        "sequencerInbox": "0xaF5800ADF22301968613c37DA9C3C2a486eA915A"
+      },
+      "nativeToken": "0xcccCb68e1A848CBDB5b60a974E07aAE143ed40C3",
+      "explorerUrl": "https://hychain.calderaexplorer.xyz/",
+      "rpcUrl": "https://hychain.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Hychain",
+      "slug": "hychain",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x86b6E73AC34D3Cc8b02ebf8BfB33db3cbf0e6062",
+        "parentErc20Gateway": "0xa3Ce255824D5E0c75d38CC88ae8D0d6a03c108Cb",
+        "parentGatewayRouter": "0x9E795A6b44Ba1Ad02469C88ECA7348D60050051c",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x575686ACC6d5a8a0fF6f35a6822AC9Ea26cC973e",
+        "childErc20Gateway": "0x62636b3f3bfd31144A9A03686a70b417E13624b8",
+        "childGatewayRouter": "0x6478a4A93601a5D36F0cC357e64ee06d0c6bEFf6",
+        "childMultiCall": "0x83e8a1358d71031e03fE9b7Bd2Cc3E0EfcfbC171",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#D36DFF",
+        "network": {
+          "name": "Hychain",
+          "logo": "/images/Hychain_Logo.jpg",
+          "description": "Hychain is the L2 built to enable mass adoption of massive web3 games."
+        },
+        "nativeTokenData": {
+          "name": "TOPIA",
+          "symbol": "TOPIA",
+          "logoUrl": "/images/Hychain_NativeTokenLogo.jpg"
+        }
+      }
     }
   ],
   "testnet": [
@@ -2122,6 +2170,53 @@
           "name": "GNET",
           "symbol": "GNET",
           "logoUrl": "/images/GalacticaCassiopeia_Logo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 394,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x018bCF69363c30330e620dEec7e4710810bfB11e",
+        "inbox": "0x96F5fFb4b1028aF8F6FEf49ac259581e3B3087cD",
+        "outbox": "0x84A7610dd1517a53ed16CB70f7aDE64b22BEEFD0",
+        "rollup": "0x84B2f76ca27FEe7EA9E307a287c8Ba8158B5E784",
+        "sequencerInbox": "0xA70CD7B98FE30a0aF6Ac02b44624A36d0E209884"
+      },
+      "nativeToken": "0x18E1e0739dCb289f3310b77bE41edA6548c867B9",
+      "explorerUrl": "https://nexus-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://nexus-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Nexus Sepolia",
+      "slug": "nexus-sepolia",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x0e64771258474657eb9bb4E95710f7d4FdF7E268",
+        "parentErc20Gateway": "0x93D9e1A6D41a74c2fEf28B9F1C683d8b64f3d36C",
+        "parentGatewayRouter": "0xEF0fF2aF13Ed59544cB98626173AA025c8668d24",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x9Dd863814680ae6A63084Bd33F5892C5815A8090",
+        "childErc20Gateway": "0x14780282F8Fa09462278a6DEba9117065156b983",
+        "childGatewayRouter": "0xEBE82e1d9D130835F169b1c30d7A5E07EE1e6662",
+        "childMultiCall": "0x77B9Ee869159d5e78C9ADDfb4Bbaf5682E8285e7",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFFFFF",
+        "network": {
+          "name": "Nexus Sepolia",
+          "logo": "/images/Nexus_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Nexus Token",
+          "symbol": "NEX",
+          "logoUrl": "/images/Nexus_Logo.svg"
         }
       }
     }
