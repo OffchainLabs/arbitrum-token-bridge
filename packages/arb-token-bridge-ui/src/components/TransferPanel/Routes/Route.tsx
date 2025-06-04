@@ -112,6 +112,7 @@ type RouteAmountProps = {
   isBatchTransferSupported: boolean
   amount2?: string
   childNativeCurrency: Token | NativeCurrency
+  compactMode: boolean
 }
 
 const RouteAmount = ({
@@ -122,20 +123,25 @@ const RouteAmount = ({
   ethToUSD,
   isBatchTransferSupported,
   amount2,
-  childNativeCurrency
+  childNativeCurrency,
+  compactMode
 }: RouteAmountProps) => (
   <div className="flex flex-col md:min-w-36">
-    <span className="flex gap-1">
-      {destinationAddress ? (
-        <Tooltip content={destinationAddress}>
-          {shortenAddress(destinationAddress)}
-        </Tooltip>
-      ) : (
-        'You'
-      )}{' '}
-      will receive:
-    </span>
-    <div className="flex flex-col text-lg">
+    {!compactMode && (
+      <span className="flex gap-1">
+        {destinationAddress ? (
+          <Tooltip content={destinationAddress}>
+            {shortenAddress(destinationAddress)}
+          </Tooltip>
+        ) : (
+          'You'
+        )}{' '}
+        will receive:
+      </span>
+    )}
+    <div
+      className={twMerge('flex flex-col text-lg', compactMode && 'text-base')}
+    >
       <div className="flex flex-row items-center gap-1">
         <TokenLogo
           srcOverride={'logoURI' in token ? token.logoURI : null}
@@ -146,8 +152,13 @@ const RouteAmount = ({
         {formatAmount(Number(amountReceived))} {token.symbol}
         <div className="text-sm">
           {showUsdValueForReceivedToken && (
-            <div className="text-sm tabular-nums opacity-80">
-              {formatUSD(ethToUSD(Number(amountReceived)))}
+            <div
+              className={twMerge(
+                'tabular-nums opacity-80',
+                compactMode ? 'text-xs' : 'text-sm'
+              )}
+            >
+              ({formatUSD(ethToUSD(Number(amountReceived)))})
             </div>
           )}
         </div>
@@ -228,6 +239,7 @@ type RouteFeesProps = {
   ethToUSD: (amount: number) => number
   bridgeFee?: { fee: string | undefined; token: Token }
   showUSDValueForBridgeFee: boolean | undefined
+  compactMode: boolean
 }
 
 const RouteFees = ({
@@ -236,12 +248,18 @@ const RouteFees = ({
   gasEth,
   ethToUSD,
   bridgeFee,
-  showUSDValueForBridgeFee
+  showUSDValueForBridgeFee,
+  compactMode
 }: RouteFeesProps) => (
   <>
     <Tooltip content={'The gas fees paid to operate the network'}>
       <div className="flex items-center">
-        <Image src="/icons/gas.svg" width={15} height={15} alt="gas" />
+        <Image
+          src="/icons/gas.svg"
+          width={compactMode ? 12 : 15}
+          height={compactMode ? 12 : 15}
+          alt="gas"
+        />
         <span className="ml-1">
           {isLoadingGasEstimate ? (
             <Loader size="small" color="white" />
@@ -256,12 +274,19 @@ const RouteFees = ({
                 )
                 .join(' and ')}
               {gasEth && (
-                <div className="text-sm tabular-nums opacity-80">
+                <div
+                  className={twMerge(
+                    'tabular-nums opacity-80',
+                    compactMode ? 'text-xs' : 'text-sm'
+                  )}
+                >
+                  (
                   {formatUSD(
                     ethToUSD(
                       Number(utils.formatEther(BigNumber.from(gasEth.gasCost)))
                     )
                   )}
+                  )
                 </div>
               )}
             </div>
@@ -277,8 +302,8 @@ const RouteFees = ({
         <div className="flex items-center gap-1">
           <Image
             src="/icons/bridge.svg"
-            width={15}
-            height={15}
+            width={compactMode ? 12 : 15}
+            height={compactMode ? 12 : 15}
             alt="bridge fee"
           />
           <span>
@@ -288,12 +313,19 @@ const RouteFees = ({
             })}
           </span>
           {showUSDValueForBridgeFee && (
-            <div className="text-sm tabular-nums opacity-80">
+            <div
+              className={twMerge(
+                'tabular-nums opacity-80',
+                compactMode ? 'text-xs' : 'text-sm'
+              )}
+            >
+              (
               {formatUSD(
                 ethToUSD(
                   Number(utils.formatEther(BigNumber.from(bridgeFee.fee)))
                 )
               )}
+              )
             </div>
           )}
         </div>
@@ -305,10 +337,11 @@ const RouteFees = ({
 // Route Badge Component
 type RouteBadgeProps = {
   tag?: BadgeType | BadgeType[]
+  compactMode: boolean
 }
 
-const RouteBadge = ({ tag }: RouteBadgeProps) => {
-  if (!tag) return null
+const RouteBadge = ({ tag, compactMode }: RouteBadgeProps) => {
+  if (!tag || compactMode) return null
 
   return (
     <div className="invisible absolute right-2 top-2 flex gap-1 md:visible">
@@ -370,7 +403,9 @@ export const Route = React.memo(
         bridgeFee.token.address === constants.AddressZero) ||
       false
 
-    if (embedMode) {
+    const compactMode = true
+
+    if (embedMode && false) {
       return (
         <CompactRouteDisplay
           {...{
@@ -401,10 +436,13 @@ export const Route = React.memo(
     return (
       <button
         className={twMerge(
-          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-[#ffffff33] transition-colors md:flex-row',
+          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-inset ring-[#ffffff33] transition-colors md:flex-row',
           'focus-visible:!outline-none',
           'focus-within:bg-[#474747] hover:bg-[#474747]',
-          !isDisabled && selected && 'bg-[#474747] ring-[#5F7D5B]'
+          !isDisabled &&
+            selected &&
+            'bg-[#5F7D5B60] ring-[#5F7D5B] focus-within:bg-[#5F7D5B60] hover:bg-[#5F7D5B60]',
+          compactMode && 'md:flex-col'
         )}
         onClick={() => onSelectedRouteClick(type)}
         disabled={isDisabled}
@@ -419,14 +457,26 @@ export const Route = React.memo(
           isBatchTransferSupported={isBatchTransferSupported}
           amount2={amount2}
           childNativeCurrency={childNativeCurrency}
+          compactMode={compactMode}
         />
 
-        <div className="flex flex-row flex-wrap gap-3 md:flex-col md:justify-between">
-          <RouteDuration
-            durationMs={durationMs}
-            fastWithdrawalActive={fastWithdrawalActive}
-          />
-          <RouteBridge bridge={bridge} bridgeIconURI={bridgeIconURI} />
+        <div
+          className={twMerge(
+            'flex flex-row flex-wrap gap-3 md:flex-col md:justify-between',
+            compactMode && 'gap-3 md:flex-row md:justify-start'
+          )}
+        >
+          {!compactMode && (
+            <RouteDuration
+              durationMs={durationMs}
+              fastWithdrawalActive={fastWithdrawalActive}
+            />
+          )}
+
+          {!compactMode && (
+            <RouteBridge bridge={bridge} bridgeIconURI={bridgeIconURI} />
+          )}
+
           <RouteFees
             isLoadingGasEstimate={isLoadingGasEstimate}
             gasCost={gasCost}
@@ -434,10 +484,11 @@ export const Route = React.memo(
             ethToUSD={ethToUSD}
             bridgeFee={bridgeFee}
             showUSDValueForBridgeFee={showUSDValueForBridgeFee}
+            compactMode={compactMode}
           />
         </div>
 
-        <RouteBadge tag={tag} />
+        <RouteBadge tag={tag} compactMode={compactMode} />
       </button>
     )
   }
