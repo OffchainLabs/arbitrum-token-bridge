@@ -76,6 +76,7 @@ async function prepareTransferConfig({
       quoteFee,
       from as Address
     ],
+    chainId: sourceChainId,
     value: quoteFee.nativeFee
   })
 }
