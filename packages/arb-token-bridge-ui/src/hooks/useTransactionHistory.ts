@@ -149,13 +149,6 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
 }
 
 function getMultiChainFetchList(): ChainPair[] {
-  return [
-    {
-      parentChainId: ChainId.ArbitrumOne,
-      childChainId: 33139 as ChainId
-    }
-  ]
-
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
@@ -322,7 +315,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Ethereum,
     l2ChainId: ChainId.ArbitrumOne,
     pageNumber: 0,
-    pageSize: 0,
+    pageSize: 1000,
     type: 'all'
   })
 
@@ -331,7 +324,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Sepolia,
     l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
-    pageSize: 0,
+    pageSize: 1000,
     type: 'all'
   })
 
