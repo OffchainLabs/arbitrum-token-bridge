@@ -132,7 +132,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
         targetChainDomain,
         mintRecipient,
         usdcContractAddress
-      ]
+      ],
+      chainId: await this.getSourceChainId()
     })
   }
 
