@@ -135,10 +135,7 @@ async function ensureCorrectNetwork({
         chainId: sourceChainId
       })
     } catch (e) {
-      // If user reject the switch, stop the transfer
-      if (isUserRejectedError(e)) {
-        return false
-      }
+      return false
     }
   }
 
