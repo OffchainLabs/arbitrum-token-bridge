@@ -24,7 +24,6 @@ import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
-import { CompactRouteDisplay } from './CompactRouteDisplay'
 
 // Types
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
@@ -350,6 +349,38 @@ const RouteBadge = ({ tag, compactMode }: RouteBadgeProps) => {
   )
 }
 
+// Route Summary Badge Component
+type RouteSummaryBadgeProps = {
+  bridge: string
+  bridgeIconURI: string
+  durationMs: number
+}
+
+const RouteSummaryBadge = ({
+  bridge,
+  bridgeIconURI,
+  durationMs
+}: RouteSummaryBadgeProps) => (
+  <div className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1">
+    <Tooltip content={bridge}>
+      <SafeImage
+        src={bridgeIconURI}
+        width={12}
+        height={12}
+        alt="bridge"
+        className="h-4 w-4 rounded-full"
+      />
+    </Tooltip>
+
+    <div className="h-[16px] border border-white/40" />
+
+    <ClockIcon width={18} height={18} className="-ml-[1px]" />
+    <span className="text-xs">
+      {dayjs().add(durationMs, 'millisecond').fromNow(true)}
+    </span>
+  </div>
+)
+
 // Main Route Component
 export const Route = React.memo(
   ({
@@ -376,7 +407,8 @@ export const Route = React.memo(
       provider: childChainProvider
     })
     const [_token] = useSelectedToken()
-    const [{ amount2, destinationAddress, embedMode }] = useArbQueryParams()
+    const [{ amount2, destinationAddress, embedMode: compactMode }] =
+      useArbQueryParams()
     const isBatchTransferSupported = useIsBatchTransferSupported()
 
     const token = (overrideToken || _token || childNativeCurrency) as Token
@@ -402,37 +434,6 @@ export const Route = React.memo(
         bridgeFee &&
         bridgeFee.token.address === constants.AddressZero) ||
       false
-
-    const compactMode = true
-
-    if (embedMode && false) {
-      return (
-        <CompactRouteDisplay
-          {...{
-            type,
-            bridge,
-            bridgeIconURI,
-            durationMs,
-            amountReceived,
-            isLoadingGasEstimate,
-            gasCost,
-            selected,
-            bridgeFee,
-            tag,
-            onSelectedRouteClick,
-            token,
-            showUsdValueForReceivedToken,
-            ethToUSD,
-            gasEth,
-            showUSDValueForBridgeFee,
-            isBatchTransferSupported,
-            amount2,
-            childNativeCurrency
-          }}
-        />
-      )
-    }
-
     return (
       <button
         className={twMerge(
@@ -448,17 +449,27 @@ export const Route = React.memo(
         disabled={isDisabled}
         aria-label={`Route ${type}`}
       >
-        <RouteAmount
-          destinationAddress={destinationAddress}
-          amountReceived={amountReceived}
-          token={token}
-          showUsdValueForReceivedToken={showUsdValueForReceivedToken}
-          ethToUSD={ethToUSD}
-          isBatchTransferSupported={isBatchTransferSupported}
-          amount2={amount2}
-          childNativeCurrency={childNativeCurrency}
-          compactMode={compactMode}
-        />
+        <div className="flex flex-row flex-nowrap justify-between">
+          <RouteAmount
+            destinationAddress={destinationAddress}
+            amountReceived={amountReceived}
+            token={token}
+            showUsdValueForReceivedToken={showUsdValueForReceivedToken}
+            ethToUSD={ethToUSD}
+            isBatchTransferSupported={isBatchTransferSupported}
+            amount2={amount2}
+            childNativeCurrency={childNativeCurrency}
+            compactMode={compactMode}
+          />
+
+          {compactMode && (
+            <RouteSummaryBadge
+              bridge={bridge}
+              bridgeIconURI={bridgeIconURI}
+              durationMs={durationMs}
+            />
+          )}
+        </div>
 
         <div
           className={twMerge(
@@ -467,14 +478,13 @@ export const Route = React.memo(
           )}
         >
           {!compactMode && (
-            <RouteDuration
-              durationMs={durationMs}
-              fastWithdrawalActive={fastWithdrawalActive}
-            />
-          )}
-
-          {!compactMode && (
-            <RouteBridge bridge={bridge} bridgeIconURI={bridgeIconURI} />
+            <>
+              <RouteDuration
+                durationMs={durationMs}
+                fastWithdrawalActive={fastWithdrawalActive}
+              />
+              <RouteBridge bridge={bridge} bridgeIconURI={bridgeIconURI} />
+            </>
           )}
 
           <RouteFees
