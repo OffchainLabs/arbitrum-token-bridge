@@ -77,6 +77,8 @@ jobs:
 
       - name: Generate OG image
         run: yarn workspace arb-token-bridge-ui generateOpenGraphImages:orbit
+        env:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
       - name: Commit changes
         run: |
