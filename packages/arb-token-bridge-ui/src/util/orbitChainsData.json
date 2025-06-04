@@ -2124,6 +2124,53 @@
           "logoUrl": "/images/GalacticaCassiopeia_Logo.svg"
         }
       }
+    },
+    {
+      "chainId": 394,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x018bCF69363c30330e620dEec7e4710810bfB11e",
+        "inbox": "0x96F5fFb4b1028aF8F6FEf49ac259581e3B3087cD",
+        "outbox": "0x84A7610dd1517a53ed16CB70f7aDE64b22BEEFD0",
+        "rollup": "0x84B2f76ca27FEe7EA9E307a287c8Ba8158B5E784",
+        "sequencerInbox": "0xA70CD7B98FE30a0aF6Ac02b44624A36d0E209884"
+      },
+      "nativeToken": "0x18E1e0739dCb289f3310b77bE41edA6548c867B9",
+      "explorerUrl": "https://nexus-sepolia.explorer.alchemy.com/",
+      "rpcUrl": "https://nexus-sepolia.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Nexus",
+      "slug": "nexus",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x0e64771258474657eb9bb4E95710f7d4FdF7E268",
+        "parentErc20Gateway": "0x93D9e1A6D41a74c2fEf28B9F1C683d8b64f3d36C",
+        "parentGatewayRouter": "0xEF0fF2aF13Ed59544cB98626173AA025c8668d24",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x9Dd863814680ae6A63084Bd33F5892C5815A8090",
+        "childErc20Gateway": "0x14780282F8Fa09462278a6DEba9117065156b983",
+        "childGatewayRouter": "0xEBE82e1d9D130835F169b1c30d7A5E07EE1e6662",
+        "childMultiCall": "0x77B9Ee869159d5e78C9ADDfb4Bbaf5682E8285e7",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FFFFFF",
+        "network": {
+          "name": "Nexus",
+          "logo": "/images/Nexus_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Nexus Token",
+          "symbol": "NEX",
+          "logoUrl": "/images/Nexus_Logo.svg"
+        }
+      }
     }
   ]
 }
