@@ -2140,8 +2140,8 @@
       "rpcUrl": "https://nexus-sepolia.g.alchemy.com/public",
       "isCustom": true,
       "isTestnet": true,
-      "name": "Nexus",
-      "slug": "nexus",
+      "name": "Nexus Sepolia",
+      "slug": "nexus-sepolia",
       "parentChainId": 11155111,
       "tokenBridge": {
         "parentCustomGateway": "0x0e64771258474657eb9bb4E95710f7d4FdF7E268",
@@ -2162,7 +2162,7 @@
       "bridgeUiConfig": {
         "color": "#FFFFFF",
         "network": {
-          "name": "Nexus",
+          "name": "Nexus Sepolia",
           "logo": "/images/Nexus_Logo.svg"
         },
         "nativeTokenData": {
