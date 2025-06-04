@@ -11,7 +11,6 @@ import { hideBin } from 'yargs/helpers'
 // to ensure that the environment variables are loaded
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
-import { isNetwork } from './util/networks'
 import { ChainId } from './types/ChainId'
 import { getBridgeUiConfigForChain } from './util/bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './util/orbitChainsList'
@@ -357,9 +356,19 @@ const generateOptions = {
 
 type Args = Arguments<InferredOptionTypes<typeof generateOptions>>
 
+function isCoreChain(chainId: number) {
+  return [
+    ChainId.Ethereum,
+    ChainId.Sepolia,
+    ChainId.ArbitrumOne,
+    ChainId.ArbitrumNova,
+    ChainId.ArbitrumSepolia
+  ].includes(chainId)
+}
+
 async function generate(argv: Args) {
   for (const combination of configs) {
-    const { isCoreChain: isChildChainCoreChain } = isNetwork(combination[1])
+    const isChildChainCoreChain = isCoreChain(combination[1])
 
     if (argv.orbit && !isChildChainCoreChain) {
       await generateSvg(combination[1])
