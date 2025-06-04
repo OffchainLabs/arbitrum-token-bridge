@@ -9,9 +9,9 @@ export function ConnectWalletButton() {
   const isMobile = isMobileBrowser()
 
   const handleClick = () => {
-    if (embedMode && isMobile) {
+    if (embedMode && isMobile && window.top) {
       // Redirect to bridge.arbitrum.io in mobile browser when in embed mode
-      window.location.href = 'https://bridge.arbitrum.io'
+      window.top.location.href = 'https://bridge.arbitrum.io'
     } else if (openConnectModal) {
       openConnectModal()
     }
