@@ -67,6 +67,8 @@ jobs:
         BATCH_POSTER_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
         ASSERTION_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
         ASSERTION_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
+        RETRYABLE_MONITORING_NOTION_TOKEN: ${{ secrets.RETRYABLE_MONITORING_NOTION_TOKEN }}
+        RETRYABLE_MONITORING_NOTION_DB_ID: ${{ secrets.RETRYABLE_MONITORING_NOTION_DB_ID }}
         NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
         NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
         ARB_ONE_MONITOR_RPC_URL: ${{ secrets.ARB_ONE_MONITOR_RPC_URL }}
