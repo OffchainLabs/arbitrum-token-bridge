@@ -699,17 +699,6 @@ export function TransferPanel() {
         return
       }
 
-      if (
-        !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
-          sourceChainId: latestNetworks.current.sourceChain.id,
-          switchChainAsync
-        }))
-      ) {
-        return wrongChainDetectedWarningToast(
-          getNetworkName(latestNetworks.current.sourceChain.id)
-        )
-      }
       const { fromToken, toToken } = getFromAndToTokenAddresses({
         isDepositMode,
         selectedToken,
@@ -892,17 +881,6 @@ export function TransferPanel() {
         return
       }
 
-      if (
-        !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
-          sourceChainId: latestNetworks.current.sourceChain.id,
-          switchChainAsync
-        }))
-      ) {
-        return wrongChainDetectedWarningToast(
-          getNetworkName(latestNetworks.current.sourceChain.id)
-        )
-      }
       const oftTransferStarter = new OftV2TransferStarter({
         sourceChainProvider,
         sourceChainErc20Address: isDepositMode
@@ -1080,17 +1058,6 @@ export function TransferPanel() {
 
       const destinationChainId = latestNetworks.current.destinationChain.id
 
-      if (
-        !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
-          sourceChainId: latestNetworks.current.sourceChain.id,
-          switchChainAsync
-        }))
-      ) {
-        return wrongChainDetectedWarningToast(
-          getNetworkName(latestNetworks.current.sourceChain.id)
-        )
-      }
       const childChainName = getNetworkName(childChain.id)
 
       const sourceChainErc20Address = isDepositMode
