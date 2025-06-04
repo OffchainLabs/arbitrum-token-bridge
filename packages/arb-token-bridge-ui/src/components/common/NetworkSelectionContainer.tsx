@@ -121,7 +121,7 @@ export function NetworkButton({
   const isSource = type === 'source'
   const chains = useChainIdsForNetworkSelection({ isSource })
   const { isFeatureDisabled } = useDisabledFeatures()
-  const allowNetworkSelection = !isFeatureDisabled(
+  const isNetworkSelectionDisabled = isFeatureDisabled(
     DisabledFeatures.NETWORK_SELECTION
   )
 
@@ -132,10 +132,10 @@ export function NetworkButton({
   const hasOneOrLessChain = chains.length <= 1
 
   const disabled =
+    isNetworkSelectionDisabled ||
     hasOneOrLessChain ||
     (isSmartContractWallet && type === 'source') ||
-    isLoading ||
-    !allowNetworkSelection
+    isLoading
 
   const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
 
