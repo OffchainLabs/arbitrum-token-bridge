@@ -1146,6 +1146,54 @@
           "logoUrl": "/images/PlumeMainnet_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 2911,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x73C6af7029E714DFf1F1554F88b79B335011Da68",
+        "inbox": "0xD6c596b7ca17870DD50D322393deCE6C2085a116",
+        "outbox": "0x0389E24A4Bc96518169f83F50FCDdA442dD8eAFd",
+        "rollup": "0x8f98f9ae2f2836Ed3a628c23311Ad9976B9fBF1B",
+        "sequencerInbox": "0xaF5800ADF22301968613c37DA9C3C2a486eA915A"
+      },
+      "nativeToken": "0xcccCb68e1A848CBDB5b60a974E07aAE143ed40C3",
+      "explorerUrl": "https://hychain.calderaexplorer.xyz/",
+      "rpcUrl": "https://hychain.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Hychain",
+      "slug": "hychain",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x86b6E73AC34D3Cc8b02ebf8BfB33db3cbf0e6062",
+        "parentErc20Gateway": "0xa3Ce255824D5E0c75d38CC88ae8D0d6a03c108Cb",
+        "parentGatewayRouter": "0x9E795A6b44Ba1Ad02469C88ECA7348D60050051c",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x575686ACC6d5a8a0fF6f35a6822AC9Ea26cC973e",
+        "childErc20Gateway": "0x62636b3f3bfd31144A9A03686a70b417E13624b8",
+        "childGatewayRouter": "0x6478a4A93601a5D36F0cC357e64ee06d0c6bEFf6",
+        "childMultiCall": "0x83e8a1358d71031e03fE9b7Bd2Cc3E0EfcfbC171",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#D36DFF",
+        "network": {
+          "name": "Hychain",
+          "logo": "/images/Hychain_Logo.jpg",
+          "description": "Hychain is the L2 built to enable mass adoption of massive web3 games."
+        },
+        "nativeTokenData": {
+          "name": "TOPIA",
+          "symbol": "TOPIA",
+          "logoUrl": "/images/Hychain_NativeTokenLogo.jpg"
+        }
+      }
     }
   ],
   "testnet": [
