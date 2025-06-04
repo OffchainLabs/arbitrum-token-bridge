@@ -280,12 +280,12 @@ async function fetchBatchedWithdrawals(
   }
 ) {
   const latestBlockNumber = await params.l2Provider.getBlockNumber()
-  const _batchSizeBlocks = params.batchSizeBlocks ?? 5_000_000
-  const batchCount = Math.ceil(latestBlockNumber / _batchSizeBlocks)
+  const batchSizeBlocks = params.batchSizeBlocks ?? 5_000_000
+  const batchCount = Math.ceil(latestBlockNumber / batchSizeBlocks)
 
   const promises = Array.from({ length: batchCount }, (_, i) => {
-    const fromBlock = i * _batchSizeBlocks
-    const toBlock = (i + 1) * _batchSizeBlocks
+    const fromBlock = i * batchSizeBlocks
+    const toBlock = (i + 1) * batchSizeBlocks
 
     return fetchWithdrawals({ ...params, fromBlock, toBlock })
   })
