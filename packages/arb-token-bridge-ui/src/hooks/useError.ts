@@ -11,6 +11,42 @@ import { isEthersError } from '../util/SentryUtils'
 const IGNORED_ERROR_CATEGORIES: ErrorCategory[] = ['user_rejection']
 
 /**
+ * Human-readable mappings for error categories
+ */
+const ERROR_CATEGORY_MESSAGES: Record<ErrorCategory, string> = {
+  token_validation: 'Token validation failed',
+  token_approval: 'Token approval failed',
+  token_transfer: 'Token transfer failed',
+  contract_interaction: 'Smart contract interaction failed',
+  contract_revert: 'Transaction was reverted by the contract',
+  gas_estimation: 'Gas estimation failed',
+  transaction_signing: 'Transaction signing failed',
+  transaction_submission: 'Transaction submission failed',
+  transaction_confirmation: 'Transaction confirmation failed',
+  claim: 'Claim operation failed',
+  allowance_check: 'Token allowance check failed',
+  network_request: 'Network request failed',
+  network_response: 'Network response error',
+  bridge_validation: 'Bridge validation failed',
+  bridge_operation: 'Bridge operation failed',
+  user_input_validation: 'Invalid input provided',
+  user_interface: 'User interface error',
+  user_rejection: 'Transaction was cancelled by user',
+  wallet_connection: 'Wallet connection failed',
+  configuration_error: 'Configuration error',
+  system: 'System error occurred',
+  unknown: 'An unknown error occurred',
+  unhandled_event: 'An unexpected error occurred'
+}
+
+/**
+ * Get human-readable error message for a given error category
+ */
+export function getErrorCategoryMessage(category: ErrorCategory): string {
+  return ERROR_CATEGORY_MESSAGES[category] || ERROR_CATEGORY_MESSAGES.unknown
+}
+
+/**
  * Parameters for the `handleError` function
  */
 export interface HandleErrorParams {
@@ -173,6 +209,7 @@ export function useError() {
   )
 
   return {
-    handleError
+    handleError,
+    getErrorCategoryMessage
   }
 }

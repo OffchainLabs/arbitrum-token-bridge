@@ -210,7 +210,7 @@ export function TransferPanel() {
 
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
-  const { handleError } = useError()
+  const { handleError, getErrorCategoryMessage } = useError()
 
   const switchToTransactionHistoryTab = useCallback(
     () =>
@@ -1144,10 +1144,11 @@ export function TransferPanel() {
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (error) {
+      const errorCategory = 'transaction_signing'
       handleError({
         error,
         label: 'arbitrum_transfer',
-        category: 'transaction_signing',
+        category: errorCategory,
         additionalData: selectedToken
           ? {
               erc20_address_on_parent_chain: selectedToken.address,
@@ -1155,6 +1156,7 @@ export function TransferPanel() {
             }
           : { transfer_type: 'native currency' }
       })
+      errorToast(getErrorCategoryMessage(errorCategory))
     } finally {
       setTransferring(false)
     }
