@@ -20,9 +20,21 @@ import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { allowedSourceTokens } from '../../../pages/api/crosschain-transfers/lifi'
 import { constants } from 'ethers'
 import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
+import { twMerge } from 'tailwind-merge'
 
 function Wrapper({ children }: PropsWithChildren) {
-  return <div className="mb-2 flex flex-col gap-2">{children}</div>
+  const [{ embedMode }] = useArbQueryParams()
+
+  return (
+    <div
+      className={twMerge(
+        'mb-2 flex flex-col gap-2',
+        embedMode && 'overflow-scroll rounded-md pb-2'
+      )}
+    >
+      {children}
+    </div>
+  )
 }
 
 function ShowHiddenRoutesButton(

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { BigNumber, constants, utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -16,7 +17,7 @@ import {
   getSmartContractWalletTeleportTransfersNotSupportedErrorMessage,
   getWithdrawOnlyChainErrorMessage
 } from './useTransferReadinessUtils'
-import { ether } from '../../constants'
+import { ether, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import {
   UseGasSummaryResult,
   useGasSummary
@@ -193,6 +194,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childWalletAddress: walletAddress
   })
   const { destinationAddressError } = useDestinationAddressError()
+  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY)
 
   const ethL1BalanceFloat = ethParentBalance
     ? parseFloat(utils.formatEther(ethParentBalance))
@@ -461,6 +463,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
           }
         })
       }
+    }
+
+    if (!tosAccepted) {
+      return notReady()
     }
 
     // The amount entered is enough funds, but now let's include gas costs
