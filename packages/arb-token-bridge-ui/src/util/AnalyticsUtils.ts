@@ -83,14 +83,11 @@ type AnalyticsEventMap = {
   }
   'Redeem Retryable': { network: string }
   'Redeem Teleport Retryable': { network: string }
-  'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
   'Tx Error: Get Help Click': {
     network: string
     transactionType: SimplifiedRouteType
   }
-  'Multiple Tx Error: Get Help Click': { network: string }
   'Address Block': { address: string }
-  'Slow Bridge Click': undefined
   'Move More Funds Click': undefined
   'Explore: Randomize Click': undefined
   'Add to Google Calendar Click': undefined
@@ -107,13 +104,6 @@ type AnalyticsEventMap = {
     amount: number
     complete: boolean
     version: number
-  }
-  'Project Click': {
-    network: string
-    projectName: string
-  }
-  'Show All Projects Click': {
-    network: string
   }
   'OFT Transfer': {
     tokenSymbol: string
