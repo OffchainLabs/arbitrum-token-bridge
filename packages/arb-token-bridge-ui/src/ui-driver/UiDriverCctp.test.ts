@@ -6,7 +6,7 @@ import {
 } from '@ethersproject/providers'
 import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 
-import { UiDriverContext } from './UiDriver'
+import { UiDriverContext, UiDriverStep } from './UiDriver'
 import { stepGeneratorForCctp } from './UiDriverCctp'
 import { nextStep, expectStep } from './UiDriverTestUtils'
 
@@ -22,6 +22,128 @@ function approveTokenPayload(txRequest: TransactionRequest) {
     txRequestLabel: 'stepGeneratorForCctp.approveToken'
   }
 }
+
+type UiDriverTestCaseStep = {
+  description: string
+  userInput?: any
+  expectedStep: UiDriverStep | undefined
+}
+
+type UiDriverTestCase = {
+  name: string
+  context: UiDriverContext
+  sequence: UiDriverTestCaseStep[]
+}
+
+const dialog = {
+  confirm: () => [true],
+  reject: () => [false]
+}
+
+const testCases: UiDriverTestCase[] = [
+  {
+    name: 'eoa :: deposit :: user rejects "confirm_cctp_deposit" dialog',
+    context: {
+      isDepositMode: true,
+      isSmartContractWallet: false
+    } as UiDriverContext,
+    sequence: [
+      {
+        description: '"confirm_cctp_deposit" dialog is opened',
+        expectedStep: {
+          type: 'dialog',
+          payload: 'confirm_cctp_deposit'
+        }
+      },
+      {
+        description: 'user rejects dialog',
+        userInput: dialog.reject(),
+        expectedStep: {
+          type: 'return'
+        }
+      }
+    ]
+  },
+  {
+    name: 'scw :: deposit :: user confirms all dialogs and token approval succeeds',
+    context: {
+      amountBigNumber: BigNumber.from(1),
+      isDepositMode: true,
+      isSmartContractWallet: true,
+      walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+      destinationAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+      transferStarter: {
+        requiresTokenApproval: () => true,
+        approveTokenPrepareTxRequest: () => mockedApproveTokenTxRequest
+      } as unknown as BridgeTransferStarter
+    } as UiDriverContext,
+    sequence: [
+      {
+        description: '"confirm_cctp_deposit" dialog is opened',
+        expectedStep: { type: 'dialog', payload: 'confirm_cctp_deposit' }
+      },
+      {
+        description: 'user confirms deposit dialog',
+        userInput: dialog.confirm(),
+        expectedStep: {
+          type: 'dialog',
+          payload: 'scw_custom_destination_address'
+        }
+      },
+      {
+        description: 'user confirms scw destination address dialog',
+        userInput: dialog.confirm(),
+        expectedStep: { type: 'dialog', payload: 'approve_token' }
+      },
+      {
+        description: 'user confirms approve token dialog',
+        userInput: dialog.confirm(),
+        expectedStep: { type: 'scw_tooltip' }
+      },
+      {
+        description: 'token approval transaction is prepared',
+        expectedStep: {
+          type: 'tx',
+          payload: approveTokenPayload(mockedApproveTokenTxRequest)
+        }
+      },
+      {
+        description: 'token approval transaction succeeds',
+        userInput: [{ data: {} as TransactionReceipt }],
+        expectedStep: undefined
+      }
+    ]
+  }
+]
+
+testCases.forEach(({ name, context, sequence }) => {
+  it(name, async () => {
+    const generator = stepGeneratorForCctp(context)
+
+    expectStep(await nextStep(generator))
+      //
+      .hasType('start')
+
+    sequence.forEach(async ({ userInput, expectedStep }) => {
+      if (typeof expectedStep === 'undefined') {
+        expectStep(await nextStep(generator, userInput))
+          //
+          .doesNotExist()
+        return
+      }
+
+      if ('payload' in expectedStep) {
+        expectStep(await nextStep(generator, userInput))
+          .hasType(expectedStep.type)
+          .hasPayload(expectedStep.payload)
+      } else {
+        expectStep(await nextStep(generator, userInput))
+          //
+          .hasType(expectedStep.type)
+      }
+    })
+  })
+})
 
 it(`
   context:
