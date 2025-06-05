@@ -84,6 +84,10 @@ type AnalyticsEventMap = {
   'Redeem Retryable': { network: string }
   'Redeem Teleport Retryable': { network: string }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
+  'Search Tx for Address Click': {
+    isTestnetMode: boolean
+    isConnectedAddress: boolean
+  }
   'Tx Error: Get Help Click': {
     network: string
     transactionType: SimplifiedRouteType

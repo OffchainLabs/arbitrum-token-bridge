@@ -9,6 +9,8 @@ import { twMerge } from 'tailwind-merge'
 
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
+import { trackEvent } from '../../util/AnalyticsUtils'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 export enum TransactionHistorySearchError {
   INVALID_ADDRESS = 'That doesn’t seem to be a valid address, please try again.'
@@ -50,6 +52,7 @@ export function TransactionHistorySearchBar() {
       shallow
     )
   const { address: connectedAddress } = useAccount()
+  const [isTestnetMode] = useIsTestnetMode()
 
   useEffect(() => {
     if (address === '' && connectedAddress) {
@@ -68,9 +71,21 @@ export function TransactionHistorySearchBar() {
       return
     }
 
+    trackEvent('Search Tx for Address Click', {
+      isTestnetMode,
+      isConnectedAddress:
+        address.toLowerCase() === connectedAddress?.toLowerCase()
+    })
+
     setSanitizedAddress(address)
     setSearchError(undefined)
-  }, [address, setSanitizedAddress, setSearchError])
+  }, [
+    address,
+    setSanitizedAddress,
+    setSearchError,
+    isTestnetMode,
+    connectedAddress
+  ])
 
   return (
     <div className="mb-4 flex flex-row items-stretch gap-1 pr-4 md:pr-0">
