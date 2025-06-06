@@ -75,9 +75,9 @@ import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
 
-const BATCH_FETCH_CHAINS = [
-  33139 // ApeChain
-]
+const BATCH_FETCH_BLOCKS: { [key: number]: number } = {
+  33139: 5_000_000
+}
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -274,20 +274,32 @@ function dedupeTransactions(txs: Transfer[]) {
   )
 }
 
-async function fetchBatchedWithdrawals(
+export async function fetchBatchedWithdrawals(
   params: FetchWithdrawalsParams & {
     batchSizeBlocks?: number
   }
-) {
+): Promise<Withdrawal[]> {
   const latestBlockNumber = await params.l2Provider.getBlockNumber()
+
+  const fromBlock = params.fromBlock ?? 1
+  const toBlock = params.toBlock ?? latestBlockNumber
+
   const batchSizeBlocks = params.batchSizeBlocks ?? 5_000_000
-  const batchCount = Math.ceil(latestBlockNumber / batchSizeBlocks)
+  const batchCount = Math.ceil((toBlock - fromBlock) / batchSizeBlocks)
 
   const promises = Array.from({ length: batchCount }, (_, i) => {
-    const fromBlock = i * batchSizeBlocks
-    const toBlock = (i + 1) * batchSizeBlocks
+    // Math.min makes sure we don't fetch above toBlock
+    const fromBlockForBatch = Math.min(fromBlock + i * batchSizeBlocks, toBlock)
+    const toBlockForBatch = Math.min(
+      fromBlockForBatch + batchSizeBlocks,
+      toBlock
+    )
 
-    return fetchWithdrawals({ ...params, fromBlock, toBlock })
+    return fetchWithdrawals({
+      ...params,
+      fromBlock: fromBlockForBatch,
+      toBlock: toBlockForBatch
+    })
   })
 
   const results = await Promise.all(promises)
@@ -422,11 +434,12 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 })
               }
 
-              const withdrawalFn = BATCH_FETCH_CHAINS.includes(
-                chainPair.childChainId
-              )
-                ? fetchBatchedWithdrawals
-                : fetchWithdrawals
+              const batchSizeBlocks = BATCH_FETCH_BLOCKS[chainPair.childChainId]
+
+              const withdrawalFn =
+                typeof batchSizeBlocks === 'number'
+                  ? fetchBatchedWithdrawals
+                  : fetchWithdrawals
 
               const fetcherFn =
                 type === 'deposits' ? fetchDeposits : withdrawalFn
@@ -439,7 +452,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 l2Provider: getProviderForChainId(chainPair.childChainId),
                 pageNumber: 0,
                 pageSize: 1000,
-                forceFetchReceived
+                forceFetchReceived,
+                batchSizeBlocks
               })
             } catch {
               addFailedChainPair(prevFailedChainPairs => {
