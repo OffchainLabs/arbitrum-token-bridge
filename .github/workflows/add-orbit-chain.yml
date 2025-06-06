@@ -76,7 +76,9 @@ jobs:
         run: yarn prettier --write "packages/arb-token-bridge-ui/src/**/*.{ts,tsx,js,jsx,json}"
 
       - name: Generate OG image
-        run: yarn generateOpenGraphImages:orbit
+        run: yarn workspace arb-token-bridge-ui generateOpenGraphImages:orbit
+        env:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
       - name: Commit changes
         run: |

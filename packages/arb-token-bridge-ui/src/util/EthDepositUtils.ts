@@ -4,25 +4,10 @@ import { BigNumber, constants } from 'ethers'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { fetchErc20Allowance } from './TokenUtils'
 import { DepositTxEstimateGasParams } from './TokenDepositUtils'
-import { isCustomDestinationAddressTx } from '../state/app/utils'
 
-function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({
-  isCustomDestinationAddressTx
-}: {
-  isCustomDestinationAddressTx: boolean
-}): DepositGasEstimates {
+function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): DepositGasEstimates {
   // todo(spsjvc): properly estimate these values
-  //
-  // this hardcoding is only necessary for Orbit chains that have a custom fee token (where estimation may fail due to low allowance)
-  if (!isCustomDestinationAddressTx) {
-    return {
-      estimatedParentChainGas: BigNumber.from(100_000),
-      estimatedChildChainGas: constants.Zero,
-      estimatedChildChainSubmissionCost: constants.Zero
-    }
-  }
-
-  // custom destination transfer using retryables
+  // native currency transfers using retryables
   return {
     estimatedParentChainGas: BigNumber.from(100_000),
     // hardcoded gas limit on child chain based on
@@ -76,15 +61,8 @@ export async function depositEthEstimateGas(
     typeof ethBridger.nativeToken !== 'undefined' &&
     ethBridger.nativeToken !== constants.AddressZero
 
-  const isDifferentDestinationAddress = isCustomDestinationAddressTx({
-    sender: address,
-    destination: destinationAddress
-  })
-
   if (customFeeToken && (await customFeeTokenAllowanceIsInsufficient(params))) {
-    return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({
-      isCustomDestinationAddressTx: isDifferentDestinationAddress
-    })
+    return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
   }
 
   try {
@@ -108,8 +86,6 @@ export async function depositEthEstimateGas(
     }
   } catch (_) {
     // we use retryables so we may not be able to fetch gas if the current approval doesn't cover gas costs
-    return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken({
-      isCustomDestinationAddressTx: isDifferentDestinationAddress
-    })
+    return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
   }
 }

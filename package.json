@@ -30,7 +30,9 @@
     "@actions/github/@octokit/plugin-paginate-rest": "9.2.2",
     "**/react-syntax-highlighter/prismjs": "1.30.0",
     "**/react-syntax-highlighter/refractor/prismjs": "1.30.0",
-    "**/@babel/runtime": "7.26.10"
+    "**/@babel/runtime": "7.26.10",
+    "**/tar-fs": "2.1.3",
+    "sharp/tar-fs": "3.0.9"
   },
   "keywords": [],
   "author": "",

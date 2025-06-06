@@ -44,18 +44,12 @@ export class EthDepositStarter extends BridgeTransferStarter {
     amount: BigNumber
     destinationAddress?: string
   }) {
-    const isCustomDestinationAddress = !!destinationAddress
-
-    if (!isCustomDestinationAddress) {
-      return BigNumber.from(0)
-    }
-
     const nativeTokenDecimals = (
       await fetchNativeCurrency({ provider: this.destinationChainProvider })
     ).decimals
 
-    // Eth transfers to a custom destination use retryables
-    // In the case of native currency we need to also approve native currency used for gas
+    // All Eth/Native currency transfers use Retryables now
+    // along with the original amount being transferred, we also need to approve native currency used for gas
     const gasEstimates = await this.transferEstimateGas({
       amount,
       from: await signer.getAddress(),
