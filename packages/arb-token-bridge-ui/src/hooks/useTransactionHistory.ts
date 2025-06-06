@@ -76,7 +76,7 @@ import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCa
 import { useDisabledFeatures } from './useDisabledFeatures'
 
 const BATCH_FETCH_BLOCKS: { [key: number]: number } = {
-  33139: 5_000_000
+  33139: 5_000_000 // ApeChain
 }
 
 export type UseTransactionHistoryResult = {
