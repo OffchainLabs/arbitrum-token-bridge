@@ -1242,7 +1242,12 @@ export function TransferPanel() {
       )
     }
 
-    switchToTransactionHistoryTab()
+    if (embedMode) {
+      openDialog('widget_transaction_history')
+    } else {
+      switchToTransactionHistoryTab()
+    }
+
     setTransferring(false)
     clearRoute()
     clearAmountInput()
