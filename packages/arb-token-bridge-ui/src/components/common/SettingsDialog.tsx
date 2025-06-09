@@ -8,9 +8,6 @@ import { SidePanel } from './SidePanel'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { ExternalLink } from './ExternalLink'
 import { ORBIT_QUICKSTART_LINK } from '../../constants'
-import { TestnetToggle } from './TestnetToggle'
-
-import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 const SectionTitle = ({
   className,
@@ -23,8 +20,6 @@ const SectionTitle = ({
 )
 
 export const SettingsDialog = () => {
-  const [isTestnetMode] = useIsTestnetMode()
-
   const [{ settingsOpen }, setQueryParams] = useArbQueryParams()
 
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
@@ -66,27 +61,12 @@ export const SettingsDialog = () => {
           />
         </div>
 
-        {/* Show testnets toggle */}
-        <div className="w-full">
-          <SectionTitle>Developer Mode</SectionTitle>
-
-          <TestnetToggle
-            label="Turn on testnet mode"
-            description="Show testnet networks and enable other testnet features."
-          />
-        </div>
-
         {/* Add custom chain */}
-        <div
-          className={twMerge(
-            'w-full transition-opacity',
-            !isTestnetMode && 'pointer-events-none opacity-20'
-          )}
-        >
-          <SectionTitle className="mb-1">Add Testnet Orbit Chain</SectionTitle>
+        <div className="w-full transition-opacity">
+          <SectionTitle className="mb-1">Add Custom Orbit Chain</SectionTitle>
           <p className="mb-4 text-sm">
-            Add in your own Orbit Testnet to the bridge. This will only be for
-            local testing.
+            Add in your own Orbit chain to the bridge. This will only be for
+            local testing, other users will not see it.
             <br />
             Learn more about how to create and add your Orbit Testnet in{' '}
             <ExternalLink
