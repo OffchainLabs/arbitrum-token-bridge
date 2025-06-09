@@ -416,7 +416,7 @@ export const Route = React.memo(
     const [_token] = useSelectedToken()
     const [{ amount2, destinationAddress }] = useArbQueryParams()
     const isBatchTransferSupported = useIsBatchTransferSupported()
-    const compactMode = true // to be connected to query params in a later feature
+    const compactMode = false // to be connected to query params in a later feature
 
     const token = (overrideToken || _token || childNativeCurrency) as Token
 
