@@ -9,7 +9,7 @@ import { WidgetHeaderAccountButton } from './WidgetHeaderAccountButton'
 import { WidgetRoutes } from './WidgetRoutes'
 import { WidgetTosConfirmationCheckbox } from './WidgetTosConfirmationCheckbox'
 import { MoveFundsButton } from '../TransferPanel/MoveFundsButton'
-import { ConnectWalletButton } from '../TransferPanel/ConnectWalletButton'
+import { WidgetConnectWalletButton } from './WidgetConnectWalletButton'
 import { TransferPanelMain } from '../TransferPanel/TransferPanelMain'
 import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
 import { UseDialogProps } from '../common/Dialog'
@@ -75,7 +75,7 @@ export function WidgetTransferPanel({
             {isConnected ? (
               <MoveFundsButton onClick={moveFundsButtonOnClick} />
             ) : (
-              <ConnectWalletButton />
+              <WidgetConnectWalletButton />
             )}
           </div>
         </div>

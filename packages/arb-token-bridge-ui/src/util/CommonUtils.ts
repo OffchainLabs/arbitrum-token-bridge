@@ -45,12 +45,3 @@ export const isE2eTestingEnvironment =
 export const isDevelopmentEnvironment = process.env.NODE_ENV === 'development'
 
 export const isProductionEnvironment = process.env.NODE_ENV === 'production'
-
-export const isMobileBrowser = () => {
-  if (typeof window === 'undefined') return false
-
-  const userAgent = window.navigator.userAgent.toLowerCase()
-  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-    userAgent
-  )
-}
