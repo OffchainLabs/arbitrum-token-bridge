@@ -21,16 +21,22 @@ export function WidgetConnectWalletButton() {
   const [{ embedMode }] = useArbQueryParams()
   const isMobile = isMobileBrowser()
 
-  if (embedMode && isMobile && window.top) {
-    const currentParams = new URLSearchParams(window.location.search)
-    currentParams.delete('embedMode')
+  const handleClick = () => {
+    if (embedMode && isMobile && window.top) {
+      const currentParams = new URLSearchParams(window.location.search)
+      currentParams.delete('embedMode')
 
-    const newUrl = `https://bridge.arbitrum.io${
-      currentParams.toString() ? `?${currentParams.toString()}` : ''
-    }`
-    window.top.location.href = newUrl // redirect the parent window to bridge.arbitrum.io
-    return null
+      const newUrl = `https://bridge.arbitrum.io${
+        currentParams.toString() ? `?${currentParams.toString()}` : ''
+      }`
+      window.top.location.href = newUrl // redirect the parent window to bridge.arbitrum.io
+      return null
+    }
   }
 
-  return <ConnectWalletButton />
+  return (
+    <ConnectWalletButton
+      onClick={embedMode && isMobile && window.top ? handleClick : undefined}
+    />
+  )
 }
