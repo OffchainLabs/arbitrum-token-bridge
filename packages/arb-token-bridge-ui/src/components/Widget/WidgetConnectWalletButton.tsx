@@ -2,20 +2,10 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { ConnectWalletButton } from '../TransferPanel/ConnectWalletButton'
 
 /**
- * This component is a wrapper around ConnectWalletButton that handles special cases for mobile browsers in embed mode.
+ * A wrapper around ConnectWalletButton that handles mobile browser restrictions in embed mode.
  *
- * Why we need this wrapper:
- * Mobile browsers implement stricter security constraints that block third-party applications (like iframes) from accessing:
- * - Cookies
- * - Web storage
- *
- * This prevents the wallet connection feature from functioning properly, as these connections rely on storing and
- * relaying messages and data through web storage. When users try to connect their wallet in a mobile browser while
- * the app is embedded in an iframe, the connection will fail due to these security restrictions.
- *
- * Solution:
- * When we detect that the user is on a mobile browser and the app is in embed mode, we redirect them to the
- * main Arbitrum Bridge website (bridge.arbitrum.io) where they can connect their wallet without these restrictions.
+ * Mobile browsers block iframes from accessing cookies and web storage, which breaks wallet connections.
+ * When detected, users are redirected to bridge.arbitrum.io with their query parameters preserved.
  */
 
 const isMobileBrowser = () => {
@@ -32,8 +22,13 @@ export function WidgetConnectWalletButton() {
   const isMobile = isMobileBrowser()
 
   if (embedMode && isMobile && window.top) {
-    // Redirect to bridge.arbitrum.io in mobile browser when in embed mode
-    window.top.location.href = 'https://bridge.arbitrum.io'
+    const currentParams = new URLSearchParams(window.location.search)
+    currentParams.delete('embedMode')
+
+    const newUrl = `https://bridge.arbitrum.io${
+      currentParams.toString() ? `?${currentParams.toString()}` : ''
+    }`
+    window.top.location.href = newUrl // redirect the parent window to bridge.arbitrum.io
     return null
   }
 
