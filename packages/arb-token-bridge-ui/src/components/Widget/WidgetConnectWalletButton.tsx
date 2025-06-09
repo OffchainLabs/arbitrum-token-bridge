@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { ConnectWalletButton } from '../TransferPanel/ConnectWalletButton'
 
@@ -21,7 +22,7 @@ export function WidgetConnectWalletButton() {
   const [{ embedMode }] = useArbQueryParams()
   const isMobile = isMobileBrowser()
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (embedMode && isMobile && window.top) {
       const currentParams = new URLSearchParams(window.location.search)
       currentParams.delete('embedMode')
@@ -30,9 +31,8 @@ export function WidgetConnectWalletButton() {
         currentParams.toString() ? `?${currentParams.toString()}` : ''
       }`
       window.top.location.href = newUrl // redirect the parent window to bridge.arbitrum.io
-      return null
     }
-  }
+  }, [embedMode, isMobile])
 
   return (
     <ConnectWalletButton
