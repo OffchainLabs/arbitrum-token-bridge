@@ -407,6 +407,14 @@ export function TransferPanel() {
     return true
   }
 
+  async function isOnCorrectNetworks() {
+    return !(await ensureCorrectNetwork({
+      currentChainId: latestChain.current?.id,
+      sourceChainId: latestNetworks.current.sourceChain.id,
+      switchChainAsync
+    }))
+  }
+
   const stepExecutor: UiDriverStepExecutor = async step => {
     if (process.env.NODE_ENV === 'development') {
       console.log(step)
@@ -481,13 +489,7 @@ export function TransferPanel() {
           showDelayedSmartContractTxRequest()
         }
         try {
-          if (
-            !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
-              sourceChainId: latestNetworks.current.sourceChain.id,
-              switchChainAsync
-            }))
-          ) {
+          if (!(await isOnCorrectNetworks())) {
             return wrongChainDetectedWarningToast(
               getNetworkName(latestNetworks.current.sourceChain.id)
             )
@@ -522,13 +524,7 @@ export function TransferPanel() {
         if (isSmartContractWallet) {
           showDelayedSmartContractTxRequest()
         }
-        if (
-          !(await ensureCorrectNetwork({
-            currentChainId: latestChain.current?.id,
-            sourceChainId: latestNetworks.current.sourceChain.id,
-            switchChainAsync
-          }))
-        ) {
+        if (!(await isOnCorrectNetworks())) {
           return wrongChainDetectedWarningToast(
             getNetworkName(latestNetworks.current.sourceChain.id)
           )
@@ -694,13 +690,7 @@ export function TransferPanel() {
         }
 
         try {
-          if (
-            !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
-              sourceChainId: latestNetworks.current.sourceChain.id,
-              switchChainAsync
-            }))
-          ) {
+          if (!(await isOnCorrectNetworks())) {
             return wrongChainDetectedWarningToast(
               getNetworkName(latestNetworks.current.sourceChain.id)
             )
@@ -732,13 +722,7 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
-      if (
-        !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
-          sourceChainId: latestNetworks.current.sourceChain.id,
-          switchChainAsync
-        }))
-      ) {
+      if (!(await isOnCorrectNetworks())) {
         return wrongChainDetectedWarningToast(
           getNetworkName(latestNetworks.current.sourceChain.id)
         )
@@ -868,13 +852,7 @@ export function TransferPanel() {
         }
 
         try {
-          if (
-            !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
-              sourceChainId: latestNetworks.current.sourceChain.id,
-              switchChainAsync
-            }))
-          ) {
+          if (!(await isOnCorrectNetworks())) {
             return wrongChainDetectedWarningToast(
               getNetworkName(latestNetworks.current.sourceChain.id)
             )
@@ -906,13 +884,7 @@ export function TransferPanel() {
         showDelayedSmartContractTxRequest()
       }
 
-      if (
-        !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
-          sourceChainId: latestNetworks.current.sourceChain.id,
-          switchChainAsync
-        }))
-      ) {
+      if (!(await isOnCorrectNetworks())) {
         return wrongChainDetectedWarningToast(
           getNetworkName(latestNetworks.current.sourceChain.id)
         )
@@ -1096,13 +1068,7 @@ export function TransferPanel() {
         const userConfirmation = await confirmDialog('approve_custom_fee_token')
         if (!userConfirmation) return false
 
-        if (
-          !(await ensureCorrectNetwork({
-            currentChainId: latestChain.current?.id,
-            sourceChainId: latestNetworks.current.sourceChain.id,
-            switchChainAsync
-          }))
-        ) {
+        if (!(await isOnCorrectNetworks())) {
           return wrongChainDetectedWarningToast(
             getNetworkName(latestNetworks.current.sourceChain.id)
           )
@@ -1183,13 +1149,7 @@ export function TransferPanel() {
           if (isSmartContractWallet && isWithdrawal) {
             showDelayInSmartContractTransaction()
           }
-          if (
-            !(await ensureCorrectNetwork({
-              currentChainId: latestChain.current?.id,
-              sourceChainId: latestNetworks.current.sourceChain.id,
-              switchChainAsync
-            }))
-          ) {
+          if (!(await isOnCorrectNetworks())) {
             return wrongChainDetectedWarningToast(
               getNetworkName(latestNetworks.current.sourceChain.id)
             )
@@ -1245,13 +1205,7 @@ export function TransferPanel() {
       }
 
       // finally, call the transfer function
-      if (
-        !(await ensureCorrectNetwork({
-          currentChainId: latestChain.current?.id,
-          sourceChainId: latestNetworks.current.sourceChain.id,
-          switchChainAsync
-        }))
-      ) {
+      if (!(await isOnCorrectNetworks())) {
         return wrongChainDetectedWarningToast(
           getNetworkName(latestNetworks.current.sourceChain.id)
         )
@@ -1437,14 +1391,10 @@ export function TransferPanel() {
           amount2: isBatchTransfer ? Number(amount2) : undefined,
           version: 2
         })
-        if (
-          !(await ensureCorrectNetwork({
-            currentChainId: latestChain.current?.id,
-            sourceChainId,
-            switchChainAsync
-          }))
-        ) {
-          return wrongChainDetectedWarningToast(getNetworkName(sourceChainId))
+        if (!(await isOnCorrectNetworks())) {
+          return wrongChainDetectedWarningToast(
+            getNetworkName(latestNetworks.current.sourceChain.id)
+          )
         }
       }
     } catch (error) {
