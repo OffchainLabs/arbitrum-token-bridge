@@ -7,11 +7,11 @@ import {
 } from '../common/Dialog2'
 import { WidgetHeaderAccountButton } from './WidgetHeaderAccountButton'
 import { WidgetRoutes } from './WidgetRoutes'
-import { WidgetTosConfirmationCheckbox } from './WidgetTosConfirmationCheckbox'
 import { MoveFundsButton } from '../TransferPanel/MoveFundsButton'
 import { WidgetConnectWalletButton } from './WidgetConnectWalletButton'
 import { TransferPanelMain } from '../TransferPanel/TransferPanelMain'
 import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
+import { ToSConfirmationCheckbox } from '../TransferPanel/ToSConfirmationCheckbox'
 import { UseDialogProps } from '../common/Dialog'
 import WidgetTxHistoryIcon from '@/images/WidgetTxHistoryIcon.svg'
 
@@ -71,7 +71,8 @@ export function WidgetTransferPanel({
           </div>
 
           <div className="flex flex-col gap-2">
-            <WidgetTosConfirmationCheckbox />
+            <ToSConfirmationCheckbox />
+
             {isConnected ? (
               <MoveFundsButton onClick={moveFundsButtonOnClick} />
             ) : (

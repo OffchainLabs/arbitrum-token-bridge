@@ -1,41 +1,48 @@
+import { useAccount } from 'wagmi'
 import { useLocalStorage } from '@uidotdev/usehooks'
+import { twMerge } from 'tailwind-merge'
+import { useLatest } from 'react-use'
 import { Checkbox } from '../common/Checkbox'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { ExternalLink } from '../common/ExternalLink'
-import { twMerge } from 'tailwind-merge'
-import { useLatest } from 'react-use'
 import { useAmountBigNumber } from '../TransferPanel/hooks/useAmountBigNumber'
-import { useAccount } from 'wagmi'
 
-export function WidgetTosConfirmationCheckbox() {
+export function ToSConfirmationCheckbox({ className }: { className?: string }) {
   const [tosAccepted, setTosAccepted] = useLocalStorage<boolean>(
     TOS_LOCALSTORAGE_KEY,
     false
   )
+
   const { isConnected } = useAccount()
   const { current: amountBigNumber } = useLatest(useAmountBigNumber())
 
-  const isTosHighlighted = !tosAccepted && amountBigNumber.gt(0) && isConnected
+  /**
+   * Visual states for the ToS checkbox:
+   * 1. Not accepted: Full opacity (100%)
+   * 2. Not accepted + Amount entered + Wallet connected: Animated highlight to draw attention
+   * 3. Accepted: Reduced opacity (50%) to de-emphasize
+   */
+  const shouldHighlightWithAnimation =
+    !tosAccepted && amountBigNumber.gt(0) && isConnected
 
   return (
     <div
       className={twMerge(
-        isTosHighlighted ? 'animate-blinkInfinite' : 'opacity-50'
+        tosAccepted ? 'opacity-50' : 'opacity-100',
+        shouldHighlightWithAnimation ? 'animate-blinkInfinite' : '',
+        className // overrides from the parent
       )}
     >
       <Checkbox
         label={
-          <span
-            className="cursor-default text-sm"
-            onClick={event => {
-              event.preventDefault()
-            }}
-          >
-            I have read, and agree to the{' '}
+          <span className="text-sm">
+            I have read and agree to the{' '}
             <ExternalLink
               href="https://arbitrum.io/tos"
               className="arb-hover cursor-pointer underline"
-              onClick={() => {
+              onClick={event => {
+                event.stopPropagation()
+                event.preventDefault()
                 window.open('https://arbitrum.io/tos', '_blank')
               }}
             >

@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 
 import axios from 'axios'
-import { useLocalStorage } from '@uidotdev/usehooks'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
-import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 
 import { useActions } from '../../state'
@@ -12,7 +10,6 @@ import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header, HeaderAccountOrConnectWalletButton } from '../common/Header'
-import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -21,7 +18,6 @@ import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnaly
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 import { Layout } from '../common/Layout'
 import { AppProviders } from './AppProviders'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 declare global {
   interface Window {
@@ -98,17 +94,6 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 const AppContent = React.memo(() => {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
-  const [{ embedMode }] = useArbQueryParams()
-
-  if (!tosAccepted && !embedMode) {
-    return (
-      <>
-        <Header />
-        <WelcomeDialog />
-      </>
-    )
-  }
 
   if (address && isBlocked) {
     return (
