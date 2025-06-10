@@ -196,6 +196,8 @@ export function clickMoveFundsButton({
 }: {
   shouldConfirmInMetamask?: boolean
 } = {}) {
+  cy.acceptTnC()
+
   cy.wait(5_000)
   cy.findMoveFundsButton().click()
   cy.wait(15_000)
