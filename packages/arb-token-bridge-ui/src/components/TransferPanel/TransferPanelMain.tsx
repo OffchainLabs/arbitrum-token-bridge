@@ -6,7 +6,7 @@ import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { Chain } from 'wagmi/chains'
 
-import { getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -29,6 +29,8 @@ import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { addressesEqual } from '../../util/AddressUtils'
+import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
+import { getOrbitChains } from '../../util/orbitChainsList'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -186,7 +188,7 @@ export function NetworkContainer({
 
 export function TransferPanelMain() {
   const [networks] = useNetworks()
-  const { childChainProvider, isTeleportMode } =
+  const { parentChain, childChain, childChainProvider, isTeleportMode } =
     useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -247,6 +249,18 @@ export function TransferPanelMain() {
     isTeleportMode
   ])
 
+  const isCustomMainnetChain = useMemo(() => {
+    const { isTestnet } = isNetwork(parentChain.id)
+    const { isCoreChain: isChildCoreChain } = isNetwork(childChain.id)
+
+    if (isTestnet || isChildCoreChain) {
+      return false
+    }
+
+    // This will not include custom chains
+    return !getOrbitChains().some(_chain => _chain.chainId === childChain.id)
+  }, [parentChain, childChain])
+
   useUpdateUSDCTokenData()
 
   return (
@@ -256,6 +270,8 @@ export function TransferPanelMain() {
       <SwitchNetworksButton />
 
       <DestinationNetworkBox />
+
+      {isCustomMainnetChain && <CustomMainnetChainWarning />}
 
       <TransferDisabledDialog />
     </div>
