@@ -65,7 +65,7 @@ export function login({
 }
 
 export const acceptTnC = () => {
-  // initial modal prompts which come in the web-app
+  // click on the terms and conditions acceptance checkbox before making transfers
   cy.findByText(/I have read and agree to the/i)
     .should('be.visible')
     .click()
