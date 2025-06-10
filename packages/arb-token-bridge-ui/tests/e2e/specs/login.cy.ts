@@ -41,7 +41,7 @@ describe('Login Account', () => {
 
   it('should show connect wallet if not logged in', () => {
     cy.visit('/')
-    cy.findByText(/I have read, and agree to the/i) // click on terms and conditions checkbox
+    cy.findByText(/I have read and agree to the/i) // click on terms and conditions checkbox
       .should('be.visible')
       .click()
     cy.findAllByText('Connect Wallet').first().should('be.visible').click()

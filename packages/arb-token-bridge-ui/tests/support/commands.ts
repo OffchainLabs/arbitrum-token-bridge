@@ -66,7 +66,7 @@ export function login({
 
 export const acceptTnC = () => {
   // initial modal prompts which come in the web-app
-  cy.findByText(/Agree to Terms and Continue/i)
+  cy.findByText(/ I have read and agree to the/i)
     .should('be.visible')
     .click()
 }
