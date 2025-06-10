@@ -97,6 +97,7 @@ import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
+import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -1373,6 +1374,8 @@ export function TransferPanel() {
             onDestinationAddressChange={setDestinationAddress}
           />
         )}
+
+        <ToSConfirmationCheckbox className="my-2" />
 
         {isConnected ? (
           <MoveFundsButton onClick={moveFundsButtonOnClick} />
