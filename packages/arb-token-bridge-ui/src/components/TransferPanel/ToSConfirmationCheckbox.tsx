@@ -36,7 +36,7 @@ export function ToSConfirmationCheckbox({ className }: { className?: string }) {
       <Checkbox
         label={
           <span className="text-sm">
-            I have read, and agree to the{' '}
+            I have read and agree to the{' '}
             <ExternalLink
               href="https://arbitrum.io/tos"
               className="arb-hover cursor-pointer underline"
