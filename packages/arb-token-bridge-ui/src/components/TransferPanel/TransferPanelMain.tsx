@@ -258,11 +258,7 @@ export function TransferPanelMain() {
     }
 
     // This will not include custom chains
-    const orbitChainFromList = getOrbitChains().find(
-      _chain => _chain.chainId === childChain.id
-    )
-
-    return typeof orbitChainFromList === 'undefined'
+    return !getOrbitChains().some(_chain => _chain.chainId === childChain.id)
   }, [parentChain, childChain])
 
   useUpdateUSDCTokenData()
