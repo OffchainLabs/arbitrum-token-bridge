@@ -94,6 +94,7 @@ describe('Withdraw ERC20 Token', () => {
 
         context('should show clickable withdraw button', () => {
           cy.selectRoute('arbitrum')
+          cy.acceptTnC()
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
         })
 
@@ -198,6 +199,7 @@ describe('Withdraw ERC20 Token', () => {
 
         context('should show clickable withdraw button', () => {
           cy.selectRoute('arbitrum')
+          cy.acceptTnC()
           cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
         })
 
