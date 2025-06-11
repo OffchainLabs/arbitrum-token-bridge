@@ -44,6 +44,7 @@ export function Layout(props: LayoutProps) {
     return (
       <body className={twMerge('bg-gray-1', unica.className)}>
         {props.children}
+        <Toast />
       </body>
     )
   }
