@@ -33,7 +33,7 @@ export const WidgetHeaderAccountButton = () => {
         <Menu>
           {({ open }) => (
             <>
-              <MenuButton className="flex items-center gap-2 rounded-md p-1 hover:bg-white/10 focus-visible:!outline-none">
+              <MenuButton className="flex h-[30px] items-center gap-2 rounded-md p-1 hover:bg-white/10 focus-visible:!outline-none">
                 <SafeImage
                   src={ensAvatar || undefined}
                   className="h-6 w-6 rounded-full"
@@ -69,7 +69,7 @@ export const WidgetHeaderAccountButton = () => {
       {!isConnected && (
         <Button
           variant="primary"
-          className="flex h-[35px] w-full justify-between bg-lime-dark"
+          className="flex h-[30px] w-full justify-between bg-lime-dark"
           onClick={openConnectModal}
         >
           <div>Connect Wallet</div>

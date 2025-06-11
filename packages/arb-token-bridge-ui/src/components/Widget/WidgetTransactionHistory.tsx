@@ -34,7 +34,6 @@ export const WidgetTransactionHistory = (props: UseDialogProps) => {
     <Dialog
       {...props}
       onClose={() => props.onClose(false)}
-      title=""
       actionButtonProps={{ hidden: true }}
       isFooterHidden={true}
       className="relative h-screen overflow-hidden"

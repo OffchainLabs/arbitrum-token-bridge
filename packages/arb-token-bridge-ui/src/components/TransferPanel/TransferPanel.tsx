@@ -1367,6 +1367,7 @@ export function TransferPanel() {
         isTokenAlreadyImported={isTokenAlreadyImported}
         tokenFromSearchParams={tokenFromSearchParams}
         tokenImportDialogProps={tokenImportDialogProps}
+        showSettingsButton={showSettingsButton}
         closeWithResetTokenImportDialog={closeWithResetTokenImportDialog}
       />
     )

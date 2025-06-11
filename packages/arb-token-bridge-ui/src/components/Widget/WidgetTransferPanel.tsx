@@ -1,5 +1,6 @@
 import { useAccount } from 'wagmi'
 import Image from 'next/image'
+import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import {
   DialogProps,
   DialogWrapper,
@@ -22,6 +23,7 @@ type WidgetTransferPanelProps = {
   tokenImportDialogProps: UseDialogProps
   openDialog: OpenDialogFunction
   dialogProps: DialogProps
+  showSettingsButton: boolean
   closeWithResetTokenImportDialog: () => void
 }
 
@@ -32,6 +34,7 @@ export function WidgetTransferPanel({
   isTokenAlreadyImported,
   tokenFromSearchParams,
   tokenImportDialogProps,
+  showSettingsButton,
   closeWithResetTokenImportDialog
 }: WidgetTransferPanelProps) {
   const { isConnected } = useAccount()
@@ -46,17 +49,33 @@ export function WidgetTransferPanel({
           <div className="mb-2 flex h-[30px] flex-row items-center justify-between text-lg">
             <WidgetHeaderAccountButton />
 
-            {/* widget transaction history */}
             <div className="flex flex-row gap-2 text-sm">
+              {/* widget transaction history */}
               {isConnected && (
-                <Image
-                  height={20}
-                  width={20}
-                  alt="Tx history logo"
-                  src={WidgetTxHistoryIcon}
-                  className="h-7 w-7 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-white/10"
+                <button
+                  className="arb-hover text-white"
                   onClick={() => openDialog('widget_transaction_history')}
-                />
+                >
+                  <Image
+                    height={20}
+                    width={20}
+                    alt="Tx history logo"
+                    src={WidgetTxHistoryIcon}
+                  />
+                </button>
+              )}
+
+              {/* slippage and advanced settings */}
+              {showSettingsButton && (
+                <button
+                  onClick={() => openDialog('settings')}
+                  aria-label="Open Settings"
+                >
+                  <Cog8ToothIcon
+                    width={20}
+                    className="arb-hover text-white/80"
+                  />
+                </button>
               )}
             </div>
           </div>
