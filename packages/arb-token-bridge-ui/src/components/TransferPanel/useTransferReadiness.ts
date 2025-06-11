@@ -598,9 +598,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
                   asset: ether.symbol,
                   chain: networks.sourceChain.name,
                   balance: formatAmount(ethBalanceFloat),
-                  requiredBalance: formatAmount(
-                    estimatedL1GasFees + estimatedL2GasFees
-                  )
+                  requiredBalance: formatAmount(estimatedL1GasFees)
                 })
               }
             })
