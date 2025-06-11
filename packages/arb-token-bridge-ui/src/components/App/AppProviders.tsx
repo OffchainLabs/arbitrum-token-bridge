@@ -50,9 +50,9 @@ interface AppProvidersProps {
 
 const queryClient = new QueryClient()
 
+createConfig({ integrator: INTEGRATOR_ID })
 export function AppProviders({ children }: AppProvidersProps) {
   const overmind = useMemo(() => createOvermind(config), [])
-  useMemo(() => createConfig({ integrator: INTEGRATOR_ID }), [])
 
   return (
     <OvermindProvider value={overmind}>
