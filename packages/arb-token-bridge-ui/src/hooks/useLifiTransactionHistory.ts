@@ -1,6 +1,5 @@
 import useSWRImmutable from 'swr/immutable'
-import { createConfig, getTransactionHistory } from '@lifi/sdk'
-import { INTEGRATOR_ID } from '../pages/api/crosschain-transfers/lifi'
+import { getTransactionHistory } from '@lifi/sdk'
 
 export function useLifiTransactionHistory({
   walletAddress
@@ -11,14 +10,9 @@ export function useLifiTransactionHistory({
     walletAddress
       ? ([walletAddress, 'useLifiTransactionHistory'] as const)
       : null,
-    async ([walletAddress]) => {
-      // Config need to be instantiated with the proper integrator id before calling getTransactionHistory
-      createConfig({
-        integrator: INTEGRATOR_ID
-      })
-      return getTransactionHistory({
+    ([walletAddress]) =>
+      getTransactionHistory({
         wallet: walletAddress
       }).then(response => response.transfers)
-    }
   )
 }
