@@ -589,7 +589,9 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         if (nativeCurrency.isCustom && isDepositMode) {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
-          if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
+
+          // Case 1: the parent chain's native balance (eg. ETH) is not enough to cover the retryable creation fee
+          if (estimatedL1GasFees > ethBalanceFloat) {
             return notReady({
               errorMessages: {
                 inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
@@ -599,6 +601,22 @@ export function useTransferReadiness(): UseTransferReadinessResult {
                   requiredBalance: formatAmount(
                     estimatedL1GasFees + estimatedL2GasFees
                   )
+                })
+              }
+            })
+          }
+
+          // Case 2: user has enough parent chain's native balance (eg. ETH), but doesn't have enough child-chain-native token to cover the child-chain execution cost
+          if (estimatedL2GasFees > Number(customFeeTokenBalanceFloat)) {
+            return notReady({
+              errorMessages: {
+                inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+                  asset: nativeCurrency.symbol,
+                  chain: networks.sourceChain.name,
+                  balance: customFeeTokenBalanceFloat
+                    ? formatAmount(customFeeTokenBalanceFloat)
+                    : formatAmount(constants.Zero),
+                  requiredBalance: formatAmount(estimatedL2GasFees)
                 })
               }
             })
