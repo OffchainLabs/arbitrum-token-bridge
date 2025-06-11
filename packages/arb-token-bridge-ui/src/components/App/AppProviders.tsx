@@ -10,6 +10,8 @@ import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { AppContextProvider } from './AppContext'
 import { getProps } from '../../util/wagmi/setup'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createConfig } from '@lifi/sdk'
+import { INTEGRATOR_ID } from '../../pages/api/crosschain-transfers/lifi'
 
 const rainbowkitTheme = merge(darkTheme(), {
   colors: {
@@ -48,6 +50,7 @@ interface AppProvidersProps {
 
 const queryClient = new QueryClient()
 
+createConfig({ integrator: INTEGRATOR_ID })
 export function AppProviders({ children }: AppProvidersProps) {
   const overmind = useMemo(() => createOvermind(config), [])
 
