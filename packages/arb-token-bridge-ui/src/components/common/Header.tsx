@@ -11,6 +11,7 @@ import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 import { isExperimentalModeEnabled } from '../../util'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function HeaderAccountOrConnectWalletButton() {
   const { isConnected } = useAccount()
@@ -23,11 +24,14 @@ export function HeaderAccountOrConnectWalletButton() {
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
+  const [{ embedMode }] = useArbQueryParams()
   const { isTestnet } = isNetwork(sourceChain.id)
 
   const isExperimentalMode = isExperimentalModeEnabled()
 
   const destinationChainStyle = useDestinationChainStyle()
+
+  if (embedMode) return null
 
   return (
     <header

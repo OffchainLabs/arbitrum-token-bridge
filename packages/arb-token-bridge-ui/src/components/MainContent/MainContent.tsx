@@ -24,6 +24,12 @@ export function MainContent() {
 
   useBalanceUpdater()
 
+  const [{ embedMode }] = useArbQueryParams()
+
+  if (embedMode) {
+    return <TransferPanel />
+  }
+
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">

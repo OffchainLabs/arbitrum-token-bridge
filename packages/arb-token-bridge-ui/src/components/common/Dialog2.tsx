@@ -14,6 +14,7 @@ import { CctpUsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/
 import { UsdcDepositConfirmationDialog } from '../TransferPanel/USDCDeposit/UsdcDepositConfirmationDialog'
 import { TokenDepositCheckDialog } from '../TransferPanel/TokenDepositCheckDialog'
 import { HighSlippageWarningDialog } from '../TransferPanel/HighSlippageWarningDialog'
+import { WidgetTransactionHistory } from '../Widget/WidgetTransactionHistory'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { SettingsDialog } from '../TransferPanel/SettingsDialog'
 /**
@@ -146,6 +147,8 @@ export function DialogWrapper(props: DialogProps) {
       )
     case 'high_slippage_warning':
       return <HighSlippageWarningDialog {...commonProps} />
+    case 'widget_transaction_history':
+      return <WidgetTransactionHistory {...commonProps} />
     case 'token_selection':
       return <TokenSearch {...commonProps} />
     case 'settings':

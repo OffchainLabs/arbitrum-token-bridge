@@ -98,6 +98,7 @@ import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
+import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -118,7 +119,13 @@ export function TransferPanel() {
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [
-    { amount, amount2, destinationAddress, token: tokenFromSearchParams },
+    {
+      amount,
+      amount2,
+      destinationAddress,
+      token: tokenFromSearchParams,
+      embedMode
+    },
     setQueryParams
   ] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
@@ -1228,7 +1235,12 @@ export function TransferPanel() {
       )
     }
 
-    switchToTransactionHistoryTab()
+    if (embedMode) {
+      openDialog('widget_transaction_history')
+    } else {
+      switchToTransactionHistoryTab()
+    }
+
     setTransferring(false)
     clearRoute()
     clearAmountInput()
@@ -1345,6 +1357,21 @@ export function TransferPanel() {
       destinationChainId: networks.destinationChain.id
     }) ||
     (!isLoadingAccountType && !isSmartContractWallet)
+
+  if (embedMode) {
+    return (
+      <WidgetTransferPanel
+        openDialog={openDialog}
+        dialogProps={dialogProps}
+        moveFundsButtonOnClick={moveFundsButtonOnClick}
+        isTokenAlreadyImported={isTokenAlreadyImported}
+        tokenFromSearchParams={tokenFromSearchParams}
+        tokenImportDialogProps={tokenImportDialogProps}
+        showSettingsButton={showSettingsButton}
+        closeWithResetTokenImportDialog={closeWithResetTokenImportDialog}
+      />
+    )
+  }
 
   return (
     <>

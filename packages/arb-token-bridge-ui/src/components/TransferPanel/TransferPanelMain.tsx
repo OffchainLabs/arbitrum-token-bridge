@@ -196,7 +196,7 @@ export function TransferPanelMain() {
 
   const { address: walletAddress } = useAccount()
 
-  const [{ destinationAddress }] = useArbQueryParams()
+  const [{ destinationAddress, embedMode }] = useArbQueryParams()
 
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
@@ -264,7 +264,9 @@ export function TransferPanelMain() {
   useUpdateUSDCTokenData()
 
   return (
-    <div className="flex flex-col pb-6 lg:gap-y-1">
+    <div
+      className={twMerge('flex flex-col pb-6 lg:gap-y-1', embedMode && 'pb-0')}
+    >
       <SourceNetworkBox />
 
       <SwitchNetworksButton />

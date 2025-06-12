@@ -110,7 +110,7 @@ type RouteAmountProps = {
   isBatchTransferSupported: boolean
   amount2?: string
   childNativeCurrency: Token | NativeCurrency
-  compactMode: boolean
+  embedMode: boolean
 }
 
 const RouteAmount = ({
@@ -121,13 +121,13 @@ const RouteAmount = ({
   isBatchTransferSupported,
   amount2,
   childNativeCurrency,
-  compactMode
+  embedMode
 }: RouteAmountProps) => {
   const { ethToUSD } = useETHPrice()
 
   return (
     <div className="flex flex-col md:min-w-36">
-      {!compactMode && (
+      {!embedMode && (
         <span className="flex gap-1">
           {destinationAddress ? (
             <Tooltip content={destinationAddress}>
@@ -140,7 +140,10 @@ const RouteAmount = ({
         </span>
       )}
       <div
-        className={twMerge('flex flex-col text-lg', compactMode && 'text-base')}
+        className={twMerge(
+          'flex flex-col text-lg',
+          embedMode && 'whitespace-nowrap text-base'
+        )}
       >
         <div className="flex flex-row items-center gap-1">
           <TokenLogo
@@ -155,7 +158,7 @@ const RouteAmount = ({
               <div
                 className={twMerge(
                   'tabular-nums opacity-80',
-                  compactMode ? 'text-xs' : 'text-sm'
+                  embedMode ? 'text-xs' : 'text-sm'
                 )}
               >
                 ({formatUSD(ethToUSD(Number(amountReceived)))})
@@ -239,7 +242,7 @@ type RouteFeesProps = {
   gasEth?: RouteGas | false
   bridgeFee?: { fee: string | undefined; token: Token }
   showUSDValueForBridgeFee: boolean
-  compactMode: boolean
+  embedMode: boolean
 }
 
 const RouteFees = ({
@@ -248,7 +251,7 @@ const RouteFees = ({
   gasEth,
   bridgeFee,
   showUSDValueForBridgeFee,
-  compactMode
+  embedMode
 }: RouteFeesProps) => {
   const { ethToUSD } = useETHPrice()
 
@@ -258,8 +261,8 @@ const RouteFees = ({
         <div className="flex items-center">
           <Image
             src="/icons/gas.svg"
-            width={compactMode ? 12 : 15}
-            height={compactMode ? 12 : 15}
+            width={embedMode ? 12 : 15}
+            height={embedMode ? 12 : 15}
             alt="gas"
           />
           <span className="ml-1">
@@ -279,7 +282,7 @@ const RouteFees = ({
                   <div
                     className={twMerge(
                       'tabular-nums opacity-80',
-                      compactMode ? 'text-xs' : 'text-sm'
+                      embedMode ? 'text-xs' : 'text-sm'
                     )}
                   >
                     (
@@ -306,8 +309,8 @@ const RouteFees = ({
           <div className="flex items-center gap-1">
             <Image
               src="/icons/bridge.svg"
-              width={compactMode ? 12 : 15}
-              height={compactMode ? 12 : 15}
+              width={embedMode ? 12 : 15}
+              height={embedMode ? 12 : 15}
               alt="bridge fee"
             />
             <span>
@@ -320,7 +323,7 @@ const RouteFees = ({
               <div
                 className={twMerge(
                   'tabular-nums opacity-80',
-                  compactMode ? 'text-xs' : 'text-sm'
+                  embedMode ? 'text-xs' : 'text-sm'
                 )}
               >
                 (
@@ -342,11 +345,11 @@ const RouteFees = ({
 // Route Badge Component
 type RouteBadgeProps = {
   tag?: BadgeType | BadgeType[]
-  compactMode: boolean
+  embedMode: boolean
 }
 
-const RouteBadge = ({ tag, compactMode }: RouteBadgeProps) => {
-  if (!tag || compactMode) return null
+const RouteBadge = ({ tag, embedMode }: RouteBadgeProps) => {
+  if (!tag || embedMode) return null
 
   return (
     <div className="invisible absolute right-2 top-2 flex gap-1 md:visible">
@@ -366,27 +369,30 @@ const RouteSummaryBadge = ({
   bridge,
   bridgeIconURI,
   durationMs
-}: RouteSummaryBadgeProps) => (
-  <div className="flex items-center gap-1 self-start rounded-full bg-white/20 px-2 py-1">
-    <Tooltip content={bridge}>
-      <SafeImage
-        src={bridgeIconURI}
-        width={12}
-        height={12}
-        alt="bridge"
-        className="h-4 w-4 rounded-full"
-        fallback={<div className="h-4 w-4 rounded-full bg-gray-dark" />}
-      />
+}: RouteSummaryBadgeProps) => {
+  const duration = dayjs().add(durationMs, 'millisecond').fromNow(true)
+  return (
+    <Tooltip
+      content={`This transfer uses ${bridge} and will take ~${duration}.`}
+    >
+      <div className="flex flex-nowrap items-center gap-1 self-start rounded-full bg-white/20 px-2 py-1">
+        <SafeImage
+          src={bridgeIconURI}
+          width={12}
+          height={12}
+          alt="bridge"
+          className="h-4 w-4 rounded-full"
+          fallback={<div className="h-4 w-4 rounded-full bg-gray-dark" />}
+        />
+
+        <div className="h-[16px] border border-white/40" />
+
+        <ClockIcon width={18} height={18} className="-ml-[1px] shrink-0" />
+        <span className="whitespace-nowrap text-xs">{duration}</span>
+      </div>
     </Tooltip>
-
-    <div className="h-[16px] border border-white/40" />
-
-    <ClockIcon width={18} height={18} className="-ml-[1px]" />
-    <span className="text-xs">
-      {dayjs().add(durationMs, 'millisecond').fromNow(true)}
-    </span>
-  </div>
-)
+  )
+}
 
 // Main Route Component
 export const Route = React.memo(
@@ -414,9 +420,8 @@ export const Route = React.memo(
       provider: childChainProvider
     })
     const [_token] = useSelectedToken()
-    const [{ amount2, destinationAddress }] = useArbQueryParams()
+    const [{ amount2, destinationAddress, embedMode }] = useArbQueryParams()
     const isBatchTransferSupported = useIsBatchTransferSupported()
-    const compactMode = false // to be connected to query params in a later feature
 
     const token = (overrideToken || _token || childNativeCurrency) as Token
 
@@ -440,7 +445,6 @@ export const Route = React.memo(
         bridgeFee &&
         bridgeFee.token.address === constants.AddressZero) ||
       false
-
     return (
       <button
         className={twMerge(
@@ -450,13 +454,13 @@ export const Route = React.memo(
           !isDisabled &&
             selected &&
             'bg-[#5F7D5B60] ring-[#5F7D5B] focus-within:bg-[#5F7D5B60] hover:bg-[#5F7D5B60]',
-          compactMode && 'md:flex-col'
+          embedMode && 'md:flex-col'
         )}
         onClick={() => onSelectedRouteClick(type)}
         disabled={isDisabled}
         aria-label={`Route ${type}`}
       >
-        <div className="flex flex-row flex-nowrap justify-between">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-2">
           <RouteAmount
             destinationAddress={destinationAddress}
             amountReceived={amountReceived}
@@ -465,10 +469,10 @@ export const Route = React.memo(
             isBatchTransferSupported={isBatchTransferSupported}
             amount2={amount2}
             childNativeCurrency={childNativeCurrency}
-            compactMode={compactMode}
+            embedMode={embedMode}
           />
 
-          {compactMode && (
+          {embedMode && (
             <RouteSummaryBadge
               bridge={bridge}
               bridgeIconURI={bridgeIconURI}
@@ -480,10 +484,10 @@ export const Route = React.memo(
         <div
           className={twMerge(
             'flex flex-row flex-wrap gap-3 md:flex-col md:justify-between',
-            compactMode && 'gap-3 md:flex-row md:justify-start'
+            embedMode && 'gap-3 md:flex-row md:justify-start'
           )}
         >
-          {!compactMode && (
+          {!embedMode && (
             <>
               <RouteDuration
                 durationMs={durationMs}
@@ -499,11 +503,11 @@ export const Route = React.memo(
             gasEth={gasEth}
             bridgeFee={bridgeFee}
             showUSDValueForBridgeFee={showUSDValueForBridgeFee}
-            compactMode={compactMode}
+            embedMode={embedMode}
           />
         </div>
 
-        <RouteBadge tag={tag} compactMode={compactMode} />
+        <RouteBadge tag={tag} embedMode={embedMode} />
       </button>
     )
   }
