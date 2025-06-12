@@ -33,7 +33,12 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { isLifiRoute, RouteContext, useRouteStore } from './hooks/useRouteStore'
+import {
+  isLifiRoute,
+  RouteContext,
+  RouteType,
+  useRouteStore
+} from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { addressesEqual } from '../../util/AddressUtils'
 
@@ -51,7 +56,11 @@ type ErrorMessages = {
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
-  options: { isSmartContractWallet: boolean; isDepositMode: boolean }
+  options: {
+    isSmartContractWallet: boolean
+    isDepositMode: boolean
+    selectedRoute: RouteType | undefined
+  }
 ) {
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } = gasSummary
 
@@ -67,6 +76,11 @@ function sanitizeEstimatedGasFees(
 
   // For smart contract wallets, the relayer pays the gas fees
   if (options.isSmartContractWallet) {
+    // For CCTP, the relayer pays for everything
+    if (options.selectedRoute === 'cctp') {
+      return { estimatedL1GasFees: 0, estimatedL2GasFees: 0 }
+    }
+
     if (options.isDepositMode) {
       // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
       return {
@@ -261,6 +275,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     const { estimatedL1GasFees, estimatedL2GasFees } = sanitizeEstimatedGasFees(
       gasSummary,
       {
+        selectedRoute,
         isSmartContractWallet,
         isDepositMode
       }
