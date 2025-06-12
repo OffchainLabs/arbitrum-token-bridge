@@ -135,7 +135,8 @@ export class LifiTransferStarter extends BridgeTransferStarter {
     const tx = await sendTransaction(wagmiConfig, {
       to: this.lifiData.transactionRequest.to as Address,
       data: this.lifiData.transactionRequest.data as Address,
-      value: BigInt(this.lifiData.transactionRequest.value)
+      value: BigInt(this.lifiData.transactionRequest.value),
+      chainId: (await this.sourceChainProvider.getNetwork()).chainId
     })
 
     return {
