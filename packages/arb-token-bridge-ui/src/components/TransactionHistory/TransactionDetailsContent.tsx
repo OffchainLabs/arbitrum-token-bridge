@@ -193,7 +193,7 @@ export const TransactionDetailsContent = ({
       </DetailsBox>
 
       <DetailsBox header="Network">
-        <div className="flex space-x-4">
+        <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <NetworkImage chainId={sourceChainId} className="h-5 w-5" />
             <span>{sourceNetworkName}</span>
