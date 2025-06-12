@@ -18,6 +18,7 @@ import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnaly
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 import { Layout } from '../common/Layout'
 import { AppProviders } from './AppProviders'
+import { RecoverFunds } from '../RecoverFunds'
 
 declare global {
   interface Window {
@@ -129,6 +130,7 @@ export default function App() {
     <AppProviders>
       <Layout>
         <AppContent />
+        <RecoverFunds />
       </Layout>
     </AppProviders>
   )
