@@ -22,7 +22,10 @@ import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  useArbQueryParams,
+  DisabledFeatures
+} from '../../hooks/useArbQueryParams'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from './NetworkImage'
@@ -33,6 +36,7 @@ import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/util
 import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useChainIdsForNetworkSelection'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
+import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -116,6 +120,10 @@ export function NetworkButton({
   const { isSmartContractWallet, isLoading } = useAccountType()
   const isSource = type === 'source'
   const chains = useChainIdsForNetworkSelection({ isSource })
+  const { isFeatureDisabled } = useDisabledFeatures()
+  const isNetworkSelectionDisabled = isFeatureDisabled(
+    DisabledFeatures.NETWORK_SELECTION
+  )
 
   const selectedChainId = isSource
     ? networks.sourceChain.id
@@ -124,6 +132,7 @@ export function NetworkButton({
   const hasOneOrLessChain = chains.length <= 1
 
   const disabled =
+    isNetworkSelectionDisabled ||
     hasOneOrLessChain ||
     (isSmartContractWallet && type === 'source') ||
     isLoading
@@ -250,6 +259,7 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
+  const [{ embedMode }] = useArbQueryParams()
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -395,10 +405,12 @@ function NetworksPanel({
           )}
         </AutoSizer>
       </SearchPanelTable>
-      <div className="flex justify-between pb-2">
-        <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
-        <AddCustomOrbitChainButton closeDialog={close} />
-      </div>
+      {!embedMode && (
+        <div className="flex justify-between pb-2">
+          <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
+          <AddCustomOrbitChainButton closeDialog={close} />
+        </div>
+      )}
     </div>
   )
 }

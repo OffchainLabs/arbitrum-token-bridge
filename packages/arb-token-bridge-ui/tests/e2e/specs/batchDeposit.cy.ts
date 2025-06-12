@@ -119,6 +119,7 @@ describe('Batch Deposit', () => {
     }
 
     context('should deposit successfully', () => {
+      cy.acceptTnC()
       cy.clickMoveFundsButton()
       cy.findTransactionInTransactionHistory({
         ...txData,
@@ -222,6 +223,7 @@ describe('Batch Deposit', () => {
     }
 
     context('should deposit successfully', () => {
+      cy.acceptTnC()
       cy.clickMoveFundsButton()
       cy.findTransactionInTransactionHistory({
         ...txData,

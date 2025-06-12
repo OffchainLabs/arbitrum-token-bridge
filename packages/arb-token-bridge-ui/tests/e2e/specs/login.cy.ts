@@ -41,9 +41,6 @@ describe('Login Account', () => {
 
   it('should show connect wallet if not logged in', () => {
     cy.visit('/')
-    cy.findByText(/Agree to Terms and Continue/i)
-      .should('be.visible')
-      .click()
     cy.findAllByText('Connect Wallet').first().should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
   })

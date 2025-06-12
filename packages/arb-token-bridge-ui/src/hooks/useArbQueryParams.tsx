@@ -40,7 +40,8 @@ export enum TabParamEnum {
 
 export enum DisabledFeatures {
   BATCH_TRANSFERS = 'batch-transfers',
-  TX_HISTORY = 'tx-history'
+  TX_HISTORY = 'tx-history',
+  NETWORK_SELECTION = 'network-selection'
 }
 
 export enum AmountQueryParamEnum {
@@ -120,7 +121,8 @@ export const useArbQueryParams = () => {
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
     tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
-    disabledFeatures: withDefault(DisabledFeaturesParam, []) // disabled features in the bridge
+    disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
+    embedMode: withDefault(BooleanParam, false) // enable/disable embed mode
   })
 }
 
