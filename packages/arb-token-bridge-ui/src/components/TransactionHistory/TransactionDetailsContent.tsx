@@ -199,7 +199,7 @@ export const TransactionDetailsContent = ({
             <span>{sourceNetworkName}</span>
           </div>
           <ArrowRightIcon width={16} />
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
             <NetworkImage chainId={destinationChainId} className="h-5 w-5" />
             <span>{destinationNetworkName}</span>
           </div>
