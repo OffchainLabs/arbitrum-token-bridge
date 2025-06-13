@@ -383,7 +383,7 @@ export function TransferPanel() {
     return true
   }
 
-  const stepExecutor: UiDriverStepExecutor = async step => {
+  const stepExecutor: UiDriverStepExecutor = async (context, step) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(step)
     }
