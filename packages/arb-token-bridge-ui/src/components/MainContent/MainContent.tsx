@@ -9,6 +9,7 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { RecoverFunds } from '../RecoverFunds'
 
 export function MainContent() {
   const [isArbitrumStatsVisible] =
@@ -45,6 +46,8 @@ export function MainContent() {
           </Tab.Panels>
         </Tab.Group>
       </div>
+
+      <RecoverFunds />
 
       {/* Settings panel */}
       <SettingsDialog />
