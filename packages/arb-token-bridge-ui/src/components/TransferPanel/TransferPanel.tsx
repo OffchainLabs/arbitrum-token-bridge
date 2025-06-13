@@ -403,12 +403,42 @@ export function TransferPanel() {
       case 'dialog': {
         return confirmDialog(step.payload)
       }
+
+      case 'scw_tooltip': {
+        showDelayedSmartContractTxRequest()
+        return
+      }
+
+      case 'tx': {
+        try {
+          const tx = await signer!.sendTransaction(step.payload.txRequest)
+          const txReceipt = await tx.wait()
+
+          return { data: txReceipt }
+        } catch (error) {
+          // capture error and show toast for anything that's not user rejecting error
+          if (!isUserRejectedError(error)) {
+            handleError({
+              error,
+              label: step.payload.txRequestLabel,
+              category: 'transaction_signing'
+            })
+
+            errorToast(`${(error as Error)?.message ?? error}`)
+          }
+
+          return { error: error as unknown as Error }
+        }
+      }
     }
   }
 
   const transferCctp = async () => {
     if (!selectedToken) {
       return
+    }
+    if (!walletAddress) {
+      throw new Error(`walletAddress is undefined`)
     }
     if (!signer) {
       throw new Error(signerUndefinedError)
@@ -423,11 +453,18 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         latestNetworks.current
 
+      const cctpTransferStarter = new CctpTransferStarter({
+        sourceChainProvider,
+        destinationChainProvider
+      })
+
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
+        amountBigNumber,
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
-        destinationAddress
+        destinationAddress,
+        transferStarter: cctpTransferStarter
       })
 
       // this is only necessary while we are migrating to the ui driver
@@ -436,49 +473,6 @@ export function TransferPanel() {
       // after we are done, we can change the return type of `drive` to `void`
       if (returnEarly) {
         return
-      }
-
-      const cctpTransferStarter = new CctpTransferStarter({
-        sourceChainProvider,
-        destinationChainProvider
-      })
-
-      const isTokenApprovalRequired =
-        await cctpTransferStarter.requiresTokenApproval({
-          amount: amountBigNumber,
-          owner: await signer.getAddress()
-        })
-
-      if (isTokenApprovalRequired) {
-        const userConfirmation = await confirmDialog('approve_token')
-        if (!userConfirmation) return false
-
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
-        try {
-          const tx = await cctpTransferStarter.approveToken({
-            signer,
-            amount: amountBigNumber
-          })
-
-          await tx.wait()
-        } catch (error) {
-          if (isUserRejectedError(error)) {
-            return
-          }
-          handleError({
-            error,
-            label: 'cctp_approve_token',
-            category: 'token_approval'
-          })
-          errorToast(
-            `USDC approval transaction failed: ${
-              (error as Error)?.message ?? error
-            }`
-          )
-          return
-        }
       }
 
       let depositForBurnTx
