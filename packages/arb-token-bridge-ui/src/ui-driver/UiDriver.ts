@@ -64,6 +64,7 @@ export type UiDriverStepGenerator<TStep extends UiDriverStep = UiDriverStep> = (
 ) => AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep['type']>>
 
 export type UiDriverStepExecutor<TStep extends UiDriverStep = UiDriverStep> = (
+  context: UiDriverContext,
   step: TStep
 ) => Promise<UiDriverStepResultFor<TStep['type']>>
 
@@ -100,7 +101,7 @@ export async function drive<TStep extends UiDriverStep>(
     }
 
     // execute current step and obtain the result
-    const result = await executor(step)
+    const result = await executor(context, step)
 
     // pass the result back into the generator
     nextStep = await flow.next(result)
