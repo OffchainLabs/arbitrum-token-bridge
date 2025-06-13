@@ -8,7 +8,16 @@ import {
 } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
+import { ChainId } from '../types/ChainId'
+
 export { OutgoingMessageState }
+
+export type AddTokensFromListArgs = {
+  tokenList: TokenList
+  listId: string
+  parentChainId: ChainId
+  childChainId: ChainId
+}
 
 export enum TokenType {
   ERC20 = 'ERC20'
@@ -101,7 +110,12 @@ export interface ArbTokenBridgeEth {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
-  addTokensFromList: (tokenList: TokenList, listID: string) => void
+  addTokensFromList: ({
+    tokenList,
+    listId,
+    parentChainId,
+    childChainId
+  }: AddTokensFromListArgs) => void
   removeTokensFromList: (listID: string) => void
   updateTokenData: (l1Address: string) => Promise<void>
   triggerOutbox: (params: {
