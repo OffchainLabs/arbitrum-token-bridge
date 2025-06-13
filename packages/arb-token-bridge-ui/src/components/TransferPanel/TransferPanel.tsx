@@ -4,6 +4,7 @@ import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import { useAccount, useConfig } from 'wagmi'
+import { writeContract } from '@wagmi/core'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 import { scaleFrom18DecimalsToNativeTokenDecimals } from '@arbitrum/sdk'
@@ -413,6 +414,34 @@ export function TransferPanel() {
         try {
           const tx = await signer!.sendTransaction(step.payload.txRequest)
           const txReceipt = await tx.wait()
+
+          return { data: txReceipt }
+        } catch (error) {
+          // capture error and show toast for anything that's not user rejecting error
+          if (!isUserRejectedError(error)) {
+            handleError({
+              error,
+              label: step.payload.txRequestLabel,
+              category: 'transaction_signing'
+            })
+
+            errorToast(`${(error as Error)?.message ?? error}`)
+          }
+
+          return { error: error as unknown as Error }
+        }
+      }
+
+      case 'tx_wagmi': {
+        try {
+          const txHash = await writeContract(
+            wagmiConfig,
+            step.payload.txRequest
+          )
+          const txReceipt =
+            await context.transferStarter.sourceChainProvider.waitForTransaction(
+              txHash
+            )
 
           return { data: txReceipt }
         } catch (error) {
