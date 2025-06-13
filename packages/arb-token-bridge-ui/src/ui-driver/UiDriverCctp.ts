@@ -76,6 +76,8 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
     type: 'tx_history_add',
     payload: createMergedTransaction(context, receipt.transactionHash)
   }
+
+  yield* step({ type: 'end' })
 }
 
 function createMergedTransaction(
