@@ -1,6 +1,6 @@
 import { BigNumber, providers } from 'ethers'
 import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
-import { SimulateContractReturnType } from '@wagmi/core'
+import { Config, SimulateContractReturnType } from '@wagmi/core'
 
 import { DialogType } from '../components/common/Dialog2'
 
@@ -19,6 +19,7 @@ export type UiDriverContext = {
   walletAddress: string
   destinationAddress?: string
   transferStarter: BridgeTransferStarter
+  wagmiConfig: Config
 }
 
 export type UiDriverStep =
