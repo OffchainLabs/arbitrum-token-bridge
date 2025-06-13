@@ -8,7 +8,6 @@ import {
 import useSWRImmutable from 'swr/immutable'
 import {
   getChains,
-  getExplorerUrl,
   getNetworkName,
   getSupportedChainIds,
   isNetwork
@@ -44,7 +43,6 @@ import { NoteBox } from './common/NoteBox'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { shortenAddress } from '../util/CommonUtils'
 import { Tooltip } from './common/Tooltip'
-import { ExternalLink } from './common/ExternalLink'
 
 async function createRetryableTicket({
   inboxAddress,
