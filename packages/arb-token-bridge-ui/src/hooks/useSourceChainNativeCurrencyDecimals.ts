@@ -1,5 +1,3 @@
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { ChainId } from '../types/ChainId'
 import { isNetwork } from '../util/networks'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useNetworks } from './useNetworks'
