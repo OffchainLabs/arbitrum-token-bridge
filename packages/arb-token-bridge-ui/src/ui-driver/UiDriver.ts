@@ -31,8 +31,9 @@ export type UiDriverContext = {
 }
 
 export type UiDriverStep =
-  | { type: 'start' } //
+  | { type: 'start' }
   | { type: 'return' }
+  | { type: 'end' }
   | { type: 'dialog'; payload: Dialog }
   | { type: 'scw_tooltip' }
   | {
@@ -78,6 +79,8 @@ export type UiDriverStepResultFor<TStepType extends UiDriverStepType> =
   TStepType extends 'start'
     ? void
     : TStepType extends 'return'
+    ? void
+    : TStepType extends 'end'
     ? void
     : TStepType extends 'dialog'
     ? boolean
