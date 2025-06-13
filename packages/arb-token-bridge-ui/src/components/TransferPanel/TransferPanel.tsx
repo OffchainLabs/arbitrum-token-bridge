@@ -416,6 +416,11 @@ export function TransferPanel() {
         return
       }
 
+      case 'end': {
+        setTransferring(false)
+        clearAmountInput()
+        return
+      }
       case 'dialog': {
         return confirmDialog(step.payload)
       }
@@ -491,7 +496,7 @@ export function TransferPanel() {
         destinationChainProvider
       })
 
-      const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
+      await drive(stepGeneratorForCctp, stepExecutor, {
         amount,
         amountBigNumber,
         isDepositMode,
@@ -505,21 +510,8 @@ export function TransferPanel() {
         childChain,
         parentChain
       })
-
-      // this is only necessary while we are migrating to the ui driver
-      // so we can know when to stop the execution of the rest of the function
-      //
-      // after we are done, we can change the return type of `drive` to `void`
-      if (returnEarly) {
-        return
-      }
-
-      setTransferring(false)
-      clearAmountInput()
-      clearRoute()
     } catch (e) {
-    } finally {
-      setTransferring(false)
+      // todo: double-check error handling
     }
   }
 
