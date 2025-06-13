@@ -64,6 +64,7 @@ export type TransferPrepareTxRequestProps = {
   from: string
   destinationAddress?: string
   overrides?: TransferOverrides
+  wagmiConfig?: Config
 }
 
 export type TransferProps = {
