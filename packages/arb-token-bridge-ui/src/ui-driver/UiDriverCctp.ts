@@ -2,7 +2,7 @@ import { step, UiDriverStepGenerator } from './UiDriver'
 import {
   stepGeneratorForDialog,
   stepGeneratorForSmartContractWalletDestinationDialog,
-  stepGeneratorForTransaction
+  stepGeneratorForTransactionEthers
 } from './UiDriverCommon'
 
 export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
@@ -27,7 +27,7 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
       amount: context.amountBigNumber
     })
 
-    yield* stepGeneratorForTransaction(context, {
+    yield* stepGeneratorForTransactionEthers(context, {
       txRequest: request,
       txRequestLabel: 'stepGeneratorForCctp.approveToken'
     })

@@ -36,7 +36,7 @@ export const stepGeneratorForSmartContractWalletDestinationDialog: UiDriverStepG
     }
   }
 
-export type UiDriverStepGeneratorForTransaction<
+export type UiDriverStepGeneratorForTransactionEthers<
   TStep extends UiDriverStep = UiDriverStep
 > = (
   context: UiDriverContext,
@@ -47,7 +47,7 @@ export type UiDriverStepGeneratorForTransaction<
   UiDriverStepResultFor<TStep['type']>
 >
 
-export const stepGeneratorForTransaction: UiDriverStepGeneratorForTransaction =
+export const stepGeneratorForTransactionEthers: UiDriverStepGeneratorForTransactionEthers =
   async function* (context, payload) {
     if (context.isSmartContractWallet) {
       yield* step({ type: 'scw_tooltip' })
