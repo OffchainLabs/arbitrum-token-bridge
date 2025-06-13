@@ -155,7 +155,7 @@ it(`
     .hasType('dialog')
     .hasPayload('approve_token')
   expectStep(await nextStep(generator, [true]))
-    .hasType('tx')
+    .hasType('tx_ethers')
     .hasPayload(approveTokenPayload(mockedApproveTokenTxRequest))
   expectStep(await nextStep(generator, [{ error: new Error() }]))
     //
@@ -201,7 +201,7 @@ it(`
     .hasType('dialog')
     .hasPayload('approve_token')
   expectStep(await nextStep(generator, [true]))
-    .hasType('tx')
+    .hasType('tx_ethers')
     .hasPayload(approveTokenPayload(mockedApproveTokenTxRequest))
   expectStep(await nextStep(generator, [{ data: {} as TransactionReceipt }]))
     //
@@ -326,7 +326,7 @@ it(`
     //
     .hasType('scw_tooltip')
   expectStep(await nextStep(generator))
-    .hasType('tx')
+    .hasType('tx_ethers')
     .hasPayload(approveTokenPayload(mockedApproveTokenTxRequest))
   expectStep(await nextStep(generator, [{ data: {} as TransactionReceipt }]))
     //

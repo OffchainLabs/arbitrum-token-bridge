@@ -409,7 +409,7 @@ export function TransferPanel() {
         return
       }
 
-      case 'tx': {
+      case 'tx_ethers': {
         try {
           const tx = await signer!.sendTransaction(step.payload.txRequest)
           const txReceipt = await tx.wait()

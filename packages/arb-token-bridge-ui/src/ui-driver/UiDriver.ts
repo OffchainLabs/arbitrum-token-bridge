@@ -26,7 +26,7 @@ export type UiDriverStep =
   | { type: 'dialog'; payload: Dialog }
   | { type: 'scw_tooltip' }
   | {
-      type: 'tx'
+      type: 'tx_ethers'
       payload: {
         txRequest: providers.TransactionRequest
         txRequestLabel: string
@@ -55,7 +55,7 @@ export type UiDriverStepResultFor<TStepType extends UiDriverStepType> =
     ? boolean
     : TStepType extends 'scw_tooltip'
     ? void
-    : TStepType extends 'tx'
+    : TStepType extends 'tx_ethers'
     ? Result<providers.TransactionReceipt>
     : never
 
