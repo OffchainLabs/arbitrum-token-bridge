@@ -8,6 +8,7 @@ import {
 import useSWRImmutable from 'swr/immutable'
 import {
   getChains,
+  getExplorerUrl,
   getNetworkName,
   getSupportedChainIds,
   isNetwork
@@ -41,6 +42,9 @@ import { twMerge } from 'tailwind-merge'
 import { Loader } from './common/atoms/Loader'
 import { NoteBox } from './common/NoteBox'
 import { trackEvent } from '../util/AnalyticsUtils'
+import { shortenAddress } from '../util/CommonUtils'
+import { Tooltip } from './common/Tooltip'
+import { ExternalLink } from './common/ExternalLink'
 
 async function createRetryableTicket({
   inboxAddress,
@@ -229,15 +233,10 @@ export function useFundsOnAliasedAddress({
       const chainIds = getSupportedChainIds({
         includeTestnets: isTestnet,
         includeMainnets: !isTestnet
-      }).filter(
-        chainId =>
-          ![
-            ChainId.Ethereum,
-            ChainId.Sepolia,
-            ChainId.Base,
-            ChainId.BaseSepolia
-          ].includes(chainId)
-      )
+      }).filter(chainId => {
+        const { isBase, isEthereumMainnetOrTestnet } = isNetwork(chainId)
+        return !isBase && !isEthereumMainnetOrTestnet
+      })
 
       const balancePromises = chainIds.map(async chainId => {
         const provider = getProviderForChainId(chainId)
@@ -303,11 +302,32 @@ export function RecoverFunds() {
   return (
     <>
       <DialogWrapper {...dialogProps} />
-      <NoteBox className="left-0 right-0 m-auto w-[600px]">
+      <NoteBox className="m-auto w-[600px]">
         <div className="flex items-center">
-          <div>{`There are funds on ${getAliasedAddress(
-            address
-          )} (Alias of ${address}) to be recovered.`}</div>
+          <p>
+            We detected some funds on{' '}
+            <Tooltip
+              wrapperClassName="inline arb-hover underline cursor-help"
+              content={getAliasedAddress(address)}
+              tippyProps={{
+                hideOnClick: false
+              }}
+            >
+              {shortenAddress(getAliasedAddress(address))}
+            </Tooltip>{' '}
+            alias of currently connected address (
+            <Tooltip
+              wrapperClassName="inline arb-hover underline cursor-help"
+              content={address}
+              tippyProps={{
+                hideOnClick: false
+              }}
+            >
+              {shortenAddress(address)}
+            </Tooltip>
+            )
+          </p>
+
           <Button
             variant="primary"
             onClick={() => openDialog('recover_funds')}
