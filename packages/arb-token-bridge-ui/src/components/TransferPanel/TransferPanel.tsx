@@ -452,6 +452,13 @@ export function TransferPanel() {
           return handleTxSigningError(error, step.payload.txRequestLabel)
         }
       }
+
+      case 'tx_history_add': {
+        addPendingTransaction(step.payload)
+        switchToTransactionHistoryTab()
+
+        return
+      }
     }
   }
 
@@ -472,8 +479,12 @@ export function TransferPanel() {
     const destinationAddress = latestDestinationAddress.current
 
     try {
-      const { sourceChainProvider, destinationChainProvider, sourceChain } =
-        latestNetworks.current
+      const {
+        sourceChainProvider,
+        destinationChainProvider,
+        sourceChain,
+        destinationChain
+      } = latestNetworks.current
 
       const cctpTransferStarter = new CctpTransferStarter({
         sourceChainProvider,
@@ -481,13 +492,18 @@ export function TransferPanel() {
       })
 
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
+        amount,
         amountBigNumber,
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
         destinationAddress,
         transferStarter: cctpTransferStarter,
-        wagmiConfig
+        wagmiConfig,
+        sourceChain,
+        destinationChain,
+        childChain,
+        parentChain
       })
 
       // this is only necessary while we are migrating to the ui driver
@@ -498,94 +514,6 @@ export function TransferPanel() {
         return
       }
 
-      let depositForBurnTx
-
-      try {
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
-        const transfer = await cctpTransferStarter.transfer({
-          amount: amountBigNumber,
-          signer,
-          destinationAddress,
-          wagmiConfig
-        })
-        depositForBurnTx = transfer.sourceChainTransaction
-      } catch (error) {
-        if (isUserRejectedError(error)) {
-          return
-        }
-        handleError({
-          error,
-          label: 'cctp_transfer',
-          category: 'transaction_signing'
-        })
-        errorToast(
-          `USDC ${
-            isDepositMode ? 'Deposit' : 'Withdrawal'
-          } transaction failed: ${(error as Error)?.message ?? error}`
-        )
-      }
-
-      const childChainName = getNetworkName(childChain.id)
-
-      if (isSmartContractWallet) {
-        // For SCW, we assume that the transaction went through
-        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: 'Smart Contract',
-          network: childChainName,
-          amount: Number(amount),
-          complete: false,
-          version: 2
-        })
-
-        return
-      }
-
-      if (!depositForBurnTx) {
-        return
-      }
-
-      trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-        accountType: 'EOA',
-        network: childChainName,
-        amount: Number(amount),
-        complete: false,
-        version: 2
-      })
-
-      const newTransfer: MergedTransaction = {
-        txId: depositForBurnTx.hash,
-        asset: 'USDC',
-        assetType: AssetType.ERC20,
-        blockNum: null,
-        createdAt: dayjs().valueOf(),
-        direction: isDepositMode ? 'deposit' : 'withdraw',
-        isWithdrawal: !isDepositMode,
-        resolvedAt: null,
-        status: 'pending',
-        uniqueId: null,
-        value: amount,
-        depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
-        destination: destinationAddress ?? walletAddress,
-        sender: walletAddress,
-        isCctp: true,
-        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
-        cctpData: {
-          sourceChainId: sourceChain.id,
-          attestationHash: null,
-          messageBytes: null,
-          receiveMessageTransactionHash: null,
-          receiveMessageTimestamp: null
-        },
-        parentChainId: parentChain.id,
-        childChainId: childChain.id,
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      }
-
-      addPendingTransaction(newTransfer)
-      switchToTransactionHistoryTab()
       setTransferring(false)
       clearAmountInput()
       clearRoute()
