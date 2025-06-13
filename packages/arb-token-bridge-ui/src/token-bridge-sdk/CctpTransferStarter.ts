@@ -128,7 +128,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       sourceChainId
     })
 
-    const { request } = await simulateContract(wagmiConfig, {
+    return simulateContract(wagmiConfig, {
       address: tokenMessengerContractAddress,
       abi: TokenMessengerAbi,
       functionName: 'depositForBurn',
@@ -139,8 +139,6 @@ export class CctpTransferStarter extends BridgeTransferStarter {
         usdcContractAddress
       ]
     })
-
-    return request as unknown as SimulateContractReturnType['request']
   }
 
   async transfer({
@@ -149,7 +147,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     destinationAddress,
     wagmiConfig
   }: TransferProps & { wagmiConfig: Config }) {
-    const request = await this.transferPrepareTxRequest({
+    const { request } = await this.transferPrepareTxRequest({
       from: await getAddressFromSigner(signer),
       amount,
       destinationAddress,

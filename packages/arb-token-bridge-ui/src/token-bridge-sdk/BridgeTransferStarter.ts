@@ -184,8 +184,8 @@ export abstract class BridgeTransferStarter {
   public async transferPrepareTxRequest(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     props?: TransferPrepareTxRequestProps
-  ): Promise<TransactionRequest | SimulateContractReturnType['request']> {
-    return {} as TransactionRequest | SimulateContractReturnType['request']
+  ): Promise<TransactionRequest | SimulateContractReturnType> {
+    return {} as TransactionRequest | SimulateContractReturnType
   }
 
   public abstract transferEstimateGas(
