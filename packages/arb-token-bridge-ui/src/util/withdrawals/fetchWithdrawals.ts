@@ -170,10 +170,8 @@ export async function fetchWithdrawals({
     ? await backOff(() =>
         fetchETHWithdrawalsFromEventLogs({
           receiver,
-          // not sure why eslint is treating "toBlock" as "number | undefined" here
-          // even though typescript recognizes it as "number"
-          fromBlock: toBlock ?? 0 + 1,
-          toBlock: 'latest',
+          fromBlock: fromBlock ?? 1,
+          toBlock: toBlock ?? 'latest',
           l2Provider: l2Provider
         })
       )
@@ -185,8 +183,8 @@ export async function fetchWithdrawals({
     await fetchTokenWithdrawalsFromEventLogsSequentially({
       sender,
       receiver,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
+      fromBlock: fromBlock ?? 1,
+      toBlock: toBlock ?? 'latest',
       provider: l2Provider,
       queries
     })
