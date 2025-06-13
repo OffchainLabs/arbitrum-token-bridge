@@ -7,6 +7,7 @@ import { orbitChains } from '../../util/orbitChainsList'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TokenListWithId } from '../../util/TokenListUtils'
 
+// TODO: cache
 function createTokenLogoMapFromTokenLists(
   tokenLists: TokenListWithId[] | undefined
 ) {
