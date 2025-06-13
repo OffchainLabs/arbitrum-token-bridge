@@ -2,7 +2,8 @@ import { step, UiDriverStepGenerator } from './UiDriver'
 import {
   stepGeneratorForDialog,
   stepGeneratorForSmartContractWalletDestinationDialog,
-  stepGeneratorForTransactionEthers
+  stepGeneratorForTransactionEthers,
+  stepGeneratorForTransactionWagmi
 } from './UiDriverCommon'
 
 export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
@@ -32,4 +33,17 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
       txRequestLabel: 'stepGeneratorForCctp.approveToken'
     })
   }
+
+  const request = await context.transferStarter.transferPrepareTxRequest({
+    amount: context.amountBigNumber,
+    from: context.walletAddress,
+    destinationAddress: context.destinationAddress,
+    wagmiConfig: context.wagmiConfig
+  })
+
+  yield* stepGeneratorForTransactionWagmi(context, {
+    // @ts-expect-error - TODO: fix this
+    txRequest: request,
+    txRequestLabel: 'stepGeneratorForCctp.transfer'
+  })
 }
