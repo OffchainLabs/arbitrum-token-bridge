@@ -1,8 +1,11 @@
 import { BigNumber, providers } from 'ethers'
 import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { Config, SimulateContractReturnType } from '@wagmi/core'
+import { Chain } from 'wagmi/chains'
 
 import { DialogType } from '../components/common/Dialog2'
+import { trackEvent } from '../util/AnalyticsUtils'
+import { MergedTransaction } from '../state/app/state'
 
 export type Dialog = Extract<
   DialogType,
@@ -13,6 +16,7 @@ export type Dialog = Extract<
 >
 
 export type UiDriverContext = {
+  amount: string
   amountBigNumber: BigNumber
   isDepositMode: boolean
   isSmartContractWallet: boolean
@@ -20,6 +24,10 @@ export type UiDriverContext = {
   destinationAddress?: string
   transferStarter: BridgeTransferStarter
   wagmiConfig: Config
+  sourceChain: Chain
+  destinationChain: Chain
+  childChain: Chain
+  parentChain: Chain
 }
 
 export type UiDriverStep =
@@ -40,6 +48,17 @@ export type UiDriverStep =
         txRequest: SimulateContractReturnType
         txRequestLabel: string
       }
+    }
+  | {
+      type: 'analytics'
+      payload: {
+        event: Parameters<typeof trackEvent>[0]
+        properties?: Parameters<typeof trackEvent>[1]
+      }
+    }
+  | {
+      type: 'tx_history_add'
+      payload: MergedTransaction
     }
 
 export type UiDriverStepType = UiDriverStep['type']
@@ -66,6 +85,10 @@ export type UiDriverStepResultFor<TStepType extends UiDriverStepType> =
     ? void
     : TStepType extends 'tx_ethers' | 'tx_wagmi'
     ? Result<providers.TransactionReceipt>
+    : TStepType extends 'analytics'
+    ? void
+    : TStepType extends 'tx_history_add'
+    ? void
     : never
 
 export type UiDriverStepGenerator<TStep extends UiDriverStep = UiDriverStep> = (
