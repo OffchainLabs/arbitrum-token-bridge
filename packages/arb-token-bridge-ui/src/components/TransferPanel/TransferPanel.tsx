@@ -493,7 +493,8 @@ export function TransferPanel() {
         isSmartContractWallet,
         walletAddress,
         destinationAddress,
-        transferStarter: cctpTransferStarter
+        transferStarter: cctpTransferStarter,
+        wagmiConfig
       })
 
       // this is only necessary while we are migrating to the ui driver
