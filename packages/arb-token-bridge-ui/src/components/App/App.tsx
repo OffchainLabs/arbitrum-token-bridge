@@ -130,7 +130,6 @@ export default function App() {
     <AppProviders>
       <Layout>
         <AppContent />
-        <RecoverFunds />
       </Layout>
     </AppProviders>
   )
