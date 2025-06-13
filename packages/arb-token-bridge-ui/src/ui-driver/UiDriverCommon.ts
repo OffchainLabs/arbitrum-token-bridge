@@ -36,24 +36,24 @@ export const stepGeneratorForSmartContractWalletDestinationDialog: UiDriverStepG
     }
   }
 
-export type UiDriverStepGeneratorForTransaction<
+export type UiDriverStepGeneratorForTransactionEthers<
   TStep extends UiDriverStep = UiDriverStep
 > = (
   context: UiDriverContext,
-  payload: UiDriverStepPayloadFor<'tx'>
+  payload: UiDriverStepPayloadFor<'tx_ethers'>
 ) => AsyncGenerator<
   TStep,
   providers.TransactionReceipt | void,
   UiDriverStepResultFor<TStep['type']>
 >
 
-export const stepGeneratorForTransaction: UiDriverStepGeneratorForTransaction =
+export const stepGeneratorForTransactionEthers: UiDriverStepGeneratorForTransactionEthers =
   async function* (context, payload) {
     if (context.isSmartContractWallet) {
       yield* step({ type: 'scw_tooltip' })
     }
 
-    const { error, data } = yield* step({ type: 'tx', payload })
+    const { error, data } = yield* step({ type: 'tx_ethers', payload })
 
     if (typeof error !== 'undefined') {
       yield* step({ type: 'return' })
