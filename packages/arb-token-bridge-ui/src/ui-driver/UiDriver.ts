@@ -36,7 +36,7 @@ export type UiDriverStep =
   | {
       type: 'tx_wagmi'
       payload: {
-        txRequest: SimulateContractReturnType['request']
+        txRequest: SimulateContractReturnType
         txRequestLabel: string
       }
     }
