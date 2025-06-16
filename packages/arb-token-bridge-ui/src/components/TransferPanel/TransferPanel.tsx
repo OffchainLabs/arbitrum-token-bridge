@@ -440,7 +440,7 @@ export function TransferPanel() {
         try {
           const txHash = await writeContract(
             wagmiConfig,
-            step.payload.txRequest
+            step.payload.txRequest.request
           )
           const txReceipt =
             await context.transferStarter.sourceChainProvider.waitForTransaction(
