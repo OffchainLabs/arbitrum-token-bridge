@@ -384,6 +384,21 @@ export function TransferPanel() {
     return true
   }
 
+  const handleTxSigningError = (error: unknown, txRequestLabel: string) => {
+    // capture error and show toast for anything that's not user rejecting error
+    if (!isUserRejectedError(error)) {
+      handleError({
+        error,
+        label: txRequestLabel,
+        category: 'transaction_signing'
+      })
+
+      errorToast(`${(error as Error)?.message ?? error}`)
+    }
+
+    return { error: error as unknown as Error }
+  }
+
   const stepExecutor: UiDriverStepExecutor = async (context, step) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(step)
@@ -417,18 +432,7 @@ export function TransferPanel() {
 
           return { data: txReceipt }
         } catch (error) {
-          // capture error and show toast for anything that's not user rejecting error
-          if (!isUserRejectedError(error)) {
-            handleError({
-              error,
-              label: step.payload.txRequestLabel,
-              category: 'transaction_signing'
-            })
-
-            errorToast(`${(error as Error)?.message ?? error}`)
-          }
-
-          return { error: error as unknown as Error }
+          return handleTxSigningError(error, step.payload.txRequestLabel)
         }
       }
 
@@ -445,18 +449,7 @@ export function TransferPanel() {
 
           return { data: txReceipt }
         } catch (error) {
-          // capture error and show toast for anything that's not user rejecting error
-          if (!isUserRejectedError(error)) {
-            handleError({
-              error,
-              label: step.payload.txRequestLabel,
-              category: 'transaction_signing'
-            })
-
-            errorToast(`${(error as Error)?.message ?? error}`)
-          }
-
-          return { error: error as unknown as Error }
+          return handleTxSigningError(error, step.payload.txRequestLabel)
         }
       }
     }
