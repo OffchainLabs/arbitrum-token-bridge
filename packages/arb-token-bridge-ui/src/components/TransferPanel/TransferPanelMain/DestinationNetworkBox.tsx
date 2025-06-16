@@ -137,7 +137,10 @@ function BalancesContainer() {
     ? selectedTokenBalances.destinationBalance
     : nativeCurrencyBalances.destinationBalance
 
-  const showNativeUsdcBalance = isCctpTransfer && selectedRoute === 'cctp'
+  // For cctp transfer, if no route are selected, display USDC balance on destination chain
+  const showNativeUsdcBalance =
+    (isCctpTransfer && selectedRoute === 'cctp') ||
+    (isCctpTransfer && !selectedRoute)
 
   return (
     <div
