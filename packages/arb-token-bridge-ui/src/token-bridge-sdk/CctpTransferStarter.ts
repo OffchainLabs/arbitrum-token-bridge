@@ -1,9 +1,4 @@
-import {
-  Config,
-  simulateContract,
-  SimulateContractReturnType,
-  writeContract
-} from '@wagmi/core'
+import { Config, simulateContract, writeContract } from '@wagmi/core'
 import { BigNumber, constants, utils } from 'ethers'
 import { TransactionRequest } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
