@@ -86,3 +86,19 @@ export const sanitizeExperimentalFeaturesQueryParam = (
 
   return validFlagsArray.join(',')
 }
+
+export const sanitizeDestinationAddressQueryParam = (
+  destinationAddress: string | null | undefined
+) => {
+  if (!destinationAddress) {
+    return undefined
+  }
+
+  const destinationAddressTrimmed = destinationAddress.trim()
+
+  if (destinationAddressTrimmed === '') {
+    return undefined
+  }
+
+  return destinationAddressTrimmed
+}
