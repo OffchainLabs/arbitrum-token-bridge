@@ -58,7 +58,7 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
     return
   }
 
-  yield {
+  yield* step({
     type: 'analytics',
     payload: {
       event: context.isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal',
@@ -70,12 +70,12 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
         version: 2
       }
     }
-  }
+  })
 
-  yield {
+  yield* step({
     type: 'tx_history_add',
     payload: createMergedTransaction(context, receipt.transactionHash)
-  }
+  })
 }
 
 function createMergedTransaction(
