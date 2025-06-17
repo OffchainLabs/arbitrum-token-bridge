@@ -20,7 +20,7 @@ import {
   DisabledFeaturesParam
 } from '../hooks/useArbQueryParams'
 import {
-  sanitizeDestinationAddressQueryParam,
+  sanitizeDestinationAddress,
   sanitizeExperimentalFeaturesQueryParam
 } from '../util'
 import {
@@ -229,7 +229,7 @@ export async function getServerSideProps({
     }),
     tab: sanitizeTabQueryParam(tab),
     disabledFeatures: DisabledFeaturesParam.decode(disabledFeatures),
-    destinationAddress: sanitizeDestinationAddressQueryParam(destinationAddress)
+    destinationAddress: sanitizeDestinationAddress(destinationAddress)
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
