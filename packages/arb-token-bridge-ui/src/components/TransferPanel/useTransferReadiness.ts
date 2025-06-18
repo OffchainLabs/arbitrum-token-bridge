@@ -142,7 +142,6 @@ export function getAmountToPay(selectedRouteContext: RouteContext) {
       constants.AddressZero
     )
   ) {
-    console.log(1)
     amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
   }
   if (
@@ -151,7 +150,6 @@ export function getAmountToPay(selectedRouteContext: RouteContext) {
       constants.AddressZero
     )
   ) {
-    console.log(2)
     amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
   }
   if (
@@ -160,7 +158,6 @@ export function getAmountToPay(selectedRouteContext: RouteContext) {
       constants.AddressZero
     )
   ) {
-    console.log(3)
     amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
   }
 

@@ -1,5 +1,4 @@
 import { Token as LiFiToken } from '@lifi/sdk'
-import { allowedSourceChains } from './constants'
 
 export type QueryParams = {
   fromToken: string
@@ -41,7 +40,3 @@ export interface CrosschainTransfersRouteBase {
   toAddress: string
   spenderAddress: string
 }
-
-export type LifiSourceChain = keyof typeof allowedSourceChains
-export type LifiDestinationChain =
-  (typeof allowedSourceChains)[LifiSourceChain][number]
