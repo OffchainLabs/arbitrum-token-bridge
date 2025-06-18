@@ -24,10 +24,6 @@ export type UiDriverContext = {
   destinationAddress?: string
   transferStarter: BridgeTransferStarter
   wagmiConfig: Config
-  sourceChain: Chain
-  destinationChain: Chain
-  childChain: Chain
-  parentChain: Chain
 }
 
 export type UiDriverStep =

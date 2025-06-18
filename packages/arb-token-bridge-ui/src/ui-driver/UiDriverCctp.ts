@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 
 import { step, UiDriverStepGenerator, UiDriverContext } from './UiDriver'
 import {
@@ -74,23 +75,28 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
 
   yield* step({
     type: 'tx_history_add',
-    payload: createMergedTransaction(context, receipt.transactionHash)
+    payload: await createMergedTransaction(context, receipt.transactionHash)
   })
 }
 
-function createMergedTransaction(
+async function createMergedTransaction(
   {
     isDepositMode,
     walletAddress,
     destinationAddress,
-    sourceChain,
-    destinationChain,
     amount,
-    parentChain,
-    childChain
+    transferStarter
   }: UiDriverContext,
   depositForBurnTxHash: string
-): MergedTransaction {
+): Promise<MergedTransaction> {
+  const [sourceChainId, destinationChainId] = await Promise.all([
+    getChainIdFromProvider(transferStarter.sourceChainProvider),
+    getChainIdFromProvider(transferStarter.destinationChainProvider)
+  ])
+
+  const childChainId = isDepositMode ? destinationChainId : sourceChainId
+  const parentChainId = isDepositMode ? sourceChainId : destinationChainId
+
   return {
     txId: depositForBurnTxHash,
     asset: 'USDC',
@@ -107,17 +113,17 @@ function createMergedTransaction(
     destination: destinationAddress ?? walletAddress,
     sender: walletAddress,
     isCctp: true,
-    tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
+    tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
     cctpData: {
-      sourceChainId: sourceChain.id,
+      sourceChainId,
       attestationHash: null,
       messageBytes: null,
       receiveMessageTransactionHash: null,
       receiveMessageTimestamp: null
     },
-    parentChainId: parentChain.id,
-    childChainId: childChain.id,
-    sourceChainId: sourceChain.id,
-    destinationChainId: destinationChain.id
+    parentChainId,
+    childChainId,
+    sourceChainId,
+    destinationChainId
   }
 }
