@@ -8,6 +8,7 @@ import {
   ApproveTokenProps,
   BridgeTransferStarter,
   RequiresTokenApprovalProps,
+  TransferPrepareTxRequestProps,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
@@ -85,15 +86,13 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return undefined
   }
 
-  public async transfer({
-    signer,
+  public async transferPrepareTxRequest({
+    from,
     amount,
     destinationAddress,
     wagmiConfig
-  }: TransferProps & { wagmiConfig: Config }) {
+  }: TransferPrepareTxRequestProps & { wagmiConfig: Config }) {
     const sourceChainId = await this.getSourceChainId()
-
-    const address = await getAddressFromSigner(signer)
 
     // cctp has an upper limit for transfer
     const burnLimit = await fetchPerMessageBurnLimit({
@@ -111,10 +110,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       )
     }
 
-    const recipient = destinationAddress ?? address
-
+    const recipient = destinationAddress ?? from
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
-
     // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
     const mintRecipient = utils.hexlify(utils.zeroPad(recipient, 32)) as Address
 
@@ -126,7 +123,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       sourceChainId
     })
 
-    const { request } = await simulateContract(wagmiConfig, {
+    return simulateContract(wagmiConfig, {
       address: tokenMessengerContractAddress,
       abi: TokenMessengerAbi,
       functionName: 'depositForBurn',
@@ -136,6 +133,20 @@ export class CctpTransferStarter extends BridgeTransferStarter {
         mintRecipient,
         usdcContractAddress
       ]
+    })
+  }
+
+  async transfer({
+    signer,
+    amount,
+    destinationAddress,
+    wagmiConfig
+  }: TransferProps & { wagmiConfig: Config }) {
+    const { request } = await this.transferPrepareTxRequest({
+      from: await getAddressFromSigner(signer),
+      amount,
+      destinationAddress,
+      wagmiConfig
     })
 
     const depositForBurnTx = await writeContract(wagmiConfig, request)
