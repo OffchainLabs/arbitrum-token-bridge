@@ -19,6 +19,8 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
 import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
+import { lifiDestinationChainIds } from '../pages/api/crosschain-transfers/constants'
+import { isLifiEnabled } from './featureFlag'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -522,7 +524,8 @@ export function getChildChainIds(
 ) {
   const childChainIds = [
     ...getChildrenForNetwork(chain.chainId).map(chain => chain.chainId),
-    ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
+    ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []), // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
+    ...(isLifiEnabled() ? lifiDestinationChainIds[chain.chainId] ?? [] : [])
   ]
   return Array.from(new Set(childChainIds))
 }
