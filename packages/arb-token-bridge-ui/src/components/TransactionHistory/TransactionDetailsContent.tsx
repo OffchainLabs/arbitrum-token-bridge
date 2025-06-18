@@ -29,7 +29,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { SafeImage } from '../common/SafeImage'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useEmbedMode } from '../../hooks/useEmbedMode'
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
   if (isLifiTransfer(tx)) {
@@ -115,7 +115,7 @@ export const TransactionDetailsContent = ({
   const childProvider = getProviderForChainId(tx?.childChainId ?? 0)
   const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useEmbedMode()
 
   if (!tx || !nativeCurrency) {
     return null

@@ -99,6 +99,7 @@ import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
+import { useEmbedMode } from '../../hooks/useEmbedMode'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -119,15 +120,10 @@ export function TransferPanel() {
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [
-    {
-      amount,
-      amount2,
-      destinationAddress,
-      token: tokenFromSearchParams,
-      embedMode
-    },
+    { amount, amount2, destinationAddress, token: tokenFromSearchParams },
     setQueryParams
   ] = useArbQueryParams()
+  const { embedMode } = useEmbedMode()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =

@@ -7,7 +7,8 @@ import { useArbQueryParams, ModeParamEnum } from './useArbQueryParams'
 export function useEmbedMode() {
   const [{ mode }] = useArbQueryParams()
 
-  const isEmbedMode = mode === ModeParamEnum.EMBED
+  const embedMode = mode === ModeParamEnum.EMBED
+  // later, we can have other booleans like `embedCompactMode` depending on the requirements
 
-  return { mode, isEmbedMode }
+  return { mode, embedMode }
 }

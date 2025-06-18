@@ -21,9 +21,10 @@ import { allowedSourceTokens } from '../../../pages/api/crosschain-transfers/lif
 import { constants } from 'ethers'
 import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 import { twMerge } from 'tailwind-merge'
+import { useEmbedMode } from '../../../hooks/useEmbedMode'
 
 function Wrapper({ children }: PropsWithChildren) {
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useEmbedMode()
 
   return (
     <div

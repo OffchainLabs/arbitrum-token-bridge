@@ -9,7 +9,7 @@ import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useEmbedMode } from '../../hooks/useEmbedMode'
 
 const unica = localFont({
   src: [
@@ -38,7 +38,7 @@ export type LayoutProps = {
 }
 
 export function Layout(props: LayoutProps) {
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useEmbedMode()
 
   if (embedMode) {
     return (
