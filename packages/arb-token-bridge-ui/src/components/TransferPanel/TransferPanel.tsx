@@ -480,10 +480,9 @@ export function TransferPanel() {
 
     try {
       const {
+        //
         sourceChainProvider,
-        destinationChainProvider,
-        sourceChain,
-        destinationChain
+        destinationChainProvider
       } = latestNetworks.current
 
       const cctpTransferStarter = new CctpTransferStarter({
@@ -499,11 +498,7 @@ export function TransferPanel() {
         walletAddress,
         destinationAddress,
         transferStarter: cctpTransferStarter,
-        wagmiConfig,
-        sourceChain,
-        destinationChain,
-        childChain,
-        parentChain
+        wagmiConfig
       })
 
       // this is only necessary while we are migrating to the ui driver
