@@ -11,6 +11,7 @@ import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
+import { LifiTransferStarter } from './LifiTransferStarter'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -95,6 +96,7 @@ export class BridgeTransferStarterFactory {
     if (!isNativeCurrencyTransfer) {
       return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
     }
+
     return withCache(cacheKey, new EthWithdrawalStarter(initProps))
   }
 }
