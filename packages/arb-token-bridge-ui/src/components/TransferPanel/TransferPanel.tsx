@@ -233,6 +233,13 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
+  // if the destination address in the query params has an error on load, open settings so the user sees the error
+  useEffect(() => {
+    if (destinationAddressError) {
+      openDialog('settings')
+    }
+  }, [destinationAddressError, openDialog])
+
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
       return
