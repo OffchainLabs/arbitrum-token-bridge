@@ -248,7 +248,7 @@ export default async function handler(
       })
     ) {
       res.status(400).send({
-        message: `sending fromToken (${fromToken}) from chain ${fromChainId} to chain ${toChainId} is not supported`,
+        message: `Sending fromToken (${fromToken}) from chain ${fromChainId} to chain ${toChainId} is not supported`,
         data: null
       })
       return
@@ -319,7 +319,6 @@ export default async function handler(
 
     const { routes } = await getRoutes({ ...parameters, options })
 
-    console.log(parameters)
     const filteredRoutes = routes
       .filter(route => route.steps.length === 1)
       .map(route =>
