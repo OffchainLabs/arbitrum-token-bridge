@@ -46,7 +46,8 @@ function useIsLifiSupported() {
   const { fromToken, toToken } = getFromAndToTokenAddresses({
     isDepositMode,
     selectedToken: token,
-    sourceChainId: networks.sourceChain.id
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
   })
 
   const { data, isLoading } = useSWRImmutable(
