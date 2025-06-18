@@ -24,6 +24,7 @@ import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useAccountType } from '../../hooks/useAccountType'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
+import { sanitizeDestinationAddress } from '../../util'
 
 function useTools() {
   const [{ sourceChain, destinationChain }] = useNetworks()
@@ -185,7 +186,10 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
           setQueryParams({ destinationAddress: undefined })
           setDestinationAddress(undefined)
         } else {
-          setQueryParams({ destinationAddress })
+          const sanitizedDestinationAddress =
+            sanitizeDestinationAddress(destinationAddress)
+          setDestinationAddress(sanitizedDestinationAddress)
+          setQueryParams({ destinationAddress: sanitizedDestinationAddress })
         }
       }}
       isFooterHidden
