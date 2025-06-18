@@ -1,6 +1,7 @@
 import { Provider, TransactionRequest } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { Config } from 'wagmi'
+import { SimulateContractReturnType } from '@wagmi/core'
 
 import { MergedTransaction } from '../state/app/state'
 import {
@@ -56,6 +57,14 @@ export type TransferEstimateGasProps = {
 export type TransferOverrides = {
   maxSubmissionCost?: BigNumber
   excessFeeRefundAddress?: string
+}
+
+export type TransferPrepareTxRequestProps = {
+  amount: BigNumber
+  from: string
+  destinationAddress?: string
+  overrides?: TransferOverrides
+  wagmiConfig?: Config
 }
 
 export type TransferProps = {
@@ -168,6 +177,16 @@ export abstract class BridgeTransferStarter {
   public abstract approveToken(
     props: ApproveTokenProps
   ): Promise<ContractTransaction | void>
+
+  // not marking this as abstract for now, as we need a dummy implementation for every class
+  // only cctp is going to override it for now, and we'll do the same for others one by one
+  // finally, once we have all implementations we'll mark it as abstract
+  public async transferPrepareTxRequest(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    props?: TransferPrepareTxRequestProps
+  ): Promise<TransactionRequest | SimulateContractReturnType> {
+    return {} as TransactionRequest | SimulateContractReturnType
+  }
 
   public abstract transferEstimateGas(
     props: TransferEstimateGasProps
