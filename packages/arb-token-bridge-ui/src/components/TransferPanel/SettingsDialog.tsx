@@ -23,7 +23,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useAccountType } from '../../hooks/useAccountType'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
+import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
 
 function useTools() {
   const [{ sourceChain, destinationChain }] = useNetworks()
@@ -146,10 +146,10 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
     useAccountType()
   const isLifiSupported = useMemo(
     () =>
-      isLifiTransferAllowed({
-        selectedToken,
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
+      isValidLifiTransfer({
+        fromChainId: networks.sourceChain.id,
+        toChainId: networks.destinationChain.id,
+        fromToken: selectedToken?.address
       }),
     [selectedToken, networks.sourceChain.id, networks.destinationChain.id]
   )

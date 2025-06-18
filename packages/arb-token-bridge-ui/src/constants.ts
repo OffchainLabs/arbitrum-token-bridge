@@ -1,3 +1,6 @@
+import { Token } from './components/TransferPanel/Routes/Route'
+import { CommonAddress } from './util/CommonAddressUtils'
+
 export const TOS_VERSION = 2
 
 export const TOS_LOCALSTORAGE_KEY = 'arbitrum:bridge:tos-v' + TOS_VERSION
@@ -34,3 +37,21 @@ export const ETHER_TOKEN_LOGO = '/images/EthereumLogoRound.svg'
 export const ether = { name: 'Ether', symbol: 'ETH', decimals: 18 } as const
 
 export const PORTAL_API_ENDPOINT = 'https://portal.arbitrum.io'
+
+export const commonUsdcToken: Token = {
+  decimals: 6,
+  address: CommonAddress.Ethereum.USDC,
+  symbol: 'placeholder',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
+}
+
+export const bridgedUsdcToken: Token = {
+  ...commonUsdcToken,
+  symbol: 'USDC.e'
+}
+
+export const nativeUsdcToken: Token = {
+  ...commonUsdcToken,
+  symbol: 'USDC'
+}
