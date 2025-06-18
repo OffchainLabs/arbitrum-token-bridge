@@ -116,7 +116,7 @@ const ModeParam = {
     return mode
   },
   decode: (value: string | (string | null)[] | null | undefined) => {
-    const modeStr = value?.toString()
+    const modeStr = value?.toString()?.toLowerCase()
     if (modeStr === ModeParamEnum.EMBED) {
       return modeStr
     }
