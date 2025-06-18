@@ -95,11 +95,11 @@ import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
 import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
-import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 import { useMode } from '../../hooks/useMode'
+import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -592,7 +592,8 @@ export function TransferPanel() {
       const { fromToken, toToken } = getFromAndToTokenAddresses({
         isDepositMode,
         selectedToken,
-        sourceChainId: networks.sourceChain.id
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       })
 
       const { transactionRequest } = await getStepTransaction(context.step)
@@ -1328,10 +1329,12 @@ export function TransferPanel() {
    * or if it's an EOA (to display custom destination address input)
    */
   const showSettingsButton =
-    isLifiTransferAllowed({
-      selectedToken,
-      sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id
+    isValidLifiTransfer({
+      fromChainId: networks.sourceChain.id,
+      toChainId: networks.destinationChain.id,
+      fromToken: isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address
     }) ||
     (!isLoadingAccountType && !isSmartContractWallet)
 
