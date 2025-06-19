@@ -18,48 +18,48 @@ module.exports = {
       },
       colors: {
         // ACTION
-        error: '#CD0000',
-        'blue-link': '#1366C1',
+        error: 'var(--color-error, #CD0000)',
+        'blue-link': 'var(--color-blue-link, #1366C1)',
 
         // PRIMARY
-        cyan: '#DDEAFA',
-        brick: '#FFDDD6',
-        orange: '#FFEED3',
-        lime: '#E8FFE4',
-        lilac: '#754562',
-        blue: '#00FBFF',
+        cyan: 'var(--color-cyan, #DDEAFA)',
+        brick: 'var(--color-brick, #FFDDD6)',
+        orange: 'var(--color-orange, #FFEED3)',
+        lime: 'var(--color-lime, #E8FFE4)',
+        lilac: 'var(--color-lilac, #754562)',
+        blue: 'var(--color-blue, #00FBFF)',
 
         // SECONDARY
-        'cyan-dark': '#11365E',
-        'brick-dark': '#762716',
-        'orange-dark': '#60461F',
-        'lime-dark': '#31572A',
+        'cyan-dark': 'var(--color-cyan-dark, #11365E)',
+        'brick-dark': 'var(--color-brick-dark, #762716)',
+        'orange-dark': 'var(--color-orange-dark, #60461F)',
+        'lime-dark': 'var(--color-lime-dark, #31572A)',
 
         // TRANSACTION STATUS COLORS
-        claim: '#6AD28A',
-        retry: '#CD0000',
-        pending: '#CCB069',
+        claim: 'var(--color-claim, #6AD28A)',
+        retry: 'var(--color-retry, #CD0000)',
+        pending: 'var(--color-pending, #CCB069)',
 
         // NEUTRAL (GRAYS)
-        'gray-1': '#191919',
-        'gray-2': '#E5E5E5',
-        'gray-3': '#DADADA',
-        'gray-4': '#CCCCCC',
-        'gray-5': '#AEAEAE',
-        'gray-6': '#999999',
-        'gray-7': '#BDBDBD',
-        'gray-8': '#262626',
-        'gray-dark': '#6D6D6D',
-        'line-gray': '#F4F4F4',
-        dark: '#1A1C1D', // (or default-black)
-        'dark-hover': '#2b2e30', // (or default-black-hover)
+        'gray-1': 'var(--color-gray-1, #191919)',
+        'gray-2': 'var(--color-gray-2, #E5E5E5)',
+        'gray-3': 'var(--color-gray-3, #DADADA)',
+        'gray-4': 'var(--color-gray-4, #CCCCCC)',
+        'gray-5': 'var(--color-gray-5, #AEAEAE)',
+        'gray-6': 'var(--color-gray-6, #999999)',
+        'gray-7': 'var(--color-gray-7, #BDBDBD)',
+        'gray-8': 'var(--color-gray-8, #262626)',
+        'gray-dark': 'var(--color-gray-dark, #6D6D6D)',
+        'line-gray': 'var(--color-line-gray, #F4F4F4)',
+        dark: 'var(--color-dark, #1A1C1D)', // (or default-black)
+        'dark-hover': 'var(--color-dark-hover, #2b2e30)', // (or default-black-hover)
 
-        'bg-gray-1': '#191919',
+        'bg-gray-1': 'var(--color-bg-gray-1, #191919)',
 
         // BRAND
-        'eth-dark': '#1A1C33',
-        'ocl-blue': '#243145',
-        'atmosphere-blue': '#152C4E'
+        'eth-dark': 'var(--color-eth-dark, #1A1C33)',
+        'ocl-blue': 'var(--color-ocl-blue, #243145)',
+        'atmosphere-blue': 'var(--color-atmosphere-blue, #152C4E)'
       },
       spacing: {
         1: '5px',
@@ -111,7 +111,7 @@ module.exports = {
         8: '2rem'
       },
       borderRadius: {
-        DEFAULT: '5px'
+        DEFAULT: 'var(--border-radius, 5px)'
       },
       boxShadow: {
         // shadow used for input fields across the app

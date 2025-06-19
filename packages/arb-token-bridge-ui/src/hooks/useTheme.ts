@@ -1,32 +1,34 @@
 import { useEffect } from 'react'
-import useLocalStorage from '@rehooks/local-storage'
+import { useArbQueryParams, ThemeConfig } from './useArbQueryParams'
 
-export const themeLocalStorageKey = 'arbitrum:bridge:preferences:theme'
+// Map theme properties to CSS variables
+const themeVariableMap: Record<keyof ThemeConfig, string> = {
+  borderRadius: '--border-radius'
+  // Add more mappings as we extend the theme
+  // colors: '--color',
+  // spacing: '--spacing',
+}
 
-export const classicThemeKey = 'arbitrum-classic-theme'
-
-export const THEME_CONFIG = [
-  {
-    id: 'space',
-    label: 'Space',
-    description:
-      'A dark, space-themed UI with a sleek and futuristic aesthetic, featuring Arbinaut on a backdrop of shining stars and moon.'
-  },
-  {
-    id: classicThemeKey,
-    label: 'Arbitrum Classic',
-    description:
-      'Arbitrum before it was cool: A reminiscent of the pre-nitro era, with simple, solid buttons, a minimal purple layout and chunky fonts.'
-  }
-]
-
-export const useTheme = () => {
-  const [theme, setTheme] = useLocalStorage<string>(themeLocalStorageKey)
+export function useTheme() {
+  const [{ theme }] = useArbQueryParams()
 
   useEffect(() => {
-    if (!theme) return
-    document.body.className = theme
-  }, [theme])
+    // Apply all theme properties to CSS variables
+    Object.entries(theme).forEach(([key, value]) => {
+      const cssVariable = themeVariableMap[key as keyof ThemeConfig]
+      if (cssVariable && value) {
+        document.documentElement.style.setProperty(
+          cssVariable,
+          value.toString()
+        )
+      }
+    })
 
-  return [theme, setTheme] as const
+    return () => {
+      // Clean up all theme variables
+      Object.values(themeVariableMap).forEach(cssVariable => {
+        document.documentElement.style.removeProperty(cssVariable)
+      })
+    }
+  }, [theme])
 }

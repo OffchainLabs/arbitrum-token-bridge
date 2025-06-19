@@ -105,6 +105,60 @@ export const DisabledFeaturesParam = {
   }
 }
 
+// Theme configuration types
+export interface ThemeConfig {
+  borderRadius?: string
+  // Add more theme properties here as needed
+  // Example:
+  // colors?: {
+  //   primary?: string;
+  //   secondary?: string;
+  //   text?: string;
+  // };
+  // spacing?: {
+  //   base?: string;
+  //   large?: string;
+  // };
+  // typography?: {
+  //   fontSize?: string;
+  //   lineHeight?: string;
+  // };
+}
+
+const defaultTheme: ThemeConfig = {
+  borderRadius: '5px'
+  // Add default values for new properties here
+  // colors: {
+  //   primary: '#1366C1',
+  //   secondary: '#CD0000',
+  //   text: '#191919'
+  // }
+}
+
+// Theme parameter decoder/encoder
+export const ThemeParam = {
+  encode: (config: ThemeConfig | undefined) => {
+    if (!config) return undefined
+    try {
+      return JSON.stringify(config)
+    } catch {
+      return undefined
+    }
+  },
+  decode: (
+    configStr: string | (string | null)[] | null | undefined
+  ): ThemeConfig => {
+    if (!configStr || Array.isArray(configStr)) return defaultTheme
+    try {
+      const parsedTheme = JSON.parse(configStr)
+      // Deep merge with default theme to ensure all properties have values
+      return { ...defaultTheme, ...parsedTheme }
+    } catch {
+      return defaultTheme
+    }
+  }
+}
+
 export const useArbQueryParams = () => {
   /*
     returns [
@@ -122,7 +176,8 @@ export const useArbQueryParams = () => {
     settingsOpen: withDefault(BooleanParam, false),
     tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
     disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
-    embedMode: withDefault(BooleanParam, false) // enable/disable embed mode
+    embedMode: withDefault(BooleanParam, false), // enable/disable embed mode
+    theme: withDefault(ThemeParam, defaultTheme) // theme customization
   })
 }
 
