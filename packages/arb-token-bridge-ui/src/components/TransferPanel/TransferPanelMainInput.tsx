@@ -18,13 +18,11 @@ import { ExternalLink } from '../common/ExternalLink'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { Loader } from '../common/atoms/Loader'
-import {
-  sanitizeAmountQueryParam,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
+import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useMode } from '../../hooks/useMode'
 
 function MaxButton({
   className = '',
@@ -149,7 +147,7 @@ function ErrorMessage({
 }: {
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
 }) {
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useMode()
 
   if (typeof errorMessage === 'undefined') {
     return null

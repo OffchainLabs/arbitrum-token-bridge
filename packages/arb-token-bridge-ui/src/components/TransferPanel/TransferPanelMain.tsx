@@ -31,6 +31,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { addressesEqual } from '../../util/AddressUtils'
 import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
+import { useMode } from '../../hooks/useMode'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -196,7 +197,8 @@ export function TransferPanelMain() {
 
   const { address: walletAddress } = useAccount()
 
-  const [{ destinationAddress, embedMode }] = useArbQueryParams()
+  const [{ destinationAddress }] = useArbQueryParams()
+  const { embedMode } = useMode()
 
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 

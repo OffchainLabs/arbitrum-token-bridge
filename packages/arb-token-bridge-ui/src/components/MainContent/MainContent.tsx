@@ -9,6 +9,7 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useMode } from '../../hooks/useMode'
 
 export function MainContent() {
   const [isArbitrumStatsVisible] =
@@ -24,7 +25,7 @@ export function MainContent() {
 
   useBalanceUpdater()
 
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useMode()
 
   if (embedMode) {
     return <TransferPanel />

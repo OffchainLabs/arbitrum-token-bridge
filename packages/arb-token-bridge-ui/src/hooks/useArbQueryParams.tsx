@@ -48,6 +48,11 @@ export enum AmountQueryParamEnum {
   MAX = 'max'
 }
 
+export enum ModeParamEnum {
+  EMBED = 'embed'
+  // add other modes when we have a use case for it
+}
+
 export const tabToIndex = {
   [TabParamEnum.BRIDGE]: 0,
   [TabParamEnum.TX_HISTORY]: 1
@@ -105,6 +110,20 @@ export const DisabledFeaturesParam = {
   }
 }
 
+const ModeParam = {
+  encode: (mode: ModeParamEnum) => {
+    if (!mode) return undefined
+    return mode
+  },
+  decode: (value: string | (string | null)[] | null | undefined) => {
+    const modeStr = value?.toString()?.toLowerCase()
+    if (modeStr === ModeParamEnum.EMBED) {
+      return modeStr
+    }
+    return undefined
+  }
+}
+
 export const useArbQueryParams = () => {
   /*
     returns [
@@ -122,7 +141,7 @@ export const useArbQueryParams = () => {
     settingsOpen: withDefault(BooleanParam, false),
     tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
     disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
-    embedMode: withDefault(BooleanParam, false) // enable/disable embed mode
+    mode: withDefault(ModeParam, undefined) // mode: 'embed', or undefined for normal mode
   })
 }
 

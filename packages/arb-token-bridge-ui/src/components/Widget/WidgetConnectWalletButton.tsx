@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { ConnectWalletButton } from '../TransferPanel/ConnectWalletButton'
+import { useMode } from '../../hooks/useMode'
 
 /**
  * A wrapper around ConnectWalletButton that handles mobile browser restrictions in embed mode.
@@ -19,7 +19,7 @@ const isMobileBrowser = () => {
 }
 
 export function WidgetConnectWalletButton() {
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useMode()
   const isMobile = isMobileBrowser()
 
   const handleClick = useCallback(() => {
