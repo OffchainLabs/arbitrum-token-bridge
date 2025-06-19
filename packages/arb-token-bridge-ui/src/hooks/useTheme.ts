@@ -12,6 +12,8 @@ const themeVariableMap: Record<keyof ThemeConfig, string> = {
 export function useTheme() {
   const [{ theme }] = useArbQueryParams()
 
+  const _themeKey = theme?.toString() // we don't want the hook to fire every time the object reference changes
+
   useEffect(() => {
     // Apply all theme properties to CSS variables
     Object.entries(theme).forEach(([key, value]) => {
@@ -30,5 +32,5 @@ export function useTheme() {
         document.documentElement.style.removeProperty(cssVariable)
       })
     }
-  }, [theme])
+  }, [_themeKey])
 }
