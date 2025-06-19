@@ -1,6 +1,6 @@
 import { useArbQueryParams, ModeParamEnum } from './useArbQueryParams'
 
-export function useEmbedMode() {
+export function useMode() {
   const [{ mode }] = useArbQueryParams()
 
   const embedMode = mode === ModeParamEnum.EMBED

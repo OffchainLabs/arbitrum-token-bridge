@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { ConnectWalletButton } from '../TransferPanel/ConnectWalletButton'
-import { useEmbedMode } from '../../hooks/useEmbedMode'
+import { useMode } from '../../hooks/useMode'
 
 /**
  * A wrapper around ConnectWalletButton that handles mobile browser restrictions in embed mode.
@@ -19,7 +19,7 @@ const isMobileBrowser = () => {
 }
 
 export function WidgetConnectWalletButton() {
-  const { embedMode } = useEmbedMode()
+  const { embedMode } = useMode()
   const isMobile = isMobileBrowser()
 
   const handleClick = useCallback(() => {

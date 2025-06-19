@@ -24,7 +24,7 @@ import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
-import { useEmbedMode } from '../../../hooks/useEmbedMode'
+import { useMode } from '../../../hooks/useMode'
 
 // Types
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
@@ -422,7 +422,7 @@ export const Route = React.memo(
     })
     const [_token] = useSelectedToken()
     const [{ amount2, destinationAddress }] = useArbQueryParams()
-    const { embedMode } = useEmbedMode()
+    const { embedMode } = useMode()
     const isBatchTransferSupported = useIsBatchTransferSupported()
 
     const token = (overrideToken || _token || childNativeCurrency) as Token

@@ -11,7 +11,7 @@ import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 import { isExperimentalModeEnabled } from '../../util'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
-import { useEmbedMode } from '../../hooks/useEmbedMode'
+import { useMode } from '../../hooks/useMode'
 
 export function HeaderAccountOrConnectWalletButton() {
   const { isConnected } = useAccount()
@@ -24,7 +24,7 @@ export function HeaderAccountOrConnectWalletButton() {
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
-  const { embedMode } = useEmbedMode()
+  const { embedMode } = useMode()
   const { isTestnet } = isNetwork(sourceChain.id)
 
   const isExperimentalMode = isExperimentalModeEnabled()

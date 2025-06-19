@@ -21,10 +21,10 @@ import { allowedSourceTokens } from '../../../pages/api/crosschain-transfers/lif
 import { constants } from 'ethers'
 import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 import { twMerge } from 'tailwind-merge'
-import { useEmbedMode } from '../../../hooks/useEmbedMode'
+import { useMode } from '../../../hooks/useMode'
 
 function Wrapper({ children }: PropsWithChildren) {
-  const { embedMode } = useEmbedMode()
+  const { embedMode } = useMode()
 
   return (
     <div

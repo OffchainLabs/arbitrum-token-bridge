@@ -42,7 +42,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
-import { useEmbedMode } from '../../hooks/useEmbedMode'
+import { useMode } from '../../hooks/useMode'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -572,7 +572,7 @@ export function TokenSearch(props: UseDialogProps) {
   const [networks] = useNetworks()
   const { childChain, parentChainProvider } = useNetworksRelationship(networks)
 
-  const { embedMode } = useEmbedMode()
+  const { embedMode } = useMode()
   const [activePanel, setActivePanel] = useState<Panel>(Panel.MAIN)
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens

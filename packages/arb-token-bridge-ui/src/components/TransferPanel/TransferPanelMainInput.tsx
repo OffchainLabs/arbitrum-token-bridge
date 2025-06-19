@@ -22,7 +22,7 @@ import { sanitizeAmountQueryParam } from '../../hooks/useArbQueryParams'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useEmbedMode } from '../../hooks/useEmbedMode'
+import { useMode } from '../../hooks/useMode'
 
 function MaxButton({
   className = '',
@@ -147,7 +147,7 @@ function ErrorMessage({
 }: {
   errorMessage: string | TransferReadinessRichErrorMessage | undefined
 }) {
-  const { embedMode } = useEmbedMode()
+  const { embedMode } = useMode()
 
   if (typeof errorMessage === 'undefined') {
     return null

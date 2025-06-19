@@ -9,7 +9,7 @@ import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
-import { useEmbedMode } from '../../hooks/useEmbedMode'
+import { useMode } from '../../hooks/useMode'
 
 const unica = localFont({
   src: [
@@ -38,7 +38,7 @@ export type LayoutProps = {
 }
 
 export function Layout(props: LayoutProps) {
-  const { embedMode } = useEmbedMode()
+  const { embedMode } = useMode()
 
   if (embedMode) {
     return (

@@ -99,7 +99,7 @@ import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
-import { useEmbedMode } from '../../hooks/useEmbedMode'
+import { useMode } from '../../hooks/useMode'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -123,7 +123,7 @@ export function TransferPanel() {
     { amount, amount2, destinationAddress, token: tokenFromSearchParams },
     setQueryParams
   ] = useArbQueryParams()
-  const { embedMode } = useEmbedMode()
+  const { embedMode } = useMode()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =

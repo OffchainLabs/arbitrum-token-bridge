@@ -111,7 +111,7 @@ module.exports = {
         8: '2rem'
       },
       borderRadius: {
-        DEFAULT: '5px'
+        DEFAULT: '30px'
       },
       boxShadow: {
         // shadow used for input fields across the app
