@@ -26,51 +26,43 @@ const validResult = [
 const l1Provider = new StaticJsonRpcProvider('https://eth.llamarpc.com')
 
 describe.sequential('fetchBatchedWithdrawals multiple calls', () => {
-  it(
-    'calls fetchWithdrawals correct number of times and returns valid data',
-    { timeout: 15_000 },
-    async () => {
-      const mock = vi.spyOn(fetchModule, 'fetchWithdrawals')
+  it('calls fetchWithdrawals correct number of times and returns valid data', async () => {
+    const mock = vi.spyOn(fetchModule, 'fetchWithdrawals')
 
-      const result = await fetchBatchedWithdrawals({
-        l1Provider,
-        ...getQueryCoveringClassicAndNitroWithResults(),
-        batchSizeBlocks: 5_000_000
-      })
+    const result = await fetchBatchedWithdrawals({
+      l1Provider,
+      ...getQueryCoveringClassicAndNitroWithResults(),
+      batchSizeBlocks: 5_000_000
+    })
 
-      expect(mock).toHaveBeenCalledTimes(3)
-      expect(result).toHaveLength(4)
-      expect(result).toEqual(expect.arrayContaining(validResult))
+    expect(mock).toHaveBeenCalledTimes(3)
+    expect(result).toHaveLength(4)
+    expect(result).toEqual(expect.arrayContaining(validResult))
 
-      mock.mockRestore()
-    }
-  )
+    mock.mockRestore()
+  })
 })
 
 describe.sequential('fetchBatchedWithdrawals single call', () => {
-  it(
-    'calls a large range once and returns valid data',
-    { timeout: 15_000 },
-    async () => {
-      const mock = vi.spyOn(fetchModule, 'fetchWithdrawals')
+  it('calls a large range once and returns valid data', async () => {
+    const mock = vi.spyOn(fetchModule, 'fetchWithdrawals')
 
-      const result = await fetchBatchedWithdrawals({
-        l1Provider,
-        ...getQueryCoveringClassicAndNitroWithResults(),
-        batchSizeBlocks: 100_000_000
-      })
+    const result = await fetchBatchedWithdrawals({
+      l1Provider,
+      ...getQueryCoveringClassicAndNitroWithResults(),
+      batchSizeBlocks: 100_000_000
+    })
 
-      expect(mock).toHaveBeenCalledTimes(1)
-      expect(result).toHaveLength(4)
-      expect(result).toEqual(expect.arrayContaining(validResult))
-    }
-  )
+    expect(mock).toHaveBeenCalledTimes(1)
+    expect(result).toHaveLength(4)
+    expect(result).toEqual(expect.arrayContaining(validResult))
+  })
 })
 
 describe.sequential(
   'fetchBatchedWithdrawals throw error when toBlock lower than fromBlock',
   () => {
-    it('throws an error', { timeout: 15_000 }, async () => {
+    it('throws an error', async () => {
       await expect(
         fetchBatchedWithdrawals({
           l1Provider,
