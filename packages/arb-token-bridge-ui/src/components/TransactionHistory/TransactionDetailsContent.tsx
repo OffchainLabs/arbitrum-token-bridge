@@ -8,7 +8,7 @@ import LayerZeroIcon from '@/images/LayerZeroIcon.png'
 import LifiLogo from '@/icons/lifi.svg'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-
+import { twMerge } from 'tailwind-merge'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
@@ -29,6 +29,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { MergedTransaction } from '../../state/app/state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { SafeImage } from '../common/SafeImage'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 const ProtocolNameAndLogo = ({ tx }: { tx: MergedTransaction }) => {
   if (isLifiTransfer(tx)) {
@@ -114,6 +115,8 @@ export const TransactionDetailsContent = ({
   const childProvider = getProviderForChainId(tx?.childChainId ?? 0)
   const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
+  const [{ embedMode }] = useArbQueryParams()
+
   if (!tx || !nativeCurrency) {
     return null
   }
@@ -140,7 +143,9 @@ export const TransactionDetailsContent = ({
   const destinationNetworkName = getNetworkName(destinationChainId)
 
   return (
-    <div className="grid gap-4">
+    <div
+      className={twMerge('grid gap-4', embedMode && 'min-[850px]:grid-cols-2')}
+    >
       <DetailsBox>
         <div className="flex flex-col space-y-3">
           <div className="flex justify-between text-xs text-white">
@@ -188,13 +193,13 @@ export const TransactionDetailsContent = ({
       </DetailsBox>
 
       <DetailsBox header="Network">
-        <div className="flex space-x-4">
+        <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <NetworkImage chainId={sourceChainId} className="h-5 w-5" />
             <span>{sourceNetworkName}</span>
           </div>
           <ArrowRightIcon width={16} />
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
             <NetworkImage chainId={destinationChainId} className="h-5 w-5" />
             <span>{destinationNetworkName}</span>
           </div>

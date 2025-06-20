@@ -1,3 +1,6 @@
+import { BigNumber, providers } from 'ethers'
+import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
+
 import { DialogType } from '../components/common/Dialog2'
 
 export type Dialog = Extract<
@@ -5,39 +8,65 @@ export type Dialog = Extract<
   | 'confirm_cctp_deposit'
   | 'confirm_cctp_withdrawal'
   | 'scw_custom_destination_address'
+  | 'approve_token'
 >
 
 export type UiDriverContext = {
+  amountBigNumber: BigNumber
   isDepositMode: boolean
   isSmartContractWallet: boolean
-  walletAddress?: string
+  walletAddress: string
   destinationAddress?: string
+  transferStarter: BridgeTransferStarter
 }
 
 export type UiDriverStep =
   | { type: 'start' } //
   | { type: 'return' }
   | { type: 'dialog'; payload: Dialog }
+  | { type: 'scw_tooltip' }
+  | {
+      type: 'tx_ethers'
+      payload: {
+        txRequest: providers.TransactionRequest
+        txRequestLabel: string
+      }
+    }
 
-export type UiDriverStepResultFor<TStep extends UiDriverStep> = //
-  TStep extends { type: 'start' }
+export type UiDriverStepType = UiDriverStep['type']
+
+export type UiDriverStepPayloadFor<TStepType extends UiDriverStepType> =
+  Extract<UiDriverStep, { type: TStepType }> extends {
+    payload: infer TPayload
+  }
+    ? TPayload
+    : never
+
+type Result<T> =
+  | { data: T; error?: undefined }
+  | { data?: undefined; error: Error }
+
+export type UiDriverStepResultFor<TStepType extends UiDriverStepType> =
+  TStepType extends 'start'
     ? void
-    : //
-    TStep extends { type: 'return' }
+    : TStepType extends 'return'
     ? void
-    : //
-    TStep extends { type: 'dialog' }
+    : TStepType extends 'dialog'
     ? boolean
-    : //
-      never
+    : TStepType extends 'scw_tooltip'
+    ? void
+    : TStepType extends 'tx_ethers'
+    ? Result<providers.TransactionReceipt>
+    : never
 
 export type UiDriverStepGenerator<TStep extends UiDriverStep = UiDriverStep> = (
   context: UiDriverContext
-) => AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep>>
+) => AsyncGenerator<TStep, void, UiDriverStepResultFor<TStep['type']>>
 
 export type UiDriverStepExecutor<TStep extends UiDriverStep = UiDriverStep> = (
+  context: UiDriverContext,
   step: TStep
-) => Promise<UiDriverStepResultFor<TStep>>
+) => Promise<UiDriverStepResultFor<TStep['type']>>
 
 // TypeScript doesn't to the greatest job with generators
 // This 2nd generator helps with types both for params and result when yielding a step
@@ -45,8 +74,8 @@ export async function* step<TStep extends UiDriverStep>(
   step: TStep
 ): AsyncGenerator<
   TStep,
-  UiDriverStepResultFor<TStep>,
-  UiDriverStepResultFor<TStep>
+  UiDriverStepResultFor<TStep['type']>,
+  UiDriverStepResultFor<TStep['type']>
 > {
   return yield step
 }
@@ -72,7 +101,7 @@ export async function drive<TStep extends UiDriverStep>(
     }
 
     // execute current step and obtain the result
-    const result = await executor(step)
+    const result = await executor(context, step)
 
     // pass the result back into the generator
     nextStep = await flow.next(result)

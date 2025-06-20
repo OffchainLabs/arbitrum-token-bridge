@@ -61,6 +61,7 @@ describe('Withdraw USDC through CCTP', () => {
 
     cy.findGasFeeSummary('N/A')
     cy.selectRoute('cctp')
+    cy.acceptTnC()
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()
@@ -95,6 +96,7 @@ describe('Withdraw USDC through CCTP', () => {
     cy.findGasFeeSummary('N/A')
     cy.fillCustomDestinationAddress()
     cy.selectRoute('cctp')
+    cy.acceptTnC()
     cy.clickMoveFundsButton({ shouldConfirmInMetamask: false })
 
     confirmAndApproveCctpWithdrawal()

@@ -74,7 +74,6 @@ import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { ExternalLink } from '../common/ExternalLink'
 import { useIsTransferAllowed } from './hooks/useIsTransferAllowed'
 import { MoveFundsButton } from './MoveFundsButton'
-import { ProjectsListing } from '../common/ProjectsListing'
 import { useAmountBigNumber } from './hooks/useAmountBigNumber'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
@@ -98,6 +97,8 @@ import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
+import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
+import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -118,7 +119,13 @@ export function TransferPanel() {
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [
-    { amount, amount2, destinationAddress, token: tokenFromSearchParams },
+    {
+      amount,
+      amount2,
+      destinationAddress,
+      token: tokenFromSearchParams,
+      embedMode
+    },
     setQueryParams
   ] = useArbQueryParams()
   const [importTokenModalStatus, setImportTokenModalStatus] =
@@ -206,8 +213,6 @@ export function TransferPanel() {
 
   const { destinationAddressError } = useDestinationAddressError()
 
-  const [showProjectsListing, setShowProjectsListing] = useState(false)
-
   const isBatchTransfer = isBatchTransferSupported && Number(amount2) > 0
 
   const { handleError } = useError()
@@ -227,11 +232,6 @@ export function TransferPanel() {
       }),
     [setQueryParams]
   )
-
-  useEffect(() => {
-    // hide Project listing when networks are changed
-    setShowProjectsListing(false)
-  }, [childChain.id, parentChain.id])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -383,7 +383,7 @@ export function TransferPanel() {
     return true
   }
 
-  const stepExecutor: UiDriverStepExecutor = async step => {
+  const stepExecutor: UiDriverStepExecutor = async (context, step) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(step)
     }
@@ -403,12 +403,42 @@ export function TransferPanel() {
       case 'dialog': {
         return confirmDialog(step.payload)
       }
+
+      case 'scw_tooltip': {
+        showDelayedSmartContractTxRequest()
+        return
+      }
+
+      case 'tx_ethers': {
+        try {
+          const tx = await signer!.sendTransaction(step.payload.txRequest)
+          const txReceipt = await tx.wait()
+
+          return { data: txReceipt }
+        } catch (error) {
+          // capture error and show toast for anything that's not user rejecting error
+          if (!isUserRejectedError(error)) {
+            handleError({
+              error,
+              label: step.payload.txRequestLabel,
+              category: 'transaction_signing'
+            })
+
+            errorToast(`${(error as Error)?.message ?? error}`)
+          }
+
+          return { error: error as unknown as Error }
+        }
+      }
     }
   }
 
   const transferCctp = async () => {
     if (!selectedToken) {
       return
+    }
+    if (!walletAddress) {
+      throw new Error(`walletAddress is undefined`)
     }
     if (!signer) {
       throw new Error(signerUndefinedError)
@@ -423,11 +453,18 @@ export function TransferPanel() {
       const { sourceChainProvider, destinationChainProvider, sourceChain } =
         latestNetworks.current
 
+      const cctpTransferStarter = new CctpTransferStarter({
+        sourceChainProvider,
+        destinationChainProvider
+      })
+
       const returnEarly = await drive(stepGeneratorForCctp, stepExecutor, {
+        amountBigNumber,
         isDepositMode,
         isSmartContractWallet,
         walletAddress,
-        destinationAddress
+        destinationAddress,
+        transferStarter: cctpTransferStarter
       })
 
       // this is only necessary while we are migrating to the ui driver
@@ -436,49 +473,6 @@ export function TransferPanel() {
       // after we are done, we can change the return type of `drive` to `void`
       if (returnEarly) {
         return
-      }
-
-      const cctpTransferStarter = new CctpTransferStarter({
-        sourceChainProvider,
-        destinationChainProvider
-      })
-
-      const isTokenApprovalRequired =
-        await cctpTransferStarter.requiresTokenApproval({
-          amount: amountBigNumber,
-          owner: await signer.getAddress()
-        })
-
-      if (isTokenApprovalRequired) {
-        const userConfirmation = await confirmDialog('approve_token')
-        if (!userConfirmation) return false
-
-        if (isSmartContractWallet) {
-          showDelayedSmartContractTxRequest()
-        }
-        try {
-          const tx = await cctpTransferStarter.approveToken({
-            signer,
-            amount: amountBigNumber
-          })
-
-          await tx.wait()
-        } catch (error) {
-          if (isUserRejectedError(error)) {
-            return
-          }
-          handleError({
-            error,
-            label: 'cctp_approve_token',
-            category: 'token_approval'
-          })
-          errorToast(
-            `USDC approval transaction failed: ${
-              (error as Error)?.message ?? error
-            }`
-          )
-          return
-        }
       }
 
       let depositForBurnTx
@@ -1235,15 +1229,15 @@ export function TransferPanel() {
       )
     }
 
-    switchToTransactionHistoryTab()
+    if (embedMode) {
+      openDialog('widget_transaction_history')
+    } else {
+      switchToTransactionHistoryTab()
+    }
+
     setTransferring(false)
     clearRoute()
     clearAmountInput()
-
-    // for custom orbit pages, show Projects' listing after transfer
-    if (isDepositMode && isNetwork(childChain.id).isOrbitChain) {
-      setShowProjectsListing(true)
-    }
 
     await (sourceChainTransaction as TransactionResponse).wait()
 
@@ -1358,6 +1352,21 @@ export function TransferPanel() {
     }) ||
     (!isLoadingAccountType && !isSmartContractWallet)
 
+  if (embedMode) {
+    return (
+      <WidgetTransferPanel
+        openDialog={openDialog}
+        dialogProps={dialogProps}
+        moveFundsButtonOnClick={moveFundsButtonOnClick}
+        isTokenAlreadyImported={isTokenAlreadyImported}
+        tokenFromSearchParams={tokenFromSearchParams}
+        tokenImportDialogProps={tokenImportDialogProps}
+        showSettingsButton={showSettingsButton}
+        closeWithResetTokenImportDialog={closeWithResetTokenImportDialog}
+      />
+    )
+  }
+
   return (
     <>
       <DialogWrapper {...dialogProps} />
@@ -1386,6 +1395,8 @@ export function TransferPanel() {
             onDestinationAddressChange={setDestinationAddress}
           />
         )}
+
+        <ToSConfirmationCheckbox className="my-2" />
 
         {isConnected ? (
           <MoveFundsButton onClick={moveFundsButtonOnClick} />
@@ -1427,8 +1438,6 @@ export function TransferPanel() {
           </Tippy>
         )}
       </div>
-
-      {showProjectsListing && <ProjectsListing />}
     </>
   )
 }

@@ -1,9 +1,10 @@
 import { DialogBackdrop, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { useCallback, useRef, useState } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -100,6 +101,7 @@ export function Dialog(props: DialogProps) {
   const closeable = props.closeable ?? true
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
+  const [{ embedMode }] = useArbQueryParams()
   const onClose = props.onClose
 
   // separate state to track transition state and have a smooth exit animation
@@ -150,19 +152,34 @@ export function Dialog(props: DialogProps) {
           'z-10 max-h-screen w-screen scale-100 overflow-y-auto border border-gray-dark bg-gray-1 opacity-100 transition-[transform_opacity] md:max-w-[727px] md:rounded',
           'data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:duration-400 data-[enter]:ease-out',
           'data-[leave]:duration-200 data-[leave]:ease-in',
+          embedMode && 'border-0',
           className
         )}
       >
-        <div className="flex items-start justify-between px-6 pt-4">
-          <HeadlessUIDialog.Title className="text-xl text-gray-2">
+        <div
+          className={twMerge(
+            'flex items-start justify-between px-6 pt-4',
+            embedMode && 'flex-row-reverse items-center justify-end gap-4'
+          )}
+        >
+          <HeadlessUIDialog.Title
+            className={twMerge('text-xl text-gray-2', embedMode && 'text-lg')}
+          >
             {props.title}
           </HeadlessUIDialog.Title>
           {closeable && (
             <button type="button" onClick={() => handleClose(false)}>
-              <XMarkIcon
-                className="arb-hover h-6 w-6 text-gray-7"
-                aria-label="Close Dialog"
-              />
+              {embedMode ? (
+                <ChevronLeftIcon
+                  className="arb-hover h-4 w-4 text-gray-7"
+                  aria-label="Close Dialog"
+                />
+              ) : (
+                <XMarkIcon
+                  className="arb-hover h-6 w-6 text-gray-7"
+                  aria-label="Close Dialog"
+                />
+              )}
             </button>
           )}
         </div>

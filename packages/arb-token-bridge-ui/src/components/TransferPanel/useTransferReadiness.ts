@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { BigNumber, constants, utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -16,7 +17,7 @@ import {
   getSmartContractWalletTeleportTransfersNotSupportedErrorMessage,
   getWithdrawOnlyChainErrorMessage
 } from './useTransferReadinessUtils'
-import { ether } from '../../constants'
+import { ether, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import {
   UseGasSummaryResult,
   useGasSummary
@@ -32,7 +33,12 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { formatAmount } from '../../util/NumberUtils'
 import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdrawOnly'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
-import { isLifiRoute, RouteContext, useRouteStore } from './hooks/useRouteStore'
+import {
+  isLifiRoute,
+  RouteContext,
+  RouteType,
+  useRouteStore
+} from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { addressesEqual } from '../../util/AddressUtils'
 
@@ -50,7 +56,11 @@ type ErrorMessages = {
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
-  options: { isSmartContractWallet: boolean; isDepositMode: boolean }
+  options: {
+    isSmartContractWallet: boolean
+    isDepositMode: boolean
+    selectedRoute: RouteType | undefined
+  }
 ) {
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } = gasSummary
 
@@ -66,6 +76,11 @@ function sanitizeEstimatedGasFees(
 
   // For smart contract wallets, the relayer pays the gas fees
   if (options.isSmartContractWallet) {
+    // For CCTP, the relayer pays for everything
+    if (options.selectedRoute === 'cctp') {
+      return { estimatedL1GasFees: 0, estimatedL2GasFees: 0 }
+    }
+
     if (options.isDepositMode) {
       // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
       return {
@@ -193,6 +208,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     childWalletAddress: walletAddress
   })
   const { destinationAddressError } = useDestinationAddressError()
+  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY)
 
   const ethL1BalanceFloat = ethParentBalance
     ? parseFloat(utils.formatEther(ethParentBalance))
@@ -259,6 +275,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     const { estimatedL1GasFees, estimatedL2GasFees } = sanitizeEstimatedGasFees(
       gasSummary,
       {
+        selectedRoute,
         isSmartContractWallet,
         isDepositMode
       }
@@ -463,6 +480,10 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       }
     }
 
+    if (!tosAccepted) {
+      return notReady()
+    }
+
     // The amount entered is enough funds, but now let's include gas costs
     switch (gasSummary.status) {
       // No error while loading gas costs
@@ -583,16 +604,32 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         if (nativeCurrency.isCustom && isDepositMode) {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
-          if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
+
+          // Case 1: the parent chain's native balance (eg. ETH) is not enough to cover the retryable creation fee
+          if (estimatedL1GasFees > ethBalanceFloat) {
             return notReady({
               errorMessages: {
                 inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
                   asset: ether.symbol,
                   chain: networks.sourceChain.name,
                   balance: formatAmount(ethBalanceFloat),
-                  requiredBalance: formatAmount(
-                    estimatedL1GasFees + estimatedL2GasFees
-                  )
+                  requiredBalance: formatAmount(estimatedL1GasFees)
+                })
+              }
+            })
+          }
+
+          // Case 2: user has enough parent chain's native balance (eg. ETH), but doesn't have enough child-chain-native token to cover the child-chain execution cost
+          if (estimatedL2GasFees > Number(customFeeTokenBalanceFloat)) {
+            return notReady({
+              errorMessages: {
+                inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
+                  asset: nativeCurrency.symbol,
+                  chain: networks.sourceChain.name,
+                  balance: customFeeTokenBalanceFloat
+                    ? formatAmount(customFeeTokenBalanceFloat)
+                    : formatAmount(constants.Zero),
+                  requiredBalance: formatAmount(estimatedL2GasFees)
                 })
               }
             })

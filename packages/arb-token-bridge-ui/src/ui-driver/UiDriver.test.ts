@@ -16,7 +16,7 @@ it('successfully does step execution', async () => {
     yield { type: 'start' }
   }
 
-  const executor: UiDriverStepExecutor = async function (step) {
+  const executor: UiDriverStepExecutor = async function (_, step) {
     if (step.type === 'start') {
       counter += 1
     }
@@ -39,7 +39,7 @@ it('successfully does early return', async () => {
     yield { type: 'start' }
   }
 
-  const executor: UiDriverStepExecutor = async function (step) {
+  const executor: UiDriverStepExecutor = async function (_, step) {
     if (step.type === 'start') {
       counter += 1
     }
