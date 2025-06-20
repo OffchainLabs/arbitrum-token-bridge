@@ -6,7 +6,8 @@ import { isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
   isTokenArbitrumOneUSDCe,
-  isTokenArbitrumSepoliaUSDCe
+  isTokenArbitrumSepoliaUSDCe,
+  isTokenUSDT
 } from './TokenUtils'
 import { CommonAddress } from './CommonAddressUtils'
 
@@ -375,7 +376,10 @@ export async function isWithdrawOnlyToken({
     return true
   }
 
-  if (await isLayerZeroToken(parentChainErc20Address, parentChainId)) {
+  if (
+    !isTokenUSDT(parentChainErc20Address) && // USDT is a special case - it's bridged via OFT, but we still want to allow transfers coz of our OftV2 Integration
+    (await isLayerZeroToken(parentChainErc20Address, parentChainId))
+  ) {
     return true
   }
 

@@ -388,6 +388,9 @@ export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
 export const isTokenArbitrumSepoliaUSDCe = (tokenAddress: string | undefined) =>
   addressesEqual(tokenAddress, CommonAddress.ArbitrumSepolia['USDC.e'])
 
+export const isTokenArbitrumOneUSDT = (tokenAddress: string | undefined) =>
+  addressesEqual(tokenAddress, CommonAddress.ArbitrumOne.USDT)
+
 export const isTokenArbitrumOneNativeUSDC = (
   tokenAddress: string | undefined
 ) => addressesEqual(tokenAddress, CommonAddress.ArbitrumOne.USDC)
@@ -407,6 +410,9 @@ export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
 
 export const isTokenEthereumUSDT = (tokenAddress: string | undefined) =>
   addressesEqual(tokenAddress, CommonAddress.Ethereum.USDT)
+
+export const isTokenUSDT = (tokenAddress: string | undefined) =>
+  isTokenEthereumUSDT(tokenAddress) || isTokenArbitrumOneUSDT(tokenAddress)
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
