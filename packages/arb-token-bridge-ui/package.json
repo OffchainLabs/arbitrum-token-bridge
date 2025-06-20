@@ -62,6 +62,7 @@
     "start": "next start",
     "test": "vitest --config vitest.config.ts --watch",
     "test:ci": "vitest --config vitest.config.ts --run",
+    "test:widget-snapshot": "yarn playwright test src/components/Widget/__tests__/widget-visual-regression.spec.ts",
     "lint": "tsc && eslint",
     "lint:fix": "tsc && eslint --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
@@ -91,6 +92,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.26.0",
     "@next/eslint-plugin-next": "^15.3.2",
+    "@playwright/test": "^1.45.3",
     "@synthetixio/synpress": "3.7.3",
     "@testing-library/react": "^16.3.0",
     "@types/lodash-es": "^4.17.12",
@@ -128,6 +130,7 @@
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.32.1",
     "vitest": "^3.1.1",
+    "wait-on": "^7.2.0",
     "yargs": "^18.0.0"
   }
 }
