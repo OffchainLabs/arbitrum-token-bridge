@@ -67,23 +67,23 @@ describe.sequential('fetchBatchedWithdrawals single call', () => {
   )
 })
 
-describe.sequential('fetchBatchedWithdrawals fetch 0 times', () => {
-  it(
-    'does not call the method at all and returns an empty data',
-    { timeout: 15_000 },
-    async () => {
-      const mock = vi.spyOn(fetchModule, 'fetchWithdrawals')
-
-      const result = await fetchBatchedWithdrawals({
-        l1Provider,
-        ...getQueryCoveringClassicAndNitroWithResults(),
-        batchSizeBlocks: 1,
-        fromBlock: 2,
-        toBlock: 1
-      })
-
-      expect(mock).toHaveBeenCalledTimes(0)
-      expect(result).toHaveLength(0)
-    }
-  )
-})
+describe.sequential(
+  'fetchBatchedWithdrawals throw error when toBlock lower than fromBlock',
+  () => {
+    it(
+      'does not call the method at all and returns an empty data',
+      { timeout: 15_000 },
+      async () => {
+        await expect(
+          fetchBatchedWithdrawals({
+            l1Provider,
+            ...getQueryCoveringClassicAndNitroWithResults(),
+            batchSizeBlocks: 1,
+            fromBlock: 2,
+            toBlock: 1
+          })
+        ).rejects.toThrow('toBlock (1) cannot be lower than fromBlock (2)')
+      }
+    )
+  }
+)

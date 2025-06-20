@@ -285,6 +285,12 @@ export async function fetchBatchedWithdrawals(
   const fromBlock = params.fromBlock ?? 1
   const toBlock = params.toBlock ?? latestBlockNumber
 
+  if (toBlock < fromBlock) {
+    throw new Error(
+      `toBlock (${toBlock}) cannot be lower than fromBlock (${fromBlock})`
+    )
+  }
+
   const batchSizeBlocks = params.batchSizeBlocks ?? 5_000_000
   const batchCount = Math.ceil((toBlock - fromBlock) / batchSizeBlocks)
 
