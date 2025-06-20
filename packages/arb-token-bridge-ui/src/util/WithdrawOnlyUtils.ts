@@ -1,9 +1,7 @@
 // tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
-import { ethers } from 'ethers'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-
+import axios from 'axios'
 import { isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
@@ -281,27 +279,68 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   ]
 }
 
+/**
+ * Fetches LayerZero's off-chain metadata to identify OFT tokens.
+ * If found in the metadata, it means the token supports OFT transfers - hence shouldn't be deposited through Arbitrum's canonical bridge.
+ * @param parentChainErc20Address
+ * @param parentChainId
+ * @returns boolean - true if the token is an OFT token, false otherwise
+ */
 async function isLayerZeroToken(
   parentChainErc20Address: string,
   parentChainId: number
 ) {
-  const parentProvider = getProviderForChainId(parentChainId)
+  const chainIdToLzName: Record<number, string | undefined> = {
+    [ChainId.Ethereum]: 'ethereum',
+    [ChainId.ArbitrumOne]: 'arbitrum',
+    [ChainId.ArbitrumNova]: 'nova',
+    [ChainId.Sepolia]: 'ethereum-sepolia',
+    [ChainId.ArbitrumSepolia]: 'arbitrum-sepolia'
+  }
 
-  // https://github.com/LayerZero-Labs/LayerZero-v2/blob/592625b9e5967643853476445ffe0e777360b906/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol#L37
-  const layerZeroTokenOftContract = new ethers.Contract(
-    parentChainErc20Address,
-    [
-      'function oftVersion() external pure virtual returns (bytes4 interfaceId, uint64 version)'
-    ],
-    parentProvider
-  )
+  const parentChainName = chainIdToLzName[parentChainId]
 
-  try {
-    const _isLayerZeroToken = await layerZeroTokenOftContract.oftVersion()
-    return !!_isLayerZeroToken
-  } catch (error) {
+  if (!parentChainName) {
     return false
   }
+
+  try {
+    // Fetches LayerZero's off-chain metadata to identify OFT tokens.
+    // If found in the metadata, it means the token supports OFT transfers - hence shouldn't be deposited through Arbitrum's canonical bridge.
+    // {
+    //   "ethereum": { <-- parent chain name
+    //     "tokens": {
+    //       "0x57e114b691db790c35207b2e685d4a43181e6061": {  <--- parent chain erc20 address
+    //         "id": "ena",
+    //         "symbol": "ENA",
+    //         "decimals": 18
+    //       }
+    //       ...more tokens
+    //     }
+    //   }
+    // }
+
+    const response = await axios.get(
+      'https://metadata.layerzero-api.com/v1/metadata'
+    )
+    const metadata = response.data
+    const chainData = metadata[parentChainName]
+
+    if (chainData && chainData.tokens) {
+      const tokenInfo = Object.keys(chainData.tokens).find(
+        tokenAddr =>
+          tokenAddr.toLowerCase() === parentChainErc20Address.toLowerCase()
+      )
+      return !!tokenInfo
+    }
+  } catch (error) {
+    console.error(
+      `Error fetching or processing LayerZero metadata for ${parentChainErc20Address} on chain ${parentChainId}:`,
+      error
+    )
+  }
+
+  return false
 }
 
 /**
