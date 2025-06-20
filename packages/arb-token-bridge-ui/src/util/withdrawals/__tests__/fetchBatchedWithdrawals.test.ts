@@ -71,7 +71,7 @@ describe.sequential(
   'fetchBatchedWithdrawals throw error when toBlock lower than fromBlock',
   () => {
     it(
-      'does not call the method at all and returns an empty data',
+      'throws an error',
       { timeout: 15_000 },
       async () => {
         await expect(
