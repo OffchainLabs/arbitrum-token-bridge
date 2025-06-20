@@ -81,24 +81,23 @@ export async function fetchWithdrawals({
     fromBlock = 0
   }
 
-  if (!toBlock) {
-    // if toBlock hasn't been provided by the user
-
-    // fetch the latest L2 block number thorough subgraph
-    const latestSubgraphBlockNumber = await fetchLatestSubgraphBlockNumber(
-      l2ChainID
-    )
-    toBlock = latestSubgraphBlockNumber
-  }
+  let latestFetchedBlock = fromBlock
+  const latestSubgraphBlock = await fetchLatestSubgraphBlockNumber(l2ChainID)
 
   let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
   try {
+    const toBlockSubgraph =
+      typeof toBlock === 'number'
+        ? // get smaller value to respect provided toBlock
+          Math.min(latestSubgraphBlock, toBlock)
+        : latestSubgraphBlock
+
     withdrawalsFromSubgraph = (
       await fetchWithdrawalsFromSubgraph({
         sender,
         receiver,
         fromBlock,
-        toBlock,
+        toBlock: toBlockSubgraph,
         l2ChainId: l2ChainID,
         pageNumber,
         pageSize,
@@ -113,6 +112,9 @@ export async function fetchWithdrawals({
         childChainId: l2ChainID
       }
     })
+
+    // if successful, this is our latest fetched block and we will use it as a start block for event logs to fetch the remaining data
+    latestFetchedBlock = toBlockSubgraph
   } catch (error) {
     console.log('Error fetching withdrawals from subgraph', error)
   }
@@ -151,7 +153,9 @@ export async function fetchWithdrawals({
 
   /// receiver queries; only add if nonce > 0 for orbit chains
   const fetchReceivedTransactions =
-    isCoreChain || (isOrbitChain && senderNonce > 0) || forceFetchReceived
+    (toBlock && latestFetchedBlock < toBlock && isCoreChain) ||
+    (isOrbitChain && senderNonce > 0) ||
+    forceFetchReceived
 
   if (fetchReceivedTransactions) {
     if (isAlchemy) {
@@ -170,10 +174,8 @@ export async function fetchWithdrawals({
     ? await backOff(() =>
         fetchETHWithdrawalsFromEventLogs({
           receiver,
-          // not sure why eslint is treating "toBlock" as "number | undefined" here
-          // even though typescript recognizes it as "number"
-          fromBlock: toBlock ?? 0 + 1,
-          toBlock: 'latest',
+          fromBlock: latestFetchedBlock,
+          toBlock: toBlock ?? 'latest',
           l2Provider: l2Provider
         })
       )
@@ -185,8 +187,8 @@ export async function fetchWithdrawals({
     await fetchTokenWithdrawalsFromEventLogsSequentially({
       sender,
       receiver,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
+      fromBlock: latestFetchedBlock,
+      toBlock: toBlock ?? 'latest',
       provider: l2Provider,
       queries
     })

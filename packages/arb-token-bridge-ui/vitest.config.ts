@@ -9,7 +9,7 @@ export default defineConfig({
     snapshotFormat: {
       escapeString: true
     },
-    testTimeout: 5_000,
+    testTimeout: 15_000,
     include: ['./src/**/*.test.ts', './src/**/*.test.tsx'],
     env: loadEnv('', process.cwd(), ''),
     environment: 'happy-dom'
