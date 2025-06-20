@@ -170,8 +170,8 @@ export async function fetchWithdrawals({
     ? await backOff(() =>
         fetchETHWithdrawalsFromEventLogs({
           receiver,
-          fromBlock: fromBlock ?? 1,
-          toBlock: toBlock ?? 'latest',
+          fromBlock: fromBlock || 1,
+          toBlock: toBlock || 'latest',
           l2Provider: l2Provider
         })
       )
@@ -183,8 +183,8 @@ export async function fetchWithdrawals({
     await fetchTokenWithdrawalsFromEventLogsSequentially({
       sender,
       receiver,
-      fromBlock: fromBlock ?? 1,
-      toBlock: toBlock ?? 'latest',
+      fromBlock: fromBlock || 1,
+      toBlock: toBlock || 'latest',
       provider: l2Provider,
       queries
     })

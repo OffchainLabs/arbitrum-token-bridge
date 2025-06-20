@@ -305,7 +305,7 @@ export async function fetchBatchedWithdrawals(
 
   const results = await Promise.all(promises)
 
-  return results.flat().sort(sortByTimestampDescending)
+  return results.flat()
 }
 
 /**
