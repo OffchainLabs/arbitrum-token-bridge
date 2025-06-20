@@ -305,7 +305,7 @@ async function isLayerZeroToken(
   }
 
   try {
-    // Fetches LayerZero's off-chain metadata to identify OFT tokens.
+    // Fetches LayerZero's off-chain metadata (https://metadata.layerzero-api.com/v1/metadata) to identify OFT tokens.
     // If found in the metadata, it means the token supports OFT transfers - hence shouldn't be deposited through Arbitrum's canonical bridge.
     // Schema:
     // {
