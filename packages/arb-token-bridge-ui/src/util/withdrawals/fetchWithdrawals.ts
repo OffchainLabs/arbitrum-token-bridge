@@ -68,21 +68,21 @@ export async function fetchWithdrawals({
   toBlock,
   forceFetchReceived = false
 }: FetchWithdrawalsParams): Promise<Withdrawal[]> {
-  let latestFetchedBlock = 0
-
+  
   if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
     return []
   }
-
+  
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
-
+  
   const { isOrbitChain, isCoreChain } = isNetwork(l2ChainID)
-
+  
   if (!fromBlock) {
     fromBlock = 0
   }
-
+  
+  let latestFetchedBlock = fromBlock
   const latestSubgraphBlock = await fetchLatestSubgraphBlockNumber(l2ChainID)
 
   let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
