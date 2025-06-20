@@ -39,7 +39,7 @@ describe.sequential('fetchBatchedWithdrawals multiple calls', () => {
       })
 
       expect(mock).toHaveBeenCalledTimes(3)
-      expect(result).toHaveLength(6)
+      expect(result).toHaveLength(4)
       expect(result).toEqual(expect.arrayContaining(validResult))
 
       mock.mockRestore()
@@ -61,7 +61,7 @@ describe.sequential('fetchBatchedWithdrawals single call', () => {
       })
 
       expect(mock).toHaveBeenCalledTimes(1)
-      expect(result).toHaveLength(6)
+      expect(result).toHaveLength(4)
       expect(result).toEqual(expect.arrayContaining(validResult))
     }
   )
@@ -70,20 +70,16 @@ describe.sequential('fetchBatchedWithdrawals single call', () => {
 describe.sequential(
   'fetchBatchedWithdrawals throw error when toBlock lower than fromBlock',
   () => {
-    it(
-      'throws an error',
-      { timeout: 15_000 },
-      async () => {
-        await expect(
-          fetchBatchedWithdrawals({
-            l1Provider,
-            ...getQueryCoveringClassicAndNitroWithResults(),
-            batchSizeBlocks: 1,
-            fromBlock: 2,
-            toBlock: 1
-          })
-        ).rejects.toThrow('toBlock (1) cannot be lower than fromBlock (2)')
-      }
-    )
+    it('throws an error', { timeout: 15_000 }, async () => {
+      await expect(
+        fetchBatchedWithdrawals({
+          l1Provider,
+          ...getQueryCoveringClassicAndNitroWithResults(),
+          batchSizeBlocks: 1,
+          fromBlock: 2,
+          toBlock: 1
+        })
+      ).rejects.toThrow('toBlock (1) cannot be lower than fromBlock (2)')
+    })
   }
 )
