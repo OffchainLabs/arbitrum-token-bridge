@@ -40,3 +40,7 @@ yarn-error.log*
 # Next.js
 .next
 next-env.d.ts
+
+# Test results
+/test-results/
+/playwright-report/
