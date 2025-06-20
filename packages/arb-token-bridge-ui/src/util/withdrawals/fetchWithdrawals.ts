@@ -68,6 +68,8 @@ export async function fetchWithdrawals({
   toBlock,
   forceFetchReceived = false
 }: FetchWithdrawalsParams): Promise<Withdrawal[]> {
+  let latestFetchedBlock = 0
+
   if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
     return []
   }
@@ -81,24 +83,22 @@ export async function fetchWithdrawals({
     fromBlock = 0
   }
 
-  if (!toBlock) {
-    // if toBlock hasn't been provided by the user
-
-    // fetch the latest L2 block number thorough subgraph
-    const latestSubgraphBlockNumber = await fetchLatestSubgraphBlockNumber(
-      l2ChainID
-    )
-    toBlock = latestSubgraphBlockNumber
-  }
+  const latestSubgraphBlock = await fetchLatestSubgraphBlockNumber(l2ChainID)
 
   let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
   try {
+    const toBlockSubgraph =
+      typeof toBlock === 'number'
+        ? // get smaller value to respect provided toBlock
+          Math.min(latestSubgraphBlock, toBlock)
+        : latestSubgraphBlock
+
     withdrawalsFromSubgraph = (
       await fetchWithdrawalsFromSubgraph({
         sender,
         receiver,
         fromBlock,
-        toBlock,
+        toBlock: toBlockSubgraph,
         l2ChainId: l2ChainID,
         pageNumber,
         pageSize,
@@ -113,6 +113,9 @@ export async function fetchWithdrawals({
         childChainId: l2ChainID
       }
     })
+
+    // if successful, this is our latest fetched block and we will use it as a start block for event logs to fetch the remaining data
+    latestFetchedBlock = toBlockSubgraph
   } catch (error) {
     console.log('Error fetching withdrawals from subgraph', error)
   }
@@ -170,8 +173,8 @@ export async function fetchWithdrawals({
     ? await backOff(() =>
         fetchETHWithdrawalsFromEventLogs({
           receiver,
-          fromBlock: fromBlock || 1,
-          toBlock: toBlock || 'latest',
+          fromBlock: latestFetchedBlock,
+          toBlock: toBlock ?? 'latest',
           l2Provider: l2Provider
         })
       )
@@ -183,8 +186,8 @@ export async function fetchWithdrawals({
     await fetchTokenWithdrawalsFromEventLogsSequentially({
       sender,
       receiver,
-      fromBlock: fromBlock || 1,
-      toBlock: toBlock || 'latest',
+      fromBlock: latestFetchedBlock,
+      toBlock: toBlock ?? 'latest',
       provider: l2Provider,
       queries
     })
