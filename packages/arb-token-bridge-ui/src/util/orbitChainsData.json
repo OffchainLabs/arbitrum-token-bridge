@@ -1194,6 +1194,53 @@
           "logoUrl": "/images/Hychain_NativeTokenLogo.jpg"
         }
       }
+    },
+    {
+      "chainId": 6985385,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x8620F893F6321C31909e4a58bcEb6948A289e0fD",
+        "inbox": "0xe7D7C04885f460e0c58504D617C65ab064A4879D",
+        "outbox": "0x74045319D890f0C0CD7914F2DE757F25492331f0",
+        "rollup": "0x45e39B0957FE6eac4Be9B0A02462290A17724a68",
+        "sequencerInbox": "0xa80dD081B83399614fa0BB497174Bdcb3EF4Efe6"
+      },
+      "nativeToken": "0xcf5104d094e3864cfcbda43b82e1cefd26a016eb",
+      "explorerUrl": "https://humanity-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://humanity-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Humanity Mainnet",
+      "slug": "humanity-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0xdbcC9e1e24C0b8f9b7bEE5b32E0A9332D9818686",
+        "parentErc20Gateway": "0xa84A5f9565DB67129Be5bEb7fA94dB0F74098f37",
+        "parentGatewayRouter": "0x0266191d2a5ED66A308874E9266099039AF19cD2",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xc8a8eCF060e219B6CADe249562933479c6097a89",
+        "childErc20Gateway": "0x5214401CE33cdeBd33F46eD479133eB35731E095",
+        "childGatewayRouter": "0x38Fa669dE4442F65c2cE4a324bA7e004E3b7A653",
+        "childMultiCall": "0xB40f50Ba0fCF0237b717135c71423F3f2BA027f2",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#BA5400",
+        "network": {
+          "name": "Humanity Mainnet",
+          "logo": "/images/HumanityMainnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Humanity",
+          "symbol": "H",
+          "logoUrl": "/images/HumanityMainnet_Logo.svg"
+        }
+      }
     }
   ],
   "testnet": [
