@@ -380,7 +380,6 @@ async function isLayerZeroToken(
   parentChainId: number
 ) {
   try {
-    // We prefer the API check as it's faster and less resource intensive
     if (await isLayerZeroTokenViaAPI(parentChainErc20Address, parentChainId)) {
       return true
     }
