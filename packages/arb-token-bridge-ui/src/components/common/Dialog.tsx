@@ -4,7 +4,7 @@ import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useMode } from '../../hooks/useMode'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -101,7 +101,7 @@ export function Dialog(props: DialogProps) {
   const closeable = props.closeable ?? true
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useMode()
   const onClose = props.onClose
 
   // separate state to track transition state and have a smooth exit animation
