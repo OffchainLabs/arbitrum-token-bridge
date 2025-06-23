@@ -151,11 +151,12 @@ export async function fetchWithdrawals({
     }
   }
 
-  /// receiver queries; only add if nonce > 0 for orbit chains
   const fetchReceivedTransactions =
-    (toBlock && latestFetchedBlock < toBlock && isCoreChain) ||
-    (isOrbitChain && senderNonce > 0) ||
-    forceFetchReceived
+    // check if we already fetched for each block
+    toBlock && latestFetchedBlock >= toBlock
+      ? false
+      : // receiver queries; only add if nonce > 0 for orbit chains
+        isCoreChain || (isOrbitChain && senderNonce > 0) || forceFetchReceived
 
   if (fetchReceivedTransactions) {
     if (isAlchemy) {
