@@ -2219,6 +2219,48 @@
           "logoUrl": "/images/GalacticaCassiopeia_Logo.svg"
         }
       }
+    },
+    {
+      "chainId": 181228,
+      "confirmPeriodBlocks": 60,
+      "ethBridge": {
+        "bridge": "0x1DDe0F57E7889B6866505634E58E3057b01dfed0",
+        "inbox": "0xAAD45a7bF65b43E56767CdE3Ab84A5433c714Afc",
+        "outbox": "0x781Fc2C8EAeA5DFBa4E40A2487187C70703BD92C",
+        "rollup": "0x60b33120F5572608CC33c5C3a40c992987B59Edc",
+        "sequencerInbox": "0x7A6398deA2adc6fe4A3cfBA3352840bB03e440d3"
+      },
+      "explorerUrl": "https://sepolia-explorer.hpp.io/",
+      "rpcUrl": "https://sepolia.hpp.io",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "HPP Sepolia",
+      "slug": "hpp-sepolia",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x1070D76B89D5dfCd30c56429202bd3dAE4d55955",
+        "parentErc20Gateway": "0x15C7018696e1bDc392C252a28E0accD429D85b3E",
+        "parentGatewayRouter": "0x8deBBE23AAE151C49609A46ad2b14590e3692F21",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+        "parentWethGateway": "0xbB0c4391ACBA1e218feE5aD156fA661eBff5545B",
+        "childCustomGateway": "0x8980cbD2EAF1F2aBb930889Fbbbe2b3837140cc5",
+        "childErc20Gateway": "0x4B39dEc9fBebE71902232be6129C123f10a732A6",
+        "childGatewayRouter": "0xb3D7425f7A8dD31EF83d3fAE08302b7f9058E978",
+        "childMultiCall": "0xc7da6827dA3c2e8a41625eb2986a1c9D0515fD9d",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0xd96a3b90e8AbF45E758BA7a407B3f2d1a3b6f546",
+        "childWethGateway": "0xE57Bfe64Ee4e0A5A32329A75c7aC98b1c7664187"
+      },
+      "bridgeUiConfig": {
+        "color": "#1f2021",
+        "network": {
+          "name": "HPP Sepolia",
+          "logo": "/images/HPPSepolia_Logo.svg",
+          "description": "House Party Protocol (HPP) is a modular AI-powered blockchain and data infrastructure designed for the next generation of decentralized applications, built on the pillars of trustworthy data, verifiable AI, and real-world scalability."
+        }
+      }
     }
   ]
 }
