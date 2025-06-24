@@ -12,6 +12,8 @@
     "@heroicons/react": "^2.2.0",
     "@lifi/sdk": "^3.7.0",
     "@offchainlabs/cobalt": "^0.4.0",
+    "@ponder/client": "^0.11.19",
+    "@ponder/react": "^0.11.19",
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@rehooks/local-storage": "^2.4.5",
     "@sentry/react": "^9.13.0",
