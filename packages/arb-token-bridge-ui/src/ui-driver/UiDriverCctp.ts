@@ -68,13 +68,20 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
     return
   }
 
+  const [sourceChainId, destinationChainId] = await Promise.all([
+    getChainIdFromProvider(context.transferStarter.sourceChainProvider),
+    getChainIdFromProvider(context.transferStarter.destinationChainProvider)
+  ])
+
   yield* step({
     type: 'analytics',
     payload: {
       event: context.isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal',
       properties: {
         accountType: context.isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: getNetworkName(context.childChain.id),
+        network: getNetworkName(
+          context.isDepositMode ? destinationChainId : sourceChainId
+        ),
         amount: Number(context.amount),
         complete: false,
         version: 2
@@ -84,7 +91,10 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
 
   yield* step({
     type: 'tx_history_add',
-    payload: await createMergedTransaction(context, receipt.transactionHash)
+    payload: await createMergedTransaction(
+      { ...context, sourceChainId, destinationChainId },
+      receipt.transactionHash
+    )
   })
 }
 
@@ -94,15 +104,11 @@ async function createMergedTransaction(
     walletAddress,
     destinationAddress,
     amount,
-    transferStarter
-  }: UiDriverContext,
+    sourceChainId,
+    destinationChainId
+  }: UiDriverContext & { sourceChainId: number; destinationChainId: number },
   depositForBurnTxHash: string
 ): Promise<MergedTransaction> {
-  const [sourceChainId, destinationChainId] = await Promise.all([
-    getChainIdFromProvider(transferStarter.sourceChainProvider),
-    getChainIdFromProvider(transferStarter.destinationChainProvider)
-  ])
-
   const childChainId = isDepositMode ? destinationChainId : sourceChainId
   const parentChainId = isDepositMode ? sourceChainId : destinationChainId
 
