@@ -20,6 +20,11 @@ import { getUsdcTokenAddressFromSourceChainId } from '../state/cctpState'
 export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
   context
 ) {
+  const [sourceChainId, destinationChainId] = await Promise.all([
+    getChainIdFromProvider(context.transferStarter.sourceChainProvider),
+    getChainIdFromProvider(context.transferStarter.destinationChainProvider)
+  ])
+
   const deposit = context.isDepositMode
   const dialog = `confirm_cctp_${deposit ? 'deposit' : 'withdrawal'}` as const
 
@@ -52,7 +57,7 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
     wagmiConfig: context.wagmiConfig
   })
 
-  // Use type guard to narrow the union type
+  // narrow the union type
   if (!isSimulateContractReturnType(request)) {
     throw new Error(
       `Expected "SimulateContractReturnType" for wagmi transaction`
@@ -67,11 +72,6 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
   if (typeof receipt === 'undefined') {
     return
   }
-
-  const [sourceChainId, destinationChainId] = await Promise.all([
-    getChainIdFromProvider(context.transferStarter.sourceChainProvider),
-    getChainIdFromProvider(context.transferStarter.destinationChainProvider)
-  ])
 
   yield* step({
     type: 'analytics',
