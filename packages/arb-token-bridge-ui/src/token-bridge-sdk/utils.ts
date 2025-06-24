@@ -1,5 +1,10 @@
 import { BigNumber, Signer } from 'ethers'
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import {
+  Provider,
+  StaticJsonRpcProvider,
+  TransactionRequest
+} from '@ethersproject/providers'
+import { SimulateContractReturnType } from 'viem'
 
 import { isNetwork, rpcURLs } from '../util/networks'
 import { ChainId } from '../types/ChainId'
@@ -122,4 +127,10 @@ export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   }
 
   return createProviderWithCache(chainId)
+}
+
+export function isSimulateContractReturnType(
+  value: TransactionRequest | SimulateContractReturnType
+): value is SimulateContractReturnType {
+  return 'request' in value && 'result' in value
 }
