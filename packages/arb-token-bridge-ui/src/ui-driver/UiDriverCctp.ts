@@ -1,5 +1,8 @@
 import dayjs from 'dayjs'
-import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
+import {
+  getChainIdFromProvider,
+  isSimulateContractReturnType
+} from '@/token-bridge-sdk/utils'
 
 import { step, UiDriverStepGenerator, UiDriverContext } from './UiDriver'
 import {
@@ -49,8 +52,14 @@ export const stepGeneratorForCctp: UiDriverStepGenerator = async function* (
     wagmiConfig: context.wagmiConfig
   })
 
+  // Use type guard to narrow the union type
+  if (!isSimulateContractReturnType(request)) {
+    throw new Error(
+      `Expected "SimulateContractReturnType" for wagmi transaction`
+    )
+  }
+
   const receipt = yield* stepGeneratorForTransactionWagmi(context, {
-    // @ts-expect-error - TODO: fix this
     txRequest: request,
     txRequestLabel: 'stepGeneratorForCctp.transfer'
   })
