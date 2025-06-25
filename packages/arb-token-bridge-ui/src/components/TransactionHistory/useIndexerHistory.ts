@@ -3,10 +3,7 @@ import { Address } from 'viem'
 import useSWRImmutable from 'swr/immutable'
 import useSWR from 'swr'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import {
-  useArbitrumIndexer,
-  type Transfer as IndexerTransfer
-} from '../../../../indexer-provider'
+import { useArbitrumIndexer } from '../../../../indexer-provider'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { BigNumber, utils } from 'ethers'
@@ -18,6 +15,30 @@ import {
 import { isExperimentalFeatureEnabled } from '../../util'
 import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
 import { fetchErc20Data } from '../../util/TokenUtils'
+
+type PartialTransfer = {
+  fromAddress: string
+  toAddress: string
+  timestamp: bigint
+  executionTimestamp: bigint
+  status: string
+  amount: bigint
+  txHash: string
+  childChainId: number
+  parentChainId: number
+}
+
+type EthIndexerTransfer = PartialTransfer & {
+  type: 'ETH'
+  tokenAddress: undefined
+}
+
+type Erc20IndexerTransfer = PartialTransfer & {
+  type: 'ERC20'
+  tokenAddress: string
+}
+
+type IndexerTransfer = EthIndexerTransfer | Erc20IndexerTransfer
 
 function getIndexerTransferStatus(tx: IndexerTransfer) {
   switch (tx.status) {
@@ -50,14 +71,24 @@ type TokenDetails = {
   decimals: number
 }
 
-function transformIndexerTransfer<T extends IndexerTransfer['type']>({
-  tx,
-  tokenDetails
-}: {
+function transformIndexerTransfer(params: {
+  tx: EthIndexerTransfer
+  tokenDetails?: undefined
+}): MergedTransaction
+
+function transformIndexerTransfer(params: {
+  tx: Erc20IndexerTransfer
+  tokenDetails: TokenDetails
+}): MergedTransaction
+
+function transformIndexerTransfer(params: {
   tx: IndexerTransfer
-} & (T extends 'ERC20'
-  ? { tokenDetails: TokenDetails }
-  : { tokenDetails?: undefined })): MergedTransaction {
+  tokenDetails?: TokenDetails | undefined
+}): MergedTransaction {
+  const { tx } = params
+  const tokenDetails =
+    'tokenDetails' in params ? params.tokenDetails : undefined
+
   return {
     sender: tx.fromAddress,
     destination: tx.toAddress,
@@ -100,7 +131,11 @@ export const useIndexerHistory = (
     useArbitrumIndexer(isIndexerEnabled ? _address : '')
 
   const indexerTransactions = useMemo(() => {
-    return [...pendingTransfers, ...completedTransfers]
+    return [
+      ...pendingTransfers,
+      ...completedTransfers
+      // move types to indexer
+    ] as never as IndexerTransfer[]
   }, [pendingTransfers, completedTransfers])
 
   // todo: cache
@@ -142,8 +177,8 @@ export const useIndexerHistory = (
       : null,
     ([_indexerTransactions, _tokenDetailsMap]) => {
       return _indexerTransactions.map(tx => {
-        if (!tx.tokenAddress) {
-          return transformIndexerTransfer<'ETH'>({ tx })
+        if (tx.type === 'ETH') {
+          return transformIndexerTransfer({ tx })
         }
 
         const tokenDetails = _tokenDetailsMap[tx.tokenAddress]
@@ -157,7 +192,9 @@ export const useIndexerHistory = (
         return transformIndexerTransfer({ tx, tokenDetails })
       })
     },
-    { onSuccess: data => data.sort(sortByTimestampDescending) }
+    {
+      onSuccess: data => data.sort(sortByTimestampDescending)
+    }
   )
 
   return {
