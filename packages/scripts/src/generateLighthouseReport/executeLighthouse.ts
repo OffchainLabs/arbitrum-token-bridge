@@ -35,12 +35,6 @@ export async function executeLighthouseFlow(chromePath?: string) {
 
   await flow.startTimespan();
 
-  // Accept ToS
-  const tosButton = await page.waitForSelector(
-    '[aria-label="Agree to Terms and Continue"]'
-  );
-  await tosButton?.click();
-
   // Type amount
   const input = await page.waitForSelector('[aria-label="Amount input"]');
   await input?.type("2");
