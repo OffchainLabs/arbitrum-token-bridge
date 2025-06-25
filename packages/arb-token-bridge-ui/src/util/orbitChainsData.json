@@ -2261,6 +2261,54 @@
           "description": "House Party Protocol (HPP) is a modular AI-powered blockchain and data infrastructure designed for the next generation of decentralized applications, built on the pillars of trustworthy data, verifiable AI, and real-world scalability."
         }
       }
+    },
+    {
+      "chainId": 393,
+      "confirmPeriodBlocks": 64,
+      "ethBridge": {
+        "bridge": "0xB8f043Bb9e63174548660F152d4FAD563Ce8a038",
+        "inbox": "0xb2B13E2bBfE28f7d20a0aa18b0602b978806679D",
+        "outbox": "0x8706f4852437a6AB78a312d5bdAe3da79304f1B8",
+        "rollup": "0x4C6ffC9604C5b6C5803BD3d87c0236b1270F7E86",
+        "sequencerInbox": "0x686F8dfB1eAcbcdD78946E13f91E04Dd1f181fd5"
+      },
+      "nativeToken": "0x4fAa7bddB947790C5d585d2E1B8a59aA39a1a4DB",
+      "explorerUrl": "https://explorer.nexus.xyz/",
+      "rpcUrl": "https://nexus-new.rpc.caldera.xyz/http",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Nexus Devnet",
+      "slug": "nexus-devnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x793ac23ba3dbd28AA5290c1ea067D8e52B363FBb",
+        "parentErc20Gateway": "0x94c1496B31D78459874740e636a05BfcE6B7e04a",
+        "parentGatewayRouter": "0x1f3C407456432d8b81d0a7452df3Cd5E9DE48320",
+        "parentMultiCall": "0xBE575090EA0706FD4785a483120A8A8654005178",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x95dcc58A140aaAA1b29651859d3CCF22038240b6",
+        "childErc20Gateway": "0x52FCDdF698E71c0F8771Ec6Ef70777C80B9Ea4A1",
+        "childGatewayRouter": "0xd3FC9B4C6d4f1425d97062c8b6b5CFC4B84f5Ebb",
+        "childMultiCall": "0x00119847032ff6D0f833b1aa23Da5FC5B114E6Fb",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#000000",
+        "network": {
+          "name": "Nexus Devnet",
+          "logo": "/images/NexusDevnet_Logo.png",
+          "description": "Innovation at the intersection of artificial intelligence, blockchain, and zero knowledge."
+        },
+        "nativeTokenData": {
+          "name": "Nexus",
+          "symbol": "NEX",
+          "logoUrl": "/images/NexusDevnet_NativeTokenLogo.png"
+        }
+      }
     }
   ]
 }
