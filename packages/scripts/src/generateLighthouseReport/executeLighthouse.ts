@@ -42,7 +42,7 @@ export async function executeLighthouseFlow(chromePath?: string) {
 
   // Switch network
   await page.click('[aria-label="Switch Networks"]');
-  await page.waitForSelector("[aria-label='From Arbitrum One']");
+  await page.waitForSelector("[aria-label='From: Arbitrum One']");
 
   // Open token selection
   await page.click("[aria-label='Select Token']");
@@ -55,7 +55,7 @@ export async function executeLighthouseFlow(chromePath?: string) {
   await page.waitForSelector("xpath///button[contains(., 'USDC.e')]");
 
   // Open chain selection
-  await page.click("[aria-label='From Arbitrum One']");
+  await page.click("[aria-label='From: Arbitrum One']");
   const chainInput = await page.waitForSelector(
     '[placeholder="Search a network name"]'
   );
@@ -63,7 +63,7 @@ export async function executeLighthouseFlow(chromePath?: string) {
 
   const xaiRow = await page.waitForSelector('[aria-label="Switch to Xai"]');
   await xaiRow?.click();
-  await page.waitForSelector("[aria-label='From Xai']");
+  await page.waitForSelector("[aria-label='From: Xai']");
 
   await flow.endTimespan();
   await flow.snapshot();
