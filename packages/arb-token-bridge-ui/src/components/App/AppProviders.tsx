@@ -13,7 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from '@lifi/sdk'
 import { INTEGRATOR_ID } from '@/bridge/app/api/crosschain-transfers/lifi'
 
-import { ArbitrumIndexerProvider } from 'arbitrum-indexer/packages/indexer-provider'
+import { ArbitrumIndexerProvider } from '../../../../indexer-provider'
 import { PonderProvider } from '@ponder/react'
 import { client } from './ponder'
 
@@ -61,20 +61,22 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <PonderProvider client={client}>
       <QueryClientProvider client={queryClient}>
-        <ArbitrumIndexerProvider
-          ponderClient={client}
-          queryClient={queryClient}
-        >
-          <OvermindProvider value={overmind}>
-            <ArbQueryParamProvider>
-              <WagmiProvider config={wagmiConfig}>
-                <RainbowKitProvider theme={rainbowkitTheme}>
-                  <AppContextProvider>{children}</AppContextProvider>
-                </RainbowKitProvider>
-              </WagmiProvider>
-            </ArbQueryParamProvider>
-          </OvermindProvider>
-        </ArbitrumIndexerProvider>
+        <OvermindProvider value={overmind}>
+          <ArbQueryParamProvider>
+            <WagmiProvider config={wagmiConfig}>
+              <RainbowKitProvider theme={rainbowkitTheme}>
+                <AppContextProvider>
+                  <ArbitrumIndexerProvider
+                    ponderClient={client}
+                    queryClient={queryClient}
+                  >
+                    {children}
+                  </ArbitrumIndexerProvider>
+                </AppContextProvider>
+              </RainbowKitProvider>
+            </WagmiProvider>
+          </ArbQueryParamProvider>
+        </OvermindProvider>
       </QueryClientProvider>
     </PonderProvider>
   )
