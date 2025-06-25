@@ -52,8 +52,6 @@ jobs:
 
     - name: Generate chains JSON
       run: yarn workspace arb-token-bridge-ui ${{ steps.config.outputs.generate_command }}
-      env:
-        INCLUDE_ARB_ONE_AS_CORE_CHAIN: ${{ inputs.monitor != 'retryable' }}
 
     - name: Copy chains JSON to Arbitrum Monitoring
       run: cp ./packages/arb-token-bridge-ui/public/${{ steps.config.outputs.config_file }} ./arbitrum-monitoring/config.json

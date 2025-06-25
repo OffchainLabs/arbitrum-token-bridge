@@ -24,11 +24,7 @@ async function generateCoreChainsToMonitor() {
       rpcURLs[ChainId.ArbitrumOne]
   }
 
-  // don't need to monitor arbOne chain in case of retryable-monitoring
-  const chains =
-    process.env.INCLUDE_ARB_ONE_AS_CORE_CHAIN === 'true'
-      ? [arbOneChain, novaChain]
-      : [novaChain]
+  const chains = [arbOneChain, novaChain]
 
   // make the chain data compatible with that required by the monitoring script
   const coreChainsToMonitor = chains.map(coreChain =>
