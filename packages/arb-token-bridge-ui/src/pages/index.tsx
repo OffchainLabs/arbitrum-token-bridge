@@ -207,7 +207,8 @@ export async function getServerSideProps({
   // sanitize the query params
   const sanitizedChainIds = sanitizeQueryParams({
     sourceChainId,
-    destinationChainId
+    destinationChainId,
+    allowTransfersToNonArbitrumChains: true
   })
   const sanitized = {
     ...sanitizedChainIds,

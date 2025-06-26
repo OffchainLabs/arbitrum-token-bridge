@@ -10,6 +10,7 @@ import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
+import { useAllowTransfersToNonArbitrumChains } from '../../hooks/useAllowTransfersToNonArbitrumChains'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
@@ -39,9 +40,18 @@ export function SwitchNetworksButton(
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const disabled = isSmartContractWallet || isLoadingAccountType
-
+  const allowTransfersToNonArbitrumChains =
+    useAllowTransfersToNonArbitrumChains()
   const [networks, setNetworks] = useNetworks()
+
+  const destinationChainNonArbitrumNotAllowed =
+    !allowTransfersToNonArbitrumChains &&
+    isNetwork(networks.sourceChain.id).isNonArbitrumNetwork
+
+  const disabled =
+    isSmartContractWallet ||
+    isLoadingAccountType ||
+    destinationChainNonArbitrumNotAllowed
 
   return (
     <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">

@@ -1,10 +1,12 @@
 import {
   getDestinationChainIds,
-  getSupportedChainIds
+  getSupportedChainIds,
+  isNetwork
 } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../useIsTestnetMode'
 import { useNetworks } from '../useNetworks'
+import { useAllowTransfersToNonArbitrumChains } from '../useAllowTransfersToNonArbitrumChains'
 import { useMemo } from 'react'
 
 export function useChainIdsForNetworkSelection({
@@ -14,6 +16,8 @@ export function useChainIdsForNetworkSelection({
 }) {
   const [networks] = useNetworks()
   const [isTestnetMode] = useIsTestnetMode()
+  const allowTransfersToNonArbitrumChains =
+    useAllowTransfersToNonArbitrumChains()
 
   return useMemo(() => {
     if (isSource) {
@@ -23,7 +27,10 @@ export function useChainIdsForNetworkSelection({
       })
     }
 
-    const destinationChainIds = getDestinationChainIds(networks.sourceChain.id)
+    const destinationChainIds = getDestinationChainIds(
+      networks.sourceChain.id,
+      allowTransfersToNonArbitrumChains
+    )
 
     // if source chain is Arbitrum One, add Arbitrum Nova to destination
     if (networks.sourceChain.id === ChainId.ArbitrumOne) {
@@ -34,6 +41,17 @@ export function useChainIdsForNetworkSelection({
       destinationChainIds.push(ChainId.ArbitrumOne)
     }
 
+    if (!allowTransfersToNonArbitrumChains) {
+      return destinationChainIds.filter(
+        chainId => !isNetwork(chainId).isNonArbitrumNetwork
+      )
+    }
+
     return destinationChainIds
-  }, [isSource, isTestnetMode, networks.sourceChain.id])
+  }, [
+    isSource,
+    isTestnetMode,
+    networks.sourceChain.id,
+    allowTransfersToNonArbitrumChains
+  ])
 }
