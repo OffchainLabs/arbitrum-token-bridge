@@ -1,7 +1,7 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { BigNumber, constants, utils } from 'ethers'
-import { BadgeType, Route } from './Route'
+import { BadgeType, Route, Token } from './Route'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { RouteType, useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
@@ -22,10 +22,9 @@ import { Loader } from '../../common/atoms/Loader'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
-import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
-import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { Address } from 'viem'
 import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
+import { getDestinationTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 export function LifiRoutes({
   cheapestTag,
@@ -54,7 +53,8 @@ export function LifiRoutes({
   const { fromToken, toToken } = getFromAndToTokenAddresses({
     selectedToken,
     isDepositMode,
-    sourceChainId: networks.sourceChain.id
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
   })
   const parameters = {
     fromAddress: address,
@@ -71,6 +71,16 @@ export function LifiRoutes({
 
   const { data: routes, isLoading: isLoading } =
     useLifiCrossTransfersRoute(parameters)
+
+  const overrideToken = useMemo(
+    () =>
+      getDestinationTokenOverride({
+        fromChainId: networks.sourceChain.id,
+        fromToken,
+        toChainId: networks.destinationChain.id
+      }),
+    [fromToken, networks.sourceChain.id, networks.destinationChain.id]
+  )
 
   useEffect(() => {
     /**
@@ -120,7 +130,14 @@ export function LifiRoutes({
     if (cheapestTag) {
       tags.push(cheapestTag)
     }
-    return <LifiRoute type="lifi" route={route} tag={tags} />
+    return (
+      <LifiRoute
+        type="lifi"
+        route={route}
+        tag={tags}
+        overrideToken={overrideToken}
+      />
+    )
   }
 
   return (
@@ -130,10 +147,16 @@ export function LifiRoutes({
           type="lifi-cheapest"
           route={cheapestRoute}
           tag={cheapestTag}
+          overrideToken={overrideToken}
         />
       )}
       {fastestRoute && (
-        <LifiRoute type="lifi-fastest" route={fastestRoute} tag={fastestTag} />
+        <LifiRoute
+          type="lifi-fastest"
+          route={fastestRoute}
+          tag={fastestTag}
+          overrideToken={overrideToken}
+        />
       )}
     </>
   )
@@ -142,11 +165,13 @@ export function LifiRoutes({
 function LifiRoute({
   type,
   route,
-  tag
+  tag,
+  overrideToken
 }: {
   type: 'lifi' | 'lifi-fastest' | 'lifi-cheapest'
   route: LifiCrosschainTransfersRoute
   tag?: BadgeType | BadgeType[]
+  overrideToken: Token | undefined
 }) {
   const [selectedToken] = useSelectedToken()
   const { selectedRoute, setSelectedRoute } = useRouteStore(
@@ -205,8 +230,6 @@ function LifiRoute({
     [route.gas.amount, route.gas.token]
   )
 
-  const isUsdcTransfer = isTokenNativeUSDC(selectedToken?.address)
-
   return (
     <Route
       type={type}
@@ -218,7 +241,7 @@ function LifiRoute({
         .toString()}
       isLoadingGasEstimate={false}
       gasCost={gasCost}
-      overrideToken={isUsdcTransfer ? ArbOneNativeUSDC : undefined}
+      overrideToken={overrideToken}
       bridgeFee={bridgeFee}
       tag={tag}
       selected={isSelected}
