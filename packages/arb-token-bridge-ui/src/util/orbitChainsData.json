@@ -2309,6 +2309,53 @@
           "logoUrl": "/images/NexusDevnet_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 3940,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xaAd98C7363efe8194397E21a1F36489Ff2A1cF13",
+        "inbox": "0x8C480DfF2F16D0d32E6814270dd5d426324F4b3f",
+        "outbox": "0x641E679B32481980cF169eaC0213493f7dEA5b10",
+        "rollup": "0xc0487449057158bbd264EBFBdc8f8d7f8921e2aC",
+        "sequencerInbox": "0x87286b5b75ee11989a847D01d832Aa6976421E9A"
+      },
+      "nativeToken": "0x551D690089a85765ef2d584b9324E3738A255b0e",
+      "explorerUrl": "https://testnet3.explorer.nexus.xyz/",
+      "rpcUrl": "https://nexus-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Nexus Testnet III",
+      "slug": "nexus-testnet-iii",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0xD8fF73e2E12b0c64bE27313792180E3bedAbC829",
+        "parentErc20Gateway": "0xE0fE1d99166223B71247E4e6a28CFe6C2003883C",
+        "parentGatewayRouter": "0xbaaf4fDe03dB58CdE2af226923aEb3CEd3C628F9",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x14fE16f8e7407b4edF0192BFe4dBB7095739937C",
+        "childErc20Gateway": "0x67CCd93B45f830C4aa60a0D8827B87d7310daf0f",
+        "childGatewayRouter": "0xedB1F624b1aBB9CBBAE3Cb18252e5019a8D7dACC",
+        "childMultiCall": "0x603E9258b6aDECFE7257553D3fA1F4086F42376f",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#151515",
+        "network": {
+          "name": "Nexus Testnet III",
+          "logo": "/images/NexusTestnetIII_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Nexus",
+          "symbol": "NEX",
+          "logoUrl": "/images/NexusTestnetIII_Logo.png"
+        }
+      }
     }
   ]
 }
