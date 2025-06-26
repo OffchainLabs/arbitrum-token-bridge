@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
 
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useAllowTransfersToNonArbitrumChains } from '../../hooks/useAllowTransfersToNonArbitrumChains'
 import { sanitizeQueryParams } from '../../hooks/useNetworks'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
@@ -20,6 +21,9 @@ export function useSyncConnectedChainToQueryParams() {
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
 
+  const allowTransfersToNonArbitrumChains =
+    useAllowTransfersToNonArbitrumChains()
+
   const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {
       return
@@ -28,11 +32,12 @@ export function useSyncConnectedChainToQueryParams() {
     const { sourceChainId: sourceChain, destinationChainId: destinationChain } =
       sanitizeQueryParams({
         sourceChainId: chain.id,
-        destinationChainId: undefined
+        destinationChainId: undefined,
+        allowTransfersToNonArbitrumChains
       })
 
     setQueryParams({ sourceChain, destinationChain })
-  }, [chain, setQueryParams])
+  }, [chain, setQueryParams, allowTransfersToNonArbitrumChains])
 
   useEffect(() => {
     async function checkCorrectChainForSmartContractWallet() {
