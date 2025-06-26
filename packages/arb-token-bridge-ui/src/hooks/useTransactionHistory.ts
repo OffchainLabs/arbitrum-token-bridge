@@ -72,6 +72,8 @@ import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
 import { withTimeout } from '../util/withTimeout'
+import { useIndexerHistory } from '../components/TransactionHistory/useIndexerHistory'
+import { isExperimentalFeatureEnabled } from '../util'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -138,7 +140,7 @@ function getTransactionTimestamp(tx: Transfer) {
   return normalizeTimestamp(tx.timestamp?.toNumber() ?? 0)
 }
 
-function sortByTimestampDescending(a: Transfer, b: Transfer) {
+export function sortByTimestampDescending(a: Transfer, b: Transfer) {
   return getTransactionTimestamp(a) > getTransactionTimestamp(b) ? -1 : 1
 }
 
@@ -445,7 +447,10 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     ]
   )
 
-  const shouldFetch = address && !isLoadingAccountType && isTxHistoryEnabled
+  const isIndexerEnabled = isExperimentalFeatureEnabled('indexer')
+
+  const shouldFetch =
+    address && !isLoadingAccountType && isTxHistoryEnabled && !isIndexerEnabled
 
   const {
     data: depositsData,
@@ -510,6 +515,8 @@ export const useTransactionHistory = (
 
   const { isFeatureDisabled } = useDisabledFeatures()
   const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
+
+  const indexerResult = useIndexerHistory(address)
 
   const lifiTransactions = useLifiMergedTransactionCacheStore(
     state => state.transactions
@@ -881,6 +888,12 @@ export const useTransactionHistory = (
   function resume() {
     setFetching(true)
     setPage(prevPage => prevPage + 1)
+  }
+
+  const isIndexerEnabled = isExperimentalFeatureEnabled('indexer')
+
+  if (isIndexerEnabled) {
+    return { ...indexerResult, addPendingTransaction, updatePendingTransaction }
   }
 
   if (isLoadingTxsWithoutStatus || error) {
