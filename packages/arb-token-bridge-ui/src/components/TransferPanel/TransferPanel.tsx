@@ -502,25 +502,12 @@ export function TransferPanel() {
 
       const childChainName = getNetworkName(childChain.id)
 
-      if (isSmartContractWallet) {
-        // For SCW, we assume that the transaction went through
-        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: 'Smart Contract',
-          network: childChainName,
-          amount: Number(amount),
-          complete: false,
-          version: 2
-        })
-
-        return
-      }
-
       if (!depositForBurnTx) {
         return
       }
 
       trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-        accountType: 'EOA',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
         network: childChainName,
         amount: Number(amount),
         complete: false,
