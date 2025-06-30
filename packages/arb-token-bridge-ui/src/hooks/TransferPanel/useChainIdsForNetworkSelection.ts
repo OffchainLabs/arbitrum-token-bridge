@@ -9,6 +9,7 @@ import { useNetworks } from '../useNetworks'
 import { useMemo } from 'react'
 import { useDisabledFeatures } from '../useDisabledFeatures'
 import { DisabledFeatures } from '../useArbQueryParams'
+import { isLifiEnabled } from '../../util/featureFlag'
 
 export function useChainIdsForNetworkSelection({
   isSource
@@ -34,14 +35,15 @@ export function useChainIdsForNetworkSelection({
       // do not display chains that have no destination chains
       return sourceChainIds.filter(
         chainId =>
-          getDestinationChainIds(chainId, disableTransfersToNonArbitrumChains)
-            .length > 0
+          getDestinationChainIds(chainId, {
+            disableTransfersToNonArbitrumChains
+          }).length > 0
       )
     }
 
     const destinationChainIds = getDestinationChainIds(
       networks.sourceChain.id,
-      disableTransfersToNonArbitrumChains
+      { includeLifi: isLifiEnabled(), disableTransfersToNonArbitrumChains }
     )
 
     // if source chain is Arbitrum One, add Arbitrum Nova to destination

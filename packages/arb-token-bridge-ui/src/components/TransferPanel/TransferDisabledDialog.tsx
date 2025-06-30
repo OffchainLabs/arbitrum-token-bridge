@@ -15,10 +15,8 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { addressesEqual } from '../../util/AddressUtils'
 import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
-import { constants } from 'ethers'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { isLifiEnabled } from '../../util/featureFlag'
-import RestrictedPage from '../../pages/restricted'
 
 export function isDisabledCanonicalTransfer({
   selectedToken,

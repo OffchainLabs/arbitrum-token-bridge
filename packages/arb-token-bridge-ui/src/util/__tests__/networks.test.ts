@@ -1,13 +1,16 @@
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import { it, expect, describe, beforeAll } from 'vitest'
+import { it, expect, describe, beforeAll, MockInstance, vi } from 'vitest'
 
 import {
+  customChainLocalStorageKey,
   getBlockNumberReferenceChainIdByChainId,
   getDestinationChainIds,
-  getSupportedChainIds
+  getSupportedChainIds,
+  isNetwork
 } from '../networks'
 import { ChainId } from '../../types/ChainId'
 import { orbitTestnets } from '../orbitChainsList'
+import { createMockOrbitChain } from '../../hooks/__tests__/helpers'
 
 const xaiTestnetChainId = 37714555429
 
@@ -125,9 +128,9 @@ describe('getBlockNumberReferenceChainIdByChainId', () => {
     it('should return the chainId', () => {
       expect(
         getBlockNumberReferenceChainIdByChainId({
-          chainId: 2222
+          chainId: 1337
         })
-      ).toBe(2222)
+      ).toBe(1337)
     })
   })
 })
@@ -224,12 +227,45 @@ describe('getSupportedChainIds', () => {
 })
 
 describe('getDestinationChainIds', () => {
+  let localStorageGetItemMock: MockInstance<(key: string) => string | null>
+
+  beforeAll(() => {
+    const mockedOrbitChain_1 = createMockOrbitChain({
+      chainId: 2222,
+      parentChainId: ChainId.ArbitrumSepolia
+    })
+    const mockedOrbitChain_2 = createMockOrbitChain({
+      chainId: 3333,
+      parentChainId: ChainId.ArbitrumOne
+    })
+    const mockedOrbitChain_3 = createMockOrbitChain({
+      chainId: 4444,
+      parentChainId: ChainId.ArbitrumNova
+    })
+
+    localStorageGetItemMock = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation((key: string) => {
+        if (key === customChainLocalStorageKey) {
+          return JSON.stringify([
+            mockedOrbitChain_1,
+            mockedOrbitChain_2,
+            mockedOrbitChain_3
+          ])
+        }
+        return null
+      })
+
+    registerCustomArbitrumNetwork(mockedOrbitChain_1)
+    registerCustomArbitrumNetwork(mockedOrbitChain_2)
+    registerCustomArbitrumNetwork(mockedOrbitChain_3)
+  })
+
   function isAscending(arr: number[]) {
     return arr.every(
       (value, index) => index === 0 || value >= Number(arr[index - 1])
     )
   }
-
   it('should return a sorted list for Ethereum Mainnet', () => {
     const destinationChainIds = getDestinationChainIds(ChainId.Ethereum)
     const defaultChainId = destinationChainIds[0]
@@ -237,6 +273,17 @@ describe('getDestinationChainIds', () => {
 
     expect(defaultChainId).toBe(ChainId.ArbitrumOne)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
+
+    const [arbitrumOne, arbitrumNova, ...orbitChains] = getDestinationChainIds(
+      ChainId.Ethereum,
+      {
+        includeLifi: true
+      }
+    )
+
+    expect(arbitrumOne).toBe(ChainId.ArbitrumOne)
+    expect(arbitrumNova).toBe(ChainId.ArbitrumNova)
+    expect(isAscending(orbitChains)).toBe(true)
   })
 
   it('should return a sorted list for Arbitrum One', () => {
@@ -246,6 +293,16 @@ describe('getDestinationChainIds', () => {
 
     expect(defaultChainId).toBe(ChainId.Ethereum)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
+
+    const [ethereum, ...orbitChains] = getDestinationChainIds(
+      ChainId.ArbitrumOne,
+      {
+        includeLifi: true
+      }
+    )
+
+    expect(ethereum).toBe(ChainId.Ethereum)
+    expect(isAscending(orbitChains)).toBe(true)
   })
 
   it('should return a sorted list for Sepolia', () => {
@@ -275,10 +332,22 @@ describe('getDestinationChainIds', () => {
     expect(isAscending(nonDefaultChainIds)).toBe(true)
   })
 
-  // Enable when there are Orbit Chains on Base
-  it('should not return a list for Base', () => {
-    const destinationChainIds = getDestinationChainIds(ChainId.Base)
+  describe('should return for Base', () => {
+    it('no chains without lifi', () => {
+      const destinationChainIds = getDestinationChainIds(ChainId.Base)
+      expect(destinationChainIds).toEqual([])
+    })
 
-    expect(destinationChainIds).toHaveLength(0)
+    it('a sorted list with lifi destinations', () => {
+      const [arbitrumOne, ...orbitChains] = getDestinationChainIds(
+        ChainId.Base,
+        {
+          includeLifi: true
+        }
+      )
+
+      expect(arbitrumOne).toBe(ChainId.ArbitrumOne)
+      expect(isAscending(orbitChains)).toBe(true)
+    })
   })
 })

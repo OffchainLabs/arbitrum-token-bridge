@@ -1,7 +1,11 @@
 import { bridgedUsdcToken } from '../../../constants'
 import { addressesEqual } from '../../../util/AddressUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { tokensMap } from './constants'
+import {
+  allowedLifiSourceChainIds,
+  lifiDestinationChainIds,
+  tokensMap
+} from './constants'
 import { constants } from 'ethers'
 
 export function getLifiDestinationToken({
@@ -41,7 +45,21 @@ export function isValidLifiTransfer({
     toChainId
   })
 
-  return addressesEqual(toToken, expectedDestinationTokenAddress)
+  if (!addressesEqual(toToken, expectedDestinationTokenAddress)) {
+    return false
+  }
+
+  if (!allowedLifiSourceChainIds.includes(Number(fromChainId))) {
+    return false
+  }
+
+  if (
+    !lifiDestinationChainIds[Number(fromChainId)]?.includes(Number(toChainId))
+  ) {
+    return false
+  }
+
+  return true
 }
 
 export function getDestinationTokenOverride({
