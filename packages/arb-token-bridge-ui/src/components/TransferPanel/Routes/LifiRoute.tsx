@@ -173,7 +173,6 @@ function LifiRoute({
   tag?: BadgeType | BadgeType[]
   overrideToken: Token | undefined
 }) {
-  const [selectedToken] = useSelectedToken()
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
       selectedRoute: state.selectedRoute,

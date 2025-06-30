@@ -23,6 +23,7 @@ import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { getOrbitChains } from '../util/orbitChainsList'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useDisabledFeatures } from './useDisabledFeatures'
+import { isLifiEnabled } from '../util/featureFlag'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined
@@ -61,16 +62,18 @@ const cache: Record<
 export function sanitizeQueryParams({
   sourceChainId,
   destinationChainId,
-  disableTransfersToNonArbitrumChains = false
+  disableTransfersToNonArbitrumChains = false,
+  includeLifi = isLifiEnabled()
 }: {
   sourceChainId: ChainId | number | undefined
   destinationChainId: ChainId | number | undefined
   disableTransfersToNonArbitrumChains?: boolean
+  includeLifi?: boolean
 }): {
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  const key = `${sourceChainId}-${destinationChainId}-${disableTransfersToNonArbitrumChains}`
+  const key = `${sourceChainId}-${destinationChainId}-${disableTransfersToNonArbitrumChains}-${includeLifi}`
   const cacheHit = cache[key]
   if (cacheHit) {
     return cacheHit
@@ -99,10 +102,10 @@ export function sanitizeQueryParams({
       isNetwork(destinationChainId).isNonArbitrumNetwork
 
     // case 2: the destination chain id is supported and valid, but it doesn't have a source chain partner, eg. sourceChain=undefined and destinationChain=base
-    const [defaultSourceChainId] = getDestinationChainIds(
-      destinationChainId,
-      disableTransfersToNonArbitrumChains
-    )
+    const [defaultSourceChainId] = getDestinationChainIds(destinationChainId, {
+      disableTransfersToNonArbitrumChains,
+      includeLifi
+    })
 
     // in both cases, we default to eth<>arbitrum-one pair
     if (
@@ -126,10 +129,10 @@ export function sanitizeQueryParams({
     isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
   ) {
-    const [defaultDestinationChainId] = getDestinationChainIds(
-      sourceChainId,
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId, {
+      includeLifi,
       disableTransfersToNonArbitrumChains
-    )
+    })
 
     if (typeof defaultDestinationChainId === 'undefined') {
       return (cache[key] = {
@@ -146,15 +149,15 @@ export function sanitizeQueryParams({
 
   // destinationChainId is not a partner of sourceChainId
   if (
-    !getDestinationChainIds(
-      sourceChainId!,
-      disableTransfersToNonArbitrumChains
-    ).includes(destinationChainId!)
+    !getDestinationChainIds(sourceChainId!, {
+      disableTransfersToNonArbitrumChains,
+      includeLifi
+    }).includes(destinationChainId!)
   ) {
-    const [defaultDestinationChainId] = getDestinationChainIds(
-      sourceChainId!,
-      disableTransfersToNonArbitrumChains
-    )
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!, {
+      disableTransfersToNonArbitrumChains,
+      includeLifi
+    })
 
     if (!defaultDestinationChainId) {
       return (cache[key] = {
