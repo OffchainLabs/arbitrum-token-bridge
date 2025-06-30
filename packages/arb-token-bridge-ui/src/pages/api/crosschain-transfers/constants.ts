@@ -89,3 +89,15 @@ export const lifiDestinationChainIds: Record<number, number[]> = {
   [SuperpositionChainId]: [ChainId.Ethereum, ChainId.ArbitrumOne, ApeChainId],
   [ChainId.Base]: [ChainId.ArbitrumOne, ApeChainId, SuperpositionChainId]
 }
+
+export const lifiChildChainIds: Record<number, number[]> = {
+  [ChainId.Ethereum]: [ChainId.ArbitrumOne, ApeChainId, SuperpositionChainId],
+  [ChainId.ArbitrumOne]: [ApeChainId, SuperpositionChainId]
+}
+
+export const allowedLifiSourceChainIds: number[] = Object.keys(
+  lifiDestinationChainIds
+).map(id => Number(id))
+export const allowedLifiDestinationChainIds: number[] = Object.values(
+  lifiDestinationChainIds
+).flatMap(id => id)
