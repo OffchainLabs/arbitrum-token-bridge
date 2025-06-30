@@ -22,6 +22,7 @@ import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { getOrbitChains } from '../util/orbitChainsList'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { isLifiEnabled } from '../util/featureFlag'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined
@@ -73,6 +74,8 @@ export function sanitizeQueryParams({
     return cacheHit
   }
 
+  const includeLifi = isLifiEnabled()
+
   if (
     (!sourceChainId && !destinationChainId) ||
     (!isSupportedChainId(sourceChainId) &&
@@ -90,7 +93,9 @@ export function sanitizeQueryParams({
     !isSupportedChainId(sourceChainId) &&
     isSupportedChainId(destinationChainId)
   ) {
-    const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
+    const [defaultSourceChainId] = getDestinationChainIds(destinationChainId, {
+      includeLifi
+    })
 
     if (typeof defaultSourceChainId === 'undefined') {
       return (cache[key] = {
@@ -110,7 +115,9 @@ export function sanitizeQueryParams({
     isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
   ) {
-    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId, {
+      includeLifi
+    })
 
     if (typeof defaultDestinationChainId === 'undefined') {
       return (cache[key] = {
@@ -126,8 +133,14 @@ export function sanitizeQueryParams({
   }
 
   // destinationChainId is not a partner of sourceChainId
-  if (!getDestinationChainIds(sourceChainId!).includes(destinationChainId!)) {
-    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!)
+  if (
+    !getDestinationChainIds(sourceChainId!, { includeLifi }).includes(
+      destinationChainId!
+    )
+  ) {
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!, {
+      includeLifi
+    })
     return (cache[key] = {
       sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!

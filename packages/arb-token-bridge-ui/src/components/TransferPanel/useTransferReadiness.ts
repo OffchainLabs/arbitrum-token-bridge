@@ -198,7 +198,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
-  const gasSummary = useGasSummary()
+  const gasSummary = useGasSummary({ selectedRoute })
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })

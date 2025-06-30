@@ -9,6 +9,10 @@ import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { TransferEstimateGasResult } from '@/token-bridge-sdk/BridgeTransferStarter'
+import {
+  RouteContext,
+  useRouteStore
+} from '../../components/TransferPanel/hooks/useRouteStore'
 
 async function fetcher([
   walletAddress,
@@ -18,7 +22,8 @@ async function fetcher([
   destinationChainErc20Address,
   destinationAddress,
   amount,
-  wagmiConfig
+  wagmiConfig,
+  context
 ]: [
   walletAddress: string | undefined,
   sourceChainId: number,
@@ -27,7 +32,8 @@ async function fetcher([
   destinationChainErc20Address: string | undefined,
   destinationAddress: string | undefined,
   amount: BigNumber,
-  wagmiConfig: Config
+  wagmiConfig: Config,
+  context: RouteContext | undefined
 ]): Promise<TransferEstimateGasResult> {
   const _walletAddress = walletAddress ?? constants.AddressZero
   const sourceProvider = getProviderForChainId(sourceChainId)
@@ -37,7 +43,27 @@ async function fetcher([
     sourceChainId,
     sourceChainErc20Address,
     destinationChainId,
-    destinationChainErc20Address
+    destinationChainErc20Address,
+    lifiData: context || {
+      fee: {
+        amount: BigNumber.from(0),
+        token: {
+          address: constants.AddressZero,
+          decimals: 0,
+          symbol: 'ETH'
+        }
+      },
+      gas: {
+        amount: BigNumber.from(0),
+        token: {
+          address: constants.AddressZero,
+          decimals: 0,
+          symbol: 'ETH'
+        }
+      },
+      spenderAddress: constants.AddressZero,
+      transactionRequest: undefined
+    }
   })
 
   return await bridgeTransferStarter.transferEstimateGas({
@@ -48,6 +74,11 @@ async function fetcher([
   })
 }
 
+/**
+ * Returns gas estimate for the selected route.
+ *
+ * Otherwise default to the first route
+ */
 export function useGasEstimates({
   sourceChainErc20Address,
   destinationChainErc20Address,
@@ -66,6 +97,7 @@ export function useGasEstimates({
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
   const wagmiConfig = useConfig()
+  const context = useRouteStore(state => state.context)
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
@@ -86,6 +118,7 @@ export function useGasEstimates({
       sanitizedDestinationAddress,
       walletAddress,
       wagmiConfig,
+      context,
       'gasEstimates'
     ] as const,
     ([
@@ -96,7 +129,8 @@ export function useGasEstimates({
       _amount,
       _destinationAddress,
       _walletAddress,
-      _wagmiConfig
+      _wagmiConfig,
+      _context
     ]) =>
       fetcher([
         _walletAddress,
@@ -106,7 +140,8 @@ export function useGasEstimates({
         _destinationChainErc20Address,
         _destinationAddress,
         BigNumber.from(_amount),
-        _wagmiConfig
+        _wagmiConfig,
+        _context
       ]),
     {
       refreshInterval: 30_000,

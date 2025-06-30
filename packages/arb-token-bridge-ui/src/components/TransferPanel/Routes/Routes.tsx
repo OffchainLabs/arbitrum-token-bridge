@@ -22,7 +22,7 @@ import { twMerge } from 'tailwind-merge'
 import { useMode } from '../../../hooks/useMode'
 import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
 import { useSelectedTokenIsWithdrawOnly } from '../hooks/useSelectedTokenIsWithdrawOnly'
-import { isDisabledCanonicalTransfer } from '../TransferDisabledDialog'
+import { isTeleportEnabledToken } from '../../../util/TokenTeleportEnabledUtils'
 
 function Wrapper({ children }: PropsWithChildren) {
   const { embedMode } = useMode()
@@ -52,7 +52,7 @@ function ShowHiddenRoutesButton(
   )
 }
 
-function getRoutes({
+export function getRoutes({
   isTeleportMode,
   isOftV2Transfer,
   isCctpTransfer,
@@ -63,9 +63,7 @@ function getRoutes({
   setShowHiddenRoutes,
   sourceChainId,
   destinationChainId,
-  selectedToken,
-  isSelectedTokenWithdrawOnly,
-  isSelectedTokenWithdrawOnlyLoading
+  selectedToken
 }: {
   isTeleportMode: boolean
   isOftV2Transfer: boolean
@@ -78,11 +76,9 @@ function getRoutes({
   sourceChainId: number
   destinationChainId: number
   selectedToken: ERC20BridgeToken | null
-  isSelectedTokenWithdrawOnly: boolean | undefined
-  isSelectedTokenWithdrawOnlyLoading: boolean
 }): {
   ChildRoutes: React.JSX.Element | null
-  focus: RouteType | null
+  routes: RouteType[]
 } {
   const { fromToken } = getFromAndToTokenAddresses({
     isDepositMode,
@@ -96,17 +92,19 @@ function getRoutes({
 
   const isLifiEnabled = isLifiEnabledUtil() && !isTestnet
 
+  console.log('GET ROUTES', selectedToken)
+
   if (Number(amount) === 0) {
     return {
       ChildRoutes: null,
-      focus: null
+      routes: []
     }
   }
 
   if (isOftV2Transfer) {
     return {
       ChildRoutes: <OftV2Route />,
-      focus: 'oftV2'
+      routes: ['oftV2']
     }
   }
 
@@ -126,7 +124,9 @@ function getRoutes({
             )}
           </>
         ),
-        focus: null
+        routes: showHiddenRoutes
+          ? ['cctp', 'lifi-fastest', 'arbitrum']
+          : ['cctp', 'lifi-fastest']
       }
     }
 
@@ -137,34 +137,87 @@ function getRoutes({
           <CctpRoute />
         </>
       ),
-      focus: isLifiEnabled ? null : 'cctp'
+      routes: isLifiEnabled ? ['lifi-fastest', 'cctp'] : ['cctp']
     }
   }
 
-  const isTokenDisabledForArbitrumRoute = isDisabledCanonicalTransfer({
-    selectedToken,
-    isDepositMode,
-    isTeleportMode,
-    parentChainId: sourceChainId,
-    childChainId: destinationChainId,
-    isSelectedTokenWithdrawOnly,
-    isSelectedTokenWithdrawOnlyLoading
-  })
+  const isValidLifiRoute =
+    isLifiEnabled &&
+    isValidLifiTransfer({
+      fromToken,
+      fromChainId: sourceChainId,
+      toChainId: destinationChainId
+    })
+  const ChildRoutes: React.JSX.Element[] = []
+  const routes: RouteType[] = []
+  if (isValidLifiRoute) {
+    ChildRoutes.push(
+      <LifiRoutes cheapestTag="best-deal" fastestTag="fastest" />
+    )
+    routes.push('lifi')
+  }
+
+  if (
+    (isTeleportMode &&
+      selectedToken?.address &&
+      isTeleportEnabledToken(
+        selectedToken.address,
+        isDepositMode ? sourceChainId : destinationChainId,
+        isDepositMode ? destinationChainId : sourceChainId
+      )) ||
+    (isTeleportMode && selectedToken === null)
+  ) {
+    ChildRoutes.push(<ArbitrumCanonicalRoute />)
+    routes.push('arbitrum')
+  }
 
   return {
-    ChildRoutes: (
-      <>
-        {isLifiEnabled &&
-          isValidLifiTransfer({
-            fromToken,
-            fromChainId: sourceChainId,
-            toChainId: destinationChainId
-          }) && <LifiRoutes cheapestTag="best-deal" fastestTag="fastest" />}
-        {!isTokenDisabledForArbitrumRoute && <ArbitrumCanonicalRoute />}
-      </>
-    ),
-    focus: isLifiEnabled ? null : 'arbitrum'
+    ChildRoutes: <>{ChildRoutes.map(ChildRoute => ChildRoute)}</>,
+    routes
   }
+}
+
+export function useRoutes() {
+  const [networks] = useNetworks()
+  const { isDepositMode, isTeleportMode } = useNetworksRelationship(networks)
+  const [{ amount }] = useArbQueryParams()
+  const isCctpTransfer = useIsCctpTransfer()
+  const isOftV2Transfer = useIsOftV2Transfer()
+  const [selectedToken] = useSelectedToken()
+
+  const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
+
+  const { isTestnet } = isNetwork(networks.sourceChain.id)
+
+  return useMemo(
+    () =>
+      getRoutes({
+        isTeleportMode,
+        isOftV2Transfer,
+        isCctpTransfer,
+        amount,
+        isDepositMode,
+        isTestnet,
+        showHiddenRoutes,
+        setShowHiddenRoutes,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id,
+        selectedToken
+      }),
+    [
+      isTeleportMode,
+      isOftV2Transfer,
+      isCctpTransfer,
+      amount,
+      isDepositMode,
+      isTestnet,
+      showHiddenRoutes,
+      setShowHiddenRoutes,
+      networks.sourceChain.id,
+      networks.destinationChain.id,
+      selectedToken
+    ]
+  )
 }
 
 /**
@@ -178,6 +231,7 @@ function getRoutes({
  *  - Native USDC on Arb1
  *  - If layerzero is displayed
  *  - Arb1/ArbNova
+ *  - Teleport mode with USDC
  * Display no routes for:
  * - Arb1/ArbNova
  *
@@ -221,45 +275,47 @@ export const Routes = React.memo(() => {
     shallow
   )
 
-  const { focus, ChildRoutes } = useMemo(
-    () =>
-      getRoutes({
-        isTeleportMode,
-        isOftV2Transfer,
-        isCctpTransfer,
-        amount,
-        isDepositMode,
-        isTestnet,
-        showHiddenRoutes,
-        setShowHiddenRoutes,
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id,
-        selectedToken,
-        isSelectedTokenWithdrawOnly,
-        isSelectedTokenWithdrawOnlyLoading
-      }),
-    [
-      isOftV2Transfer,
-      isCctpTransfer,
-      amount,
-      isDepositMode,
-      isTestnet,
-      showHiddenRoutes,
-      networks.sourceChain.id,
-      networks.destinationChain.id,
-      selectedToken,
-      isSelectedTokenWithdrawOnly,
-      isSelectedTokenWithdrawOnlyLoading
-    ]
-  )
+  // const { routes, ChildRoutes } = useMemo(
+  //   () =>
+  //     getRoutes({
+  //       isTeleportMode,
+  //       isOftV2Transfer,
+  //       isCctpTransfer,
+  //       amount,
+  //       isDepositMode,
+  //       isTestnet,
+  //       showHiddenRoutes,
+  //       setShowHiddenRoutes,
+  //       sourceChainId: networks.sourceChain.id,
+  //       destinationChainId: networks.destinationChain.id,
+  //       selectedToken
+  //       // isSelectedTokenWithdrawOnly,
+  //       // isSelectedTokenWithdrawOnlyLoading
+  //     }),
+  //   [
+  //     isOftV2Transfer,
+  //     isCctpTransfer,
+  //     amount,
+  //     isDepositMode,
+  //     isTestnet,
+  //     showHiddenRoutes,
+  //     networks.sourceChain.id,
+  //     networks.destinationChain.id,
+  //     selectedToken
+  //     // isSelectedTokenWithdrawOnly,
+  //     // isSelectedTokenWithdrawOnlyLoading
+  //   ]
+  // )
+  const { routes, ChildRoutes } = useRoutes()
 
   useEffect(() => {
-    if (focus) {
+    const focus = routes[0]
+    if (routes.length === 1 && focus) {
       setSelectedRoute(focus)
     } else {
       clearRoute()
     }
-  }, [setSelectedRoute, focus, clearRoute, ChildRoutes])
+  }, [setSelectedRoute, routes, clearRoute, ChildRoutes])
 
   useEffect(() => {
     // If selected token changes, reset the showHidden route state
