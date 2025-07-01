@@ -911,6 +911,8 @@ export function TransferPanel() {
 
     setTransferring(true)
 
+    console.log('running tests')
+
     try {
       const warningToken =
         selectedToken && warningTokens[selectedToken.address.toLowerCase()]
