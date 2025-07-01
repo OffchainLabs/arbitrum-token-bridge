@@ -12,7 +12,7 @@
   {
     "name": "Withdraw native token",
     "file": "tests/e2e/specs/**/withdrawNativeToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "true"
+    "recordVideo": "false"
   },
   {
     "name": "Deposit ERC20",

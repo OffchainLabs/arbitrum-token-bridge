@@ -11,13 +11,11 @@ export const EmptyTransactionHistory = ({
   loading,
   isError,
   paused,
-  error,
   resume,
   tabType
 }: {
   loading: boolean
   isError: boolean
-  error: string
   paused: boolean
   resume: () => void
   tabType: 'pending' | 'settled'
@@ -51,7 +49,6 @@ export const EmptyTransactionHistory = ({
           We seem to be having a difficult time loading your data, we&apos;re
           working hard to resolve it.
         </p>
-        <p>{JSON.stringify(error)}</p>
         <p>Please give it a moment and then try refreshing the page.</p>
         <p className="mt-4">
           If the problem persists, please file a ticket{' '}

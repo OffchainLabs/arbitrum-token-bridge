@@ -7,6 +7,7 @@ import { BigNumber } from 'ethers'
 import { ChainId } from '../types/ChainId'
 import { ConnectionInfo } from 'ethers/lib/utils.js'
 import { isNetwork } from '../util/networks'
+import { getAlchemyRpcUrl } from '../util/rpc/alchemy'
 
 interface Storage {
   getItem(key: string): string | null
@@ -151,8 +152,18 @@ export class EnhancedProvider extends StaticJsonRpcProvider {
     const cachedReceipt = getTxReceiptFromCache(this.storage, chainId, hash)
     if (cachedReceipt) return cachedReceipt
 
+    let receipt: TransactionReceipt | undefined
+
     // Else, fetch the receipt using the original method
-    const receipt = await super.getTransactionReceipt(hash)
+    if (chainId === ChainId.ArbitrumSepolia) {
+      // Infura provider failing to fetch old transaction receipts
+      const alchemyProvider = new StaticJsonRpcProvider(
+        getAlchemyRpcUrl(chainId)
+      )
+      receipt = await alchemyProvider.getTransactionReceipt(hash)
+    } else {
+      receipt = await super.getTransactionReceipt(hash)
+    }
 
     // Cache the receipt if it meets the criteria
     if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
