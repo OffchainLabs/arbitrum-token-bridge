@@ -41,7 +41,7 @@ export async function withBatchRangeProcessing<T>({
   const {
     maxRange = 10_000,
     parallelRequestSize = 3,
-    timeoutMs = 60_000,
+    timeoutMs,
     logPrefix = '[withBatchRangeProcessing]'
   } = options
 
