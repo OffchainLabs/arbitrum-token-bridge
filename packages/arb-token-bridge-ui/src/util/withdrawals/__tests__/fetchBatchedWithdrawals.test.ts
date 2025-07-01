@@ -1,5 +1,5 @@
 import { vi, describe, it, expect } from 'vitest'
-import { fetchBatchedWithdrawals } from '../../../hooks/useTransactionHistory'
+import { fetchWithdrawalsInBatches } from '../../../hooks/useTransactionHistory'
 import { getQueryCoveringClassicAndNitroWithResults } from './fetchWithdrawalsTestHelpers'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import * as fetchModule from '../fetchWithdrawals'
@@ -25,11 +25,11 @@ const validResult = [
 
 const l1Provider = new StaticJsonRpcProvider('https://eth.llamarpc.com')
 
-describe.sequential('fetchBatchedWithdrawals multiple calls', () => {
+describe.sequential('fetchWithdrawalsInBatches multiple calls', () => {
   it('calls fetchWithdrawals correct number of times and returns valid data', async () => {
     const mock = vi.spyOn(fetchModule, 'fetchWithdrawals')
 
-    const result = await fetchBatchedWithdrawals({
+    const result = await fetchWithdrawalsInBatches({
       l1Provider,
       ...getQueryCoveringClassicAndNitroWithResults(),
       batchSizeBlocks: 5_000_000
@@ -43,11 +43,11 @@ describe.sequential('fetchBatchedWithdrawals multiple calls', () => {
   })
 })
 
-describe.sequential('fetchBatchedWithdrawals single call', () => {
+describe.sequential('fetchWithdrawalsInBatches single call', () => {
   it('calls a large range once and returns valid data', async () => {
     const mock = vi.spyOn(fetchModule, 'fetchWithdrawals')
 
-    const result = await fetchBatchedWithdrawals({
+    const result = await fetchWithdrawalsInBatches({
       l1Provider,
       ...getQueryCoveringClassicAndNitroWithResults(),
       batchSizeBlocks: 100_000_000
@@ -60,11 +60,11 @@ describe.sequential('fetchBatchedWithdrawals single call', () => {
 })
 
 describe.sequential(
-  'fetchBatchedWithdrawals throw error when toBlock lower than fromBlock',
+  'fetchWithdrawalsInBatches throw error when toBlock lower than fromBlock',
   () => {
     it('throws an error', async () => {
       await expect(
-        fetchBatchedWithdrawals({
+        fetchWithdrawalsInBatches({
           l1Provider,
           ...getQueryCoveringClassicAndNitroWithResults(),
           batchSizeBlocks: 1,
