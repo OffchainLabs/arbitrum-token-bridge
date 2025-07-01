@@ -6,8 +6,9 @@ import {
 import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../useIsTestnetMode'
 import { useNetworks } from '../useNetworks'
-import { useAllowTransfersToNonArbitrumChains } from '../useAllowTransfersToNonArbitrumChains'
 import { useMemo } from 'react'
+import { useDisabledFeatures } from '../useDisabledFeatures'
+import { DisabledFeatures } from '../useArbQueryParams'
 
 export function useChainIdsForNetworkSelection({
   isSource
@@ -16,8 +17,12 @@ export function useChainIdsForNetworkSelection({
 }) {
   const [networks] = useNetworks()
   const [isTestnetMode] = useIsTestnetMode()
-  const allowTransfersToNonArbitrumChains =
-    useAllowTransfersToNonArbitrumChains()
+
+  const { isFeatureDisabled } = useDisabledFeatures()
+
+  const allowTransfersToNonArbitrumChains = !isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
 
   return useMemo(() => {
     if (isSource) {

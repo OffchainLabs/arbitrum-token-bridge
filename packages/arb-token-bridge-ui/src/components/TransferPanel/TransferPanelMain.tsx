@@ -10,7 +10,6 @@ import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
-import { useAllowTransfersToNonArbitrumChains } from '../../hooks/useAllowTransfersToNonArbitrumChains'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
@@ -28,11 +27,15 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  DisabledFeatures,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { addressesEqual } from '../../util/AddressUtils'
 import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
+import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -40,12 +43,16 @@ export function SwitchNetworksButton(
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const allowTransfersToNonArbitrumChains =
-    useAllowTransfersToNonArbitrumChains()
   const [networks, setNetworks] = useNetworks()
 
+  const { isFeatureDisabled } = useDisabledFeatures()
+
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
+
   const destinationChainNonArbitrumNotAllowed =
-    !allowTransfersToNonArbitrumChains &&
+    disableTransfersToNonArbitrumChains &&
     isNetwork(networks.sourceChain.id).isNonArbitrumNetwork
 
   const disabled =

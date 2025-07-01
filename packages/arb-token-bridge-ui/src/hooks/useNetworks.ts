@@ -4,8 +4,7 @@ import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { Chain } from 'wagmi/chains'
 
 import useSWRImmutable from 'swr/immutable'
-import { useArbQueryParams } from './useArbQueryParams'
-import { useAllowTransfersToNonArbitrumChains } from './useAllowTransfersToNonArbitrumChains'
+import { DisabledFeatures, useArbQueryParams } from './useArbQueryParams'
 import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
@@ -23,6 +22,7 @@ import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { getOrbitChains } from '../util/orbitChainsList'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useDisabledFeatures } from './useDisabledFeatures'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined
@@ -184,8 +184,11 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     setQueryParams
   ] = useArbQueryParams()
 
-  const allowTransfersToNonArbitrumChains =
-    useAllowTransfersToNonArbitrumChains()
+  const { isFeatureDisabled } = useDisabledFeatures()
+
+  const allowTransfersToNonArbitrumChains = !isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
 
   const {
     sourceChainId: validSourceChainId,

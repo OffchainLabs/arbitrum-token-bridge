@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
-
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { useAllowTransfersToNonArbitrumChains } from '../../hooks/useAllowTransfersToNonArbitrumChains'
+import {
+  DisabledFeatures,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { sanitizeQueryParams } from '../../hooks/useNetworks'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { getNetworkName } from '../../util/networks'
+import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 
 export function useSyncConnectedChainToQueryParams() {
   const { address, chain } = useAccount()
@@ -17,12 +19,14 @@ export function useSyncConnectedChainToQueryParams() {
       onSettled: onDisconnectHandler
     }
   })
+  const { isFeatureDisabled } = useDisabledFeatures()
 
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
 
-  const allowTransfersToNonArbitrumChains =
-    useAllowTransfersToNonArbitrumChains()
+  const allowTransfersToNonArbitrumChains = !isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
 
   const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {
