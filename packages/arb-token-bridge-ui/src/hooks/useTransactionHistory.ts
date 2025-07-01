@@ -77,7 +77,7 @@ import { useDisabledFeatures } from './useDisabledFeatures'
 
 const BATCH_FETCH_BLOCKS: { [key: number]: number } = {
   33139: 5_000_000, // ApeChain
-  4078: 5_000 // Muster
+  4078: 10_000 // Muster
 }
 
 export type UseTransactionHistoryResult = {

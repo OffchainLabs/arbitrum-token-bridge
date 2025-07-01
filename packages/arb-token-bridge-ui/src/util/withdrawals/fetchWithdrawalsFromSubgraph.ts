@@ -53,6 +53,10 @@ export async function fetchWithdrawalsFromSubgraph({
   pageNumber?: number
   searchString?: string
 }): Promise<WithdrawalFromSubgraph[]> {
+  if (!hasL2Subgraph(Number(l2ChainId))) {
+    throw new Error(`L2 subgraph not available for network: ${l2ChainId}`)
+  }
+
   if (fromBlock >= toBlock) {
     // if fromBlock > toBlock or both are equal / 0
     return []
@@ -70,10 +74,6 @@ export async function fetchWithdrawalsFromSubgraph({
       search: searchString
     })
   )
-
-  if (!hasL2Subgraph(Number(l2ChainId))) {
-    throw new Error(`L2 subgraph not available for network: ${l2ChainId}`)
-  }
 
   if (pageSize === 0) return [] // don't query subgraph if nothing requested
 
