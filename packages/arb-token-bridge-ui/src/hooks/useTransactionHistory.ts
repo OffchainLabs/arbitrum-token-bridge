@@ -275,7 +275,7 @@ function dedupeTransactions(txs: Transfer[]) {
   )
 }
 
-export async function fetchBatchedWithdrawals(
+export async function fetchWithdrawalsInBatches(
   params: FetchWithdrawalsParams & {
     batchSizeBlocks?: number
   }
@@ -445,7 +445,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
 
               const withdrawalFn =
                 typeof batchSizeBlocks === 'number'
-                  ? fetchBatchedWithdrawals
+                  ? fetchWithdrawalsInBatches
                   : fetchWithdrawals
 
               const fetcherFn =

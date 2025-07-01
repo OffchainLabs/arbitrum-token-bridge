@@ -81,7 +81,11 @@ export async function fetchWithdrawals({
     fromBlock = 0
   }
 
+  // this value will be:
+  // {0 or fromBlock} if subgraphs fail (or don't exist), so event logs are fetched from the first block
+  // latestSubgraphBlock if subgraphs successful, so we fetch event logs only for unindexed blocks
   let latestFetchedBlock = fromBlock
+
   const latestSubgraphBlock = await fetchLatestSubgraphBlockNumber(l2ChainID)
 
   let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
@@ -175,7 +179,7 @@ export async function fetchWithdrawals({
     ? await backOff(() =>
         fetchETHWithdrawalsFromEventLogs({
           receiver,
-          fromBlock: latestFetchedBlock,
+          fromBlock: latestFetchedBlock + 1,
           toBlock: toBlock ?? 'latest',
           l2Provider: l2Provider
         })
@@ -188,7 +192,7 @@ export async function fetchWithdrawals({
     await fetchTokenWithdrawalsFromEventLogsSequentially({
       sender,
       receiver,
-      fromBlock: latestFetchedBlock,
+      fromBlock: latestFetchedBlock + 1,
       toBlock: toBlock ?? 'latest',
       provider: l2Provider,
       queries
