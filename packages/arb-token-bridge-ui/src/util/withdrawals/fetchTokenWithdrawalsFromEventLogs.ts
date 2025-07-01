@@ -1,6 +1,7 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger, EventArgs } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
+import { withBatchRangeProcessing } from './withBatchRangeProcessing'
 
 function dedupeEvents(
   events: (EventArgs<WithdrawalInitiatedEvent> & {
@@ -31,6 +32,36 @@ export type FetchTokenWithdrawalsFromEventLogsParams = {
  * @param query.l2GatewayAddresses L2 gateway addresses to use
  */
 export async function fetchTokenWithdrawalsFromEventLogs({
+  sender,
+  receiver,
+  fromBlock,
+  toBlock,
+  l2Provider,
+  l2GatewayAddresses = []
+}: FetchTokenWithdrawalsFromEventLogsParams) {
+  const results = await withBatchRangeProcessing({
+    fromBlock,
+    toBlock,
+    provider: l2Provider,
+    fetchFunction: async (fromBlock: number, toBlock: number) => {
+      return fetchTokenWithdrawalsInRange({
+        sender,
+        receiver,
+        fromBlock,
+        toBlock,
+        l2Provider,
+        l2GatewayAddresses
+      })
+    },
+    options: {
+      logPrefix: 'xxx [fetchTokenWithdrawalsFromEventLogs]'
+    }
+  })
+
+  return dedupeEvents(results)
+}
+
+async function fetchTokenWithdrawalsInRange({
   sender,
   receiver,
   fromBlock,
@@ -72,5 +103,5 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   })
 
   // when getting funds received by this address we will also get duplicate txs returned in 'funds sent by this address'
-  return dedupeEvents((await Promise.all(promises)).flat())
+  return (await Promise.all(promises)).flat()
 }

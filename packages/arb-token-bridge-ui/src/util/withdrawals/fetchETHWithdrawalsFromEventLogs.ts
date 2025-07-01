@@ -1,5 +1,6 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { ChildToParentMessageReader } from '@arbitrum/sdk'
+import { withBatchRangeProcessing } from './withBatchRangeProcessing'
 
 /**
  * Fetches initiated ETH withdrawals from event logs in range of [fromBlock, toBlock].
@@ -10,7 +11,7 @@ import { ChildToParentMessageReader } from '@arbitrum/sdk'
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2Provider Provider for the L2 network
  */
-export function fetchETHWithdrawalsFromEventLogs({
+export async function fetchETHWithdrawalsFromEventLogs({
   receiver,
   fromBlock,
   toBlock,
@@ -25,11 +26,20 @@ export function fetchETHWithdrawalsFromEventLogs({
     return Promise.resolve([])
   }
 
-  // funds received by this address
-  return ChildToParentMessageReader.getChildToParentEvents(
-    l2Provider,
-    { fromBlock, toBlock },
-    undefined,
-    receiver
-  )
+  return withBatchRangeProcessing({
+    fromBlock,
+    toBlock,
+    provider: l2Provider,
+    fetchFunction: async (fromBlock: number, toBlock: number) => {
+      return ChildToParentMessageReader.getChildToParentEvents(
+        l2Provider,
+        { fromBlock, toBlock },
+        undefined,
+        receiver
+      )
+    },
+    options: {
+      logPrefix: 'xxx [fetchETHWithdrawalsFromEventLogs]'
+    }
+  })
 }

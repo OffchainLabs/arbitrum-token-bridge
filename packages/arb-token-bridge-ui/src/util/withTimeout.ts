@@ -1,4 +1,4 @@
-export function withTimeout<T>(promise: Promise<T>, ms = 30_000): Promise<T> {
+export function withTimeout<T>(promise: Promise<T>, ms = 60_000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Request timed out')), ms)
     promise

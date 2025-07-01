@@ -165,53 +165,62 @@ export async function fetchWithdrawals({
       queries.push({ receiver, gateways: allGateways })
     }
   }
+  let mappedEthWithdrawalsFromEventLogs: Withdrawal[] = []
+  try {
+    const ethWithdrawalsFromEventLogs = fetchReceivedTransactions
+      ? await backOff(() =>
+          fetchETHWithdrawalsFromEventLogs({
+            receiver,
+            // not sure why eslint is treating "toBlock" as "number | undefined" here
+            // even though typescript recognizes it as "number"
+            fromBlock: toBlock ?? 0 + 1,
+            toBlock: 'latest',
+            l2Provider: l2Provider
+          })
+        )
+      : []
 
-  const ethWithdrawalsFromEventLogs = fetchReceivedTransactions
-    ? await backOff(() =>
-        fetchETHWithdrawalsFromEventLogs({
-          receiver,
-          // not sure why eslint is treating "toBlock" as "number | undefined" here
-          // even though typescript recognizes it as "number"
-          fromBlock: toBlock ?? 0 + 1,
-          toBlock: 'latest',
-          l2Provider: l2Provider
-        })
-      )
-    : []
+    mappedEthWithdrawalsFromEventLogs = ethWithdrawalsFromEventLogs.map(tx => {
+      return {
+        ...tx,
+        direction: 'withdrawal',
+        source: 'event_logs',
+        parentChainId: l1ChainID,
+        childChainId: l2ChainID
+      }
+    })
+  } catch (error) {
+    console.log('xxxx Error fetching eth withdrawals from event logs', error)
+  }
 
   await wait(delayMs)
 
-  const tokenWithdrawalsFromEventLogs =
-    await fetchTokenWithdrawalsFromEventLogsSequentially({
-      sender,
-      receiver,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
-      provider: l2Provider,
-      queries
-    })
+  let mappedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] = []
+  try {
+    const tokenWithdrawalsFromEventLogs =
+      await fetchTokenWithdrawalsFromEventLogsSequentially({
+        sender,
+        receiver,
+        fromBlock: toBlock + 1,
+        toBlock: 'latest',
+        provider: l2Provider,
+        queries
+      })
 
-  const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
-    ethWithdrawalsFromEventLogs.map(tx => {
-      return {
-        ...tx,
-        direction: 'withdrawal',
-        source: 'event_logs',
-        parentChainId: l1ChainID,
-        childChainId: l2ChainID
+    mappedTokenWithdrawalsFromEventLogs = tokenWithdrawalsFromEventLogs.map(
+      tx => {
+        return {
+          ...tx,
+          direction: 'withdrawal',
+          source: 'event_logs',
+          parentChainId: l1ChainID,
+          childChainId: l2ChainID
+        }
       }
-    })
-
-  const mappedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] =
-    tokenWithdrawalsFromEventLogs.map(tx => {
-      return {
-        ...tx,
-        direction: 'withdrawal',
-        source: 'event_logs',
-        parentChainId: l1ChainID,
-        childChainId: l2ChainID
-      }
-    })
+    )
+  } catch (error) {
+    console.log('xxxx Error fetching token withdrawals from event logs', error)
+  }
 
   // we need timestamps to sort token withdrawals along ETH withdrawals
   const tokenWithdrawalsFromEventLogsWithTimestamp: Withdrawal[] =
@@ -221,9 +230,19 @@ export async function fetchWithdrawals({
       )
     )
 
-  return [
+  const finalWithdrawals = [
     ...mappedEthWithdrawalsFromEventLogs,
     ...tokenWithdrawalsFromEventLogsWithTimestamp,
     ...withdrawalsFromSubgraph
   ]
+
+  console.log(
+    'xxx [fetchWithdrawals] Final withdrawals for address:',
+    receiver,
+    l1ChainID,
+    l2ChainID,
+    finalWithdrawals
+  )
+
+  return finalWithdrawals
 }
