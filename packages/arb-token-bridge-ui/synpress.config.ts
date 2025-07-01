@@ -47,7 +47,8 @@ const isOrbitTest = [
   process.env.E2E_ORBIT,
   process.env.E2E_ORBIT_CUSTOM_GAS_TOKEN
 ].includes('true')
-const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+// const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+const shouldRecordVideo = true
 
 const l3Network =
   process.env.ORBIT_CUSTOM_GAS_TOKEN === 'true'
@@ -72,11 +73,22 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       logsPrinter(on)
 
-      await registerLocalNetwork()
+      try {
+        await registerLocalNetwork()
+        console.log('success')
+      } catch (e) {
+        console.log({ e })
+      }
+
+      console.log('here1')
 
       const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+
+      console.log('here1.5')
       const ethBridger = await EthBridger.fromProvider(childProvider)
       const isCustomFeeToken = isNonZeroAddress(ethBridger.nativeToken)
+
+      console.log('here2')
 
       if (!ethRpcUrl && !isOrbitTest) {
         throw new Error(

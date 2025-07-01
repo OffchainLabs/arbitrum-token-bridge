@@ -129,6 +129,8 @@ export function TransactionHistorySearchResults() {
         <TransactionHistoryDisclaimer />
       </div>
 
+      <div>{JSON.stringify(props.error)}</div>
+
       <Tab.Group as="div" className="h-full overflow-hidden rounded md:pr-0">
         <Tab.List className="mb-4 flex border-b border-white/30">
           <TabButton
