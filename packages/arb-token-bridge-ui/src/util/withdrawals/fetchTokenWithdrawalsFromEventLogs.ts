@@ -2,6 +2,7 @@ import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger, EventArgs } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 import { withBatchRangeProcessing } from './withBatchRangeProcessing'
+import { isNetwork } from '../networks'
 
 function dedupeEvents(
   events: (EventArgs<WithdrawalInitiatedEvent> & {
@@ -39,26 +40,51 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   l2Provider,
   l2GatewayAddresses = []
 }: FetchTokenWithdrawalsFromEventLogsParams) {
-  const results = await withBatchRangeProcessing({
-    fromBlock,
-    toBlock,
-    provider: l2Provider,
-    fetchFunction: async (fromBlock: number, toBlock: number) => {
-      return fetchTokenWithdrawalsInRange({
-        sender,
-        receiver,
-        fromBlock,
-        toBlock,
-        l2Provider,
-        l2GatewayAddresses
-      })
-    },
-    options: {
-      logPrefix: 'xxx [fetchTokenWithdrawalsFromEventLogs]'
-    }
-  })
+  // Define the fetch function once
+  const fetchFunction = async (fromBlock: number, toBlock: number) => {
+    return fetchTokenWithdrawalsInRange({
+      sender,
+      receiver,
+      fromBlock,
+      toBlock,
+      l2Provider,
+      l2GatewayAddresses
+    })
+  }
 
-  return dedupeEvents(results)
+  // Get chain ID to check if it's an orbit chain
+  const chainId = await l2Provider.getNetwork().then(network => network.chainId)
+  const { isOrbitChain } = isNetwork(chainId)
+
+  if (isOrbitChain) {
+    // Use batch range processing for orbit chains
+    const results = await withBatchRangeProcessing({
+      fromBlock,
+      toBlock,
+      provider: l2Provider,
+      fetchFunction,
+      options: {
+        enableLogging: false,
+        logPrefix: '[fetchTokenWithdrawalsFromEventLogs]'
+      }
+    })
+
+    return dedupeEvents(results)
+  } else {
+    // Use direct query for non-orbit chains
+    const results = await fetchFunction(
+      typeof fromBlock === 'number'
+        ? fromBlock
+        : parseInt(fromBlock.toString()),
+      toBlock === 'latest'
+        ? await l2Provider.getBlockNumber()
+        : typeof toBlock === 'number'
+        ? toBlock
+        : parseInt(toBlock.toString())
+    )
+
+    return dedupeEvents(results)
+  }
 }
 
 async function fetchTokenWithdrawalsInRange({

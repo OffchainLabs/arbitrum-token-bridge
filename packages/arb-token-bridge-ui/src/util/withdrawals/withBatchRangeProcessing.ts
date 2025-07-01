@@ -2,10 +2,11 @@ import { Provider, BlockTag } from '@ethersproject/providers'
 import { withTimeout } from '../withTimeout'
 
 export interface BatchRangeProcessingOptions {
-  maxRange?: number
+  maxBlockRange?: number
   parallelRequestSize?: number
   timeoutMs?: number
   logPrefix?: string
+  enableLogging?: boolean
 }
 
 export interface BlockRange {
@@ -39,23 +40,26 @@ export async function withBatchRangeProcessing<T>({
   options?: BatchRangeProcessingOptions
 }): Promise<T[]> {
   const {
-    maxRange = 10_000,
+    maxBlockRange = 10_000,
     parallelRequestSize = 3,
     timeoutMs,
-    logPrefix = '[withBatchRangeProcessing]'
+    logPrefix = '[withBatchRangeProcessing]',
+    enableLogging = true
   } = options
 
   const chainId = await provider.getNetwork().then(network => network.chainId)
   const latestBlockNumber = await provider.getBlockNumber()
 
-  console.log(`${logPrefix} Chain ID: ${chainId}`)
-  console.log(`${logPrefix} Input params:`, {
-    fromBlock,
-    toBlock,
-    latestBlockNumber,
-    maxRange,
-    parallelRequestSize
-  })
+  if (enableLogging) {
+    console.log(`${logPrefix} Chain ID: ${chainId}`)
+    console.log(`${logPrefix} Input params:`, {
+      fromBlock,
+      toBlock,
+      latestBlockNumber,
+      maxBlockRange,
+      parallelRequestSize
+    })
+  }
 
   const fromBlockNumber =
     typeof fromBlock === 'number' ? fromBlock : parseInt(fromBlock.toString())
@@ -68,13 +72,19 @@ export async function withBatchRangeProcessing<T>({
 
   const blockRange = toBlockNumber - fromBlockNumber
 
-  console.log(`${logPrefix} Block range: ${blockRange} (max: ${maxRange})`)
-
-  if (blockRange <= maxRange) {
-    // Use single query if range is within limits
+  if (enableLogging) {
     console.log(
-      `${logPrefix} Using single query for range ${fromBlockNumber} to ${toBlockNumber}`
+      `${logPrefix} Block range: ${blockRange} (max: ${maxBlockRange})`
     )
+  }
+
+  if (blockRange <= maxBlockRange) {
+    // Use single query if range is within limits
+    if (enableLogging) {
+      console.log(
+        `${logPrefix} Using single query for range ${fromBlockNumber} to ${toBlockNumber}`
+      )
+    }
     return await withTimeout(
       fetchFunction(fromBlockNumber, toBlockNumber),
       timeoutMs
@@ -85,9 +95,11 @@ export async function withBatchRangeProcessing<T>({
   const allResults: T[] = []
   const finalToBlock = Math.min(toBlockNumber, latestBlockNumber)
 
-  console.log(
-    `${logPrefix} Using chunking for large range: ${fromBlockNumber} to ${finalToBlock}`
-  )
+  if (enableLogging) {
+    console.log(
+      `${logPrefix} Using chunking for large range: ${fromBlockNumber} to ${finalToBlock}`
+    )
+  }
 
   // Generate all chunk ranges
   const chunkRanges: BlockRange[] = []
@@ -96,7 +108,7 @@ export async function withBatchRangeProcessing<T>({
 
   while (currentFromBlock <= finalToBlock) {
     const currentToBlock = Math.min(
-      currentFromBlock + maxRange - 1,
+      currentFromBlock + maxBlockRange - 1,
       finalToBlock
     )
     chunkRanges.push({
@@ -107,38 +119,48 @@ export async function withBatchRangeProcessing<T>({
     currentFromBlock = currentToBlock + 1
   }
 
-  console.log(`${logPrefix} Total chunks: ${chunkRanges.length}`)
+  if (enableLogging) {
+    console.log(`${logPrefix} Total chunks: ${chunkRanges.length}`)
+  }
 
   // Process chunks in parallel batches
   for (let i = 0; i < chunkRanges.length; i += parallelRequestSize) {
     const batch = chunkRanges.slice(i, i + parallelRequestSize)
-    console.log(
-      `${logPrefix} Processing batch ${
-        Math.floor(i / parallelRequestSize) + 1
-      }: chunks ${i + 1}-${Math.min(
-        i + parallelRequestSize,
-        chunkRanges.length
-      )}`
-    )
+    if (enableLogging) {
+      console.log(
+        `${logPrefix} Processing batch ${
+          Math.floor(i / parallelRequestSize) + 1
+        }: chunks ${i + 1}-${Math.min(
+          i + parallelRequestSize,
+          chunkRanges.length
+        )}`
+      )
+    }
 
     const batchPromises = batch.map(async ({ fromBlock, toBlock, index }) => {
       try {
-        console.log(
-          `${logPrefix} Chunk ${index}: blocks ${fromBlock} to ${toBlock}`
-        )
+        if (enableLogging) {
+          console.log(
+            `${logPrefix} Chunk ${index}: blocks ${fromBlock} to ${toBlock}`
+          )
+        }
         const chunkResults = await withTimeout(
           fetchFunction(fromBlock, toBlock),
           timeoutMs
         )
-        console.log(
-          `${logPrefix} Chunk ${index} returned ${chunkResults.length} results`
-        )
+        if (enableLogging) {
+          console.log(
+            `${logPrefix} Chunk ${index} returned ${chunkResults.length} results`
+          )
+        }
         return chunkResults
       } catch (error) {
-        console.warn(
-          `${logPrefix} Failed to fetch results from block ${fromBlock} to ${toBlock}:`,
-          error
-        )
+        if (enableLogging) {
+          console.warn(
+            `${logPrefix} Failed to fetch results from block ${fromBlock} to ${toBlock}:`,
+            error
+          )
+        }
         return []
       }
     })
@@ -147,8 +169,10 @@ export async function withBatchRangeProcessing<T>({
     allResults.push(...batchResults.flat())
   }
 
-  console.log(
-    `${logPrefix} Completed chunking. Total results: ${allResults.length}`
-  )
+  if (enableLogging) {
+    console.log(
+      `${logPrefix} Completed chunking. Total results: ${allResults.length}`
+    )
+  }
   return allResults
 }
