@@ -145,7 +145,7 @@ export const TransactionHistoryTable = (
     failedChainPairs,
     resume,
     selectedTabIndex,
-    oldestTxTimeAgoString
+    oldestTxTimeAgoString,
   } = props
 
   const TABLE_HEADER_HEIGHT = 52
@@ -196,6 +196,7 @@ export const TransactionHistoryTable = (
       <EmptyTransactionHistory
         loading={loading}
         isError={typeof error !== 'undefined'}
+        error={error as string}
         paused={paused}
         resume={resume}
         tabType={isPendingTab ? 'pending' : 'settled'}
