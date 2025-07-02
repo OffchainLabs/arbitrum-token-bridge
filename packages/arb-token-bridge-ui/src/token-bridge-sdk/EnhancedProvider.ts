@@ -151,10 +151,8 @@ export class EnhancedProvider extends StaticJsonRpcProvider {
     const cachedReceipt = getTxReceiptFromCache(this.storage, chainId, hash)
     if (cachedReceipt) return cachedReceipt
 
-    let receipt: TransactionReceipt | undefined
-
     // Else, fetch the receipt using the original method
-    receipt = await super.getTransactionReceipt(hash)
+    const receipt = await super.getTransactionReceipt(hash)
 
     // Cache the receipt if it meets the criteria
     if (receipt && shouldCacheTxReceipt(chainId, receipt)) {
