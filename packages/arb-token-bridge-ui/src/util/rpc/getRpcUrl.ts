@@ -28,16 +28,6 @@ function getRpcProvider(): RpcProvider {
   return rpcProviderFromEnv
 }
 
-export function getFallbackRpcUrl(
-  chainId: number,
-  rpcProviderKey?: string
-): string {
-  const fallbackRpcProvider =
-    getRpcProvider() === 'infura' ? 'alchemy' : 'infura'
-
-  return getRpcUrl(chainId, fallbackRpcProvider, rpcProviderKey)
-}
-
 export function getRpcUrl(
   chainId: ProductionChainId,
   rpcProvider: RpcProvider = getRpcProvider(),
