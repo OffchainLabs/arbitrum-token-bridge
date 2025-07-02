@@ -1288,6 +1288,53 @@
           "logoUrl": "/images/GalacticaMainnet_Logo.svg"
         }
       }
+    },
+    {
+      "chainId": 32766,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xA9F4ee72439afC704db48dc049CbFb7E914aD300",
+        "inbox": "0x446626827f14F89B38D5bA1ab152B484cd7912fD",
+        "outbox": "0x39919941b42DAb335d9924Ef56dF7b9813b2D6d9",
+        "rollup": "0xc930fd48846e956b308f28524dA2d5E14c832e33",
+        "sequencerInbox": "0x38d41Ac2fbc3f13FcA7838F6638D8FbDb189e807"
+      },
+      "nativeToken": "0x3e62fED35c97145e6B445704B8CE74B2544776A9",
+      "explorerUrl": "https://earnm-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://earnm-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Earnm Mainnet",
+      "slug": "earnm-mainnet",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x24f926249F73203112400756801A41Cb519a87aa",
+        "parentErc20Gateway": "0x0b6b5aFEe8602A4d88dC26Fc2E85b2d1236156F6",
+        "parentGatewayRouter": "0xFCF106865f380D73b52406933B3e74498771F3Ef",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xfE7314336309689B2ff48126F1c1D918e38D7f8B",
+        "childErc20Gateway": "0x6Bc48DE32A13F0bc735254A68796e3edCF0fa15c",
+        "childGatewayRouter": "0xa8cF21b0Fb8f3F142632f7BB23E363061411B00b",
+        "childMultiCall": "0x90E54d885A3f99b97B9977390a493D9108Da73F1",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#1fd82e",
+        "network": {
+          "name": "Earnm Mainnet",
+          "logo": "/images/EarnmMainnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Earnm Token",
+          "symbol": "EARNM",
+          "logoUrl": "/images/EarnmMainnet_NativeTokenLogo.svg"
+        }
+      }
     }
   ],
   "testnet": [
