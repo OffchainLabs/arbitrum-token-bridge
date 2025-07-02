@@ -1,13 +1,14 @@
 import {
   Networkish,
   StaticJsonRpcProvider,
-  TransactionReceipt
+  TransactionReceipt,
+  TransactionResponse
 } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { ChainId } from '../types/ChainId'
 import { ConnectionInfo } from 'ethers/lib/utils.js'
 import { isNetwork } from '../util/networks'
-import { getAlchemyRpcUrl } from '../util/rpc/alchemy'
+import { getFallbackRpcUrl } from '../util/rpc/getRpcUrl'
 
 interface Storage {
   getItem(key: string): string | null
@@ -132,6 +133,7 @@ function addTxReceiptToCache(
 
 export class EnhancedProvider extends StaticJsonRpcProvider {
   private storage: Storage
+  private fallbackProvider: StaticJsonRpcProvider
 
   constructor(
     url?: ConnectionInfo | string,
@@ -140,6 +142,24 @@ export class EnhancedProvider extends StaticJsonRpcProvider {
   ) {
     super(url, network)
     this.storage = storage
+    this.fallbackProvider = new StaticJsonRpcProvider(
+      getFallbackRpcUrl(this.network.chainId)
+    )
+  }
+
+  async getTransaction(
+    transactionHash: string | Promise<string>
+  ): Promise<TransactionResponse> {
+    let response: TransactionResponse | undefined
+    const hash = await transactionHash
+
+    response = await super.getTransaction(hash)
+
+    if (!response) {
+      response = await this.fallbackProvider.getTransaction(hash)
+    }
+
+    return response
   }
 
   async getTransactionReceipt(
@@ -155,14 +175,10 @@ export class EnhancedProvider extends StaticJsonRpcProvider {
     let receipt: TransactionReceipt | undefined
 
     // Else, fetch the receipt using the original method
-    if (chainId === ChainId.ArbitrumSepolia) {
-      // Infura provider failing to fetch old transaction receipts
-      const alchemyProvider = new StaticJsonRpcProvider(
-        getAlchemyRpcUrl(chainId)
-      )
-      receipt = await alchemyProvider.getTransactionReceipt(hash)
-    } else {
-      receipt = await super.getTransactionReceipt(hash)
+    receipt = await super.getTransactionReceipt(hash)
+
+    if (!receipt) {
+      receipt = await this.fallbackProvider.getTransactionReceipt(hash)
     }
 
     // Cache the receipt if it meets the criteria
