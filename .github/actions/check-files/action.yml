@@ -31,6 +31,10 @@ runs:
             test_scripts=true
             break
           fi
+          if [[ "$file" == .github/workflows/e2e-tests.yml ]]; then
+            run_tests=true
+            break
+          fi
         done
 
         for file in $files; do
