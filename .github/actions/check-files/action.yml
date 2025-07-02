@@ -33,7 +33,6 @@ runs:
           
           if [[ "$file" == .github/workflows/e2e-tests.yml ]]; then
             run_tests=true
-            break
           fi
           
           if [[ $file == packages/arb-token-bridge-ui/* ]]; then
