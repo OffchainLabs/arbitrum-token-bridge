@@ -55,13 +55,13 @@ export const fetchDepositsFromSubgraph = async ({
   pageNumber?: number
   searchString?: string
 }): Promise<FetchDepositsFromSubgraphResult[]> => {
+  if (!hasL1Subgraph(Number(l2ChainId))) {
+    throw new Error(`L1 subgraph not available for network: ${l2ChainId}`)
+  }
+
   if (toBlock && fromBlock >= toBlock) {
     // if fromBlock > toBlock or both are equal / 0
     return []
-  }
-
-  if (!hasL1Subgraph(Number(l2ChainId))) {
-    throw new Error(`L1 subgraph not available for network: ${l2ChainId}`)
   }
 
   const urlParams = new URLSearchParams(
