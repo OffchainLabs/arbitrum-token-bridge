@@ -29,18 +29,13 @@ runs:
         for file in $files; do
           if [[ "$file" == packages/scripts/* ]]; then
             test_scripts=true
-            break
           fi
-        done
-
-        for file in $files; do
+          
           if [[ "$file" == .github/workflows/e2e-tests.yml ]]; then
             run_tests=true
             break
           fi
-        done
-
-        for file in $files; do
+          
           if [[ $file == packages/arb-token-bridge-ui/* ]]; then
             # Dont run tests if only images/docs were changed
             if [[ "$file" =~ \.(md|svg|png|webp|gif|jpg|jpeg|txt)$ ]]; then
@@ -53,7 +48,6 @@ runs:
             fi 
             
             run_tests=true
-            break
           fi
         done
 
