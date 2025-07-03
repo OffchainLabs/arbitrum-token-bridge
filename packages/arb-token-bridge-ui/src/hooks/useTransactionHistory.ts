@@ -3,6 +3,7 @@ import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
+import pLimit from 'p-limit'
 
 import { getChains, getChildChainIds, isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
@@ -294,6 +295,11 @@ export async function fetchWithdrawalsInBatches(
   const batchSizeBlocks = params.batchSizeBlocks ?? 5_000_000
   const batchCount = Math.ceil((toBlock - fromBlock) / batchSizeBlocks)
 
+  // Max parallel fetches to avoid 429 errors
+  const limit = pLimit(10)
+
+  const childChainId = (await params.l2Provider.getNetwork()).chainId
+
   const promises = Array.from({ length: batchCount }, (_, i) => {
     // Math.min makes sure we don't fetch above toBlock
     const fromBlockForBatch = Math.min(fromBlock + i * batchSizeBlocks, toBlock)
@@ -302,10 +308,19 @@ export async function fetchWithdrawalsInBatches(
       toBlock
     )
 
-    return fetchWithdrawals({
-      ...params,
-      fromBlock: fromBlockForBatch,
-      toBlock: toBlockForBatch
+    return limit(async () => {
+      performance.mark(
+        `withdrawal batch start chainId:${childChainId} ${i}/${batchCount}`
+      )
+      const result = await fetchWithdrawals({
+        ...params,
+        fromBlock: fromBlockForBatch,
+        toBlock: toBlockForBatch
+      })
+      performance.mark(
+        `withdrawal batch end chainId:${childChainId} ${i}/${batchCount}`
+      )
+      return result
     })
   })
 
