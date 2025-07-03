@@ -309,13 +309,17 @@ export async function fetchWithdrawalsInBatches(
     )
 
     return limit(async () => {
-      performance.mark(`withdrawal batch start chainId:${childChainId} ${i}/${batchCount}`)
+      performance.mark(
+        `withdrawal batch start chainId:${childChainId} ${i}/${batchCount}`
+      )
       const result = await fetchWithdrawals({
         ...params,
         fromBlock: fromBlockForBatch,
         toBlock: toBlockForBatch
       })
-      performance.mark(`withdrawal batch end chainId:${childChainId} ${i}/${batchCount}`)
+      performance.mark(
+        `withdrawal batch end chainId:${childChainId} ${i}/${batchCount}`
+      )
       return result
     })
   })
