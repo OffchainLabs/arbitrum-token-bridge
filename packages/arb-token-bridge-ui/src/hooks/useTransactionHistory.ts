@@ -298,6 +298,8 @@ export async function fetchWithdrawalsInBatches(
   // Max parallel fetches to avoid 429 errors
   const limit = pLimit(10)
 
+  const childChainId = (await params.l2Provider.getNetwork()).chainId
+
   const promises = Array.from({ length: batchCount }, (_, i) => {
     // Math.min makes sure we don't fetch above toBlock
     const fromBlockForBatch = Math.min(fromBlock + i * batchSizeBlocks, toBlock)
@@ -306,14 +308,16 @@ export async function fetchWithdrawalsInBatches(
       toBlock
     )
 
-    return limit(
-      async () =>
-        await fetchWithdrawals({
-          ...params,
-          fromBlock: fromBlockForBatch,
-          toBlock: toBlockForBatch
-        })
-    )
+    return limit(async () => {
+      performance.mark(`withdrawal batch start chainId:${childChainId} ${i}/${batchCount}`)
+      const result = await fetchWithdrawals({
+        ...params,
+        fromBlock: fromBlockForBatch,
+        toBlock: toBlockForBatch
+      })
+      performance.mark(`withdrawal batch end chainId:${childChainId} ${i}/${batchCount}`)
+      return result
+    })
   })
 
   const results = await Promise.all(promises)
