@@ -19,6 +19,7 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
 import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
+import { lifiDestinationChainIds } from '../pages/api/crosschain-transfers/constants'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -57,21 +58,25 @@ const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
     isTestnet: true
   }
 }
-
-// TODO: load only once
-export const getChains = () => {
+export const getChains = (
+  { includeAllChains } = { includeAllChains: false }
+) => {
   const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
     ...Object.values(baseNetworks),
     ...getArbitrumNetworks()
   ]
 
+  if (includeAllChains) {
+    return chains
+  }
+
   return chains.filter(chain => {
-    // exclude L1 chains or Base Chains with no child chains
     if (
       isBlockNumberReferenceNetwork(chain) &&
       getChildrenForNetwork(chain.chainId).length === 0
     ) {
+      // exclude L1 chains or Base Chains with no child chains
       return false
     }
 
@@ -79,8 +84,11 @@ export const getChains = () => {
   })
 }
 
-function getChainByChainId(chainId: number) {
-  return getChains().find(c => c.chainId === chainId)
+function getChainByChainId(
+  chainId: number,
+  { includeAllChains } = { includeAllChains: false }
+) {
+  return getChains({ includeAllChains }).find(c => c.chainId === chainId)
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
@@ -550,8 +558,11 @@ export function sortChainIds(chainIds: number[]) {
   })
 }
 
-export function getDestinationChainIds(chainId: ChainId): ChainId[] {
-  const chain = getChainByChainId(chainId)
+export function getDestinationChainIds(
+  chainId: ChainId | number,
+  { includeLifi } = { includeLifi: false }
+): ChainId[] {
+  const chain = getChainByChainId(chainId, { includeAllChains: includeLifi })
 
   if (!chain) {
     return []
@@ -561,11 +572,17 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
 
   const validDestinationChainIds = getChildChainIds(chain)
 
+  const chainIds = validDestinationChainIds
   if (parentChainId) {
-    return sortChainIds([parentChainId, ...validDestinationChainIds])
+    chainIds.push(parentChainId)
+  }
+  const lifiChainIds = lifiDestinationChainIds[chainId]
+  console.log(lifiChainIds)
+  if (includeLifi && lifiChainIds && lifiChainIds.length) {
+    chainIds.push(...lifiChainIds)
   }
 
-  return sortChainIds(validDestinationChainIds)
+  return sortChainIds([...new Set(chainIds)])
 }
 
 export function isWithdrawalFromArbSepoliaToSepolia({

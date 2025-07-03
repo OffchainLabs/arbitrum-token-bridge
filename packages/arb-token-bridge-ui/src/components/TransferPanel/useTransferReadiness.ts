@@ -41,6 +41,8 @@ import {
 } from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { addressesEqual } from '../../util/AddressUtils'
+import { isLifiEnabled } from '../../util/featureFlag'
+import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
@@ -194,7 +196,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
   const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
     useSelectedTokenIsWithdrawOnly()
-  const gasSummary = useGasSummary()
+  const gasSummary = useGasSummary({ selectedRoute })
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -361,6 +363,15 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             parentChain.id,
             childChain.id
           ))
+      const isValidLifiRoute =
+        isLifiEnabled() &&
+        isValidLifiTransfer({
+          fromChainId: networks.sourceChain.id,
+          fromToken: isDepositMode
+            ? selectedToken.address
+            : selectedToken.l2Address,
+          toChainId: networks.destinationChain.id
+        })
 
       if (
         isDepositMode &&
@@ -372,7 +383,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             inputAmount1: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
           }
         })
-      } else if (selectedTokenIsDisabled) {
+      } else if (selectedTokenIsDisabled && !isValidLifiRoute) {
         return notReady({
           errorMessages: {
             inputAmount1:
