@@ -19,6 +19,8 @@ import { useCopyToClipboard } from '@uidotdev/usehooks'
 import { successToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { stackoverflowDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 function Networks({ networks }: { networks: ChainPair }) {
   return (
@@ -40,7 +42,16 @@ function ErrorTooltip({ error }: { error: string }) {
   return (
     <Tooltip
       tippyProps={{ className: 'break-all', trigger: 'click' }}
-      content={error}
+      content={
+        <SyntaxHighlighter
+          className="text-xs"
+          language="json"
+          style={stackoverflowDark}
+          wrapLongLines
+        >
+          {error}
+        </SyntaxHighlighter>
+      }
     >
       <div className="arb-hover flex cursor-pointer space-x-1">
         <EyeIcon width={20} />
