@@ -8,7 +8,8 @@ import {
   ChevronRightIcon,
   ArrowsRightLeftIcon,
   DocumentIcon,
-  EyeIcon
+  EyeIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { ChainError, ChainPair } from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
@@ -16,6 +17,8 @@ import { getNetworkName } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import { useCopyToClipboard } from '@uidotdev/usehooks'
 import { successToast } from '../common/atoms/Toast'
+import { ExternalLink } from '../common/ExternalLink'
+import { GET_HELP_LINK } from '../../constants'
 
 function Networks({ networks }: { networks: ChainPair }) {
   return (
@@ -63,6 +66,18 @@ function CopyErrorToClipboard({ error }: { error: string }) {
   )
 }
 
+function GetHelp() {
+  return (
+    <ExternalLink
+      className="arb-hover flex items-center space-x-1"
+      href={GET_HELP_LINK}
+    >
+      <ChatBubbleLeftRightIcon width={20} />
+      <span>Get help</span>
+    </ExternalLink>
+  )
+}
+
 export function ChainErrorsInfo({
   chainErrors
 }: {
@@ -89,15 +104,16 @@ export function ChainErrorsInfo({
         <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 ui-open:rotate-90 ui-open:transform" />
       </DisclosureButton>
       <DisclosurePanel className="flex flex-col gap-2 pl-4">
-        <ul>
+        <ul className="mt-1">
           {chainErrors.map(chainError => (
             <li
               key={`${chainError.chainPair.parentChainId}-${chainError.chainPair.childChainId}`}
-              className="grid grid-cols-[1fr_1fr_auto] items-center border-t border-white/50 py-2"
+              className="grid grid-cols-[1.5fr_1fr_1fr_auto] items-center border-t border-white/50 py-2"
             >
               <Networks networks={chainError.chainPair} />
               <ErrorTooltip error={chainError.error} />
               <CopyErrorToClipboard error={chainError.error} />
+              <GetHelp />
             </li>
           ))}
         </ul>
