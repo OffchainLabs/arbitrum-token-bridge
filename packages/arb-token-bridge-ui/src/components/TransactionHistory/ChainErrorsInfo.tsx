@@ -91,7 +91,10 @@ export function ChainErrorsInfo({
       <DisclosurePanel className="flex flex-col gap-2 pl-4">
         <ul>
           {chainErrors.map(chainError => (
-            <li className="grid grid-cols-[1fr_1fr_auto] items-center border-t border-white/50 py-2">
+            <li
+              key={`${chainError.chainPair.parentChainId}-${chainError.chainPair.childChainId}`}
+              className="grid grid-cols-[1fr_1fr_auto] items-center border-t border-white/50 py-2"
+            >
               <Networks networks={chainError.chainPair} />
               <ErrorTooltip error={chainError.error} />
               <CopyErrorToClipboard error={chainError.error} />
