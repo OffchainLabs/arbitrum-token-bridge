@@ -24,6 +24,7 @@ import {
 import { useTransactionHistoryAddressStore } from './TransactionHistorySearchBar'
 import { shallow } from 'zustand/shallow'
 import { TransactionHistoryDisclaimer } from './TransactionHistoryDisclaimer'
+import { ChainErrorsInfo } from './ChainErrorsInfo'
 
 function useTransactionHistoryUpdater() {
   const sanitizedAddress = useTransactionHistoryAddressStore(
@@ -56,7 +57,7 @@ const tabClasses =
 
 export function TransactionHistorySearchResults() {
   const props = useTransactionHistoryUpdater()
-  const { transactions } = props
+  const { transactions, chainErrors } = props
   const { forceFetchReceived, setForceFetchReceived } = useForceFetchReceived(
     state => ({
       forceFetchReceived: state.forceFetchReceived,
@@ -124,6 +125,12 @@ export function TransactionHistorySearchResults() {
       <div className="pr-4 md:pr-0">
         <TransactionStatusInfo />
       </div>
+
+      {chainErrors.length > 0 && (
+        <div className="pr-4 md:pr-0">
+          <ChainErrorsInfo chainErrors={chainErrors} />
+        </div>
+      )}
 
       <div className="mb-4">
         <TransactionHistoryDisclaimer />
