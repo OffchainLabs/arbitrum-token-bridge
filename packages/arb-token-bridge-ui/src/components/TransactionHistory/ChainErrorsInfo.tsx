@@ -3,6 +3,8 @@ import {
   DisclosureButton,
   DisclosurePanel
 } from '@headlessui/react'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { stackoverflowDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 import {
   XCircleIcon,
   ChevronRightIcon,
@@ -19,8 +21,6 @@ import { useCopyToClipboard } from '@uidotdev/usehooks'
 import { successToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
-import SyntaxHighlighter from 'react-syntax-highlighter'
-import { stackoverflowDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 function Networks({ networks }: { networks: ChainPair }) {
   return (
@@ -101,7 +101,7 @@ export function ChainErrorsInfo({
   return (
     <Disclosure
       as="div"
-      className="text-red-dark my-3 flex w-full flex-col justify-start gap-1 rounded border border-red-400 bg-red-900 px-3 py-2 text-sm text-white"
+      className="text-red-dark my-3 flex w-full flex-col justify-start gap-1 overflow-scroll rounded border border-red-400 bg-red-900 px-3 py-2 text-sm text-white"
     >
       <DisclosureButton className="flex items-center text-left">
         <div className="flex items-start gap-1">
