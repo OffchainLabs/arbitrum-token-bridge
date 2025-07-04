@@ -1,4 +1,8 @@
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel
+} from '@headlessui/react'
 import {
   InformationCircleIcon,
   ChevronRightIcon

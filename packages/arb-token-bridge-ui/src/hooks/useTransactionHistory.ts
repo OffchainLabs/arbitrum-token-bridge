@@ -385,8 +385,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       isTestnet: isTestnetMode
     })
 
-  const { data: chainErrors = [], mutate: addChainError } =
-    useSWRImmutable<ChainError[]>(address ? ['chainErrors', address] : null)
+  const { data: chainErrors = [], mutate: addChainError } = useSWRImmutable<
+    ChainError[]
+  >(address ? ['chainErrors', address] : null)
 
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
