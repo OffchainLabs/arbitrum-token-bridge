@@ -349,7 +349,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Ethereum,
     l2ChainId: ChainId.ArbitrumOne,
     pageNumber: 0,
-    pageSize: 1000,
+    pageSize: isTxHistoryEnabled ? 1000 : 0,
     type: 'all'
   })
 
@@ -358,7 +358,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     l1ChainId: ChainId.Sepolia,
     l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
-    pageSize: 1000,
+    pageSize: isTxHistoryEnabled ? 1000 : 0,
     type: 'all'
   })
 
@@ -384,7 +384,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
 
   const { transactions: oftTransfers, isLoading: oftLoading } =
     useOftTransactionHistory({
-      walletAddress: address,
+      walletAddress: isTxHistoryEnabled ? address : undefined,
       isTestnet: isTestnetMode
     })
 
@@ -649,12 +649,16 @@ export const useTransactionHistory = (
   ])
 
   const lifiTransactionsFromCache = useMemo(() => {
-    if (!useLifiMergedTransactionCacheStore.persist.hasHydrated || !address) {
+    if (
+      !useLifiMergedTransactionCacheStore.persist.hasHydrated ||
+      !address ||
+      !isTxHistoryEnabled
+    ) {
       return []
     }
 
     return lifiTransactions[address] || []
-  }, [address, lifiTransactions])
+  }, [address, lifiTransactions, isTxHistoryEnabled])
 
   const {
     data: txPages,
