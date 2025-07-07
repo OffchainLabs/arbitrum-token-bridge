@@ -3,10 +3,14 @@ import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
+import pLimit from 'p-limit'
 
 import { getChains, getChildChainIds, isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
-import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
+import {
+  fetchWithdrawals,
+  FetchWithdrawalsParams
+} from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
   AssetType,
@@ -71,7 +75,11 @@ import {
 import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
-import { withTimeout } from '../util/withTimeout'
+
+const BATCH_FETCH_BLOCKS: { [key: number]: number } = {
+  33139: 5_000_000, // ApeChain
+  4078: 10_000 // Muster
+}
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -268,6 +276,59 @@ function dedupeTransactions(txs: Transfer[]) {
   )
 }
 
+export async function fetchWithdrawalsInBatches(
+  params: FetchWithdrawalsParams & {
+    batchSizeBlocks?: number
+  }
+): Promise<Withdrawal[]> {
+  const latestBlockNumber = await params.l2Provider.getBlockNumber()
+
+  const fromBlock = params.fromBlock ?? 1
+  const toBlock = params.toBlock ?? latestBlockNumber
+
+  if (toBlock < fromBlock) {
+    throw new Error(
+      `toBlock (${toBlock}) cannot be lower than fromBlock (${fromBlock})`
+    )
+  }
+
+  const batchSizeBlocks = params.batchSizeBlocks ?? 5_000_000
+  const batchCount = Math.ceil((toBlock - fromBlock) / batchSizeBlocks)
+
+  // Max parallel fetches to avoid 429 errors
+  const limit = pLimit(10)
+
+  const childChainId = (await params.l2Provider.getNetwork()).chainId
+
+  const promises = Array.from({ length: batchCount }, (_, i) => {
+    // Math.min makes sure we don't fetch above toBlock
+    const fromBlockForBatch = Math.min(fromBlock + i * batchSizeBlocks, toBlock)
+    const toBlockForBatch = Math.min(
+      fromBlockForBatch + batchSizeBlocks,
+      toBlock
+    )
+
+    return limit(async () => {
+      performance.mark(
+        `withdrawal batch start chainId:${childChainId} ${i}/${batchCount}`
+      )
+      const result = await fetchWithdrawals({
+        ...params,
+        fromBlock: fromBlockForBatch,
+        toBlock: toBlockForBatch
+      })
+      performance.mark(
+        `withdrawal batch end chainId:${childChainId} ${i}/${batchCount}`
+      )
+      return result
+    })
+  })
+
+  const results = await Promise.all(promises)
+
+  return results.flat()
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
@@ -338,8 +399,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
         return []
       }
 
-      const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
-
       return Promise.all(
         getMultiChainFetchList()
           .filter(chainPair => {
@@ -383,34 +442,41 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 // teleporter does not support withdrawals
                 if (type === 'withdrawals') return []
 
-                return await withTimeout(
-                  fetchTeleports({
-                    sender: includeSentTxs ? address : undefined,
-                    receiver: includeReceivedTxs ? address : undefined,
-                    parentChainProvider: getProviderForChainId(
-                      chainPair.parentChainId
-                    ),
-                    childChainProvider: getProviderForChainId(
-                      chainPair.childChainId
-                    ),
-                    pageNumber: 0,
-                    pageSize: 1000
-                  })
-                )
-              }
-
-              // else, fetch deposits or withdrawals
-              return await withTimeout<Transaction[] | Withdrawal[]>(
-                fetcherFn({
+                return await fetchTeleports({
                   sender: includeSentTxs ? address : undefined,
                   receiver: includeReceivedTxs ? address : undefined,
-                  l1Provider: getProviderForChainId(chainPair.parentChainId),
-                  l2Provider: getProviderForChainId(chainPair.childChainId),
+                  parentChainProvider: getProviderForChainId(
+                    chainPair.parentChainId
+                  ),
+                  childChainProvider: getProviderForChainId(
+                    chainPair.childChainId
+                  ),
                   pageNumber: 0,
-                  pageSize: 1000,
-                  forceFetchReceived
+                  pageSize: 1000
                 })
-              )
+              }
+
+              const batchSizeBlocks = BATCH_FETCH_BLOCKS[chainPair.childChainId]
+
+              const withdrawalFn =
+                typeof batchSizeBlocks === 'number'
+                  ? fetchWithdrawalsInBatches
+                  : fetchWithdrawals
+
+              const fetcherFn =
+                type === 'deposits' ? fetchDeposits : withdrawalFn
+
+              // else, fetch deposits or withdrawals
+              return await fetcherFn({
+                sender: includeSentTxs ? address : undefined,
+                receiver: includeReceivedTxs ? address : undefined,
+                l1Provider: getProviderForChainId(chainPair.parentChainId),
+                l2Provider: getProviderForChainId(chainPair.childChainId),
+                pageNumber: 0,
+                pageSize: 1000,
+                forceFetchReceived,
+                batchSizeBlocks
+              })
             } catch {
               addFailedChainPair(prevFailedChainPairs => {
                 if (!prevFailedChainPairs) {
