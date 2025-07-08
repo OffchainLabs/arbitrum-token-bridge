@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { TokenType } from '../../../hooks/arbTokenBridge.types'
+import {
+  ERC20BridgeToken,
+  TokenType
+} from '../../../hooks/arbTokenBridge.types'
 import { isArbitrumCanonicalTransfer } from './useIsCanonicalTransfer'
 import { ChainId } from '../../../types/ChainId'
 
-const usdcToken = {
+const usdcToken: ERC20BridgeToken = {
   address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   decimals: 6,
   symbol: 'USDC',
