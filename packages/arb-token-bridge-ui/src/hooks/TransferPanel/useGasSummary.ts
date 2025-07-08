@@ -20,8 +20,6 @@ import {
   isWithdrawalFromArbSepoliaToSepolia
 } from '../../util/networks'
 import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
-import { RouteType } from '../../components/TransferPanel/hooks/useRouteStore'
-import { useRoutes } from '../../components/TransferPanel/Routes/Routes'
 
 export type GasEstimationStatus =
   | 'loading'

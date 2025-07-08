@@ -12,7 +12,7 @@ import {
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
