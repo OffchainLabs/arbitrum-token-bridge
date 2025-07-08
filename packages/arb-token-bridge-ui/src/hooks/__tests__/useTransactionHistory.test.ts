@@ -59,7 +59,7 @@ describe.sequential('useTransactionHistory', () => {
     createTestCase({
       key: 'WALLET_MULTIPLE_TX',
       enabled: true,
-      expectedPagesTxCounts: [3, 4]
+      expectedPagesTxCounts: [3, 5]
     }),
     createTestCase({
       key: 'WALLET_MULTIPLE_TX',
