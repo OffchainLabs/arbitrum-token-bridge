@@ -15,18 +15,18 @@ const wallets = {
  * @param config - Test case configuration
  * @param config.key - The wallet key from the wallets object to use for testing
  * @param config.enabled - Whether the transaction history feature is enabled
- * @param config.expectedTxCounts - Array of expected transaction counts for each batch
+ * @param config.expectedPagesTxCounts - Array of expected transaction counts for each paginated batch
  * @returns Test case object with the provided configuration
  */
 const createTestCase = ({
   key,
   enabled,
-  expectedTxCounts
+  expectedPagesTxCounts
 }: {
   key: keyof typeof wallets
   enabled: boolean
-  expectedTxCounts: number[]
-}) => ({ key, enabled, expectedTxCounts })
+  expectedPagesTxCounts: number[]
+}) => ({ key, enabled, expectedPagesTxCounts })
 
 vi.mock('wagmi', async importActual => ({
   ...(await importActual()),
@@ -59,31 +59,31 @@ describe.sequential('useTransactionHistory', () => {
     createTestCase({
       key: 'WALLET_MULTIPLE_TX',
       enabled: true,
-      expectedTxCounts: [3, 4]
+      expectedPagesTxCounts: [3, 4]
     }),
     createTestCase({
       key: 'WALLET_MULTIPLE_TX',
       enabled: false,
-      expectedTxCounts: [0]
+      expectedPagesTxCounts: [0]
     }),
     createTestCase({
       key: 'WALLET_SINGLE_TX',
       enabled: true,
-      expectedTxCounts: [1]
+      expectedPagesTxCounts: [1]
     }),
     createTestCase({
       key: 'WALLET_SINGLE_TX',
       enabled: false,
-      expectedTxCounts: [0]
+      expectedPagesTxCounts: [0]
     }),
     createTestCase({
       key: 'WALLET_EMPTY',
       enabled: true,
-      expectedTxCounts: [0]
+      expectedPagesTxCounts: [0]
     })
   ])(
-    'fetches history for key:$key enabled:$enabled expectedTxCounts:$expectedTxCounts',
-    async ({ key, enabled, expectedTxCounts }) => {
+    'fetches history for key:$key enabled:$enabled expectedPagesTxCounts:$expectedPagesTxCounts',
+    async ({ key, enabled, expectedPagesTxCounts }) => {
       const mockUseArbQueryParams = vi.mocked(useArbQueryParams)
       const [currentParams, setParams] = mockUseArbQueryParams()
 
@@ -107,9 +107,9 @@ describe.sequential('useTransactionHistory', () => {
       const { result } = await renderHookAsyncUseTransactionHistory(address)
 
       // fetch each batch
-      for (let i = 0; i < expectedTxCounts.length; i++) {
+      for (let page = 0; page < expectedPagesTxCounts.length; page++) {
         // initial fetch starts immediately
-        if (i > 0) {
+        if (page > 0) {
           act(() => {
             result.current.resume()
           })
@@ -125,7 +125,7 @@ describe.sequential('useTransactionHistory', () => {
 
         // total results so far
         expect(result.current.transactions).toHaveLength(
-          Number(expectedTxCounts[i])
+          Number(expectedPagesTxCounts[page])
         )
       }
 
