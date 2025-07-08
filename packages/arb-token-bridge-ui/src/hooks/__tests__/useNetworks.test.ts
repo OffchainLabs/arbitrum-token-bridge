@@ -248,6 +248,7 @@ describe('sanitizeQueryParams', () => {
           destinationChainId: undefined,
           disableTransfersToNonArbitrumChains: true
         })
+
         // Should not default to a non-Arbitrum network
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
           false
@@ -334,14 +335,15 @@ describe('sanitizeQueryParams', () => {
         )
       })
 
-      it('should allow parent chain when it is the only valid option', () => {
+      it('should not allow parent chain when even when it is the only valid option', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumSepolia,
           destinationChainId: ChainId.Sepolia,
           disableTransfersToNonArbitrumChains: true
         })
-        // Should stay as Sepolia since it's the parent chain and there are no other options
-        expect(result.destinationChainId).toBe(ChainId.Sepolia)
+        expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
+          false
+        )
       })
     })
 
@@ -376,7 +378,7 @@ describe('sanitizeQueryParams', () => {
           destinationChainId: ChainId.Ethereum,
           disableTransfersToNonArbitrumChains: true
         })
-        expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(false)
+
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
           false
         )
@@ -388,7 +390,6 @@ describe('sanitizeQueryParams', () => {
           destinationChainId: ChainId.Base,
           disableTransfersToNonArbitrumChains: true
         })
-        expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(false)
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
           false
         )

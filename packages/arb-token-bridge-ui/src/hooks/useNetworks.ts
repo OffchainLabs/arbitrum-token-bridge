@@ -5,7 +5,7 @@ import { Chain } from 'wagmi/chains'
 
 import useSWRImmutable from 'swr/immutable'
 import { DisabledFeatures, useArbQueryParams } from './useArbQueryParams'
-import { getCustomChainsFromLocalStorage } from '../util/networks'
+import { getCustomChainsFromLocalStorage, isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
   sepolia,
@@ -88,7 +88,7 @@ export function sanitizeQueryParams({
     })
   }
 
-  // destinationChainId is valid and sourceChainId is undefined
+  // destinationChainId is supported and sourceChainId is undefined
   if (
     !isSupportedChainId(sourceChainId) &&
     isSupportedChainId(destinationChainId)
@@ -98,7 +98,14 @@ export function sanitizeQueryParams({
       disableTransfersToNonArbitrumChains
     )
 
-    if (typeof defaultSourceChainId === 'undefined') {
+    const isInvalidDestinationChainId =
+      disableTransfersToNonArbitrumChains &&
+      isNetwork(destinationChainId).isNonArbitrumNetwork
+
+    if (
+      typeof defaultSourceChainId === 'undefined' ||
+      isInvalidDestinationChainId
+    ) {
       return (cache[key] = {
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
