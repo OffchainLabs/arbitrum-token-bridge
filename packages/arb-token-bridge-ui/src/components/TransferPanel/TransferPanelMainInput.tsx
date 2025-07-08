@@ -23,6 +23,8 @@ import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useNativeCurrencyBalances } from './TransferPanelMain/useNativeCurrencyBalances'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 import { useMode } from '../../hooks/useMode'
+import { addressesEqual } from '../../util/AddressUtils'
+import { constants } from 'ethers'
 
 function MaxButton({
   className = '',
@@ -85,7 +87,22 @@ function SourceChainTokenBalance({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenBalance = selectedTokenBalances.sourceBalance
+  /**
+   * If token is ETH (lifi), show ETH balance on source chain
+   * If token is ERC20, show the balance of the selected token
+   * If no token is selected, show the child chain native currency balance on source chain
+   */
+  const tokenBalance = (() => {
+    if (addressesEqual(selectedToken?.address, constants.AddressZero)) {
+      return selectedTokenBalances.sourceBalance
+    }
+
+    if (!selectedToken) {
+      return nativeCurrencyBalances.sourceBalance
+    }
+
+    return selectedTokenBalances.sourceBalance
+  })()
 
   const balance =
     balanceOverride ??

@@ -147,8 +147,8 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
   const isLifiSupported = useMemo(
     () =>
       isValidLifiTransfer({
-        fromChainId: networks.sourceChain.id,
-        toChainId: networks.destinationChain.id,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id,
         fromToken: selectedToken?.address
       }),
     [selectedToken, networks.sourceChain.id, networks.destinationChain.id]

@@ -5,6 +5,12 @@ import { Chain } from 'wagmi/chains'
 import { UseNetworksState } from './useNetworks'
 import { isDepositMode } from '../util/isDepositMode'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+import {
+  isLifiTransfer,
+  isValidLifiTransfer
+} from '../pages/api/crosschain-transfers/utils'
+import { getDestinationChainIds } from '../util/networks'
+import { ChainId } from '../types/ChainId'
 
 type UseNetworksRelationshipState = {
   childChain: Chain
@@ -13,6 +19,10 @@ type UseNetworksRelationshipState = {
   parentChainProvider: StaticJsonRpcProvider
   isDepositMode: boolean
   isTeleportMode: boolean
+  /** true if route is supported through lifi (regardless of selected token)  */
+  isLifi: boolean
+  /** true if route is supported through canonical route (regardless of selected token)  */
+  isValidArbitrumRoute: boolean
 }
 export function useNetworksRelationship({
   sourceChain,
@@ -31,6 +41,48 @@ export function useNetworksRelationship({
       destinationChainId: destinationChain.id
     })
 
+    const isLifi = isLifiTransfer({
+      sourceChainId: sourceChain.id,
+      destinationChainId: destinationChain.id
+    })
+
+    const isValidArbitrumRoute = getDestinationChainIds(
+      sourceChain.id
+    ).includes(destinationChain.id)
+
+    // Ape to Surpeposition and vice-versa
+    if (
+      sourceChain.id === ChainId.ApeChain &&
+      destinationChain.id === ChainId.Superposition
+    ) {
+      return {
+        childChain: sourceChain,
+        childChainProvider: sourceChainProvider,
+        parentChain: destinationChain,
+        parentChainProvider: destinationChainProvider,
+        isDepositMode: false,
+        isTeleportMode: false,
+        isLifi,
+        isValidArbitrumRoute
+      }
+    }
+
+    if (
+      sourceChain.id === ChainId.Superposition &&
+      destinationChain.id === ChainId.ApeChain
+    ) {
+      return {
+        childChain: destinationChain,
+        childChainProvider: destinationChainProvider,
+        parentChain: sourceChain,
+        parentChainProvider: sourceChainProvider,
+        isDepositMode: true,
+        isTeleportMode: false,
+        isLifi,
+        isValidArbitrumRoute
+      }
+    }
+
     if (_isDepositMode) {
       return {
         childChain: destinationChain,
@@ -38,7 +90,9 @@ export function useNetworksRelationship({
         parentChain: sourceChain,
         parentChainProvider: sourceChainProvider,
         isDepositMode: _isDepositMode,
-        isTeleportMode
+        isTeleportMode,
+        isLifi,
+        isValidArbitrumRoute
       }
     }
 
@@ -48,7 +102,9 @@ export function useNetworksRelationship({
       parentChain: destinationChain,
       parentChainProvider: destinationChainProvider,
       isDepositMode: _isDepositMode,
-      isTeleportMode
+      isTeleportMode,
+      isLifi,
+      isValidArbitrumRoute
     }
   }, [
     sourceChain,
