@@ -11,7 +11,8 @@ import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumG
 export { OutgoingMessageState }
 
 export enum TokenType {
-  ERC20 = 'ERC20'
+  ERC20 = 'ERC20',
+  ETH = 'ETH'
 }
 
 export enum AssetType {
@@ -72,9 +73,12 @@ export interface BridgeToken {
   isL2Native?: boolean
 }
 
-export interface ERC20BridgeToken extends BridgeToken {
-  type: TokenType.ERC20
+export interface BridgeTokenWithDecimals extends BridgeToken {
   decimals: number
+}
+
+export interface ERC20BridgeToken extends BridgeTokenWithDecimals {
+  type: TokenType.ERC20
 }
 
 export interface ContractStorage<T> {

@@ -1,24 +1,71 @@
-import useSWRImmutable from 'swr/immutable'
+import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
+import { BridgeTokenWithDecimals } from '../../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { getOftV2TransferConfig } from '../../../token-bridge-sdk/oftUtils'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { isDepositMode } from '../../../util/isDepositMode'
 import { getDestinationChainIds } from '../../../util/networks'
-import { constants } from 'ethers'
+import { isDisabledCanonicalTransfer } from '../TransferDisabledDialog'
+import { useSelectedTokenIsWithdrawOnly } from './useSelectedTokenIsWithdrawOnly'
+
+export function isArbitrumCanonicalTransfer({
+  sourceChainId,
+  destinationChainId,
+  childChainId,
+  parentChainId,
+  isSelectedTokenWithdrawOnly,
+  isSelectedTokenWithdrawOnlyLoading,
+  selectedToken
+}: {
+  sourceChainId: number
+  destinationChainId: number
+  childChainId: number
+  parentChainId: number
+  isSelectedTokenWithdrawOnly: boolean | undefined
+  isSelectedTokenWithdrawOnlyLoading: boolean
+  selectedToken: BridgeTokenWithDecimals | null
+}): boolean {
+  const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
+  const isTeleportMode = isValidTeleportChainPair({
+    destinationChainId,
+    sourceChainId
+  })
+  const isValidPair =
+    getDestinationChainIds(sourceChainId).includes(destinationChainId)
+
+  if (!isValidPair) return false
+
+  if (
+    isDisabledCanonicalTransfer({
+      childChainId: childChainId,
+      isDepositMode: isDeposit,
+      isSelectedTokenWithdrawOnly,
+      isSelectedTokenWithdrawOnlyLoading,
+      isTeleportMode,
+      parentChainId: parentChainId,
+      selectedToken
+    })
+  ) {
+    return false
+  }
+
+  return true
+}
 
 export const useIsArbitrumCanonicalTransfer = function () {
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
-  const { isTeleportMode, isDepositMode } = useNetworksRelationship(networks)
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const { isSelectedTokenWithdrawOnly, isSelectedTokenWithdrawOnlyLoading } =
+    useSelectedTokenIsWithdrawOnly()
 
-  const isValidPair = getDestinationChainIds(networks.sourceChain.id).includes(
-    networks.destinationChain.id
-  )
-
-  if (!isValidPair) return false
-
-  // Teleport only support ETH
-  if (isTeleportMode && selectedToken?.address === constants.AddressZero) {
-    return false
-  }
+  return isArbitrumCanonicalTransfer({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id,
+    childChainId: childChain.id,
+    parentChainId: parentChain.id,
+    isSelectedTokenWithdrawOnly,
+    isSelectedTokenWithdrawOnlyLoading,
+    selectedToken
+  })
 }

@@ -12,7 +12,10 @@ import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
 import { LifiData, LifiTransferStarter } from './LifiTransferStarter'
-import { isValidLifiTransfer } from '../pages/api/crosschain-transfers/utils'
+import {
+  isLifiTransfer,
+  isValidLifiTransfer
+} from '../pages/api/crosschain-transfers/utils'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -75,14 +78,20 @@ export class BridgeTransferStarterFactory {
       sourceChainErc20Address: props.sourceChainErc20Address
     })
 
-    const isLifi = isValidLifiTransfer({
-      fromChainId: props.sourceChainId,
-      toChainId: props.destinationChainId,
-      fromToken: props.sourceChainErc20Address
+    const isLifi = isLifiTransfer({
+      sourceChainId: props.sourceChainId,
+      destinationChainId: props.destinationChainId
     })
 
     if (isOft.isValid) {
       return withCache(cacheKey, new OftV2TransferStarter(initProps))
+    }
+
+    if (isLifi && props.lifiData) {
+      return withCache(
+        cacheKey,
+        new LifiTransferStarter({ ...initProps, lifiData: props.lifiData })
+      )
     }
 
     if (isTeleport) {
@@ -90,14 +99,6 @@ export class BridgeTransferStarterFactory {
         return withCache(cacheKey, new EthTeleportStarter(initProps))
       }
       return withCache(cacheKey, new Erc20TeleportStarter(initProps))
-    }
-
-    console.log('isLifi', isLifi, props.lifiData)
-    if (isLifi && props.lifiData) {
-      return withCache(
-        cacheKey,
-        new LifiTransferStarter({ ...initProps, lifiData: props.lifiData })
-      )
     }
 
     // deposits

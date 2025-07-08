@@ -4,19 +4,25 @@ import { BigNumber, constants } from 'ethers'
 import { useBalance } from './useBalance'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
-import { ERC20BridgeToken } from './arbTokenBridge.types'
+import {
+  BridgeTokenWithDecimals,
+  ERC20BridgeToken,
+  TokenType
+} from './arbTokenBridge.types'
 import { useNativeCurrencyBalances } from '../components/TransferPanel/TransferPanelMain/useNativeCurrencyBalances'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../util/TokenUtils'
 import { isNetwork } from '../util/networks'
+import { addressesEqual } from '../util/AddressUtils'
+import { useNativeCurrency } from './useNativeCurrency'
 
 /**
  * Balance of the child chain's native currency or ERC20 token
  */
 export function useBalanceOnSourceChain(
-  token: ERC20BridgeToken | null
+  token: BridgeTokenWithDecimals | null
 ): BigNumber | null {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
@@ -24,9 +30,13 @@ export function useBalanceOnSourceChain(
   const { isOrbitChain: isSourceOrbitChain } = isNetwork(
     networks.sourceChain.id
   )
+  const sourceChainNativeCurrency = useNativeCurrency({
+    provider: networks.sourceChainProvider
+  })
 
   const {
-    erc20: [erc20SourceChainBalances]
+    erc20: [erc20SourceChainBalances],
+    eth: [ethSourceChainBalance]
   } = useBalance({ chainId: networks.sourceChain.id, walletAddress })
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -35,6 +45,18 @@ export function useBalanceOnSourceChain(
   // user bridging the destination chain's native currency
   if (!token) {
     return nativeCurrencyBalances.sourceBalance
+  }
+
+  if (addressesEqual(token.address, constants.AddressZero)) {
+    // If ether is the native currency on the source chain
+    if (!sourceChainNativeCurrency.isCustom) {
+      return ethSourceChainBalance
+    }
+
+    return token.l2Address
+      ? erc20SourceChainBalances?.[token.l2Address.toLowerCase()] ||
+          constants.Zero
+      : constants.Zero
   }
 
   const tokenAddressLowercased = token.address.toLowerCase()

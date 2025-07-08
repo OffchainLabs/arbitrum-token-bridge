@@ -71,17 +71,17 @@ export const fetchDeposits = async ({
   try {
     depositsFromSubgraph = await fetchDepositsFromSubgraph(subgraphParams)
   } catch (error: any) {
-    console.log('Error fetching deposits from subgraph', error)
+    // console.log('Error fetching deposits from subgraph', error)
   }
 
   try {
     ethDepositsToCustomDestinationFromSubgraph =
       await fetchEthDepositsToCustomDestinationFromSubgraph(subgraphParams)
   } catch (error: any) {
-    console.log(
-      'Error fetching native token deposits to custom destination from subgraph',
-      error
-    )
+    // console.log(
+    //   'Error fetching native token deposits to custom destination from subgraph',
+    //   error
+    // )
   }
 
   const mappedDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(

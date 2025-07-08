@@ -368,11 +368,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       const isValidLifiRoute =
         isLifiEnabled() &&
         isValidLifiTransfer({
-          fromChainId: networks.sourceChain.id,
+          sourceChainId: networks.sourceChain.id,
           fromToken: isDepositMode
             ? selectedToken.address
             : selectedToken.l2Address,
-          toChainId: networks.destinationChain.id
+          destinationChainId: networks.destinationChain.id
         })
 
       if (

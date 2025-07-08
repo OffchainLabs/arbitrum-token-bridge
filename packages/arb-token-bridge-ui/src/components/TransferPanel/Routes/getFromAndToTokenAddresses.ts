@@ -24,8 +24,8 @@ export function getFromAndToTokenAddresses({
     fromToken,
     toToken: getLifiDestinationToken({
       fromToken,
-      fromChainId: sourceChainId,
-      toChainId: destinationChainId
+      sourceChainId,
+      destinationChainId
     })
   }
 }

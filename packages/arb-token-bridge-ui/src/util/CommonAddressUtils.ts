@@ -25,13 +25,13 @@ export const CommonAddress = {
     tokenMessengerContractAddress: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5'
   },
   Base: {
-    USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+    USDC: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
   },
   ApeChain: {
-    USDCe: '0xF1815bd50389c46847f0Bda824eC8da914045D14',
-    WETH: '0xf4D9235269a96aaDaFc9aDAe454a0618eBE37949'
+    USDCe: '0xf1815bd50389c46847f0bda824ec8da914045d14',
+    WETH: '0xf4d9235269a96aadafc9adae454a0618ebe37949'
   },
   Superposition: {
-    USDCe: '0x6c030c5CC283F791B26816f325b9C632d964F8A1'
+    USDCe: '0x6c030c5cc283f791b26816f325b9c632d964f8a1'
   }
 } as const
