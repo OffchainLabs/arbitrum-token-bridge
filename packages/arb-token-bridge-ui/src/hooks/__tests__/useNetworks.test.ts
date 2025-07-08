@@ -240,13 +240,13 @@ describe('sanitizeQueryParams', () => {
     })
   })
 
-  describe('when `allowTransfersToNonArbitrumChains` is false', () => {
+  describe('when `disableTransfersToNonArbitrumChains` is true', () => {
     describe('when `sourceChainId` is Arbitrum and `destinationChainId` is undefined', () => {
       it('should not include non-Arbitrum networks as destination when transfers to non-Arbitrum chains are disabled', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: undefined,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         // Should not default to a non-Arbitrum network
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
@@ -258,7 +258,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumNova,
           destinationChainId: undefined,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         // Should not default to a non-Arbitrum network
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
@@ -270,7 +270,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumSepolia,
           destinationChainId: undefined,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         // Should not default to a non-Arbitrum network
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
@@ -284,7 +284,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: ChainId.ArbitrumOne,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         // Should not default to a non-Arbitrum network
         expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(false)
@@ -294,7 +294,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: ChainId.ArbitrumNova,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         // Should not default to a non-Arbitrum network
         expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(false)
@@ -304,7 +304,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: ChainId.ArbitrumSepolia,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         // Should not default to a non-Arbitrum network
         expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(false)
@@ -316,7 +316,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: ChainId.Ethereum,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
           false
@@ -327,7 +327,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: ChainId.Base,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
           false
@@ -338,7 +338,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumSepolia,
           destinationChainId: ChainId.Sepolia,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         // Should stay as Sepolia since it's the parent chain and there are no other options
         expect(result.destinationChainId).toBe(ChainId.Sepolia)
@@ -350,7 +350,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.Ethereum,
           destinationChainId: undefined,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
           false
@@ -361,7 +361,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: ChainId.Base,
           destinationChainId: undefined,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
           false
@@ -374,7 +374,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: ChainId.Ethereum,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(false)
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
@@ -386,7 +386,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: ChainId.Base,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(false)
         expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
@@ -400,7 +400,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: 9999,
           destinationChainId: 8888,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(result.sourceChainId).toBe(ChainId.Ethereum)
         expect(result.destinationChainId).toBe(ChainId.ArbitrumOne)
@@ -412,7 +412,7 @@ describe('sanitizeQueryParams', () => {
         const result = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: undefined,
-          allowTransfersToNonArbitrumChains: false
+          disableTransfersToNonArbitrumChains: true
         })
         expect(result.sourceChainId).toBe(ChainId.Ethereum)
         expect(result.destinationChainId).toBe(ChainId.ArbitrumOne)
@@ -420,12 +420,12 @@ describe('sanitizeQueryParams', () => {
     })
   })
 
-  describe('when `allowTransfersToNonArbitrumChains` is true (default behavior)', () => {
+  describe('when `disableTransfersToNonArbitrumChains` is false (default behavior)', () => {
     it('should include non-Arbitrum networks as destination for Arbitrum chains', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: undefined,
-        allowTransfersToNonArbitrumChains: true
+        disableTransfersToNonArbitrumChains: false
       })
       expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
         true
@@ -436,7 +436,7 @@ describe('sanitizeQueryParams', () => {
       const result = sanitizeQueryParams({
         sourceChainId: undefined,
         destinationChainId: ChainId.ArbitrumOne,
-        allowTransfersToNonArbitrumChains: true
+        disableTransfersToNonArbitrumChains: false
       })
       expect(isNetwork(result.sourceChainId).isNonArbitrumNetwork).toBe(true)
     })
@@ -445,7 +445,7 @@ describe('sanitizeQueryParams', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: ChainId.Ethereum,
-        allowTransfersToNonArbitrumChains: true
+        disableTransfersToNonArbitrumChains: false
       })
       expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
         true
@@ -456,7 +456,7 @@ describe('sanitizeQueryParams', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: ChainId.Base,
-        allowTransfersToNonArbitrumChains: true
+        disableTransfersToNonArbitrumChains: false
       })
       expect(isNetwork(result.destinationChainId).isNonArbitrumNetwork).toBe(
         true
@@ -464,8 +464,8 @@ describe('sanitizeQueryParams', () => {
     })
   })
 
-  describe('when `allowTransfersToNonArbitrumChains` is not provided', () => {
-    it('should default to true and include non-Arbitrum networks as destination', () => {
+  describe('when `disableTransfersToNonArbitrumChains` is not provided', () => {
+    it('should default to false and include non-Arbitrum networks as destination', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: undefined
@@ -475,7 +475,7 @@ describe('sanitizeQueryParams', () => {
       )
     })
 
-    it('should default to true and include non-Arbitrum networks as source', () => {
+    it('should default to false and include non-Arbitrum networks as source', () => {
       const result = sanitizeQueryParams({
         sourceChainId: undefined,
         destinationChainId: ChainId.ArbitrumOne
@@ -484,12 +484,12 @@ describe('sanitizeQueryParams', () => {
     })
   })
 
-  describe('cache behavior with `allowTransfersToNonArbitrumChains`', () => {
-    it('should cache results separately for different allowTransfersToNonArbitrumChains values', () => {
+  describe('cache behavior with `disableTransfersToNonArbitrumChains`', () => {
+    it('should cache results separately for different disableTransfersToNonArbitrumChains values', () => {
       const result1 = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: undefined,
-        allowTransfersToNonArbitrumChains: true
+        disableTransfersToNonArbitrumChains: false
       })
       expect(isNetwork(result1.destinationChainId).isNonArbitrumNetwork).toBe(
         true
@@ -498,7 +498,7 @@ describe('sanitizeQueryParams', () => {
       const result2 = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: undefined,
-        allowTransfersToNonArbitrumChains: false
+        disableTransfersToNonArbitrumChains: true
       })
       expect(isNetwork(result2.destinationChainId).isNonArbitrumNetwork).toBe(
         false
@@ -508,7 +508,7 @@ describe('sanitizeQueryParams', () => {
       const result3 = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: undefined,
-        allowTransfersToNonArbitrumChains: true
+        disableTransfersToNonArbitrumChains: false
       })
       expect(isNetwork(result3.destinationChainId).isNonArbitrumNetwork).toBe(
         true
@@ -517,7 +517,7 @@ describe('sanitizeQueryParams', () => {
       const result4 = sanitizeQueryParams({
         sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: undefined,
-        allowTransfersToNonArbitrumChains: false
+        disableTransfersToNonArbitrumChains: true
       })
       expect(isNetwork(result4.destinationChainId).isNonArbitrumNetwork).toBe(
         false

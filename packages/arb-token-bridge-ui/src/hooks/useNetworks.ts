@@ -61,16 +61,16 @@ const cache: Record<
 export function sanitizeQueryParams({
   sourceChainId,
   destinationChainId,
-  allowTransfersToNonArbitrumChains = true
+  disableTransfersToNonArbitrumChains = false
 }: {
   sourceChainId: ChainId | number | undefined
   destinationChainId: ChainId | number | undefined
-  allowTransfersToNonArbitrumChains?: boolean
+  disableTransfersToNonArbitrumChains?: boolean
 }): {
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  const key = `${sourceChainId}-${destinationChainId}-${allowTransfersToNonArbitrumChains}`
+  const key = `${sourceChainId}-${destinationChainId}-${disableTransfersToNonArbitrumChains}`
   const cacheHit = cache[key]
   if (cacheHit) {
     return cacheHit
@@ -95,7 +95,7 @@ export function sanitizeQueryParams({
   ) {
     const [defaultSourceChainId] = getDestinationChainIds(
       destinationChainId,
-      allowTransfersToNonArbitrumChains
+      disableTransfersToNonArbitrumChains
     )
 
     if (typeof defaultSourceChainId === 'undefined') {
@@ -118,7 +118,7 @@ export function sanitizeQueryParams({
   ) {
     const [defaultDestinationChainId] = getDestinationChainIds(
       sourceChainId,
-      allowTransfersToNonArbitrumChains
+      disableTransfersToNonArbitrumChains
     )
 
     if (typeof defaultDestinationChainId === 'undefined') {
@@ -138,12 +138,12 @@ export function sanitizeQueryParams({
   if (
     !getDestinationChainIds(
       sourceChainId!,
-      allowTransfersToNonArbitrumChains
+      disableTransfersToNonArbitrumChains
     ).includes(destinationChainId!)
   ) {
     const [defaultDestinationChainId] = getDestinationChainIds(
       sourceChainId!,
-      allowTransfersToNonArbitrumChains
+      disableTransfersToNonArbitrumChains
     )
 
     if (!defaultDestinationChainId) {
@@ -186,7 +186,7 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
   const { isFeatureDisabled } = useDisabledFeatures()
 
-  const allowTransfersToNonArbitrumChains = !isFeatureDisabled(
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
     DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
   )
 
@@ -198,9 +198,9 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
       sanitizeQueryParams({
         sourceChainId,
         destinationChainId,
-        allowTransfersToNonArbitrumChains
+        disableTransfersToNonArbitrumChains
       }),
-    [destinationChainId, sourceChainId, allowTransfersToNonArbitrumChains]
+    [destinationChainId, sourceChainId, disableTransfersToNonArbitrumChains]
   )
 
   const {
@@ -228,14 +228,14 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
       } = sanitizeQueryParams({
         sourceChainId: newSourceChainId,
         destinationChainId: newDestinationChainId,
-        allowTransfersToNonArbitrumChains
+        disableTransfersToNonArbitrumChains
       })
       setQueryParams({
         sourceChain: validSourceChainId,
         destinationChain: validDestinationChainId
       })
     },
-    [setQueryParams, allowTransfersToNonArbitrumChains]
+    [setQueryParams, disableTransfersToNonArbitrumChains]
   )
 
   // The return values of the hook will always be the sanitized values

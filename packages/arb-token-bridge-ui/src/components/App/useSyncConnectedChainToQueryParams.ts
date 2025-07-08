@@ -24,7 +24,7 @@ export function useSyncConnectedChainToQueryParams() {
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
 
-  const allowTransfersToNonArbitrumChains = !isFeatureDisabled(
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
     DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
   )
 
@@ -37,11 +37,11 @@ export function useSyncConnectedChainToQueryParams() {
       sanitizeQueryParams({
         sourceChainId: chain.id,
         destinationChainId: undefined,
-        allowTransfersToNonArbitrumChains
+        disableTransfersToNonArbitrumChains
       })
 
     setQueryParams({ sourceChain, destinationChain })
-  }, [chain, setQueryParams, allowTransfersToNonArbitrumChains])
+  }, [chain, setQueryParams, disableTransfersToNonArbitrumChains])
 
   useEffect(() => {
     async function checkCorrectChainForSmartContractWallet() {

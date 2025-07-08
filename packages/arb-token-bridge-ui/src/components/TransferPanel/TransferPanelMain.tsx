@@ -80,9 +80,19 @@ export function SwitchNetworksButton(
       >
         <SwitchNetworkButtonBorderTop />
         {isSmartContractWallet ? (
-          <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
+          <ArrowDownIcon
+            className={twMerge(
+              'h-6 w-6 stroke-1 text-white',
+              disabled && 'opacity-30'
+            )}
+          />
         ) : (
-          <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
+          <ArrowsUpDownIcon
+            className={twMerge(
+              'h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80',
+              disabled && 'opacity-30'
+            )}
+          />
         )}
         <SwitchNetworkButtonBorderBottom />
       </button>

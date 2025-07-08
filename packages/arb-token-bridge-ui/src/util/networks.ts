@@ -554,7 +554,7 @@ export function sortChainIds(chainIds: number[]) {
 
 export function getDestinationChainIds(
   chainId: ChainId,
-  allowTransfersToNonArbitrumChains = true
+  disableTransfersToNonArbitrumChains = false
 ): ChainId[] {
   const chain = getChainByChainId(chainId)
 
@@ -566,7 +566,7 @@ export function getDestinationChainIds(
 
   const validDestinationChainIds = getChildChainIds(chain)
 
-  if (parentChainId && allowTransfersToNonArbitrumChains) {
+  if (parentChainId && !disableTransfersToNonArbitrumChains) {
     return sortChainIds([parentChainId, ...validDestinationChainIds])
   }
 

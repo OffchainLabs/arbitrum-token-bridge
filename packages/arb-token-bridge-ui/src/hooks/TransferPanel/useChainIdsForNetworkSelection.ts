@@ -20,7 +20,7 @@ export function useChainIdsForNetworkSelection({
 
   const { isFeatureDisabled } = useDisabledFeatures()
 
-  const allowTransfersToNonArbitrumChains = !isFeatureDisabled(
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
     DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
   )
 
@@ -34,7 +34,7 @@ export function useChainIdsForNetworkSelection({
 
     const destinationChainIds = getDestinationChainIds(
       networks.sourceChain.id,
-      allowTransfersToNonArbitrumChains
+      disableTransfersToNonArbitrumChains
     )
 
     // if source chain is Arbitrum One, add Arbitrum Nova to destination
@@ -46,7 +46,7 @@ export function useChainIdsForNetworkSelection({
       destinationChainIds.push(ChainId.ArbitrumOne)
     }
 
-    if (!allowTransfersToNonArbitrumChains) {
+    if (disableTransfersToNonArbitrumChains) {
       return destinationChainIds.filter(
         chainId => !isNetwork(chainId).isNonArbitrumNetwork
       )
@@ -57,6 +57,6 @@ export function useChainIdsForNetworkSelection({
     isSource,
     isTestnetMode,
     networks.sourceChain.id,
-    allowTransfersToNonArbitrumChains
+    disableTransfersToNonArbitrumChains
   ])
 }
