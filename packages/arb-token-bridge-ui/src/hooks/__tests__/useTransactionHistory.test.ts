@@ -115,6 +115,8 @@ describe.sequential('useTransactionHistory', () => {
           })
         }
 
+        expect(result.current.loading).toBe(true)
+
         await waitFor(
           () => {
             // fetching finished
