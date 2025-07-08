@@ -1,4 +1,9 @@
-import { bridgedUsdcToken } from '../../../constants'
+import { bridgedUsdcToken, ether, ETHER_TOKEN_LOGO } from '../../../constants'
+import {
+  BridgeTokenWithDecimals,
+  TokenType
+} from '../../../hooks/arbTokenBridge.types'
+import { ChainId } from '../../../types/ChainId'
 import { addressesEqual } from '../../../util/AddressUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import {
@@ -10,29 +15,51 @@ import { constants } from 'ethers'
 
 export function getLifiDestinationToken({
   fromToken,
-  fromChainId,
-  toChainId
+  sourceChainId,
+  destinationChainId
 }: {
   fromToken: string
-  fromChainId: string | number
-  toChainId: string | number
+  sourceChainId: number
+  destinationChainId: number
 }) {
-  return tokensMap[fromChainId]?.[toChainId]?.[fromToken]
+  return tokensMap[sourceChainId]?.[destinationChainId]?.[fromToken]
+}
+
+export function isLifiTransfer({
+  sourceChainId,
+  destinationChainId
+}: {
+  sourceChainId: number
+  destinationChainId: number
+}) {
+  return !!(
+    allowedLifiSourceChainIds.includes(sourceChainId) &&
+    lifiDestinationChainIds[sourceChainId]?.includes(destinationChainId)
+  )
 }
 
 export function isValidLifiTransfer({
   fromToken = constants.AddressZero,
-  fromChainId,
-  toChainId
+  sourceChainId,
+  destinationChainId
 }: {
   fromToken: string | undefined
-  fromChainId: number | string
-  toChainId: number | string
+  sourceChainId: number
+  destinationChainId: number
 }): boolean {
+  if (
+    !isLifiTransfer({
+      sourceChainId,
+      destinationChainId
+    })
+  ) {
+    return false
+  }
+
   const toToken = getLifiDestinationToken({
     fromToken,
-    fromChainId,
-    toChainId
+    sourceChainId,
+    destinationChainId
   })
 
   if (!toToken) {
@@ -41,51 +68,53 @@ export function isValidLifiTransfer({
 
   const expectedDestinationTokenAddress = getLifiDestinationToken({
     fromToken,
-    fromChainId,
-    toChainId
+    sourceChainId,
+    destinationChainId
   })
 
   if (!addressesEqual(toToken, expectedDestinationTokenAddress)) {
     return false
   }
 
-  if (!allowedLifiSourceChainIds.includes(Number(fromChainId))) {
-    return false
-  }
-
-  if (
-    !lifiDestinationChainIds[Number(fromChainId)]?.includes(Number(toChainId))
-  ) {
-    return false
-  }
-
   return true
 }
 
+const etherWithLogo: BridgeTokenWithDecimals = {
+  ...ether,
+  logoURI: ETHER_TOKEN_LOGO,
+  type: TokenType.ETH,
+  address: constants.AddressZero,
+  listIds: new Set<string>()
+}
+
+/**
+ * When transferring ETH to ApeChain for example, destination token is WETH.
+ * When transferring USDC to ApeChain or Superposition, destination token is USDCe.
+ */
 export function getDestinationTokenOverride({
   fromToken,
-  fromChainId,
-  toChainId
+  sourceChainId,
+  destinationChainId
 }: {
   fromToken: string
-  fromChainId: string | number
-  toChainId: string | number
+  sourceChainId: number
+  destinationChainId: number
 }) {
   const destinationToken = getLifiDestinationToken({
     fromToken,
-    fromChainId,
-    toChainId
+    sourceChainId,
+    destinationChainId
   })
 
   // ApeChain
-  if (toChainId === 33139) {
+  if (destinationChainId === 33139) {
     if (addressesEqual(destinationToken, CommonAddress.ApeChain.USDCe)) {
       return bridgedUsdcToken
     }
     if (addressesEqual(destinationToken, CommonAddress.ApeChain.WETH)) {
       return {
         address: CommonAddress.ApeChain.WETH,
-        symbol: 'WETH',
+        symbol: 'WETH_OVERRIDE?',
         decimals: 18,
         logoURI:
           'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
@@ -94,11 +123,68 @@ export function getDestinationTokenOverride({
   }
 
   // Superposition
-  if (toChainId === 55244) {
+  if (destinationChainId === 55244) {
     if (addressesEqual(destinationToken, CommonAddress.Superposition.USDCe)) {
       return bridgedUsdcToken
+    }
+
+    if (addressesEqual(destinationToken, constants.AddressZero)) {
+      return etherWithLogo
     }
   }
 
   return undefined
+}
+
+/**
+ * Temporary solutions until token lists support overrides
+ */
+const Weth = {
+  symbol: 'WETH',
+  name: 'Wrapped Ether',
+  decimals: 18,
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
+}
+
+export function getTokenOverride({
+  fromToken,
+  sourceChainId,
+  destinationChainId
+}: {
+  fromToken: string | undefined
+  sourceChainId: number
+  destinationChainId: number
+}) {
+  // ApeChain to any other chain
+  if (sourceChainId === ChainId.ApeChain) {
+    if (addressesEqual(fromToken, constants.AddressZero)) {
+      return {
+        source: {
+          ...Weth,
+          address: CommonAddress.ApeChain.WETH
+        },
+        destination: {
+          ...etherWithLogo,
+          address: constants.AddressZero
+        }
+      }
+    }
+  }
+
+  // Any chain to ApeChain
+  if (destinationChainId === ChainId.ApeChain) {
+    if (addressesEqual(fromToken, constants.AddressZero)) {
+      return {
+        source: {
+          ...etherWithLogo,
+          address: constants.AddressZero
+        },
+        destination: {
+          ...Weth,
+          address: CommonAddress.ApeChain.WETH
+        }
+      }
+    }
+  }
 }

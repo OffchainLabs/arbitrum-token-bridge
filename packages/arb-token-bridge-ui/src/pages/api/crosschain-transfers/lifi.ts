@@ -243,8 +243,8 @@ export default async function handler(
     if (
       !isValidLifiTransfer({
         fromToken,
-        fromChainId: fromChainId,
-        toChainId: toChainId
+        sourceChainId: Number(fromChainId),
+        destinationChainId: Number(toChainId)
       })
     ) {
       res.status(400).send({

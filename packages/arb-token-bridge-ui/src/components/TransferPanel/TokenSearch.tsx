@@ -22,7 +22,11 @@ import {
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import {
+  BridgeTokenWithDecimals,
+  ERC20BridgeToken,
+  TokenType
+} from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
@@ -43,8 +47,15 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { useMode } from '../../hooks/useMode'
+import {
+  allowedLifiSourceChainIds,
+  lifiDestinationChainIds
+} from '../../pages/api/crosschain-transfers/constants'
+import { ether, ETHER_TOKEN_LOGO } from '../../constants'
+import { constants } from 'ethers'
+import { isValid } from 'zod'
 
-export const ARB_ONE_NATIVE_USDC_TOKEN = {
+export const ARB_ONE_NATIVE_USDC_TOKEN: BridgeTokenWithDecimals = {
   ...ArbOneNativeUSDC,
   listIds: new Set<string>(),
   type: TokenType.ERC20,
@@ -54,7 +65,7 @@ export const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
-export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
+export const ARB_SEPOLIA_NATIVE_USDC_TOKEN: BridgeTokenWithDecimals = {
   ...ArbOneNativeUSDC,
   listIds: new Set<string>(),
   type: TokenType.ERC20,
@@ -165,7 +176,7 @@ const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
 function TokensPanel({
   onTokenSelected
 }: {
-  onTokenSelected: (token: ERC20BridgeToken | null) => void
+  onTokenSelected: (token: BridgeTokenWithDecimals | null) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
@@ -174,8 +185,14 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    isDepositMode,
+    isLifi,
+    isValidArbitrumRoute
+  } = useNetworksRelationship(networks)
   const {
     ethParentBalance,
     erc20ParentBalances,
@@ -213,6 +230,10 @@ function TokensPanel({
             : ethChildBalance
         }
 
+        return isDepositMode ? ethParentBalance : ethChildBalance
+      }
+
+      if (address === 'ether') {
         return isDepositMode ? ethParentBalance : ethChildBalance
       }
 
@@ -288,7 +309,9 @@ function TokensPanel({
       ...Object.keys(tokensFromUser),
       ...Object.keys(tokensFromLists)
     ]
+
     if (!isDepositMode) {
+      // if (!isDepositMode) {
       // L2 to L1 withdrawals
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
@@ -306,11 +329,13 @@ function TokensPanel({
       }
     }
 
-    const tokens = [
-      NATIVE_CURRENCY_IDENTIFIER,
-      // Deduplicate addresses
-      ...new Set(tokenAddresses)
-    ]
+    // Only add native currency if it's not a lifi only route
+    if (isValidArbitrumRoute) {
+      tokenAddresses.push(NATIVE_CURRENCY_IDENTIFIER)
+    }
+
+    const tokens = Array.from(new Set(tokenAddresses))
+
     return tokens
       .filter(address => {
         // Derive the token object from the address string
@@ -318,12 +343,12 @@ function TokensPanel({
 
         if (isTokenArbitrumOneNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
-          token = ARB_ONE_NATIVE_USDC_TOKEN
+          token = ARB_ONE_NATIVE_USDC_TOKEN as ERC20BridgeToken
         }
 
         if (isTokenArbitrumSepoliaNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
-          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN as ERC20BridgeToken
         }
 
         if (isTokenArbitrumOneUSDCe(address) && isDepositMode && isOrbitChain) {
@@ -343,6 +368,10 @@ function TokensPanel({
         if (!tokenSearch) {
           // Always show native currency
           if (address === NATIVE_CURRENCY_IDENTIFIER) {
+            return true
+          }
+
+          if (addressesEqual(address, constants.AddressZero)) {
             return true
           }
 
@@ -381,6 +410,11 @@ function TokensPanel({
         // Pin native currency to top
         if (address2 === NATIVE_CURRENCY_IDENTIFIER) {
           return 1
+        }
+
+        // Pin Ether to top
+        if (addressesEqual(address1, constants.AddressZero)) {
+          return -1
         }
 
         const bal1 = getBalance(address1)
@@ -470,7 +504,7 @@ function TokensPanel({
   const rowRenderer = useCallback(
     (virtualizedProps: ListRowProps) => {
       const address = tokensToShow[virtualizedProps.index]
-      let token: ERC20BridgeToken | null = null
+      let token: BridgeTokenWithDecimals | null = null
 
       if (
         isTokenArbitrumOneNativeUSDC(address) ||
@@ -491,6 +525,7 @@ function TokensPanel({
         return (
           <TokenRow
             key="TokenRowNativeCurrency"
+            style={virtualizedProps.style}
             onTokenSelected={onTokenSelected}
             token={null}
           />
@@ -577,7 +612,7 @@ export function TokenSearch(props: UseDialogProps) {
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
-  async function selectToken(_token: ERC20BridgeToken | null) {
+  async function selectToken(_token: BridgeTokenWithDecimals | null) {
     props.onClose(false)
 
     if (_token === null) {
@@ -586,6 +621,12 @@ export function TokenSearch(props: UseDialogProps) {
     }
 
     if (!_token.address) {
+      return
+    }
+
+    if (addressesEqual(_token.address, constants.AddressZero)) {
+      // If the token is ETH, we don't need to fetch any data
+      setSelectedToken(_token.address)
       return
     }
 

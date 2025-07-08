@@ -586,7 +586,7 @@ export function getDestinationChainIds(
     chainIds.push(parentChainId)
   }
   const lifiChainIds = lifiDestinationChainIds[chainId]
-  if (!!includeLifi && lifiChainIds && lifiChainIds.length) {
+  if (includeLifi && lifiChainIds && lifiChainIds.length) {
     chainIds.push(...lifiChainIds)
   }
 

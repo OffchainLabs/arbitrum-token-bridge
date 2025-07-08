@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { utils } from 'ethers'
+import { useCallback, useEffect } from 'react'
+import { constants, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
 import {
@@ -7,7 +7,7 @@ import {
   getProviderForChainId
 } from '@/token-bridge-sdk/utils'
 
-import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
+import { BridgeTokenWithDecimals, TokenType } from './arbTokenBridge.types'
 import {
   getL2ERC20Address,
   isTokenArbitrumOneNativeUSDC,
@@ -25,16 +25,24 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
+import { ether, ETHER_TOKEN_LOGO } from '../constants'
+import { addressesEqual } from '../util/AddressUtils'
+import { sanitizeTokenQueryParam } from '../pages'
+import { ChainId } from '../types/ChainId'
 
-const commonUSDC = {
+const commonUSDC: BridgeTokenWithDecimals = {
   name: 'USD Coin',
   type: TokenType.ERC20,
   symbol: 'USDC',
   decimals: 6,
-  listIds: new Set<string>()
+  listIds: new Set<string>(),
+  address: ''
 }
 
-export const useSelectedToken = () => {
+export const useSelectedToken = (): [
+  BridgeTokenWithDecimals | null,
+  (erc20ParentAddress: string | null) => void
+] => {
   const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
@@ -69,8 +77,22 @@ export const useSelectedToken = () => {
   )
 
   const setSelectedToken = useCallback(
-    (erc20ParentAddress: string | null) =>
-      setQueryParams({ token: sanitizeTokenAddress(erc20ParentAddress) }),
+    (erc20ParentAddress: string | null) => {
+      return setQueryParams(latestQuery => {
+        if (
+          latestQuery.sourceChain === ChainId.Ethereum &&
+          latestQuery.destinationChain === ChainId.ApeChain
+        ) {
+          return {
+            token: constants.AddressZero
+          }
+        }
+
+        return {
+          token: sanitizeTokenAddress(erc20ParentAddress)
+        }
+      })
+    },
     [setQueryParams]
   )
 
@@ -105,7 +127,7 @@ export async function getUsdcToken({
   tokenAddress: string
   parentProvider: Provider
   childProvider: Provider
-}): Promise<ERC20BridgeToken | null> {
+}): Promise<BridgeTokenWithDecimals | null> {
   const parentChainId = await getChainIdFromProvider(parentProvider)
   const childChainId = await getChainIdFromProvider(childProvider)
 
