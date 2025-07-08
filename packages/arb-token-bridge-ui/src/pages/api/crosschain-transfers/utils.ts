@@ -1,6 +1,6 @@
 import { bridgedUsdcToken, ether, ETHER_TOKEN_LOGO } from '../../../constants'
 import {
-  BridgeTokenWithDecimals,
+  ERC20BridgeToken,
   TokenType
 } from '../../../hooks/arbTokenBridge.types'
 import { ChainId } from '../../../types/ChainId'
@@ -79,10 +79,10 @@ export function isValidLifiTransfer({
   return true
 }
 
-const etherWithLogo: BridgeTokenWithDecimals = {
+const etherWithLogo: ERC20BridgeToken = {
   ...ether,
   logoURI: ETHER_TOKEN_LOGO,
-  type: TokenType.ETH,
+  type: TokenType.ERC20,
   address: constants.AddressZero,
   listIds: new Set<string>()
 }
@@ -106,8 +106,7 @@ export function getDestinationTokenOverride({
     destinationChainId
   })
 
-  // ApeChain
-  if (destinationChainId === 33139) {
+  if (destinationChainId === ChainId.ApeChain) {
     if (addressesEqual(destinationToken, CommonAddress.ApeChain.USDCe)) {
       return bridgedUsdcToken
     }
@@ -122,8 +121,7 @@ export function getDestinationTokenOverride({
     }
   }
 
-  // Superposition
-  if (destinationChainId === 55244) {
+  if (destinationChainId === ChainId.Superposition) {
     if (addressesEqual(destinationToken, CommonAddress.Superposition.USDCe)) {
       return bridgedUsdcToken
     }

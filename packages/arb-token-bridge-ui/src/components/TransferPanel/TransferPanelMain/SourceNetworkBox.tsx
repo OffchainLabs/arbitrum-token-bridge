@@ -112,11 +112,11 @@ const Input1 = React.memo(() => {
   const overrideOptions = useMemo(() => {
     // For Lifi transfer to and from ApeChain, native currency (APE) is not supported
     // const isLifiTransferToApeChain =
-    //   networks.destinationChain.id === 33139 &&
+    //   networks.destinationChain.id === ChainId.ApeChain &&
     //   !selectedToken &&
     //   networks.sourceChain.id !== ChainId.ArbitrumOne
     // const isLifiTransferFromApeChain =
-    //   networks.sourceChain.id === 33139 &&
+    //   networks.sourceChain.id === ChainId.ApeChain &&
     //   !selectedToken &&
     //   networks.destinationChain.id !== ChainId.ArbitrumOne
 

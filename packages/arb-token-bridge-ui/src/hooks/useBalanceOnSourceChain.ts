@@ -4,11 +4,7 @@ import { BigNumber, constants } from 'ethers'
 import { useBalance } from './useBalance'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
-import {
-  BridgeTokenWithDecimals,
-  ERC20BridgeToken,
-  TokenType
-} from './arbTokenBridge.types'
+import { ERC20BridgeToken } from './arbTokenBridge.types'
 import { useNativeCurrencyBalances } from '../components/TransferPanel/TransferPanelMain/useNativeCurrencyBalances'
 import {
   isTokenArbitrumOneNativeUSDC,
@@ -22,7 +18,7 @@ import { useNativeCurrency } from './useNativeCurrency'
  * Balance of the child chain's native currency or ERC20 token
  */
 export function useBalanceOnSourceChain(
-  token: BridgeTokenWithDecimals | null
+  token: ERC20BridgeToken | null
 ): BigNumber | null {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
