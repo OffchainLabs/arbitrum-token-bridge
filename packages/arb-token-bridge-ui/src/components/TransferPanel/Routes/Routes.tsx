@@ -15,7 +15,7 @@ import { isNetwork } from '../../../util/networks'
 import { shallow } from 'zustand/shallow'
 import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { BridgeTokenWithDecimals } from '../../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { constants } from 'ethers'
 import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 import { twMerge } from 'tailwind-merge'
@@ -73,7 +73,7 @@ export function getRoutes({
   setShowHiddenRoutes: (toggle: boolean) => void
   sourceChainId: number
   destinationChainId: number
-  selectedToken: BridgeTokenWithDecimals | null
+  selectedToken: ERC20BridgeToken | null
   isArbitrumCanonicalTransfer: boolean
 }): {
   ChildRoutes: React.JSX.Element | null

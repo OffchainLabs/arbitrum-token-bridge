@@ -22,7 +22,7 @@ import { SafeImage } from '../common/SafeImage'
 import { getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
-import { BridgeTokenWithDecimals } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -50,7 +50,7 @@ function StyledLoader() {
   )
 }
 
-function TokenListInfo({ token }: { token: BridgeTokenWithDecimals | null }) {
+function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   const [networks] = useNetworks()
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
   const { isCustom: childChainNativeCurrencyIsCustom } = useNativeCurrency({
@@ -141,11 +141,11 @@ function TokenListInfo({ token }: { token: BridgeTokenWithDecimals | null }) {
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  onTokenSelected: (token: BridgeTokenWithDecimals | null) => void
-  token: BridgeTokenWithDecimals | null
+  onTokenSelected: (token: ERC20BridgeToken | null) => void
+  token: ERC20BridgeToken | null
 }
 
-function useTokenInfo(token: BridgeTokenWithDecimals | null) {
+function useTokenInfo(token: ERC20BridgeToken | null) {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
@@ -263,7 +263,7 @@ function ArbitrumTokenBadge() {
   )
 }
 
-function TokenBalance({ token }: { token: BridgeTokenWithDecimals | null }) {
+function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   const {
     app: {
       arbTokenBridge: { bridgeTokens }
@@ -325,11 +325,7 @@ function TokenBalance({ token }: { token: BridgeTokenWithDecimals | null }) {
   )
 }
 
-function TokenContractLink({
-  token
-}: {
-  token: BridgeTokenWithDecimals | null
-}) {
+function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)

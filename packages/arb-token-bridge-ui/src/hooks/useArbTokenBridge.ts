@@ -1,7 +1,7 @@
 import { useCallback, useState, useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { Chain } from 'viem'
-import { BigNumber, constants } from 'ethers'
+import { BigNumber } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -19,8 +19,7 @@ import {
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
   TokenType,
-  L2ToL1EventResult,
-  BridgeTokenWithDecimals
+  L2ToL1EventResult
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
@@ -37,7 +36,6 @@ import { isNetwork } from '../util/networks'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useArbQueryParams } from './useArbQueryParams'
-import { addressesEqual } from '../util/AddressUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -93,7 +91,7 @@ export const useArbTokenBridge = (
   const { l1, l2 } = params
   const { address: walletAddress } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
-    ContractStorage<BridgeTokenWithDecimals> | undefined
+    ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
 
   const [{ destinationAddress }] = useArbQueryParams()
@@ -160,9 +158,9 @@ export const useArbTokenBridge = (
     const l1ChainID = l1.network.id
     const l2ChainID = l2.network.id
 
-    const bridgeTokensToAdd: ContractStorage<BridgeTokenWithDecimals> = {}
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
-    const candidateUnbridgedTokensToAdd: BridgeTokenWithDecimals[] = []
+    const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
 
     for (const tokenData of arbTokenList.tokens) {
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
@@ -212,9 +210,7 @@ export const useArbTokenBridge = (
 
         bridgeTokensToAdd[l1Address] = {
           name,
-          type: addressesEqual(l1Address, constants.AddressZero)
-            ? TokenType.ETH
-            : TokenType.ERC20,
+          type: TokenType.ERC20,
           symbol,
           address: l1Address,
           l2Address: address.toLowerCase(),
@@ -228,9 +224,7 @@ export const useArbTokenBridge = (
       else if (arbTokenList.tokens.length < 1000) {
         candidateUnbridgedTokensToAdd.push({
           name,
-          type: addressesEqual(address, constants.AddressZero)
-            ? TokenType.ETH
-            : TokenType.ERC20,
+          type: TokenType.ERC20,
           symbol,
           address: address.toLowerCase(),
           decimals,

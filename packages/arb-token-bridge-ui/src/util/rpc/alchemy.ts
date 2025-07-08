@@ -77,5 +77,9 @@ export function getAlchemyRpcUrl(
       return `https://arb-sepolia.g.alchemy.com/v2/${alchemyKey}`
     case ChainId.BaseSepolia:
       return `https://base-sepolia.g.alchemy.com/v2/${alchemyKey}`
+    case ChainId.ApeChain:
+      return ''
+    case ChainId.Superposition:
+      return ''
   }
 }

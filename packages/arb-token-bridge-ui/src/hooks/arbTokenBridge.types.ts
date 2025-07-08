@@ -73,11 +73,8 @@ export interface BridgeToken {
   isL2Native?: boolean
 }
 
-export interface BridgeTokenWithDecimals extends BridgeToken {
+export interface ERC20BridgeToken extends BridgeToken {
   decimals: number
-}
-
-export interface ERC20BridgeToken extends BridgeTokenWithDecimals {
   type: TokenType.ERC20
 }
 

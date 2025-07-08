@@ -15,7 +15,7 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { addressesEqual } from '../../util/AddressUtils'
 import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
-import { BridgeTokenWithDecimals } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { isLifiEnabled } from '../../util/featureFlag'
 
 export function isDisabledCanonicalTransfer({
@@ -27,7 +27,7 @@ export function isDisabledCanonicalTransfer({
   isSelectedTokenWithdrawOnly,
   isSelectedTokenWithdrawOnlyLoading
 }: {
-  selectedToken: BridgeTokenWithDecimals | null
+  selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
   isTeleportMode: boolean
   parentChainId: ChainId
