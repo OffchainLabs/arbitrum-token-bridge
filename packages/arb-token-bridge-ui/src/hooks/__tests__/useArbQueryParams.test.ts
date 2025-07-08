@@ -298,6 +298,7 @@ describe('sanitizeTokenQueryParam', () => {
 
     it('should be kept if the destination chain is an Orbit chain with custom gas token', () => {
       const result = sanitizeTokenQueryParam({
+        sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: xaiChainId,
         token: 'eth'
       })
@@ -306,6 +307,7 @@ describe('sanitizeTokenQueryParam', () => {
 
     it('should be case insensitive', () => {
       const result = sanitizeTokenQueryParam({
+        sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: xaiChainId,
         token: 'eTH'
       })
@@ -314,6 +316,7 @@ describe('sanitizeTokenQueryParam', () => {
 
     it('should be stripped if the destination chain is a core chain with ETH as the gas token', () => {
       const result = sanitizeTokenQueryParam({
+        sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: ChainId.ArbitrumOne,
         token: 'eth'
       })
@@ -324,6 +327,7 @@ describe('sanitizeTokenQueryParam', () => {
       const rariChainId = 1380012617
 
       const result = sanitizeTokenQueryParam({
+        sourceChainId: ChainId.ArbitrumOne,
         destinationChainId: rariChainId,
         token: 'eth'
       })

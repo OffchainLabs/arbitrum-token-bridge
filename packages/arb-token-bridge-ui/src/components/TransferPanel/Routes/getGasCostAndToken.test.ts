@@ -3,7 +3,10 @@ import { constants } from 'ethers'
 import { getGasCostAndToken } from './getGasCostAndToken'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
 import { GasEstimationStatus } from '../../../hooks/TransferPanel/useGasSummary'
-import { TokenType } from '../../../hooks/arbTokenBridge.types'
+import {
+  ERC20BridgeToken,
+  TokenType
+} from '../../../hooks/arbTokenBridge.types'
 
 describe('getGasCostAndToken', () => {
   const mockNativeCurrency: NativeCurrency & { address: string } = {
@@ -22,7 +25,7 @@ describe('getGasCostAndToken', () => {
     address: '0x0000000000000000000000000000000000000222'
   }
 
-  const mockErc20 = {
+  const mockErc20: ERC20BridgeToken = {
     name: 'ERC20',
     symbol: 'ERC20',
     decimals: 18,
