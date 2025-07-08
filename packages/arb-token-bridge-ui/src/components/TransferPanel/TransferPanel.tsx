@@ -258,6 +258,10 @@ export function TransferPanel() {
       return true
     }
 
+    if (addressesEqual(tokenFromSearchParams, constants.AddressZero)) {
+      return true
+    }
+
     if (isLoadingTokenLists) {
       return undefined
     }
@@ -1330,8 +1334,8 @@ export function TransferPanel() {
    */
   const showSettingsButton =
     isValidLifiTransfer({
-      fromChainId: networks.sourceChain.id,
-      toChainId: networks.destinationChain.id,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id,
       fromToken: isDepositMode
         ? selectedToken?.address
         : selectedToken?.l2Address

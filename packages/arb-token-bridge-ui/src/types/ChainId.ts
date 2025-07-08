@@ -13,5 +13,8 @@ export enum ChainId {
   ArbitrumLocal = 412346,
   BaseSepolia = 84532,
   // L3 Testnets
-  L3Local = 333333
+  L3Local = 333333,
+  // Orbit chains
+  ApeChain = 33139,
+  Superposition = 55244
 }

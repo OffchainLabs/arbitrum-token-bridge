@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useMemo
 } from 'react'
-import { utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import Image from 'next/image'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'
@@ -41,6 +41,8 @@ import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
+import { useBalances } from '../../../hooks/useBalances'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 function Amount2ToggleButton() {
   const [networks] = useNetworks()
@@ -78,11 +80,14 @@ export const useAmount2InputVisibility = create<{
 }))
 
 const Input1 = React.memo(() => {
+  const [networks] = useNetworks()
   const [{ amount }] = useArbQueryParams()
   const { setAmount } = useSetInputAmount()
   const { maxAmount } = useMaxAmount()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
+  const { ethParentBalance } = useBalances()
+  const [selectedToken] = useSelectedToken()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -104,6 +109,40 @@ const Input1 = React.memo(() => {
     [setAmount]
   )
 
+  const overrideOptions = useMemo(() => {
+    // For Lifi transfer to and from ApeChain, native currency (APE) is not supported
+    // const isLifiTransferToApeChain =
+    //   networks.destinationChain.id === 33139 &&
+    //   !selectedToken &&
+    //   networks.sourceChain.id !== ChainId.ArbitrumOne
+    // const isLifiTransferFromApeChain =
+    //   networks.sourceChain.id === 33139 &&
+    //   !selectedToken &&
+    //   networks.destinationChain.id !== ChainId.ArbitrumOne
+
+    // if (isLifiTransferToApeChain || isLifiTransferFromApeChain) {
+    //   return {
+    //     symbol: 'ETH',
+    //     logoSrc: '/images/EthereumLogoRound.svg',
+    //     balance: ethParentBalance
+    //       ? parseFloat(utils.formatEther(ethParentBalance))
+    //       : 0
+    //   }
+    // }
+
+    // return null
+    const override = getTokenOverride({
+      fromToken: selectedToken?.address || constants.AddressZero,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    })
+    if (!override) {
+      return null
+    }
+
+    return override.source
+  }, [networks.sourceChain.id, ethParentBalance, selectedToken])
+
   return (
     <TransferPanelMainInput
       maxButtonOnClick={maxButtonOnClick}
@@ -113,6 +152,7 @@ const Input1 = React.memo(() => {
       maxAmount={maxAmount}
       isMaxAmount={isMaxAmount}
       decimals={decimals}
+      {...(overrideOptions ? { options: overrideOptions } : {})}
     />
   )
 })

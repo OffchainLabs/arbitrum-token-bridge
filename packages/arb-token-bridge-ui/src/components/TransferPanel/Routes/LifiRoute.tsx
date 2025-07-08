@@ -75,9 +75,9 @@ export function LifiRoutes({
   const overrideToken = useMemo(
     () =>
       getDestinationTokenOverride({
-        fromChainId: networks.sourceChain.id,
+        sourceChainId: networks.sourceChain.id,
         fromToken,
-        toChainId: networks.destinationChain.id
+        destinationChainId: networks.destinationChain.id
       }),
     [fromToken, networks.sourceChain.id, networks.destinationChain.id]
   )

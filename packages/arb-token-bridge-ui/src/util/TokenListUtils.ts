@@ -123,6 +123,22 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI: '/images/XaiLogo.svg'
   },
+  {
+    id: '33139_lifi',
+    originChainID: 33139,
+    url: 'tokenLists/33139_lifi.json',
+    name: 'Ape Lifi List',
+    isDefault: true,
+    logoURI: CoinGeckoLogo // TODO: change
+  },
+  {
+    id: '55244_lifi',
+    originChainID: 55244,
+    url: 'tokenLists/55244_lifi.json',
+    name: 'Superposition Lifi List',
+    isDefault: true,
+    logoURI: CoinGeckoLogo // TODO: change
+  },
   // For all orbit chains,
   ...orbitChainsData.mainnet
     .concat(orbitChainsData.testnet)

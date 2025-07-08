@@ -24,6 +24,7 @@ import {
   isE2eTestingEnvironment,
   isProductionEnvironment
 } from '../util/CommonUtils'
+import { ChainId } from '../types/ChainId'
 
 const App = dynamic(
   () => {
@@ -51,14 +52,28 @@ const App = dynamic(
 
 export const sanitizeTokenQueryParam = ({
   token,
+  sourceChainId,
   destinationChainId
 }: {
   token: string | null | undefined
+  sourceChainId: number | undefined
   destinationChainId: number | undefined
 }) => {
   const tokenLowercased = token?.toLowerCase()
 
   if (!tokenLowercased) {
+    if (destinationChainId === ChainId.ApeChain) {
+      /** Deposit to ApeChain from Ethereum, Superposition or base is only supported through Lifi
+       *  We need to set the default token to ETH rather than ApeChain native token
+       */
+      if (
+        sourceChainId === ChainId.Ethereum ||
+        sourceChainId === ChainId.Superposition ||
+        sourceChainId === ChainId.Base
+      ) {
+        return constants.AddressZero
+      }
+    }
     return undefined
   }
   if (!destinationChainId) {
@@ -209,11 +224,13 @@ export async function getServerSideProps({
     sourceChainId,
     destinationChainId
   })
+
   const sanitized = {
     ...sanitizedChainIds,
     experiments: sanitizeExperimentalFeaturesQueryParam(experiments),
     token: sanitizeTokenQueryParam({
       token,
+      sourceChainId: sanitizedChainIds.sourceChainId,
       destinationChainId: sanitizedChainIds.destinationChainId
     }),
     tab: sanitizeTabQueryParam(tab),

@@ -12,7 +12,7 @@ import {
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -20,6 +20,7 @@ import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { addressesEqual } from '../../util/AddressUtils'
+import { constants } from 'ethers'
 
 enum ImportStatus {
   LOADING,
@@ -186,6 +187,10 @@ export function TokenImportDialog({
     }
 
     if (l1Address) {
+      if (l1Address === constants.AddressZero) {
+        return
+      }
+
       const searchResult1 = searchForTokenInLists(l1Address)
 
       if (searchResult1.found) {
