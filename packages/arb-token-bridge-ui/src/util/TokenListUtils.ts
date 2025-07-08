@@ -125,7 +125,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: '33139_lifi',
-    originChainID: 33139,
+    originChainID: ChainId.ApeChain,
     url: 'tokenLists/33139_lifi.json',
     name: 'Ape Lifi List',
     isDefault: true,
@@ -133,7 +133,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: '55244_lifi',
-    originChainID: 55244,
+    originChainID: ChainId.Superposition,
     url: 'tokenLists/55244_lifi.json',
     name: 'Superposition Lifi List',
     isDefault: true,

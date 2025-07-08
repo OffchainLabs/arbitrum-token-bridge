@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { constants, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
@@ -7,7 +7,7 @@ import {
   getProviderForChainId
 } from '@/token-bridge-sdk/utils'
 
-import { BridgeTokenWithDecimals, TokenType } from './arbTokenBridge.types'
+import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
 import {
   getL2ERC20Address,
   isTokenArbitrumOneNativeUSDC,
@@ -25,12 +25,9 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
-import { ether, ETHER_TOKEN_LOGO } from '../constants'
-import { addressesEqual } from '../util/AddressUtils'
-import { sanitizeTokenQueryParam } from '../pages'
 import { ChainId } from '../types/ChainId'
 
-const commonUSDC: BridgeTokenWithDecimals = {
+const commonUSDC: ERC20BridgeToken = {
   name: 'USD Coin',
   type: TokenType.ERC20,
   symbol: 'USDC',
@@ -40,7 +37,7 @@ const commonUSDC: BridgeTokenWithDecimals = {
 }
 
 export const useSelectedToken = (): [
-  BridgeTokenWithDecimals | null,
+  ERC20BridgeToken | null,
   (erc20ParentAddress: string | null) => void
 ] => {
   const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
@@ -127,7 +124,7 @@ export async function getUsdcToken({
   tokenAddress: string
   parentProvider: Provider
   childProvider: Provider
-}): Promise<BridgeTokenWithDecimals | null> {
+}): Promise<ERC20BridgeToken | null> {
   const parentChainId = await getChainIdFromProvider(parentProvider)
   const childChainId = await getChainIdFromProvider(childProvider)
 
