@@ -13,8 +13,7 @@ import {
 import { BigNumber, constants, utils } from 'ethers'
 import { CrosschainTransfersRouteBase, QueryParams, Token } from './types'
 import { ether } from '../../../constants'
-import { tokensMap } from './constants'
-import { getLifiDestinationToken, isValidLifiTransfer } from './utils'
+import { isValidLifiTransfer } from './utils'
 
 export enum Order {
   /**
