@@ -12,10 +12,7 @@ import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
 import { LifiData, LifiTransferStarter } from './LifiTransferStarter'
-import {
-  isLifiTransfer,
-  isValidLifiTransfer
-} from '../pages/api/crosschain-transfers/utils'
+import { isLifiTransfer } from '../pages/api/crosschain-transfers/utils'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
