@@ -1,14 +1,6 @@
 import { constants } from 'ethers'
-import { bridgedUsdcToken, ether, nativeUsdcToken } from '../../../constants'
-import {
-  BridgeTokenWithDecimals,
-  TokenType
-} from '../../../hooks/arbTokenBridge.types'
 import { ChainId } from '../../../types/ChainId'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-
-const ApeChainId = 33139
-const SuperpositionChainId = 55244
 
 const NATIVE_CURRENCY_IDENTIFIER = constants.AddressZero
 
@@ -22,11 +14,11 @@ export const tokensMap: Record<
       [CommonAddress.Ethereum.USDC]: CommonAddress.ArbitrumOne.USDC,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
     },
-    [ApeChainId]: {
+    [ChainId.ApeChain]: {
       [CommonAddress.Ethereum.USDC]: CommonAddress.ApeChain.USDCe,
       [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
     },
-    [SuperpositionChainId]: {
+    [ChainId.Superposition]: {
       [CommonAddress.Ethereum.USDC]: CommonAddress.Superposition.USDCe,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
     }
@@ -36,16 +28,16 @@ export const tokensMap: Record<
       [CommonAddress.ArbitrumOne.USDC]: CommonAddress.Ethereum.USDC,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
     },
-    [ApeChainId]: {
+    [ChainId.ApeChain]: {
       [CommonAddress.ArbitrumOne.USDC]: CommonAddress.ApeChain.USDCe,
       [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
     },
-    [SuperpositionChainId]: {
+    [ChainId.Superposition]: {
       [CommonAddress.ArbitrumOne.USDC]: CommonAddress.Superposition.USDCe,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
     }
   },
-  [SuperpositionChainId]: {
+  [ChainId.Superposition]: {
     [ChainId.Ethereum]: {
       [CommonAddress.Superposition.USDCe]: CommonAddress.Ethereum.USDC,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
@@ -54,12 +46,12 @@ export const tokensMap: Record<
       [CommonAddress.Superposition.USDCe]: CommonAddress.ArbitrumOne.USDC,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
     },
-    [ApeChainId]: {
+    [ChainId.ApeChain]: {
       [CommonAddress.Superposition.USDCe]: CommonAddress.ApeChain.USDCe,
       [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
     }
   },
-  [ApeChainId]: {
+  [ChainId.ApeChain]: {
     [ChainId.Ethereum]: {
       [CommonAddress.ApeChain.USDCe]: CommonAddress.Ethereum.USDC,
       [CommonAddress.ApeChain.WETH]: NATIVE_CURRENCY_IDENTIFIER
@@ -68,7 +60,7 @@ export const tokensMap: Record<
       [CommonAddress.ApeChain.USDCe]: CommonAddress.ArbitrumOne.USDC,
       [CommonAddress.ApeChain.WETH]: NATIVE_CURRENCY_IDENTIFIER
     },
-    [SuperpositionChainId]: {
+    [ChainId.Superposition]: {
       [CommonAddress.ApeChain.USDCe]: CommonAddress.Superposition.USDCe,
       [CommonAddress.ApeChain.WETH]: NATIVE_CURRENCY_IDENTIFIER
     }
@@ -78,11 +70,11 @@ export const tokensMap: Record<
       [CommonAddress.Base.USDC]: CommonAddress.ArbitrumOne.USDC,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
     },
-    [SuperpositionChainId]: {
+    [ChainId.Superposition]: {
       [CommonAddress.Base.USDC]: CommonAddress.Superposition.USDCe,
       [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
     },
-    [ApeChainId]: {
+    [ChainId.ApeChain]: {
       [CommonAddress.Base.USDC]: CommonAddress.ApeChain.USDCe,
       [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
     }
@@ -90,16 +82,36 @@ export const tokensMap: Record<
 }
 
 export const lifiDestinationChainIds: Record<number, number[]> = {
-  [ChainId.Ethereum]: [ChainId.ArbitrumOne, ApeChainId, SuperpositionChainId],
-  [ChainId.ArbitrumOne]: [ChainId.Ethereum, ApeChainId, SuperpositionChainId],
-  [ApeChainId]: [ChainId.Ethereum, ChainId.ArbitrumOne, SuperpositionChainId],
-  [SuperpositionChainId]: [ChainId.Ethereum, ChainId.ArbitrumOne, ApeChainId],
-  [ChainId.Base]: [ChainId.ArbitrumOne, ApeChainId, SuperpositionChainId]
+  [ChainId.Ethereum]: [
+    ChainId.ArbitrumOne,
+    ChainId.ApeChain,
+    ChainId.Superposition
+  ],
+  [ChainId.ArbitrumOne]: [
+    ChainId.Ethereum,
+    ChainId.ApeChain,
+    ChainId.Superposition
+  ],
+  [ChainId.ApeChain]: [
+    ChainId.Ethereum,
+    ChainId.ArbitrumOne,
+    ChainId.Superposition
+  ],
+  [ChainId.Superposition]: [
+    ChainId.Ethereum,
+    ChainId.ArbitrumOne,
+    ChainId.ApeChain
+  ],
+  [ChainId.Base]: [ChainId.ArbitrumOne, ChainId.ApeChain, ChainId.Superposition]
 }
 
 export const lifiChildChainIds: Record<number, number[]> = {
-  [ChainId.Ethereum]: [ChainId.ArbitrumOne, ApeChainId, SuperpositionChainId],
-  [ChainId.ArbitrumOne]: [ApeChainId, SuperpositionChainId]
+  [ChainId.Ethereum]: [
+    ChainId.ArbitrumOne,
+    ChainId.ApeChain,
+    ChainId.Superposition
+  ],
+  [ChainId.ArbitrumOne]: [ChainId.ApeChain, ChainId.Superposition]
 }
 
 export const allowedLifiSourceChainIds: number[] = Object.keys(

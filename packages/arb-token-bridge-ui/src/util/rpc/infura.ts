@@ -49,6 +49,12 @@ export function getInfuraKeyFromEnv(chainId: InfuraSupportedChainId): string {
         env: process.env.NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA,
         fallback: defaultInfuraKey
       })
+
+    case ChainId.ApeChain:
+      return ''
+
+    case ChainId.Superposition:
+      return ''
   }
 }
 
@@ -76,5 +82,11 @@ export function getInfuraRpcUrl(
       return `https://arbitrum-sepolia.infura.io/v3/${infuraKey}`
     case ChainId.BaseSepolia:
       return `https://base-sepolia.infura.io/v3/${infuraKey}`
+
+    case ChainId.ApeChain:
+      return ''
+
+    case ChainId.Superposition:
+      return ''
   }
 }
