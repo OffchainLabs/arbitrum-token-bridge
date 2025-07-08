@@ -29,10 +29,7 @@ import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
-import {
-  getDestinationTokenOverride,
-  getTokenOverride
-} from '../../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 function BalanceRow({
   parentErc20Address,
@@ -130,7 +127,7 @@ function BalanceRow({
 
 function BalancesContainer() {
   const [networks] = useNetworks()
-  const { childChain, isDepositMode } = useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
   const { isArbitrumOne } = isNetwork(childChain.id)
   const isCctpTransfer = useIsCctpTransfer()
   const [selectedToken] = useSelectedToken()
