@@ -29,8 +29,10 @@ describe('Transaction History', () => {
         destinationChain: 'arbitrum-sepolia'
       }
     })
+
     context('open transactions history panel', () => {
       cy.switchToTransactionHistoryTab('settled')
+      cy.findByLabelText('Load more').click()
       cy.findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
         .its('length')
         .should('be.gt', 0)
