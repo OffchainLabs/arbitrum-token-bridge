@@ -154,6 +154,7 @@ export function getTokenOverride({
       return {
         source: {
           ...nativeUsdcToken,
+          name: 'USDC',
           address: CommonAddress.ArbitrumOne.USDC
         }
       }
