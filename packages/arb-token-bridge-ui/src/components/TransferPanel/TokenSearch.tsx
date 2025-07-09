@@ -44,6 +44,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { useMode } from '../../hooks/useMode'
 import { constants } from 'ethers'
+import { log } from 'console'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN: ERC20BridgeToken = {
   ...ArbOneNativeUSDC,
@@ -300,7 +301,6 @@ function TokensPanel({
     ]
 
     if (!isDepositMode) {
-      // if (!isDepositMode) {
       // L2 to L1 withdrawals
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
@@ -318,8 +318,16 @@ function TokensPanel({
       }
     }
 
-    // Only add native currency if it's not a lifi only route
-    if (isValidArbitrumRoute) {
+    /**
+     * Add native currency to the list of tokens for arbitrum routes
+     * Ethereum to Superposition ETH should not be included twice
+     * Ethereum to ApeChain ApeCoin should not be included
+     */
+    if (
+      (nativeCurrency.isCustom ||
+        !tokenAddresses.includes(constants.AddressZero)) &&
+      isValidArbitrumRoute
+    ) {
       tokenAddresses.push(NATIVE_CURRENCY_IDENTIFIER)
     }
 
@@ -330,7 +338,7 @@ function TokensPanel({
         // Derive the token object from the address string
         let token = tokensFromUser[address] || tokensFromLists[address]
 
-        if (isTokenArbitrumOneNativeUSDC(address)) {
+        if (isTokenArbitrumOneNativeUSDC(address) && !token?.l2Address) {
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_ONE_NATIVE_USDC_TOKEN as ERC20BridgeToken
         }
@@ -404,6 +412,11 @@ function TokensPanel({
         // Pin Ether to top
         if (addressesEqual(address1, constants.AddressZero)) {
           return -1
+        }
+
+        // Pin Ether to top
+        if (addressesEqual(address2, constants.AddressZero)) {
+          return 1
         }
 
         const bal1 = getBalance(address1)
@@ -521,6 +534,7 @@ function TokensPanel({
         )
       }
 
+      console.log('TOKEN', token)
       return (
         <TokenRow
           key={address}

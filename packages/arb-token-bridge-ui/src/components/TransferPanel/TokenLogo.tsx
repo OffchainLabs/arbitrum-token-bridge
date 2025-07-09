@@ -42,6 +42,7 @@ export const TokenLogo = ({
     }
 
     if (selectedToken) {
+      console.log('SELEC', selectedToken)
       return selectedToken.logoURI
     }
 

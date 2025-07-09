@@ -1,4 +1,10 @@
-import { bridgedUsdcToken, ether, ETHER_TOKEN_LOGO } from '../../../constants'
+import {
+  bridgedUsdcToken,
+  commonUsdcToken,
+  ether,
+  ETHER_TOKEN_LOGO,
+  nativeUsdcToken
+} from '../../../constants'
 import {
   ERC20BridgeToken,
   TokenType
@@ -91,48 +97,48 @@ const etherWithLogo: ERC20BridgeToken = {
  * When transferring ETH to ApeChain for example, destination token is WETH.
  * When transferring USDC to ApeChain or Superposition, destination token is USDCe.
  */
-export function getDestinationTokenOverride({
-  fromToken,
-  sourceChainId,
-  destinationChainId
-}: {
-  fromToken: string
-  sourceChainId: number
-  destinationChainId: number
-}) {
-  const destinationToken = getLifiDestinationToken({
-    fromToken,
-    sourceChainId,
-    destinationChainId
-  })
+// export function getDestinationTokenOverride({
+//   fromToken,
+//   sourceChainId,
+//   destinationChainId
+// }: {
+//   fromToken: string
+//   sourceChainId: number
+//   destinationChainId: number
+// }) {
+//   const destinationToken = getLifiDestinationToken({
+//     fromToken,
+//     sourceChainId,
+//     destinationChainId
+//   })
 
-  if (destinationChainId === ChainId.ApeChain) {
-    if (addressesEqual(destinationToken, CommonAddress.ApeChain.USDCe)) {
-      return bridgedUsdcToken
-    }
-    if (addressesEqual(destinationToken, CommonAddress.ApeChain.WETH)) {
-      return {
-        address: CommonAddress.ApeChain.WETH,
-        symbol: 'WETH_OVERRIDE?',
-        decimals: 18,
-        logoURI:
-          'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
-      }
-    }
-  }
+//   if (destinationChainId === ChainId.ApeChain) {
+//     if (addressesEqual(destinationToken, CommonAddress.ApeChain.USDCe)) {
+//       return bridgedUsdcToken
+//     }
+//     if (addressesEqual(destinationToken, CommonAddress.ApeChain.WETH)) {
+//       return {
+//         address: CommonAddress.ApeChain.WETH,
+//         symbol: 'WETH_OVERRIDE?',
+//         decimals: 18,
+//         logoURI:
+//           'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
+//       }
+//     }
+//   }
 
-  if (destinationChainId === ChainId.Superposition) {
-    if (addressesEqual(destinationToken, CommonAddress.Superposition.USDCe)) {
-      return bridgedUsdcToken
-    }
+//   if (destinationChainId === ChainId.Superposition) {
+//     if (addressesEqual(destinationToken, CommonAddress.Superposition.USDCe)) {
+//       return bridgedUsdcToken
+//     }
 
-    if (addressesEqual(destinationToken, constants.AddressZero)) {
-      return etherWithLogo
-    }
-  }
+//     if (addressesEqual(destinationToken, constants.AddressZero)) {
+//       return etherWithLogo
+//     }
+//   }
 
-  return undefined
-}
+//   return undefined
+// }
 
 /**
  * Temporary solutions until token lists support overrides
@@ -181,6 +187,21 @@ export function getTokenOverride({
         destination: {
           ...Weth,
           address: CommonAddress.ApeChain.WETH
+        }
+      }
+    }
+  }
+
+  // Arb1 to Superposition: Show correct USDC token
+  if (destinationChainId === ChainId.Superposition) {
+    if (
+      sourceChainId === ChainId.ArbitrumOne &&
+      addressesEqual(fromToken, CommonAddress.ArbitrumOne.USDC)
+    ) {
+      return {
+        source: {
+          ...nativeUsdcToken,
+          address: CommonAddress.ArbitrumOne.USDC
         }
       }
     }
