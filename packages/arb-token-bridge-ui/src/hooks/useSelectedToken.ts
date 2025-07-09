@@ -213,7 +213,6 @@ export async function getUsdcToken({
     (isTokenSepoliaUSDC(tokenAddress) && isParentChainSepolia)
   ) {
     let childChainUsdcAddress
-    console.log('OUI')
     try {
       childChainUsdcAddress = (
         await getL2ERC20Address({
@@ -223,7 +222,6 @@ export async function getUsdcToken({
         })
       ).toLowerCase()
     } catch {
-      console.log('CATCH')
       // could be never bridged before
     }
 

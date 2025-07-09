@@ -74,11 +74,6 @@ async function fetcher([
   })
 }
 
-/**
- * Returns gas estimate for the selected route.
- *
- * Otherwise default to the first route
- */
 export function useGasEstimates({
   sourceChainErc20Address,
   destinationChainErc20Address,

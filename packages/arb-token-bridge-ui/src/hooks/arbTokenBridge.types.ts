@@ -74,8 +74,8 @@ export interface BridgeToken {
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
-  decimals: number
   type: TokenType.ERC20
+  decimals: number
 }
 
 export interface ContractStorage<T> {
