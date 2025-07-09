@@ -94,53 +94,6 @@ const etherWithLogo: ERC20BridgeToken = {
 }
 
 /**
- * When transferring ETH to ApeChain for example, destination token is WETH.
- * When transferring USDC to ApeChain or Superposition, destination token is USDCe.
- */
-// export function getDestinationTokenOverride({
-//   fromToken,
-//   sourceChainId,
-//   destinationChainId
-// }: {
-//   fromToken: string
-//   sourceChainId: number
-//   destinationChainId: number
-// }) {
-//   const destinationToken = getLifiDestinationToken({
-//     fromToken,
-//     sourceChainId,
-//     destinationChainId
-//   })
-
-//   if (destinationChainId === ChainId.ApeChain) {
-//     if (addressesEqual(destinationToken, CommonAddress.ApeChain.USDCe)) {
-//       return bridgedUsdcToken
-//     }
-//     if (addressesEqual(destinationToken, CommonAddress.ApeChain.WETH)) {
-//       return {
-//         address: CommonAddress.ApeChain.WETH,
-//         symbol: 'WETH_OVERRIDE?',
-//         decimals: 18,
-//         logoURI:
-//           'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
-//       }
-//     }
-//   }
-
-//   if (destinationChainId === ChainId.Superposition) {
-//     if (addressesEqual(destinationToken, CommonAddress.Superposition.USDCe)) {
-//       return bridgedUsdcToken
-//     }
-
-//     if (addressesEqual(destinationToken, constants.AddressZero)) {
-//       return etherWithLogo
-//     }
-//   }
-
-//   return undefined
-// }
-
-/**
  * Temporary solutions until token lists support overrides
  */
 const Weth = {
