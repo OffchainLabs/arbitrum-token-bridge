@@ -104,7 +104,9 @@ function sanitizeEstimatedGasFees(
 function withdrawalDisabled(token: string) {
   return [
     '0x0e192d382a36de7011f795acc4391cd302003606',
-    '0x488cc08935458403a0458e45e20c0159c8ab2c92'
+    '0x488cc08935458403a0458e45e20c0159c8ab2c92',
+    '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
+    '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
   ].includes(token.toLowerCase())
 }
 
