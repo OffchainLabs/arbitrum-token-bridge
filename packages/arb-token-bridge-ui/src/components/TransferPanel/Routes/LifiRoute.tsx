@@ -24,7 +24,7 @@ import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
 import { Address } from 'viem'
 import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
-import { getDestinationTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 export function LifiRoutes({
   cheapestTag,
@@ -74,11 +74,11 @@ export function LifiRoutes({
 
   const overrideToken = useMemo(
     () =>
-      getDestinationTokenOverride({
+      getTokenOverride({
         sourceChainId: networks.sourceChain.id,
         fromToken,
         destinationChainId: networks.destinationChain.id
-      }),
+      })?.destination,
     [fromToken, networks.sourceChain.id, networks.destinationChain.id]
   )
 

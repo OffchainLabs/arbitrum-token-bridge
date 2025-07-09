@@ -9,14 +9,9 @@
       "name": "Ether",
       "symbol": "ETH",
       "decimals": 18,
-      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
+      "logoURI": "/images/EthereumLogoRound.svg",
       "extensions": {
         "bridgeInfo": {
-          "1": {
-            "tokenAddress": "0x0000000000000000000000000000000000000000",
-            "originBridgeAddress": "N/A",
-            "destBridgeAddress": "N/A"
-          },
           "33139": {
             "tokenAddress": "0xf4d9235269a96aadafc9adae454a0618ebe37949",
             "originBridgeAddress": "N/A",
@@ -39,7 +34,7 @@
       "chainId": 55244,
       "address": "0x6c030c5cc283f791b26816f325b9c632d964f8a1",
       "name": "Bridged USDC",
-      "symbol": "USDCe",
+      "symbol": "USDC.e",
       "decimals": 6,
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
       "extensions": {
