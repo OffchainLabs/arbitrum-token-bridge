@@ -33,7 +33,9 @@ const commonUSDC: ERC20BridgeToken = {
   symbol: 'USDC',
   decimals: 6,
   listIds: new Set<string>(),
-  address: ''
+  address: '',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
 }
 
 export const useSelectedToken = (): [
@@ -51,14 +53,28 @@ export const useSelectedToken = (): [
       tokenFromSearchParams,
       parentChain.id,
       childChain.id,
+      networks.destinationChain.id,
       'useSelectedToken_usdc'
     ],
-    async ([_tokenAddress, _parentChainId, _childChainId]) => {
+    async ([
+      _tokenAddress,
+      _parentChainId,
+      _childChainId,
+      _destinationChainId
+    ]) => {
       if (!_tokenAddress) {
         return null
       }
 
       if (!isTokenNativeUSDC(_tokenAddress)) {
+        return null
+      }
+
+      // USDC for lifi chains, use bridgeTokens
+      if (
+        _destinationChainId === ChainId.ApeChain ||
+        _destinationChainId === ChainId.Superposition
+      ) {
         return null
       }
 
@@ -77,6 +93,7 @@ export const useSelectedToken = (): [
     (erc20ParentAddress: string | null) => {
       return setQueryParams(latestQuery => {
         if (
+          !erc20ParentAddress &&
           latestQuery.sourceChain === ChainId.Ethereum &&
           latestQuery.destinationChain === ChainId.ApeChain
         ) {
@@ -196,6 +213,7 @@ export async function getUsdcToken({
     (isTokenSepoliaUSDC(tokenAddress) && isParentChainSepolia)
   ) {
     let childChainUsdcAddress
+    console.log('OUI')
     try {
       childChainUsdcAddress = (
         await getL2ERC20Address({
@@ -205,6 +223,7 @@ export async function getUsdcToken({
         })
       ).toLowerCase()
     } catch {
+      console.log('CATCH')
       // could be never bridged before
     }
 

@@ -334,6 +334,9 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   const destinationChainNativeCurrency = useNativeCurrency({
     provider: networks.destinationChainProvider
   })
+  const sourceChainNativeCurrency = useNativeCurrency({
+    provider: networks.sourceChainProvider
+  })
 
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
@@ -346,11 +349,11 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
     )
   }
 
-  if (
-    !token ||
-    (addressesEqual(token.address, constants.AddressZero) &&
-      destinationChainNativeCurrency.isCustom)
-  ) {
+  if (!token) {
+    return null
+  }
+
+  if (addressesEqual(token.address, constants.AddressZero)) {
     return null
   }
 
