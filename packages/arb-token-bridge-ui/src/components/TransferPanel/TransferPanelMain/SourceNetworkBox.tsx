@@ -110,37 +110,20 @@ const Input1 = React.memo(() => {
   )
 
   const overrideOptions = useMemo(() => {
-    // For Lifi transfer to and from ApeChain, native currency (APE) is not supported
-    // const isLifiTransferToApeChain =
-    //   networks.destinationChain.id === ChainId.ApeChain &&
-    //   !selectedToken &&
-    //   networks.sourceChain.id !== ChainId.ArbitrumOne
-    // const isLifiTransferFromApeChain =
-    //   networks.sourceChain.id === ChainId.ApeChain &&
-    //   !selectedToken &&
-    //   networks.destinationChain.id !== ChainId.ArbitrumOne
-
-    // if (isLifiTransferToApeChain || isLifiTransferFromApeChain) {
-    //   return {
-    //     symbol: 'ETH',
-    //     logoSrc: '/images/EthereumLogoRound.svg',
-    //     balance: ethParentBalance
-    //       ? parseFloat(utils.formatEther(ethParentBalance))
-    //       : 0
-    //   }
-    // }
-
-    // return null
     const override = getTokenOverride({
       fromToken: selectedToken?.address || constants.AddressZero,
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id
     })
+
     if (!override) {
       return null
     }
 
-    return override.source
+    return {
+      ...override.source,
+      logoSrc: override.source.logoURI
+    }
   }, [networks.sourceChain.id, ethParentBalance, selectedToken])
 
   return (
