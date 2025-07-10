@@ -23,7 +23,6 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
 import { Address } from 'viem'
-import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 export function LifiRoutes({
