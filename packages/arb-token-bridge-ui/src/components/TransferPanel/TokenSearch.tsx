@@ -533,7 +533,6 @@ function TokensPanel({
         )
       }
 
-      console.log('TOKEN', token)
       return (
         <TokenRow
           key={address}

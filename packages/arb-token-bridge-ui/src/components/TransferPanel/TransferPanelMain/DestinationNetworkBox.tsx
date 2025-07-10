@@ -150,7 +150,7 @@ function BalancesContainer() {
 
   const tokenOverride = useMemo(() => {
     const override = getTokenOverride({
-      fromToken: selectedToken?.address || constants.AddressZero,
+      fromToken: selectedToken?.address,
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id
     })

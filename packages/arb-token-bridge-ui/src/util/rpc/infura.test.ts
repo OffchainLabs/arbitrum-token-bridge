@@ -24,12 +24,12 @@ it('successfully returns the correct url for the provided chain and key', () => 
     {
       "1": "https://mainnet.infura.io/v3/123456",
       "11155111": "https://sepolia.infura.io/v3/123456",
+      "33139": "",
       "42161": "https://arbitrum-mainnet.infura.io/v3/123456",
       "421614": "https://arbitrum-sepolia.infura.io/v3/123456",
+      "55244": ""
       "8453": "https://base-mainnet.infura.io/v3/123456",
       "84532": "https://base-sepolia.infura.io/v3/123456",
-      "33139": "",
-      "55244": ""
       
     }
   `)

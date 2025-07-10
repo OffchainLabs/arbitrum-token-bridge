@@ -111,7 +111,7 @@ const Input1 = React.memo(() => {
 
   const overrideOptions = useMemo(() => {
     const override = getTokenOverride({
-      fromToken: selectedToken?.address || constants.AddressZero,
+      fromToken: selectedToken?.address,
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id
     })

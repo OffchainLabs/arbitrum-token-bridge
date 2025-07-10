@@ -1,10 +1,4 @@
-import {
-  bridgedUsdcToken,
-  commonUsdcToken,
-  ether,
-  ETHER_TOKEN_LOGO,
-  nativeUsdcToken
-} from '../../../constants'
+import { ether, ETHER_TOKEN_LOGO, nativeUsdcToken } from '../../../constants'
 import {
   ERC20BridgeToken,
   TokenType
@@ -24,11 +18,14 @@ export function getLifiDestinationToken({
   sourceChainId,
   destinationChainId
 }: {
-  fromToken: string
+  fromToken: string | undefined
   sourceChainId: number
   destinationChainId: number
 }) {
-  return tokensMap[sourceChainId]?.[destinationChainId]?.[fromToken]
+  if (!fromToken) {
+    return null
+  }
+  return tokensMap[sourceChainId]?.[destinationChainId]?.[fromToken] || null
 }
 
 export function isLifiTransfer({
@@ -45,7 +42,7 @@ export function isLifiTransfer({
 }
 
 export function isValidLifiTransfer({
-  fromToken = constants.AddressZero,
+  fromToken,
   sourceChainId,
   destinationChainId
 }: {
@@ -78,7 +75,7 @@ export function isValidLifiTransfer({
     destinationChainId
   })
 
-  if (!addressesEqual(toToken, expectedDestinationTokenAddress)) {
+  if (!addressesEqual(toToken, expectedDestinationTokenAddress || '')) {
     return false
   }
 
