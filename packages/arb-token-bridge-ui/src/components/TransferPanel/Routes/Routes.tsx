@@ -19,10 +19,7 @@ import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { constants } from 'ethers'
 import { twMerge } from 'tailwind-merge'
 import { useMode } from '../../../hooks/useMode'
-import {
-  getTokenOverride,
-  isValidLifiTransfer
-} from '../../../pages/api/crosschain-transfers/utils'
+import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
 import { useIsArbitrumCanonicalTransfer } from '../hooks/useIsCanonicalTransfer'
 import { ChainId } from '../../../types/ChainId'
 import { addressesEqual } from '../../../util/AddressUtils'
@@ -83,12 +80,6 @@ export function getRoutes({
   ChildRoutes: React.JSX.Element | null
   routes: RouteType[]
 } {
-  const tokenOverride = getTokenOverride({
-    fromToken: selectedToken?.address,
-    sourceChainId,
-    destinationChainId
-  })
-
   const isLifiEnabled = isLifiEnabledUtil() && !isTestnet
 
   if (Number(amount) === 0) {
@@ -138,13 +129,10 @@ export function getRoutes({
     }
   }
 
-  const address = isDepositMode
-    ? selectedToken?.address
-    : selectedToken?.l2Address
   const isValidLifiRoute =
     isLifiEnabled &&
     isValidLifiTransfer({
-      fromToken: address,
+      fromToken: selectedToken?.address,
       sourceChainId: sourceChainId,
       destinationChainId: destinationChainId
     })
