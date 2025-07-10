@@ -27,13 +27,13 @@ it('successfully returns the correct url for the provided chain and key', () => 
     {
       "1": "https://eth-mainnet.g.alchemy.com/v2/123456",
       "11155111": "https://eth-sepolia.g.alchemy.com/v2/123456",
+      "33139": "",
       "42161": "https://arb-mainnet.g.alchemy.com/v2/123456",
       "421614": "https://arb-sepolia.g.alchemy.com/v2/123456",
       "42170": "https://arbnova-mainnet.g.alchemy.com/v2/123456",
+      "55244": "",
       "8453": "https://base-mainnet.g.alchemy.com/v2/123456",
       "84532": "https://base-sepolia.g.alchemy.com/v2/123456",
-      "33139": "",
-      "55244": ""
     }
   `)
 })

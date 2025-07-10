@@ -2,8 +2,6 @@ import { constants } from 'ethers'
 import { ChainId } from '../../../types/ChainId'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 
-const NATIVE_CURRENCY_IDENTIFIER = constants.AddressZero
-
 // tokensMap is typed loosely here to allow for dynamic keys when checking
 export const tokensMap: Record<
   string,
@@ -12,71 +10,71 @@ export const tokensMap: Record<
   [ChainId.Ethereum]: {
     [ChainId.ArbitrumOne]: {
       [CommonAddress.Ethereum.USDC]: CommonAddress.ArbitrumOne.USDC,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     },
     [ChainId.ApeChain]: {
       [CommonAddress.Ethereum.USDC]: CommonAddress.ApeChain.USDCe,
-      [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
+      [constants.AddressZero]: CommonAddress.ApeChain.WETH
     },
     [ChainId.Superposition]: {
       [CommonAddress.Ethereum.USDC]: CommonAddress.Superposition.USDCe,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     }
   },
   [ChainId.ArbitrumOne]: {
     [ChainId.Ethereum]: {
       [CommonAddress.ArbitrumOne.USDC]: CommonAddress.Ethereum.USDC,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     },
     [ChainId.ApeChain]: {
       [CommonAddress.ArbitrumOne.USDC]: CommonAddress.ApeChain.USDCe,
-      [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
+      [constants.AddressZero]: CommonAddress.ApeChain.WETH
     },
     [ChainId.Superposition]: {
       [CommonAddress.ArbitrumOne.USDC]: CommonAddress.Superposition.USDCe,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     }
   },
   [ChainId.Superposition]: {
     [ChainId.Ethereum]: {
       [CommonAddress.Superposition.USDCe]: CommonAddress.Ethereum.USDC,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     },
     [ChainId.ArbitrumOne]: {
       [CommonAddress.Superposition.USDCe]: CommonAddress.ArbitrumOne.USDC,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     },
     [ChainId.ApeChain]: {
       [CommonAddress.Superposition.USDCe]: CommonAddress.ApeChain.USDCe,
-      [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
+      [constants.AddressZero]: CommonAddress.ApeChain.WETH
     }
   },
   [ChainId.ApeChain]: {
     [ChainId.Ethereum]: {
       [CommonAddress.ApeChain.USDCe]: CommonAddress.Ethereum.USDC,
-      [CommonAddress.ApeChain.WETH]: NATIVE_CURRENCY_IDENTIFIER
+      [CommonAddress.ApeChain.WETH]: constants.AddressZero
     },
     [ChainId.ArbitrumOne]: {
       [CommonAddress.ApeChain.USDCe]: CommonAddress.ArbitrumOne.USDC,
-      [CommonAddress.ApeChain.WETH]: NATIVE_CURRENCY_IDENTIFIER
+      [CommonAddress.ApeChain.WETH]: constants.AddressZero
     },
     [ChainId.Superposition]: {
       [CommonAddress.ApeChain.USDCe]: CommonAddress.Superposition.USDCe,
-      [CommonAddress.ApeChain.WETH]: NATIVE_CURRENCY_IDENTIFIER
+      [CommonAddress.ApeChain.WETH]: constants.AddressZero
     }
   },
   [ChainId.Base]: {
     [ChainId.ArbitrumOne]: {
       [CommonAddress.Base.USDC]: CommonAddress.ArbitrumOne.USDC,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     },
     [ChainId.Superposition]: {
       [CommonAddress.Base.USDC]: CommonAddress.Superposition.USDCe,
-      [NATIVE_CURRENCY_IDENTIFIER]: NATIVE_CURRENCY_IDENTIFIER
+      [constants.AddressZero]: constants.AddressZero
     },
     [ChainId.ApeChain]: {
       [CommonAddress.Base.USDC]: CommonAddress.ApeChain.USDCe,
-      [NATIVE_CURRENCY_IDENTIFIER]: CommonAddress.ApeChain.WETH
+      [constants.AddressZero]: CommonAddress.ApeChain.WETH
     }
   }
 }

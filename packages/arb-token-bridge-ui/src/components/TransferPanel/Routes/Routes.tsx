@@ -22,6 +22,8 @@ import { twMerge } from 'tailwind-merge'
 import { useMode } from '../../../hooks/useMode'
 import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
 import { useIsArbitrumCanonicalTransfer } from '../hooks/useIsCanonicalTransfer'
+import { ChainId } from '../../../types/ChainId'
+import { addressesEqual } from '../../../util/AddressUtils'
 
 function Wrapper({ children }: PropsWithChildren) {
   const { embedMode } = useMode()
@@ -156,8 +158,14 @@ export function getRoutes({
   }
 
   if (isArbitrumCanonicalTransfer) {
-    ChildRoutes.push(<ArbitrumCanonicalRoute />)
-    routes.push('arbitrum')
+    // Arbitrum to ApeChain doesn't support ETH
+    if (
+      destinationChainId !== ChainId.ApeChain &&
+      !addressesEqual(selectedToken?.address, constants.AddressZero)
+    ) {
+      ChildRoutes.push(<ArbitrumCanonicalRoute />)
+      routes.push('arbitrum')
+    }
   }
 
   return {
