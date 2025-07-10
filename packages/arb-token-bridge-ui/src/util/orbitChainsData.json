@@ -1335,6 +1335,48 @@
           "logoUrl": "/images/EarnmMainnet_NativeTokenLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 1628,
+      "confirmPeriodBlocks": 7200,
+      "ethBridge": {
+        "bridge": "0x61C4b51f9388A2DD62C791341f0d50AD88d64Fd4",
+        "inbox": "0x1744424936C6F1A4921130b12AA4F3832B421002",
+        "outbox": "0xa0419E39cA100DCfC6F0d68D605d2445f387Fb4e",
+        "rollup": "0x7705e53B707AF758aCEa86580d5da155d2fB2921",
+        "sequencerInbox": "0xfF3e828FD206bD8491A7C77ABfb128860D314b6B"
+      },
+      "explorerUrl": "https://explorer.trex.xyz",
+      "rpcUrl": "https://rpc.trex.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "T-REX",
+      "slug": "t-rex",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x043349BFE53Ba7684492c49eDbF8355205e5e454",
+        "parentErc20Gateway": "0xd1Fc6140377f4b8F31f250B922B5a6A59eFaAC41",
+        "parentGatewayRouter": "0xac586C4a3C8e4165d046ed3F64816058A5d4f00e",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "parentWethGateway": "0x8CF7f2E0E29ACd80A7dab0A4a9d2b5C6Da706166",
+        "childCustomGateway": "0x6a8835302c2fC45528DA99C7fc11C0e376b33dD5",
+        "childErc20Gateway": "0x9126565e79cede19Ce9b49963174f3d46bb4685E",
+        "childGatewayRouter": "0x1D89605a15de4aB54A8Bf06ee33f8D5B94A729F7",
+        "childMultiCall": "0x1Bc42912EBb178fB8BFEB49dE64aDC65d51DAc52",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0xEA935Ba885D79efb563aaea7662Fdd169a6CbB60",
+        "childWethGateway": "0x2cdDA5dfDe2299c8e3C534938e311148142367a6"
+      },
+      "bridgeUiConfig": {
+        "color": "#AAD394",
+        "network": {
+          "name": "T-REX",
+          "logo": "/images/T-REX_Logo.png",
+          "description": "Invisible blockchain bridging everyday digital interactions into real-world rewards."
+        }
+      }
     }
   ],
   "testnet": [
