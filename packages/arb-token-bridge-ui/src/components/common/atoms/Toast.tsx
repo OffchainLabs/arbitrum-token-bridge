@@ -22,6 +22,17 @@ export const warningToast = (
   toast.warning(message, { autoClose })
 }
 
+export const successToast = (
+  message: React.ReactNode,
+  {
+    autoClose
+  }: {
+    autoClose?: number | false | undefined
+  } = { autoClose: 5000 }
+) => {
+  toast.success(message, { autoClose })
+}
+
 export const Toast = () => {
   return (
     <ToastContainer
