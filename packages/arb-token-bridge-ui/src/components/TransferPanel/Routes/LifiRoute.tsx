@@ -50,20 +50,28 @@ export function LifiRoutes({
   const [selectedToken] = useSelectedToken()
   const amount = useAmountBigNumber()
 
-  const { fromToken, toToken } = getFromAndToTokenAddresses({
-    selectedToken,
-    isDepositMode,
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
-  })
+  const overrideToken = useMemo(
+    () =>
+      getTokenOverride({
+        sourceChainId: networks.sourceChain.id,
+        fromToken: selectedToken?.address,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [
+      selectedToken?.address,
+      networks.sourceChain.id,
+      networks.destinationChain.id
+    ]
+  )
+
   const parameters = {
     fromAddress: address,
     fromAmount: amount.toString(),
     fromChainId: networks.sourceChain.id,
-    fromToken: fromToken || constants.AddressZero,
+    fromToken: overrideToken.source?.address || constants.AddressZero,
     toAddress: (destinationAddress as Address) || address,
     toChainId: networks.destinationChain.id,
-    toToken: toToken || constants.AddressZero,
+    toToken: overrideToken.destination?.address || constants.AddressZero,
     denyBridges: disabledBridges,
     denyExchanges: disabledExchanges,
     slippage
@@ -71,16 +79,6 @@ export function LifiRoutes({
 
   const { data: routes, isLoading: isLoading } =
     useLifiCrossTransfersRoute(parameters)
-
-  const overrideToken = useMemo(
-    () =>
-      getTokenOverride({
-        sourceChainId: networks.sourceChain.id,
-        fromToken,
-        destinationChainId: networks.destinationChain.id
-      })?.destination,
-    [fromToken, networks.sourceChain.id, networks.destinationChain.id]
-  )
 
   useEffect(() => {
     /**
@@ -135,7 +133,7 @@ export function LifiRoutes({
         type="lifi"
         route={route}
         tag={tags}
-        overrideToken={overrideToken}
+        overrideToken={overrideToken.destination || undefined}
       />
     )
   }
@@ -147,7 +145,7 @@ export function LifiRoutes({
           type="lifi-cheapest"
           route={cheapestRoute}
           tag={cheapestTag}
-          overrideToken={overrideToken}
+          overrideToken={overrideToken.destination || undefined}
         />
       )}
       {fastestRoute && (
@@ -155,7 +153,7 @@ export function LifiRoutes({
           type="lifi-fastest"
           route={fastestRoute}
           tag={fastestTag}
-          overrideToken={overrideToken}
+          overrideToken={overrideToken.destination || undefined}
         />
       )}
     </>
@@ -171,7 +169,7 @@ function LifiRoute({
   type: 'lifi' | 'lifi-fastest' | 'lifi-cheapest'
   route: LifiCrosschainTransfersRoute
   tag?: BadgeType | BadgeType[]
-  overrideToken: Token | undefined
+  overrideToken?: Token | undefined
 }) {
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
