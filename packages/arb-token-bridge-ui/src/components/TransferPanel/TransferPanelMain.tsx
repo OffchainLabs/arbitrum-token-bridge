@@ -27,11 +27,15 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  DisabledFeatures,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { addressesEqual } from '../../util/AddressUtils'
 import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
+import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -39,9 +43,22 @@ export function SwitchNetworksButton(
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const disabled = isSmartContractWallet || isLoadingAccountType
-
   const [networks, setNetworks] = useNetworks()
+
+  const { isFeatureDisabled } = useDisabledFeatures()
+
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
+
+  const destinationChainNonArbitrumNotAllowed =
+    disableTransfersToNonArbitrumChains &&
+    isNetwork(networks.sourceChain.id).isNonArbitrumNetwork
+
+  const disabled =
+    isSmartContractWallet ||
+    isLoadingAccountType ||
+    destinationChainNonArbitrumNotAllowed
 
   return (
     <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
@@ -63,9 +80,19 @@ export function SwitchNetworksButton(
       >
         <SwitchNetworkButtonBorderTop />
         {isSmartContractWallet ? (
-          <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
+          <ArrowDownIcon
+            className={twMerge(
+              'h-6 w-6 stroke-1 text-white',
+              disabled && 'opacity-30'
+            )}
+          />
         ) : (
-          <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
+          <ArrowsUpDownIcon
+            className={twMerge(
+              'h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80',
+              disabled && 'opacity-30'
+            )}
+          />
         )}
         <SwitchNetworkButtonBorderBottom />
       </button>
