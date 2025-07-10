@@ -1,5 +1,4 @@
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { BigNumber, constants, utils } from 'ethers'
 import { BadgeType, Route, Token } from './Route'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
@@ -34,7 +33,6 @@ export function LifiRoutes({
 }) {
   const { address } = useAccount()
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
   const { disabledBridges, disabledExchanges, slippage } = useLifiSettingsStore(
     state => ({
       disabledBridges: state.disabledBridges,
