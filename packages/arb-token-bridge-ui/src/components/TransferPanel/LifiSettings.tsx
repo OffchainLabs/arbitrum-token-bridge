@@ -4,7 +4,6 @@ import {
   useLifiSettingsStore
 } from './hooks/useLifiSettingsStore'
 import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import useSWRImmutable from 'swr/immutable'
 import { useCallback, useState } from 'react'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
@@ -24,11 +23,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { shallow } from 'zustand/shallow'
 import { ExternalLink } from '../common/ExternalLink'
-import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
+import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
 
 function useIsLifiSupported() {
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
   const { disabledBridges, disabledExchanges } = useLifiSettingsStore(
     ({ disabledBridges, disabledExchanges }) => ({
       disabledBridges,
@@ -43,23 +41,24 @@ function useIsLifiSupported() {
     l2Address: constants.AddressZero
   }
 
-  const { fromToken, toToken } = getFromAndToTokenAddresses({
-    isDepositMode,
-    selectedToken: token,
+  const tokenOverrides = getTokenOverride({
+    fromToken: token.address,
     sourceChainId: networks.sourceChain.id,
     destinationChainId: networks.destinationChain.id
   })
 
   const { data, isLoading } = useSWRImmutable(
-    [
-      networks.sourceChain.id,
-      networks.destinationChain.id,
-      fromToken,
-      toToken,
-      disabledBridges,
-      disabledExchanges,
-      'useIsLifiSupported'
-    ] as const,
+    tokenOverrides.source && tokenOverrides.destination
+      ? ([
+          networks.sourceChain.id,
+          networks.destinationChain.id,
+          tokenOverrides.source.address,
+          tokenOverrides.destination.address,
+          disabledBridges,
+          disabledExchanges,
+          'useIsLifiSupported'
+        ] as const)
+      : null,
     ([
       _sourceChainId,
       _destinationChainId,
