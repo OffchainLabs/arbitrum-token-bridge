@@ -95,11 +95,13 @@ import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
 import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
-import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 import { useMode } from '../../hooks/useMode'
-import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
+import {
+  getTokenOverride,
+  isValidLifiTransfer
+} from '../../pages/api/crosschain-transfers/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -593,9 +595,8 @@ export function TransferPanel() {
 
       const { sourceChainProvider, destinationChainProvider } = networks
 
-      const { fromToken, toToken } = getFromAndToTokenAddresses({
-        isDepositMode,
-        selectedToken,
+      const tokenOverrides = getTokenOverride({
+        fromToken: selectedToken?.address,
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id
       })
@@ -608,8 +609,8 @@ export function TransferPanel() {
       const lifiTransferStarter = new LifiTransferStarter({
         destinationChainProvider,
         sourceChainProvider,
-        destinationChainErc20Address: toToken,
-        sourceChainErc20Address: fromToken,
+        destinationChainErc20Address: tokenOverrides.destination?.address,
+        sourceChainErc20Address: tokenOverrides.source?.address,
         lifiData: {
           ...context,
           transactionRequest

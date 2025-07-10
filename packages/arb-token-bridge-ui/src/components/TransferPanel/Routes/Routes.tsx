@@ -17,10 +17,12 @@ import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { constants } from 'ethers'
-import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
 import { twMerge } from 'tailwind-merge'
 import { useMode } from '../../../hooks/useMode'
-import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
+import {
+  getTokenOverride,
+  isValidLifiTransfer
+} from '../../../pages/api/crosschain-transfers/utils'
 import { useIsArbitrumCanonicalTransfer } from '../hooks/useIsCanonicalTransfer'
 import { ChainId } from '../../../types/ChainId'
 import { addressesEqual } from '../../../util/AddressUtils'
@@ -81,12 +83,8 @@ export function getRoutes({
   ChildRoutes: React.JSX.Element | null
   routes: RouteType[]
 } {
-  const { fromToken } = getFromAndToTokenAddresses({
-    isDepositMode,
-    selectedToken: selectedToken || {
-      address: constants.AddressZero,
-      l2Address: constants.AddressZero
-    },
+  const tokenOverride = getTokenOverride({
+    fromToken: selectedToken?.address,
     sourceChainId,
     destinationChainId
   })
@@ -140,10 +138,13 @@ export function getRoutes({
     }
   }
 
+  const address = isDepositMode
+    ? selectedToken?.address
+    : selectedToken?.l2Address
   const isValidLifiRoute =
     isLifiEnabled &&
     isValidLifiTransfer({
-      fromToken,
+      fromToken: address,
       sourceChainId: sourceChainId,
       destinationChainId: destinationChainId
     })

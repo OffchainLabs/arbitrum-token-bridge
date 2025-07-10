@@ -1,4 +1,10 @@
-import { ether, ETHER_TOKEN_LOGO, nativeUsdcToken } from '../../../constants'
+import {
+  bridgedUsdcToken,
+  commonUsdcToken,
+  ether,
+  ETHER_TOKEN_LOGO,
+  nativeUsdcToken
+} from '../../../constants'
 import {
   ERC20BridgeToken,
   TokenType
@@ -6,27 +12,8 @@ import {
 import { ChainId } from '../../../types/ChainId'
 import { addressesEqual } from '../../../util/AddressUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import {
-  allowedLifiSourceChainIds,
-  lifiDestinationChainIds,
-  tokensMap
-} from './constants'
+import { allowedLifiSourceChainIds, lifiDestinationChainIds } from './constants'
 import { constants } from 'ethers'
-
-export function getLifiDestinationToken({
-  fromToken,
-  sourceChainId,
-  destinationChainId
-}: {
-  fromToken: string | undefined
-  sourceChainId: number
-  destinationChainId: number
-}) {
-  if (!fromToken) {
-    return null
-  }
-  return tokensMap[sourceChainId]?.[destinationChainId]?.[fromToken] || null
-}
 
 export function isLifiTransfer({
   sourceChainId,
@@ -41,6 +28,16 @@ export function isLifiTransfer({
   )
 }
 
+function isUsdcToken(tokenAddress: string | undefined) {
+  return (
+    addressesEqual(tokenAddress, CommonAddress.Ethereum.USDC) ||
+    addressesEqual(tokenAddress, CommonAddress.ArbitrumOne.USDC) ||
+    addressesEqual(tokenAddress, CommonAddress.Superposition.USDCe) ||
+    addressesEqual(tokenAddress, CommonAddress.ApeChain.USDCe) ||
+    addressesEqual(tokenAddress, CommonAddress.Base.USDC)
+  )
+}
+
 export function isValidLifiTransfer({
   fromToken,
   sourceChainId,
@@ -50,6 +47,7 @@ export function isValidLifiTransfer({
   sourceChainId: number
   destinationChainId: number
 }): boolean {
+  // Check if it's a valid lifi pair
   if (
     !isLifiTransfer({
       sourceChainId,
@@ -59,27 +57,38 @@ export function isValidLifiTransfer({
     return false
   }
 
-  const toToken = getLifiDestinationToken({
-    fromToken,
-    sourceChainId,
-    destinationChainId
-  })
-
-  if (!toToken) {
-    return false
+  /**
+   * Check if it's Ether (native token)
+   * ApeChain has the zero address for Ether
+   */
+  if (
+    sourceChainId !== ChainId.ApeChain &&
+    destinationChainId !== ChainId.ApeChain &&
+    !fromToken
+  ) {
+    return true
   }
 
-  const expectedDestinationTokenAddress = getLifiDestinationToken({
-    fromToken,
-    sourceChainId,
-    destinationChainId
-  })
-
-  if (!addressesEqual(toToken, expectedDestinationTokenAddress || '')) {
-    return false
+  if (addressesEqual(fromToken, constants.AddressZero)) {
+    return true
   }
 
-  return true
+  if (
+    (addressesEqual(fromToken, CommonAddress.Ethereum.USDC) &&
+      sourceChainId === ChainId.Ethereum) ||
+    (addressesEqual(fromToken, CommonAddress.ArbitrumOne.USDC) &&
+      sourceChainId === ChainId.ArbitrumOne) ||
+    (addressesEqual(fromToken, CommonAddress.Superposition.USDCe) &&
+      sourceChainId === ChainId.Superposition) ||
+    (addressesEqual(fromToken, CommonAddress.ApeChain.USDCe) &&
+      sourceChainId === ChainId.ApeChain) ||
+    (addressesEqual(fromToken, CommonAddress.Base.USDC) &&
+      sourceChainId === ChainId.Base)
+  ) {
+    return true
+  }
+
+  return false
 }
 
 const etherWithLogo: ERC20BridgeToken = {
@@ -101,6 +110,39 @@ const Weth = {
     'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
 }
 
+function getUsdc(chainId: number) {
+  return (
+    {
+      [ChainId.Ethereum]: {
+        address: CommonAddress.Ethereum.USDC,
+        symbol: 'USDC',
+        name: 'USDC'
+      },
+      [ChainId.ArbitrumOne]: {
+        address: CommonAddress.ArbitrumOne.USDC,
+        symbol: 'USDC',
+        name: 'USDC'
+      },
+      [ChainId.Superposition]: {
+        address: CommonAddress.Superposition.USDCe,
+        symbol: 'USDC.e',
+        name: 'Bridged USDC'
+      },
+      [ChainId.ApeChain]: {
+        address: CommonAddress.ApeChain.USDCe,
+        symbol: 'USDC.e',
+        name: 'Bridged USDC'
+      },
+      [ChainId.Base]: {
+        address: CommonAddress.Base.USDC,
+        symbol: 'USDC',
+        name: 'USD Coin'
+      }
+    }[chainId] || null
+  )
+}
+
+/** Returns source and destination token for current token on (source,destination) */
 export function getTokenOverride({
   fromToken,
   sourceChainId,
@@ -109,14 +151,24 @@ export function getTokenOverride({
   fromToken: string | undefined
   sourceChainId: number
   destinationChainId: number
-}) {
-  // ApeChain to any other chain
-  if (sourceChainId === ChainId.ApeChain) {
-    if (addressesEqual(fromToken, constants.AddressZero)) {
+}):
+  | {
+      source: ERC20BridgeToken
+      destination: ERC20BridgeToken
+    }
+  | {
+      source: null
+      destination: null
+    } {
+  // Eth on ApeChain
+  if (addressesEqual(fromToken, constants.AddressZero)) {
+    if (sourceChainId === ChainId.ApeChain) {
       return {
         source: {
           ...Weth,
-          address: CommonAddress.ApeChain.WETH
+          address: CommonAddress.ApeChain.WETH,
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
         },
         destination: {
           ...etherWithLogo,
@@ -124,11 +176,8 @@ export function getTokenOverride({
         }
       }
     }
-  }
 
-  // Any chain to ApeChain
-  if (destinationChainId === ChainId.ApeChain) {
-    if (addressesEqual(fromToken, constants.AddressZero)) {
+    if (destinationChainId === ChainId.ApeChain) {
       return {
         source: {
           ...etherWithLogo,
@@ -136,9 +185,19 @@ export function getTokenOverride({
         },
         destination: {
           ...Weth,
-          address: CommonAddress.ApeChain.WETH
+          address: CommonAddress.ApeChain.WETH,
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
         }
       }
+    }
+  }
+
+  // Native token on non-ETH chain
+  if (!fromToken) {
+    return {
+      source: null,
+      destination: null
     }
   }
 
@@ -152,9 +211,45 @@ export function getTokenOverride({
         source: {
           ...nativeUsdcToken,
           name: 'USDC',
-          address: CommonAddress.ArbitrumOne.USDC
+          address: CommonAddress.ArbitrumOne.USDC,
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
+        },
+        destination: {
+          ...bridgedUsdcToken,
+          name: 'Bridged USDC',
+          address: CommonAddress.Superposition.USDCe,
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
         }
       }
     }
+  }
+
+  // USDC
+  if (fromToken && isUsdcToken(fromToken)) {
+    const destinationUsdcToken = getUsdc(destinationChainId)
+    const sourceUsdcToken = getUsdc(sourceChainId)
+    if (destinationUsdcToken && sourceUsdcToken) {
+      return {
+        source: {
+          ...commonUsdcToken,
+          ...sourceUsdcToken,
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
+        },
+        destination: {
+          ...commonUsdcToken,
+          ...destinationUsdcToken,
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
+        }
+      }
+    }
+  }
+
+  return {
+    source: null,
+    destination: null
   }
 }

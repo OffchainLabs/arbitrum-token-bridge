@@ -64,8 +64,9 @@ export const sanitizeTokenQueryParam = ({
 
   if (!tokenLowercased) {
     if (destinationChainId === ChainId.ApeChain) {
-      /** Deposit to ApeChain from Ethereum, Superposition or base is only supported through Lifi
+      /** Deposit to ApeChain from Ethereum, Superposition or Base is only supported through Lifi
        *  We need to set the default token to ETH rather than ApeChain native token
+       *  For ArbitrumOne we default to native token (Ape)
        */
       if (
         sourceChainId === ChainId.Ethereum ||

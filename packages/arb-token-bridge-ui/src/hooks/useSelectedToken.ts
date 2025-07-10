@@ -94,11 +94,14 @@ export const useSelectedToken = (): [
       return setQueryParams(latestQuery => {
         if (
           !erc20ParentAddress &&
-          latestQuery.sourceChain === ChainId.Ethereum &&
           latestQuery.destinationChain === ChainId.ApeChain
         ) {
-          return {
-            token: constants.AddressZero
+          if (
+            latestQuery.sourceChain === ChainId.Ethereum ||
+            latestQuery.sourceChain === ChainId.Superposition ||
+            latestQuery.sourceChain === ChainId.Base
+          ) {
+            return { token: constants.AddressZero }
           }
         }
 
