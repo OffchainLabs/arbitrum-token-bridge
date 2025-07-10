@@ -331,12 +331,6 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
     useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const destinationChainNativeCurrency = useNativeCurrency({
-    provider: networks.destinationChainProvider
-  })
-  const sourceChainNativeCurrency = useNativeCurrency({
-    provider: networks.sourceChainProvider
-  })
 
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
