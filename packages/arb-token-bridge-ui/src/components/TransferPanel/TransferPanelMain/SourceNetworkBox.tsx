@@ -116,7 +116,7 @@ const Input1 = React.memo(() => {
       destinationChainId: networks.destinationChain.id
     })
 
-    if (!override) {
+    if (!override.source) {
       return null
     }
 
