@@ -5,33 +5,6 @@
   "tokens": [
     {
       "chainId": 55244,
-      "address": "0x0000000000000000000000000000000000000000",
-      "name": "Ether",
-      "symbol": "ETH",
-      "decimals": 18,
-      "logoURI": "/images/EthereumLogoRound.svg",
-      "extensions": {
-        "bridgeInfo": {
-          "33139": {
-            "tokenAddress": "0xf4d9235269a96aadafc9adae454a0618ebe37949",
-            "originBridgeAddress": "N/A",
-            "destBridgeAddress": "N/A"
-          },
-          "42161": {
-            "tokenAddress": "0x0000000000000000000000000000000000000000",
-            "originBridgeAddress": "N/A",
-            "destBridgeAddress": "N/A"
-          },
-          "8453": {
-            "tokenAddress": "0x0000000000000000000000000000000000000000",
-            "originBridgeAddress": "N/A",
-            "destBridgeAddress": "N/A"
-          }
-        }
-      }
-    },
-    {
-      "chainId": 55244,
       "address": "0x6c030c5cc283f791b26816f325b9c632d964f8a1",
       "name": "Bridged USDC",
       "symbol": "USDC.e",
