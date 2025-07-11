@@ -76,7 +76,16 @@ export const sanitizeTokenQueryParam = ({
         return constants.AddressZero
       }
     }
-    return undefined
+
+    /**
+     * For transfers from ApeChain, we default to ETH unless destination is ArbitrumOne
+     */
+    if (
+      sourceChainId === ChainId.ApeChain &&
+      destinationChainId !== ChainId.ArbitrumOne
+    ) {
+      return constants.AddressZero
+    }
   }
   if (!destinationChainId) {
     return tokenLowercased

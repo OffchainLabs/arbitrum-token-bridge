@@ -105,6 +105,14 @@ export const useSelectedToken = (): [
           }
         }
 
+        if (
+          !erc20ParentAddress &&
+          latestQuery.sourceChain === ChainId.ApeChain &&
+          latestQuery.destinationChain !== ChainId.ArbitrumOne
+        ) {
+          return { token: constants.AddressZero }
+        }
+
         return {
           token: sanitizeTokenAddress(erc20ParentAddress)
         }

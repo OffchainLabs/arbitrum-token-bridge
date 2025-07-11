@@ -47,7 +47,7 @@ export function useNetworksRelationship({
       sourceChain.id
     ).includes(destinationChain.id)
 
-    // Ape to Surpeposition and vice-versa
+    // Ape to Superposition, set Superposition as parent chain
     if (
       sourceChain.id === ChainId.ApeChain &&
       destinationChain.id === ChainId.Superposition
@@ -64,6 +64,7 @@ export function useNetworksRelationship({
       }
     }
 
+    // Superposition to Ape, set Superposition as parent chain
     if (
       sourceChain.id === ChainId.Superposition &&
       destinationChain.id === ChainId.ApeChain
