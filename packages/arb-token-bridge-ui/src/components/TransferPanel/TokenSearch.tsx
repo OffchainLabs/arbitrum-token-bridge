@@ -44,6 +44,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { useMode } from '../../hooks/useMode'
 import { constants } from 'ethers'
+import { ChainId } from '../../types/ChainId'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN: ERC20BridgeToken = {
   ...ArbOneNativeUSDC,
@@ -175,13 +176,9 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    isDepositMode,
-    isValidArbitrumRoute
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
+
   const {
     ethParentBalance,
     erc20ParentBalances,
@@ -219,10 +216,6 @@ function TokensPanel({
             : ethChildBalance
         }
 
-        return isDepositMode ? ethParentBalance : ethChildBalance
-      }
-
-      if (address === 'ether') {
         return isDepositMode ? ethParentBalance : ethChildBalance
       }
 
@@ -318,14 +311,20 @@ function TokensPanel({
     }
 
     /**
-     * Add native currency to the list of tokens for arbitrum routes
-     * Ethereum to Superposition ETH should not be included twice
-     * Ethereum to ApeChain ApeCoin should not be included
+     * When transferring from or to ApeChain,
+     * Ape token (native currency) should only be displayed if we transfer to/from ArbitrumOne
+     *
+     * Other chains are only supported by Lifi and don't support ApeToken
      */
     if (
-      (nativeCurrency.isCustom ||
-        !tokenAddresses.includes(constants.AddressZero)) &&
-      isValidArbitrumRoute
+      (networks.sourceChain.id === ChainId.ApeChain &&
+        ![ChainId.Ethereum, ChainId.Base, ChainId.Superposition].includes(
+          networks.destinationChain.id
+        )) ||
+      (networks.destinationChain.id === ChainId.ApeChain &&
+        ![ChainId.Ethereum, ChainId.Base, ChainId.Superposition].includes(
+          networks.sourceChain.id
+        ))
     ) {
       tokenAddresses.push(NATIVE_CURRENCY_IDENTIFIER)
     }
@@ -339,12 +338,12 @@ function TokensPanel({
 
         if (isTokenArbitrumOneNativeUSDC(address) && !token?.l2Address) {
           // for token search as Arb One native USDC isn't in any lists
-          token = ARB_ONE_NATIVE_USDC_TOKEN as ERC20BridgeToken
+          token = ARB_ONE_NATIVE_USDC_TOKEN
         }
 
         if (isTokenArbitrumSepoliaNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
-          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN as ERC20BridgeToken
+          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
         }
 
         if (isTokenArbitrumOneUSDCe(address) && isDepositMode && isOrbitChain) {
@@ -433,6 +432,7 @@ function TokensPanel({
         return bal1.gt(bal2) ? -1 : 1
       })
   }, [
+    networks,
     newToken,
     tokensFromUser,
     tokensFromLists,

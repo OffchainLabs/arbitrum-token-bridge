@@ -6,7 +6,6 @@ import { UseNetworksState } from './useNetworks'
 import { isDepositMode } from '../util/isDepositMode'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
 import { isLifiTransfer } from '../pages/api/crosschain-transfers/utils'
-import { getDestinationChainIds } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 
 type UseNetworksRelationshipState = {
@@ -18,8 +17,6 @@ type UseNetworksRelationshipState = {
   isTeleportMode: boolean
   /** true if route is supported through lifi (regardless of selected token)  */
   isLifi: boolean
-  /** true if route is supported through canonical route (regardless of selected token)  */
-  isValidArbitrumRoute: boolean
 }
 export function useNetworksRelationship({
   sourceChain,
@@ -43,10 +40,6 @@ export function useNetworksRelationship({
       destinationChainId: destinationChain.id
     })
 
-    const isValidArbitrumRoute = getDestinationChainIds(
-      sourceChain.id
-    ).includes(destinationChain.id)
-
     // Ape to Superposition, set Superposition as parent chain
     if (
       sourceChain.id === ChainId.ApeChain &&
@@ -59,8 +52,7 @@ export function useNetworksRelationship({
         parentChainProvider: destinationChainProvider,
         isDepositMode: false,
         isTeleportMode: false,
-        isLifi,
-        isValidArbitrumRoute
+        isLifi
       }
     }
 
@@ -76,8 +68,7 @@ export function useNetworksRelationship({
         parentChainProvider: sourceChainProvider,
         isDepositMode: true,
         isTeleportMode: false,
-        isLifi,
-        isValidArbitrumRoute
+        isLifi
       }
     }
 
@@ -89,8 +80,7 @@ export function useNetworksRelationship({
         parentChainProvider: sourceChainProvider,
         isDepositMode: _isDepositMode,
         isTeleportMode,
-        isLifi,
-        isValidArbitrumRoute
+        isLifi
       }
     }
 
@@ -101,8 +91,7 @@ export function useNetworksRelationship({
       parentChainProvider: destinationChainProvider,
       isDepositMode: _isDepositMode,
       isTeleportMode,
-      isLifi,
-      isValidArbitrumRoute
+      isLifi
     }
   }, [
     sourceChain,
