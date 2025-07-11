@@ -31,6 +31,10 @@ import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
 import { useSourceChainNativeCurrencyDecimals } from '../../hooks/useSourceChainNativeCurrencyDecimals'
 import { BlockExplorerTokenLink } from './TokenInfoTooltip'
+import { addressesEqual } from '../../util/AddressUtils'
+import { constants } from 'ethers'
+import { ChainId } from '../../types/ChainId'
+import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
 
 function tokenListIdsToNames(ids: string[]): string {
   return ids
@@ -51,6 +55,12 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
   const { isCustom: childChainNativeCurrencyIsCustom } = useNativeCurrency({
     provider: childChainProvider
+  })
+  const sourceChainNativeCurrency = useNativeCurrency({
+    provider: networks.sourceChainProvider
+  })
+  const destinationChainNativeCurrency = useNativeCurrency({
+    provider: networks.destinationChainProvider
   })
 
   const tokenListInfo = useMemo(() => {
@@ -97,6 +107,25 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
     )
   }
 
+  if (addressesEqual(token.address, constants.AddressZero)) {
+    if (
+      (sourceChainNativeCurrency.isCustom &&
+        destinationChainNativeCurrency.isCustom) ||
+      networks.sourceChain.id === ChainId.ApeChain
+    ) {
+      return <span className="flex text-xs text-white/70">{tokenListInfo}</span>
+    }
+
+    return (
+      <span className="flex text-xs text-white/70">
+        Native token on{' '}
+        {sourceChainNativeCurrency.isCustom
+          ? getNetworkName(networks.destinationChain.id)
+          : getNetworkName(networks.sourceChain.id)}
+      </span>
+    )
+  }
+
   if (token?.isL2Native) {
     return (
       <span className="flex text-xs text-white/70">
@@ -122,8 +151,23 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
     useNetworksRelationship(networks)
   const chainId = isDepositMode ? parentChain.id : childChain.id
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const overrideToken = useMemo(() => {
+    const override = getTokenOverride({
+      fromToken: token?.address,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    })
+    if (!override) {
+      return null
+    }
+
+    return override.source
+  }, [token, networks])
 
   const name = useMemo(() => {
+    if (overrideToken) {
+      return overrideToken.name
+    }
     if (token) {
       return sanitizeTokenName(token.name, {
         erc20L1Address: token.address,
@@ -135,6 +179,9 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
   }, [token, nativeCurrency.name, chainId])
 
   const symbol = useMemo(() => {
+    if (overrideToken) {
+      return overrideToken.symbol
+    }
     if (token) {
       return sanitizeTokenSymbol(token.symbol, {
         erc20L1Address: token.address,
@@ -146,6 +193,9 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
   }, [token, nativeCurrency.symbol, chainId])
 
   const logoURI = useMemo(() => {
+    if (overrideToken) {
+      return overrideToken.logoURI
+    }
     if (!token) {
       return nativeCurrency.logoUrl
     }
@@ -234,7 +284,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
       return true
     }
 
-    if (!token) {
+    if (!token || addressesEqual(token.address, constants.AddressZero)) {
       return true
     }
 
@@ -294,6 +344,10 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
   }
 
   if (!token) {
+    return null
+  }
+
+  if (addressesEqual(token.address, constants.AddressZero)) {
     return null
   }
 

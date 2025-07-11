@@ -12,8 +12,8 @@ import {
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { CrosschainTransfersRouteBase, QueryParams, Token } from './types'
-import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { ether } from '../../../constants'
+import { isValidLifiTransfer } from './utils'
 
 export enum Order {
   /**
@@ -61,16 +61,6 @@ function sumFee(feeCosts: FeeCost[] | undefined) {
     }, constants.Zero) ?? constants.Zero
   ).toString()
 }
-
-export const allowedSourceTokens = [
-  CommonAddress.ArbitrumOne.USDC,
-  constants.AddressZero
-]
-
-export const allowedDestinationToken = [
-  CommonAddress.Ethereum.USDC,
-  constants.AddressZero
-]
 
 function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
   route,
@@ -242,14 +232,6 @@ export default async function handler(
       return
     }
 
-    if (!allowedSourceTokens.includes(fromToken)) {
-      res.status(400).send({
-        message: 'fromToken is not one of the allowed tokens: USDC, ETH',
-        data: null
-      })
-      return
-    }
-
     if (!toToken || !utils.isAddress(toToken)) {
       res
         .status(400)
@@ -257,9 +239,15 @@ export default async function handler(
       return
     }
 
-    if (!allowedDestinationToken.includes(toToken)) {
+    if (
+      !isValidLifiTransfer({
+        fromToken,
+        sourceChainId: Number(fromChainId),
+        destinationChainId: Number(toChainId)
+      })
+    ) {
       res.status(400).send({
-        message: 'toToken is not one of the allowed tokens: USDC, ETH',
+        message: `Sending fromToken (${fromToken}) from chain ${fromChainId} to chain ${toChainId} is not supported`,
         data: null
       })
       return

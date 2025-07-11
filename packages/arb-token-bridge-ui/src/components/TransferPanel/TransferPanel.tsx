@@ -95,11 +95,13 @@ import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
 import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
-import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
-import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 import { useMode } from '../../hooks/useMode'
+import {
+  getTokenOverride,
+  isValidLifiTransfer
+} from '../../pages/api/crosschain-transfers/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -255,6 +257,10 @@ export function TransferPanel() {
     }
 
     if (isTokenNativeUSDC(tokenFromSearchParams)) {
+      return true
+    }
+
+    if (addressesEqual(tokenFromSearchParams, constants.AddressZero)) {
       return true
     }
 
@@ -589,10 +595,10 @@ export function TransferPanel() {
 
       const { sourceChainProvider, destinationChainProvider } = networks
 
-      const { fromToken, toToken } = getFromAndToTokenAddresses({
-        isDepositMode,
-        selectedToken,
-        sourceChainId: networks.sourceChain.id
+      const tokenOverrides = getTokenOverride({
+        fromToken: selectedToken?.address,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       })
 
       const { transactionRequest } = await getStepTransaction(context.step)
@@ -603,8 +609,8 @@ export function TransferPanel() {
       const lifiTransferStarter = new LifiTransferStarter({
         destinationChainProvider,
         sourceChainProvider,
-        destinationChainErc20Address: toToken,
-        sourceChainErc20Address: fromToken,
+        destinationChainErc20Address: tokenOverrides.destination?.address,
+        sourceChainErc20Address: tokenOverrides.source?.address,
         lifiData: {
           ...context,
           transactionRequest
@@ -1328,10 +1334,12 @@ export function TransferPanel() {
    * or if it's an EOA (to display custom destination address input)
    */
   const showSettingsButton =
-    isLifiTransferAllowed({
-      selectedToken,
+    isValidLifiTransfer({
       sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id
+      destinationChainId: networks.destinationChain.id,
+      fromToken: isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address
     }) ||
     (!isLoadingAccountType && !isSmartContractWallet)
 

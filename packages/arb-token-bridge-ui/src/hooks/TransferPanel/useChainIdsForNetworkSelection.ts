@@ -6,6 +6,7 @@ import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../useIsTestnetMode'
 import { useNetworks } from '../useNetworks'
 import { useMemo } from 'react'
+import { isLifiEnabled } from '../../util/featureFlag'
 
 export function useChainIdsForNetworkSelection({
   isSource
@@ -23,7 +24,10 @@ export function useChainIdsForNetworkSelection({
       })
     }
 
-    const destinationChainIds = getDestinationChainIds(networks.sourceChain.id)
+    const destinationChainIds = getDestinationChainIds(
+      networks.sourceChain.id,
+      { includeLifi: isLifiEnabled() }
+    )
 
     // if source chain is Arbitrum One, add Arbitrum Nova to destination
     if (networks.sourceChain.id === ChainId.ArbitrumOne) {

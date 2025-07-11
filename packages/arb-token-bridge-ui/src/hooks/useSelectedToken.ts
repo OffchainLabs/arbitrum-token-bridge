@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
 import {
@@ -25,16 +25,23 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
+import { ChainId } from '../types/ChainId'
 
-const commonUSDC = {
+const commonUSDC: ERC20BridgeToken = {
   name: 'USD Coin',
   type: TokenType.ERC20,
   symbol: 'USDC',
   decimals: 6,
-  listIds: new Set<string>()
+  listIds: new Set<string>(),
+  address: '',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
 }
 
-export const useSelectedToken = () => {
+export const useSelectedToken = (): [
+  ERC20BridgeToken | null,
+  (erc20ParentAddress: string | null) => void
+] => {
   const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
@@ -46,14 +53,28 @@ export const useSelectedToken = () => {
       tokenFromSearchParams,
       parentChain.id,
       childChain.id,
+      networks.destinationChain.id,
       'useSelectedToken_usdc'
     ],
-    async ([_tokenAddress, _parentChainId, _childChainId]) => {
+    async ([
+      _tokenAddress,
+      _parentChainId,
+      _childChainId,
+      _destinationChainId
+    ]) => {
       if (!_tokenAddress) {
         return null
       }
 
       if (!isTokenNativeUSDC(_tokenAddress)) {
+        return null
+      }
+
+      // USDC for lifi chains, use bridgeTokens
+      if (
+        _destinationChainId === ChainId.ApeChain ||
+        _destinationChainId === ChainId.Superposition
+      ) {
         return null
       }
 
@@ -69,8 +90,34 @@ export const useSelectedToken = () => {
   )
 
   const setSelectedToken = useCallback(
-    (erc20ParentAddress: string | null) =>
-      setQueryParams({ token: sanitizeTokenAddress(erc20ParentAddress) }),
+    (erc20ParentAddress: string | null) => {
+      return setQueryParams(latestQuery => {
+        if (
+          !erc20ParentAddress &&
+          latestQuery.destinationChain === ChainId.ApeChain
+        ) {
+          if (
+            latestQuery.sourceChain === ChainId.Ethereum ||
+            latestQuery.sourceChain === ChainId.Superposition ||
+            latestQuery.sourceChain === ChainId.Base
+          ) {
+            return { token: constants.AddressZero }
+          }
+        }
+
+        if (
+          !erc20ParentAddress &&
+          latestQuery.sourceChain === ChainId.ApeChain &&
+          latestQuery.destinationChain !== ChainId.ArbitrumOne
+        ) {
+          return { token: constants.AddressZero }
+        }
+
+        return {
+          token: sanitizeTokenAddress(erc20ParentAddress)
+        }
+      })
+    },
     [setQueryParams]
   )
 
