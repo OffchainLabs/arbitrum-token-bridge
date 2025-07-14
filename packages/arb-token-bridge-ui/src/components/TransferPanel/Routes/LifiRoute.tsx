@@ -25,6 +25,7 @@ import { Address } from 'viem'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { useRoutes } from './Routes'
+import { NoteBox } from '../../common/NoteBox'
 
 export function LifiRoutes({
   cheapestTag,
@@ -111,7 +112,27 @@ export function LifiRoutes({
 
     // If lifi is the only route available, show an empty state
     if (ChildRoutes?.props.children.length === 1) {
-      return <div className="text-white">Placeholder for no routes</div>
+      return (
+        <>
+          <NoteBox variant="warning" className="w-fit">
+            Low liquidity
+          </NoteBox>
+
+          <p className="flex flex-col text-white">
+            Unable to find a viable path because of low liquidity.
+            <br /> <br />
+            This can happen when demand for a specific asset is high or if a new
+            chain has limited initial liquidity.
+            <br /> <br />
+            You can try to:
+            <ol className="list-decimal pl-6">
+              <li>Check back soon: Liquidity conditions can improve.</li>
+              <li>Reduce your transaction amount.</li>
+              <li>If possible, consider alternative assets or destinations.</li>
+            </ol>
+          </p>
+        </>
+      )
     }
 
     return null
