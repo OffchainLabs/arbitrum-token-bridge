@@ -47,6 +47,7 @@ async function fetcher([
     lifiData: context || {
       fee: {
         amount: BigNumber.from(0),
+        amountUSD: '0',
         token: {
           address: constants.AddressZero,
           decimals: 0,
@@ -55,6 +56,7 @@ async function fetcher([
       },
       gas: {
         amount: BigNumber.from(0),
+        amountUSD: '0',
         token: {
           address: constants.AddressZero,
           decimals: 0,

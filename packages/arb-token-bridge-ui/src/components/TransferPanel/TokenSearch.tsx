@@ -311,20 +311,34 @@ function TokensPanel({
     }
 
     /**
-     * When transferring from or to ApeChain,
-     * Ape token (native currency) should only be displayed if we transfer to/from ArbitrumOne
+     * Disable native currency for transfer from ApeChain to Ethereum, Base and Superposition
+     * And vice versa
+     */
+    const lifiChains = [ChainId.Ethereum, ChainId.Base, ChainId.Superposition]
+    const isTransferringFromApe =
+      networks.sourceChain.id === ChainId.ApeChain &&
+      lifiChains.includes(networks.destinationChain.id)
+    const isTransferringToApe =
+      networks.destinationChain.id === ChainId.ApeChain &&
+      lifiChains.includes(networks.sourceChain.id)
+
+    /**
+     * Disable Ape token for ApeChain transfers from/to Ethereum, Base and Superposition
+     * Allow Ape token AND ethereum for transfers from/to Arbitrum One
      *
-     * Other chains are only supported by Lifi and don't support ApeToken
+     * For other chains, always show native currency
      */
     if (
+      !isTransferringFromApe &&
+      !isTransferringToApe &&
+      !tokenAddresses.includes(constants.AddressZero)
+    ) {
+      tokenAddresses.push(NATIVE_CURRENCY_IDENTIFIER)
+    } else if (
       (networks.sourceChain.id === ChainId.ApeChain &&
-        ![ChainId.Ethereum, ChainId.Base, ChainId.Superposition].includes(
-          networks.destinationChain.id
-        )) ||
+        networks.destinationChain.id === ChainId.ArbitrumOne) ||
       (networks.destinationChain.id === ChainId.ApeChain &&
-        ![ChainId.Ethereum, ChainId.Base, ChainId.Superposition].includes(
-          networks.sourceChain.id
-        ))
+        networks.sourceChain.id === ChainId.ArbitrumOne)
     ) {
       tokenAddresses.push(NATIVE_CURRENCY_IDENTIFIER)
     }

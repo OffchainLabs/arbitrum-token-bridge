@@ -1,6 +1,6 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { BigNumber, constants, utils } from 'ethers'
-import { BadgeType, Route, Token } from './Route'
+import { BadgeType, Route } from './Route'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { RouteType, useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
@@ -23,6 +23,9 @@ import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
 import { Address } from 'viem'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
+import { Token } from '../../../pages/api/crosschain-transfers/types'
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { useRoutes } from './Routes'
 
 export function LifiRoutes({
   cheapestTag,
@@ -31,6 +34,7 @@ export function LifiRoutes({
   cheapestTag?: BadgeType
   fastestTag?: BadgeType
 }) {
+  const { ChildRoutes } = useRoutes()
   const { address } = useAccount()
   const [networks] = useNetworks()
   const { disabledBridges, disabledExchanges, slippage } = useLifiSettingsStore(
@@ -106,6 +110,11 @@ export function LifiRoutes({
       )
     }
 
+    // If lifi is the only route available, show an empty state
+    if (ChildRoutes?.props.children.length === 1) {
+      return <div className="text-white">Placeholder for no routes</div>
+    }
+
     return null
   }
 
@@ -166,7 +175,7 @@ function LifiRoute({
   type: 'lifi' | 'lifi-fastest' | 'lifi-cheapest'
   route: LifiCrosschainTransfersRoute
   tag?: BadgeType | BadgeType[]
-  overrideToken?: Token | undefined
+  overrideToken?: ERC20BridgeToken | undefined
 }) {
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
@@ -183,18 +192,22 @@ function LifiRoute({
         spenderAddress: route.spenderAddress as Address,
         gas: {
           amount: BigNumber.from(route.gas.amount),
+          amountUSD: route.gas.amountUSD,
           token: route.gas.token
         },
         fee: {
           amount: BigNumber.from(route.fee.amount),
+          amountUSD: route.fee.amountUSD,
           token: route.fee.token
         },
         fromAmount: {
           amount: BigNumber.from(route.fromAmount.amount),
+          amountUSD: route.fromAmount.amountUSD,
           token: route.fromAmount.token
         },
         toAmount: {
           amount: BigNumber.from(route.toAmount.amount),
+          amountUSD: route.toAmount.amountUSD,
           token: route.toAmount.token
         },
         toolDetails: route.protocolData.tool,
