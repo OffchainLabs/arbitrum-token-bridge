@@ -80,7 +80,7 @@ const subgraphs = {
 } as const
 
 function createApolloClient(uri: string) {
-  const timeoutLink = new ApolloLinkTimeout()
+  const timeoutLink = new ApolloLinkTimeout(30_000)
   const httpLink = timeoutLink.concat(new HttpLink({ uri, fetch }))
 
   return new ApolloClient({
