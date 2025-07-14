@@ -65,7 +65,8 @@ export default async function handler(
             }
           }
         }
-      `
+      `,
+      context: { timeout: 10_000 },
     })
 
     res.status(200).json({
