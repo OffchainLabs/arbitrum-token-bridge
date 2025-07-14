@@ -32,6 +32,7 @@ export async function generateLighthouseReport() {
       parseLighthouseReports([report1, report2, report3]);
     core.endGroup();
 
+    core.setOutput("parsedNavigationReport", parsedNavigationReport);
     core.startGroup("Compare lighthouse results");
     const diff = await compareLighthouseReports({
       prevReport: lighthouseBaseline as [
