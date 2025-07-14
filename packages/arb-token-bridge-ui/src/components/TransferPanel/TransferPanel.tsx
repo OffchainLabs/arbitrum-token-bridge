@@ -130,7 +130,6 @@ export function TransferPanel() {
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
     useState(false)
-
   const {
     app: {
       arbTokenBridge: { token },
@@ -579,12 +578,13 @@ export function TransferPanel() {
        * If the amount received is less than 90% of the sent amount, we show a warning dialog
        * We multiply by 100 before dividing to avoid BigNumber stripping the value to 0
        */
+      const { fromAmountUsd, toAmountUsd } = getAmountToPay(context)
       const { lossPercentage } = getAmountLoss({
-        fromAmount: getAmountToPay(context),
-        toAmount: context.toAmount.amount
+        fromAmount: fromAmountUsd,
+        toAmount: toAmountUsd
       })
 
-      if (lossPercentage.gt(10)) {
+      if (lossPercentage > 10) {
         const confirmation = await confirmDialog('high_slippage_warning')
         if (!confirmation) return
       }
@@ -683,14 +683,21 @@ export function TransferPanel() {
           highlightTransactionHistoryDisclaimer()
         }, 100)
       } else {
+        const assetType =
+          !selectedToken ||
+          (selectedToken &&
+            addressesEqual(selectedToken.address, constants.AddressZero))
+            ? AssetType.ETH
+            : AssetType.ERC20
+
         const newTransfer: LifiMergedTransaction = {
           txId: transfer.sourceChainTransaction.hash,
           asset: selectedToken?.symbol || 'ETH',
-          assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
+          assetType,
           blockNum: null,
           createdAt: dayjs().valueOf(),
-          direction: 'withdraw',
-          isWithdrawal: true,
+          direction: isDepositMode ? 'deposit' : 'withdraw',
+          isWithdrawal: !isDepositMode,
           resolvedAt: null,
           status: WithdrawalStatus.UNCONFIRMED,
           destinationStatus: WithdrawalStatus.UNCONFIRMED,

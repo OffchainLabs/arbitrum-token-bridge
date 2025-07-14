@@ -16,13 +16,10 @@ import { shallow } from 'zustand/shallow'
 import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
-import { constants } from 'ethers'
 import { twMerge } from 'tailwind-merge'
 import { useMode } from '../../../hooks/useMode'
 import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
 import { useIsArbitrumCanonicalTransfer } from '../hooks/useIsCanonicalTransfer'
-import { ChainId } from '../../../types/ChainId'
-import { addressesEqual } from '../../../util/AddressUtils'
 
 function Wrapper({ children }: PropsWithChildren) {
   const { embedMode } = useMode()
@@ -147,14 +144,8 @@ export function getRoutes({
   }
 
   if (isArbitrumCanonicalTransfer) {
-    // Arbitrum to ApeChain doesn't support ETH
-    if (
-      destinationChainId !== ChainId.ApeChain &&
-      !addressesEqual(selectedToken?.address, constants.AddressZero)
-    ) {
-      ChildRoutes.push(<ArbitrumCanonicalRoute />)
-      routes.push('arbitrum')
-    }
+    ChildRoutes.push(<ArbitrumCanonicalRoute />)
+    routes.push('arbitrum')
   }
 
   return {

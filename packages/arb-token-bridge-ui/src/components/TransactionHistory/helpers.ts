@@ -600,6 +600,7 @@ export async function getUpdatedLifiTransfer(
   let destinationStatus: WithdrawalStatus
   let destinationTxId: string | null = null
 
+  console.log(statusResponse)
   /**
    * See https://docs.li.fi/li.fi-api/li.fi-api/status-of-a-transaction#the-different-statuses-and-what-they-mean
    */

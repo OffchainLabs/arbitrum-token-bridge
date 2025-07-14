@@ -7,6 +7,8 @@ import { isDepositMode } from '../../../util/isDepositMode'
 import { getDestinationChainIds } from '../../../util/networks'
 import { isDisabledCanonicalTransfer } from '../TransferDisabledDialog'
 import { useSelectedTokenIsWithdrawOnly } from './useSelectedTokenIsWithdrawOnly'
+import { ChainId } from '../../../types/ChainId'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
 
 export function isArbitrumCanonicalTransfer({
   sourceChainId,
@@ -47,6 +49,15 @@ export function isArbitrumCanonicalTransfer({
     })
   ) {
     return false
+  }
+
+  if (
+    sourceChainId === ChainId.ArbitrumOne &&
+    destinationChainId === ChainId.ApeChain
+  ) {
+    return (
+      !selectedToken || selectedToken.address === CommonAddress.ArbitrumOne.USDC
+    )
   }
 
   return true
