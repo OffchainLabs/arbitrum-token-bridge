@@ -117,7 +117,6 @@ export const Step = ({
 
 const LastStepEndItem = ({ tx }: { tx: MergedTransaction }) => {
   const destinationNetworkTxId = getDestinationNetworkTxId(tx)
-  console.log(tx)
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
