@@ -12,6 +12,7 @@ export type NavigationResult = {
   tbt: Metric;
   cls: Metric;
   speed: Metric;
+  bundle_size: Metric;
   performance: number;
   accessibility: number;
   best_practices: number;
@@ -73,6 +74,7 @@ export function parseNavigationResults(
       const lcp = parse(report, "largest-contentful-paint");
       const tbt = parse(report, "total-blocking-time");
       const cls = parse(report, "cumulative-layout-shift");
+      const bundle_size = parse(report, "total-byte-weight");
       const speed = report.lhr.audits["speed-index"];
 
       return {
@@ -95,6 +97,10 @@ export function parseNavigationResults(
         speed: {
           numericValue: acc.speed.numericValue + (speed.numericValue || 0),
           score: acc.speed.score + (speed.score || 0),
+        },
+        bundle_size: {
+          numericValue: acc.bundle_size.numericValue + bundle_size.numericValue,
+          score: acc.bundle_size.score + bundle_size.score,
         },
         performance:
           acc.performance + (report.lhr.categories.performance.score || 0),
@@ -127,6 +133,10 @@ export function parseNavigationResults(
         numericValue: 0,
         score: 0,
       },
+      bundle_size: {
+        numericValue: 0,
+        score: 0,
+      },
       performance: 0,
       accessibility: 0,
       best_practices: 0,
@@ -141,6 +151,11 @@ export function parseNavigationResults(
     tbt: generateMetric({ key: "tbt", length, report: mergedReports }),
     cls: generateMetric({ key: "cls", length, report: mergedReports }),
     speed: generateMetric({ key: "speed", length, report: mergedReports }),
+    bundle_size: generateMetric({
+      key: "bundle_size",
+      length,
+      report: mergedReports,
+    }),
     performance: parseToFixedNumber(
       (mergedReports.performance / length) * 100,
       2

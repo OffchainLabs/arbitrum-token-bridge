@@ -47,6 +47,7 @@ Navigation:
 | Total Blocking Time        | ${parsedNavigationReport.tbt.score} (${parsedNavigationReport.tbt.numericValue} ms) | ${navigationDiff.tbt.score} (${navigationDiff.tbt.numericValue} ms) |
 | Cumulative Layout Shift    | ${parsedNavigationReport.cls.score} (${parsedNavigationReport.cls.numericValue}) | ${navigationDiff.cls.score} (${navigationDiff.cls.numericValue} ms) |
 | Speed Index                | ${parsedNavigationReport.speed.score} (${parsedNavigationReport.speed.numericValue}s) | ${navigationDiff.speed.score} (${navigationDiff.speed.numericValue} ms) |
+| Bundle Size                | ${parsedNavigationReport.bundle_size.score} (${parsedNavigationReport.bundle_size.numericValue}s) | ${navigationDiff.bundle_size.score} (${navigationDiff.bundle_size.numericValue} byte) |
 
 
 Timespan:

@@ -88,6 +88,18 @@ export async function compareLighthouseReports({
       2
     ),
     seo: parseToFixedNumber(prevNavigationResult.seo - navigationResult.seo, 2),
+    bundle_size: {
+      numericValue: parseToFixedNumber(
+        prevNavigationResult.bundle_size.numericValue -
+          navigationResult.bundle_size.numericValue,
+        3
+      ),
+      score: parseToFixedNumber(
+        prevNavigationResult.bundle_size.score -
+          navigationResult.bundle_size.score,
+        2
+      ),
+    },
   } satisfies NavigationResult;
 
   // Compare Timespan Results
