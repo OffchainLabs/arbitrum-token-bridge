@@ -4,6 +4,10 @@ exports[`ParseLighthouseReports > Parse the navigation result 1`] = `
 {
   "accessibility": 90,
   "best_practices": 96,
+  "bundle_size": {
+    "numericValue": 17480764,
+    "score": 50,
+  },
   "cls": {
     "numericValue": 0,
     "score": 100,
