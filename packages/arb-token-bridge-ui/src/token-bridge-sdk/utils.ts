@@ -14,6 +14,7 @@ import {
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
 import { EnhancedProvider } from './EnhancedProvider'
+import { isValidLifiTransfer } from '../pages/api/crosschain-transfers/utils'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -54,6 +55,12 @@ export const getBridgeTransferProperties = (
     destinationChainId
   })
 
+  const isLifi = isValidLifiTransfer({
+    sourceChainId,
+    destinationChainId,
+    fromToken: props.sourceChainErc20Address
+  })
+
   const isNativeCurrencyTransfer =
     typeof props.sourceChainErc20Address === 'undefined'
 
@@ -62,7 +69,7 @@ export const getBridgeTransferProperties = (
     isWithdrawal,
     isNativeCurrencyTransfer,
     isTeleport,
-    isSupported: isDeposit || isWithdrawal || isTeleport
+    isSupported: isDeposit || isWithdrawal || isTeleport || isLifi
   }
 }
 

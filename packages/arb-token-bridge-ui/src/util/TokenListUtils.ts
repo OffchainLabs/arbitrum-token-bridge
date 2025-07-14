@@ -132,12 +132,20 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: '/images/ApeChainLogo.svg'
   },
   {
-    id: '55244_lifi',
+    id: '42161_lifi',
     originChainID: ChainId.Superposition,
     url: 'tokenLists/55244_lifi.json',
     name: 'Superposition Lifi List',
     isDefault: true,
     logoURI: '/images/SuperpositionLogo.svg'
+  },
+  {
+    id: '42161_lifi',
+    originChainID: ChainId.ArbitrumOne,
+    url: 'tokenLists/42161_lifi.json',
+    name: 'ArbitrumOne Lifi List',
+    isDefault: true,
+    logoURI: '/images/ArbitrumLogo.svg'
   },
   // For all orbit chains,
   ...orbitChainsData.mainnet

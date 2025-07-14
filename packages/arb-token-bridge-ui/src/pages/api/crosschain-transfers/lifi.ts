@@ -8,7 +8,8 @@ import {
   getRoutes,
   RoutesRequest,
   Route,
-  LiFiStep
+  LiFiStep,
+  CoinKey
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { CrosschainTransfersRouteBase, QueryParams, Token } from './types'
@@ -47,6 +48,7 @@ export interface LifiCrosschainTransfersRoute
   }
 }
 
+// TODO: check multiple gas?
 function sumGasCosts(gasCosts: GasCost[] | undefined) {
   return (
     (gasCosts || []).reduce((sum, gas) => {
@@ -88,13 +90,19 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
 
   const gasToken: Token =
     step.estimate.gasCosts && step.estimate.gasCosts.length > 0
-      ? step.estimate.gasCosts[0]!.token
-      : { ...ether, address: constants.AddressZero }
+      ? {
+          ...step.estimate.gasCosts[0]!.token,
+          coinKey: step.estimate.gasCosts[0]!.token.coinKey
+        }
+      : { ...ether, address: constants.AddressZero, coinKey: CoinKey.ETH }
 
   const feeToken: Token =
     step.estimate.feeCosts && step.estimate.feeCosts.length > 0
-      ? step.estimate.feeCosts[0]!.token
-      : { ...ether, address: constants.AddressZero }
+      ? {
+          ...step.estimate.feeCosts[0]!.token,
+          coinKey: step.estimate.feeCosts[0]!.token.coinKey
+        }
+      : { ...ether, address: constants.AddressZero, coinKey: CoinKey.ETH }
 
   return {
     type: 'lifi',
@@ -102,22 +110,32 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
     gas: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: sumGasCosts(step.estimate.gasCosts),
+      amountUSD: step.estimate.gasCosts?.[0]?.amountUSD || '0',
       token: gasToken
     },
     fee: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: sumFee(step.estimate.feeCosts),
+      amountUSD: step.estimate.feeCosts?.[0]?.amountUSD || '0',
       token: feeToken
     },
     fromAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: step.action.fromAmount,
-      token: step.action.fromToken
+      amountUSD: step.estimate.fromAmountUSD || '0',
+      token: {
+        ...step.action.fromToken,
+        coinKey: step.action.fromToken.coinKey
+      }
     },
     toAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: step.estimate.toAmount,
-      token: step.action.toToken
+      amountUSD: step.estimate.toAmountUSD || '0',
+      token: {
+        ...step.action.toToken,
+        coinKey: step.action.toToken.coinKey
+      }
     },
     fromAddress,
     toAddress,

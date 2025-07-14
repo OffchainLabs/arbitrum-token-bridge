@@ -69,7 +69,10 @@ export function isValidLifiTransfer({
     return true
   }
 
-  if (addressesEqual(fromToken, constants.AddressZero)) {
+  if (
+    addressesEqual(fromToken, CommonAddress.ApeChain.WETH) ||
+    addressesEqual(fromToken, constants.AddressZero)
+  ) {
     return true
   }
 
