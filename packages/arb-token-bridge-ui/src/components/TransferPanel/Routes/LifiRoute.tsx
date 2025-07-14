@@ -23,7 +23,6 @@ import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
 import { Address } from 'viem'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
-import { Token } from '../../../pages/api/crosschain-transfers/types'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { useRoutes } from './Routes'
 

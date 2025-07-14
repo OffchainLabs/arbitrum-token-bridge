@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useMemo
 } from 'react'
-import { constants, utils } from 'ethers'
+import { utils } from 'ethers'
 import Image from 'next/image'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'

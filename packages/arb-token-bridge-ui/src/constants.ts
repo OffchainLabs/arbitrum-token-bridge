@@ -1,5 +1,4 @@
 import { ERC20BridgeToken, TokenType } from './hooks/arbTokenBridge.types'
-import { Token } from './pages/api/crosschain-transfers/types'
 import { CommonAddress } from './util/CommonAddressUtils'
 
 export const TOS_VERSION = 2
