@@ -42,7 +42,16 @@ function ErrorTooltip({ error }: { error: string }) {
   return (
     <Tooltip
       tippyProps={{ className: 'break-all', trigger: 'click' }}
-      content={error}
+      content={
+        <SyntaxHighlighter
+          className="text-xs"
+          language="json"
+          style={stackoverflowDark}
+          wrapLongLines
+        >
+          {error}
+        </SyntaxHighlighter>
+      }
     >
       <div className="arb-hover flex cursor-pointer space-x-1">
         <EyeIcon width={20} />

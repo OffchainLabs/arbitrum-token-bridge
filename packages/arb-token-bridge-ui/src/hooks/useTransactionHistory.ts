@@ -435,6 +435,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                   destinationChainId: chainPair.childChainId
                 })
               ) {
+                if (chainPair.childChainId === 42170) {
+                  console.log('nova error 1')
+                }
                 // teleporter does not support withdrawals
                 if (type === 'withdrawals') return []
 
@@ -452,15 +455,31 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 })
               }
 
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 2')
+              }
+
               const batchSizeBlocks = BATCH_FETCH_BLOCKS[chainPair.childChainId]
+
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 3')
+              }
 
               const withdrawalFn =
                 typeof batchSizeBlocks === 'number'
                   ? fetchWithdrawalsInBatches
                   : fetchWithdrawals
 
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 4')
+              }
+
               const fetcherFn =
                 type === 'deposits' ? fetchDeposits : withdrawalFn
+
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 5')
+              }
 
               // else, fetch deposits or withdrawals
               return await fetcherFn({

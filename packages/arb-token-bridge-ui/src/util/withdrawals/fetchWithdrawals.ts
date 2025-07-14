@@ -75,6 +75,10 @@ export async function fetchWithdrawals({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
+  if (l2ChainID === 42170) {
+    console.log('nova error w1')
+  }
+
   const { isOrbitChain, isCoreChain } = isNetwork(l2ChainID)
 
   if (!fromBlock) {
@@ -87,6 +91,10 @@ export async function fetchWithdrawals({
   let latestFetchedBlock = fromBlock
 
   const latestSubgraphBlock = await fetchLatestSubgraphBlockNumber(l2ChainID)
+
+  if (l2ChainID === 42170) {
+    console.log('nova error w2')
+  }
 
   let withdrawalsFromSubgraph: WithdrawalFromSubgraph[] = []
   try {
@@ -117,10 +125,18 @@ export async function fetchWithdrawals({
       }
     })
 
+    if (l2ChainID === 42170) {
+      console.log('nova error w3')
+    }
+
     // if successful, this is our latest fetched block and we will use it as a start block for event logs to fetch the remaining data
     latestFetchedBlock = toBlockSubgraph
   } catch (error) {
     console.log('Error fetching withdrawals from subgraph', error)
+  }
+
+  if (l2ChainID === 42170) {
+    console.log('nova error w4')
   }
 
   const gateways = await getGateways(l2Provider)
@@ -133,6 +149,10 @@ export async function fetchWithdrawals({
   // alchemy as a raas has a global rate limit across their chains, so we have to fetch sequentially and wait in-between requests to work around this
   const isAlchemy = isAlchemyChain(l2ChainID)
   const delayMs = isAlchemy ? 2_000 : 0
+
+  if (l2ChainID === 42170) {
+    console.log('nova error w5')
+  }
 
   const allGateways = [
     gateways.standardGateway,
@@ -155,6 +175,10 @@ export async function fetchWithdrawals({
     }
   }
 
+  if (l2ChainID === 42170) {
+    console.log('nova error w6')
+  }
+
   const fetchReceivedTransactions =
     // check if we already fetched for each block
     toBlock && latestFetchedBlock >= toBlock
@@ -175,6 +199,10 @@ export async function fetchWithdrawals({
     }
   }
 
+  if (l2ChainID === 42170) {
+    console.log('nova error w7')
+  }
+
   const ethWithdrawalsFromEventLogs = fetchReceivedTransactions
     ? await backOff(() =>
         fetchETHWithdrawalsFromEventLogs({
@@ -188,6 +216,10 @@ export async function fetchWithdrawals({
 
   await wait(delayMs)
 
+  if (l2ChainID === 42170) {
+    console.log('nova error w8')
+  }
+
   const tokenWithdrawalsFromEventLogs =
     await fetchTokenWithdrawalsFromEventLogsSequentially({
       sender,
@@ -197,6 +229,10 @@ export async function fetchWithdrawals({
       provider: l2Provider,
       queries
     })
+
+  if (l2ChainID === 42170) {
+    console.log('nova error w9')
+  }
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
     ethWithdrawalsFromEventLogs.map(tx => {
@@ -209,6 +245,10 @@ export async function fetchWithdrawals({
       }
     })
 
+  if (l2ChainID === 42170) {
+    console.log('nova error w10')
+  }
+
   const mappedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] =
     tokenWithdrawalsFromEventLogs.map(tx => {
       return {
@@ -220,6 +260,10 @@ export async function fetchWithdrawals({
       }
     })
 
+  if (l2ChainID === 42170) {
+    console.log('nova error w11')
+  }
+
   // we need timestamps to sort token withdrawals along ETH withdrawals
   const tokenWithdrawalsFromEventLogsWithTimestamp: Withdrawal[] =
     await Promise.all(
@@ -227,6 +271,10 @@ export async function fetchWithdrawals({
         attachTimestampToTokenWithdrawal({ withdrawal, l2Provider })
       )
     )
+
+  if (l2ChainID === 42170) {
+    console.log('nova error w12')
+  }
 
   return [
     ...mappedEthWithdrawalsFromEventLogs,
