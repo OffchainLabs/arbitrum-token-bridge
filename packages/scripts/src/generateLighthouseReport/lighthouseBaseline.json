@@ -8,7 +8,8 @@
     "performance": 81.33,
     "accessibility": 90,
     "best_practices": 100,
-    "seo": 100
+    "seo": 100,
+    "bundle_size": { "numericValue": 2754742.333, "score": 50 }
   },
   {
     "performance": 49.67,
