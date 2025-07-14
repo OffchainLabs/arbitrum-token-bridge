@@ -1,5 +1,6 @@
 import { FlowResult } from "lighthouse";
 import { parseToFixedNumber } from "./parseToFixedNumber";
+import { log } from "console";
 
 type Metric = {
   /** Number from 0 to 1 */
@@ -307,6 +308,8 @@ export function parseLighthouseReports(
   const navigationReports = reports.map((report) => report.steps[0]);
   const timespanReports = reports.map((report) => report.steps[1]);
   const snapshotReports = reports.map((report) => report.steps[2]);
+
+  console.log(navigationReports);
 
   return [
     parseNavigationResults(navigationReports),
