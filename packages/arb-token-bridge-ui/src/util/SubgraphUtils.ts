@@ -47,6 +47,8 @@ export const fetchLatestSubgraphBlockNumber = async (
         headers: { 'Content-Type': 'application/json' }
       }
     )
+
+    console.log({ response })
   
     return ((await response.json()) as { data: number }).data
   } catch {
