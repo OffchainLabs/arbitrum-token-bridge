@@ -309,7 +309,7 @@ export function parseLighthouseReports(
   const timespanReports = reports.map((report) => report.steps[1]);
   const snapshotReports = reports.map((report) => report.steps[2]);
 
-  console.log(navigationReports);
+  console.log(parseNavigationResults(navigationReports));
 
   return [
     parseNavigationResults(navigationReports),
