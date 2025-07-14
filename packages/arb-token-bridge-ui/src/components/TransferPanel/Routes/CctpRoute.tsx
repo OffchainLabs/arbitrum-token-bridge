@@ -13,8 +13,6 @@ import {
   ERC20BridgeToken,
   TokenType
 } from '../../../hooks/arbTokenBridge.types'
-import { Token } from '../../../pages/api/crosschain-transfers/types'
-import { CoinKey } from '@lifi/sdk'
 
 export function CctpRoute() {
   const [{ amount }] = useArbQueryParams()
