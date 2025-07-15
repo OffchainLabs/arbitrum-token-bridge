@@ -83,7 +83,11 @@ export const LoadMoreButton = (
   props: ButtonHTMLAttributes<HTMLButtonElement>
 ) => {
   return (
-    <button {...props} className="arb-hover text-xs">
+    <button
+      {...props}
+      className="arb-hover text-xs"
+      aria-label="Load More Transactions"
+    >
       <div className="flex space-x-1 rounded border border-white px-2 py-1">
         <span>Load more</span>
         <PlusCircleIcon width={16} />
