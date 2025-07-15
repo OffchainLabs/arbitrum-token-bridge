@@ -1,5 +1,6 @@
 import { BigNumber, providers } from 'ethers'
 import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
+import { SimulateContractReturnType } from '@wagmi/core'
 
 import { DialogType } from '../components/common/Dialog2'
 
@@ -32,6 +33,13 @@ export type UiDriverStep =
         txRequestLabel: string
       }
     }
+  | {
+      type: 'tx_wagmi'
+      payload: {
+        txRequest: SimulateContractReturnType
+        txRequestLabel: string
+      }
+    }
 
 export type UiDriverStepType = UiDriverStep['type']
 
@@ -55,7 +63,7 @@ export type UiDriverStepResultFor<TStepType extends UiDriverStepType> =
     ? boolean
     : TStepType extends 'scw_tooltip'
     ? void
-    : TStepType extends 'tx_ethers'
+    : TStepType extends 'tx_ethers' | 'tx_wagmi'
     ? Result<providers.TransactionReceipt>
     : never
 
