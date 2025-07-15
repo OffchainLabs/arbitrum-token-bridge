@@ -6,7 +6,11 @@ import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { Chain } from 'wagmi/chains'
 
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import {
+  getDestinationChainIds,
+  getExplorerUrl,
+  isNetwork
+} from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -51,14 +55,24 @@ export function SwitchNetworksButton(
     DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
   )
 
-  const destinationChainNonArbitrumNotAllowed =
-    disableTransfersToNonArbitrumChains &&
-    isNetwork(networks.sourceChain.id).isNonArbitrumNetwork
+  const isNetworkSwapBlocked = useMemo(() => {
+    // block network swaps in case of either a smart contract wallet, or if the destination chain does not support transfers to the source-chain
+    // in this case, we show a one-way arrow and disable the swap button
+    return (
+      isSmartContractWallet ||
+      !getDestinationChainIds(
+        networks.destinationChain.id,
+        disableTransfersToNonArbitrumChains
+      ).includes(networks.sourceChain.id)
+    )
+  }, [
+    networks.destinationChain.id,
+    networks.sourceChain.id,
+    isSmartContractWallet,
+    disableTransfersToNonArbitrumChains
+  ])
 
-  const disabled =
-    isSmartContractWallet ||
-    isLoadingAccountType ||
-    destinationChainNonArbitrumNotAllowed
+  const disabled = isLoadingAccountType || isNetworkSwapBlocked
 
   return (
     <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
@@ -79,20 +93,10 @@ export function SwitchNetworksButton(
         {...props}
       >
         <SwitchNetworkButtonBorderTop />
-        {isSmartContractWallet ? (
-          <ArrowDownIcon
-            className={twMerge(
-              'h-6 w-6 stroke-1 text-white',
-              disabled && 'opacity-30'
-            )}
-          />
+        {isNetworkSwapBlocked ? (
+          <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
         ) : (
-          <ArrowsUpDownIcon
-            className={twMerge(
-              'h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80',
-              disabled && 'opacity-30'
-            )}
-          />
+          <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
         )}
         <SwitchNetworkButtonBorderBottom />
       </button>

@@ -566,10 +566,21 @@ export function getDestinationChainIds(
 
   const validDestinationChainIds = getChildChainIds(chain)
 
+  // include the parent chain in destination if there is no restriction
   if (parentChainId && !disableTransfersToNonArbitrumChains) {
     return sortChainIds([parentChainId, ...validDestinationChainIds])
   }
 
+  // do not include the parent chain in destination if the destinations cant include non-arbitrum chains and the parent is non-arbitrum
+  if (
+    parentChainId &&
+    disableTransfersToNonArbitrumChains &&
+    !isNetwork(parentChainId).isNonArbitrumNetwork
+  ) {
+    return sortChainIds([parentChainId, ...validDestinationChainIds])
+  }
+
+  // do not include the parent chain in destination if its invalid (undefined)
   return sortChainIds(validDestinationChainIds)
 }
 
