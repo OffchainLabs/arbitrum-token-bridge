@@ -93,15 +93,18 @@ export function sanitizeQueryParams({
     !isSupportedChainId(sourceChainId) &&
     isSupportedChainId(destinationChainId)
   ) {
+    // case 1: the destination chain id is supported, but invalid in the context of the feature flag
+    const isInvalidDestinationChainId =
+      disableTransfersToNonArbitrumChains &&
+      isNetwork(destinationChainId).isNonArbitrumNetwork
+
+    // case 2: the destination chain id is supported and valid, but it doesn't have a source chain partner, eg. sourceChain=undefined and destinationChain=base
     const [defaultSourceChainId] = getDestinationChainIds(
       destinationChainId,
       disableTransfersToNonArbitrumChains
     )
 
-    const isInvalidDestinationChainId =
-      disableTransfersToNonArbitrumChains &&
-      isNetwork(destinationChainId).isNonArbitrumNetwork
-
+    // in both cases, we default to eth<>arbitrum-one pair
     if (
       typeof defaultSourceChainId === 'undefined' ||
       isInvalidDestinationChainId
