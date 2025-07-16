@@ -153,15 +153,15 @@ export function getAmountToPay(
 ): GetAmountToPayResult {
   const amounts: Record<string, AmountsToPay> = {}
   // Fee
-  amounts[selectedRouteContext.fee.token.address] = {
+  amounts[selectedRouteContext.fee.token.address.toLowerCase()] = {
     amount: selectedRouteContext.fee.amount,
     amountUSD: selectedRouteContext.fee.amountUSD,
     token: selectedRouteContext.fee.token
   }
 
   // Gas
-  const acc = amounts[selectedRouteContext.gas.token.address]
-  amounts[selectedRouteContext.gas.token.address] = {
+  const acc = amounts[selectedRouteContext.gas.token.address.toLowerCase()]
+  amounts[selectedRouteContext.gas.token.address.toLowerCase()] = {
     amount: acc
       ? acc.amount.add(selectedRouteContext.gas.amount)
       : selectedRouteContext.gas.amount,
@@ -174,10 +174,13 @@ export function getAmountToPay(
   }
 
   // Amount
-  const acc2 = amounts[selectedRouteContext.fromAmount.token.address]
-  amounts[selectedRouteContext.fromAmount.token.address] = {
+  const acc2 =
+    amounts[selectedRouteContext.fromAmount.token.address.toLowerCase()]
+  amounts[selectedRouteContext.fromAmount.token.address.toLowerCase()] = {
     amount: acc2
-      ? acc2.amount.add(selectedRouteContext.fromAmount.token.address)
+      ? acc2.amount.add(
+          selectedRouteContext.fromAmount.token.address.toLowerCase()
+        )
       : selectedRouteContext.fromAmount.amount,
     amountUSD: acc2
       ? (
@@ -526,7 +529,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         return notReady({
           errorMessages: {
             inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
+              asset: nativeCurrency.symbol,
               chain: networks.sourceChain.name,
               balance: formatAmount(ethBalanceFloat),
               requiredBalance: formatAmount(feeToPay)
@@ -537,7 +540,11 @@ export function useTransferReadiness(): UseTransferReadinessResult {
 
       // Check token sent balance
       const amountToSend = selectedToken?.address
-        ? amounts[selectedToken?.address]
+        ? amounts[
+            (isDepositMode
+              ? selectedToken?.address
+              : selectedToken?.l2Address) || constants.AddressZero
+          ]
         : undefined
       const amountToPay = parseFloat(
         utils.formatUnits(
@@ -547,17 +554,14 @@ export function useTransferReadiness(): UseTransferReadinessResult {
       )
 
       if (
-        selectedToken &&
         selectedTokenBalanceFloat &&
         amountToPay > selectedTokenBalanceFloat
       ) {
         return notReady({
           errorMessages: {
-            inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-              asset: selectedToken.symbol,
-              chain: networks.sourceChain.name,
-              balance: formatAmount(selectedTokenBalanceFloat),
-              requiredBalance: formatAmount(amountToPay)
+            inputAmount1: getInsufficientFundsErrorMessage({
+              asset: selectedToken?.symbol || nativeCurrency.symbol,
+              chain: networks.sourceChain.name
             })
           }
         })
