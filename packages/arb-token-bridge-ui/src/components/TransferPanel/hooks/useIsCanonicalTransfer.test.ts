@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import {
   ERC20BridgeToken,
   TokenType
 } from '../../../hooks/arbTokenBridge.types'
 import { isArbitrumCanonicalTransfer } from './useIsCanonicalTransfer'
 import { ChainId } from '../../../types/ChainId'
+import { constants } from 'ethers'
+import { ether } from '../../../constants'
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
+import orbitChainsData from '../../../util/orbitChainsData.json'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
 
 const usdcToken: ERC20BridgeToken = {
   address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -16,9 +21,22 @@ const usdcToken: ERC20BridgeToken = {
 }
 
 const rariChainId = 1380012617
-const apeChainId = 33139
 
 describe('isArbitrumCanonicalTransfer', () => {
+  beforeAll(() => {
+    registerCustomArbitrumNetwork(
+      orbitChainsData.mainnet.find(chain => chain.chainId === ChainId.ApeChain)!
+    )
+    registerCustomArbitrumNetwork(
+      orbitChainsData.mainnet.find(
+        chain => chain.chainId === ChainId.Superposition
+      )!
+    )
+    registerCustomArbitrumNetwork(
+      orbitChainsData.mainnet.find(chain => chain.chainId === rariChainId)!
+    )
+  })
+
   describe('for deposits', () => {
     it('should return true from Ethereum to Arbitrum One', () => {
       const ethDeposit = isArbitrumCanonicalTransfer({
@@ -88,6 +106,63 @@ describe('isArbitrumCanonicalTransfer', () => {
         }
       })
       expect(deposit).toBe(false)
+    })
+
+    it('should return from ArbitrumOne to ApeChain', () => {
+      const apeDeposit = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.ArbitrumOne,
+        destinationChainId: ChainId.ApeChain,
+        childChainId: ChainId.ApeChain,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: null
+      })
+      expect(apeDeposit).toBe(true)
+
+      const ethDeposit = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.ArbitrumOne,
+        destinationChainId: ChainId.ApeChain,
+        childChainId: ChainId.ApeChain,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: {
+          ...ether,
+          type: TokenType.ERC20,
+          address: constants.AddressZero,
+          l2Address: CommonAddress.ApeChain.WETH,
+          listIds: new Set<string>()
+        }
+      })
+      expect(ethDeposit).toBe(false)
+    })
+
+    it('should return from ArbitrumOne to Superposition', () => {
+      const ethDeposit = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.ArbitrumOne,
+        destinationChainId: ChainId.Superposition,
+        childChainId: ChainId.Superposition,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: null
+      })
+      expect(ethDeposit).toBe(true)
+
+      const usdcDeposit = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.ArbitrumOne,
+        destinationChainId: ChainId.Superposition,
+        childChainId: ChainId.Superposition,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: {
+          ...usdcToken,
+          address: CommonAddress.ArbitrumOne.USDC
+        }
+      })
+      expect(usdcDeposit).toBe(true)
     })
   })
 
@@ -161,6 +236,66 @@ describe('isArbitrumCanonicalTransfer', () => {
       })
       expect(withdrawal).toBe(false)
     })
+
+    it('should return from ApeChain to ArbitrumOne', () => {
+      const apeWithdraw = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.ApeChain,
+        destinationChainId: ChainId.ArbitrumOne,
+        childChainId: ChainId.ApeChain,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: null
+      })
+      expect(apeWithdraw).toBe(true)
+
+      const wethWithdraw = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.ApeChain,
+        destinationChainId: ChainId.ArbitrumOne,
+        childChainId: ChainId.ApeChain,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: {
+          address: constants.AddressZero,
+          decimals: 18,
+          l2Address: CommonAddress.ApeChain.WETH,
+          listIds: new Set<string>(['33139_lifi']),
+          logoURI: '',
+          name: 'Wrapped Ether',
+          symbol: 'WETH',
+          type: TokenType.ERC20
+        }
+      })
+      expect(wethWithdraw).toBe(false)
+    })
+
+    it('should return from Superposition to ArbitrumOne', () => {
+      const ethWithdraw = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.Superposition,
+        destinationChainId: ChainId.ArbitrumOne,
+        childChainId: ChainId.Superposition,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: null
+      })
+      expect(ethWithdraw).toBe(true)
+
+      const usdcWithdraw = isArbitrumCanonicalTransfer({
+        sourceChainId: ChainId.Superposition,
+        destinationChainId: ChainId.ArbitrumOne,
+        childChainId: ChainId.Superposition,
+        parentChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: {
+          ...usdcToken,
+          address: CommonAddress.ArbitrumOne.USDC
+        }
+      })
+      expect(usdcWithdraw).toBe(true)
+    })
   })
 
   describe('teleport mode', () => {
@@ -210,10 +345,10 @@ describe('isArbitrumCanonicalTransfer', () => {
 
     it('should return false from Ethereum to ApeChain', () => {
       const ethTeleport = isArbitrumCanonicalTransfer({
-        childChainId: apeChainId,
+        childChainId: ChainId.ApeChain,
         parentChainId: ChainId.Ethereum,
         sourceChainId: ChainId.Ethereum,
-        destinationChainId: apeChainId,
+        destinationChainId: ChainId.ApeChain,
         isSelectedTokenWithdrawOnly: false,
         isSelectedTokenWithdrawOnlyLoading: false,
         selectedToken: null
@@ -221,10 +356,10 @@ describe('isArbitrumCanonicalTransfer', () => {
       expect(ethTeleport).toBe(false)
 
       const erc20Teleport = isArbitrumCanonicalTransfer({
-        childChainId: apeChainId,
+        childChainId: ChainId.ApeChain,
         parentChainId: ChainId.Ethereum,
         sourceChainId: ChainId.Ethereum,
-        destinationChainId: apeChainId,
+        destinationChainId: ChainId.ApeChain,
         isSelectedTokenWithdrawOnly: false,
         isSelectedTokenWithdrawOnlyLoading: false,
         selectedToken: usdcToken
