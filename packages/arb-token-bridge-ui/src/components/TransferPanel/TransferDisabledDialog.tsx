@@ -17,6 +17,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { isLifiEnabled } from '../../util/featureFlag'
+import { CommonAddress } from '../../util/CommonAddressUtils'
 
 export function isDisabledCanonicalTransfer({
   selectedToken,
@@ -48,6 +49,23 @@ export function isDisabledCanonicalTransfer({
     !isTeleportEnabledToken(selectedToken.address, parentChainId, childChainId)
   ) {
     return true
+  }
+
+  if (parentChainId === ChainId.ArbitrumOne) {
+    if (
+      childChainId === ChainId.ApeChain &&
+      !addressesEqual(selectedToken.address, CommonAddress.ArbitrumOne.USDC)
+    ) {
+      return true
+    }
+
+    if (
+      childChainId === ChainId.Superposition &&
+      !addressesEqual(selectedToken.address, CommonAddress.ArbitrumOne.USDT) &&
+      !addressesEqual(selectedToken.address, CommonAddress.ArbitrumOne.USDC)
+    ) {
+      return true
+    }
   }
 
   if (
