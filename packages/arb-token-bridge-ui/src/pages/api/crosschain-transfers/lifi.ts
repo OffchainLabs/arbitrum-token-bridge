@@ -8,8 +8,7 @@ import {
   getRoutes,
   RoutesRequest,
   Route,
-  LiFiStep,
-  CoinKey
+  LiFiStep
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { CrosschainTransfersRouteBase, QueryParams, Token } from './types'
@@ -48,7 +47,6 @@ export interface LifiCrosschainTransfersRoute
   }
 }
 
-// TODO: check multiple gas?
 function sumGasCosts(gasCosts: GasCost[] | undefined) {
   return (
     (gasCosts || []).reduce((sum, gas) => {
@@ -90,19 +88,13 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
 
   const gasToken: Token =
     step.estimate.gasCosts && step.estimate.gasCosts.length > 0
-      ? {
-          ...step.estimate.gasCosts[0]!.token,
-          coinKey: step.estimate.gasCosts[0]!.token.coinKey
-        }
-      : { ...ether, address: constants.AddressZero, coinKey: CoinKey.ETH }
+      ? step.estimate.gasCosts[0]!.token
+      : { ...ether, address: constants.AddressZero }
 
   const feeToken: Token =
     step.estimate.feeCosts && step.estimate.feeCosts.length > 0
-      ? {
-          ...step.estimate.feeCosts[0]!.token,
-          coinKey: step.estimate.feeCosts[0]!.token.coinKey
-        }
-      : { ...ether, address: constants.AddressZero, coinKey: CoinKey.ETH }
+      ? step.estimate.feeCosts[0]!.token
+      : { ...ether, address: constants.AddressZero }
 
   return {
     type: 'lifi',
@@ -123,19 +115,13 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: step.action.fromAmount,
       amountUSD: step.estimate.fromAmountUSD || '0',
-      token: {
-        ...step.action.fromToken,
-        coinKey: step.action.fromToken.coinKey
-      }
+      token: step.action.fromToken
     },
     toAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: step.estimate.toAmount,
       amountUSD: step.estimate.toAmountUSD || '0',
-      token: {
-        ...step.action.toToken,
-        coinKey: step.action.toToken.coinKey
-      }
+      token: step.action.toToken
     },
     fromAddress,
     toAddress,
