@@ -48,7 +48,8 @@ export const TokenInfo = ({
     destinationChainId: networks.destinationChain.id
   }).source
 
-  const tokenAddressLowercased = tokenOverride?.address.toLowerCase()
+  const tokenAddressLowercased =
+    tokenOverride?.address.toLowerCase() || token?.address.toLowerCase()
 
   const tokenLogo = useMemo(() => {
     if (!tokenAddressLowercased) {
