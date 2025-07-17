@@ -59,7 +59,8 @@ module.exports = {
         // BRAND
         'eth-dark': 'var(--color-eth-dark, #1A1C33)',
         'ocl-blue': 'var(--color-ocl-blue, #243145)',
-        'atmosphere-blue': 'var(--color-atmosphere-blue, #152C4E)'
+        'atmosphere-blue': 'var(--color-atmosphere-blue, #152C4E)',
+        'widget-background': 'var(--color-widget-background, #191919)'
       },
       spacing: {
         1: '5px',

@@ -32,6 +32,7 @@ import {
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../types/ChainId'
+import { defaultTheme, ThemeConfig } from './useTheme'
 
 export enum TabParamEnum {
   BRIDGE = 'bridge',
@@ -110,42 +111,11 @@ export const DisabledFeaturesParam = {
   }
 }
 
-// Theme configuration types
-export interface ThemeConfig {
-  borderRadius?: string
-  // Add more theme properties here as needed
-  // Example:
-  // colors?: {
-  //   primary?: string;
-  //   secondary?: string;
-  //   text?: string;
-  // };
-  // spacing?: {
-  //   base?: string;
-  //   large?: string;
-  // };
-  // typography?: {
-  //   fontSize?: string;
-  //   lineHeight?: string;
-  // };
-}
-
-const defaultTheme: ThemeConfig = {
-  borderRadius: '5px'
-  // Add default values for new properties here
-  // colors: {
-  //   primary: '#1366C1',
-  //   secondary: '#CD0000',
-  //   text: '#191919'
-  // }
-}
-
-// Theme parameter decoder/encoder
 export const ThemeParam = {
   encode: (config: ThemeConfig | undefined) => {
     if (!config) return undefined
     try {
-      return JSON.stringify(config)
+      return encodeURIComponent(JSON.stringify(config)) // Encode the JSON string to handle special characters like # in hex colors
     } catch {
       return undefined
     }
@@ -155,9 +125,8 @@ export const ThemeParam = {
   ): ThemeConfig => {
     if (!configStr || Array.isArray(configStr)) return defaultTheme
     try {
-      const parsedTheme = JSON.parse(configStr)
-      // Deep merge with default theme to ensure all properties have values
-      return { ...defaultTheme, ...parsedTheme }
+      const decodedTheme = JSON.parse(decodeURIComponent(configStr))
+      return { ...defaultTheme, ...decodedTheme }
     } catch {
       return defaultTheme
     }

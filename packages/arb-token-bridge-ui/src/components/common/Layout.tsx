@@ -42,7 +42,7 @@ export function Layout(props: LayoutProps) {
 
   if (embedMode) {
     return (
-      <body className={twMerge('bg-gray-1', unica.className)}>
+      <body className={twMerge('bg-widget-background', unica.className)}>
         {props.children}
         <Toast />
       </body>

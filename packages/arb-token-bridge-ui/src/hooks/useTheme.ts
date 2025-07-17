@@ -1,12 +1,21 @@
 import { useEffect } from 'react'
-import { useArbQueryParams, ThemeConfig } from './useArbQueryParams'
+import { useArbQueryParams } from './useArbQueryParams'
+
+// Theme configuration types
+export interface ThemeConfig {
+  borderRadius?: string
+  widgetBackgroundColor?: string
+}
+
+export const defaultTheme: ThemeConfig = {
+  borderRadius: '5px',
+  widgetBackgroundColor: '#191919'
+}
 
 // Map theme properties to CSS variables
 const themeVariableMap: Record<keyof ThemeConfig, string> = {
-  borderRadius: '--border-radius'
-  // Add more mappings as we extend the theme
-  // colors: '--color',
-  // spacing: '--spacing',
+  borderRadius: '--border-radius',
+  widgetBackgroundColor: '--color-widget-background'
 }
 
 export function useTheme() {
