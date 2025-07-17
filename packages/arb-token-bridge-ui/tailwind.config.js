@@ -114,6 +114,9 @@ module.exports = {
       borderRadius: {
         DEFAULT: 'var(--border-radius, 5px)'
       },
+      borderWidth: {
+        DEFAULT: 'var(--border-width, 1px)'
+      },
       boxShadow: {
         // shadow used for input fields across the app
         input:

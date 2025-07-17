@@ -450,12 +450,12 @@ export const Route = React.memo(
     return (
       <button
         className={twMerge(
-          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-inset ring-[#ffffff33] transition-colors md:flex-row',
+          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded border border-[#ffffff33] bg-[#303030] px-4 py-3 text-left text-sm text-white transition-colors md:flex-row',
           'focus-visible:!outline-none',
           'focus-within:bg-[#474747] hover:bg-[#474747]',
           !isDisabled &&
             selected &&
-            'bg-[#5F7D5B60] ring-[#5F7D5B] focus-within:bg-[#5F7D5B60] hover:bg-[#5F7D5B60]',
+            'border border-[#5F7D5B] bg-[#5F7D5B60] focus-within:bg-[#5F7D5B60] hover:bg-[#5F7D5B60]',
           embedMode && 'md:flex-col'
         )}
         onClick={() => onSelectedRouteClick(type)}

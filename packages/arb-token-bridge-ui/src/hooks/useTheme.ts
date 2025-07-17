@@ -5,16 +5,19 @@ import { useArbQueryParams } from './useArbQueryParams'
 export interface ThemeConfig {
   borderRadius?: string
   widgetBackgroundColor?: string
+  borderWidth?: string
 }
 
 export const defaultTheme: ThemeConfig = {
   borderRadius: '5px',
+  borderWidth: '1px',
   widgetBackgroundColor: '#191919'
 }
 
 // Map theme properties to CSS variables
 const themeVariableMap: Record<keyof ThemeConfig, string> = {
   borderRadius: '--border-radius',
+  borderWidth: '--border-width',
   widgetBackgroundColor: '--color-widget-background'
 }
 
