@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import dayjs from 'dayjs'
 import { SafeImage } from '../../common/SafeImage'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { twMerge } from 'tailwind-merge'
 import { formatAmount, formatUSD } from '../../../util/NumberUtils'
 import { Loader } from '../../common/atoms/Loader'
@@ -25,7 +25,6 @@ import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { useMode } from '../../../hooks/useMode'
-import { CoinKey } from '@lifi/sdk'
 import { Token } from '../../../pages/api/crosschain-transfers/types'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
@@ -435,12 +434,17 @@ export const Route = React.memo(
     const gasEth =
       (!isTestnet &&
         gasCost &&
-        gasCost.find(({ gasToken }) => gasToken.coinKey === CoinKey.ETH)) ||
+        gasCost.find(
+          ({ gasToken }) => gasToken.address === constants.AddressZero
+        )) ||
       undefined
 
     const showUSDValueForBridgeFee =
-      (!isTestnet && bridgeFee && bridgeFee.token.coinKey === CoinKey.ETH) ||
+      (!isTestnet &&
+        bridgeFee &&
+        bridgeFee.token.address === constants.AddressZero) ||
       false
+
     return (
       <button
         className={twMerge(

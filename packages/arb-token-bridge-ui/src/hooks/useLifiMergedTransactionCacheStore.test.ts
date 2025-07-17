@@ -54,8 +54,7 @@ function createMockedLifiTransaction({
       token: {
         address: constants.AddressZero,
         decimals: 18,
-        symbol: 'ETH',
-        coinKey: 'ETH'
+        symbol: 'ETH'
       }
     },
     toAmount: {
@@ -64,8 +63,7 @@ function createMockedLifiTransaction({
       token: {
         address: constants.AddressZero,
         decimals: 18,
-        symbol: 'ETH',
-        coinKey: 'ETH'
+        symbol: 'ETH'
       }
     },
     destinationTxId: null,

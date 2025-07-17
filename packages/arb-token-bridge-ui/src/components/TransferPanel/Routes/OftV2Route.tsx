@@ -10,7 +10,6 @@ import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { shallow } from 'zustand/shallow'
-import { CoinKey } from '@lifi/sdk'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {
@@ -55,8 +54,7 @@ export function OftV2Route() {
               .toString(),
         gasToken: {
           ...ether,
-          address: constants.AddressZero,
-          coinKey: CoinKey.ETH
+          address: constants.AddressZero
         }
       }
     ]
@@ -74,7 +72,7 @@ export function OftV2Route() {
 
     return {
       fee: oftFeeEstimates.sourceChainGasFee.toString(),
-      token: { ...ether, address: constants.AddressZero, coinKey: CoinKey.ETH }
+      token: { ...ether, address: constants.AddressZero }
     }
   }, [oftFeeEstimates?.sourceChainGasFee])
 
