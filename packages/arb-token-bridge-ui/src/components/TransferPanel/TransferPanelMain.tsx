@@ -32,6 +32,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
+import { useTheme } from '../../hooks/useTheme'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -40,6 +41,8 @@ export function SwitchNetworksButton(
     useAccountType()
 
   const disabled = isSmartContractWallet || isLoadingAccountType
+
+  const { theme } = useTheme()
 
   const [networks, setNetworks] = useNetworks()
 
@@ -50,7 +53,8 @@ export function SwitchNetworksButton(
         disabled={disabled}
         className={twMerge(
           'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
-          disabled && 'pointer-events-none'
+          disabled && 'pointer-events-none',
+          theme.primaryCtaColor ? 'bg-primary-cta' : ''
         )}
         onClick={() => {
           setNetworks({
@@ -75,6 +79,7 @@ export function SwitchNetworksButton(
 
 function SwitchNetworkButtonBorderTop() {
   const [networks] = useNetworks()
+  const { theme } = useTheme()
 
   const sourceNetworkColor = getBridgeUiConfigForChain(
     networks.sourceChain.id
@@ -83,13 +88,16 @@ function SwitchNetworkButtonBorderTop() {
   return (
     <div
       className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: sourceNetworkColor }}
+      style={{
+        borderColor: theme.networkThemeOverrideColor ?? sourceNetworkColor
+      }}
     />
   )
 }
 
 function SwitchNetworkButtonBorderBottom() {
   const [networks] = useNetworks()
+  const { theme } = useTheme()
 
   const destinationNetworkColor = getBridgeUiConfigForChain(
     networks.destinationChain.id
@@ -98,7 +106,9 @@ function SwitchNetworkButtonBorderBottom() {
   return (
     <div
       className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: destinationNetworkColor }}
+      style={{
+        borderColor: theme.networkThemeOverrideColor ?? destinationNetworkColor
+      }}
     />
   )
 }
@@ -152,6 +162,7 @@ export function NetworkContainer({
 }) {
   const { address: walletAddress } = useAccount()
   const { color } = getBridgeUiConfigForChain(network.id)
+  const { theme } = useTheme()
 
   const showCustomAddressBanner = useMemo(() => {
     if (!customAddress) {
@@ -170,8 +181,8 @@ export function NetworkContainer({
       )}
       <div
         style={{
-          backgroundColor: `${color}66`, // 255*40% is 102, = 66 in hex
-          borderColor: color
+          backgroundColor: theme.networkThemeOverrideColor ?? `${color}66`, // 255*40% is 102, = 66 in hex
+          borderColor: theme.networkThemeOverrideColor ?? color
         }}
         className={twMerge(
           'relative rounded border transition-colors duration-400',

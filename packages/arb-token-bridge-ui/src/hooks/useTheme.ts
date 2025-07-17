@@ -1,32 +1,56 @@
 import { useEffect } from 'react'
-import useLocalStorage from '@rehooks/local-storage'
+import { useArbQueryParams } from './useArbQueryParams'
 
-export const themeLocalStorageKey = 'arbitrum:bridge:preferences:theme'
+// Theme configuration types
+export interface ThemeConfig {
+  borderRadius?: string
+  widgetBackgroundColor?: string
+  borderWidth?: string
+  networkThemeOverrideColor?: string
+  primaryCtaColor?: string
+}
 
-export const classicThemeKey = 'arbitrum-classic-theme'
+export const defaultTheme: ThemeConfig = {
+  borderRadius: '5px',
+  borderWidth: '1px',
+  widgetBackgroundColor: '#191919'
+}
 
-export const THEME_CONFIG = [
-  {
-    id: 'space',
-    label: 'Space',
-    description:
-      'A dark, space-themed UI with a sleek and futuristic aesthetic, featuring Arbinaut on a backdrop of shining stars and moon.'
-  },
-  {
-    id: classicThemeKey,
-    label: 'Arbitrum Classic',
-    description:
-      'Arbitrum before it was cool: A reminiscent of the pre-nitro era, with simple, solid buttons, a minimal purple layout and chunky fonts.'
-  }
-]
+// Map theme properties to CSS variables
+const themeVariableMap: Record<keyof ThemeConfig, string> = {
+  borderRadius: '--border-radius',
+  borderWidth: '--border-width',
+  widgetBackgroundColor: '--color-widget-background',
+  networkThemeOverrideColor: '--color-network-theme-override',
+  primaryCtaColor: '--color-primary-cta'
+}
 
-export const useTheme = () => {
-  const [theme, setTheme] = useLocalStorage<string>(themeLocalStorageKey)
+export function useTheme() {
+  const [{ theme }] = useArbQueryParams()
 
+  const _themeKey = theme?.toString() // we don't want the hook to fire every time the object reference changes
+
+  // Apply all theme properties to the app
   useEffect(() => {
-    if (!theme) return
-    document.body.className = theme
-  }, [theme])
+    Object.entries(theme).forEach(([key, value]) => {
+      const cssVariable = themeVariableMap[key as keyof ThemeConfig]
+      if (cssVariable && value) {
+        document.documentElement.style.setProperty(
+          cssVariable,
+          value.toString()
+        )
+      }
+    })
 
-  return [theme, setTheme] as const
+    return () => {
+      // Clean up all theme variables
+      Object.values(themeVariableMap).forEach(cssVariable => {
+        document.documentElement.style.removeProperty(cssVariable)
+      })
+    }
+  }, [_themeKey])
+
+  return {
+    theme
+  }
 }
