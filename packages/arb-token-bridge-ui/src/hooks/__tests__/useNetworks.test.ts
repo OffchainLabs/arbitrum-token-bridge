@@ -151,18 +151,6 @@ describe('sanitizeQueryParams', () => {
       })
     })
   })
-  describe('when `destinationChainId` is valid but has no paired source chains and `sourceChainId` is undefined', () => {
-    it('should set `sourceChainId` to Ethereum and `destinationChainId` to Arbitrum One', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: ChainId.Base
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    })
-  })
 
   describe('when `destinationChainId` is invalid and `sourceChainId` is valid', () => {
     it('should set `destinationChainId` based on `sourceChainId`', () => {
@@ -224,18 +212,6 @@ describe('sanitizeQueryParams', () => {
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: 2222,
         destinationChainId: ChainId.ArbitrumSepolia
-      })
-    })
-  })
-  describe('when `destinationChainId` is undefined and `sourceChainId` is valid but has no paired destination chains', () => {
-    it('should set `sourceChainId` to Ethereum and `destinationChainId` to Arbitrum One', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: ChainId.Base,
-        destinationChainId: undefined
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
       })
     })
   })

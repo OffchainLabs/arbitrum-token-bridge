@@ -2,13 +2,17 @@ import { useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
 import { useNetworks } from '../../../hooks/useNetworks'
-import { Route, Token } from './Route'
+import { Route } from './Route'
 import { isNetwork } from '../../../util/networks'
 
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
+import {
+  ERC20BridgeToken,
+  TokenType
+} from '../../../hooks/arbTokenBridge.types'
 
 export function CctpRoute() {
   const [{ amount }] = useArbQueryParams()
@@ -22,11 +26,14 @@ export function CctpRoute() {
     shallow
   )
 
-  const nativeUsdcToken: Token = useMemo(
+  const nativeUsdcToken: ERC20BridgeToken = useMemo(
     () => ({
       decimals: 6,
       address: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
       symbol: 'USDC',
+      type: TokenType.ERC20,
+      name: 'USD Coin',
+      listIds: new Set<string>(),
       logoURI:
         'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
     }),

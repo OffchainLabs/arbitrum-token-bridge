@@ -42,10 +42,7 @@ export const TokenLogo = ({
     }
 
     if (selectedToken) {
-      return (
-        tokensFromLists[selectedToken.address]?.logoURI ??
-        tokensFromUser[selectedToken.address]?.logoURI
-      )
+      return selectedToken.logoURI
     }
 
     return nativeCurrency.logoUrl

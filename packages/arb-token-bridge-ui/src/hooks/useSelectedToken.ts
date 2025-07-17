@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
 import {
@@ -25,16 +25,62 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
+import { ChainId } from '../types/ChainId'
 
-const commonUSDC = {
+const commonUSDC: ERC20BridgeToken = {
   name: 'USD Coin',
   type: TokenType.ERC20,
   symbol: 'USDC',
   decimals: 6,
-  listIds: new Set<string>()
+  listIds: new Set<string>(),
+  address: '',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
 }
 
-export const useSelectedToken = () => {
+/**
+ * On ApeChain, if selectedToken is null, we default to ApeToken for regular transfers
+ * And constants.zero (ETH) for lifi transfers
+ */
+export function sanitizeSelectedTokenAddress({
+  sourceChainId,
+  destinationChainId,
+  erc20ParentAddress
+}: {
+  sourceChainId: number | undefined
+  destinationChainId: number | undefined
+  erc20ParentAddress: string | null
+}) {
+  /** Deposit to ApeChain from Ethereum, Superposition or Base is only supported through Lifi
+   *  We need to set the default token to ETH rather than ApeChain native token
+   *  For ArbitrumOne we default to native token (Ape)
+   */
+  if (!erc20ParentAddress && destinationChainId === ChainId.ApeChain) {
+    if (
+      sourceChainId === ChainId.Ethereum ||
+      sourceChainId === ChainId.Superposition ||
+      sourceChainId === ChainId.Base
+    ) {
+      return constants.AddressZero
+    }
+  }
+
+  /**
+   * For transfers from ApeChain, we default to ETH unless destination is ArbitrumOne
+   */
+  if (
+    !erc20ParentAddress &&
+    sourceChainId === ChainId.ApeChain &&
+    destinationChainId !== ChainId.ArbitrumOne
+  ) {
+    return constants.AddressZero
+  }
+}
+
+export const useSelectedToken = (): [
+  ERC20BridgeToken | null,
+  (erc20ParentAddress: string | null) => void
+] => {
   const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
@@ -46,14 +92,28 @@ export const useSelectedToken = () => {
       tokenFromSearchParams,
       parentChain.id,
       childChain.id,
+      networks.destinationChain.id,
       'useSelectedToken_usdc'
     ],
-    async ([_tokenAddress, _parentChainId, _childChainId]) => {
+    async ([
+      _tokenAddress,
+      _parentChainId,
+      _childChainId,
+      _destinationChainId
+    ]) => {
       if (!_tokenAddress) {
         return null
       }
 
       if (!isTokenNativeUSDC(_tokenAddress)) {
+        return null
+      }
+
+      // USDC for lifi chains, use bridgeTokens
+      if (
+        _destinationChainId === ChainId.ApeChain ||
+        _destinationChainId === ChainId.Superposition
+      ) {
         return null
       }
 
@@ -69,8 +129,25 @@ export const useSelectedToken = () => {
   )
 
   const setSelectedToken = useCallback(
-    (erc20ParentAddress: string | null) =>
-      setQueryParams({ token: sanitizeTokenAddress(erc20ParentAddress) }),
+    (erc20ParentAddress: string | null) => {
+      return setQueryParams(latestQuery => {
+        const sanitizedTokenAddress = sanitizeSelectedTokenAddress({
+          sourceChainId: latestQuery.sourceChain,
+          destinationChainId: latestQuery.destinationChain,
+          erc20ParentAddress
+        })
+
+        if (sanitizedTokenAddress) {
+          return {
+            token: sanitizedTokenAddress
+          }
+        }
+
+        return {
+          token: sanitizeTokenAddress(erc20ParentAddress)
+        }
+      })
+    },
     [setQueryParams]
   )
 

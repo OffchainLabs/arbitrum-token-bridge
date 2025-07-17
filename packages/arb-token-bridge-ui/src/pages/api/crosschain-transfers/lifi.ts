@@ -12,8 +12,8 @@ import {
 } from '@lifi/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { CrosschainTransfersRouteBase, QueryParams, Token } from './types'
-import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { ether } from '../../../constants'
+import { isValidLifiTransfer } from './utils'
 
 export enum Order {
   /**
@@ -48,29 +48,43 @@ export interface LifiCrosschainTransfersRoute
 }
 
 function sumGasCosts(gasCosts: GasCost[] | undefined) {
-  return (
-    (gasCosts || []).reduce((sum, gas) => {
-      return sum.add(BigNumber.from(gas.estimate))
-    }, constants.Zero) ?? constants.Zero
-  ).toString()
+  const result =
+    (gasCosts || []).reduce(
+      ({ amount, amountUSD }, gas) => {
+        return {
+          amount: amount.add(BigNumber.from(gas.estimate)),
+          amountUSD: amountUSD + Number(gas.amountUSD)
+        }
+      },
+      { amount: constants.Zero, amountUSD: 0 }
+    ) ?? constants.Zero
+
+  return {
+    amount: result.amount.toString(),
+    amountUSD: result.amountUSD.toString()
+  }
 }
 function sumFee(feeCosts: FeeCost[] | undefined) {
-  return (
-    (feeCosts || []).reduce((sum, fee) => {
-      return sum.add(BigNumber.from(fee.amount))
-    }, constants.Zero) ?? constants.Zero
-  ).toString()
+  const result =
+    (feeCosts || []).reduce(
+      ({ amount, amountUSD }, fee) => {
+        return {
+          amount: fee.included
+            ? amount
+            : amount.add(BigNumber.from(fee.amount)),
+          amountUSD: fee.included
+            ? amountUSD
+            : amountUSD + Number(fee.amountUSD)
+        }
+      },
+      { amount: constants.Zero, amountUSD: 0 }
+    ) ?? constants.Zero
+
+  return {
+    amount: result.amount.toString(),
+    amountUSD: result.amountUSD.toString()
+  }
 }
-
-export const allowedSourceTokens = [
-  CommonAddress.ArbitrumOne.USDC,
-  constants.AddressZero
-]
-
-export const allowedDestinationToken = [
-  CommonAddress.Ethereum.USDC,
-  constants.AddressZero
-]
 
 function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
   route,
@@ -84,8 +98,6 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
   toAddress: string
   fromChainId: string
   toChainId: string
-  fromToken: string
-  toToken: string
 }): LifiCrosschainTransfersRoute {
   const step = route.steps[0]!
   const tags: Order[] = []
@@ -111,22 +123,24 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
     durationMs: step.estimate.executionDuration * 1_000,
     gas: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: sumGasCosts(step.estimate.gasCosts),
+      ...sumGasCosts(step.estimate.gasCosts),
       token: gasToken
     },
     fee: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: sumFee(step.estimate.feeCosts),
+      ...sumFee(step.estimate.feeCosts),
       token: feeToken
     },
     fromAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: step.action.fromAmount,
+      amountUSD: step.estimate.fromAmountUSD || '0',
       token: step.action.fromToken
     },
     toAmount: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
       amount: step.estimate.toAmount,
+      amountUSD: step.estimate.toAmountUSD || '0',
       token: step.action.toToken
     },
     fromAddress,
@@ -242,14 +256,6 @@ export default async function handler(
       return
     }
 
-    if (!allowedSourceTokens.includes(fromToken)) {
-      res.status(400).send({
-        message: 'fromToken is not one of the allowed tokens: USDC, ETH',
-        data: null
-      })
-      return
-    }
-
     if (!toToken || !utils.isAddress(toToken)) {
       res
         .status(400)
@@ -257,9 +263,15 @@ export default async function handler(
       return
     }
 
-    if (!allowedDestinationToken.includes(toToken)) {
+    if (
+      !isValidLifiTransfer({
+        fromToken,
+        sourceChainId: Number(fromChainId),
+        destinationChainId: Number(toChainId)
+      })
+    ) {
       res.status(400).send({
-        message: 'toToken is not one of the allowed tokens: USDC, ETH',
+        message: `Sending fromToken (${fromToken}) from chain ${fromChainId} to chain ${toChainId} is not supported`,
         data: null
       })
       return
@@ -338,9 +350,7 @@ export default async function handler(
           fromAddress,
           toAddress,
           fromChainId,
-          toChainId,
-          fromToken,
-          toToken
+          toChainId
         })
       )
 

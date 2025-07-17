@@ -41,6 +41,8 @@ import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceChainNativeCurrencyDecimals'
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
+import { useBalances } from '../../../hooks/useBalances'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 function Amount2ToggleButton() {
   const [networks] = useNetworks()
@@ -78,11 +80,14 @@ export const useAmount2InputVisibility = create<{
 }))
 
 const Input1 = React.memo(() => {
+  const [networks] = useNetworks()
   const [{ amount }] = useArbQueryParams()
   const { setAmount } = useSetInputAmount()
   const { maxAmount } = useMaxAmount()
   const decimals = useSelectedTokenDecimals()
   const { errorMessages } = useTransferReadiness()
+  const { ethParentBalance } = useBalances()
+  const [selectedToken] = useSelectedToken()
 
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -104,6 +109,23 @@ const Input1 = React.memo(() => {
     [setAmount]
   )
 
+  const overrideOptions = useMemo(() => {
+    const override = getTokenOverride({
+      fromToken: selectedToken?.address,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    })
+
+    if (!override.source) {
+      return null
+    }
+
+    return {
+      ...override.source,
+      logoSrc: override.source.logoURI
+    }
+  }, [networks.sourceChain.id, ethParentBalance, selectedToken])
+
   return (
     <TransferPanelMainInput
       maxButtonOnClick={maxButtonOnClick}
@@ -113,6 +135,7 @@ const Input1 = React.memo(() => {
       maxAmount={maxAmount}
       isMaxAmount={isMaxAmount}
       decimals={decimals}
+      {...(overrideOptions ? { options: overrideOptions } : {})}
     />
   )
 })

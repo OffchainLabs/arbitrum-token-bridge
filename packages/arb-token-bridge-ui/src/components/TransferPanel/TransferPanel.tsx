@@ -95,11 +95,13 @@ import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
 import { AdvancedSettings } from './AdvancedSettings'
 import { Cog8ToothIcon } from '@heroicons/react/24/outline'
-import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
-import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 import { useMode } from '../../hooks/useMode'
+import {
+  getTokenOverride,
+  isValidLifiTransfer
+} from '../../pages/api/crosschain-transfers/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -128,7 +130,6 @@ export function TransferPanel() {
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
     useState(false)
-
   const {
     app: {
       arbTokenBridge: { token },
@@ -255,6 +256,10 @@ export function TransferPanel() {
     }
 
     if (isTokenNativeUSDC(tokenFromSearchParams)) {
+      return true
+    }
+
+    if (addressesEqual(tokenFromSearchParams, constants.AddressZero)) {
       return true
     }
 
@@ -573,12 +578,13 @@ export function TransferPanel() {
        * If the amount received is less than 90% of the sent amount, we show a warning dialog
        * We multiply by 100 before dividing to avoid BigNumber stripping the value to 0
        */
+      const { fromAmountUsd, toAmountUsd } = getAmountToPay(context)
       const { lossPercentage } = getAmountLoss({
-        fromAmount: getAmountToPay(context),
-        toAmount: context.toAmount.amount
+        fromAmount: fromAmountUsd,
+        toAmount: toAmountUsd
       })
 
-      if (lossPercentage.gt(10)) {
+      if (lossPercentage > 10) {
         const confirmation = await confirmDialog('high_slippage_warning')
         if (!confirmation) return
       }
@@ -589,10 +595,10 @@ export function TransferPanel() {
 
       const { sourceChainProvider, destinationChainProvider } = networks
 
-      const { fromToken, toToken } = getFromAndToTokenAddresses({
-        isDepositMode,
-        selectedToken,
-        sourceChainId: networks.sourceChain.id
+      const tokenOverrides = getTokenOverride({
+        fromToken: selectedToken?.address,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       })
 
       const { transactionRequest } = await getStepTransaction(context.step)
@@ -603,8 +609,8 @@ export function TransferPanel() {
       const lifiTransferStarter = new LifiTransferStarter({
         destinationChainProvider,
         sourceChainProvider,
-        destinationChainErc20Address: toToken,
-        sourceChainErc20Address: fromToken,
+        destinationChainErc20Address: tokenOverrides.destination?.address,
+        sourceChainErc20Address: tokenOverrides.source?.address,
         lifiData: {
           ...context,
           transactionRequest
@@ -677,14 +683,21 @@ export function TransferPanel() {
           highlightTransactionHistoryDisclaimer()
         }, 100)
       } else {
+        const assetType =
+          !selectedToken ||
+          (selectedToken &&
+            addressesEqual(selectedToken.address, constants.AddressZero))
+            ? AssetType.ETH
+            : AssetType.ERC20
+
         const newTransfer: LifiMergedTransaction = {
           txId: transfer.sourceChainTransaction.hash,
           asset: selectedToken?.symbol || 'ETH',
-          assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
+          assetType,
           blockNum: null,
           createdAt: dayjs().valueOf(),
-          direction: 'withdraw',
-          isWithdrawal: true,
+          direction: isDepositMode ? 'deposit' : 'withdraw',
+          isWithdrawal: !isDepositMode,
           resolvedAt: null,
           status: WithdrawalStatus.UNCONFIRMED,
           destinationStatus: WithdrawalStatus.UNCONFIRMED,
@@ -1328,10 +1341,12 @@ export function TransferPanel() {
    * or if it's an EOA (to display custom destination address input)
    */
   const showSettingsButton =
-    isLifiTransferAllowed({
-      selectedToken,
+    isValidLifiTransfer({
       sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id
+      destinationChainId: networks.destinationChain.id,
+      fromToken: isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address
     }) ||
     (!isLoadingAccountType && !isSmartContractWallet)
 

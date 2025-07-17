@@ -1,5 +1,4 @@
 import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { BigNumber, constants, utils } from 'ethers'
 import { BadgeType, Route } from './Route'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
@@ -22,10 +21,11 @@ import { Loader } from '../../common/atoms/Loader'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
-import { ArbOneNativeUSDC } from '../../../util/L2NativeUtils'
-import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { Address } from 'viem'
-import { getFromAndToTokenAddresses } from './getFromAndToTokenAddresses'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { useRoutes } from './Routes'
+import { NoteBox } from '../../common/NoteBox'
 
 export function LifiRoutes({
   cheapestTag,
@@ -34,9 +34,9 @@ export function LifiRoutes({
   cheapestTag?: BadgeType
   fastestTag?: BadgeType
 }) {
+  const { ChildRoutes } = useRoutes()
   const { address } = useAccount()
   const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
   const { disabledBridges, disabledExchanges, slippage } = useLifiSettingsStore(
     state => ({
       disabledBridges: state.disabledBridges,
@@ -51,19 +51,28 @@ export function LifiRoutes({
   const [selectedToken] = useSelectedToken()
   const amount = useAmountBigNumber()
 
-  const { fromToken, toToken } = getFromAndToTokenAddresses({
-    selectedToken,
-    isDepositMode,
-    sourceChainId: networks.sourceChain.id
-  })
+  const overrideToken = useMemo(
+    () =>
+      getTokenOverride({
+        sourceChainId: networks.sourceChain.id,
+        fromToken: selectedToken?.address,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [
+      selectedToken?.address,
+      networks.sourceChain.id,
+      networks.destinationChain.id
+    ]
+  )
+
   const parameters = {
     fromAddress: address,
     fromAmount: amount.toString(),
     fromChainId: networks.sourceChain.id,
-    fromToken: fromToken || constants.AddressZero,
+    fromToken: overrideToken.source?.address || constants.AddressZero,
     toAddress: (destinationAddress as Address) || address,
     toChainId: networks.destinationChain.id,
-    toToken: toToken || constants.AddressZero,
+    toToken: overrideToken.destination?.address || constants.AddressZero,
     denyBridges: disabledBridges,
     denyExchanges: disabledExchanges,
     slippage
@@ -101,6 +110,31 @@ export function LifiRoutes({
       )
     }
 
+    // If lifi is the only route available, show an empty state
+    if (ChildRoutes?.props.children.length === 1) {
+      return (
+        <>
+          <NoteBox variant="warning" className="w-fit">
+            Low liquidity
+          </NoteBox>
+
+          <p className="flex flex-col text-white">
+            Unable to find a viable path because of low liquidity.
+            <br /> <br />
+            This can happen when demand for a specific asset is high or if a new
+            chain has limited initial liquidity.
+            <br /> <br />
+            You can try to:
+            <ol className="list-decimal pl-6">
+              <li>Check back soon: Liquidity conditions can improve.</li>
+              <li>Reduce your transaction amount.</li>
+              <li>If possible, consider alternative assets or destinations.</li>
+            </ol>
+          </p>
+        </>
+      )
+    }
+
     return null
   }
 
@@ -120,7 +154,14 @@ export function LifiRoutes({
     if (cheapestTag) {
       tags.push(cheapestTag)
     }
-    return <LifiRoute type="lifi" route={route} tag={tags} />
+    return (
+      <LifiRoute
+        type="lifi"
+        route={route}
+        tag={tags}
+        overrideToken={overrideToken.destination || undefined}
+      />
+    )
   }
 
   return (
@@ -130,10 +171,16 @@ export function LifiRoutes({
           type="lifi-cheapest"
           route={cheapestRoute}
           tag={cheapestTag}
+          overrideToken={overrideToken.destination || undefined}
         />
       )}
       {fastestRoute && (
-        <LifiRoute type="lifi-fastest" route={fastestRoute} tag={fastestTag} />
+        <LifiRoute
+          type="lifi-fastest"
+          route={fastestRoute}
+          tag={fastestTag}
+          overrideToken={overrideToken.destination || undefined}
+        />
       )}
     </>
   )
@@ -142,13 +189,14 @@ export function LifiRoutes({
 function LifiRoute({
   type,
   route,
-  tag
+  tag,
+  overrideToken
 }: {
   type: 'lifi' | 'lifi-fastest' | 'lifi-cheapest'
   route: LifiCrosschainTransfersRoute
   tag?: BadgeType | BadgeType[]
+  overrideToken?: ERC20BridgeToken | undefined
 }) {
-  const [selectedToken] = useSelectedToken()
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
       selectedRoute: state.selectedRoute,
@@ -164,18 +212,22 @@ function LifiRoute({
         spenderAddress: route.spenderAddress as Address,
         gas: {
           amount: BigNumber.from(route.gas.amount),
+          amountUSD: route.gas.amountUSD,
           token: route.gas.token
         },
         fee: {
           amount: BigNumber.from(route.fee.amount),
+          amountUSD: route.fee.amountUSD,
           token: route.fee.token
         },
         fromAmount: {
           amount: BigNumber.from(route.fromAmount.amount),
+          amountUSD: route.fromAmount.amountUSD,
           token: route.fromAmount.token
         },
         toAmount: {
           amount: BigNumber.from(route.toAmount.amount),
+          amountUSD: route.toAmount.amountUSD,
           token: route.toAmount.token
         },
         toolDetails: route.protocolData.tool,
@@ -205,8 +257,6 @@ function LifiRoute({
     [route.gas.amount, route.gas.token]
   )
 
-  const isUsdcTransfer = isTokenNativeUSDC(selectedToken?.address)
-
   return (
     <Route
       type={type}
@@ -218,7 +268,7 @@ function LifiRoute({
         .toString()}
       isLoadingGasEstimate={false}
       gasCost={gasCost}
-      overrideToken={isUsdcTransfer ? ArbOneNativeUSDC : undefined}
+      overrideToken={overrideToken}
       bridgeFee={bridgeFee}
       tag={tag}
       selected={isSelected}

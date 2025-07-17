@@ -20,18 +20,22 @@ export interface CrosschainTransfersRouteBase {
   durationMs: number
   gas: {
     amount: string
+    amountUSD: string
     token: Token
   }
   fee: {
     amount: string
+    amountUSD: string
     token: Token
   }
   fromAmount: {
     amount: string
+    amountUSD: string
     token: Token
   }
   toAmount: {
     amount: string
+    amountUSD: string
     token: Token
   }
   fromChainId: number

@@ -229,7 +229,6 @@ describe('getDestinationChainIds', () => {
       (value, index) => index === 0 || value >= Number(arr[index - 1])
     )
   }
-
   it('should return a sorted list for Ethereum Mainnet', () => {
     const destinationChainIds = getDestinationChainIds(ChainId.Ethereum)
     const defaultChainId = destinationChainIds[0]
@@ -237,6 +236,17 @@ describe('getDestinationChainIds', () => {
 
     expect(defaultChainId).toBe(ChainId.ArbitrumOne)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
+
+    const [arbitrumOne, arbitrumNova, ...orbitChains] = getDestinationChainIds(
+      ChainId.Ethereum,
+      {
+        includeLifi: true
+      }
+    )
+
+    expect(arbitrumOne).toBe(ChainId.ArbitrumOne)
+    expect(arbitrumNova).toBe(ChainId.ArbitrumNova)
+    expect(isAscending(orbitChains)).toBe(true)
   })
 
   it('should return a sorted list for Arbitrum One', () => {
@@ -246,6 +256,16 @@ describe('getDestinationChainIds', () => {
 
     expect(defaultChainId).toBe(ChainId.Ethereum)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
+
+    const [ethereum, ...orbitChains] = getDestinationChainIds(
+      ChainId.ArbitrumOne,
+      {
+        includeLifi: true
+      }
+    )
+
+    expect(ethereum).toBe(ChainId.Ethereum)
+    expect(isAscending(orbitChains)).toBe(true)
   })
 
   it('should return a sorted list for Sepolia', () => {
@@ -276,9 +296,22 @@ describe('getDestinationChainIds', () => {
   })
 
   // Enable when there are Orbit Chains on Base
-  it('should not return a list for Base', () => {
-    const destinationChainIds = getDestinationChainIds(ChainId.Base)
+  describe('should return for Base', () => {
+    it('no chains without lifi', () => {
+      const destinationChainIds = getDestinationChainIds(ChainId.Base)
+      expect(destinationChainIds).toEqual([])
+    })
 
-    expect(destinationChainIds).toHaveLength(0)
+    it('a sorted list with lifi destinations', () => {
+      const [arbitrumOne, ...orbitChains] = getDestinationChainIds(
+        ChainId.Base,
+        {
+          includeLifi: true
+        }
+      )
+
+      expect(arbitrumOne).toBe(ChainId.ArbitrumOne)
+      expect(isAscending(orbitChains)).toBe(true)
+    })
   })
 })

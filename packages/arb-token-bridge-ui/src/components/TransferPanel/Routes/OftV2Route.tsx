@@ -52,7 +52,10 @@ export function OftV2Route() {
           : utils
               .parseUnits(estimatedChildChainGasFees.toString(), 18)
               .toString(),
-        gasToken: { ...ether, address: constants.AddressZero }
+        gasToken: {
+          ...ether,
+          address: constants.AddressZero
+        }
       }
     ]
   }, [

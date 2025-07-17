@@ -9,7 +9,6 @@ export const CommonAddress = {
     'USDC.e': '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     USDT: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a',
-
     CU: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02'
   },
   // Xai Mainnet
@@ -24,5 +23,15 @@ export const CommonAddress = {
     USDC: '0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
     'USDC.e': '0x119f0e6303bec7021b295ecab27a4a1a5b37ecf0',
     tokenMessengerContractAddress: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5'
+  },
+  Base: {
+    USDC: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+  },
+  ApeChain: {
+    USDCe: '0xf1815bd50389c46847f0bda824ec8da914045d14',
+    WETH: '0xf4d9235269a96aadafc9adae454a0618ebe37949'
+  },
+  Superposition: {
+    USDCe: '0x6c030c5cc283f791b26816f325b9c632d964f8a1'
   }
 } as const
