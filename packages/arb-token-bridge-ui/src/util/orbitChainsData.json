@@ -1194,6 +1194,189 @@
           "logoUrl": "/images/Hychain_NativeTokenLogo.jpg"
         }
       }
+    },
+    {
+      "chainId": 6985385,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x8620F893F6321C31909e4a58bcEb6948A289e0fD",
+        "inbox": "0xe7D7C04885f460e0c58504D617C65ab064A4879D",
+        "outbox": "0x74045319D890f0C0CD7914F2DE757F25492331f0",
+        "rollup": "0x45e39B0957FE6eac4Be9B0A02462290A17724a68",
+        "sequencerInbox": "0xa80dD081B83399614fa0BB497174Bdcb3EF4Efe6"
+      },
+      "nativeToken": "0xcf5104d094e3864cfcbda43b82e1cefd26a016eb",
+      "explorerUrl": "https://humanity-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://humanity-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Humanity Mainnet",
+      "slug": "humanity-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0xdbcC9e1e24C0b8f9b7bEE5b32E0A9332D9818686",
+        "parentErc20Gateway": "0xa84A5f9565DB67129Be5bEb7fA94dB0F74098f37",
+        "parentGatewayRouter": "0x0266191d2a5ED66A308874E9266099039AF19cD2",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xc8a8eCF060e219B6CADe249562933479c6097a89",
+        "childErc20Gateway": "0x5214401CE33cdeBd33F46eD479133eB35731E095",
+        "childGatewayRouter": "0x38Fa669dE4442F65c2cE4a324bA7e004E3b7A653",
+        "childMultiCall": "0xB40f50Ba0fCF0237b717135c71423F3f2BA027f2",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#BA5400",
+        "network": {
+          "name": "Humanity Mainnet",
+          "logo": "/images/HumanityMainnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Humanity",
+          "symbol": "H",
+          "logoUrl": "/images/HumanityMainnet_Logo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 613419,
+      "confirmPeriodBlocks": 50400,
+      "ethBridge": {
+        "bridge": "0xd75a60aFcBC113C1c76e42184663Da141f839053",
+        "inbox": "0x46a2f92Fa215eBc734e51b26da3d205de71FA930",
+        "outbox": "0xC327F5cDBAAc8879EE8017A0977C9a685A850a4F",
+        "rollup": "0xfcEE41852E5Ec9b907714200B2A3c5b7AC29e7Ae",
+        "sequencerInbox": "0x2fccc2de02Dd598E14403C4151F192d962E646Ba"
+      },
+      "nativeToken": "0x690F1eEf8AcEaD09Ac695d9111Af081045c6d5b7",
+      "explorerUrl": "https://galactica-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://galactica-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Galactica Mainnet",
+      "slug": "galactica-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2AA8436882f207aD42dD62B169650EDe658B2BB0",
+        "parentErc20Gateway": "0x15B37ad0bE0cCB5Cdb3004d740E5D2d95C08cD9e",
+        "parentGatewayRouter": "0x8200d6f1f080DDc28Ec6ce2972999C9Cbd014B07",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x80713AC91F995C19d607152eB020594D966edb7A",
+        "childErc20Gateway": "0x80713AC91F995C19d607152eB020594D966edb7A",
+        "childGatewayRouter": "0x33347c676570593D1F86B688c7015208697d7384",
+        "childMultiCall": "0x58dc7979d9Ca852333d3939145B5EF775a3122f6",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#F49756",
+        "network": {
+          "name": "Galactica Mainnet",
+          "logo": "/images/GalacticaMainnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "GNET",
+          "symbol": "GNET",
+          "logoUrl": "/images/GalacticaMainnet_Logo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 32766,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xA9F4ee72439afC704db48dc049CbFb7E914aD300",
+        "inbox": "0x446626827f14F89B38D5bA1ab152B484cd7912fD",
+        "outbox": "0x39919941b42DAb335d9924Ef56dF7b9813b2D6d9",
+        "rollup": "0xc930fd48846e956b308f28524dA2d5E14c832e33",
+        "sequencerInbox": "0x38d41Ac2fbc3f13FcA7838F6638D8FbDb189e807"
+      },
+      "nativeToken": "0x3e62fED35c97145e6B445704B8CE74B2544776A9",
+      "explorerUrl": "https://earnm-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://earnm-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Earnm Mainnet",
+      "slug": "earnm-mainnet",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x24f926249F73203112400756801A41Cb519a87aa",
+        "parentErc20Gateway": "0x0b6b5aFEe8602A4d88dC26Fc2E85b2d1236156F6",
+        "parentGatewayRouter": "0xFCF106865f380D73b52406933B3e74498771F3Ef",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xfE7314336309689B2ff48126F1c1D918e38D7f8B",
+        "childErc20Gateway": "0x6Bc48DE32A13F0bc735254A68796e3edCF0fa15c",
+        "childGatewayRouter": "0xa8cF21b0Fb8f3F142632f7BB23E363061411B00b",
+        "childMultiCall": "0x90E54d885A3f99b97B9977390a493D9108Da73F1",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#1fd82e",
+        "network": {
+          "name": "Earnm Mainnet",
+          "logo": "/images/EarnmMainnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "Earnm Token",
+          "symbol": "EARNM",
+          "logoUrl": "/images/EarnmMainnet_NativeTokenLogo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 1628,
+      "confirmPeriodBlocks": 7200,
+      "ethBridge": {
+        "bridge": "0x61C4b51f9388A2DD62C791341f0d50AD88d64Fd4",
+        "inbox": "0x1744424936C6F1A4921130b12AA4F3832B421002",
+        "outbox": "0xa0419E39cA100DCfC6F0d68D605d2445f387Fb4e",
+        "rollup": "0x7705e53B707AF758aCEa86580d5da155d2fB2921",
+        "sequencerInbox": "0xfF3e828FD206bD8491A7C77ABfb128860D314b6B"
+      },
+      "explorerUrl": "https://explorer.trex.xyz",
+      "rpcUrl": "https://rpc.trex.xyz",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "T-REX",
+      "slug": "t-rex",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x043349BFE53Ba7684492c49eDbF8355205e5e454",
+        "parentErc20Gateway": "0xd1Fc6140377f4b8F31f250B922B5a6A59eFaAC41",
+        "parentGatewayRouter": "0xac586C4a3C8e4165d046ed3F64816058A5d4f00e",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "parentWethGateway": "0x8CF7f2E0E29ACd80A7dab0A4a9d2b5C6Da706166",
+        "childCustomGateway": "0x6a8835302c2fC45528DA99C7fc11C0e376b33dD5",
+        "childErc20Gateway": "0x9126565e79cede19Ce9b49963174f3d46bb4685E",
+        "childGatewayRouter": "0x1D89605a15de4aB54A8Bf06ee33f8D5B94A729F7",
+        "childMultiCall": "0x1Bc42912EBb178fB8BFEB49dE64aDC65d51DAc52",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0xEA935Ba885D79efb563aaea7662Fdd169a6CbB60",
+        "childWethGateway": "0x2cdDA5dfDe2299c8e3C534938e311148142367a6"
+      },
+      "bridgeUiConfig": {
+        "color": "#AAD394",
+        "network": {
+          "name": "T-REX",
+          "logo": "/images/T-REX_Logo.png",
+          "description": "Invisible blockchain bridging everyday digital interactions into real-world rewards."
+        }
+      }
     }
   ],
   "testnet": [
@@ -2170,6 +2353,143 @@
           "name": "GNET",
           "symbol": "GNET",
           "logoUrl": "/images/GalacticaCassiopeia_Logo.svg"
+        }
+      }
+    },
+    {
+      "chainId": 181228,
+      "confirmPeriodBlocks": 60,
+      "ethBridge": {
+        "bridge": "0x1DDe0F57E7889B6866505634E58E3057b01dfed0",
+        "inbox": "0xAAD45a7bF65b43E56767CdE3Ab84A5433c714Afc",
+        "outbox": "0x781Fc2C8EAeA5DFBa4E40A2487187C70703BD92C",
+        "rollup": "0x60b33120F5572608CC33c5C3a40c992987B59Edc",
+        "sequencerInbox": "0x7A6398deA2adc6fe4A3cfBA3352840bB03e440d3"
+      },
+      "explorerUrl": "https://sepolia-explorer.hpp.io/",
+      "rpcUrl": "https://sepolia.hpp.io",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "HPP Sepolia",
+      "slug": "hpp-sepolia",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x1070D76B89D5dfCd30c56429202bd3dAE4d55955",
+        "parentErc20Gateway": "0x15C7018696e1bDc392C252a28E0accD429D85b3E",
+        "parentGatewayRouter": "0x8deBBE23AAE151C49609A46ad2b14590e3692F21",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+        "parentWethGateway": "0xbB0c4391ACBA1e218feE5aD156fA661eBff5545B",
+        "childCustomGateway": "0x8980cbD2EAF1F2aBb930889Fbbbe2b3837140cc5",
+        "childErc20Gateway": "0x4B39dEc9fBebE71902232be6129C123f10a732A6",
+        "childGatewayRouter": "0xb3D7425f7A8dD31EF83d3fAE08302b7f9058E978",
+        "childMultiCall": "0xc7da6827dA3c2e8a41625eb2986a1c9D0515fD9d",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0xd96a3b90e8AbF45E758BA7a407B3f2d1a3b6f546",
+        "childWethGateway": "0xE57Bfe64Ee4e0A5A32329A75c7aC98b1c7664187"
+      },
+      "bridgeUiConfig": {
+        "color": "#1f2021",
+        "network": {
+          "name": "HPP Sepolia",
+          "logo": "/images/HPPSepolia_Logo.svg",
+          "description": "House Party Protocol (HPP) is a modular AI-powered blockchain and data infrastructure designed for the next generation of decentralized applications, built on the pillars of trustworthy data, verifiable AI, and real-world scalability."
+        }
+      }
+    },
+    {
+      "chainId": 393,
+      "confirmPeriodBlocks": 64,
+      "ethBridge": {
+        "bridge": "0xB8f043Bb9e63174548660F152d4FAD563Ce8a038",
+        "inbox": "0xb2B13E2bBfE28f7d20a0aa18b0602b978806679D",
+        "outbox": "0x8706f4852437a6AB78a312d5bdAe3da79304f1B8",
+        "rollup": "0x4C6ffC9604C5b6C5803BD3d87c0236b1270F7E86",
+        "sequencerInbox": "0x686F8dfB1eAcbcdD78946E13f91E04Dd1f181fd5"
+      },
+      "nativeToken": "0x4fAa7bddB947790C5d585d2E1B8a59aA39a1a4DB",
+      "explorerUrl": "https://explorer.nexus.xyz/",
+      "rpcUrl": "https://nexus-new.rpc.caldera.xyz/http",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Nexus Devnet",
+      "slug": "nexus-devnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x793ac23ba3dbd28AA5290c1ea067D8e52B363FBb",
+        "parentErc20Gateway": "0x94c1496B31D78459874740e636a05BfcE6B7e04a",
+        "parentGatewayRouter": "0x1f3C407456432d8b81d0a7452df3Cd5E9DE48320",
+        "parentMultiCall": "0xBE575090EA0706FD4785a483120A8A8654005178",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x95dcc58A140aaAA1b29651859d3CCF22038240b6",
+        "childErc20Gateway": "0x52FCDdF698E71c0F8771Ec6Ef70777C80B9Ea4A1",
+        "childGatewayRouter": "0xd3FC9B4C6d4f1425d97062c8b6b5CFC4B84f5Ebb",
+        "childMultiCall": "0x00119847032ff6D0f833b1aa23Da5FC5B114E6Fb",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#000000",
+        "network": {
+          "name": "Nexus Devnet",
+          "logo": "/images/NexusDevnet_Logo.png",
+          "description": "Innovation at the intersection of artificial intelligence, blockchain, and zero knowledge."
+        },
+        "nativeTokenData": {
+          "name": "Nexus",
+          "symbol": "NEX",
+          "logoUrl": "/images/NexusDevnet_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 3940,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0xaAd98C7363efe8194397E21a1F36489Ff2A1cF13",
+        "inbox": "0x8C480DfF2F16D0d32E6814270dd5d426324F4b3f",
+        "outbox": "0x641E679B32481980cF169eaC0213493f7dEA5b10",
+        "rollup": "0xc0487449057158bbd264EBFBdc8f8d7f8921e2aC",
+        "sequencerInbox": "0x87286b5b75ee11989a847D01d832Aa6976421E9A"
+      },
+      "nativeToken": "0x551D690089a85765ef2d584b9324E3738A255b0e",
+      "explorerUrl": "https://testnet3.explorer.nexus.xyz/",
+      "rpcUrl": "https://nexus-testnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "Nexus Testnet III",
+      "slug": "nexus-testnet-iii",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0xD8fF73e2E12b0c64bE27313792180E3bedAbC829",
+        "parentErc20Gateway": "0xE0fE1d99166223B71247E4e6a28CFe6C2003883C",
+        "parentGatewayRouter": "0xbaaf4fDe03dB58CdE2af226923aEb3CEd3C628F9",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x14fE16f8e7407b4edF0192BFe4dBB7095739937C",
+        "childErc20Gateway": "0x67CCd93B45f830C4aa60a0D8827B87d7310daf0f",
+        "childGatewayRouter": "0xedB1F624b1aBB9CBBAE3Cb18252e5019a8D7dACC",
+        "childMultiCall": "0x603E9258b6aDECFE7257553D3fA1F4086F42376f",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#151515",
+        "network": {
+          "name": "Nexus Testnet III",
+          "logo": "/images/NexusTestnetIII_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Nexus",
+          "symbol": "NEX",
+          "logoUrl": "/images/NexusTestnetIII_Logo.png"
         }
       }
     }

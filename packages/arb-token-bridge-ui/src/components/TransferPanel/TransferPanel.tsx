@@ -99,6 +99,7 @@ import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
 import { getFromAndToTokenAddresses } from './Routes/getFromAndToTokenAddresses'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
+import { useMode } from '../../hooks/useMode'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -119,15 +120,10 @@ export function TransferPanel() {
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [
-    {
-      amount,
-      amount2,
-      destinationAddress,
-      token: tokenFromSearchParams,
-      embedMode
-    },
+    { amount, amount2, destinationAddress, token: tokenFromSearchParams },
     setQueryParams
   ] = useArbQueryParams()
+  const { embedMode } = useMode()
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
@@ -506,25 +502,12 @@ export function TransferPanel() {
 
       const childChainName = getNetworkName(childChain.id)
 
-      if (isSmartContractWallet) {
-        // For SCW, we assume that the transaction went through
-        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: 'Smart Contract',
-          network: childChainName,
-          amount: Number(amount),
-          complete: false,
-          version: 2
-        })
-
-        return
-      }
-
       if (!depositForBurnTx) {
         return
       }
 
       trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-        accountType: 'EOA',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
         network: childChainName,
         amount: Number(amount),
         complete: false,

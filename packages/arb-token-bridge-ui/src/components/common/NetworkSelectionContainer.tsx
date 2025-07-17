@@ -37,6 +37,7 @@ import { useChainIdsForNetworkSelection } from '../../hooks/TransferPanel/useCha
 import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
+import { useMode } from '../../hooks/useMode'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -259,7 +260,7 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
-  const [{ embedMode }] = useArbQueryParams()
+  const { embedMode } = useMode()
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
