@@ -69,8 +69,12 @@ function sumFee(feeCosts: FeeCost[] | undefined) {
     (feeCosts || []).reduce(
       ({ amount, amountUSD }, fee) => {
         return {
-          amount: amount.add(BigNumber.from(fee.amount)),
-          amountUSD: amountUSD + Number(fee.amountUSD)
+          amount: fee.included
+            ? amount
+            : amount.add(BigNumber.from(fee.amount)),
+          amountUSD: fee.included
+            ? amountUSD
+            : amountUSD + Number(fee.amountUSD)
         }
       },
       { amount: constants.Zero, amountUSD: 0 }
