@@ -452,9 +452,9 @@ export const Route = React.memo(
     return (
       <button
         className={twMerge(
-          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded border border-[#ffffff33] bg-[#303030] px-4 py-3 text-left text-sm text-white transition-colors md:flex-row',
+          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded border border-[#ffffff33] bg-[#ffffff1a] px-4 py-3 text-left text-sm text-white transition-colors md:flex-row',
           'focus-visible:!outline-none',
-          'focus-within:bg-[#474747] hover:bg-[#474747]',
+          'focus-within:bg-[#ffffff36] hover:bg-[#ffffff36]',
           !isDisabled && selected && 'border border-primary-cta',
           embedMode && 'md:flex-col'
         )}
