@@ -48,18 +48,38 @@ export interface LifiCrosschainTransfersRoute
 }
 
 function sumGasCosts(gasCosts: GasCost[] | undefined) {
-  return (
-    (gasCosts || []).reduce((sum, gas) => {
-      return sum.add(BigNumber.from(gas.estimate))
-    }, constants.Zero) ?? constants.Zero
-  ).toString()
+  const result =
+    (gasCosts || []).reduce(
+      ({ amount, amountUSD }, gas) => {
+        return {
+          amount: amount.add(BigNumber.from(gas.estimate)),
+          amountUSD: amountUSD + Number(gas.amountUSD)
+        }
+      },
+      { amount: constants.Zero, amountUSD: 0 }
+    ) ?? constants.Zero
+
+  return {
+    amount: result.amount.toString(),
+    amountUSD: result.amountUSD.toString()
+  }
 }
 function sumFee(feeCosts: FeeCost[] | undefined) {
-  return (
-    (feeCosts || []).reduce((sum, fee) => {
-      return sum.add(BigNumber.from(fee.amount))
-    }, constants.Zero) ?? constants.Zero
-  ).toString()
+  const result =
+    (feeCosts || []).reduce(
+      ({ amount, amountUSD }, fee) => {
+        return {
+          amount: amount.add(BigNumber.from(fee.amount)),
+          amountUSD: amountUSD + Number(fee.amountUSD)
+        }
+      },
+      { amount: constants.Zero, amountUSD: 0 }
+    ) ?? constants.Zero
+
+  return {
+    amount: result.amount.toString(),
+    amountUSD: result.amountUSD.toString()
+  }
 }
 
 function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
@@ -101,14 +121,12 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
     durationMs: step.estimate.executionDuration * 1_000,
     gas: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: sumGasCosts(step.estimate.gasCosts),
-      amountUSD: step.estimate.gasCosts?.[0]?.amountUSD || '0',
+      ...sumGasCosts(step.estimate.gasCosts),
       token: gasToken
     },
     fee: {
       /** Amount with all decimals (e.g. 100000000000000 for 0.0001 ETH) */
-      amount: sumFee(step.estimate.feeCosts),
-      amountUSD: step.estimate.feeCosts?.[0]?.amountUSD || '0',
+      ...sumFee(step.estimate.feeCosts),
       token: feeToken
     },
     fromAmount: {
