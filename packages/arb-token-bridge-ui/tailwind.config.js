@@ -60,7 +60,8 @@ module.exports = {
         'eth-dark': 'var(--color-eth-dark, #1A1C33)',
         'ocl-blue': 'var(--color-ocl-blue, #243145)',
         'atmosphere-blue': 'var(--color-atmosphere-blue, #152C4E)',
-        'widget-background': 'var(--color-widget-background, #191919)'
+        'widget-background': 'var(--color-widget-background, #191919)',
+        'primary-cta': 'var(--color-primary-cta, #31572A)'
       },
       spacing: {
         1: '5px',

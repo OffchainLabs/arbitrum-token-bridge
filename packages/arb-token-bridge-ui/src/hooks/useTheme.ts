@@ -6,6 +6,8 @@ export interface ThemeConfig {
   borderRadius?: string
   widgetBackgroundColor?: string
   borderWidth?: string
+  networkThemeOverrideColor?: string
+  primaryCtaColor?: string
 }
 
 export const defaultTheme: ThemeConfig = {
@@ -18,7 +20,9 @@ export const defaultTheme: ThemeConfig = {
 const themeVariableMap: Record<keyof ThemeConfig, string> = {
   borderRadius: '--border-radius',
   borderWidth: '--border-width',
-  widgetBackgroundColor: '--color-widget-background'
+  widgetBackgroundColor: '--color-widget-background',
+  networkThemeOverrideColor: '--color-network-theme-override',
+  primaryCtaColor: '--color-primary-cta'
 }
 
 export function useTheme() {
@@ -26,8 +30,8 @@ export function useTheme() {
 
   const _themeKey = theme?.toString() // we don't want the hook to fire every time the object reference changes
 
+  // Apply all theme properties to the app
   useEffect(() => {
-    // Apply all theme properties to CSS variables
     Object.entries(theme).forEach(([key, value]) => {
       const cssVariable = themeVariableMap[key as keyof ThemeConfig]
       if (cssVariable && value) {
@@ -45,4 +49,8 @@ export function useTheme() {
       })
     }
   }, [_themeKey])
+
+  return {
+    theme
+  }
 }

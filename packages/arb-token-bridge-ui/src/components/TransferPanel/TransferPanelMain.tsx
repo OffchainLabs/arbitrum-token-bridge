@@ -32,6 +32,7 @@ import { addressesEqual } from '../../util/AddressUtils'
 import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
+import { useTheme } from '../../hooks/useTheme'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -152,6 +153,7 @@ export function NetworkContainer({
 }) {
   const { address: walletAddress } = useAccount()
   const { color } = getBridgeUiConfigForChain(network.id)
+  const { theme } = useTheme()
 
   const showCustomAddressBanner = useMemo(() => {
     if (!customAddress) {
@@ -170,7 +172,7 @@ export function NetworkContainer({
       )}
       <div
         style={{
-          backgroundColor: `${color}66`, // 255*40% is 102, = 66 in hex
+          backgroundColor: theme.networkThemeOverrideColor ?? `${color}66`, // 255*40% is 102, = 66 in hex
           borderColor: color
         }}
         className={twMerge(
