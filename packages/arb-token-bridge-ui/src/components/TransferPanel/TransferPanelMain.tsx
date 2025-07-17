@@ -79,6 +79,7 @@ export function SwitchNetworksButton(
 
 function SwitchNetworkButtonBorderTop() {
   const [networks] = useNetworks()
+  const { theme } = useTheme()
 
   const sourceNetworkColor = getBridgeUiConfigForChain(
     networks.sourceChain.id
@@ -87,13 +88,16 @@ function SwitchNetworkButtonBorderTop() {
   return (
     <div
       className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: sourceNetworkColor }}
+      style={{
+        borderColor: theme.networkThemeOverrideColor ?? sourceNetworkColor
+      }}
     />
   )
 }
 
 function SwitchNetworkButtonBorderBottom() {
   const [networks] = useNetworks()
+  const { theme } = useTheme()
 
   const destinationNetworkColor = getBridgeUiConfigForChain(
     networks.destinationChain.id
@@ -102,7 +106,9 @@ function SwitchNetworkButtonBorderBottom() {
   return (
     <div
       className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: destinationNetworkColor }}
+      style={{
+        borderColor: theme.networkThemeOverrideColor ?? destinationNetworkColor
+      }}
     />
   )
 }
@@ -176,7 +182,7 @@ export function NetworkContainer({
       <div
         style={{
           backgroundColor: theme.networkThemeOverrideColor ?? `${color}66`, // 255*40% is 102, = 66 in hex
-          borderColor: color
+          borderColor: theme.networkThemeOverrideColor ?? color
         }}
         className={twMerge(
           'relative rounded border transition-colors duration-400',
