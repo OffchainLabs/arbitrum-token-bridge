@@ -98,8 +98,6 @@ function parseLifiRouteToCrosschainTransfersQuoteWithLifiData({
   toAddress: string
   fromChainId: string
   toChainId: string
-  fromToken: string
-  toToken: string
 }): LifiCrosschainTransfersRoute {
   const step = route.steps[0]!
   const tags: Order[] = []
@@ -352,9 +350,7 @@ export default async function handler(
           fromAddress,
           toAddress,
           fromChainId,
-          toChainId,
-          fromToken,
-          toToken
+          toChainId
         })
       )
 
