@@ -38,6 +38,45 @@ const commonUSDC: ERC20BridgeToken = {
     'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
 }
 
+/**
+ * On ApeChain, if selectedToken is null, we default to ApeToken for regular transfers
+ * And constants.zero (ETH) for lifi transfers
+ */
+export function sanitizeSelectedTokenAddress({
+  sourceChainId,
+  destinationChainId,
+  erc20ParentAddress
+}: {
+  sourceChainId: number | undefined
+  destinationChainId: number | undefined
+  erc20ParentAddress: string | null
+}) {
+  /** Deposit to ApeChain from Ethereum, Superposition or Base is only supported through Lifi
+   *  We need to set the default token to ETH rather than ApeChain native token
+   *  For ArbitrumOne we default to native token (Ape)
+   */
+  if (!erc20ParentAddress && destinationChainId === ChainId.ApeChain) {
+    if (
+      sourceChainId === ChainId.Ethereum ||
+      sourceChainId === ChainId.Superposition ||
+      sourceChainId === ChainId.Base
+    ) {
+      return constants.AddressZero
+    }
+  }
+
+  /**
+   * For transfers from ApeChain, we default to ETH unless destination is ArbitrumOne
+   */
+  if (
+    !erc20ParentAddress &&
+    sourceChainId === ChainId.ApeChain &&
+    destinationChainId !== ChainId.ArbitrumOne
+  ) {
+    return constants.AddressZero
+  }
+}
+
 export const useSelectedToken = (): [
   ERC20BridgeToken | null,
   (erc20ParentAddress: string | null) => void
@@ -92,25 +131,16 @@ export const useSelectedToken = (): [
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) => {
       return setQueryParams(latestQuery => {
-        if (
-          !erc20ParentAddress &&
-          latestQuery.destinationChain === ChainId.ApeChain
-        ) {
-          if (
-            latestQuery.sourceChain === ChainId.Ethereum ||
-            latestQuery.sourceChain === ChainId.Superposition ||
-            latestQuery.sourceChain === ChainId.Base
-          ) {
-            return { token: constants.AddressZero }
-          }
-        }
+        const sanitizedTokenAddress = sanitizeSelectedTokenAddress({
+          sourceChainId: latestQuery.sourceChain,
+          destinationChainId: latestQuery.destinationChain,
+          erc20ParentAddress
+        })
 
-        if (
-          !erc20ParentAddress &&
-          latestQuery.sourceChain === ChainId.ApeChain &&
-          latestQuery.destinationChain !== ChainId.ArbitrumOne
-        ) {
-          return { token: constants.AddressZero }
+        if (sanitizedTokenAddress) {
+          return {
+            token: sanitizedTokenAddress
+          }
         }
 
         return {

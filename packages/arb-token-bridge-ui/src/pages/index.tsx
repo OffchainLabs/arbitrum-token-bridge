@@ -25,7 +25,7 @@ import {
   isE2eTestingEnvironment,
   isProductionEnvironment
 } from '../util/CommonUtils'
-import { ChainId } from '../types/ChainId'
+import { sanitizeSelectedTokenAddress } from '../hooks/useSelectedToken'
 
 const App = dynamic(
   () => {
@@ -63,28 +63,14 @@ export const sanitizeTokenQueryParam = ({
   const tokenLowercased = token?.toLowerCase()
 
   if (!tokenLowercased) {
-    if (destinationChainId === ChainId.ApeChain) {
-      /** Deposit to ApeChain from Ethereum, Superposition or Base is only supported through Lifi
-       *  We need to set the default token to ETH rather than ApeChain native token
-       *  For ArbitrumOne we default to native token (Ape)
-       */
-      if (
-        sourceChainId === ChainId.Ethereum ||
-        sourceChainId === ChainId.Superposition ||
-        sourceChainId === ChainId.Base
-      ) {
-        return constants.AddressZero
-      }
-    }
+    const sanitizedTokenAddress = sanitizeSelectedTokenAddress({
+      sourceChainId,
+      destinationChainId,
+      erc20ParentAddress: tokenLowercased || null
+    })
 
-    /**
-     * For transfers from ApeChain, we default to ETH unless destination is ArbitrumOne
-     */
-    if (
-      sourceChainId === ChainId.ApeChain &&
-      destinationChainId !== ChainId.ArbitrumOne
-    ) {
-      return constants.AddressZero
+    if (sanitizedTokenAddress) {
+      return sanitizedTokenAddress
     }
   }
   if (!destinationChainId) {
