@@ -1377,6 +1377,54 @@
           "description": "Invisible blockchain bridging everyday digital interactions into real-world rewards."
         }
       }
+    },
+    {
+      "chainId": 101069,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x13355730A242744D71f1e489896837f70797fB26",
+        "inbox": "0x09a0f92A165dE693E2f5A9dE6c78605Fe873b36E",
+        "outbox": "0xbBe348691B0765B04D5a72EBfD502Acd3bf5d09A",
+        "rollup": "0x5aE6380a5E9306A616CCDffF5a53813dbC4b88F3",
+        "sequencerInbox": "0x9876fC5268F4053e6339ead270311582A4983cE5"
+      },
+      "nativeToken": "0x077574441C4F8763a37a2cFeE2ECb444aA60A15e",
+      "explorerUrl": "https://scan.rcade.network",
+      "rpcUrl": "https://rpc.rcade.network/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "RCADE",
+      "slug": "rcade",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x68e00287a7936c0A264538F673dd9112d87eB0a7",
+        "parentErc20Gateway": "0x69dD06f0301d482452917cF3AfEf0871021238c1",
+        "parentGatewayRouter": "0x069e7d4dA9B6Ac6EbA80EDb6902a64bb32142cd8",
+        "parentMultiCall": "0x411f8A148e448bBe75382d4FFABee0796484f3c6",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x0f65B750B0Bac788e9FB2bf611AEc7f0f928045C",
+        "childErc20Gateway": "0x313543711c1d8Af3D6D9b88dfF772b47104FbcCc",
+        "childGatewayRouter": "0x3020408E6174e422cC349365dCa4C4417540b8fE",
+        "childMultiCall": "0x3C680bb77c36c172EA2c5E30F2C3c2D9A62CBD87",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#000000",
+        "network": {
+          "name": "RCADE",
+          "logo": "/images/RCADE_Logo.png",
+          "description": "RCADE powered by Caldera."
+        },
+        "nativeTokenData": {
+          "name": "RCADE",
+          "symbol": "RCADE",
+          "logoUrl": "/images/RCADE_Logo.png"
+        }
+      }
     }
   ],
   "testnet": [
