@@ -129,7 +129,9 @@ export function getRoutes({
   const isValidLifiRoute =
     isLifiEnabled &&
     isValidLifiTransfer({
-      fromToken: selectedToken?.address,
+      fromToken: isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address,
       sourceChainId: sourceChainId,
       destinationChainId: destinationChainId
     })
