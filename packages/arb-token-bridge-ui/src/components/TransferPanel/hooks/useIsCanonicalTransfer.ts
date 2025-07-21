@@ -21,7 +21,7 @@ export function isArbitrumCanonicalTransfer({
   destinationChainId: number
   childChainId: number
   parentChainId: number
-  isSelectedTokenWithdrawOnly: boolean | undefined
+  isSelectedTokenWithdrawOnly: boolean
   isSelectedTokenWithdrawOnlyLoading: boolean
   selectedToken: ERC20BridgeToken | null
 }): boolean {

@@ -69,7 +69,8 @@ export const getBridgeTransferProperties = (
     isWithdrawal,
     isNativeCurrencyTransfer,
     isTeleport,
-    isSupported: isDeposit || isWithdrawal || isTeleport || isLifi
+    isSupported: isDeposit || isWithdrawal || isTeleport || isLifi,
+    isLifi
   }
 }
 
