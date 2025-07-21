@@ -48,6 +48,12 @@ export function getAlchemyKeyFromEnv(chainId: ProductionChainId): string {
         env: process.env.NEXT_PUBLIC_ALCHEMY_KEY_BASE_SEPOLIA,
         fallback: defaultAlchemyKey
       })
+
+    // Orbit chains
+    case ChainId.ApeChain:
+      return ''
+    case ChainId.Superposition:
+      return ''
   }
 }
 
