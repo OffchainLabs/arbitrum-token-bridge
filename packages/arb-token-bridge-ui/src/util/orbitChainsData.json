@@ -1471,6 +1471,54 @@
           "symbol": "MOLTEN"
         }
       }
+    },
+    {
+      "chainId": 98215,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x55A1B18E0300aD707617B828E0554765dBFc8535",
+        "inbox": "0x306c4D4032862813db6554519e03DA31C1387cFf",
+        "outbox": "0x8D6513Bc0cafaa0CaEdB80dB392997E92c7FA125",
+        "rollup": "0xA71a1e9649167787e179DD66348e578f928d43F4",
+        "sequencerInbox": "0xA672239e003124455c00FdAB7D15dD682BCe97AE"
+      },
+      "nativeToken": "0x49bef7de007b944505f5a2fac1f00737c8e4fa96",
+      "explorerUrl": "https://explorer.tiktrix.gg/",
+      "rpcUrl": "https://rpc.tiktrix.gg",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "MeerChain",
+      "slug": "meerchain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2A4054528972748aaaF6224Ff46F2A6349CE1426",
+        "parentErc20Gateway": "0x70e43daC8f9140752C0937251c9345DDE97183C7",
+        "parentGatewayRouter": "0x5d94E722d350579662De3Bd57298a42D148432b3",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x516892998a30e42f03940A33098a7900d2FADe3B",
+        "childErc20Gateway": "0xa074a952096c29097F83B7c9c9b30692A8fcd6Fc",
+        "childGatewayRouter": "0x8dB05c5f0625C6f6702e76781aE61f1541B1489d",
+        "childMultiCall": "0x46E941268A2bc14AeA1138E32b52CCc4cB4Ae3ad",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#c1ff72",
+        "network": {
+          "name": "MeerChain",
+          "logo": "/images/MeerChain_Logo.png",
+          "description": "MeerChain serves as the foundational blockchain for the TikTrix platform, delivering high-performance infrastructure as a Layer-3 application chain specifically engineered for GameFi and SocialFi ecosystems. Built upon Arbitrum's battle-tested security framework and inheriting Ethereum mainnet's decentralized architecture, MeerChain enables ultra-low-cost transactions and sub-second block finality, creating an optimized environment for gaming and social interactions at scale."
+        },
+        "nativeTokenData": {
+          "name": "TikTrix Token",
+          "symbol": "TRIX",
+          "logoUrl": "/images/MeerChain_NativeTokenLogo.png"
+        }
+      }
     }
   ],
   "testnet": [
