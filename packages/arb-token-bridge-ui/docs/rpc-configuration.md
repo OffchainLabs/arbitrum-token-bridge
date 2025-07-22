@@ -36,7 +36,15 @@ The Alchemy key is provided through the following environment variable:
 
 - `NEXT_PUBLIC_ALCHEMY_KEY`
 
-The key will be used for all chains.
+The key will be used for all chains. However, if you need to have different keys for each chain, you can do so through the following environment variables:
+
+- `NEXT_PUBLIC_ALCHEMY_KEY_ETHEREUM`
+- `NEXT_PUBLIC_ALCHEMY_KEY_SEPOLIA`
+- `NEXT_PUBLIC_ALCHEMY_KEY_ARBITRUM_ONE`
+- `NEXT_PUBLIC_ALCHEMY_KEY_ARBITRUM_NOVA`
+- `NEXT_PUBLIC_ALCHEMY_KEY_BASE`
+- `NEXT_PUBLIC_ALCHEMY_KEY_ARBITRUM_SEPOLIA`
+- `NEXT_PUBLIC_ALCHEMY_KEY_BASE_SEPOLIA`
 
 ## Custom RPCs
 
