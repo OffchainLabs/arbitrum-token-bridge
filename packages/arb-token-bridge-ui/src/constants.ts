@@ -1,6 +1,3 @@
-import { ERC20BridgeToken, TokenType } from './hooks/arbTokenBridge.types'
-import { CommonAddress } from './util/CommonAddressUtils'
-
 export const TOS_VERSION = 2
 
 export const TOS_LOCALSTORAGE_KEY = 'arbitrum:bridge:tos-v' + TOS_VERSION
