@@ -13,7 +13,7 @@ type AmountProps = {
 }
 function Amount({ token, showToken, amount }: AmountProps) {
   if (showToken) {
-    return <span>{formatAmount(amount, token)}</span>
+    return <span>{formatAmount(BigNumber.from(amount), token)}</span>
   }
 
   return <span>{formatUSD(Number(amount))}</span>
@@ -119,7 +119,6 @@ export function HighSlippageWarningDialog(props: UseDialogProps) {
           amountProps={[
             {
               amount: context.toAmount.amountUSD,
-              showToken: true,
               token: context.toAmount.token
             }
           ]}

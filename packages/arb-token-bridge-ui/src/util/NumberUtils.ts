@@ -41,10 +41,10 @@ const formatNumber = (
 ): string => Intl.NumberFormat('en', options).format(number)
 
 // Format amount according to a specific set of rules to limit space used
-export const formatAmount = <T extends number | BigNumber | string | undefined>(
+export const formatAmount = <T extends number | BigNumber | undefined>(
   balance: T,
   options: {
-    decimals?: T extends number ? never : number
+    decimals?: number
     symbol?: string
   } = {}
 ): string => {
@@ -56,7 +56,7 @@ export const formatAmount = <T extends number | BigNumber | string | undefined>(
 
   const value: number = BigNumber.isBigNumber(balance)
     ? parseFloat(utils.formatUnits(balance, decimals))
-    : Number(balance)
+    : balance
   const suffix = symbol ? ` ${symbol}` : ''
 
   if (value === 0) {

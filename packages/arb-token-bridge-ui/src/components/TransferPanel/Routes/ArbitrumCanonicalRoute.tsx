@@ -18,7 +18,10 @@ import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { shallow } from 'zustand/shallow'
 import { getGasCostAndToken } from './getGasCostAndToken'
-import { bridgedUsdcToken, nativeUsdcToken } from '../../../constants'
+import {
+  bridgedUsdcToken,
+  nativeUsdcToken
+} from '../../../util/CommonAddressUtils'
 
 function getDuration({
   isTestnet,

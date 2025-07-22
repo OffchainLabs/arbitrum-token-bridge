@@ -1,17 +1,16 @@
-import {
-  bridgedUsdcToken,
-  commonUsdcToken,
-  ether,
-  ETHER_TOKEN_LOGO,
-  nativeUsdcToken
-} from '../../../constants'
+import { ether, ETHER_TOKEN_LOGO } from '../../../constants'
 import {
   ERC20BridgeToken,
   TokenType
 } from '../../../hooks/arbTokenBridge.types'
 import { ChainId } from '../../../types/ChainId'
 import { addressesEqual } from '../../../util/AddressUtils'
-import { CommonAddress } from '../../../util/CommonAddressUtils'
+import {
+  bridgedUsdcToken,
+  CommonAddress,
+  commonUsdcToken,
+  nativeUsdcToken
+} from '../../../util/CommonAddressUtils'
 import { allowedLifiSourceChainIds, lifiDestinationChainIds } from './constants'
 import { constants } from 'ethers'
 
