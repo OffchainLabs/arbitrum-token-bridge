@@ -1,3 +1,5 @@
+import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
+
 export const CommonAddress = {
   Ethereum: {
     USDC: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
@@ -35,3 +37,24 @@ export const CommonAddress = {
     USDCe: '0x6c030c5cc283f791b26816f325b9c632d964f8a1'
   }
 } as const
+
+export const commonUsdcToken: ERC20BridgeToken = {
+  decimals: 6,
+  address: CommonAddress.Ethereum.USDC,
+  symbol: 'placeholder',
+  type: TokenType.ERC20,
+  name: 'placeholder',
+  listIds: new Set<string>(),
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
+}
+
+export const bridgedUsdcToken: ERC20BridgeToken = {
+  ...commonUsdcToken,
+  symbol: 'USDC.e'
+}
+
+export const nativeUsdcToken: ERC20BridgeToken = {
+  ...commonUsdcToken,
+  symbol: 'USDC'
+}

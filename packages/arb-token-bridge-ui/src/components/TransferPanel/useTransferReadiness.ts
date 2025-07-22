@@ -152,44 +152,36 @@ export function getAmountToPay(
   selectedRouteContext: RouteContext
 ): GetAmountToPayResult {
   const amounts: Record<string, AmountsToPay> = {}
-  // Fee
-  amounts[selectedRouteContext.fee.token.address.toLowerCase()] = {
-    amount: selectedRouteContext.fee.amount,
-    amountUSD: selectedRouteContext.fee.amountUSD,
-    token: selectedRouteContext.fee.token
+
+  function addAmount({
+    token,
+    amount,
+    amountUSD
+  }: {
+    token: Token
+    amount: BigNumber
+    amountUSD: string
+  }) {
+    const key = token.address.toLowerCase()
+    const acc = amounts[key]
+    if (acc) {
+      amounts[key] = {
+        amount: acc.amount.add(amount),
+        amountUSD: (Number(acc.amountUSD) + Number(amountUSD)).toFixed(3),
+        token
+      }
+    } else {
+      amounts[key] = {
+        amount,
+        amountUSD,
+        token
+      }
+    }
   }
 
-  // Gas
-  const acc = amounts[selectedRouteContext.gas.token.address.toLowerCase()]
-  amounts[selectedRouteContext.gas.token.address.toLowerCase()] = {
-    amount: acc
-      ? acc.amount.add(selectedRouteContext.gas.amount)
-      : selectedRouteContext.gas.amount,
-    amountUSD: acc
-      ? (
-          Number(acc.amountUSD) + Number(selectedRouteContext.gas.amountUSD)
-        ).toString()
-      : selectedRouteContext.gas.amountUSD,
-    token: selectedRouteContext.gas.token
-  }
-
-  // Amount
-  const acc2 =
-    amounts[selectedRouteContext.fromAmount.token.address.toLowerCase()]
-  amounts[selectedRouteContext.fromAmount.token.address.toLowerCase()] = {
-    amount: acc2
-      ? acc2.amount.add(
-          selectedRouteContext.fromAmount.token.address.toLowerCase()
-        )
-      : selectedRouteContext.fromAmount.amount,
-    amountUSD: acc2
-      ? (
-          Number(acc2.amountUSD) +
-          Number(selectedRouteContext.fromAmount.amountUSD)
-        ).toString()
-      : selectedRouteContext.fromAmount.amountUSD,
-    token: selectedRouteContext.fromAmount.token
-  }
+  addAmount(selectedRouteContext.fee)
+  addAmount(selectedRouteContext.gas)
+  addAmount(selectedRouteContext.fromAmount)
 
   const fromAmountUsd =
     Number(selectedRouteContext.fromAmount.amountUSD) +
@@ -198,7 +190,7 @@ export function getAmountToPay(
 
   return {
     amounts,
-    fromAmountUsd,
+    fromAmountUsd: Number(fromAmountUsd.toFixed(3)),
     toAmountUsd: Number(selectedRouteContext.toAmount.amountUSD)
   }
 }
