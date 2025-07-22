@@ -1519,6 +1519,48 @@
           "logoUrl": "/images/MeerChain_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 190415,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x9948eDFBb9e0b104bAd60393dBe79d0BC7937014",
+        "inbox": "0xE0400a87d5Ee8a2Fc1dF2aAf4B6d8f89d0B9bE55",
+        "outbox": "0x433da6d107e942Ec4EAB1e86B16427B6071F6491",
+        "rollup": "0xf0d2960a37B33567FF7507C2d59da021277663A1",
+        "sequencerInbox": "0x9B26957a661bc862FA0d7eb21813Aa008d0Cc6E6"
+      },
+      "explorerUrl": "https://explorer.hpp.io/",
+      "rpcUrl": "https://mainnet.hpp.io",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "HPP Mainnet",
+      "slug": "hpp-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2241e2a93b4DE8da10b0748d6b349bfB76DCC45F",
+        "parentErc20Gateway": "0x8F31c7a6806432F05A936Ade26a7407c968f13eA",
+        "parentGatewayRouter": "0x1f948D3718b279d602887ca0FB28Df4EDF77023F",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "parentWethGateway": "0x8f10926536478dabff58A748C54385a346830546",
+        "childCustomGateway": "0xf190f3B9C76be7Bf48b458C3A87d1da9e1b54Cd3",
+        "childErc20Gateway": "0xBFd95DB183Ce641010809c36c3339F5Cce70e270",
+        "childGatewayRouter": "0x83c4a717fE8e3A57f1AE1Cc451C3426fC66eAA69",
+        "childMultiCall": "0x62F0696576a3769120bd251C69140eec42ca51B8",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x82553CDA0bEd9262a879F9F7524cd20288B357AA",
+        "childWethGateway": "0x2cb68758b5aFbB961B685B4BE8ba04DcB04B6f07"
+      },
+      "bridgeUiConfig": {
+        "color": "#1f2021",
+        "network": {
+          "name": "HPP Mainnet",
+          "logo": "/images/HPPMainnet_Logo.svg",
+          "description": "House Party Protocol (HPP) is a modular AI-powered blockchain and data infrastructure designed for the next generation of decentralized applications, built on the pillars of trustworthy data, verifiable AI, and real-world scalability."
+        }
+      }
     }
   ],
   "testnet": [
