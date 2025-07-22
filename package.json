@@ -45,5 +45,8 @@
   "config": {
     "chromeVersion": "128.0.6613.137",
     "chromePath": "node_modules/.cache/synpress"
+  },
+  "dependencies": {
+    "form-data": "^4.0.4"
   }
 }
