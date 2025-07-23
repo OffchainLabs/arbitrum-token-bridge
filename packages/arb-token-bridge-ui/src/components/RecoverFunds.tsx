@@ -7,7 +7,6 @@ import {
 } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 import {
-  getChains,
   getNetworkName,
   getSupportedChainIds,
   isNetwork
@@ -43,6 +42,10 @@ import { NoteBox } from './common/NoteBox'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { shortenAddress } from '../util/CommonUtils'
 import { Tooltip } from './common/Tooltip'
+import { TokenLogoFallback } from './TransferPanel/TokenInfo'
+import { addressesEqual } from '../util/AddressUtils'
+import { useSwitchNetworkWithConfig } from '../hooks/useSwitchNetworkWithConfig'
+import { useLatest } from 'react-use'
 
 async function createRetryableTicket({
   inboxAddress,
@@ -63,8 +66,11 @@ async function createRetryableTicket({
 }) {
   const { nativeToken } = await EthBridger.fromProvider(childProvider)
 
-  if (nativeToken) {
-    const inbox = ERC20Inbox__factory.connect(inboxAddress, childProvider)
+  if (
+    typeof nativeToken === 'undefined' ||
+    addressesEqual(nativeToken, constants.AddressZero)
+  ) {
+    const inbox = Inbox__factory.connect(inboxAddress, childProvider)
     return inbox.connect(signer).unsafeCreateRetryableTicket(
       destinationAddress, // to
       l2CallValue, // l2CallValue
@@ -73,15 +79,18 @@ async function createRetryableTicket({
       destinationAddress, // callValueRefundAddress
       gasEstimation.gasLimit, // gasLimit
       gasEstimation.maxFeePerGas, // maxFeePerGas
-      0, // tokenTotalFeeAmount
       '0x', // data
       {
-        from: signerAddress
+        from: signerAddress,
+        value: 0
       }
     )
   }
 
-  const inbox = Inbox__factory.connect(inboxAddress, childProvider)
+  const inbox = ERC20Inbox__factory.connect(inboxAddress, childProvider)
+  // And we send the request through the method unsafeCreateRetryableTicket of the Inbox contract
+  // We need this method because we don't want the contract to check that we are not sending the l2CallValue
+  // in the "value" of the transaction, because we want to use the amount that is already on child chain
   return inbox.connect(signer).unsafeCreateRetryableTicket(
     destinationAddress, // to
     l2CallValue, // l2CallValue
@@ -90,10 +99,10 @@ async function createRetryableTicket({
     destinationAddress, // callValueRefundAddress
     gasEstimation.gasLimit, // gasLimit
     gasEstimation.maxFeePerGas, // maxFeePerGas
+    0, // tokenTotalFeeAmount
     '0x', // data
     {
-      from: signerAddress,
-      value: 0
+      from: signerAddress
     }
   )
 }
@@ -130,9 +139,6 @@ async function prepareTransaction({
     parentProvider
   )
 
-  // And we send the request through the method unsafeCreateRetryableTicket of the Inbox contract
-  // We need this method because we don't want the contract to check that we are not sending the l2CallValue
-  // in the "value" of the transaction, because we want to use the amount that is already on child chain
   const l2CallValue = balanceToRecover
     .sub(gasEstimation.maxSubmissionCost)
     .sub(gasEstimation.gasLimit.mul(gasEstimation.maxFeePerGas))
@@ -197,11 +203,9 @@ async function filterLostFundsWithoutEnoughGas({
   }
 
   const childProvider = getProviderForChainId(chainId)
-  const chains = getChains()
-  const chain = chains.find(chain => chain.chainId === chainId)!
-  const parentProvider = getProviderForChainId(
-    'parentChainId' in chain ? chain.parentChainId : 1
-  )
+  const chain = getArbitrumNetwork(chainId)
+
+  const parentProvider = getProviderForChainId(chain.parentChainId)
   const { l2CallValue } = await prepareTransaction({
     address,
     destinationAddress: getAliasedAddress(address),
@@ -270,11 +274,7 @@ const TokenColumn: TableCellRenderer = ({ rowData }) => {
         src={nativeCurrency.logoUrl}
         height={20}
         width={20}
-        fallback={
-          <div className="flex h-4 w-4 items-center justify-center bg-gray-dark text-sm font-medium">
-            ?
-          </div>
-        }
+        fallback={<TokenLogoFallback className="h4 w-4" />}
       />
       <span className="ml-1 text-xs">
         {formatAmount(balance, nativeCurrency)}
@@ -348,6 +348,7 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
   >(undefined)
   const { handleError } = useError()
   const signer = useEthersSigner()
+  const { current: latestSigner } = useLatest(signer)
   const childChainProvider = getProviderForChainId(chainId)
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
@@ -355,12 +356,10 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
     address,
     isTestnet
   })
+  const { switchChainAsync } = useSwitchNetworkWithConfig()
   const parentChainProvider = useMemo(() => {
-    const chains = getChains()
-    const chain = chains.find(chain => chain.chainId === chainId)!
-    return getProviderForChainId(
-      'parentChainId' in chain ? chain.parentChainId : 1
-    )
+    const chain = getArbitrumNetwork(chainId)
+    return getProviderForChainId(chain.parentChainId)
   }, [chainId])
 
   if (!address) {
@@ -374,7 +373,12 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
   return (
     <div className="flex h-12 items-center align-middle">
       <input
-        className="h-full bg-transparent px-3 py-1 text-sm font-light placeholder:text-white/60"
+        className={twMerge(
+          'h-full rounded border border-white bg-black/40 px-3 py-1 text-sm font-light placeholder:text-white/60',
+          destinationAddress &&
+            !isAddress(destinationAddress) &&
+            'border-red-400'
+        )}
         name="destinationAddressInput"
         placeholder={`Recovery address`}
         onChange={e => {
@@ -394,8 +398,16 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
         variant="primary"
         className="ml-auto mr-3 w-14 rounded bg-green-400 p-2 text-xs text-black"
         onClick={async () => {
-          if (!signer || !destinationAddress) {
+          if (!latestSigner || !destinationAddress) {
             return
+          }
+
+          const parentChainId = getArbitrumNetwork(chainId).parentChainId
+          let currentChainId = latestSigner.provider.network.chainId
+          while (currentChainId !== parentChainId) {
+            currentChainId = (
+              await switchChainAsync({ chainId: parentChainId })
+            ).id
           }
 
           try {
@@ -407,7 +419,7 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
               destinationAddress,
               parentProvider: parentChainProvider,
               inboxAddress: inboxAddress as string,
-              signer
+              signer: latestSigner
             })
 
             trackEvent('Recover funds', {
