@@ -423,6 +423,7 @@ export function isNetwork(chainId: ChainId) {
 
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
   const isOrbitChain = getIsArbitrumChain(chainId) && !isCoreChain
+  const isNonArbitrumNetwork = isBase || isEthereumMainnetOrTestnet
 
   return {
     // L1
@@ -444,7 +445,8 @@ export function isNetwork(chainId: ChainId) {
     // General
     isTestnet: isTestnetChain(chainId),
     // Core Chain is a chain category for the UI
-    isCoreChain
+    isCoreChain,
+    isNonArbitrumNetwork
   }
 }
 
@@ -550,7 +552,10 @@ export function sortChainIds(chainIds: number[]) {
   })
 }
 
-export function getDestinationChainIds(chainId: ChainId): ChainId[] {
+export function getDestinationChainIds(
+  chainId: ChainId,
+  disableTransfersToNonArbitrumChains = false
+): ChainId[] {
   const chain = getChainByChainId(chainId)
 
   if (!chain) {
@@ -561,10 +566,21 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
 
   const validDestinationChainIds = getChildChainIds(chain)
 
-  if (parentChainId) {
+  // include the parent chain in destination if there is no restriction
+  if (parentChainId && !disableTransfersToNonArbitrumChains) {
     return sortChainIds([parentChainId, ...validDestinationChainIds])
   }
 
+  // do not include the parent chain in destination if the destinations cant include non-arbitrum chains and the parent is non-arbitrum
+  if (
+    parentChainId &&
+    disableTransfersToNonArbitrumChains &&
+    !isNetwork(parentChainId).isNonArbitrumNetwork
+  ) {
+    return sortChainIds([parentChainId, ...validDestinationChainIds])
+  }
+
+  // do not include the parent chain in destination if its invalid (undefined)
   return sortChainIds(validDestinationChainIds)
 }
 
