@@ -26,10 +26,17 @@ export function useChainIdsForNetworkSelection({
 
   return useMemo(() => {
     if (isSource) {
-      return getSupportedChainIds({
+      const sourceChainIds = getSupportedChainIds({
         includeMainnets: !isTestnetMode,
         includeTestnets: isTestnetMode
       })
+
+      // do not display chains that have no destination chains
+      return sourceChainIds.filter(
+        chainId =>
+          getDestinationChainIds(chainId, disableTransfersToNonArbitrumChains)
+            .length > 0
+      )
     }
 
     const destinationChainIds = getDestinationChainIds(
