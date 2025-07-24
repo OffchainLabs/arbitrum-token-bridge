@@ -15,7 +15,7 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { BigNumber, constants, Signer } from 'ethers'
 import { useNetworks } from '../hooks/useNetworks'
 import { useAccount } from 'wagmi'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { fetchNativeCurrency, NativeCurrency } from '../hooks/useNativeCurrency'
 import { ChainId } from '../types/ChainId'
 import { formatAmount } from '../util/NumberUtils'
@@ -46,6 +46,9 @@ import { TokenLogoFallback } from './TransferPanel/TokenInfo'
 import { addressesEqual } from '../util/AddressUtils'
 import { useSwitchNetworkWithConfig } from '../hooks/useSwitchNetworkWithConfig'
 import { useLatest } from 'react-use'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { shallow } from 'zustand/shallow'
 
 async function createRetryableTicket({
   inboxAddress,
@@ -71,7 +74,7 @@ async function createRetryableTicket({
     addressesEqual(nativeToken, constants.AddressZero)
   ) {
     const inbox = Inbox__factory.connect(inboxAddress, childProvider)
-    return inbox.connect(signer).unsafeCreateRetryableTicket(
+    return await inbox.connect(signer).unsafeCreateRetryableTicket(
       destinationAddress, // to
       l2CallValue, // l2CallValue
       gasEstimation.maxSubmissionCost, // maxSubmissionCost
@@ -91,7 +94,7 @@ async function createRetryableTicket({
   // And we send the request through the method unsafeCreateRetryableTicket of the Inbox contract
   // We need this method because we don't want the contract to check that we are not sending the l2CallValue
   // in the "value" of the transaction, because we want to use the amount that is already on child chain
-  return inbox.connect(signer).unsafeCreateRetryableTicket(
+  return await inbox.connect(signer).unsafeCreateRetryableTicket(
     destinationAddress, // to
     l2CallValue, // l2CallValue
     gasEstimation.maxSubmissionCost, // maxSubmissionCost
@@ -174,7 +177,7 @@ async function recoverFunds({
     balanceToRecover
   })
 
-  return createRetryableTicket({
+  return await createRetryableTicket({
     childProvider,
     destinationAddress,
     gasEstimation,
@@ -339,6 +342,46 @@ export function RecoverFunds() {
   )
 }
 
+type RecoverFundsTransactionsStore = {
+  transactions: Record<string, Record<number, string>>
+  addTransaction: (parameters: {
+    walletAddress: string
+    chainId: ChainId
+    tx: string
+  }) => void
+  removeTransaction: (parameters: {
+    walletAddress: string
+    chainId: ChainId
+  }) => void
+}
+export const useRecoverFundsTransactionsStore =
+  create<RecoverFundsTransactionsStore>()(
+    persist(
+      set => ({
+        transactions: {},
+        addTransaction: ({ chainId, walletAddress, tx }) =>
+          set(state => ({
+            transactions: {
+              [walletAddress]: {
+                ...(state.transactions[walletAddress] || {}),
+                [chainId]: tx
+              }
+            }
+          })),
+        removeTransaction: ({ chainId, walletAddress }) =>
+          set(state => {
+            const newState = { ...state }
+            delete newState.transactions[walletAddress]?.[chainId]
+            return newState
+          })
+      }),
+      {
+        name: 'recover-funds-transaction-cache',
+        version: 1
+      }
+    )
+  )
+
 const ActionColumn: TableCellRenderer = ({ rowData }) => {
   const [chainId, balance]: [ChainId, BigNumber, NativeCurrency] = rowData
   const { address } = useAccount()
@@ -352,6 +395,15 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
   const childChainProvider = getProviderForChainId(chainId)
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
+  const { transactions, addTransaction, removeTransaction } =
+    useRecoverFundsTransactionsStore(
+      state => ({
+        transactions: state.transactions,
+        addTransaction: state.addTransaction,
+        removeTransaction: state.removeTransaction
+      }),
+      shallow
+    )
   const { mutate } = useFundsOnAliasedAddress({
     address,
     isTestnet
@@ -361,6 +413,59 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
     const chain = getArbitrumNetwork(chainId)
     return getProviderForChainId(chain.parentChainId)
   }, [chainId])
+
+  useEffect(() => {
+    async function resumeTransaction() {
+      try {
+        if (!address) {
+          return
+        }
+        const txHash = transactions[address]?.[chainId]
+        if (!txHash) {
+          return
+        }
+
+        // When transaction is pulled from localStorage, `wait` function has been removed due to JSON.stringify
+        const provider = getProviderForChainId(
+          getArbitrumNetwork(chainId).parentChainId
+        )
+        const tx = await provider.getTransaction(txHash)
+        const parentSubmissionTx =
+          ParentTransactionReceipt.monkeyPatchContractCallWait(tx)
+        const parentSubmissionTxReceipt = await parentSubmissionTx.wait()
+        await parentSubmissionTxReceipt.waitForChildTransactionReceipt(
+          childChainProvider
+        )
+        // Refetch lists
+        await mutate()
+        removeTransaction({ walletAddress: address, chainId })
+      } catch (error) {
+        handleError({
+          error,
+          label: 'recover_funds',
+          category: 'contract_interaction'
+        })
+        errorToast(
+          `Recover funds transaction failed: ${
+            (error as Error)?.message ?? error
+          }`
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    resumeTransaction()
+  }, [
+    transactions,
+    address,
+    chainId,
+    childChainProvider,
+    mutate,
+    removeTransaction,
+    setIsLoading,
+    handleError
+  ])
 
   if (!address) {
     return null
@@ -421,22 +526,19 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
               inboxAddress: inboxAddress as string,
               signer: latestSigner
             })
-
+            addTransaction({
+              walletAddress: address,
+              chainId,
+              tx: tx.hash
+            })
             trackEvent('Recover funds', {
               chainId,
               balanceToRecover: balance.toString()
             })
-            // We wrap the transaction in monkeyPatchContractCallWait so we can also waitForL2 later on
-            const parentSubmissionTx =
-              ParentTransactionReceipt.monkeyPatchContractCallWait(tx)
-            const parentSubmissionTxReceipt = await parentSubmissionTx.wait()
 
-            await parentSubmissionTxReceipt.waitForChildTransactionReceipt(
-              childChainProvider
-            )
-            // Refecth lists
-            await mutate()
+            // Rest of the flow is handled in useEffect, for both transactions triggered during that session, and transactions in previous sessions
           } catch (error) {
+            setIsLoading(false)
             if (isUserRejectedError(error)) {
               return
             }
@@ -451,15 +553,20 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
                 (error as Error)?.message ?? error
               }`
             )
-          } finally {
-            setIsLoading(false)
           }
         }}
         disabled={
-          !destinationAddress || !isAddress(destinationAddress) || isLoading
+          !destinationAddress ||
+          !isAddress(destinationAddress) ||
+          isLoading ||
+          transactions[address]?.[chainId] !== undefined
         }
       >
-        {isLoading ? <Loader size={12} /> : 'Recover'}
+        {isLoading || transactions[address]?.[chainId] !== undefined ? (
+          <Loader size={12} />
+        ) : (
+          'Recover'
+        )}
       </Button>
     </div>
   )
