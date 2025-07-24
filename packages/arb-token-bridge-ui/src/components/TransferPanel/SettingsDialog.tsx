@@ -142,8 +142,7 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
   )
   const { destinationAddressError } =
     useDestinationAddressError(destinationAddress)
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { accountType, isLoading: isLoadingAccountType } = useAccountType()
   const isLifiSupported = useMemo(
     () =>
       isLifiTransferAllowed({
@@ -177,7 +176,7 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
         setDisabledBridgesToStore(disabledBridges)
         props.onClose(confirmed)
 
-        if (isSmartContractWallet) {
+        if (accountType === 'smart-contract-wallet') {
           return
         }
 
@@ -287,7 +286,7 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
             </div>
           </>
         )}
-        {!isLoadingAccountType && !isSmartContractWallet && (
+        {!isLoadingAccountType && accountType !== 'smart-contract-wallet' && (
           // For SCW, destination address is shown outside of settings panel
           <AdvancedSettings
             destinationAddress={destinationAddress}

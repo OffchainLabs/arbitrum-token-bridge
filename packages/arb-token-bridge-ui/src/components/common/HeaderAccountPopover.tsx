@@ -39,8 +39,7 @@ export function HeaderAccountPopover({
   const { isTestnet } = isNetwork(sourceChain.id)
   const [, copyToClipboard] = useCopyToClipboard()
   const isSmallScreen = useMedia('(max-width: 639px)')
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { accountType } = useAccountType()
 
   const destinationChainStyle = useDestinationChainStyle()
 
@@ -79,7 +78,7 @@ export function HeaderAccountPopover({
         />
         <span className="flex flex-col text-justify text-base leading-extra-tight text-gray-4 sm:text-white">
           {ensName ?? udInfo.name ?? accountShort}
-          {isSmartContractWallet && !isLoadingAccountType && (
+          {accountType === 'smart-contract-wallet' && (
             <span className="text-[10px]">Smart Contract Wallet</span>
           )}
         </span>

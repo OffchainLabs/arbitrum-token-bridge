@@ -1,13 +1,45 @@
 import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
-import { addressIsSmartContract } from '../util/AddressUtils'
 import { useNetworks } from './useNetworks'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-type Result = {
-  isEOA: boolean
-  isSmartContractWallet: boolean
-  isLoading: boolean
+export type AccountType =
+  | 'externally-owned-account'
+  | 'delegated-account'
+  | 'smart-contract-wallet'
+
+type Result =
+  | {
+      accountType: AccountType
+      isLoading: false
+    }
+  | {
+      accountType: undefined
+      isLoading: true
+    }
+
+export async function getAccountType({
+  address,
+  chainId
+}: {
+  address: string
+  chainId: number
+}): Promise<AccountType | undefined> {
+  const provider = getProviderForChainId(chainId)
+  try {
+    const code = await provider.getCode(address)
+    // delegation designator prefix for 7702
+    if (code.startsWith('0xef01')) {
+      return 'delegated-account'
+    }
+    if (code.length > 2) {
+      return 'smart-contract-wallet'
+    }
+    return 'externally-owned-account'
+  } catch (_) {
+    return undefined
+  }
 }
 
 export function useAccountType(addressOverride?: string): Result {
@@ -19,9 +51,10 @@ export function useAccountType(addressOverride?: string): Result {
 
   const address = addressOverride ?? walletAddress
 
-  const { data: isSmartContractWallet = false, isLoading } = useSWRImmutable(
+  const { data: accountType } = useSWRImmutable(
     address && sourceChain ? [address, sourceChain.id, 'useAccountType'] : null,
-    ([_address, chainId]) => addressIsSmartContract(_address, chainId),
+    ([_address, chainId]) =>
+      getAccountType({ address: _address, chainId: chainId }),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
@@ -29,10 +62,15 @@ export function useAccountType(addressOverride?: string): Result {
     }
   )
 
-  // By default, assume it's an EOA
+  if (!accountType) {
+    return {
+      accountType: undefined,
+      isLoading: true
+    }
+  }
+
   return {
-    isEOA: !isSmartContractWallet,
-    isSmartContractWallet,
-    isLoading
+    accountType,
+    isLoading: false
   }
 }
