@@ -21,7 +21,7 @@ import {
   percentIncrease
 } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
-import { getAccountType } from '../hooks/useAccountType'
+import { getAccountType } from '../util/AccountUtils'
 
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'

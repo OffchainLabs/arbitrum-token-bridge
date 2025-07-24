@@ -8,7 +8,7 @@ import { sanitizeQueryParams } from '../../hooks/useNetworks'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { getNetworkName } from '../../util/networks'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
-import { getAccountType } from '../../hooks/useAccountType'
+import { getAccountType } from '../../util/AccountUtils'
 
 export function useSyncConnectedChainToQueryParams() {
   const { address, chain } = useAccount()

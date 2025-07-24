@@ -12,8 +12,8 @@ import { IBridge__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IBridge__
 import { IRollupCore__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IRollupCore__factory'
 import { getChainIdFromProvider, getProviderForChainId } from './utils'
 import { TELEPORT_ALLOWLIST } from '../util/networks'
+import { getAccountType } from '../util/AccountUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
-import { getAccountType } from '../hooks/useAccountType'
 
 export const isValidTeleportChainPair = ({
   sourceChainId,

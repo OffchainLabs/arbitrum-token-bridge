@@ -8,8 +8,9 @@ import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
-import { AccountType, useAccountType } from '../../hooks/useAccountType'
+import { useAccountType } from '../../hooks/useAccountType'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { AccountType } from '../../util/AccountUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
@@ -145,9 +146,7 @@ export const AdvancedSettings = ({
           <input
             className="w-full bg-transparent text-white placeholder-white/50"
             placeholder={
-              isSmartContractWallet
-                ? 'Enter Destination Address'
-                : address
+              isSmartContractWallet ? 'Enter Destination Address' : address
             }
             value={destinationAddress}
             disabled={inputLocked}
