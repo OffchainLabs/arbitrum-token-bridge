@@ -350,4 +350,36 @@ describe('getDestinationChainIds', () => {
       expect(isAscending(orbitChains)).toBe(true)
     })
   })
+
+  describe('when `disabledTransfersToNonArbitrumChains` is true', () => {
+    it('should exclude non-Arbitrum networks as destination', () => {
+      const result = getDestinationChainIds(ChainId.ArbitrumOne, {
+        disableTransfersToNonArbitrumChains: true,
+        includeLifi: false
+      })
+      expect(result).toEqual([3333])
+
+      const result2 = getDestinationChainIds(ChainId.ArbitrumOne, {
+        disableTransfersToNonArbitrumChains: true,
+        includeLifi: true
+      })
+      expect(result2).toEqual([3333, 33139, 55244])
+    })
+  })
+
+  describe('when `disabledTransfersToNonArbitrumChains` is false (defaut behavior)', () => {
+    it('should include non-Arbitrum networks as destination', () => {
+      const result = getDestinationChainIds(ChainId.ArbitrumOne, {
+        disableTransfersToNonArbitrumChains: false,
+        includeLifi: false
+      })
+      expect(result).toEqual([1, 3333])
+
+      const result2 = getDestinationChainIds(ChainId.ArbitrumOne, {
+        disableTransfersToNonArbitrumChains: false,
+        includeLifi: true
+      })
+      expect(result2).toEqual([1, 3333, 33139, 55244])
+    })
+  })
 })
