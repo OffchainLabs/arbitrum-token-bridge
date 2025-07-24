@@ -8,11 +8,7 @@ import {
   MockInstance
 } from 'vitest'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import {
-  customChainLocalStorageKey,
-  getDestinationChainIds,
-  isNetwork
-} from '../../util/networks'
+import { customChainLocalStorageKey, isNetwork } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'

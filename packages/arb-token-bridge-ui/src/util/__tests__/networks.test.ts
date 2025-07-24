@@ -5,8 +5,7 @@ import {
   customChainLocalStorageKey,
   getBlockNumberReferenceChainIdByChainId,
   getDestinationChainIds,
-  getSupportedChainIds,
-  isNetwork
+  getSupportedChainIds
 } from '../networks'
 import { ChainId } from '../../types/ChainId'
 import { orbitTestnets } from '../orbitChainsList'
