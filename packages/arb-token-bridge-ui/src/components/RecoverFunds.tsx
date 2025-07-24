@@ -435,7 +435,7 @@ const ActionColumn: TableCellRenderer = ({ rowData }) => {
               childChainProvider
             )
             // Refecth lists
-            mutate()
+            await mutate()
           } catch (error) {
             if (isUserRejectedError(error)) {
               return
