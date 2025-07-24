@@ -34,6 +34,8 @@ export function MainContent() {
 
   return (
     <>
+      <RecoverFunds />
+
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
         <Tab.Group as={Fragment} selectedIndex={tab} onChange={setSelectedTab}>
           <TopNavBar />
@@ -47,8 +49,6 @@ export function MainContent() {
           </Tab.Panels>
         </Tab.Group>
       </div>
-
-      <RecoverFunds />
 
       {/* Settings panel */}
       <SettingsDialog />
