@@ -226,9 +226,9 @@ describe('getSupportedChainIds', () => {
 })
 
 describe('getDestinationChainIds', () => {
-  let localStorageGetItemMock: MockInstance<(key: string) => string | null>
-
   beforeAll(() => {
+    let localStorageGetItemMock: MockInstance<(key: string) => string | null>
+
     const mockedOrbitChain_1 = createMockOrbitChain({
       chainId: 2222,
       parentChainId: ChainId.ArbitrumSepolia
