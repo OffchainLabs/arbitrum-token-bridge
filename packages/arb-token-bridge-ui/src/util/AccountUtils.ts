@@ -1,4 +1,4 @@
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { getProviderForChainId } from '../token-bridge-sdk/utils'
 
 export type AccountType =
   | 'externally-owned-account'
