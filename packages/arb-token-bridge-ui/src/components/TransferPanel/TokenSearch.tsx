@@ -43,8 +43,10 @@ import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { useMode } from '../../hooks/useMode'
+import { constants } from 'ethers'
+import { ChainId } from '../../types/ChainId'
 
-export const ARB_ONE_NATIVE_USDC_TOKEN = {
+export const ARB_ONE_NATIVE_USDC_TOKEN: ERC20BridgeToken = {
   ...ArbOneNativeUSDC,
   listIds: new Set<string>(),
   type: TokenType.ERC20,
@@ -54,7 +56,7 @@ export const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
-export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
+export const ARB_SEPOLIA_NATIVE_USDC_TOKEN: ERC20BridgeToken = {
   ...ArbOneNativeUSDC,
   listIds: new Set<string>(),
   type: TokenType.ERC20,
@@ -176,6 +178,7 @@ function TokensPanel({
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
+
   const {
     ethParentBalance,
     erc20ParentBalances,
@@ -288,6 +291,7 @@ function TokensPanel({
       ...Object.keys(tokensFromUser),
       ...Object.keys(tokensFromLists)
     ]
+
     if (!isDepositMode) {
       // L2 to L1 withdrawals
       if (isArbitrumOne) {
@@ -306,17 +310,47 @@ function TokensPanel({
       }
     }
 
-    const tokens = [
-      NATIVE_CURRENCY_IDENTIFIER,
-      // Deduplicate addresses
-      ...new Set(tokenAddresses)
-    ]
+    /**
+     * Disable native currency for transfer from ApeChain to Ethereum, Base and Superposition
+     * And vice versa
+     */
+    const lifiChains = [ChainId.Ethereum, ChainId.Base, ChainId.Superposition]
+    const isTransferringFromApe =
+      networks.sourceChain.id === ChainId.ApeChain &&
+      lifiChains.includes(networks.destinationChain.id)
+    const isTransferringToApe =
+      networks.destinationChain.id === ChainId.ApeChain &&
+      lifiChains.includes(networks.sourceChain.id)
+
+    /**
+     * Disable Ape token for ApeChain transfers from/to Ethereum, Base and Superposition
+     * Allow Ape token AND ethereum for transfers from/to Arbitrum One
+     *
+     * For other chains, always show native currency
+     */
+    if (
+      !isTransferringFromApe &&
+      !isTransferringToApe &&
+      !tokenAddresses.includes(constants.AddressZero)
+    ) {
+      tokenAddresses.push(NATIVE_CURRENCY_IDENTIFIER)
+    } else if (
+      (networks.sourceChain.id === ChainId.ApeChain &&
+        networks.destinationChain.id === ChainId.ArbitrumOne) ||
+      (networks.destinationChain.id === ChainId.ApeChain &&
+        networks.sourceChain.id === ChainId.ArbitrumOne)
+    ) {
+      tokenAddresses.push(NATIVE_CURRENCY_IDENTIFIER)
+    }
+
+    const tokens = Array.from(new Set(tokenAddresses))
+
     return tokens
       .filter(address => {
         // Derive the token object from the address string
         let token = tokensFromUser[address] || tokensFromLists[address]
 
-        if (isTokenArbitrumOneNativeUSDC(address)) {
+        if (isTokenArbitrumOneNativeUSDC(address) && !token?.l2Address) {
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_ONE_NATIVE_USDC_TOKEN
         }
@@ -343,6 +377,10 @@ function TokensPanel({
         if (!tokenSearch) {
           // Always show native currency
           if (address === NATIVE_CURRENCY_IDENTIFIER) {
+            return true
+          }
+
+          if (addressesEqual(address, constants.AddressZero)) {
             return true
           }
 
@@ -383,6 +421,16 @@ function TokensPanel({
           return 1
         }
 
+        // Pin Ether to top
+        if (addressesEqual(address1, constants.AddressZero)) {
+          return -1
+        }
+
+        // Pin Ether to top
+        if (addressesEqual(address2, constants.AddressZero)) {
+          return 1
+        }
+
         const bal1 = getBalance(address1)
         const bal2 = getBalance(address2)
 
@@ -398,6 +446,7 @@ function TokensPanel({
         return bal1.gt(bal2) ? -1 : 1
       })
   }, [
+    networks,
     newToken,
     tokensFromUser,
     tokensFromLists,
@@ -491,6 +540,7 @@ function TokensPanel({
         return (
           <TokenRow
             key="TokenRowNativeCurrency"
+            style={virtualizedProps.style}
             onTokenSelected={onTokenSelected}
             token={null}
           />
@@ -586,6 +636,12 @@ export function TokenSearch(props: UseDialogProps) {
     }
 
     if (!_token.address) {
+      return
+    }
+
+    if (addressesEqual(_token.address, constants.AddressZero)) {
+      // If the token is ETH, we don't need to fetch any data
+      setSelectedToken(_token.address)
       return
     }
 

@@ -60,10 +60,9 @@ export function SwitchNetworksButton(
     // in this case, we show a one-way arrow and disable the swap button
     return (
       isSmartContractWallet ||
-      !getDestinationChainIds(
-        networks.destinationChain.id,
+      !getDestinationChainIds(networks.destinationChain.id, {
         disableTransfersToNonArbitrumChains
-      ).includes(networks.sourceChain.id)
+      }).includes(networks.sourceChain.id)
     )
   }, [
     networks.destinationChain.id,

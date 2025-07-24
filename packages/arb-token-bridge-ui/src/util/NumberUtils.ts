@@ -44,7 +44,7 @@ const formatNumber = (
 export const formatAmount = <T extends number | BigNumber | undefined>(
   balance: T,
   options: {
-    decimals?: T extends number ? never : number
+    decimals?: number
     symbol?: string
   } = {}
 ): string => {

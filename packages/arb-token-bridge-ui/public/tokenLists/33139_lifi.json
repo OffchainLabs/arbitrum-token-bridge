@@ -1,0 +1,72 @@
+{
+  "name": "Arbed Lifi Tokens 33139",
+  "timestamp": "2025-07-07T10:47:32.947Z",
+  "version": { "major": 1, "minor": 0, "patch": 0 },
+  "tokens": [
+    {
+      "chainId": 33139,
+      "address": "0xf4d9235269a96aadafc9adae454a0618ebe37949",
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
+      "decimals": 18,
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "extensions": {
+        "bridgeInfo": {
+          "1": {
+            "tokenAddress": "0x0000000000000000000000000000000000000000",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          },
+          "55244": {
+            "tokenAddress": "0x0000000000000000000000000000000000000000",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          },
+          "42161": {
+            "tokenAddress": "0x0000000000000000000000000000000000000000",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          },
+          "8453": {
+            "tokenAddress": "0x0000000000000000000000000000000000000000",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          }
+        }
+      }
+    },
+    {
+      "chainId": 33139,
+      "address": "0xf1815bd50389c46847f0bda824ec8da914045d14",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e",
+      "decimals": 6,
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
+      "extensions": {
+        "bridgeInfo": {
+          "1": {
+            "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          },
+          "55244": {
+            "tokenAddress": "0x6c030c5cc283f791b26816f325b9c632d964f8a1",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          },
+          "42161": {
+            "tokenAddress": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          },
+          "8453": {
+            "tokenAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "originBridgeAddress": "N/A",
+            "destBridgeAddress": "N/A"
+          }
+        }
+      }
+    }
+  ],
+  "logoURI": "https://avatars.githubusercontent.com/u/43838009"
+}

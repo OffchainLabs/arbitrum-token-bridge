@@ -11,6 +11,7 @@ import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
+import { LifiData, LifiTransferStarter } from './LifiTransferStarter'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -38,7 +39,7 @@ const cache: { [key: string]: BridgeTransferStarter } = {}
 
 export class BridgeTransferStarterFactory {
   public static create(
-    props: BridgeTransferStarterPropsWithChainIds
+    props: BridgeTransferStarterPropsWithChainIds & { lifiData?: LifiData }
   ): BridgeTransferStarter {
     const sourceChainProvider = getProviderForChainId(props.sourceChainId)
     const destinationChainProvider = getProviderForChainId(
@@ -53,8 +54,13 @@ export class BridgeTransferStarterFactory {
       destinationChainErc20Address: props.destinationChainErc20Address
     }
 
-    const { isDeposit, isNativeCurrencyTransfer, isSupported, isTeleport } =
-      getBridgeTransferProperties(props)
+    const {
+      isDeposit,
+      isNativeCurrencyTransfer,
+      isSupported,
+      isTeleport,
+      isWithdrawal
+    } = getBridgeTransferProperties(props)
 
     if (!isSupported) {
       throw new Error('Unsupported transfer detected')
@@ -95,6 +101,18 @@ export class BridgeTransferStarterFactory {
     if (!isNativeCurrencyTransfer) {
       return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
     }
-    return withCache(cacheKey, new EthWithdrawalStarter(initProps))
+
+    if (isWithdrawal) {
+      return withCache(cacheKey, new EthWithdrawalStarter(initProps))
+    }
+
+    if (!props.lifiData) {
+      throw new Error('Missing lifiData for LifiTransferStarter')
+    }
+
+    return withCache(
+      cacheKey,
+      new LifiTransferStarter({ ...initProps, lifiData: props.lifiData })
+    )
   }
 }
