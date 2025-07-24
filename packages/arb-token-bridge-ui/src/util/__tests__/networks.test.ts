@@ -1,5 +1,13 @@
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
-import { it, expect, describe, beforeAll, MockInstance, vi } from 'vitest'
+import {
+  it,
+  expect,
+  describe,
+  beforeAll,
+  MockInstance,
+  vi,
+  afterAll
+} from 'vitest'
 
 import {
   customChainLocalStorageKey,
@@ -226,9 +234,9 @@ describe('getSupportedChainIds', () => {
 })
 
 describe('getDestinationChainIds', () => {
-  beforeAll(() => {
-    let localStorageGetItemMock: MockInstance<(key: string) => string | null>
+  let localStorageGetItemMock: MockInstance<(key: string) => string | null>
 
+  beforeAll(() => {
     const mockedOrbitChain_1 = createMockOrbitChain({
       chainId: 2222,
       parentChainId: ChainId.ArbitrumSepolia
@@ -258,6 +266,10 @@ describe('getDestinationChainIds', () => {
     registerCustomArbitrumNetwork(mockedOrbitChain_1)
     registerCustomArbitrumNetwork(mockedOrbitChain_2)
     registerCustomArbitrumNetwork(mockedOrbitChain_3)
+  })
+
+  afterAll(() => {
+    localStorageGetItemMock.mockReset()
   })
 
   function isAscending(arr: number[]) {
