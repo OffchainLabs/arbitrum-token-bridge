@@ -21,7 +21,7 @@ export const highlightTransactionHistoryDisclaimer = () => {
 
 export function TransactionHistoryDisclaimer() {
   const { address: walletAddress } = useAccount()
-  const { isSmartContractWallet } = useAccountType()
+  const { accountType } = useAccountType()
   const { data: lifiTransactions } = useLifiTransactionHistory({
     walletAddress
   })
@@ -47,11 +47,12 @@ export function TransactionHistoryDisclaimer() {
       (mainnetUsdtBalance && mainnetUsdtBalance.gt(0)) ||
       (arbOneUsdtBalance && arbOneUsdtBalance.gt(0))
 
-    return userHasUsdtBalance && isSmartContractWallet
-  }, [mainnetBalances, arbOneBalances, isSmartContractWallet])
+    return userHasUsdtBalance && accountType === 'smart-contract-wallet'
+  }, [mainnetBalances, arbOneBalances, accountType])
 
   const showLifiDisclaimer =
-    isSmartContractWallet || (lifiTransactions && lifiTransactions.length > 0)
+    accountType === 'smart-contract-wallet' ||
+    (lifiTransactions && lifiTransactions.length > 0)
 
   if (!showOftDisclaimer && !showLifiDisclaimer) {
     return null
