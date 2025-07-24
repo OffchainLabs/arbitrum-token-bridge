@@ -351,7 +351,7 @@ describe('getDestinationChainIds', () => {
     })
   })
 
-  describe('when `disabledTransfersToNonArbitrumChains` is true', () => {
+  describe('when `disableTransfersToNonArbitrumChains` is true', () => {
     it('should exclude non-Arbitrum networks as destination', () => {
       const result = getDestinationChainIds(ChainId.ArbitrumOne, {
         disableTransfersToNonArbitrumChains: true,
@@ -367,7 +367,7 @@ describe('getDestinationChainIds', () => {
     })
   })
 
-  describe('when `disabledTransfersToNonArbitrumChains` is false (defaut behavior)', () => {
+  describe('when `disableTransfersToNonArbitrumChains` is false (defaut behavior)', () => {
     it('should include non-Arbitrum networks as destination', () => {
       const result = getDestinationChainIds(ChainId.ArbitrumOne, {
         disableTransfersToNonArbitrumChains: false,
