@@ -11,6 +11,7 @@
     "start": "yarn workspace arb-token-bridge-ui start",
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
     "test:ci": "yarn workspace arb-token-bridge-ui test:ci",
+    "test:widget-snapshot": "yarn workspace arb-token-bridge-ui test:widget-snapshot",
     "prettier:check": "./node_modules/.bin/prettier --check .",
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
