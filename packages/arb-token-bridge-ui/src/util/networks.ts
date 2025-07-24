@@ -582,7 +582,12 @@ export function getDestinationChainIds(
 
   const chainIds = getChildChainIds(chain)
 
-  if (parentChainId && !disableTransfersToNonArbitrumChains) {
+  if (
+    parentChainId &&
+    (!isNetwork(parentChainId).isNonArbitrumNetwork ||
+      (isNetwork(parentChainId).isNonArbitrumNetwork &&
+        !disableTransfersToNonArbitrumChains))
+  ) {
     chainIds.push(parentChainId)
   }
   const lifiChainIds = lifiDestinationChainIds[chainId]
