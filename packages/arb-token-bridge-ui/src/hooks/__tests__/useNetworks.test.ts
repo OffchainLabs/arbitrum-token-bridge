@@ -947,8 +947,4 @@ describe('sanitizeQueryParams', () => {
       })
     })
   })
-
-  // describe('includeLifi', () => {
-
-  // })
 })
