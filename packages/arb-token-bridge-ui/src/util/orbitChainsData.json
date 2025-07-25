@@ -1377,6 +1377,190 @@
           "description": "Invisible blockchain bridging everyday digital interactions into real-world rewards."
         }
       }
+    },
+    {
+      "chainId": 101069,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0x13355730A242744D71f1e489896837f70797fB26",
+        "inbox": "0x09a0f92A165dE693E2f5A9dE6c78605Fe873b36E",
+        "outbox": "0xbBe348691B0765B04D5a72EBfD502Acd3bf5d09A",
+        "rollup": "0x5aE6380a5E9306A616CCDffF5a53813dbC4b88F3",
+        "sequencerInbox": "0x9876fC5268F4053e6339ead270311582A4983cE5"
+      },
+      "nativeToken": "0x077574441C4F8763a37a2cFeE2ECb444aA60A15e",
+      "explorerUrl": "https://scan.rcade.network",
+      "rpcUrl": "https://rpc.rcade.network/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "RCADE",
+      "slug": "rcade",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x68e00287a7936c0A264538F673dd9112d87eB0a7",
+        "parentErc20Gateway": "0x69dD06f0301d482452917cF3AfEf0871021238c1",
+        "parentGatewayRouter": "0x069e7d4dA9B6Ac6EbA80EDb6902a64bb32142cd8",
+        "parentMultiCall": "0x411f8A148e448bBe75382d4FFABee0796484f3c6",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x0f65B750B0Bac788e9FB2bf611AEc7f0f928045C",
+        "childErc20Gateway": "0x313543711c1d8Af3D6D9b88dfF772b47104FbcCc",
+        "childGatewayRouter": "0x3020408E6174e422cC349365dCa4C4417540b8fE",
+        "childMultiCall": "0x3C680bb77c36c172EA2c5E30F2C3c2D9A62CBD87",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#000000",
+        "network": {
+          "name": "RCADE",
+          "logo": "/images/RCADE_Logo.png",
+          "description": "RCADE powered by Caldera."
+        },
+        "nativeTokenData": {
+          "name": "RCADE",
+          "symbol": "RCADE",
+          "logoUrl": "/images/RCADE_Logo.png"
+        }
+      }
+    },
+    {
+      "chainId": 360,
+      "confirmPeriodBlocks": 45818,
+      "ethBridge": {
+        "bridge": "0xE1d32C985825562edAa906fAC39295370Db72195",
+        "inbox": "0x235000876bd58336C802B3546Fc0250f285fCc79",
+        "outbox": "0xb255de22d39a26D4CbcAFd6Cf660ccaCa047e95B",
+        "rollup": "0x0f28D76Ec5c62b502625351726b4A3E3F54FF5F0",
+        "sequencerInbox": "0x0fFe9ACC296ddd4De5F616Aa482C99fA4b41A3E2"
+      },
+      "nativeToken": "0x66E535e8D2ebf13F49F3D49e5c50395a97C137b1",
+      "explorerUrl": "https://molten.calderaexplorer.xyz/",
+      "rpcUrl": "https://molten.calderachain.xyz/http",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Molten",
+      "slug": "molten",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x6D3A5fc8Ba7446127FaeC9eC1597C017EC1f3Eac",
+        "parentErc20Gateway": "0x5a6f8ea5e1028C80CB98Fd8916afBBC4E6b23D80",
+        "parentGatewayRouter": "0xAeAe9616A02dA527FceA2AC444EC918C7BfB9CdF",
+        "parentMultiCall": "0x909b042B88F587d745dBF52e2569545376f6eAA4",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xEF3c26D1854922b67A7011ee8CbFcE0Ab78726a8",
+        "childErc20Gateway": "0x939b292EE930f62E3C8f7040Df9A8b3B872E1602",
+        "childGatewayRouter": "0x56f4046f9271Ec59787Ecd22b00630c028D93301",
+        "childMultiCall": "0xfBF66Ff2Be2b15180Ec5F3Abf79D8C9517120232",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#f10000",
+        "network": {
+          "name": "Molten",
+          "logo": "/images/Molten_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Molten",
+          "symbol": "MOLTEN"
+        }
+      }
+    },
+    {
+      "chainId": 98215,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x55A1B18E0300aD707617B828E0554765dBFc8535",
+        "inbox": "0x306c4D4032862813db6554519e03DA31C1387cFf",
+        "outbox": "0x8D6513Bc0cafaa0CaEdB80dB392997E92c7FA125",
+        "rollup": "0xA71a1e9649167787e179DD66348e578f928d43F4",
+        "sequencerInbox": "0xA672239e003124455c00FdAB7D15dD682BCe97AE"
+      },
+      "nativeToken": "0x49bef7de007b944505f5a2fac1f00737c8e4fa96",
+      "explorerUrl": "https://explorer.tiktrix.gg/",
+      "rpcUrl": "https://rpc.tiktrix.gg",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "MeerChain",
+      "slug": "meerchain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2A4054528972748aaaF6224Ff46F2A6349CE1426",
+        "parentErc20Gateway": "0x70e43daC8f9140752C0937251c9345DDE97183C7",
+        "parentGatewayRouter": "0x5d94E722d350579662De3Bd57298a42D148432b3",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x516892998a30e42f03940A33098a7900d2FADe3B",
+        "childErc20Gateway": "0xa074a952096c29097F83B7c9c9b30692A8fcd6Fc",
+        "childGatewayRouter": "0x8dB05c5f0625C6f6702e76781aE61f1541B1489d",
+        "childMultiCall": "0x46E941268A2bc14AeA1138E32b52CCc4cB4Ae3ad",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#c1ff72",
+        "network": {
+          "name": "MeerChain",
+          "logo": "/images/MeerChain_Logo.png",
+          "description": "MeerChain serves as the foundational blockchain for the TikTrix platform, delivering high-performance infrastructure as a Layer-3 application chain specifically engineered for GameFi and SocialFi ecosystems. Built upon Arbitrum's battle-tested security framework and inheriting Ethereum mainnet's decentralized architecture, MeerChain enables ultra-low-cost transactions and sub-second block finality, creating an optimized environment for gaming and social interactions at scale."
+        },
+        "nativeTokenData": {
+          "name": "TikTrix Token",
+          "symbol": "TRIX",
+          "logoUrl": "/images/MeerChain_NativeTokenLogo.png"
+        }
+      }
+    },
+    {
+      "chainId": 190415,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x9948eDFBb9e0b104bAd60393dBe79d0BC7937014",
+        "inbox": "0xE0400a87d5Ee8a2Fc1dF2aAf4B6d8f89d0B9bE55",
+        "outbox": "0x433da6d107e942Ec4EAB1e86B16427B6071F6491",
+        "rollup": "0xf0d2960a37B33567FF7507C2d59da021277663A1",
+        "sequencerInbox": "0x9B26957a661bc862FA0d7eb21813Aa008d0Cc6E6"
+      },
+      "explorerUrl": "https://explorer.hpp.io/",
+      "rpcUrl": "https://mainnet.hpp.io",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "HPP Mainnet",
+      "slug": "hpp-mainnet",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2241e2a93b4DE8da10b0748d6b349bfB76DCC45F",
+        "parentErc20Gateway": "0x8F31c7a6806432F05A936Ade26a7407c968f13eA",
+        "parentGatewayRouter": "0x1f948D3718b279d602887ca0FB28Df4EDF77023F",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "parentWethGateway": "0x8f10926536478dabff58A748C54385a346830546",
+        "childCustomGateway": "0xf190f3B9C76be7Bf48b458C3A87d1da9e1b54Cd3",
+        "childErc20Gateway": "0xBFd95DB183Ce641010809c36c3339F5Cce70e270",
+        "childGatewayRouter": "0x83c4a717fE8e3A57f1AE1Cc451C3426fC66eAA69",
+        "childMultiCall": "0x62F0696576a3769120bd251C69140eec42ca51B8",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x82553CDA0bEd9262a879F9F7524cd20288B357AA",
+        "childWethGateway": "0x2cb68758b5aFbB961B685B4BE8ba04DcB04B6f07"
+      },
+      "bridgeUiConfig": {
+        "color": "#1f2021",
+        "network": {
+          "name": "HPP Mainnet",
+          "logo": "/images/HPPMainnet_Logo.svg",
+          "description": "House Party Protocol (HPP) is a modular AI-powered blockchain and data infrastructure designed for the next generation of decentralized applications, built on the pillars of trustworthy data, verifiable AI, and real-world scalability."
+        }
+      }
     }
   ],
   "testnet": [

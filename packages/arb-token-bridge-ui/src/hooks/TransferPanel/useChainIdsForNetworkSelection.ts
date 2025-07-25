@@ -1,11 +1,14 @@
 import {
   getDestinationChainIds,
-  getSupportedChainIds
+  getSupportedChainIds,
+  isNetwork
 } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../useIsTestnetMode'
 import { useNetworks } from '../useNetworks'
 import { useMemo } from 'react'
+import { useDisabledFeatures } from '../useDisabledFeatures'
+import { DisabledFeatures } from '../useArbQueryParams'
 
 export function useChainIdsForNetworkSelection({
   isSource
@@ -15,15 +18,31 @@ export function useChainIdsForNetworkSelection({
   const [networks] = useNetworks()
   const [isTestnetMode] = useIsTestnetMode()
 
+  const { isFeatureDisabled } = useDisabledFeatures()
+
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
+
   return useMemo(() => {
     if (isSource) {
-      return getSupportedChainIds({
+      const sourceChainIds = getSupportedChainIds({
         includeMainnets: !isTestnetMode,
         includeTestnets: isTestnetMode
       })
+
+      // do not display chains that have no destination chains
+      return sourceChainIds.filter(
+        chainId =>
+          getDestinationChainIds(chainId, disableTransfersToNonArbitrumChains)
+            .length > 0
+      )
     }
 
-    const destinationChainIds = getDestinationChainIds(networks.sourceChain.id)
+    const destinationChainIds = getDestinationChainIds(
+      networks.sourceChain.id,
+      disableTransfersToNonArbitrumChains
+    )
 
     // if source chain is Arbitrum One, add Arbitrum Nova to destination
     if (networks.sourceChain.id === ChainId.ArbitrumOne) {
@@ -34,6 +53,17 @@ export function useChainIdsForNetworkSelection({
       destinationChainIds.push(ChainId.ArbitrumOne)
     }
 
+    if (disableTransfersToNonArbitrumChains) {
+      return destinationChainIds.filter(
+        chainId => !isNetwork(chainId).isNonArbitrumNetwork
+      )
+    }
+
     return destinationChainIds
-  }, [isSource, isTestnetMode, networks.sourceChain.id])
+  }, [
+    isSource,
+    isTestnetMode,
+    networks.sourceChain.id,
+    disableTransfersToNonArbitrumChains
+  ])
 }

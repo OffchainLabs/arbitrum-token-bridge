@@ -6,7 +6,11 @@ import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { Chain } from 'wagmi/chains'
 
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import {
+  getDestinationChainIds,
+  getExplorerUrl,
+  isNetwork
+} from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
@@ -27,11 +31,15 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useBalances } from '../../hooks/useBalances'
 import { DestinationNetworkBox } from './TransferPanelMain/DestinationNetworkBox'
 import { SourceNetworkBox } from './TransferPanelMain/SourceNetworkBox'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  DisabledFeatures,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 import { addressesEqual } from '../../util/AddressUtils'
 import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
+import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useTheme } from '../../hooks/useTheme'
 
 export function SwitchNetworksButton(
@@ -40,11 +48,34 @@ export function SwitchNetworksButton(
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const disabled = isSmartContractWallet || isLoadingAccountType
-
   const { theme } = useTheme()
 
   const [networks, setNetworks] = useNetworks()
+
+  const { isFeatureDisabled } = useDisabledFeatures()
+
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
+
+  const isNetworkSwapBlocked = useMemo(() => {
+    // block network swaps in case of either a smart contract wallet, or if the destination chain does not support transfers to the source-chain
+    // in this case, we show a one-way arrow and disable the swap button
+    return (
+      isSmartContractWallet ||
+      !getDestinationChainIds(
+        networks.destinationChain.id,
+        disableTransfersToNonArbitrumChains
+      ).includes(networks.sourceChain.id)
+    )
+  }, [
+    networks.destinationChain.id,
+    networks.sourceChain.id,
+    isSmartContractWallet,
+    disableTransfersToNonArbitrumChains
+  ])
+
+  const disabled = isLoadingAccountType || isNetworkSwapBlocked
 
   return (
     <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
@@ -66,7 +97,7 @@ export function SwitchNetworksButton(
         {...props}
       >
         <SwitchNetworkButtonBorderTop />
-        {isSmartContractWallet ? (
+        {isNetworkSwapBlocked ? (
           <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
         ) : (
           <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
