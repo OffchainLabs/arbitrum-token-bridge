@@ -4,6 +4,7 @@ import {
   InMemoryCache,
   NormalizedCacheObject
 } from '@apollo/client'
+import ApolloLinkTimeout from 'apollo-link-timeout'
 
 import { ChainId } from '../types/ChainId'
 
@@ -79,8 +80,11 @@ const subgraphs = {
 } as const
 
 function createApolloClient(uri: string) {
+  const timeoutLink = new ApolloLinkTimeout()
+  const httpLink = timeoutLink.concat(new HttpLink({ uri, fetch }))
+
   return new ApolloClient({
-    link: new HttpLink({ uri, fetch }),
+    link: httpLink,
     cache: new InMemoryCache()
   })
 }

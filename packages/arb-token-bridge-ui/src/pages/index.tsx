@@ -17,7 +17,8 @@ import {
   decodeChainQueryParam,
   encodeChainQueryParam,
   TabParamEnum,
-  DisabledFeaturesParam
+  DisabledFeaturesParam,
+  ModeParamEnum
 } from '../hooks/useArbQueryParams'
 import { sanitizeExperimentalFeaturesQueryParam } from '../util'
 import {
@@ -101,6 +102,7 @@ function getDestinationWithSanitizedQueryParams(
     token: string | undefined
     tab: string
     disabledFeatures: string[] | undefined
+    mode: string | undefined
   },
   query: GetServerSidePropsContext['query']
 ) {
@@ -114,7 +116,8 @@ function getDestinationWithSanitizedQueryParams(
       key === 'experiments' ||
       key === 'token' ||
       key === 'tab' ||
-      key === 'disabledFeatures'
+      key === 'disabledFeatures' ||
+      key === 'mode'
     ) {
       continue
     }
@@ -132,6 +135,7 @@ function getDestinationWithSanitizedQueryParams(
   const encodedExperiments = encodeString(sanitized.experiments)
   const encodedToken = encodeString(sanitized.token)
   const encodedTab = encodeString(sanitized.tab)
+  const encodedMode = encodeString(sanitized.mode)
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -151,6 +155,10 @@ function getDestinationWithSanitizedQueryParams(
 
   if (encodedTab) {
     params.set('tab', encodedTab)
+  }
+
+  if (encodedMode) {
+    params.set('mode', encodedMode)
   }
 
   if (sanitized.disabledFeatures) {
@@ -185,6 +193,8 @@ export async function getServerSideProps({
   const experiments = decodeString(query.experiments)
   const token = decodeString(query.token)
   const tab = decodeString(query.tab)
+  const mode = decodeString(query.mode)
+
   // Parse disabled features string/array to array
   const disabledFeatures =
     typeof query.disabledFeatures === 'string'
@@ -207,8 +217,10 @@ export async function getServerSideProps({
   // sanitize the query params
   const sanitizedChainIds = sanitizeQueryParams({
     sourceChainId,
-    destinationChainId
+    destinationChainId,
+    disableTransfersToNonArbitrumChains: mode === ModeParamEnum.EMBED
   })
+
   const sanitized = {
     ...sanitizedChainIds,
     experiments: sanitizeExperimentalFeaturesQueryParam(experiments),
@@ -217,7 +229,8 @@ export async function getServerSideProps({
       destinationChainId: sanitizedChainIds.destinationChainId
     }),
     tab: sanitizeTabQueryParam(tab),
-    disabledFeatures: DisabledFeaturesParam.decode(disabledFeatures)
+    disabledFeatures: DisabledFeaturesParam.decode(disabledFeatures),
+    mode: mode ? mode : undefined
   }
 
   // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
@@ -227,14 +240,15 @@ export async function getServerSideProps({
     experiments !== sanitized.experiments ||
     token !== sanitized.token ||
     tab !== sanitized.tab ||
-    (disabledFeatures?.length || 0) !== sanitized.disabledFeatures.length
+    (disabledFeatures?.length || 0) !== sanitized.disabledFeatures.length ||
+    mode !== sanitized.mode
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)
     console.log(
-      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab}&disabledFeatures=${disabledFeatures} (before)`
+      `[getServerSideProps]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab}&disabledFeatures=${disabledFeatures}&mode=${mode} (before)`
     )
     console.log(
-      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab}&disabledFeatures=${sanitized.disabledFeatures} (after)`
+      `[getServerSideProps]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab}&disabledFeatures=${sanitized.disabledFeatures}&mode=${sanitized.mode} (after)`
     )
     return {
       redirect: {

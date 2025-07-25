@@ -4,8 +4,8 @@ import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { Chain } from 'wagmi/chains'
 
 import useSWRImmutable from 'swr/immutable'
-import { useArbQueryParams } from './useArbQueryParams'
-import { getCustomChainsFromLocalStorage } from '../util/networks'
+import { DisabledFeatures, useArbQueryParams } from './useArbQueryParams'
+import { getCustomChainsFromLocalStorage, isNetwork } from '../util/networks'
 import { ChainId } from '../types/ChainId'
 import {
   sepolia,
@@ -22,6 +22,7 @@ import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { getOrbitChains } from '../util/orbitChainsList'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useDisabledFeatures } from './useDisabledFeatures'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined
@@ -59,15 +60,17 @@ const cache: Record<
 > = {}
 export function sanitizeQueryParams({
   sourceChainId,
-  destinationChainId
+  destinationChainId,
+  disableTransfersToNonArbitrumChains = false
 }: {
   sourceChainId: ChainId | number | undefined
   destinationChainId: ChainId | number | undefined
+  disableTransfersToNonArbitrumChains?: boolean
 }): {
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  const key = `${sourceChainId}-${destinationChainId}`
+  const key = `${sourceChainId}-${destinationChainId}-${disableTransfersToNonArbitrumChains}`
   const cacheHit = cache[key]
   if (cacheHit) {
     return cacheHit
@@ -85,14 +88,27 @@ export function sanitizeQueryParams({
     })
   }
 
-  // destinationChainId is valid and sourceChainId is undefined
+  // destinationChainId is supported and sourceChainId is undefined
   if (
     !isSupportedChainId(sourceChainId) &&
     isSupportedChainId(destinationChainId)
   ) {
-    const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
+    // case 1: the destination chain id is supported, but invalid in the context of the feature flag
+    const isInvalidDestinationChainId =
+      disableTransfersToNonArbitrumChains &&
+      isNetwork(destinationChainId).isNonArbitrumNetwork
 
-    if (typeof defaultSourceChainId === 'undefined') {
+    // case 2: the destination chain id is supported and valid, but it doesn't have a source chain partner, eg. sourceChain=undefined and destinationChain=base
+    const [defaultSourceChainId] = getDestinationChainIds(
+      destinationChainId,
+      disableTransfersToNonArbitrumChains
+    )
+
+    // in both cases, we default to eth<>arbitrum-one pair
+    if (
+      typeof defaultSourceChainId === 'undefined' ||
+      isInvalidDestinationChainId
+    ) {
       return (cache[key] = {
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
@@ -110,7 +126,10 @@ export function sanitizeQueryParams({
     isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
   ) {
-    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
+    const [defaultDestinationChainId] = getDestinationChainIds(
+      sourceChainId,
+      disableTransfersToNonArbitrumChains
+    )
 
     if (typeof defaultDestinationChainId === 'undefined') {
       return (cache[key] = {
@@ -126,8 +145,24 @@ export function sanitizeQueryParams({
   }
 
   // destinationChainId is not a partner of sourceChainId
-  if (!getDestinationChainIds(sourceChainId!).includes(destinationChainId!)) {
-    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!)
+  if (
+    !getDestinationChainIds(
+      sourceChainId!,
+      disableTransfersToNonArbitrumChains
+    ).includes(destinationChainId!)
+  ) {
+    const [defaultDestinationChainId] = getDestinationChainIds(
+      sourceChainId!,
+      disableTransfersToNonArbitrumChains
+    )
+
+    if (!defaultDestinationChainId) {
+      return (cache[key] = {
+        sourceChainId: ChainId.Ethereum,
+        destinationChainId: ChainId.ArbitrumOne
+      })
+    }
+
     return (cache[key] = {
       sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!
@@ -159,6 +194,12 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     setQueryParams
   ] = useArbQueryParams()
 
+  const { isFeatureDisabled } = useDisabledFeatures()
+
+  const disableTransfersToNonArbitrumChains = isFeatureDisabled(
+    DisabledFeatures.TRANSFERS_TO_NON_ARBITRUM_CHAINS
+  )
+
   const {
     sourceChainId: validSourceChainId,
     destinationChainId: validDestinationChainId
@@ -166,9 +207,10 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     () =>
       sanitizeQueryParams({
         sourceChainId,
-        destinationChainId
+        destinationChainId,
+        disableTransfersToNonArbitrumChains
       }),
-    [destinationChainId, sourceChainId]
+    [destinationChainId, sourceChainId, disableTransfersToNonArbitrumChains]
   )
 
   const {
@@ -195,14 +237,15 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
         destinationChainId: validDestinationChainId
       } = sanitizeQueryParams({
         sourceChainId: newSourceChainId,
-        destinationChainId: newDestinationChainId
+        destinationChainId: newDestinationChainId,
+        disableTransfersToNonArbitrumChains
       })
       setQueryParams({
         sourceChain: validSourceChainId,
         destinationChain: validDestinationChainId
       })
     },
-    [setQueryParams]
+    [setQueryParams, disableTransfersToNonArbitrumChains]
   )
 
   // The return values of the hook will always be the sanitized values
