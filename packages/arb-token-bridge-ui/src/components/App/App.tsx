@@ -18,6 +18,7 @@ import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnaly
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 import { Layout } from '../common/Layout'
 import { AppProviders } from './AppProviders'
+import { useTheme } from '../../hooks/useTheme'
 
 declare global {
   interface Window {
@@ -94,6 +95,9 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 const AppContent = React.memo(() => {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
+
+  // apply custom themes if any
+  useTheme()
 
   if (address && isBlocked) {
     return (

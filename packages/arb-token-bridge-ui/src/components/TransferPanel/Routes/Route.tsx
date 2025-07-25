@@ -25,6 +25,7 @@ import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { useMode } from '../../../hooks/useMode'
+import { useTheme } from '../../../hooks/useTheme'
 
 // Types
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
@@ -424,6 +425,7 @@ export const Route = React.memo(
     const [{ amount2, destinationAddress }] = useArbQueryParams()
     const { embedMode } = useMode()
     const isBatchTransferSupported = useIsBatchTransferSupported()
+    const { theme } = useTheme()
 
     const token = (overrideToken || _token || childNativeCurrency) as Token
 
@@ -450,14 +452,22 @@ export const Route = React.memo(
     return (
       <button
         className={twMerge(
-          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-inset ring-[#ffffff33] transition-colors md:flex-row',
+          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded border border-[#ffffff33] bg-[#ffffff1a] px-4 py-3 text-left text-sm text-white transition-colors md:flex-row',
           'focus-visible:!outline-none',
-          'focus-within:bg-[#474747] hover:bg-[#474747]',
-          !isDisabled &&
-            selected &&
-            'bg-[#5F7D5B60] ring-[#5F7D5B] focus-within:bg-[#5F7D5B60] hover:bg-[#5F7D5B60]',
+          'focus-within:bg-[#ffffff36] hover:bg-[#ffffff36]',
+          !isDisabled && selected && 'border border-primary-cta',
           embedMode && 'md:flex-col'
         )}
+        style={
+          !isDisabled && selected
+            ? {
+                borderColor: theme.primaryCtaColor ?? '#5F7D5B',
+                backgroundColor: theme.primaryCtaColor
+                  ? `${theme.primaryCtaColor}60`
+                  : '#5F7D5B60'
+              }
+            : {}
+        }
         onClick={() => onSelectedRouteClick(type)}
         disabled={isDisabled}
         aria-label={`Route ${type}`}

@@ -13,7 +13,7 @@
   --toastify-text-color-success: #1a1c1d;
   --toastify-text-color-warning: #1a1c1d;
   --toastify-text-color-error: #1a1c1d;
-  --toastify-font-family: Roboto, sans-serif;
+  --toastify-font-family: var(--font-family, var(--font-unica77), Roboto, sans-serif);
   --toastify-toast-min-height: 44px;
   --blue-link: #1366C1;
 }
@@ -49,12 +49,21 @@
 }
 
 .tabular-nums {
-  font-family: Roboto !important;
+  font-family: var(--font-family, var(--font-unica77), Roboto) !important;
 }
 
 @layer base {
   html {
-    font-family: Roboto, sans-serif;
+    font-family: var(--font-family, var(--font-unica77), Roboto, sans-serif);
+  }
+  
+  body {
+    font-family: var(--font-family, var(--font-unica77), Roboto, sans-serif);
+  }
+  
+  /* Ensure font is applied to all elements unless explicitly overridden */
+  * {
+    font-family: inherit;
   }
 }
 

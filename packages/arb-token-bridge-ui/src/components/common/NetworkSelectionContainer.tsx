@@ -38,6 +38,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useMode } from '../../hooks/useMode'
+import { useTheme } from '../../hooks/useTheme'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -125,6 +126,7 @@ export function NetworkButton({
   const isNetworkSelectionDisabled = isFeatureDisabled(
     DisabledFeatures.NETWORK_SELECTION
   )
+  const { theme } = useTheme()
 
   const selectedChainId = isSource
     ? networks.sourceChain.id
@@ -138,7 +140,9 @@ export function NetworkButton({
     (isSmartContractWallet && type === 'source') ||
     isLoading
 
-  const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
+  const backgroundColor =
+    theme.networkThemeOverrideColor ??
+    getBridgeUiConfigForChain(selectedChainId).color
 
   const colorContrast = hex('#ffffff', backgroundColor)
 
