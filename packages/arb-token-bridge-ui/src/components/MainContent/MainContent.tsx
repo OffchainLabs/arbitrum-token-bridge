@@ -34,9 +34,7 @@ export function MainContent() {
 
   return (
     <>
-      <div className="sm:pt-6">
-        <RecoverFunds />
-      </div>
+      <RecoverFunds />
 
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
         <Tab.Group as={Fragment} selectedIndex={tab} onChange={setSelectedTab}>
