@@ -98,7 +98,8 @@ module.exports = {
         80: '400px'
       },
       fontFamily: {
-        unica77: ['var(--font-unica77)']
+        unica77: ['var(--font-unica77)'],
+        theme: ['var(--font-family, var(--font-unica77), Roboto, sans-serif)']
       },
       fontSize: {
         xl: '1.375rem'

@@ -8,12 +8,14 @@ export interface ThemeConfig {
   borderWidth?: string
   networkThemeOverrideColor?: string
   primaryCtaColor?: string
+  fontFamily?: string
 }
 
 export const defaultTheme: ThemeConfig = {
   borderRadius: '5px',
   borderWidth: '1px',
-  widgetBackgroundColor: '#191919'
+  widgetBackgroundColor: '#191919',
+  fontFamily: 'Unica77, Roboto, sans-serif'
 }
 
 // Map theme properties to CSS variables
@@ -22,7 +24,8 @@ const themeVariableMap: Record<keyof ThemeConfig, string> = {
   borderWidth: '--border-width',
   widgetBackgroundColor: '--color-widget-background',
   networkThemeOverrideColor: '--color-network-theme-override',
-  primaryCtaColor: '--color-primary-cta'
+  primaryCtaColor: '--color-primary-cta',
+  fontFamily: '--font-family'
 }
 
 export function useTheme() {
