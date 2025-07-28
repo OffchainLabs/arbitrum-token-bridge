@@ -222,7 +222,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumOne,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
 
           // Should not default to a non-Arbitrum network
@@ -234,7 +234,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumOne,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
 
           // Should not default to a non-Arbitrum network
@@ -259,7 +259,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumNova,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -270,7 +270,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumNova,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -293,7 +293,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumSepolia,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -304,7 +304,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumSepolia,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -329,7 +329,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.ArbitrumOne,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -340,7 +340,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.ArbitrumOne,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -363,7 +363,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.ArbitrumNova,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -374,7 +374,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.ArbitrumNova,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -397,7 +397,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.ArbitrumSepolia,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -408,7 +408,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.ArbitrumSepolia,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           // Should not default to a non-Arbitrum network
           expect(
@@ -433,7 +433,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumOne,
             destinationChainId: ChainId.Ethereum,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(
             isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -443,7 +443,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumOne,
             destinationChainId: ChainId.Ethereum,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(
             isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -464,7 +464,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumOne,
             destinationChainId: ChainId.Base,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(
             isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -474,7 +474,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumOne,
             destinationChainId: ChainId.Base,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(
             isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -495,7 +495,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumSepolia,
             destinationChainId: ChainId.Sepolia,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(
             isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -505,7 +505,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.ArbitrumSepolia,
             destinationChainId: ChainId.Sepolia,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(
             isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -528,7 +528,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.Ethereum,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(
             isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -538,7 +538,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.Ethereum,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(
             isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -559,7 +559,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.Base,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(
             isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -569,7 +569,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: ChainId.Base,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(
             isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -592,7 +592,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.Ethereum,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(
             isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -602,7 +602,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.Ethereum,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(
             isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -623,7 +623,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.Base,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(
             isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -633,7 +633,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: ChainId.Base,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(
             isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -656,7 +656,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: 9999,
             destinationChainId: 8888,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(resultWithLifi.sourceChainId).toBe(ChainId.Ethereum)
           expect(resultWithLifi.destinationChainId).toBe(ChainId.ArbitrumOne)
@@ -665,7 +665,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: 9999,
             destinationChainId: 8888,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(resultWithoutLifi.sourceChainId).toBe(ChainId.Ethereum)
           expect(resultWithoutLifi.destinationChainId).toBe(ChainId.ArbitrumOne)
@@ -686,7 +686,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: true
+            includeLifiEnabledChainPairs: true
           })
           expect(resultWithLifi.sourceChainId).toBe(ChainId.Ethereum)
           expect(resultWithLifi.destinationChainId).toBe(ChainId.ArbitrumOne)
@@ -695,7 +695,7 @@ describe('sanitizeQueryParams', () => {
             sourceChainId: undefined,
             destinationChainId: undefined,
             disableTransfersToNonArbitrumChains: true,
-            includeLifi: false
+            includeLifiEnabledChainPairs: false
           })
           expect(resultWithoutLifi.sourceChainId).toBe(ChainId.Ethereum)
           expect(resultWithoutLifi.destinationChainId).toBe(ChainId.ArbitrumOne)
@@ -717,7 +717,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: undefined,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: true
+          includeLifiEnabledChainPairs: true
         })
         expect(
           isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -727,7 +727,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: undefined,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: false
+          includeLifiEnabledChainPairs: false
         })
         expect(
           isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -748,7 +748,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: undefined,
           destinationChainId: ChainId.ArbitrumOne,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: true
+          includeLifiEnabledChainPairs: true
         })
         expect(
           isNetwork(resultWithLifi.sourceChainId).isNonArbitrumNetwork
@@ -758,7 +758,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: undefined,
           destinationChainId: ChainId.ArbitrumOne,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: false
+          includeLifiEnabledChainPairs: false
         })
         expect(
           isNetwork(resultWithoutLifi.sourceChainId).isNonArbitrumNetwork
@@ -777,7 +777,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: ChainId.Ethereum,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: true
+          includeLifiEnabledChainPairs: true
         })
         expect(
           isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -787,7 +787,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: ChainId.Ethereum,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: false
+          includeLifiEnabledChainPairs: false
         })
         expect(
           isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -808,7 +808,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: ChainId.Base,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: true
+          includeLifiEnabledChainPairs: true
         })
         expect(
           isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -818,7 +818,7 @@ describe('sanitizeQueryParams', () => {
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: ChainId.Base,
           disableTransfersToNonArbitrumChains: false,
-          includeLifi: false
+          includeLifiEnabledChainPairs: false
         })
         expect(
           isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -840,7 +840,7 @@ describe('sanitizeQueryParams', () => {
         const resultWithLifi = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: undefined,
-          includeLifi: true
+          includeLifiEnabledChainPairs: true
         })
         expect(
           isNetwork(resultWithLifi.destinationChainId).isNonArbitrumNetwork
@@ -849,7 +849,7 @@ describe('sanitizeQueryParams', () => {
         const resultWithoutLifi = sanitizeQueryParams({
           sourceChainId: ChainId.ArbitrumOne,
           destinationChainId: undefined,
-          includeLifi: false
+          includeLifiEnabledChainPairs: false
         })
         expect(
           isNetwork(resultWithoutLifi.destinationChainId).isNonArbitrumNetwork
@@ -868,7 +868,7 @@ describe('sanitizeQueryParams', () => {
         const resultWithLifi = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: ChainId.ArbitrumOne,
-          includeLifi: true
+          includeLifiEnabledChainPairs: true
         })
         expect(
           isNetwork(resultWithLifi.sourceChainId).isNonArbitrumNetwork
@@ -877,7 +877,7 @@ describe('sanitizeQueryParams', () => {
         const resultWithoutLifi = sanitizeQueryParams({
           sourceChainId: undefined,
           destinationChainId: ChainId.ArbitrumOne,
-          includeLifi: false
+          includeLifiEnabledChainPairs: false
         })
         expect(
           isNetwork(resultWithoutLifi.sourceChainId).isNonArbitrumNetwork

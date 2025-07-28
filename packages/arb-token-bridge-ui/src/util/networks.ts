@@ -563,15 +563,15 @@ export function sortChainIds(chainIds: number[]) {
 export function getDestinationChainIds(
   chainId: ChainId | number,
   {
-    includeLifi = false,
+    includeLifiEnabledChainPairs = false,
     disableTransfersToNonArbitrumChains = false
   }: {
-    includeLifi?: boolean
+    includeLifiEnabledChainPairs?: boolean
     disableTransfersToNonArbitrumChains?: boolean
   } = {}
 ): ChainId[] {
   const chain = getChainByChainId(chainId, {
-    includeAllChains: includeLifi
+    includeAllChains: includeLifiEnabledChainPairs
   })
 
   if (!chain) {
@@ -591,7 +591,7 @@ export function getDestinationChainIds(
     chainIds.push(parentChainId)
   }
   const lifiChainIds = lifiDestinationChainIds[chainId]
-  if (includeLifi && lifiChainIds && lifiChainIds.length) {
+  if (includeLifiEnabledChainPairs && lifiChainIds && lifiChainIds.length) {
     chainIds.push(...lifiChainIds)
   }
 

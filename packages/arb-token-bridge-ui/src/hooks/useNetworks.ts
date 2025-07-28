@@ -63,17 +63,17 @@ export function sanitizeQueryParams({
   sourceChainId,
   destinationChainId,
   disableTransfersToNonArbitrumChains = false,
-  includeLifi = isLifiEnabled()
+  includeLifiEnabledChainPairs = isLifiEnabled()
 }: {
   sourceChainId: ChainId | number | undefined
   destinationChainId: ChainId | number | undefined
   disableTransfersToNonArbitrumChains?: boolean
-  includeLifi?: boolean
+  includeLifiEnabledChainPairs?: boolean
 }): {
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  const key = `${sourceChainId}-${destinationChainId}-${disableTransfersToNonArbitrumChains}-${includeLifi}`
+  const key = `${sourceChainId}-${destinationChainId}-${disableTransfersToNonArbitrumChains}-${includeLifiEnabledChainPairs}`
   const cacheHit = cache[key]
   if (cacheHit) {
     return cacheHit
@@ -104,7 +104,7 @@ export function sanitizeQueryParams({
     // case 2: the destination chain id is supported and valid, but it doesn't have a source chain partner, eg. sourceChain=undefined and destinationChain=base
     const [defaultSourceChainId] = getDestinationChainIds(destinationChainId, {
       disableTransfersToNonArbitrumChains,
-      includeLifi
+      includeLifiEnabledChainPairs
     })
 
     // in both cases, we default to eth<>arbitrum-one pair
@@ -130,7 +130,7 @@ export function sanitizeQueryParams({
     !isSupportedChainId(destinationChainId)
   ) {
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId, {
-      includeLifi,
+      includeLifiEnabledChainPairs,
       disableTransfersToNonArbitrumChains
     })
 
@@ -151,12 +151,12 @@ export function sanitizeQueryParams({
   if (
     !getDestinationChainIds(sourceChainId!, {
       disableTransfersToNonArbitrumChains,
-      includeLifi
+      includeLifiEnabledChainPairs
     }).includes(destinationChainId!)
   ) {
     const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!, {
       disableTransfersToNonArbitrumChains,
-      includeLifi
+      includeLifiEnabledChainPairs
     })
 
     if (!defaultDestinationChainId) {

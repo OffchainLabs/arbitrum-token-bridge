@@ -43,7 +43,10 @@ export function useChainIdsForNetworkSelection({
 
     const destinationChainIds = getDestinationChainIds(
       networks.sourceChain.id,
-      { includeLifi: isLifiEnabled(), disableTransfersToNonArbitrumChains }
+      {
+        includeLifiEnabledChainPairs: isLifiEnabled(),
+        disableTransfersToNonArbitrumChains
+      }
     )
 
     // if source chain is Arbitrum One, add Arbitrum Nova to destination
