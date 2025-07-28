@@ -2676,6 +2676,53 @@
           "logoUrl": "/images/NexusTestnetIII_Logo.png"
         }
       }
+    },
+    {
+      "chainId": 681,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x53A868f525D27F1c5De0fd983a7672A501C54853",
+        "inbox": "0x574DB42697C40492ED620441AA5Ca633E06d1B47",
+        "outbox": "0x9988C5F8e1d59759Cd147F71292C10e64701a87C",
+        "rollup": "0xb4d897FFc6b163414C36A470E5c3B9AE8a4e784E",
+        "sequencerInbox": "0x9c0cFE8EF05a94C9FEa783ef82d2C1b0B1a92aAd"
+      },
+      "nativeToken": "0xB0d6eEbEeebf1236b15dc81B0E292e3BF4Ad23bF",
+      "explorerUrl": "https://jasmy-chain-testnet-explorer.alt.technology",
+      "rpcUrl": "https://jasmy-chain-testnet.alt.technology",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "JASMY Chain",
+      "slug": "jasmy-chain",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x4695F8C8648f038082faFBA415e7E75bA3C1b1A7",
+        "parentErc20Gateway": "0xD0e209e57709C34Bba9AF68F515bb0d17fdD6E5E",
+        "parentGatewayRouter": "0x779922999bFD660e1A4997E2774b472Fbeb6a9D4",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xF0cB8E11BB3Ea82a0e08Db59F9a8Ae24881d7621",
+        "childErc20Gateway": "0x6b4D4ad77722Bc91c05ee45AAe220E97e233b21c",
+        "childGatewayRouter": "0xdFD8A81117f6749e6d00Bd8C540b01004f1d7848",
+        "childMultiCall": "0xA1731A4C9835649C3eC88898Fd1167f31Da7DF17",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#9D00FF",
+        "network": {
+          "name": "JASMY Chain",
+          "logo": "/images/JASMYChain_Logo.png",
+          "description": "JASMY Chain: For verifiable, synergic and scalable Artificial Intelligence."
+        },
+        "nativeTokenData": {
+          "name": "JasmyCoin",
+          "symbol": "JASMY"
+        }
+      }
     }
   ]
 }
