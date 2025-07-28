@@ -8,8 +8,7 @@ import { addressesEqual } from '../../../util/AddressUtils'
 import {
   bridgedUsdcToken,
   CommonAddress,
-  commonUsdcToken,
-  nativeUsdcToken
+  commonUsdcToken
 } from '../../../util/CommonAddressUtils'
 import { allowedLifiSourceChainIds, lifiDestinationChainIds } from './constants'
 import { constants } from 'ethers'
@@ -200,31 +199,6 @@ export function getTokenOverride({
     return {
       source: null,
       destination: null
-    }
-  }
-
-  // Arb1 to Superposition: Show correct USDC token
-  if (destinationChainId === ChainId.Superposition) {
-    if (
-      sourceChainId === ChainId.ArbitrumOne &&
-      addressesEqual(fromToken, CommonAddress.ArbitrumOne.USDC)
-    ) {
-      return {
-        source: {
-          ...nativeUsdcToken,
-          name: 'USDC',
-          address: CommonAddress.ArbitrumOne.USDC,
-          type: TokenType.ERC20,
-          listIds: new Set<string>()
-        },
-        destination: {
-          ...bridgedUsdcToken,
-          name: 'Bridged USDC',
-          address: CommonAddress.Superposition.USDCe,
-          type: TokenType.ERC20,
-          listIds: new Set<string>()
-        }
-      }
     }
   }
 

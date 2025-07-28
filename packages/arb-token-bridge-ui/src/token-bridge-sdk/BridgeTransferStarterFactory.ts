@@ -55,11 +55,11 @@ export class BridgeTransferStarterFactory {
     }
 
     const {
-      isDeposit,
+      isDeposit: isCanonicalDeposit,
       isNativeCurrencyTransfer,
       isSupported,
       isTeleport,
-      isWithdrawal
+      isWithdrawal: isCanonicalWithdrawal
     } = getBridgeTransferProperties(props)
 
     if (!isSupported) {
@@ -90,19 +90,18 @@ export class BridgeTransferStarterFactory {
       return withCache(cacheKey, new Erc20TeleportStarter(initProps))
     }
 
-    // deposits
-    if (isDeposit) {
+    if (isCanonicalDeposit) {
       if (!isNativeCurrencyTransfer) {
         return withCache(cacheKey, new Erc20DepositStarter(initProps))
       }
       return withCache(cacheKey, new EthDepositStarter(initProps))
     }
-    // withdrawals
-    if (!isNativeCurrencyTransfer) {
-      return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
-    }
 
-    if (isWithdrawal) {
+    if (isCanonicalWithdrawal) {
+      if (!isNativeCurrencyTransfer) {
+        return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
+      }
+
       return withCache(cacheKey, new EthWithdrawalStarter(initProps))
     }
 

@@ -59,7 +59,9 @@ const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
   }
 }
 export const getChains = (
-  { includeAllChains } = { includeAllChains: false }
+  { includeRootChainsWithoutDestination } = {
+    includeRootChainsWithoutDestination: false
+  }
 ) => {
   const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
@@ -67,7 +69,7 @@ export const getChains = (
     ...getArbitrumNetworks()
   ]
 
-  if (includeAllChains) {
+  if (includeRootChainsWithoutDestination) {
     return chains
   }
 
@@ -86,9 +88,13 @@ export const getChains = (
 
 function getChainByChainId(
   chainId: number,
-  { includeAllChains } = { includeAllChains: false }
+  { includeRootChainsWithoutDestination } = {
+    includeRootChainsWithoutDestination: false
+  }
 ) {
-  return getChains({ includeAllChains }).find(c => c.chainId === chainId)
+  return getChains({ includeRootChainsWithoutDestination }).find(
+    c => c.chainId === chainId
+  )
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
@@ -571,7 +577,7 @@ export function getDestinationChainIds(
   } = {}
 ): ChainId[] {
   const chain = getChainByChainId(chainId, {
-    includeAllChains: includeLifiEnabledChainPairs
+    includeRootChainsWithoutDestination: includeLifiEnabledChainPairs
   })
 
   if (!chain) {

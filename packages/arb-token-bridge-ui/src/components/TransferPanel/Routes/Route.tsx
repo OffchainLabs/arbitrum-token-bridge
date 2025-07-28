@@ -435,17 +435,14 @@ export const Route = React.memo(
       (!isTestnet &&
         gasCost &&
         gasCost.find(
-          ({ gasToken }) =>
-            gasToken.address === constants.AddressZero &&
-            gasToken.symbol === 'ETH'
+          ({ gasToken }) => gasToken.address === constants.AddressZero
         )) ||
       undefined
 
     const showUSDValueForBridgeFee =
       (!isTestnet &&
         bridgeFee &&
-        bridgeFee.token.address === constants.AddressZero &&
-        bridgeFee.token.symbol === 'ETH') ||
+        bridgeFee.token.address === constants.AddressZero) ||
       false
 
     return (
