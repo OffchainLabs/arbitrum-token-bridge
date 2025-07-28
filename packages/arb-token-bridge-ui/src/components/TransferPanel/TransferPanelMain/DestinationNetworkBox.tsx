@@ -135,6 +135,19 @@ function BalancesContainer() {
   const { erc20ChildBalances } = useBalances()
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()
+  const { destination } = useMemo(
+    () =>
+      getTokenOverride({
+        destinationChainId: networks.destinationChain.id,
+        fromToken: selectedToken?.address,
+        sourceChainId: networks.sourceChain.id
+      }),
+    [
+      selectedToken?.address,
+      networks.destinationChain.id,
+      networks.sourceChain.id
+    ]
+  )
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
@@ -204,6 +217,7 @@ function BalancesContainer() {
                 })
               : undefined
           }
+          logoOverride={destination ? destination.logoURI : undefined}
         />
       )}
 
