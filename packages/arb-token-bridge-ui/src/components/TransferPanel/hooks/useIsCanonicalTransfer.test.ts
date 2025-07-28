@@ -164,6 +164,23 @@ describe('isArbitrumCanonicalTransfer', () => {
       })
       expect(usdcDeposit).toBe(true)
     })
+
+    it('Should return true for USDC transfers', () => {
+      const ethTeleport = isArbitrumCanonicalTransfer({
+        childChainId: ChainId.ArbitrumOne,
+        parentChainId: ChainId.Ethereum,
+        sourceChainId: ChainId.Ethereum,
+        destinationChainId: ChainId.ArbitrumOne,
+        isSelectedTokenWithdrawOnly: false,
+        isSelectedTokenWithdrawOnlyLoading: false,
+        selectedToken: {
+          ...usdcToken,
+          address: CommonAddress.Ethereum.USDC,
+          l2Address: CommonAddress.ArbitrumOne['USDC.e']
+        }
+      })
+      expect(ethTeleport).toBe(true)
+    })
   })
 
   describe('for withdrawals', () => {

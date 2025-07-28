@@ -232,6 +232,29 @@ export function getTokenOverride({
   if (fromToken && isUsdcToken(fromToken)) {
     const destinationUsdcToken = getUsdc(destinationChainId)
     const sourceUsdcToken = getUsdc(sourceChainId)
+
+    if (
+      addressesEqual(fromToken, CommonAddress.Ethereum.USDC) &&
+      sourceChainId === ChainId.ArbitrumOne &&
+      destinationChainId === ChainId.Ethereum
+    ) {
+      return {
+        source: {
+          ...sourceUsdcToken,
+          ...bridgedUsdcToken,
+          name: 'Bridged USDC',
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
+        },
+        destination: {
+          ...commonUsdcToken,
+          ...destinationUsdcToken,
+          type: TokenType.ERC20,
+          listIds: new Set<string>()
+        }
+      }
+    }
+
     if (destinationUsdcToken && sourceUsdcToken) {
       return {
         source: {
