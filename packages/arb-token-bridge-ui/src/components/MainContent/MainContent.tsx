@@ -10,6 +10,7 @@ import { TopNavBar } from '../TopNavBar'
 import { useBalanceUpdater } from '../syncers/useBalanceUpdater'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useMode } from '../../hooks/useMode'
+import { RecoverFunds } from '../RecoverFunds'
 
 export function MainContent() {
   const [isArbitrumStatsVisible] =
@@ -33,6 +34,8 @@ export function MainContent() {
 
   return (
     <>
+      <RecoverFunds />
+
       <div className="main-panel mx-auto flex w-full flex-col items-center gap-3 sm:pt-6">
         <Tab.Group as={Fragment} selectedIndex={tab} onChange={setSelectedTab}>
           <TopNavBar />
