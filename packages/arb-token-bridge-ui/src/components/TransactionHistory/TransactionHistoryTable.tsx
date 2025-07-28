@@ -177,7 +177,10 @@ export const TransactionHistoryTable = (
 
   const hasPendingArbitrumBridgeDeposits = useMemo(() => {
     return transactions.some(
-      tx => !tx.isWithdrawal && getTransactionType(tx) === 'arbitrum'
+      tx =>
+        !tx.isWithdrawal &&
+        isTxPending(tx) &&
+        getTransactionType(tx) === 'arbitrum'
     )
   }, [transactions])
 
