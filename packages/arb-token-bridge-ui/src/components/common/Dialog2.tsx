@@ -17,6 +17,7 @@ import { HighSlippageWarningDialog } from '../TransferPanel/HighSlippageWarningD
 import { WidgetTransactionHistory } from '../Widget/WidgetTransactionHistory'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { SettingsDialog } from '../TransferPanel/SettingsDialog'
+import { RecoverFundsDialog } from '../RecoverFunds'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -51,6 +52,7 @@ export type DialogType =
   | 'widget_transaction_history'
   | 'token_selection'
   | 'settings'
+  | 'recover_funds'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef =
@@ -153,6 +155,8 @@ export function DialogWrapper(props: DialogProps) {
       return <TokenSearch {...commonProps} />
     case 'settings':
       return <SettingsDialog {...commonProps} />
+    case 'recover_funds':
+      return <RecoverFundsDialog {...commonProps} />
     default:
       return null
   }
