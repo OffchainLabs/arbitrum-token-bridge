@@ -15,14 +15,13 @@ import {
 import dayjs from 'dayjs'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
-import { isTokenDeposit } from '../../state/app/utils'
 import {
   ChainPair,
   UseTransactionHistoryResult
 } from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
-import { isTxPending } from './helpers'
+import { getTransactionType, isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
@@ -176,9 +175,10 @@ export const TransactionHistoryTable = (
     )
   }, [contentWrapperRef.current?.offsetTop, transactions.length])
 
-  const pendingTokenDepositsCount = useMemo(() => {
-    return transactions.filter(tx => isTokenDeposit(tx) && isTxPending(tx))
-      .length
+  const hasPendingArbitrumBridgeDeposits = useMemo(() => {
+    return transactions.some(
+      tx => !tx.isWithdrawal && getTransactionType(tx) === 'arbitrum'
+    )
   }, [transactions])
 
   const topmostPendingTxId = useMemo(() => {
@@ -237,7 +237,9 @@ export const TransactionHistoryTable = (
             {!completed && <LoadMoreButton onClick={resume} />}
           </div>
         )}
-        <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
+        <div>
+          {hasPendingArbitrumBridgeDeposits && <PendingDepositWarning />}
+        </div>
       </div>
 
       <Table

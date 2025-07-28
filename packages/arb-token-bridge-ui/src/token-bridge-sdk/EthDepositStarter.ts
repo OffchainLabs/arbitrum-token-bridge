@@ -180,9 +180,9 @@ export class EthDepositStarter extends BridgeTransferStarter {
       destinationAddress: destinationAddress ?? address,
       overrides: parentChainOverrides,
       retryableGasOverrides: {
-        // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
-        // the 30% gas limit increase should cover the difference
-        gasLimit: { percentIncrease: BigNumber.from(30) }
+        gasLimit: {
+          percentIncrease: BigNumber.from(DEFAULT_GAS_PRICE_PERCENT_INCREASE)
+        }
       }
     })
 
