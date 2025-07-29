@@ -118,7 +118,7 @@ export function LifiRoutes({
             Low liquidity
           </NoteBox>
 
-          <p className="flex flex-col text-white">
+          <p className="flex flex-col text-sm text-white">
             Unable to find a viable path because of low liquidity.
             <br /> <br />
             This can happen when demand for a specific asset is high or if a new
