@@ -2692,8 +2692,8 @@
       "rpcUrl": "https://jasmy-chain-testnet.alt.technology",
       "isCustom": true,
       "isTestnet": true,
-      "name": "JASMY Chain",
-      "slug": "jasmy-chain",
+      "name": "JASMY Chain Testnet",
+      "slug": "jasmy-chain-testnet",
       "parentChainId": 11155111,
       "tokenBridge": {
         "parentCustomGateway": "0x4695F8C8648f038082faFBA415e7E75bA3C1b1A7",
@@ -2714,13 +2714,14 @@
       "bridgeUiConfig": {
         "color": "#9D00FF",
         "network": {
-          "name": "JASMY Chain",
+          "name": "JASMY Chain Testnet",
           "logo": "/images/JASMYChain_Logo.png",
           "description": "JASMY Chain: For verifiable, synergic and scalable Artificial Intelligence."
         },
         "nativeTokenData": {
           "name": "JasmyCoin",
-          "symbol": "JASMY"
+          "symbol": "JASMY",
+          "logoUrl": "/images/JASMYChain_Logo.png"
         }
       }
     }
