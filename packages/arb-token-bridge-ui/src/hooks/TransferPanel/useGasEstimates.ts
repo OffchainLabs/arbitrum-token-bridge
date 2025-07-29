@@ -79,11 +79,13 @@ async function fetcher([
 export function useGasEstimates({
   sourceChainErc20Address,
   destinationChainErc20Address,
-  amount
+  amount,
+  enabled = true
 }: {
   sourceChainErc20Address?: string
   destinationChainErc20Address?: string
   amount: BigNumber
+  enabled?: boolean
 }): {
   gasEstimates: TransferEstimateGasResult
   error: any
@@ -106,18 +108,20 @@ export function useGasEstimates({
     : undefined
 
   const { data: gasEstimates, error } = useSWR(
-    [
-      sourceChain.id,
-      destinationChain.id,
-      sourceChainErc20Address,
-      destinationChainErc20Address,
-      amountToTransfer.toString(), // BigNumber is not serializable
-      sanitizedDestinationAddress,
-      walletAddress,
-      wagmiConfig,
-      context,
-      'gasEstimates'
-    ] as const,
+    enabled
+      ? ([
+          sourceChain.id,
+          destinationChain.id,
+          sourceChainErc20Address,
+          destinationChainErc20Address,
+          amountToTransfer.toString(), // BigNumber is not serializable
+          sanitizedDestinationAddress,
+          walletAddress,
+          wagmiConfig,
+          context,
+          'gasEstimates'
+        ] as const)
+      : null,
     ([
       _sourceChainId,
       _destinationChainId,

@@ -132,20 +132,25 @@ export const useSelectedToken = (): [
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) => {
       return setQueryParams(latestQuery => {
-        const sanitizedTokenAddress = sanitizeNullSelectedToken({
-          sourceChainId: latestQuery.sourceChain,
-          destinationChainId: latestQuery.destinationChain,
-          erc20ParentAddress
-        })
+        try {
+          const sanitizedTokenAddress = sanitizeNullSelectedToken({
+            sourceChainId: latestQuery.sourceChain,
+            destinationChainId: latestQuery.destinationChain,
+            erc20ParentAddress
+          })
 
-        if (sanitizedTokenAddress) {
-          return {
-            token: sanitizedTokenAddress
+          if (sanitizedTokenAddress) {
+            return {
+              token: sanitizedTokenAddress
+            }
           }
-        }
 
-        return {
-          token: sanitizeTokenAddress(erc20ParentAddress)
+          return {
+            token: sanitizeTokenAddress(erc20ParentAddress)
+          }
+        } catch (error) {
+          console.error('Error sanitizing token address:', error)
+          return { token: undefined }
         }
       })
     },

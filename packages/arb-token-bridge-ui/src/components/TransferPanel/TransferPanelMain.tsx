@@ -40,6 +40,7 @@ import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
+import { isLifiEnabled } from '../../util/featureFlag'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -61,7 +62,8 @@ export function SwitchNetworksButton(
     return (
       isSmartContractWallet ||
       !getDestinationChainIds(networks.destinationChain.id, {
-        disableTransfersToNonArbitrumChains
+        disableTransfersToNonArbitrumChains,
+        includeLifiEnabledChainPairs: isLifiEnabled()
       }).includes(networks.sourceChain.id)
     )
   }, [
