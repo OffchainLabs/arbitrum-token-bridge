@@ -26,6 +26,7 @@ import {
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
 import { ChainId } from '../types/ChainId'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
 
 const commonUSDC: ERC20BridgeToken = {
   name: 'USD Coin',
@@ -39,10 +40,11 @@ const commonUSDC: ERC20BridgeToken = {
 }
 
 /**
- * On ApeChain, if selectedToken is null, we default to ApeToken for regular transfers
- * And constants.zero (ETH) for lifi transfers
+ * On orbit chains with custom fee token, if selectedToken is null, we default to the native token of the chain
+ * for transfer from and to the parent chain.
+ * And constants.Zero (ETH) otherwise
  */
-export function sanitizeSelectedTokenAddress({
+export function sanitizeNullSelectedToken({
   sourceChainId,
   destinationChainId,
   erc20ParentAddress
@@ -51,28 +53,27 @@ export function sanitizeSelectedTokenAddress({
   destinationChainId: number | undefined
   erc20ParentAddress: string | null
 }) {
-  /** Deposit to ApeChain from Ethereum, Superposition or Base is only supported through Lifi
-   *  We need to set the default token to ETH rather than ApeChain native token
-   *  For ArbitrumOne we default to native token (Ape)
-   */
-  if (!erc20ParentAddress && destinationChainId === ChainId.ApeChain) {
-    if (
-      sourceChainId === ChainId.Ethereum ||
-      sourceChainId === ChainId.Superposition ||
-      sourceChainId === ChainId.Base
-    ) {
-      return constants.AddressZero
-    }
+  if (!sourceChainId || !destinationChainId) {
+    return undefined
   }
 
-  /**
-   * For transfers from ApeChain, we default to ETH unless destination is ArbitrumOne
-   */
-  if (
-    !erc20ParentAddress &&
-    sourceChainId === ChainId.ApeChain &&
-    destinationChainId !== ChainId.ArbitrumOne
-  ) {
+  try {
+    const destinationChain = getArbitrumNetwork(destinationChainId)
+
+    // If the destination chain has a custom fee token, and selectedToken is null,
+    // return native token for deposit from the parent chain, ETH otherwise
+    if (destinationChain.nativeToken && !erc20ParentAddress) {
+      if (sourceChainId === destinationChain.parentChainId) {
+        return erc20ParentAddress
+      }
+      return constants.AddressZero
+    }
+  } catch (error) {
+    // Withdrawing to non Arbitrum chains (Base, Ethereum)
+    const sourceChain = getArbitrumNetwork(sourceChainId)
+    if (sourceChain.parentChainId === destinationChainId) {
+      return erc20ParentAddress
+    }
     return constants.AddressZero
   }
 }
@@ -131,7 +132,7 @@ export const useSelectedToken = (): [
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) => {
       return setQueryParams(latestQuery => {
-        const sanitizedTokenAddress = sanitizeSelectedTokenAddress({
+        const sanitizedTokenAddress = sanitizeNullSelectedToken({
           sourceChainId: latestQuery.sourceChain,
           destinationChainId: latestQuery.destinationChain,
           erc20ParentAddress

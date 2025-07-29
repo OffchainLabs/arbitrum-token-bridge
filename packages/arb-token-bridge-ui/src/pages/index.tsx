@@ -25,7 +25,7 @@ import {
   isE2eTestingEnvironment,
   isProductionEnvironment
 } from '../util/CommonUtils'
-import { sanitizeSelectedTokenAddress } from '../hooks/useSelectedToken'
+import { sanitizeNullSelectedToken } from '../hooks/useSelectedToken'
 
 const App = dynamic(
   () => {
@@ -63,7 +63,7 @@ export const sanitizeTokenQueryParam = ({
   const tokenLowercased = token?.toLowerCase()
 
   if (!tokenLowercased) {
-    const sanitizedTokenAddress = sanitizeSelectedTokenAddress({
+    const sanitizedTokenAddress = sanitizeNullSelectedToken({
       sourceChainId,
       destinationChainId,
       erc20ParentAddress: tokenLowercased || null
