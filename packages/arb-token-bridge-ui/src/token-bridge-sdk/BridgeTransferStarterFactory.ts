@@ -12,7 +12,6 @@ import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
 import { LifiData, LifiTransferStarter } from './LifiTransferStarter'
-import { getDestinationChainIds } from '../util/networks'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -40,7 +39,10 @@ const cache: { [key: string]: BridgeTransferStarter } = {}
 
 export class BridgeTransferStarterFactory {
   public static create(
-    props: BridgeTransferStarterPropsWithChainIds & { lifiData?: LifiData }
+    props: BridgeTransferStarterPropsWithChainIds & {
+      lifiData?: LifiData
+      isLifiOnly?: boolean
+    }
   ): BridgeTransferStarter {
     const sourceChainProvider = getProviderForChainId(props.sourceChainId)
     const destinationChainProvider = getProviderForChainId(
@@ -60,8 +62,7 @@ export class BridgeTransferStarterFactory {
       isNativeCurrencyTransfer,
       isSupported,
       isTeleport,
-      isWithdrawal: isCanonicalWithdrawal,
-      isLifi
+      isWithdrawal: isCanonicalWithdrawal
     } = getBridgeTransferProperties(props)
 
     if (!isSupported) {
@@ -81,7 +82,7 @@ export class BridgeTransferStarterFactory {
       sourceChainErc20Address: props.sourceChainErc20Address
     })
 
-    if (isLifi && props.lifiData) {
+    if (props.isLifiOnly && props.lifiData) {
       return withCache(
         cacheKey,
         new LifiTransferStarter({ ...initProps, lifiData: props.lifiData })
@@ -113,5 +114,7 @@ export class BridgeTransferStarterFactory {
 
       return withCache(cacheKey, new EthWithdrawalStarter(initProps))
     }
+
+    throw new Error('No transfer starter found for the given properties.')
   }
 }

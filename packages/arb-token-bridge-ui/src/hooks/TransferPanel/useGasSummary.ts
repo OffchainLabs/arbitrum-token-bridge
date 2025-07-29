@@ -20,7 +20,6 @@ import {
   isWithdrawalFromArbSepoliaToSepolia
 } from '../../util/networks'
 import { useAmountBigNumber } from '../../components/TransferPanel/hooks/useAmountBigNumber'
-import { useRouteStore } from '../../components/TransferPanel/hooks/useRouteStore'
 
 export type GasEstimationStatus =
   | 'loading'
@@ -89,7 +88,6 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
-  const selectedRoute = useRouteStore(state => state.selectedRoute)
   const balance = useBalanceOnSourceChain(selectedToken)
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
@@ -103,8 +101,7 @@ export function useGasSummary(): UseGasSummaryResult {
         : selectedToken?.l2Address,
       destinationChainErc20Address: isDepositMode
         ? selectedToken?.l2Address
-        : selectedToken?.address,
-      enabled: !!selectedRoute
+        : selectedToken?.address
     })
 
   const estimatedParentChainGasFees = useMemo(() => {

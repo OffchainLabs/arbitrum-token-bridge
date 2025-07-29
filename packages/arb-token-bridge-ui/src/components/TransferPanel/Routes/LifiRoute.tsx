@@ -1,8 +1,12 @@
 import { useNetworks } from '../../../hooks/useNetworks'
-import { BigNumber, constants, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { BadgeType, Route } from './Route'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { RouteType, useRouteStore } from '../hooks/useRouteStore'
+import {
+  getContextFromRoute,
+  RouteType,
+  useRouteStore
+} from '../hooks/useRouteStore'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import {
   LifiCrosschainTransfersRoute,
@@ -208,33 +212,7 @@ function LifiRoute({
 
   const setSelectedRouteWithContext = useCallback(
     (routeType: RouteType) => {
-      setSelectedRoute(routeType, {
-        spenderAddress: route.spenderAddress as Address,
-        gas: {
-          amount: BigNumber.from(route.gas.amount),
-          amountUSD: route.gas.amountUSD,
-          token: route.gas.token
-        },
-        fee: {
-          amount: BigNumber.from(route.fee.amount),
-          amountUSD: route.fee.amountUSD,
-          token: route.fee.token
-        },
-        fromAmount: {
-          amount: BigNumber.from(route.fromAmount.amount),
-          amountUSD: route.fromAmount.amountUSD,
-          token: route.fromAmount.token
-        },
-        toAmount: {
-          amount: BigNumber.from(route.toAmount.amount),
-          amountUSD: route.toAmount.amountUSD,
-          token: route.toAmount.token
-        },
-        toolDetails: route.protocolData.tool,
-        durationMs: route.durationMs,
-        destinationTxId: null,
-        step: route.protocolData.step
-      })
+      setSelectedRoute(routeType, getContextFromRoute(route))
     },
     [route, setSelectedRoute]
   )
