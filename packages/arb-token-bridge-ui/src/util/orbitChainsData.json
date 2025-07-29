@@ -98,7 +98,7 @@
         "bridge": "0xB0EC3C1368AF7d9C2CAE6B7f8E022Cc14d59D2b1",
         "inbox": "0x18BB8310E3a3DF4EFcCb6B3E9AeCB8bE6d4af07f",
         "outbox": "0xD17550876106645988051ffDd31dFc3cDaA29F9c",
-        "rollup": "0x73CA76d9B04661604fF950fB8DBc9f18F1B853f1",
+        "rollup": "0xE383D432F039f4377CC9AA003FfaE4c814936864",
         "sequencerInbox": "0xfb27e42E964F3364630F76D62EB295ae792BD4FA"
       },
       "explorerUrl": "https://muster-explorer.alt.technology",
@@ -355,7 +355,7 @@
         "bridge": "0x34F81F9C4F3227DbaCcFF8E51DBaa1571e114759",
         "inbox": "0x703F97120c8E5F5fC7c878C309E9e84E118B0478",
         "outbox": "0x31A1A120939007547aBC5e3BFaBDB6AcA6C00378",
-        "rollup": "0x811e70a2fC012e738e0AeA8b0c3b024538be42f2",
+        "rollup": "0x435CEf963dE6CC2241da6f09CE6Bb3600cF259a9",
         "sequencerInbox": "0xD00d2ef101d86C570dA8f38801f236b79a7a2A93"
       },
       "explorerUrl": "https://explorer.mindnetwork.xyz",
@@ -1064,7 +1064,7 @@
         "bridge": "0x113E7DC5e4A42b1bEe9DB0594f48EFdEa7b88eE0",
         "inbox": "0x5b777fa9fBF1587509fe5b2Ab681af7Af890A5A3",
         "outbox": "0x1B7b002b9430c6D59058beFa1f718A91fBe51ff0",
-        "rollup": "0x4BB5E86b2506C2E8537e50d2596D4af89Dd54307",
+        "rollup": "0xd6e33A7898aE63Cb3D56b4B51575141E953BD9D5",
         "sequencerInbox": "0xf5299083F7C234425f01CccDD9141e500011fffb"
       },
       "explorerUrl": "https://scan.birdlayer.xyz",
@@ -1619,7 +1619,7 @@
         "bridge": "0xC0856971702b02A5576219540BD92DAE79a79288",
         "inbox": "0xD62ef8d8c71d190417C6CE71f65795696C069f09",
         "outbox": "0xaEB5Fe2f7003881c3a8EBAE9664E8607f3935d53",
-        "rollup": "0xBc4cc964eF0ea5792a398F9E738edf368A34f003",
+        "rollup": "0x85F14C092e5Be656DCB0027517C70cf31B5DB462",
         "sequencerInbox": "0x67ad6c79E33eA9e523E0e68961456d0ac7A973Cc"
       },
       "nativeToken": "0xAC716E87b0853C0712674e8E3a8435a489F276b4",
@@ -2031,7 +2031,7 @@
         "bridge": "0x41852F68033cf31FECc9dd4222e1881758f2Dbd9",
         "inbox": "0x07F9E388c57F6575920e39CF6dFFFC2ABe85df7a",
         "outbox": "0xAF030552c3865b203Bcfa5585BEE8900B98a5a08",
-        "rollup": "0x68bBcca4049d6D6c29b3001caCcb9A45F24aEF64",
+        "rollup": "0x70C486d21c032FB4B61084853290A7e4A9740383",
         "sequencerInbox": "0x4353f6B198D2952f07E1405470023b58d8Ae7534"
       },
       "nativeToken": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
@@ -2674,6 +2674,54 @@
           "name": "Nexus",
           "symbol": "NEX",
           "logoUrl": "/images/NexusTestnetIII_Logo.png"
+        }
+      }
+    },
+    {
+      "chainId": 681,
+      "confirmPeriodBlocks": 150,
+      "ethBridge": {
+        "bridge": "0x53A868f525D27F1c5De0fd983a7672A501C54853",
+        "inbox": "0x574DB42697C40492ED620441AA5Ca633E06d1B47",
+        "outbox": "0x9988C5F8e1d59759Cd147F71292C10e64701a87C",
+        "rollup": "0xb4d897FFc6b163414C36A470E5c3B9AE8a4e784E",
+        "sequencerInbox": "0x9c0cFE8EF05a94C9FEa783ef82d2C1b0B1a92aAd"
+      },
+      "nativeToken": "0xB0d6eEbEeebf1236b15dc81B0E292e3BF4Ad23bF",
+      "explorerUrl": "https://jasmy-chain-testnet-explorer.alt.technology",
+      "rpcUrl": "https://jasmy-chain-testnet.alt.technology",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "JASMY Chain Testnet",
+      "slug": "jasmy-chain-testnet",
+      "parentChainId": 11155111,
+      "tokenBridge": {
+        "parentCustomGateway": "0x4695F8C8648f038082faFBA415e7E75bA3C1b1A7",
+        "parentErc20Gateway": "0xD0e209e57709C34Bba9AF68F515bb0d17fdD6E5E",
+        "parentGatewayRouter": "0x779922999bFD660e1A4997E2774b472Fbeb6a9D4",
+        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xF0cB8E11BB3Ea82a0e08Db59F9a8Ae24881d7621",
+        "childErc20Gateway": "0x6b4D4ad77722Bc91c05ee45AAe220E97e233b21c",
+        "childGatewayRouter": "0xdFD8A81117f6749e6d00Bd8C540b01004f1d7848",
+        "childMultiCall": "0xA1731A4C9835649C3eC88898Fd1167f31Da7DF17",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#9D00FF",
+        "network": {
+          "name": "JASMY Chain Testnet",
+          "logo": "/images/JASMYChain_Logo.png",
+          "description": "JASMY Chain: For verifiable, synergic and scalable Artificial Intelligence."
+        },
+        "nativeTokenData": {
+          "name": "JasmyCoin",
+          "symbol": "JASMY",
+          "logoUrl": "/images/JASMYChain_Logo.png"
         }
       }
     }
