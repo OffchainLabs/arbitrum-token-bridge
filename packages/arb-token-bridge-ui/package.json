@@ -58,7 +58,7 @@
   "scripts": {
     "predev": "yarn generateDenylist",
     "dev": "next dev",
-    "prebuild": "yarn generateDenylist",
+    "prebuild": "yarn generateDenylist && yarn generateChainIdsEnum",
     "postinstall": "patch-package",
     "build": "next build",
     "start": "next start",
@@ -68,6 +68,7 @@
     "lint:fix": "tsc && eslint --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
+    "generateChainIdsEnum": "ts-node --project ./scripts/tsconfig.json ./scripts/generateChainIdsEnum.ts",
     "generateOpenGraphImages": "ts-node --project ./scripts/tsconfig.json ./src/generateOpenGraphImages.tsx generate",
     "generateOpenGraphImages:core": "yarn generateOpenGraphImages --core",
     "generateOpenGraphImages:orbit": "yarn generateOpenGraphImages --orbit",
