@@ -11,7 +11,7 @@ import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
-import { LifiData, LifiTransferStarter } from './LifiTransferStarter'
+import { LifiTransferStarter } from './LifiTransferStarter'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -22,6 +22,10 @@ function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
 
   if (props.destinationChainErc20Address) {
     cacheKey += `-destinationErc20:${props.destinationChainErc20Address}`
+  }
+
+  if (props.lifiData) {
+    cacheKey += `-${props.lifiData.transactionRequest?.data}-${props.lifiData.spenderAddress}`
   }
 
   return cacheKey
@@ -39,10 +43,7 @@ const cache: { [key: string]: BridgeTransferStarter } = {}
 
 export class BridgeTransferStarterFactory {
   public static create(
-    props: BridgeTransferStarterPropsWithChainIds & {
-      lifiData?: LifiData
-      isLifiOnly?: boolean
-    }
+    props: BridgeTransferStarterPropsWithChainIds
   ): BridgeTransferStarter {
     const sourceChainProvider = getProviderForChainId(props.sourceChainId)
     const destinationChainProvider = getProviderForChainId(
@@ -82,7 +83,7 @@ export class BridgeTransferStarterFactory {
       sourceChainErc20Address: props.sourceChainErc20Address
     })
 
-    if (props.isLifiOnly && props.lifiData) {
+    if (props.lifiData) {
       return withCache(
         cacheKey,
         new LifiTransferStarter({ ...initProps, lifiData: props.lifiData })

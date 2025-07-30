@@ -585,9 +585,13 @@ export function getDestinationChainIds(
   }
 
   const parentChainId = isArbitrumChain(chain) ? chain.parentChainId : undefined
-
   const chainIds = getChildChainIds(chain)
 
+  /**
+   * Add parent chain if:
+   * - parent is an arbitrum network
+   * - parent is a non-arbitrum network and transfers to non-arbitrum chains are not disabled
+   */
   if (
     parentChainId &&
     (!isNetwork(parentChainId).isNonArbitrumNetwork ||
@@ -596,11 +600,14 @@ export function getDestinationChainIds(
   ) {
     chainIds.push(parentChainId)
   }
+
+  /** Include lifi chains, if flag is on */
   const lifiChainIds = lifiDestinationChainIds[chainId]
   if (includeLifiEnabledChainPairs && lifiChainIds && lifiChainIds.length) {
     chainIds.push(...lifiChainIds)
   }
 
+  /** Disabling transfers to non arbitrum chains, remove non-arbitrum chains */
   if (disableTransfersToNonArbitrumChains) {
     return sortChainIds([
       ...new Set(
@@ -608,6 +615,7 @@ export function getDestinationChainIds(
       )
     ])
   }
+
   return sortChainIds([...new Set(chainIds)])
 }
 
