@@ -9,6 +9,22 @@ import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { TransferEstimateGasResult } from '@/token-bridge-sdk/BridgeTransferStarter'
+import {
+  getContextFromRoute,
+  isLifiRoute,
+  RouteContext,
+  useRouteStore
+} from '../../components/TransferPanel/hooks/useRouteStore'
+import { useRoutes } from '../../components/TransferPanel/Routes/Routes'
+import { useMemo } from 'react'
+import {
+  useLifiCrossTransfersRoute,
+  UseLifiCrossTransfersRouteParams
+} from '../useLifiCrossTransferRoute'
+import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
+import { Address } from 'viem'
+import { useLifiSettingsStore } from '../../components/TransferPanel/hooks/useLifiSettingsStore'
+import { shallow } from 'zustand/shallow'
 
 async function fetcher([
   walletAddress,
@@ -18,7 +34,8 @@ async function fetcher([
   destinationChainErc20Address,
   destinationAddress,
   amount,
-  wagmiConfig
+  wagmiConfig,
+  routeContext
 ]: [
   walletAddress: string | undefined,
   sourceChainId: number,
@@ -27,7 +44,8 @@ async function fetcher([
   destinationChainErc20Address: string | undefined,
   destinationAddress: string | undefined,
   amount: BigNumber,
-  wagmiConfig: Config
+  wagmiConfig: Config,
+  routeContext: RouteContext | undefined
 ]): Promise<TransferEstimateGasResult> {
   const _walletAddress = walletAddress ?? constants.AddressZero
   const sourceProvider = getProviderForChainId(sourceChainId)
@@ -37,7 +55,8 @@ async function fetcher([
     sourceChainId,
     sourceChainErc20Address,
     destinationChainId,
-    destinationChainErc20Address
+    destinationChainErc20Address,
+    lifiData: routeContext
   })
 
   return await bridgeTransferStarter.transferEstimateGas({
@@ -66,6 +85,44 @@ export function useGasEstimates({
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
   const wagmiConfig = useConfig()
+  const context = useRouteStore(state => state.context)
+  const { routes } = useRoutes()
+  const isLifiOnly = useMemo(
+    () => routes.every(route => isLifiRoute(route)),
+    [routes]
+  )
+  const overrideToken = useMemo(
+    () =>
+      getTokenOverride({
+        sourceChainId: sourceChain.id,
+        fromToken: selectedToken?.address,
+        destinationChainId: destinationChain.id
+      }),
+    [selectedToken?.address, sourceChain.id, destinationChain.id]
+  )
+  const { disabledBridges, disabledExchanges, slippage } = useLifiSettingsStore(
+    state => ({
+      disabledBridges: state.disabledBridges,
+      disabledExchanges: state.disabledExchanges,
+      slippage: state.slippage
+    }),
+    shallow
+  )
+  const parameters = {
+    fromAddress: walletAddress,
+    fromAmount: amount.toString(),
+    fromChainId: sourceChain.id,
+    fromToken: overrideToken.source?.address || constants.AddressZero,
+    toAddress: (destinationAddress as Address) || walletAddress,
+    toChainId: destinationChain.id,
+    toToken: overrideToken.destination?.address || constants.AddressZero,
+    denyBridges: disabledBridges,
+    denyExchanges: disabledExchanges,
+    slippage
+  } satisfies Omit<UseLifiCrossTransfersRouteParams, 'order'>
+
+  const { data: lifiRoutes, isLoading: isLoadingLifiRoutes } =
+    useLifiCrossTransfersRoute(parameters)
 
   const amountToTransfer =
     balance !== null && amount.gte(balance) ? balance : amount
@@ -77,17 +134,34 @@ export function useGasEstimates({
     : undefined
 
   const { data: gasEstimates, error } = useSWR(
-    [
-      sourceChain.id,
-      destinationChain.id,
-      sourceChainErc20Address,
-      destinationChainErc20Address,
-      amountToTransfer.toString(), // BigNumber is not serializable
-      sanitizedDestinationAddress,
-      walletAddress,
-      wagmiConfig,
-      'gasEstimates'
-    ] as const,
+    () => {
+      if (isLifiOnly && (isLoadingLifiRoutes || lifiRoutes?.length === 0)) {
+        return null
+      }
+
+      /**
+       * If route is selected, pass context from that route
+       * If no route are selected and it's a lifi only route (for example Base to Arbitrum One),
+       * pass the first lifi route as context
+       * Otherwise, default to canonical transfer
+       */
+      const lifiContext = isLifiOnly
+        ? lifiRoutes?.[0] && getContextFromRoute(lifiRoutes?.[0])
+        : context
+
+      return [
+        sourceChain.id,
+        destinationChain.id,
+        sourceChainErc20Address,
+        destinationChainErc20Address,
+        amountToTransfer.toString(), // BigNumber is not serializable
+        sanitizedDestinationAddress,
+        walletAddress,
+        wagmiConfig,
+        lifiContext,
+        'gasEstimates'
+      ] as const
+    },
     ([
       _sourceChainId,
       _destinationChainId,
@@ -96,7 +170,8 @@ export function useGasEstimates({
       _amount,
       _destinationAddress,
       _walletAddress,
-      _wagmiConfig
+      _wagmiConfig,
+      _routeContext
     ]) =>
       fetcher([
         _walletAddress,
@@ -106,7 +181,8 @@ export function useGasEstimates({
         _destinationChainErc20Address,
         _destinationAddress,
         BigNumber.from(_amount),
-        _wagmiConfig
+        _wagmiConfig,
+        _routeContext
       ]),
     {
       refreshInterval: 30_000,

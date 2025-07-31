@@ -19,6 +19,7 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
 import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
+import { lifiDestinationChainIds } from '../pages/api/crosschain-transfers/constants'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -57,21 +58,27 @@ const baseNetworks: { [chainId: number]: BlockNumberReferenceNetwork } = {
     isTestnet: true
   }
 }
-
-// TODO: load only once
-export const getChains = () => {
+export const getChains = (
+  { includeRootChainsWithoutDestination } = {
+    includeRootChainsWithoutDestination: false
+  }
+) => {
   const chains: (BlockNumberReferenceNetwork | ArbitrumNetwork)[] = [
     ...Object.values(l1Networks),
     ...Object.values(baseNetworks),
     ...getArbitrumNetworks()
   ]
 
+  if (includeRootChainsWithoutDestination) {
+    return chains
+  }
+
   return chains.filter(chain => {
-    // exclude L1 chains or Base Chains with no child chains
     if (
       isBlockNumberReferenceNetwork(chain) &&
       getChildrenForNetwork(chain.chainId).length === 0
     ) {
+      // exclude L1 chains or Base Chains with no child chains
       return false
     }
 
@@ -79,8 +86,15 @@ export const getChains = () => {
   })
 }
 
-function getChainByChainId(chainId: number) {
-  return getChains().find(c => c.chainId === chainId)
+function getChainByChainId(
+  chainId: number,
+  { includeRootChainsWithoutDestination } = {
+    includeRootChainsWithoutDestination: false
+  }
+) {
+  return getChains({ includeRootChainsWithoutDestination }).find(
+    c => c.chainId === chainId
+  )
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
@@ -337,7 +351,7 @@ export const l2UsdcGatewayAddresses: { [chainId: number]: string } = {
   // PoP Apex
   70700: '0x97e2b88b44946cd932fb85675412699723200987',
   // Superposition
-  55244: '0xF70ae1Af7D49dA0f7D66Bb55469caC9da336181b'
+  [ChainId.Superposition]: '0xF70ae1Af7D49dA0f7D66Bb55469caC9da336181b'
 }
 
 export async function registerLocalNetwork() {
@@ -553,35 +567,56 @@ export function sortChainIds(chainIds: number[]) {
 }
 
 export function getDestinationChainIds(
-  chainId: ChainId,
-  disableTransfersToNonArbitrumChains = false
+  chainId: ChainId | number,
+  {
+    includeLifiEnabledChainPairs = false,
+    disableTransfersToNonArbitrumChains = false
+  }: {
+    includeLifiEnabledChainPairs?: boolean
+    disableTransfersToNonArbitrumChains?: boolean
+  } = {}
 ): ChainId[] {
-  const chain = getChainByChainId(chainId)
+  const chain = getChainByChainId(chainId, {
+    includeRootChainsWithoutDestination: includeLifiEnabledChainPairs
+  })
 
   if (!chain) {
     return []
   }
 
   const parentChainId = isArbitrumChain(chain) ? chain.parentChainId : undefined
+  const chainIds = getChildChainIds(chain)
 
-  const validDestinationChainIds = getChildChainIds(chain)
-
-  // include the parent chain in destination if there is no restriction
-  if (parentChainId && !disableTransfersToNonArbitrumChains) {
-    return sortChainIds([parentChainId, ...validDestinationChainIds])
-  }
-
-  // do not include the parent chain in destination if the destinations cant include non-arbitrum chains and the parent is non-arbitrum
+  /**
+   * Add parent chain if:
+   * - parent is an arbitrum network
+   * - parent is a non-arbitrum network and transfers to non-arbitrum chains are not disabled
+   */
   if (
     parentChainId &&
-    disableTransfersToNonArbitrumChains &&
-    !isNetwork(parentChainId).isNonArbitrumNetwork
+    (!isNetwork(parentChainId).isNonArbitrumNetwork ||
+      (isNetwork(parentChainId).isNonArbitrumNetwork &&
+        !disableTransfersToNonArbitrumChains))
   ) {
-    return sortChainIds([parentChainId, ...validDestinationChainIds])
+    chainIds.push(parentChainId)
   }
 
-  // do not include the parent chain in destination if its invalid (undefined)
-  return sortChainIds(validDestinationChainIds)
+  /** Include lifi chains, if flag is on */
+  const lifiChainIds = lifiDestinationChainIds[chainId]
+  if (includeLifiEnabledChainPairs && lifiChainIds && lifiChainIds.length) {
+    chainIds.push(...lifiChainIds)
+  }
+
+  /** Disabling transfers to non arbitrum chains, remove non-arbitrum chains */
+  if (disableTransfersToNonArbitrumChains) {
+    return sortChainIds([
+      ...new Set(
+        chainIds.filter(chainId => !isNetwork(chainId).isNonArbitrumNetwork)
+      )
+    ])
+  }
+
+  return sortChainIds([...new Set(chainIds)])
 }
 
 export function isWithdrawalFromArbSepoliaToSepolia({

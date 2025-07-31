@@ -25,6 +25,7 @@ import {
   isE2eTestingEnvironment,
   isProductionEnvironment
 } from '../util/CommonUtils'
+import { sanitizeNullSelectedToken } from '../hooks/useSelectedToken'
 
 const App = dynamic(
   () => {
@@ -52,15 +53,25 @@ const App = dynamic(
 
 export const sanitizeTokenQueryParam = ({
   token,
+  sourceChainId,
   destinationChainId
 }: {
   token: string | null | undefined
+  sourceChainId: number | undefined
   destinationChainId: number | undefined
 }) => {
   const tokenLowercased = token?.toLowerCase()
 
   if (!tokenLowercased) {
-    return undefined
+    const sanitizedTokenAddress = sanitizeNullSelectedToken({
+      sourceChainId,
+      destinationChainId,
+      erc20ParentAddress: tokenLowercased || null
+    })
+
+    if (sanitizedTokenAddress) {
+      return sanitizedTokenAddress
+    }
   }
   if (!destinationChainId) {
     return tokenLowercased
@@ -226,6 +237,7 @@ export async function getServerSideProps({
     experiments: sanitizeExperimentalFeaturesQueryParam(experiments),
     token: sanitizeTokenQueryParam({
       token,
+      sourceChainId: sanitizedChainIds.sourceChainId,
       destinationChainId: sanitizedChainIds.destinationChainId
     }),
     tab: sanitizeTabQueryParam(tab),

@@ -11,6 +11,8 @@ import {
   isTokenArbitrumSepoliaNativeUSDC
 } from '../util/TokenUtils'
 import { isNetwork } from '../util/networks'
+import { addressesEqual } from '../util/AddressUtils'
+import { useNativeCurrency } from './useNativeCurrency'
 
 /**
  * Balance of the child chain's native currency or ERC20 token
@@ -24,9 +26,13 @@ export function useBalanceOnSourceChain(
   const { isOrbitChain: isSourceOrbitChain } = isNetwork(
     networks.sourceChain.id
   )
+  const sourceChainNativeCurrency = useNativeCurrency({
+    provider: networks.sourceChainProvider
+  })
 
   const {
-    erc20: [erc20SourceChainBalances]
+    erc20: [erc20SourceChainBalances],
+    eth: [ethSourceChainBalance]
   } = useBalance({ chainId: networks.sourceChain.id, walletAddress })
 
   const nativeCurrencyBalances = useNativeCurrencyBalances()
@@ -35,6 +41,18 @@ export function useBalanceOnSourceChain(
   // user bridging the destination chain's native currency
   if (!token) {
     return nativeCurrencyBalances.sourceBalance
+  }
+
+  if (addressesEqual(token.address, constants.AddressZero)) {
+    // If ether is the native currency on the source chain
+    if (!sourceChainNativeCurrency.isCustom) {
+      return ethSourceChainBalance
+    }
+
+    return token.l2Address
+      ? erc20SourceChainBalances?.[token.l2Address.toLowerCase()] ||
+          constants.Zero
+      : constants.Zero
   }
 
   const tokenAddressLowercased = token.address.toLowerCase()

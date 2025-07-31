@@ -2,6 +2,9 @@ import { LifiData } from '@/token-bridge-sdk/LifiTransferStarter'
 import { create } from 'zustand'
 import { MergedTransactionLifiData } from '../../../state/app/state'
 import { LiFiStep } from '@lifi/sdk'
+import { Address } from 'viem'
+import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-transfers/lifi'
+import { BigNumber } from 'ethers'
 
 export type RouteType =
   | 'arbitrum'
@@ -38,4 +41,36 @@ export function isLifiRoute(selectedRoute: RouteType | undefined) {
     selectedRoute === 'lifi-cheapest' ||
     selectedRoute === 'lifi-fastest'
   )
+}
+
+export function getContextFromRoute(
+  route: LifiCrosschainTransfersRoute
+): RouteContext {
+  return {
+    spenderAddress: route.spenderAddress as Address,
+    gas: {
+      amount: BigNumber.from(route.gas.amount),
+      amountUSD: route.gas.amountUSD,
+      token: route.gas.token
+    },
+    fee: {
+      amount: BigNumber.from(route.fee.amount),
+      amountUSD: route.fee.amountUSD,
+      token: route.fee.token
+    },
+    fromAmount: {
+      amount: BigNumber.from(route.fromAmount.amount),
+      amountUSD: route.fromAmount.amountUSD,
+      token: route.fromAmount.token
+    },
+    toAmount: {
+      amount: BigNumber.from(route.toAmount.amount),
+      amountUSD: route.toAmount.amountUSD,
+      token: route.toAmount.token
+    },
+    toolDetails: route.protocolData.tool,
+    durationMs: route.durationMs,
+    destinationTxId: null,
+    step: route.protocolData.step
+  }
 }

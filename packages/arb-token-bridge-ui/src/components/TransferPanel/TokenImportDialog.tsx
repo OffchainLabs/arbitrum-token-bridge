@@ -20,6 +20,7 @@ import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { addressesEqual } from '../../util/AddressUtils'
+import { constants } from 'ethers'
 
 enum ImportStatus {
   LOADING,
@@ -186,6 +187,10 @@ export function TokenImportDialog({
     }
 
     if (l1Address) {
+      if (l1Address === constants.AddressZero) {
+        return
+      }
+
       const searchResult1 = searchForTokenInLists(l1Address)
 
       if (searchResult1.found) {

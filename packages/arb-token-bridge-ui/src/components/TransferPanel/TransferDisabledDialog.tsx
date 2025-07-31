@@ -14,6 +14,70 @@ import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdr
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { addressesEqual } from '../../util/AddressUtils'
+import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { isLifiEnabled } from '../../util/featureFlag'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+
+export function isDisabledCanonicalTransfer({
+  selectedToken,
+  isDepositMode,
+  isTeleportMode,
+  parentChainId,
+  childChainId,
+  isSelectedTokenWithdrawOnly,
+  isSelectedTokenWithdrawOnlyLoading
+}: {
+  selectedToken: ERC20BridgeToken | null
+  isDepositMode: boolean
+  isTeleportMode: boolean
+  parentChainId: ChainId
+  childChainId: ChainId
+  isSelectedTokenWithdrawOnly: boolean | undefined
+  isSelectedTokenWithdrawOnlyLoading: boolean
+}) {
+  if (!selectedToken) {
+    return false
+  }
+
+  if (isTransferDisabledToken(selectedToken.address, childChainId)) {
+    return true
+  }
+
+  if (
+    isTeleportMode &&
+    !isTeleportEnabledToken(selectedToken.address, parentChainId, childChainId)
+  ) {
+    return true
+  }
+
+  if (parentChainId === ChainId.ArbitrumOne) {
+    if (
+      childChainId === ChainId.ApeChain &&
+      !addressesEqual(selectedToken.address, CommonAddress.ArbitrumOne.USDC)
+    ) {
+      return true
+    }
+
+    if (
+      childChainId === ChainId.Superposition &&
+      !addressesEqual(selectedToken.address, CommonAddress.ArbitrumOne.USDT) &&
+      !addressesEqual(selectedToken.address, CommonAddress.ArbitrumOne.USDC)
+    ) {
+      return true
+    }
+  }
+
+  if (
+    isDepositMode &&
+    isSelectedTokenWithdrawOnly &&
+    !isSelectedTokenWithdrawOnlyLoading
+  ) {
+    return true
+  }
+
+  return false
+}
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
@@ -50,37 +114,36 @@ export function TransferDisabledDialog() {
     if (
       !selectedToken ||
       addressesEqual(
-        selectedToken.address,
+        selectedToken?.address,
         selectedTokenAddressLocalValue ?? undefined
       )
     ) {
       return false
     }
 
-    if (isTransferDisabledToken(selectedToken.address, childChain.id)) {
-      return true
-    }
-
+    // If a lifi route exists, don't show any dialog
     if (
-      isTeleportMode &&
-      !isTeleportEnabledToken(
-        selectedToken.address,
-        parentChain.id,
-        childChain.id
-      )
+      isLifiEnabled() &&
+      isValidLifiTransfer({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id,
+        fromToken: isDepositMode
+          ? selectedToken.address
+          : selectedToken.l2Address
+      })
     ) {
-      return true
+      return false
     }
 
-    if (
-      isDepositMode &&
-      isSelectedTokenWithdrawOnly &&
-      !isSelectedTokenWithdrawOnlyLoading
-    ) {
-      return true
-    }
-
-    return false
+    return isDisabledCanonicalTransfer({
+      selectedToken,
+      isDepositMode,
+      isTeleportMode,
+      parentChainId: parentChain.id,
+      childChainId: childChain.id,
+      isSelectedTokenWithdrawOnly,
+      isSelectedTokenWithdrawOnlyLoading
+    })
   }, [
     childChain.id,
     isDepositMode,
