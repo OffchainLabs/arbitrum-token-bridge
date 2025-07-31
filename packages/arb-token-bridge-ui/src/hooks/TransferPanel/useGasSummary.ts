@@ -88,7 +88,6 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
-
   const balance = useBalanceOnSourceChain(selectedToken)
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =

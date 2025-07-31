@@ -1,10 +1,9 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { utils } from 'ethers'
-import { Route, Token } from './Route'
+import { Route } from './Route'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
-import { CommonAddress } from '../../../util/CommonAddressUtils'
 import {
   getOrbitDepositDuration,
   getStandardDepositDuration,
@@ -19,24 +18,10 @@ import { useMemo } from 'react'
 import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { shallow } from 'zustand/shallow'
 import { getGasCostAndToken } from './getGasCostAndToken'
-
-const commonUsdcToken: Token = {
-  decimals: 6,
-  address: CommonAddress.Ethereum.USDC,
-  symbol: 'placeholder',
-  logoURI:
-    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
-}
-
-const bridgedUsdcToken: Token = {
-  ...commonUsdcToken,
-  symbol: 'USDC.e'
-}
-
-const nativeUsdcToken: Token = {
-  ...commonUsdcToken,
-  symbol: 'USDC'
-}
+import {
+  bridgedUsdcToken,
+  nativeUsdcToken
+} from '../../../util/CommonAddressUtils'
 
 function getDuration({
   isTestnet,

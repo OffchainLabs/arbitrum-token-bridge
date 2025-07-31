@@ -50,6 +50,7 @@ function createMockedLifiTransaction({
     durationMs: 1_000,
     fromAmount: {
       amount: BigNumber.from(10),
+      amountUSD: '10',
       token: {
         address: constants.AddressZero,
         decimals: 18,
@@ -58,6 +59,7 @@ function createMockedLifiTransaction({
     },
     toAmount: {
       amount: BigNumber.from(9),
+      amountUSD: '9',
       token: {
         address: constants.AddressZero,
         decimals: 18,

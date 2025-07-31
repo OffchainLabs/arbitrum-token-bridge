@@ -11,6 +11,7 @@ import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 import { getOftV2TransferConfig } from './oftUtils'
 import { OftV2TransferStarter } from './OftV2TransferStarter'
+import { LifiTransferStarter } from './LifiTransferStarter'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
@@ -21,6 +22,10 @@ function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
 
   if (props.destinationChainErc20Address) {
     cacheKey += `-destinationErc20:${props.destinationChainErc20Address}`
+  }
+
+  if (props.lifiData) {
+    cacheKey += `-${props.lifiData.transactionRequest?.data}-${props.lifiData.spenderAddress}`
   }
 
   return cacheKey
@@ -53,8 +58,13 @@ export class BridgeTransferStarterFactory {
       destinationChainErc20Address: props.destinationChainErc20Address
     }
 
-    const { isDeposit, isNativeCurrencyTransfer, isSupported, isTeleport } =
-      getBridgeTransferProperties(props)
+    const {
+      isDeposit: isCanonicalDeposit,
+      isNativeCurrencyTransfer,
+      isSupported,
+      isTeleport,
+      isWithdrawal: isCanonicalWithdrawal
+    } = getBridgeTransferProperties(props)
 
     if (!isSupported) {
       throw new Error('Unsupported transfer detected')
@@ -73,6 +83,13 @@ export class BridgeTransferStarterFactory {
       sourceChainErc20Address: props.sourceChainErc20Address
     })
 
+    if (props.lifiData) {
+      return withCache(
+        cacheKey,
+        new LifiTransferStarter({ ...initProps, lifiData: props.lifiData })
+      )
+    }
+
     if (isOft.isValid) {
       return withCache(cacheKey, new OftV2TransferStarter(initProps))
     }
@@ -84,17 +101,21 @@ export class BridgeTransferStarterFactory {
       return withCache(cacheKey, new Erc20TeleportStarter(initProps))
     }
 
-    // deposits
-    if (isDeposit) {
+    if (isCanonicalDeposit) {
       if (!isNativeCurrencyTransfer) {
         return withCache(cacheKey, new Erc20DepositStarter(initProps))
       }
       return withCache(cacheKey, new EthDepositStarter(initProps))
     }
-    // withdrawals
-    if (!isNativeCurrencyTransfer) {
-      return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
+
+    if (isCanonicalWithdrawal) {
+      if (!isNativeCurrencyTransfer) {
+        return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
+      }
+
+      return withCache(cacheKey, new EthWithdrawalStarter(initProps))
     }
-    return withCache(cacheKey, new EthWithdrawalStarter(initProps))
+
+    throw new Error('No transfer starter found for the given properties.')
   }
 }

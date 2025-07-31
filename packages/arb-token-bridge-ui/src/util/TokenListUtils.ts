@@ -10,6 +10,7 @@ import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from '../types/ChainId'
 import orbitChainsData from './orbitChainsData.json'
+import { isLifiEnabled } from './featureFlag'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID =
   'SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID'
@@ -25,6 +26,35 @@ export interface BridgeTokenList {
   logoURI: ImageProps['src']
   isValid?: boolean
 }
+
+const lifiTokenLists: BridgeTokenList[] = isLifiEnabled()
+  ? [
+      {
+        id: '33139_lifi',
+        originChainID: ChainId.ApeChain,
+        url: 'tokenLists/33139_lifi.json',
+        name: 'Ape Lifi List',
+        isDefault: true,
+        logoURI: '/images/ApeChainLogo.svg'
+      },
+      {
+        id: '42161_lifi',
+        originChainID: ChainId.Superposition,
+        url: 'tokenLists/55244_lifi.json',
+        name: 'Superposition Lifi List',
+        isDefault: true,
+        logoURI: '/images/SuperpositionLogo.svg'
+      },
+      {
+        id: '42161_lifi',
+        originChainID: ChainId.ArbitrumOne,
+        url: 'tokenLists/42161_lifi.json',
+        name: 'ArbitrumOne Lifi List',
+        isDefault: true,
+        logoURI: '/images/ArbitrumLogo.svg'
+      }
+    ]
+  : []
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
@@ -123,6 +153,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI: '/images/XaiLogo.svg'
   },
+  ...lifiTokenLists,
   // For all orbit chains,
   ...orbitChainsData.mainnet
     .concat(orbitChainsData.testnet)

@@ -41,6 +41,7 @@ import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useTheme } from '../../hooks/useTheme'
+import { isLifiEnabled } from '../../util/featureFlag'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -63,10 +64,10 @@ export function SwitchNetworksButton(
     // in this case, we show a one-way arrow and disable the swap button
     return (
       isSmartContractWallet ||
-      !getDestinationChainIds(
-        networks.destinationChain.id,
-        disableTransfersToNonArbitrumChains
-      ).includes(networks.sourceChain.id)
+      !getDestinationChainIds(networks.destinationChain.id, {
+        disableTransfersToNonArbitrumChains,
+        includeLifiEnabledChainPairs: isLifiEnabled()
+      }).includes(networks.sourceChain.id)
     )
   }, [
     networks.destinationChain.id,

@@ -11,7 +11,8 @@ import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumG
 export { OutgoingMessageState }
 
 export enum TokenType {
-  ERC20 = 'ERC20'
+  ERC20 = 'ERC20',
+  ETH = 'ETH'
 }
 
 export enum AssetType {

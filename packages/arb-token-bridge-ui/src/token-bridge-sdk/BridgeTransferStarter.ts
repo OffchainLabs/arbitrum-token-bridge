@@ -10,6 +10,7 @@ import {
 } from '../hooks/arbTokenBridge.types'
 import { Address } from '../util/AddressUtils'
 import { getChainIdFromProvider } from './utils'
+import { LifiData } from './LifiTransferStarter'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal' | 'teleport'
@@ -45,6 +46,7 @@ export type BridgeTransferStarterPropsWithChainIds = {
   sourceChainErc20Address?: string
   destinationChainId: number
   destinationChainErc20Address?: string
+  lifiData?: LifiData
 }
 
 export type TransferEstimateGasProps = {

@@ -26,22 +26,19 @@ import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { useMode } from '../../../hooks/useMode'
 import { useTheme } from '../../../hooks/useTheme'
+import { Token } from '../../../pages/api/crosschain-transfers/types'
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
 // Types
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
-export type Token = {
-  address: string
-  decimals: number
-  symbol: string
-  logoURI?: string
-}
+
 export type RouteGas = { gasCost: string | undefined; gasToken: Token }
 export type RouteProps = {
   type: RouteType
   amountReceived: string
   durationMs: number
   isLoadingGasEstimate: boolean
-  overrideToken?: Token
+  overrideToken?: ERC20BridgeToken
   gasCost: RouteGas[] | undefined
   bridgeFee?: { fee: string | undefined; token: Token }
   bridge: string
@@ -107,11 +104,11 @@ function getBadges(badgeTypes: BadgeType | BadgeType[]) {
 type RouteAmountProps = {
   destinationAddress?: string
   amountReceived: string
-  token: Token | NativeCurrency
+  token: ERC20BridgeToken | NativeCurrency
   showUsdValueForReceivedToken: boolean
   isBatchTransferSupported: boolean
   amount2?: string
-  childNativeCurrency: Token | NativeCurrency
+  childNativeCurrency: ERC20BridgeToken | NativeCurrency
   embedMode: boolean
 }
 
@@ -427,7 +424,7 @@ export const Route = React.memo(
     const isBatchTransferSupported = useIsBatchTransferSupported()
     const { theme } = useTheme()
 
-    const token = (overrideToken || _token || childNativeCurrency) as Token
+    const token = overrideToken || _token || childNativeCurrency
 
     const { isTestnet } = isNetwork(networks.sourceChain.id)
     const showUsdValueForReceivedToken = !isTestnet && !('address' in token)
@@ -449,6 +446,7 @@ export const Route = React.memo(
         bridgeFee &&
         bridgeFee.token.address === constants.AddressZero) ||
       false
+
     return (
       <button
         className={twMerge(

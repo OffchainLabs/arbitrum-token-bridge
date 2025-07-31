@@ -38,7 +38,7 @@ export function useSelectedTokenIsWithdrawOnly() {
   )
 
   return {
-    isSelectedTokenWithdrawOnly,
+    isSelectedTokenWithdrawOnly: !!isSelectedTokenWithdrawOnly,
     isSelectedTokenWithdrawOnlyLoading: isLoading
   }
 }

@@ -13,15 +13,11 @@ import {
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { Address } from 'viem'
 import { TransactionRequest } from '../pages/api/crosschain-transfers/lifi'
+import { Token } from '../pages/api/crosschain-transfers/types'
 
-type Token = {
-  address: string
-  decimals: number
-  symbol: string
-  logoURI?: string
-}
 export type AmountWithToken = {
   amount: BigNumber
+  amountUSD: string
   token: Token
 }
 export type LifiData = {
