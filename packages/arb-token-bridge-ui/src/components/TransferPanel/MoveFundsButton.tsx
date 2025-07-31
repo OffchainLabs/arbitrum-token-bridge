@@ -20,7 +20,7 @@ export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
   const signer = useEthersSigner()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
-  const [{ amount }] = useArbQueryParams()
+  const [{ amount, theme }] = useArbQueryParams()
   const selectedRoute = useRouteStore(state => state.selectedRoute)
 
   const [networks] = useNetworks()
@@ -41,11 +41,11 @@ export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
       disabled={isDisabled}
       onClick={onClick}
       style={{
-        borderColor: destinationChainUIcolor,
-        backgroundColor: `${destinationChainUIcolor}66`
+        borderColor: theme.primaryCtaColor ?? destinationChainUIcolor,
+        backgroundColor: `${theme.primaryCtaColor ?? destinationChainUIcolor}66`
       }}
       className={twMerge(
-        'w-full border py-3 text-lg',
+        'w-full border bg-primary-cta py-3 text-lg',
         'disabled:!border-white/10 disabled:!bg-white/10',
         'lg:text-2xl'
       )}

@@ -127,6 +127,7 @@ export function NetworkButton({
   const isNetworkSelectionDisabled = isFeatureDisabled(
     DisabledFeatures.NETWORK_SELECTION
   )
+  const [{ theme }] = useArbQueryParams()
 
   const selectedChainId = isSource
     ? networks.sourceChain.id
@@ -140,7 +141,9 @@ export function NetworkButton({
     (isSmartContractWallet && type === 'source') ||
     isLoading
 
-  const backgroundColor = getBridgeUiConfigForChain(selectedChainId).color
+  const backgroundColor =
+    theme.networkThemeOverrideColor ??
+    getBridgeUiConfigForChain(selectedChainId).color
 
   const colorContrast = hex('#ffffff', backgroundColor)
 

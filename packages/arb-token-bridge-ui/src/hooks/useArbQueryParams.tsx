@@ -32,6 +32,7 @@ import {
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../types/ChainId'
+import { defaultTheme, ThemeConfig } from './useTheme'
 
 export enum TabParamEnum {
   BRIDGE = 'bridge',
@@ -111,6 +112,28 @@ export const DisabledFeaturesParam = {
   }
 }
 
+export const ThemeParam = {
+  encode: (config: ThemeConfig | undefined) => {
+    if (!config) return undefined
+    try {
+      return encodeURIComponent(JSON.stringify(config)) // Encode the JSON string to handle special characters like # in hex colors
+    } catch {
+      return undefined
+    }
+  },
+  decode: (
+    configStr: string | (string | null)[] | null | undefined
+  ): ThemeConfig => {
+    if (!configStr || Array.isArray(configStr)) return defaultTheme
+    try {
+      const decodedTheme = JSON.parse(decodeURIComponent(configStr))
+      return { ...defaultTheme, ...decodedTheme }
+    } catch {
+      return defaultTheme
+    }
+  }
+}
+
 const ModeParam = {
   encode: (mode: ModeParamEnum) => {
     if (!mode) return undefined
@@ -142,7 +165,8 @@ export const useArbQueryParams = () => {
     settingsOpen: withDefault(BooleanParam, false),
     tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
     disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
-    mode: withDefault(ModeParam, undefined) // mode: 'embed', or undefined for normal mode
+    mode: withDefault(ModeParam, undefined), // mode: 'embed', or undefined for normal mode
+    theme: withDefault(ThemeParam, defaultTheme) // theme customization
   })
 }
 

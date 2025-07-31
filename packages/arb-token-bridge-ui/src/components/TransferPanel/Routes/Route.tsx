@@ -383,7 +383,7 @@ const RouteSummaryBadge = ({
           fallback={<div className="h-4 w-4 rounded-full bg-gray-dark" />}
         />
 
-        <div className="h-[16px] border border-white/40" />
+        <div className="h-[16px] border-[0.5px] border-white/40" />
 
         <ClockIcon width={18} height={18} className="-ml-[1px] shrink-0" />
         <span className="whitespace-nowrap text-xs">{duration}</span>
@@ -421,6 +421,7 @@ export const Route = React.memo(
     const [{ amount2, destinationAddress }] = useArbQueryParams()
     const { embedMode } = useMode()
     const isBatchTransferSupported = useIsBatchTransferSupported()
+    const [{ theme }] = useArbQueryParams()
 
     const token = overrideToken || _token || childNativeCurrency
 
@@ -448,14 +449,22 @@ export const Route = React.memo(
     return (
       <button
         className={twMerge(
-          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-inset ring-[#ffffff33] transition-colors md:flex-row',
+          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded border border-[#ffffff33] bg-[#ffffff1a] px-4 py-3 text-left text-sm text-white transition-colors md:flex-row',
           'focus-visible:!outline-none',
-          'focus-within:bg-[#474747] hover:bg-[#474747]',
-          !isDisabled &&
-            selected &&
-            'bg-[#5F7D5B60] ring-[#5F7D5B] focus-within:bg-[#5F7D5B60] hover:bg-[#5F7D5B60]',
+          'focus-within:bg-[#ffffff36] hover:bg-[#ffffff36]',
+          !isDisabled && selected && 'border-primary-cta',
           embedMode && 'md:flex-col'
         )}
+        style={
+          !isDisabled && selected
+            ? {
+                borderColor: theme.primaryCtaColor ?? '#5F7D5B',
+                backgroundColor: theme.primaryCtaColor
+                  ? `${theme.primaryCtaColor}60`
+                  : '#5F7D5B60'
+              }
+            : {}
+        }
         onClick={() => onSelectedRouteClick(type)}
         disabled={isDisabled}
         aria-label={`Route ${type}`}
