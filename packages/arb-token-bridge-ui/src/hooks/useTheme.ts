@@ -46,10 +46,8 @@ function applyThemeToCSS(theme: ThemeConfig): void {
 export function useTheme() {
   const [{ theme }] = useArbQueryParams()
 
-  const _themeKey = JSON.stringify(theme)
-
-  useSWRImmutable([_themeKey, 'useTheme'], ([_themeKey]) => {
-    applyThemeToCSS(JSON.parse(_themeKey))
+  useSWRImmutable([theme, 'useTheme'], ([theme]) => {
+    applyThemeToCSS(theme)
     return null
   })
 }
