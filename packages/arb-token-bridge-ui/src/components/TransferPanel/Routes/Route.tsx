@@ -25,7 +25,6 @@ import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { useMode } from '../../../hooks/useMode'
-import { useTheme } from '../../../hooks/useTheme'
 import { Token } from '../../../pages/api/crosschain-transfers/types'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
@@ -422,7 +421,7 @@ export const Route = React.memo(
     const [{ amount2, destinationAddress }] = useArbQueryParams()
     const { embedMode } = useMode()
     const isBatchTransferSupported = useIsBatchTransferSupported()
-    const { theme } = useTheme()
+    const [{ theme }] = useArbQueryParams()
 
     const token = overrideToken || _token || childNativeCurrency
 

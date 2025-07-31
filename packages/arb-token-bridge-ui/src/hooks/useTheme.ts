@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import useSWRImmutable from 'swr/immutable'
 import { useArbQueryParams } from './useArbQueryParams'
 
 // Theme configuration types
@@ -28,32 +28,28 @@ const themeVariableMap: Record<keyof ThemeConfig, string> = {
   fontFamily: '--font-family'
 }
 
+function applyThemeToCSS(theme: ThemeConfig): void {
+  // Clean up previous theme variables first
+  Object.values(themeVariableMap).forEach(cssVariable => {
+    document.documentElement.style.removeProperty(cssVariable)
+  })
+
+  // Apply new theme properties to CSS variables
+  Object.entries(theme).forEach(([key, value]) => {
+    const cssVariable = themeVariableMap[key as keyof ThemeConfig]
+    if (cssVariable && value) {
+      document.documentElement.style.setProperty(cssVariable, value.toString())
+    }
+  })
+}
+
 export function useTheme() {
   const [{ theme }] = useArbQueryParams()
 
-  const _themeKey = JSON.stringify(theme) // we don't want the hook to fire every time the object reference changes
+  const _themeKey = JSON.stringify(theme)
 
-  // Apply all theme properties to the app
-  useEffect(() => {
-    Object.entries(theme).forEach(([key, value]) => {
-      const cssVariable = themeVariableMap[key as keyof ThemeConfig]
-      if (cssVariable && value) {
-        document.documentElement.style.setProperty(
-          cssVariable,
-          value.toString()
-        )
-      }
-    })
-
-    return () => {
-      // Clean up all theme variables
-      Object.values(themeVariableMap).forEach(cssVariable => {
-        document.documentElement.style.removeProperty(cssVariable)
-      })
-    }
-  }, [_themeKey])
-
-  return {
-    theme
-  }
+  useSWRImmutable([_themeKey, 'useTheme'], ([_themeKey]) => {
+    applyThemeToCSS(JSON.parse(_themeKey))
+    return null
+  })
 }

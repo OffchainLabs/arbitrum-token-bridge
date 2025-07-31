@@ -38,7 +38,6 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useMode } from '../../hooks/useMode'
-import { useTheme } from '../../hooks/useTheme'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -126,7 +125,7 @@ export function NetworkButton({
   const isNetworkSelectionDisabled = isFeatureDisabled(
     DisabledFeatures.NETWORK_SELECTION
   )
-  const { theme } = useTheme()
+  const [{ theme }] = useArbQueryParams()
 
   const selectedChainId = isSource
     ? networks.sourceChain.id

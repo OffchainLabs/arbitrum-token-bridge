@@ -11,7 +11,6 @@ import { getNetworkName } from '../../util/networks'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useRouteStore } from './hooks/useRouteStore'
-import { useTheme } from '../../hooks/useTheme'
 
 type MoveFundsButtonProps = Pick<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -21,9 +20,8 @@ export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
   const signer = useEthersSigner()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
-  const [{ amount }] = useArbQueryParams()
+  const [{ amount, theme }] = useArbQueryParams()
   const selectedRoute = useRouteStore(state => state.selectedRoute)
-  const { theme } = useTheme()
 
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)

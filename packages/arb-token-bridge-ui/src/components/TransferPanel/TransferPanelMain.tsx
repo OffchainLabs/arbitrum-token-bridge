@@ -40,7 +40,6 @@ import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
-import { useTheme } from '../../hooks/useTheme'
 import { isLifiEnabled } from '../../util/featureFlag'
 
 export function SwitchNetworksButton(
@@ -49,7 +48,7 @@ export function SwitchNetworksButton(
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const { theme } = useTheme()
+  const [{ theme }] = useArbQueryParams()
 
   const [networks, setNetworks] = useNetworks()
 
@@ -110,7 +109,7 @@ export function SwitchNetworksButton(
 
 function SwitchNetworkButtonBorderTop() {
   const [networks] = useNetworks()
-  const { theme } = useTheme()
+  const [{ theme }] = useArbQueryParams()
 
   const sourceNetworkColor = getBridgeUiConfigForChain(
     networks.sourceChain.id
@@ -128,7 +127,7 @@ function SwitchNetworkButtonBorderTop() {
 
 function SwitchNetworkButtonBorderBottom() {
   const [networks] = useNetworks()
-  const { theme } = useTheme()
+  const [{ theme }] = useArbQueryParams()
 
   const destinationNetworkColor = getBridgeUiConfigForChain(
     networks.destinationChain.id
@@ -193,7 +192,7 @@ export function NetworkContainer({
 }) {
   const { address: walletAddress } = useAccount()
   const { color } = getBridgeUiConfigForChain(network.id)
-  const { theme } = useTheme()
+  const [{ theme }] = useArbQueryParams()
 
   const showCustomAddressBanner = useMemo(() => {
     if (!customAddress) {
