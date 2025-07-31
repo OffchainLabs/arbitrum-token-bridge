@@ -20,8 +20,8 @@ export function Checkbox({ labelClassName, label, ...props }: CheckboxProps) {
         className={twMerge(
           'h-3 w-3 flex-shrink-0 rounded-sm transition duration-200 ease-in-out',
           props.checked
-            ? 'border border-dark bg-white'
-            : 'border border-white bg-dark'
+            ? 'border-[0.5px] border-dark bg-white'
+            : 'border-[0.5px] border-white bg-dark'
         )}
       >
         <CheckIcon className="ml-[2px] mt-[1px] h-2 w-2 stroke-[5] text-dark" />

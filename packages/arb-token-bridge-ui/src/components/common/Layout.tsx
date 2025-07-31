@@ -42,7 +42,7 @@ export function Layout(props: LayoutProps) {
 
   if (embedMode) {
     return (
-      <body className={twMerge('bg-gray-1', unica.className)}>
+      <body className={twMerge('bg-widget-background', unica.variable)}>
         {props.children}
         <Toast />
       </body>
@@ -50,7 +50,7 @@ export function Layout(props: LayoutProps) {
   }
 
   return (
-    <body className={twMerge('relative flex-col bg-black', unica.className)}>
+    <body className={twMerge('relative flex-col bg-black', unica.variable)}>
       <Image
         src={EclipseBottom}
         alt="grains"

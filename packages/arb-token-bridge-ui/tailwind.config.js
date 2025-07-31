@@ -59,7 +59,9 @@ module.exports = {
         // BRAND
         'eth-dark': '#1A1C33',
         'ocl-blue': '#243145',
-        'atmosphere-blue': '#152C4E'
+        'atmosphere-blue': '#152C4E',
+        'widget-background': 'var(--color-widget-background, #191919)',
+        'primary-cta': 'var(--color-primary-cta, #31572A)'
       },
       spacing: {
         1: '5px',
@@ -96,7 +98,8 @@ module.exports = {
         80: '400px'
       },
       fontFamily: {
-        unica77: ['var(--font-unica77)']
+        unica77: ['var(--font-unica77)'],
+        theme: ['var(--font-family, var(--font-unica77), Roboto, sans-serif)']
       },
       fontSize: {
         xl: '1.375rem'
@@ -111,7 +114,10 @@ module.exports = {
         8: '2rem'
       },
       borderRadius: {
-        DEFAULT: '5px'
+        DEFAULT: 'var(--border-radius, 5px)'
+      },
+      borderWidth: {
+        DEFAULT: 'var(--border-width, 1px)'
       },
       boxShadow: {
         // shadow used for input fields across the app
