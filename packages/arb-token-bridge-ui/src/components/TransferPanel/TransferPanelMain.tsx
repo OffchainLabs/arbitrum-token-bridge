@@ -85,7 +85,6 @@ export function SwitchNetworksButton(
         disabled={disabled}
         className={twMerge(
           'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
-          disabled && 'pointer-events-none',
           theme.primaryCtaColor ? 'bg-primary-cta' : ''
         )}
         onClick={() => {

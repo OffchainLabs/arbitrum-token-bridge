@@ -384,7 +384,7 @@ const RouteSummaryBadge = ({
           fallback={<div className="h-4 w-4 rounded-full bg-gray-dark" />}
         />
 
-        <div className="h-[16px] border border-white/40" />
+        <div className="h-[16px] border-[0.5px] border-white/40" />
 
         <ClockIcon width={18} height={18} className="-ml-[1px] shrink-0" />
         <span className="whitespace-nowrap text-xs">{duration}</span>
@@ -453,7 +453,7 @@ export const Route = React.memo(
           'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded border border-[#ffffff33] bg-[#ffffff1a] px-4 py-3 text-left text-sm text-white transition-colors md:flex-row',
           'focus-visible:!outline-none',
           'focus-within:bg-[#ffffff36] hover:bg-[#ffffff36]',
-          !isDisabled && selected && 'border border-primary-cta',
+          !isDisabled && selected && 'border-primary-cta',
           embedMode && 'md:flex-col'
         )}
         style={

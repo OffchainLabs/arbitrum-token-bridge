@@ -44,7 +44,7 @@ export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
       onClick={onClick}
       style={{
         borderColor: theme.primaryCtaColor ?? destinationChainUIcolor,
-        backgroundColor: theme.primaryCtaColor ?? `${destinationChainUIcolor}66`
+        backgroundColor: `${theme.primaryCtaColor ?? destinationChainUIcolor}66`
       }}
       className={twMerge(
         'w-full border bg-primary-cta py-3 text-lg',
