@@ -17,11 +17,13 @@ export default defineConfig({
         "commander",
         "sharp",
         "path",
+        "puppeteer",
+        "lighthouse",
       ],
     },
   },
   optimizeDeps: {
-    exclude: ["sharp"],
+    exclude: ["sharp", "puppeteer", "lighthouse"],
   },
   resolve: {
     alias: {
