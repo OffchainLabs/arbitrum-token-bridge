@@ -89,7 +89,7 @@ export function WidgetTransferPanel({
             <WidgetRoutes />
           </div>
 
-          <div className="sticky bottom-4 flex flex-col gap-2 bg-widget-background">
+          <div className="sticky bottom-4 flex flex-col gap-2 bg-widget-background pt-2">
             <ToSConfirmationCheckbox />
 
             {isConnected ? (

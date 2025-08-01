@@ -1,5 +1,6 @@
 import useSWRImmutable from 'swr/immutable'
 import { useArbQueryParams } from './useArbQueryParams'
+import { unica } from '../components/common/Font'
 
 // Theme configuration types
 export interface ThemeConfig {
@@ -15,7 +16,7 @@ export const defaultTheme: ThemeConfig = {
   borderRadius: '5px',
   borderWidth: '1px',
   widgetBackgroundColor: '#191919',
-  fontFamily: 'var(--font-unica77), Roboto, sans-serif'
+  fontFamily: `${unica.style.fontFamily}, Roboto, sans-serif`
 }
 
 // Map theme properties to CSS variables
