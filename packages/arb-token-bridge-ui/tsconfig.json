@@ -11,6 +11,7 @@
     ".next/types/**/*.ts",
     "build/types/**/*.ts",
     "vitest.config.ts",
+    "vitest.mocks.ts",
     "src/generateOpenGraphImages.tsx"
   ],
   "compilerOptions": {
