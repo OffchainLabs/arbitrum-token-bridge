@@ -15,7 +15,7 @@ export const defaultTheme: ThemeConfig = {
   borderRadius: '5px',
   borderWidth: '1px',
   widgetBackgroundColor: '#191919',
-  fontFamily: 'Unica77, Roboto, sans-serif'
+  fontFamily: 'var(--font-unica77), Roboto, sans-serif'
 }
 
 // Map theme properties to CSS variables
