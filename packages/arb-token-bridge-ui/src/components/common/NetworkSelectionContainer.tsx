@@ -37,9 +37,8 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useMode } from '../../hooks/useMode'
+import { Dialog, useDialog } from './Dialog'
 import { DialogProps } from './Dialog2'
-import { useDialog } from './Dialog'
-import { Dialog } from './Dialog'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
