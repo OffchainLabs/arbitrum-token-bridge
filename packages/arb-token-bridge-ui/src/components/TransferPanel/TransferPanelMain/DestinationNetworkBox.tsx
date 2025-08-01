@@ -12,11 +12,8 @@ import { isNetwork } from '../../../util/networks'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { useDialog } from '../../common/Dialog'
-import {
-  NetworkButton,
-  NetworkSelectionContainer
-} from '../../common/NetworkSelectionContainer'
+import { useDialog2, DialogWrapper } from '../../common/Dialog2'
+import { NetworkButton } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
@@ -237,10 +234,10 @@ function BalancesContainer() {
 export function DestinationNetworkBox() {
   const [networks] = useNetworks()
   const [{ destinationAddress }] = useArbQueryParams()
-  const [
-    destinationNetworkSelectionDialogProps,
-    openDestinationNetworkSelectionDialog
-  ] = useDialog()
+  const [dialogProps, openDialog] = useDialog2()
+  const openDestinationNetworkSelectionDialog = () => {
+    openDialog('destination_network_selection')
+  }
   const {
     network: { logo: networkLogo }
   } = getBridgeUiConfigForChain(networks.destinationChain.id)
@@ -267,10 +264,7 @@ export function DestinationNetworkBox() {
         </div>
         <BalancesContainer />
       </NetworkContainer>
-      <NetworkSelectionContainer
-        {...destinationNetworkSelectionDialogProps}
-        type="destination"
-      />
+      <DialogWrapper {...dialogProps} />
     </>
   )
 }

@@ -18,6 +18,7 @@ import { WidgetTransactionHistory } from '../Widget/WidgetTransactionHistory'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { SettingsDialog } from '../TransferPanel/SettingsDialog'
 import { RecoverFundsDialog } from '../RecoverFunds'
+import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -53,6 +54,8 @@ export type DialogType =
   | 'token_selection'
   | 'settings'
   | 'recover_funds'
+  | 'source_network_selection'
+  | 'destination_network_selection'
 
 export function useDialog2(): UseDialogResult {
   const resolveRef =
@@ -157,6 +160,10 @@ export function DialogWrapper(props: DialogProps) {
       return <SettingsDialog {...commonProps} />
     case 'recover_funds':
       return <RecoverFundsDialog {...commonProps} />
+    case 'source_network_selection':
+      return <NetworkSelectionContainer {...commonProps} type="source" />
+    case 'destination_network_selection':
+      return <NetworkSelectionContainer {...commonProps} type="destination" />
     default:
       return null
   }
