@@ -23,7 +23,8 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useAccountType } from '../../hooks/useAccountType'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { isLifiTransferAllowed } from './Routes/isLifiTransferAllowed'
+import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
+import { isDepositMode as isDepositModeUtil } from '../../util/isDepositMode'
 
 function useTools() {
   const [{ sourceChain, destinationChain }] = useNetworks()
@@ -118,6 +119,10 @@ function Tools({
 export const SettingsDialog = React.memo((props: UseDialogProps) => {
   const { data: tools, isLoading: isLoadingTools } = useTools()
   const [networks] = useNetworks()
+  const isDepositMode = isDepositModeUtil({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const [selectedToken] = useSelectedToken()
   const {
     slippage,
@@ -145,10 +150,12 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
   const { accountType, isLoading: isLoadingAccountType } = useAccountType()
   const isLifiSupported = useMemo(
     () =>
-      isLifiTransferAllowed({
-        selectedToken,
+      isValidLifiTransfer({
         sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
+        destinationChainId: networks.destinationChain.id,
+        fromToken: isDepositMode
+          ? selectedToken?.address
+          : selectedToken?.l2Address
       }),
     [selectedToken, networks.sourceChain.id, networks.destinationChain.id]
   )

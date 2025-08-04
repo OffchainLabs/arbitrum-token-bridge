@@ -40,7 +40,9 @@ import {
   useRouteStore
 } from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
-import { addressesEqual } from '../../util/AddressUtils'
+import { isLifiEnabled } from '../../util/featureFlag'
+import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
+import { Token } from '../../pages/api/crosschain-transfers/types'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
@@ -132,34 +134,65 @@ function notReady(
   return { ...result, ...params }
 }
 
-export function getAmountToPay(selectedRouteContext: RouteContext) {
-  let amountToPay = BigNumber.from(0)
-  if (
-    addressesEqual(
-      selectedRouteContext.fee.token.address,
-      constants.AddressZero
-    )
-  ) {
-    amountToPay = amountToPay.add(selectedRouteContext.fee.amount)
-  }
-  if (
-    addressesEqual(
-      selectedRouteContext.gas.token.address,
-      constants.AddressZero
-    )
-  ) {
-    amountToPay = amountToPay.add(selectedRouteContext.gas.amount)
-  }
-  if (
-    addressesEqual(
-      selectedRouteContext.fromAmount.token.address,
-      constants.AddressZero
-    )
-  ) {
-    amountToPay = amountToPay.add(selectedRouteContext.fromAmount.amount)
+/**
+ * For some transfers (from Ape for example), fees and gas are paid in APE token.
+ * While amount itself is paid in the token sent (USDC or ETH).
+ */
+export type AmountsToPay = {
+  amount: BigNumber
+  amountUSD: string
+  token: Token
+}
+export type GetAmountToPayResult = {
+  amounts: Record<string, AmountsToPay>
+  fromAmountUsd: number
+  toAmountUsd: number
+}
+export function getAmountToPay(
+  selectedRouteContext: RouteContext
+): GetAmountToPayResult {
+  const amounts: Record<string, AmountsToPay> = {}
+
+  function addAmount({
+    token,
+    amount,
+    amountUSD
+  }: {
+    token: Token
+    amount: BigNumber
+    amountUSD: string
+  }) {
+    const key = token.address.toLowerCase()
+    const acc = amounts[key]
+    if (acc) {
+      amounts[key] = {
+        amount: acc.amount.add(amount),
+        amountUSD: (Number(acc.amountUSD) + Number(amountUSD)).toFixed(3),
+        token
+      }
+    } else {
+      amounts[key] = {
+        amount,
+        amountUSD,
+        token
+      }
+    }
   }
 
-  return amountToPay
+  addAmount(selectedRouteContext.fee)
+  addAmount(selectedRouteContext.gas)
+  addAmount(selectedRouteContext.fromAmount)
+
+  const fromAmountUsd =
+    Number(selectedRouteContext.fromAmount.amountUSD) +
+    Number(selectedRouteContext.gas.amountUSD) +
+    Number(selectedRouteContext.fee.amountUSD)
+
+  return {
+    amounts,
+    fromAmountUsd: Number(fromAmountUsd.toFixed(3)),
+    toAmountUsd: Number(selectedRouteContext.toAmount.amountUSD)
+  }
 }
 
 export type UseTransferReadinessTransferReady = {
@@ -364,6 +397,15 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             parentChain.id,
             childChain.id
           ))
+      const isValidLifiRoute =
+        isLifiEnabled() &&
+        isValidLifiTransfer({
+          sourceChainId: networks.sourceChain.id,
+          fromToken: isDepositMode
+            ? selectedToken.address
+            : selectedToken.l2Address,
+          destinationChainId: networks.destinationChain.id
+        })
 
       if (
         isDepositMode &&
@@ -375,7 +417,7 @@ export function useTransferReadiness(): UseTransferReadinessResult {
             inputAmount1: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
           }
         })
-      } else if (selectedTokenIsDisabled) {
+      } else if (selectedTokenIsDisabled && !isValidLifiRoute) {
         return notReady({
           errorMessages: {
             inputAmount1:
@@ -465,18 +507,54 @@ export function useTransferReadiness(): UseTransferReadinessResult {
         return notReady()
       }
 
-      const amountToPay = parseFloat(
-        utils.formatUnits(getAmountToPay(selectedRouteContext), 18)
+      const { amounts } = getAmountToPay(selectedRouteContext)
+
+      // Check if we have enough native balance to cover gas, fees and potentially token sent
+      const feeToSend = amounts[constants.AddressZero]
+      const feeToPay = parseFloat(
+        utils.formatUnits(
+          feeToSend?.amount || constants.Zero,
+          feeToSend?.token.decimals || 18
+        )
       )
 
-      if (amountToPay > ethBalanceFloat) {
+      if (feeToPay > ethBalanceFloat) {
         return notReady({
           errorMessages: {
             inputAmount1: getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
+              asset: nativeCurrency.symbol,
               chain: networks.sourceChain.name,
               balance: formatAmount(ethBalanceFloat),
-              requiredBalance: formatAmount(amountToPay)
+              requiredBalance: formatAmount(feeToPay)
+            })
+          }
+        })
+      }
+
+      // Check token sent balance
+      const amountToSend = selectedToken?.address
+        ? amounts[
+            (isDepositMode
+              ? selectedToken?.address
+              : selectedToken?.l2Address) || constants.AddressZero
+          ]
+        : undefined
+      const amountToPay = parseFloat(
+        utils.formatUnits(
+          amountToSend?.amount || constants.Zero,
+          amountToSend?.token.decimals || 18
+        )
+      )
+
+      if (
+        selectedTokenBalanceFloat &&
+        amountToPay > selectedTokenBalanceFloat
+      ) {
+        return notReady({
+          errorMessages: {
+            inputAmount1: getInsufficientFundsErrorMessage({
+              asset: selectedToken?.symbol || nativeCurrency.symbol,
+              chain: networks.sourceChain.name
             })
           }
         })

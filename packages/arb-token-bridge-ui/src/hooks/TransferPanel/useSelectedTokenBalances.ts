@@ -11,6 +11,10 @@ import { isNetwork } from '../../util/networks'
 import { useSelectedToken } from '../useSelectedToken'
 import { useBalances } from '../useBalances'
 import { useNetworksRelationship } from '../useNetworksRelationship'
+import { useBalance } from '../useBalance'
+import { useAccount } from 'wagmi'
+import { addressesEqual } from '../../util/AddressUtils'
+import { useNativeCurrency } from '../useNativeCurrency'
 
 export type Balances = {
   sourceBalance: BigNumber | null
@@ -21,6 +25,27 @@ export function useSelectedTokenBalances(): Balances {
   const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
+  const { address: walletAddress } = useAccount()
+  const sourceNativeCurrency = useNativeCurrency({
+    provider: networks.sourceChainProvider
+  })
+  const destinationNativeCurrency = useNativeCurrency({
+    provider: networks.destinationChainProvider
+  })
+  const {
+    erc20: [erc20SourceBalances],
+    eth: [ethSourceBalance]
+  } = useBalance({
+    chainId: networks.sourceChain.id,
+    walletAddress: walletAddress
+  })
+  const {
+    erc20: [erc20DestinationBalances],
+    eth: [ethDestinationBalance]
+  } = useBalance({
+    chainId: networks.destinationChain.id,
+    walletAddress: walletAddress
+  })
 
   const {
     isArbitrumOne: isSourceChainArbitrumOne,
@@ -53,6 +78,35 @@ export function useSelectedTokenBalances(): Balances {
 
     if (!selectedToken) {
       return result
+    }
+
+    // ETH balances (Lifi only)
+    if (addressesEqual(selectedToken.address, constants.AddressZero)) {
+      let sourceBalance: BigNumber | null = null
+      if (!sourceNativeCurrency.isCustom) {
+        sourceBalance = ethSourceBalance
+      } else {
+        sourceBalance =
+          (selectedToken.l2Address &&
+            erc20SourceBalances?.[selectedToken.l2Address]) ||
+          null
+      }
+
+      let destinationBalance: BigNumber | null = null
+      // Eth is the native currency of the destination chain
+      if (!destinationNativeCurrency.isCustom) {
+        destinationBalance = ethDestinationBalance
+      } else {
+        destinationBalance =
+          (selectedToken.l2Address &&
+            erc20DestinationBalances?.[selectedToken.l2Address]) ||
+          null
+      }
+
+      return {
+        sourceBalance,
+        destinationBalance
+      }
     }
 
     let parentBalance: BigNumber | null = null

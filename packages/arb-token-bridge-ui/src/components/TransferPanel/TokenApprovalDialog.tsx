@@ -28,7 +28,7 @@ import { NoteBox } from '../common/NoteBox'
 import { useEthersSigner } from '../../util/wagmi/useEthersSigner'
 import { OftV2TransferStarter } from '../../token-bridge-sdk/OftV2TransferStarter'
 import { getOftV2TransferConfig } from '../../token-bridge-sdk/oftUtils'
-import { useRouteStore } from './hooks/useRouteStore'
+import { isLifiRoute, useRouteStore } from './hooks/useRouteStore'
 import { LifiTransferStarter } from '@/token-bridge-sdk/LifiTransferStarter'
 import { shallow } from 'zustand/shallow'
 
@@ -69,8 +69,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     shallow
   )
   const isCctp = selectedRoute === 'cctp'
-  const isLifi =
-    selectedRoute === 'lifi-cheapest' || selectedRoute === 'lifi-fastest'
+  const isLifi = isLifiRoute(selectedRoute)
   const isOft = selectedRoute === 'oftV2'
 
   const [checked, setChecked] = useState(false)

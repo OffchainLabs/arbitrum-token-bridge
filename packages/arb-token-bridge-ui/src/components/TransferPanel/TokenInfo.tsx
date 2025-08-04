@@ -16,6 +16,7 @@ import {
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
+import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
 
 export function TokenLogoFallback({ className }: { className?: string }) {
   return (
@@ -40,11 +41,23 @@ export const TokenInfo = ({
   const [networks] = useNetworks()
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
-  const tokenAddressLowercased = token?.address.toLowerCase()
+
+  const tokenOverride = getTokenOverride({
+    fromToken: token?.address,
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  }).source
+
+  const tokenAddressLowercased =
+    tokenOverride?.address.toLowerCase() || token?.address.toLowerCase()
 
   const tokenLogo = useMemo(() => {
     if (!tokenAddressLowercased) {
       return undefined
+    }
+
+    if (tokenOverride?.logoURI) {
+      return tokenOverride.logoURI
     }
 
     if (isTokenArbitrumOneNativeUSDC(tokenAddressLowercased)) {
@@ -59,7 +72,7 @@ export const TokenInfo = ({
       tokensFromLists[tokenAddressLowercased]?.logoURI ||
       tokensFromUser[tokenAddressLowercased]?.logoURI
     )
-  }, [tokenAddressLowercased, tokensFromLists, tokensFromUser])
+  }, [tokenAddressLowercased, tokensFromLists, tokensFromUser, tokenOverride])
 
   return (
     <div className="flex flex-row items-center space-x-3">

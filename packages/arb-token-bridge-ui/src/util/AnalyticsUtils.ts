@@ -3,6 +3,7 @@ import posthog from 'posthog-js'
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
 import { isProductionEnvironment } from './CommonUtils'
 import { RouteType } from '../components/TransferPanel/hooks/useRouteStore'
+import { ChainId } from '../types/ChainId'
 
 type AccountType = 'EOA' | 'Smart Contract'
 type AssetType = 'ETH' | 'ERC-20'
@@ -122,6 +123,10 @@ type AnalyticsEventMap = {
     amount: number
     sourceChain: string
     destinationChain: string
+  }
+  'Recover funds': {
+    chainId: ChainId
+    balanceToRecover: string
   }
 }
 

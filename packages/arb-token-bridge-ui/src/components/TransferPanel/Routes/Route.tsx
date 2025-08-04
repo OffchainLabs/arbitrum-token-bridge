@@ -25,22 +25,19 @@ import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { useMode } from '../../../hooks/useMode'
+import { Token } from '../../../pages/api/crosschain-transfers/types'
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
 // Types
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
-export type Token = {
-  address: string
-  decimals: number
-  symbol: string
-  logoURI?: string
-}
+
 export type RouteGas = { gasCost: string | undefined; gasToken: Token }
 export type RouteProps = {
   type: RouteType
   amountReceived: string
   durationMs: number
   isLoadingGasEstimate: boolean
-  overrideToken?: Token
+  overrideToken?: ERC20BridgeToken
   gasCost: RouteGas[] | undefined
   bridgeFee?: { fee: string | undefined; token: Token }
   bridge: string
@@ -106,11 +103,11 @@ function getBadges(badgeTypes: BadgeType | BadgeType[]) {
 type RouteAmountProps = {
   destinationAddress?: string
   amountReceived: string
-  token: Token | NativeCurrency
+  token: ERC20BridgeToken | NativeCurrency
   showUsdValueForReceivedToken: boolean
   isBatchTransferSupported: boolean
   amount2?: string
-  childNativeCurrency: Token | NativeCurrency
+  childNativeCurrency: ERC20BridgeToken | NativeCurrency
   embedMode: boolean
 }
 
@@ -386,7 +383,7 @@ const RouteSummaryBadge = ({
           fallback={<div className="h-4 w-4 rounded-full bg-gray-dark" />}
         />
 
-        <div className="h-[16px] border border-white/40" />
+        <div className="h-[16px] border-[0.5px] border-white/40" />
 
         <ClockIcon width={18} height={18} className="-ml-[1px] shrink-0" />
         <span className="whitespace-nowrap text-xs">{duration}</span>
@@ -424,8 +421,9 @@ export const Route = React.memo(
     const [{ amount2, destinationAddress }] = useArbQueryParams()
     const { embedMode } = useMode()
     const isBatchTransferSupported = useIsBatchTransferSupported()
+    const [{ theme }] = useArbQueryParams()
 
-    const token = (overrideToken || _token || childNativeCurrency) as Token
+    const token = overrideToken || _token || childNativeCurrency
 
     const { isTestnet } = isNetwork(networks.sourceChain.id)
     const showUsdValueForReceivedToken = !isTestnet && !('address' in token)
@@ -447,17 +445,26 @@ export const Route = React.memo(
         bridgeFee &&
         bridgeFee.token.address === constants.AddressZero) ||
       false
+
     return (
       <button
         className={twMerge(
-          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded bg-[#303030] px-4 py-3 text-left text-sm text-white ring-1 ring-inset ring-[#ffffff33] transition-colors md:flex-row',
+          'relative flex max-w-[calc(100vw_-_40px)] flex-col gap-4 rounded border border-[#ffffff33] bg-[#ffffff1a] px-4 py-3 text-left text-sm text-white transition-colors md:flex-row',
           'focus-visible:!outline-none',
-          'focus-within:bg-[#474747] hover:bg-[#474747]',
-          !isDisabled &&
-            selected &&
-            'bg-[#5F7D5B60] ring-[#5F7D5B] focus-within:bg-[#5F7D5B60] hover:bg-[#5F7D5B60]',
+          'focus-within:bg-[#ffffff36] hover:bg-[#ffffff36]',
+          !isDisabled && selected && 'border-primary-cta',
           embedMode && 'md:flex-col'
         )}
+        style={
+          !isDisabled && selected
+            ? {
+                borderColor: theme.primaryCtaColor ?? '#5F7D5B',
+                backgroundColor: theme.primaryCtaColor
+                  ? `${theme.primaryCtaColor}60`
+                  : '#5F7D5B60'
+              }
+            : {}
+        }
         onClick={() => onSelectedRouteClick(type)}
         disabled={isDisabled}
         aria-label={`Route ${type}`}

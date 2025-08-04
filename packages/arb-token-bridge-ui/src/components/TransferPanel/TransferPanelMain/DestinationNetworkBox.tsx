@@ -29,14 +29,17 @@ import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 function BalanceRow({
   parentErc20Address,
   balance,
+  logoOverride,
   symbolOverride
 }: {
   parentErc20Address?: string
   balance: string | undefined
+  logoOverride?: string
   symbolOverride?: string
 }) {
   const [networks] = useNetworks()
@@ -50,6 +53,10 @@ function BalanceRow({
   const tokensFromUser = useTokensFromUser()
 
   const tokenLogoSrc = useMemo(() => {
+    if (logoOverride) {
+      return logoOverride
+    }
+
     if (parentErc20Address) {
       return (
         tokensFromLists[parentErc20Address]?.logoURI ??
@@ -125,11 +132,23 @@ function BalancesContainer() {
   const isCctpTransfer = useIsCctpTransfer()
   const [selectedToken] = useSelectedToken()
   const selectedRoute = useRouteStore(state => state.selectedRoute)
-
+  const { erc20ChildBalances } = useBalances()
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const { isAmount2InputVisible } = useAmount2InputVisibility()
+  const { destination } = useMemo(
+    () =>
+      getTokenOverride({
+        destinationChainId: networks.destinationChain.id,
+        fromToken: selectedToken?.address,
+        sourceChainId: networks.sourceChain.id
+      }),
+    [
+      selectedToken?.address,
+      networks.destinationChain.id,
+      networks.sourceChain.id
+    ]
+  )
 
-  const { erc20ChildBalances } = useBalances()
   const nativeCurrencyBalances = useNativeCurrencyBalances()
   const selectedTokenBalances = useSelectedTokenBalances()
 
@@ -141,6 +160,19 @@ function BalancesContainer() {
   const showNativeUsdcBalance =
     (isCctpTransfer && selectedRoute === 'cctp') ||
     (isCctpTransfer && !selectedRoute)
+
+  const tokenOverride = useMemo(() => {
+    const override = getTokenOverride({
+      fromToken: selectedToken?.address,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    })
+    if (!override) {
+      return null
+    }
+
+    return override.destination
+  }, [selectedToken, networks])
 
   return (
     <div
@@ -176,13 +208,16 @@ function BalancesContainer() {
               : undefined
           }
           symbolOverride={
-            selectedToken
+            tokenOverride
+              ? tokenOverride.symbol
+              : selectedToken
               ? sanitizeTokenSymbol(selectedToken.symbol, {
                   chainId: networks.destinationChain.id,
                   erc20L1Address: selectedToken.address
                 })
               : undefined
           }
+          logoOverride={destination ? destination.logoURI : undefined}
         />
       )}
 

@@ -40,11 +40,14 @@ import { CustomMainnetChainWarning } from './CustomMainnetChainWarning'
 import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
+import { isLifiEnabled } from '../../util/featureFlag'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
   const { accountType, isLoading: isLoadingAccountType } = useAccountType()
+
+  const [{ theme }] = useArbQueryParams()
 
   const [networks, setNetworks] = useNetworks()
 
@@ -59,10 +62,10 @@ export function SwitchNetworksButton(
     // in this case, we show a one-way arrow and disable the swap button
     return (
       accountType === 'smart-contract-wallet' ||
-      !getDestinationChainIds(
-        networks.destinationChain.id,
-        disableTransfersToNonArbitrumChains
-      ).includes(networks.sourceChain.id)
+      !getDestinationChainIds(networks.destinationChain.id, {
+        disableTransfersToNonArbitrumChains,
+        includeLifiEnabledChainPairs: isLifiEnabled()
+      }).includes(networks.sourceChain.id)
     )
   }, [
     networks.destinationChain.id,
@@ -80,7 +83,7 @@ export function SwitchNetworksButton(
         disabled={disabled}
         className={twMerge(
           'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
-          disabled && 'pointer-events-none'
+          theme.primaryCtaColor ? 'bg-primary-cta' : ''
         )}
         onClick={() => {
           setNetworks({
@@ -105,6 +108,7 @@ export function SwitchNetworksButton(
 
 function SwitchNetworkButtonBorderTop() {
   const [networks] = useNetworks()
+  const [{ theme }] = useArbQueryParams()
 
   const sourceNetworkColor = getBridgeUiConfigForChain(
     networks.sourceChain.id
@@ -113,13 +117,16 @@ function SwitchNetworkButtonBorderTop() {
   return (
     <div
       className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: sourceNetworkColor }}
+      style={{
+        borderColor: theme.networkThemeOverrideColor ?? sourceNetworkColor
+      }}
     />
   )
 }
 
 function SwitchNetworkButtonBorderBottom() {
   const [networks] = useNetworks()
+  const [{ theme }] = useArbQueryParams()
 
   const destinationNetworkColor = getBridgeUiConfigForChain(
     networks.destinationChain.id
@@ -128,7 +135,9 @@ function SwitchNetworkButtonBorderBottom() {
   return (
     <div
       className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: destinationNetworkColor }}
+      style={{
+        borderColor: theme.networkThemeOverrideColor ?? destinationNetworkColor
+      }}
     />
   )
 }
@@ -182,6 +191,7 @@ export function NetworkContainer({
 }) {
   const { address: walletAddress } = useAccount()
   const { color } = getBridgeUiConfigForChain(network.id)
+  const [{ theme }] = useArbQueryParams()
 
   const showCustomAddressBanner = useMemo(() => {
     if (!customAddress) {
@@ -200,8 +210,8 @@ export function NetworkContainer({
       )}
       <div
         style={{
-          backgroundColor: `${color}66`, // 255*40% is 102, = 66 in hex
-          borderColor: color
+          backgroundColor: theme.networkThemeOverrideColor ?? `${color}66`, // 255*40% is 102, = 66 in hex
+          borderColor: theme.networkThemeOverrideColor ?? color
         }}
         className={twMerge(
           'relative rounded border transition-colors duration-400',

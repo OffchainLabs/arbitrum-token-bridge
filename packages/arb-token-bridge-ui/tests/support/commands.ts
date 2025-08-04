@@ -67,6 +67,7 @@ export function login({
 export const acceptTnC = () => {
   // click on the terms and conditions acceptance checkbox before making transfers
   cy.findByText(/I have read and agree to the/i)
+    .scrollIntoView()
     .should('be.visible')
     .click()
 }

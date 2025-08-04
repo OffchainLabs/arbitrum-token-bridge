@@ -2,65 +2,55 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useRouteStore } from './hooks/useRouteStore'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { useETHPrice } from '../../hooks/useETHPrice'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber } from 'ethers'
 import { Token } from '../../pages/api/crosschain-transfers/types'
 import { getAmountToPay } from './useTransferReadiness'
 
 type AmountProps = {
-  amount: BigNumber
+  amount: string | BigNumber
   token: Token
   showToken?: true
 }
-function Amount({ amount, token, showToken }: AmountProps) {
-  const { ethToUSD } = useETHPrice()
-
-  if (token.address !== constants.AddressZero) {
-    return <span>{formatAmount(amount, token)}</span>
-  }
-
+function Amount({ token, showToken, amount }: AmountProps) {
   if (showToken) {
-    return (
-      <span>
-        {formatAmount(amount, token)} (
-        {formatUSD(ethToUSD(Number(utils.formatUnits(amount, token.decimals))))}
-        )
-      </span>
-    )
+    return <span>{formatAmount(BigNumber.from(amount), token)}</span>
   }
 
-  return (
-    <span>
-      {formatUSD(ethToUSD(Number(utils.formatUnits(amount, token.decimals))))}
-    </span>
-  )
+  return <span>{formatUSD(Number(amount))}</span>
 }
 
 export function getAmountLoss({
   fromAmount,
   toAmount
 }: {
-  fromAmount: BigNumber
-  toAmount: BigNumber
+  fromAmount: number
+  toAmount: number
 }) {
-  const diff = fromAmount.sub(toAmount)
-  const lossPercentage = BigNumber.from(100).sub(
-    toAmount.mul(100).div(fromAmount)
-  )
+  const diff = fromAmount - toAmount
+  const lossPercentage = Number(((diff / fromAmount) * 100).toFixed(2))
   return { diff, lossPercentage }
 }
 
 function LineWrapper({
   title,
-  amountProps: { amount, token, showToken }
+  amountProps
 }: {
-  amountProps: AmountProps
+  amountProps: AmountProps[]
   title: string
 }) {
   return (
     <div className="flex items-center justify-between px-2 text-sm">
       <span>{title}</span>
-      <Amount amount={amount} token={token} showToken={showToken} />
+      <div className="flex gap-1">
+        {amountProps.map(({ amount, token, showToken }, index) => (
+          <span key={token.address}>
+            <Amount amount={amount} token={token} showToken={showToken} />
+            {amountProps.length > 1 && index < amountProps.length - 1 && (
+              <span>, </span>
+            )}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
@@ -73,9 +63,11 @@ export function HighSlippageWarningDialog(props: UseDialogProps) {
     return null
   }
 
+  const { fromAmountUsd, toAmountUsd, amounts } = getAmountToPay(context)
+
   const { diff, lossPercentage } = getAmountLoss({
-    fromAmount: getAmountToPay(context),
-    toAmount: context.toAmount.amount
+    fromAmount: fromAmountUsd,
+    toAmount: toAmountUsd
   })
 
   return (
@@ -101,24 +93,42 @@ export function HighSlippageWarningDialog(props: UseDialogProps) {
       <div className="my-4 flex flex-col gap-2 text-sm">
         <LineWrapper
           title="Sending"
-          amountProps={{
-            ...context.fromAmount,
-            amount: BigNumber.from(getAmountToPay(context)),
+          amountProps={Object.keys(amounts).map(address => ({
+            amount: amounts[address]!.amount,
+            token: amounts[address]!.token,
             showToken: true
-          }}
+          }))}
         />
-        <LineWrapper title="Gas fees" amountProps={context.gas} />
-        <LineWrapper title="Protocol fees" amountProps={context.fee} />
+        <LineWrapper
+          title="Gas fees"
+          amountProps={[
+            { amount: context.gas.amountUSD, token: context.gas.token }
+          ]}
+        />
+        <LineWrapper
+          title="Protocol fees"
+          amountProps={[
+            {
+              amount: context.fee.amountUSD,
+              token: context.fee.token
+            }
+          ]}
+        />
         <LineWrapper
           title="Receiving"
-          amountProps={{ ...context.toAmount, showToken: true }}
+          amountProps={[
+            {
+              amount: context.toAmount.amountUSD,
+              token: context.toAmount.token
+            }
+          ]}
         />
 
         <div className="flex items-center justify-between rounded bg-orange-dark px-2 py-1 font-bold text-orange">
           <span>Value lost</span>
           <span>
             -{lossPercentage.toString()}% (
-            <Amount amount={diff} token={context.toAmount.token} />)
+            <Amount amount={diff.toString()} token={context.toAmount.token} />)
           </span>
         </div>
 

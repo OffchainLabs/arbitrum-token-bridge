@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
 import {
@@ -25,16 +25,63 @@ import {
   useTokensFromUser
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
+import { ChainId } from '../types/ChainId'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
 
-const commonUSDC = {
+const commonUSDC: ERC20BridgeToken = {
   name: 'USD Coin',
   type: TokenType.ERC20,
   symbol: 'USDC',
   decimals: 6,
-  listIds: new Set<string>()
+  listIds: new Set<string>(),
+  address: '',
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
 }
 
-export const useSelectedToken = () => {
+/**
+ * On orbit chains with custom fee token, if selectedToken is null, we default to the native token of the chain
+ * for transfer from and to the parent chain.
+ * And constants.Zero (ETH) otherwise
+ */
+export function sanitizeNullSelectedToken({
+  sourceChainId,
+  destinationChainId,
+  erc20ParentAddress
+}: {
+  sourceChainId: number | undefined
+  destinationChainId: number | undefined
+  erc20ParentAddress: string | null
+}) {
+  if (!sourceChainId || !destinationChainId) {
+    return undefined
+  }
+
+  try {
+    const destinationChain = getArbitrumNetwork(destinationChainId)
+
+    // If the destination chain has a custom fee token, and selectedToken is null,
+    // return native token for deposit from the parent chain, ETH otherwise
+    if (destinationChain.nativeToken && !erc20ParentAddress) {
+      if (sourceChainId === destinationChain.parentChainId) {
+        return erc20ParentAddress
+      }
+      return constants.AddressZero
+    }
+  } catch (error) {
+    // Withdrawing to non Arbitrum chains (Base, Ethereum)
+    const sourceChain = getArbitrumNetwork(sourceChainId)
+    if (sourceChain.parentChainId === destinationChainId) {
+      return erc20ParentAddress
+    }
+    return constants.AddressZero
+  }
+}
+
+export const useSelectedToken = (): [
+  ERC20BridgeToken | null,
+  (erc20ParentAddress: string | null) => void
+] => {
   const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
@@ -46,14 +93,28 @@ export const useSelectedToken = () => {
       tokenFromSearchParams,
       parentChain.id,
       childChain.id,
+      networks.destinationChain.id,
       'useSelectedToken_usdc'
     ],
-    async ([_tokenAddress, _parentChainId, _childChainId]) => {
+    async ([
+      _tokenAddress,
+      _parentChainId,
+      _childChainId,
+      _destinationChainId
+    ]) => {
       if (!_tokenAddress) {
         return null
       }
 
       if (!isTokenNativeUSDC(_tokenAddress)) {
+        return null
+      }
+
+      // USDC for lifi chains, use bridgeTokens
+      if (
+        _destinationChainId === ChainId.ApeChain ||
+        _destinationChainId === ChainId.Superposition
+      ) {
         return null
       }
 
@@ -69,8 +130,30 @@ export const useSelectedToken = () => {
   )
 
   const setSelectedToken = useCallback(
-    (erc20ParentAddress: string | null) =>
-      setQueryParams({ token: sanitizeTokenAddress(erc20ParentAddress) }),
+    (erc20ParentAddress: string | null) => {
+      return setQueryParams(latestQuery => {
+        try {
+          const sanitizedTokenAddress = sanitizeNullSelectedToken({
+            sourceChainId: latestQuery.sourceChain,
+            destinationChainId: latestQuery.destinationChain,
+            erc20ParentAddress
+          })
+
+          if (sanitizedTokenAddress) {
+            return {
+              token: sanitizedTokenAddress
+            }
+          }
+
+          return {
+            token: sanitizeTokenAddress(erc20ParentAddress)
+          }
+        } catch (error) {
+          console.error('Error sanitizing token address:', error)
+          return { token: undefined }
+        }
+      })
+    },
     [setQueryParams]
   )
 
