@@ -50,6 +50,7 @@
 
 .tabular-nums {
   font-family: var(--font-family, var(--font-unica77), Roboto) !important;
+  --tw-numeric-spacing: 0px;
 }
 
 @layer base {
