@@ -12,7 +12,8 @@ export default defineConfig({
     testTimeout: 15_000,
     include: ['./src/**/*.test.ts', './src/**/*.test.tsx'],
     env: loadEnv('', process.cwd(), ''),
-    environment: 'happy-dom'
+    environment: 'happy-dom',
+    setupFiles: ['./vitest.mocks.ts']
   },
   resolve: {
     alias: {

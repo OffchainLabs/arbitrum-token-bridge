@@ -10,10 +10,7 @@ import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { create } from 'zustand'
 
 import { getNetworkName } from '../../../util/networks'
-import {
-  NetworkButton,
-  NetworkSelectionContainer
-} from '../../common/NetworkSelectionContainer'
+import { NetworkButton } from '../../common/NetworkSelectionContainer'
 import { NetworkContainer } from '../TransferPanelMain'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
@@ -31,7 +28,7 @@ import {
 } from '../../../hooks/useArbQueryParams'
 import { useMaxAmount } from './useMaxAmount'
 import { useSetInputAmount } from '../../../hooks/TransferPanel/useSetInputAmount'
-import { useDialog } from '../../common/Dialog'
+import { useDialog2, DialogWrapper } from '../../common/Dialog2'
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
 import { Button } from '../../common/Button'
@@ -226,8 +223,10 @@ export function SourceNetworkBox() {
     useNetworksRelationship(networks)
   const [selectedToken] = useSelectedToken()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
-    useDialog()
+  const [dialogProps, openDialog] = useDialog2()
+  const openSourceNetworkSelectionDialog = () => {
+    openDialog('source_network_selection')
+  }
   const { isAmount2InputVisible } = useAmount2InputVisibility()
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const isCctpTransfer = useIsCctpTransfer()
@@ -303,10 +302,7 @@ export function SourceNetworkBox() {
           )}
         </div>
       </NetworkContainer>
-      <NetworkSelectionContainer
-        {...sourceNetworkSelectionDialogProps}
-        type="source"
-      />
+      <DialogWrapper {...dialogProps} />
     </>
   )
 }

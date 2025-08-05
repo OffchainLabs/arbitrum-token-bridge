@@ -29,7 +29,6 @@ import {
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from './NetworkImage'
-import { Dialog, UseDialogProps, useDialog } from './Dialog'
 import { useNetworks } from '../../hooks/useNetworks'
 import { OneNovaTransferDialog } from '../TransferPanel/OneNovaTransferDialog'
 import { shouldOpenOneNovaDialog } from '../TransferPanel/TransferPanelMain/utils'
@@ -38,6 +37,8 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useMode } from '../../hooks/useMode'
+import { Dialog, useDialog } from './Dialog'
+import { DialogProps } from './Dialog2'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -421,7 +422,7 @@ function NetworksPanel({
 
 export const NetworkSelectionContainer = React.memo(
   (
-    props: UseDialogProps & {
+    props: DialogProps & { isOpen: boolean } & {
       type: 'source' | 'destination'
     }
   ) => {
@@ -429,6 +430,7 @@ export const NetworkSelectionContainer = React.memo(
     const [networks, setNetworks] = useNetworks()
     const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
     const [, setQueryParams] = useArbQueryParams()
+    const { embedMode } = useMode()
 
     const isSource = props.type === 'source'
 
@@ -480,12 +482,15 @@ export const NetworkSelectionContainer = React.memo(
     return (
       <>
         <Dialog
-          {...props}
+          isOpen={props.isOpen}
           onClose={() => props.onClose(false)}
           title={`Select ${isSource ? 'Source' : 'Destination'} Network`}
           actionButtonProps={{ hidden: true }}
           isFooterHidden={true}
-          className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
+          className={twMerge(
+            'h-screen overflow-hidden md:h-[calc(100vh_-_175px)] md:max-h-[900px] md:max-w-[500px]',
+            embedMode && 'md:h-full'
+          )}
         >
           <SearchPanel>
             <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
