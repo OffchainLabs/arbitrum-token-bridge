@@ -231,7 +231,8 @@ export function useTransferReadiness(): UseTransferReadinessResult {
     useSelectedTokenIsWithdrawOnly()
   const gasSummary = useGasSummary()
   const { address: walletAddress } = useAccount()
-  const { isSmartContractWallet } = useAccountType()
+  const { accountType } = useAccountType()
+  const isSmartContractWallet = accountType === 'smart-contract-wallet'
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const {
     ethParentBalance,

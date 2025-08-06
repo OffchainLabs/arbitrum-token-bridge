@@ -6,9 +6,9 @@ import {
 } from '../../hooks/useArbQueryParams'
 import { sanitizeQueryParams } from '../../hooks/useNetworks'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { getNetworkName } from '../../util/networks'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
+import { getAccountType } from '../../util/AccountUtils'
 
 export function useSyncConnectedChainToQueryParams() {
   const { address, chain } = useAccount()
@@ -51,11 +51,11 @@ export function useSyncConnectedChainToQueryParams() {
       if (!address) {
         return
       }
-      const isSmartContractWallet = await addressIsSmartContract(
+      const accountType = await getAccountType({
         address,
-        chain.id
-      )
-      if (isSmartContractWallet && sourceChain !== chain.id) {
+        chainId: chain.id
+      })
+      if (accountType === 'smart-contract-wallet' && sourceChain !== chain.id) {
         const chainName = getNetworkName(chain.id)
 
         setSourceChainToConnectedChain()
