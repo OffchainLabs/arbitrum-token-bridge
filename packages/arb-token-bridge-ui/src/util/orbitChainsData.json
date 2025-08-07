@@ -1561,6 +1561,53 @@
           "description": "House Party Protocol (HPP) is a modular AI-powered blockchain and data infrastructure designed for the next generation of decentralized applications, built on the pillars of trustworthy data, verifiable AI, and real-world scalability."
         }
       }
+    },
+    {
+      "chainId": 241320162,
+      "confirmPeriodBlocks": 302400,
+      "ethBridge": {
+        "bridge": "0xA9C3B7672C477EeDA999A3ab1c8Eec28DEEB7d41",
+        "inbox": "0x249D5D37502f26c5286De3096e0120FeAFa6772a",
+        "outbox": "0x5997b6350580178f0eaD414500eBA266b3C8d569",
+        "rollup": "0xB6B4C28278FbBF444Ff7B6dF8fEdB7Bc90f72924",
+        "sequencerInbox": "0x5107C4267F13D0e55eab45A3129DB04AE8BB1AF3"
+      },
+      "nativeToken": "0x63C6667798fdA65E2E29228C43fbfDa0Cd4634A8",
+      "explorerUrl": "https://xmtp-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://xmtp-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "XMTP Mainnet",
+      "slug": "xmtp-mainnet",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0x17ed0dB9e4F591A8807C2c7a35C59cADb6BCED11",
+        "parentErc20Gateway": "0x8adc6180F8913DF9FD09D75eb4977b8586095A12",
+        "parentGatewayRouter": "0xE2264A562bb69fe8E791c9Ea276270A8B6e6b3F4",
+        "parentMultiCall": "0xd58210a17a1487a624E17251E13726fEc11F13E8",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x62563e22193EB53a6B06539cBb8c7497b74467B0",
+        "childErc20Gateway": "0xC47914b4a58cb1a9ba0A73EDDCA875B5e82F061b",
+        "childGatewayRouter": "0x8f0B3e879CdD6fD8dE8eD29B1131D9f2d31d0235",
+        "childMultiCall": "0x960CBcA44eb0699E58b1Ae41c8417243562B2065",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#ef4343",
+        "network": {
+          "name": "XMTP Mainnet",
+          "logo": "/images/XMTPMainnet_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "xUSD",
+          "symbol": "xUSD",
+          "logoUrl": "/images/XMTPMainnet_NativeTokenLogo.png"
+        }
+      }
     }
   ],
   "testnet": [
