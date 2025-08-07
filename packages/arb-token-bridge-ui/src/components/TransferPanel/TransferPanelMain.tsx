@@ -41,6 +41,7 @@ import { getOrbitChains } from '../../util/orbitChainsList'
 import { useMode } from '../../hooks/useMode'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { isLifiEnabled } from '../../util/featureFlag'
+import { Button } from '../common/Button'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -79,11 +80,12 @@ export function SwitchNetworksButton(
 
   return (
     <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
-      <button
+      <Button
         type="button"
+        variant="tertiary"
         disabled={disabled}
         className={twMerge(
-          'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
+          'group relative flex h-7 w-7 items-center justify-center rounded-full bg-gray-1 p-1',
           theme.primaryCtaColor ? 'bg-primary-cta' : ''
         )}
         onClick={() => {
@@ -95,14 +97,14 @@ export function SwitchNetworksButton(
         aria-label="Switch Networks"
         {...props}
       >
-        <SwitchNetworkButtonBorderTop />
+        {/* <SwitchNetworkButtonBorderTop /> */}
         {isNetworkSwapBlocked ? (
-          <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
+          <ArrowDownIcon className="h-5 w-5 stroke-1 text-white" />
         ) : (
-          <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
+          <ArrowsUpDownIcon className="h-4 w-4 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
         )}
-        <SwitchNetworkButtonBorderBottom />
-      </button>
+        {/* <SwitchNetworkButtonBorderBottom /> */}
+      </Button>
     </div>
   )
 }
@@ -191,8 +193,6 @@ export function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address: walletAddress } = useAccount()
-  const { color } = getBridgeUiConfigForChain(network.id)
-  const [{ theme }] = useArbQueryParams()
 
   const showCustomAddressBanner = useMemo(() => {
     if (!customAddress) {
@@ -210,12 +210,8 @@ export function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
-        style={{
-          backgroundColor: theme.networkThemeOverrideColor ?? `${color}66`, // 255*40% is 102, = 66 in hex
-          borderColor: theme.networkThemeOverrideColor ?? color
-        }}
         className={twMerge(
-          'relative rounded border transition-colors duration-400',
+          'relative rounded bg-white/10 transition-colors duration-400',
           showCustomAddressBanner && 'rounded-t-none'
         )}
       >

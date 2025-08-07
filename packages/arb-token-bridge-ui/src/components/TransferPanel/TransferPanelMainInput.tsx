@@ -289,7 +289,7 @@ export const TransferPanelMainInput = React.memo(
 
     return (
       <>
-        <div className={twMerge('flex flex-row rounded bg-black/40 shadow-2')}>
+        <div className={twMerge('flex flex-row rounded bg-white/10')}>
           <div
             className={twMerge(
               'flex min-h-[83px] grow flex-row items-center justify-center'

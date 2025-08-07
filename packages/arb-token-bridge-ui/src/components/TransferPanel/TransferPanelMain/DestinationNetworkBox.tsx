@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { constants } from 'ethers'
-import Image from 'next/image'
 import { useAccount } from 'wagmi'
 
 import { useNetworks } from '../../../hooks/useNetworks'
@@ -16,7 +15,6 @@ import { useDialog2, DialogWrapper } from '../../common/Dialog2'
 import { NetworkButton } from '../../common/NetworkSelectionContainer'
 import { useNativeCurrencyBalances } from './useNativeCurrencyBalances'
 import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsBatchTransferSupported'
-import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { SafeImage } from '../../common/SafeImage'
 import { useTokensFromLists, useTokensFromUser } from '../TokenSearchUtils'
 import { formatAmount } from '../../../util/NumberUtils'
@@ -238,9 +236,6 @@ export function DestinationNetworkBox() {
   const openDestinationNetworkSelectionDialog = () => {
     openDialog('destination_network_selection')
   }
-  const {
-    network: { logo: networkLogo }
-  } = getBridgeUiConfigForChain(networks.destinationChain.id)
 
   return (
     <>
@@ -253,14 +248,6 @@ export function DestinationNetworkBox() {
             type="destination"
             onClick={openDestinationNetworkSelectionDialog}
           />
-          <div className="relative h-[44px] w-[44px]">
-            <Image
-              src={networkLogo}
-              alt={`${networks.destinationChain.name} logo`}
-              layout={'fill'}
-              objectFit={'contain'}
-            />
-          </div>
         </div>
         <BalancesContainer />
       </NetworkContainer>

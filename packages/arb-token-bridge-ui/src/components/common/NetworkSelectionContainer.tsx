@@ -14,7 +14,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
-import { hex } from 'wcag-contrast'
 
 import { isNetwork, getNetworkName } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
@@ -126,7 +125,6 @@ export function NetworkButton({
   const isNetworkSelectionDisabled = isFeatureDisabled(
     DisabledFeatures.NETWORK_SELECTION
   )
-  const [{ theme }] = useArbQueryParams()
 
   const selectedChainId = isSource
     ? networks.sourceChain.id
@@ -140,30 +138,26 @@ export function NetworkButton({
     (isSmartContractWallet && type === 'source') ||
     isLoading
 
-  const backgroundColor =
-    theme.networkThemeOverrideColor ??
-    getBridgeUiConfigForChain(selectedChainId).color
-
-  const colorContrast = hex('#ffffff', backgroundColor)
-
-  const buttonStyle = {
-    backgroundColor,
-    color: colorContrast >= 3 ? '#ffffff' : '#000000'
-  }
-
   return (
     <button
-      style={buttonStyle}
       className={twMerge(
-        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:gap-2 md:text-2xl'
+        'arb-hover flex w-max items-center gap-1 rounded border border-white/20 px-[12px] py-[8px] text-sm text-white outline-none hover:bg-white/10 md:gap-2 md:text-2xl'
       )}
       disabled={disabled}
       onClick={onClick}
     >
-      <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
-        {isSource ? 'From:' : 'To: '} {getNetworkName(selectedChainId)}
+      <span className="flex max-w-[220px] flex-nowrap items-center gap-1 truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
+        {isSource ? 'From:' : 'To: '}
+        <NetworkImage
+          chainId={
+            isSource ? networks.sourceChain.id : networks.destinationChain.id
+          }
+          className="h-[20px] w-[20px] p-[4px]"
+          size={20}
+        />
+        {getNetworkName(selectedChainId)}
       </span>
-      {!disabled && <ChevronDownIcon width={16} />}
+      {!disabled && <ChevronDownIcon width={12} />}
     </button>
   )
 }

@@ -17,6 +17,7 @@ export const NetworkImage = ({
   const { network, color } = getBridgeUiConfigForChain(chainId)
   const networkName = getNetworkName(chainId)
 
+  // TODO: handle contrast here. If the Logo color, badge color, and background color don't look good, we should try some adjustments to the contrast
   return (
     <div
       style={{
