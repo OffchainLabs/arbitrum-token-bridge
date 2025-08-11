@@ -1655,6 +1655,53 @@
           "logoUrl": "/images/SyndicateNetwork_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 869,
+      "confirmPeriodBlocks": 302400,
+      "ethBridge": {
+        "bridge": "0x249888c93F18f50a0EcA6a29b644F8Fa1Ff7539d",
+        "inbox": "0x46EE1145523b58125fF5ed02A8946F748B9735FB",
+        "outbox": "0xa38d087580480A2266D2e50656bF43a39982c694",
+        "rollup": "0x6Db7d43375720FFf98A50841ddddc80ACB07d969",
+        "sequencerInbox": "0x3Ba9426AcC831cDDa0Dd0b537f6b4E98670Bf280"
+      },
+      "nativeToken": "0x3e31966d4f81C72D2a55310A6365A56A4393E98D",
+      "explorerUrl": "https://explorer.worldmobile.io/",
+      "rpcUrl": "https://worldmobilechain-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "World Mobile Chain Mainnet",
+      "slug": "world-mobile-chain-mainnet",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0xC2d0262B9C071E32f65b7e4fdF9802C5C5a1Fba3",
+        "parentErc20Gateway": "0x1eEBD7c1B3D1B3030cF20145fef3FC566facE666",
+        "parentGatewayRouter": "0xBFBaAA107DF2ceBa5ef2Ca74A245F8C0A164422f",
+        "parentMultiCall": "0xd58210a17a1487a624E17251E13726fEc11F13E8",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xd4F03F5Ee514DD2daB05Fdbd53D7F884Bb83B6F9",
+        "childErc20Gateway": "0x0018453D2F57680D5BD429B41219C2f2Ba8df766",
+        "childGatewayRouter": "0x5F6c991808B08a79E7F29cA55f325877B311366d",
+        "childMultiCall": "0x59aFA0551e8A7B21e37947eb899F070C71276269",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#fdf631",
+        "network": {
+          "name": "World Mobile Chain Mainnet",
+          "logo": "/images/WorldMobileChainMainnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "World Mobile Token",
+          "symbol": "WMTX",
+          "logoUrl": "/images/WorldMobileChainMainnet_NativeTokenLogo.svg"
+        }
+      }
     }
   ],
   "testnet": [
