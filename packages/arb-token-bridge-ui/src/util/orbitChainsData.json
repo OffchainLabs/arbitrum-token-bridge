@@ -1841,54 +1841,6 @@
       }
     },
     {
-      "chainId": 241320161,
-      "confirmPeriodBlocks": 900,
-      "ethBridge": {
-        "bridge": "0xC071180104924cC51922259a13B0d2DBF9646509",
-        "inbox": "0xd06d8E471F0EeB1bb516303EdE399d004Acb1615",
-        "outbox": "0xE401acFc336524955152b7260df47c3E23e4A54A",
-        "rollup": "0xcB7c934aB4F19753DFc466d05b3f1d94De909456",
-        "sequencerInbox": "0x0d3E3E08807E8Ad31d46B564C27e23eF48384C6E"
-      },
-      "nativeToken": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-      "explorerUrl": "https://xmtp-testnet.explorer.alchemy.com",
-      "rpcUrl": "https://xmtp-testnet.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "XMTP Sepolia",
-      "slug": "xmtp-sepolia",
-      "parentChainId": 84532,
-      "tokenBridge": {
-        "parentCustomGateway": "0xA3F5d88d5B7F1bA64c56EDb7A57fa525bc5B6F8E",
-        "parentErc20Gateway": "0x2E27b16B1A4F873a05706FC7BeF0F0e0Fe4C2B57",
-        "parentGatewayRouter": "0xcb430A3272899Cc6D34E09A30D33766e55dc5DDB",
-        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x72Cbe16822177CF1C338C3f1fCaFf04eb888A85A",
-        "childErc20Gateway": "0xb4d1252188Df5e674e4Ce4C80a6393e10dC88fC1",
-        "childGatewayRouter": "0x80AD3874da1D54163F4f794C343Efe33d901c460",
-        "childMultiCall": "0x186810A4286Fd7f14545b3964c9B34f79aC088eb",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#fc645b",
-        "network": {
-          "name": "XMTP Sepolia",
-          "logo": "/images/XMTPLogo.svg",
-          "description": ""
-        },
-        "nativeTokenData": {
-          "name": "USDC",
-          "symbol": "USDC",
-          "logoUrl": "/images/UsdcLogo.svg"
-        }
-      }
-    },
-    {
       "chainId": 888991,
       "confirmPeriodBlocks": 900,
       "ethBridge": {
@@ -2260,53 +2212,6 @@
           "name": "Openloot",
           "symbol": "OL",
           "logoUrl": "/images/OpenLootSepolia_NativeTokenLogo.png"
-        }
-      }
-    },
-    {
-      "chainId": 2022091,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0x0B61D503175D174E134A7DB407d077D84B0c6eD4",
-        "inbox": "0xa26A0DE07De346e33f7c41402E5e0a46AACa2A7F",
-        "outbox": "0xC9cB354a29047C796a51CDf5fA579d2e6a293F3e",
-        "rollup": "0x097f101c7b6129ADcc13cf2381FbA384Df4e1E9B",
-        "sequencerInbox": "0xC7cB05a5DEBD4ed2e03829E977F26119Fc222d5c"
-      },
-      "nativeToken": "0xefca0D4B2D7ce95E3ed53aB062eA069DE99Eda7B",
-      "explorerUrl": "https://alterscope-sepolia.explorer.alchemy.com/",
-      "rpcUrl": "https://alterscope-sepolia.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Alterscope Sepolia",
-      "slug": "alterscope-sepolia",
-      "parentChainId": 421614,
-      "tokenBridge": {
-        "parentCustomGateway": "0x5883F5C09eb402A46A5D8240F362298bA981Bc0D",
-        "parentErc20Gateway": "0x6347ABCC22C91D8d03f85cC76E627Eb389048183",
-        "parentGatewayRouter": "0x05dDaDDaBEe7Da661b5f68dBD11CaF1a077B64Eb",
-        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0xB77904fdfb5352aB029058BA73E26693347C1528",
-        "childErc20Gateway": "0x7Aa9d5b6Cc7C4C2F22B1fC4F3D0C0B613b3EAbE9",
-        "childGatewayRouter": "0xf428BD6EB848a61A014E3a1F315B4510a411d9d6",
-        "childMultiCall": "0xb47801c5179FA0F0d59cD1ccE4e9c539d016777A",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#5cfcc3",
-        "network": {
-          "name": "Alterscope Sepolia",
-          "logo": "/images/AlterscopeSepolia_Logo.svg"
-        },
-        "nativeTokenData": {
-          "name": "Risk",
-          "symbol": "RISK",
-          "logoUrl": "/images/AlterscopeSepolia_NativeTokenLogo.svg"
         }
       }
     },
