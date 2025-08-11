@@ -63,17 +63,6 @@ beforeAll(() => {
 
   registerCustomArbitrumNetwork(xaiTestnet)
 
-  const xmtpTestnetChainId = 241320161
-  const xmtpTestnet = orbitTestnets[xmtpTestnetChainId]
-
-  if (!xmtpTestnet) {
-    throw new Error(
-      `Could not find XMTP Testnet Testnet in the Orbit chains list.`
-    )
-  }
-
-  registerCustomArbitrumNetwork(xmtpTestnet)
-
   const apeChain = orbitMainnets[ChainId.ApeChain]
 
   if (!apeChain) {
