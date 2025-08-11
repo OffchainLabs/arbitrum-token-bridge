@@ -1841,54 +1841,6 @@
       }
     },
     {
-      "chainId": 241320161,
-      "confirmPeriodBlocks": 900,
-      "ethBridge": {
-        "bridge": "0xC071180104924cC51922259a13B0d2DBF9646509",
-        "inbox": "0xd06d8E471F0EeB1bb516303EdE399d004Acb1615",
-        "outbox": "0xE401acFc336524955152b7260df47c3E23e4A54A",
-        "rollup": "0xcB7c934aB4F19753DFc466d05b3f1d94De909456",
-        "sequencerInbox": "0x0d3E3E08807E8Ad31d46B564C27e23eF48384C6E"
-      },
-      "nativeToken": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-      "explorerUrl": "https://xmtp-testnet.explorer.alchemy.com",
-      "rpcUrl": "https://xmtp-testnet.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "XMTP Sepolia",
-      "slug": "xmtp-sepolia",
-      "parentChainId": 84532,
-      "tokenBridge": {
-        "parentCustomGateway": "0xA3F5d88d5B7F1bA64c56EDb7A57fa525bc5B6F8E",
-        "parentErc20Gateway": "0x2E27b16B1A4F873a05706FC7BeF0F0e0Fe4C2B57",
-        "parentGatewayRouter": "0xcb430A3272899Cc6D34E09A30D33766e55dc5DDB",
-        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x72Cbe16822177CF1C338C3f1fCaFf04eb888A85A",
-        "childErc20Gateway": "0xb4d1252188Df5e674e4Ce4C80a6393e10dC88fC1",
-        "childGatewayRouter": "0x80AD3874da1D54163F4f794C343Efe33d901c460",
-        "childMultiCall": "0x186810A4286Fd7f14545b3964c9B34f79aC088eb",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#fc645b",
-        "network": {
-          "name": "XMTP Sepolia",
-          "logo": "/images/XMTPLogo.svg",
-          "description": ""
-        },
-        "nativeTokenData": {
-          "name": "USDC",
-          "symbol": "USDC",
-          "logoUrl": "/images/UsdcLogo.svg"
-        }
-      }
-    },
-    {
       "chainId": 888991,
       "confirmPeriodBlocks": 900,
       "ethBridge": {
