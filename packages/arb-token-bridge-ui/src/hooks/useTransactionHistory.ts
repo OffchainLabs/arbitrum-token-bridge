@@ -335,8 +335,9 @@ export async function fetchWithdrawalsInBatches(
 const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { chain } = useAccount()
   const [isTestnetMode] = useIsTestnetMode()
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+  const { accountType, isLoading: isLoadingAccountType } =
     useAccountType(address)
+  const isSmartContractWallet = accountType === 'smart-contract-wallet'
   const { isFeatureDisabled } = useDisabledFeatures()
   const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
 
@@ -571,8 +572,9 @@ export const useTransactionHistory = (
 ): UseTransactionHistoryResult => {
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useAccount()
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+  const { accountType, isLoading: isLoadingAccountType } =
     useAccountType(address)
+  const isSmartContractWallet = accountType === 'smart-contract-wallet'
 
   const { isFeatureDisabled } = useDisabledFeatures()
   const isTxHistoryEnabled = !isFeatureDisabled(DisabledFeatures.TX_HISTORY)
