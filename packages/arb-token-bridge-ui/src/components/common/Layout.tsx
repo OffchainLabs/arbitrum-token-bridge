@@ -7,7 +7,6 @@ import { SiteBanner } from './SiteBanner'
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
-import 'react-toastify/dist/ReactToastify.css'
 import { useMode } from '../../hooks/useMode'
 import { unica } from './Font'
 

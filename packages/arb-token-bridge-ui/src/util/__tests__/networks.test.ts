@@ -63,16 +63,14 @@ beforeAll(() => {
 
   registerCustomArbitrumNetwork(xaiTestnet)
 
-  const xmtpTestnetChainId = 241320161
-  const xmtpTestnet = orbitTestnets[xmtpTestnetChainId]
+  const uniteTestnetChainId = 888991
+  const uniteTestnet = orbitTestnets[uniteTestnetChainId]
 
-  if (!xmtpTestnet) {
-    throw new Error(
-      `Could not find XMTP Testnet Testnet in the Orbit chains list.`
-    )
+  if (!uniteTestnet) {
+    throw new Error(`Could not find Unite Testnet in the Orbit chains list.`)
   }
 
-  registerCustomArbitrumNetwork(xmtpTestnet)
+  registerCustomArbitrumNetwork(uniteTestnet)
 
   const apeChain = orbitMainnets[ChainId.ApeChain]
 
@@ -355,7 +353,7 @@ describe('getDestinationChainIds', () => {
     const defaultChainId = destinationChainIds[0]
     const nonDefaultChainIds = destinationChainIds.slice(1)
 
-    expect(defaultChainId).toBe(241320161)
+    expect(defaultChainId).toBe(888991)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
   })
 
