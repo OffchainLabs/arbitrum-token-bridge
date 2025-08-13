@@ -17,8 +17,14 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@/images': path.resolve(__dirname, '../arb-token-bridge-app/public/images'),
-      '@/icons': path.resolve(__dirname, '../arb-token-bridge-app/public/icons'),
+      '@/images': path.resolve(
+        __dirname,
+        '../arb-token-bridge-app/public/images'
+      ),
+      '@/icons': path.resolve(
+        __dirname,
+        '../arb-token-bridge-app/public/icons'
+      ),
       '@/token-bridge-sdk': path.resolve(__dirname, './src/token-bridge-sdk')
     }
   }
