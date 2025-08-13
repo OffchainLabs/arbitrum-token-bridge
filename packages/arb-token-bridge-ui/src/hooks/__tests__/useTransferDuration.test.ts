@@ -69,8 +69,12 @@ describe('useTransferDuration', () => {
   const TRANSFER_TIME_MINUTES_CCTP_TESTNET = getCctpTransferDuration(true)
 
   beforeAll(() => {
-    // register all chains so we can read `isTestnet`
-    getOrbitChains().forEach(chain => registerCustomArbitrumNetwork(chain))
+    function resetAllChains() {
+      // register all chains so we can read `isTestnet`
+      getOrbitChains().forEach(chain => registerCustomArbitrumNetwork(chain))
+    }
+
+    expect(() => resetAllChains()).not.toThrow()
   })
 
   // ========= DEPOSITS =========

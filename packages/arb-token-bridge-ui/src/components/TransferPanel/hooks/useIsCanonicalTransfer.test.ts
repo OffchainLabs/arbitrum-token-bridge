@@ -24,17 +24,23 @@ const rariChainId = 1380012617
 
 describe('isArbitrumCanonicalTransfer', () => {
   beforeAll(() => {
-    registerCustomArbitrumNetwork(
-      orbitChainsData.mainnet.find(chain => chain.chainId === ChainId.ApeChain)!
-    )
-    registerCustomArbitrumNetwork(
-      orbitChainsData.mainnet.find(
-        chain => chain.chainId === ChainId.Superposition
-      )!
-    )
-    registerCustomArbitrumNetwork(
-      orbitChainsData.mainnet.find(chain => chain.chainId === rariChainId)!
-    )
+    function setup() {
+      registerCustomArbitrumNetwork(
+        orbitChainsData.mainnet.find(
+          chain => chain.chainId === ChainId.ApeChain
+        )!
+      )
+      registerCustomArbitrumNetwork(
+        orbitChainsData.mainnet.find(
+          chain => chain.chainId === ChainId.Superposition
+        )!
+      )
+      registerCustomArbitrumNetwork(
+        orbitChainsData.mainnet.find(chain => chain.chainId === rariChainId)!
+      )
+    }
+
+    expect(() => setup()).not.toThrow()
   })
 
   describe('for deposits', () => {

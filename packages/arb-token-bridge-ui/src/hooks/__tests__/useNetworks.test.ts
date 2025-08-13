@@ -17,35 +17,39 @@ describe('sanitizeQueryParams', () => {
   let localStorageGetItemMock: MockInstance<(key: string) => string | null>
 
   beforeAll(() => {
-    const mockedOrbitChain_1 = createMockOrbitChain({
-      chainId: 2222,
-      parentChainId: ChainId.ArbitrumSepolia
-    })
-    const mockedOrbitChain_2 = createMockOrbitChain({
-      chainId: 3333,
-      parentChainId: ChainId.ArbitrumOne
-    })
-    const mockedOrbitChain_3 = createMockOrbitChain({
-      chainId: 4444,
-      parentChainId: ChainId.ArbitrumNova
-    })
-
-    localStorageGetItemMock = vi
-      .spyOn(Storage.prototype, 'getItem')
-      .mockImplementation((key: string) => {
-        if (key === customChainLocalStorageKey) {
-          return JSON.stringify([
-            mockedOrbitChain_1,
-            mockedOrbitChain_2,
-            mockedOrbitChain_3
-          ])
-        }
-        return null
+    function setupOrbitChains() {
+      const mockedOrbitChain_1 = createMockOrbitChain({
+        chainId: 2222,
+        parentChainId: ChainId.ArbitrumSepolia
+      })
+      const mockedOrbitChain_2 = createMockOrbitChain({
+        chainId: 3333,
+        parentChainId: ChainId.ArbitrumOne
+      })
+      const mockedOrbitChain_3 = createMockOrbitChain({
+        chainId: 4444,
+        parentChainId: ChainId.ArbitrumNova
       })
 
-    registerCustomArbitrumNetwork(mockedOrbitChain_1)
-    registerCustomArbitrumNetwork(mockedOrbitChain_2)
-    registerCustomArbitrumNetwork(mockedOrbitChain_3)
+      localStorageGetItemMock = vi
+        .spyOn(Storage.prototype, 'getItem')
+        .mockImplementation((key: string) => {
+          if (key === customChainLocalStorageKey) {
+            return JSON.stringify([
+              mockedOrbitChain_1,
+              mockedOrbitChain_2,
+              mockedOrbitChain_3
+            ])
+          }
+          return null
+        })
+
+      registerCustomArbitrumNetwork(mockedOrbitChain_1)
+      registerCustomArbitrumNetwork(mockedOrbitChain_2)
+      registerCustomArbitrumNetwork(mockedOrbitChain_3)
+    }
+
+    expect(() => setupOrbitChains()).not.toThrow()
   })
 
   afterAll(() => {
