@@ -1982,48 +1982,6 @@
       }
     },
     {
-      "chainId": 98864,
-      "confirmPeriodBlocks": 60,
-      "ethBridge": {
-        "bridge": "0xF3BE11Ead404740017e4839712Af28e3c0b5C202",
-        "inbox": "0xDe66d6a8BabE07f6838ea712e708BBD47837de52",
-        "outbox": "0xE8806C827217b9C1D9610b5334254Da4d143dF3D",
-        "rollup": "0x7404f23fc2189e090E2342FaaF7f20efa7bD366a",
-        "sequencerInbox": "0xDcAb173C5D846d686856A2D3300B8a64ba12130D"
-      },
-      "explorerUrl": "https://test-explorer.plumenetwork.xyz/",
-      "rpcUrl": "https://test-rpc.plumenetwork.xyz/",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Plume Devnet (Legacy)",
-      "slug": "plume-devnet-legacy",
-      "parentChainId": 11155111,
-      "tokenBridge": {
-        "parentCustomGateway": "0xa8168b76Aa023228CaA8Ef5110477cD6d02F1508",
-        "parentErc20Gateway": "0xD7A43a671c177Ed55D2B4bCaFc597Bb669Ce4B99",
-        "parentGatewayRouter": "0x0a4671a34D411868852be59cCa137D5f251dEe52",
-        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
-        "parentWethGateway": "0x8a3f580894fF2C51E202Da7712f5550533a956B1",
-        "childCustomGateway": "0xA7E44Ce807F488791c6Bc8877c9CA7b36c68B9C0",
-        "childErc20Gateway": "0xc9F79584303fDcb2cf5d147D7Dc79c38EA3BEC11",
-        "childGatewayRouter": "0x52a0A8a9A65F90E160940972A0de15491172db87",
-        "childMultiCall": "0xA569f0e5e284A45F6155cbc4C904ad3cae0a82b0",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x1738E5247c85f96c9D35FE55800557C5479b7063",
-        "childWethGateway": "0xc260574cD5F7469d9a840f85A6648F74b7Bd4097"
-      },
-      "bridgeUiConfig": {
-        "color": "#F43B3A",
-        "network": {
-          "name": "Plume Devnet (Legacy)",
-          "logo": "/images/PlumeDevnet_Logo.png",
-          "description": "(Legacy) Bringing the real world onchain. Optimized for real world assets."
-        }
-      }
-    },
-    {
       "chainId": 2426,
       "confirmPeriodBlocks": 900,
       "ethBridge": {
