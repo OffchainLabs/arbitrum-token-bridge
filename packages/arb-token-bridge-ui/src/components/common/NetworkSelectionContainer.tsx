@@ -467,7 +467,7 @@ export const NetworkSelectionContainer = React.memo(
         })
 
         setSelectedToken(null)
-        setQueryParams({ destinationAddress: undefined })
+        setQueryParams({ destinationAddress: '' })
       },
       [
         isSource,

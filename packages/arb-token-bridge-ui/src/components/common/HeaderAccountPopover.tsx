@@ -19,6 +19,7 @@ import { SafeImage } from './SafeImage'
 import { Transition } from './Transition'
 import { CustomBoringAvatar } from './CustomBoringAvatar'
 import { useDestinationChainStyle } from '../../hooks/useDestinationChainStyle'
+import { useArbQueryParams } from '@/bridge/hooks/useArbQueryParams'
 
 export function HeaderAccountPopover({
   isCorrectNetworkConnected = true
@@ -32,9 +33,10 @@ export function HeaderAccountPopover({
     ensAvatar,
     disconnect,
     udInfo,
-    chain,
-    setQueryParams
+    chain
   } = useAccountMenu()
+
+  const [, setQueryParams] = useArbQueryParams()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
   const [, copyToClipboard] = useCopyToClipboard()

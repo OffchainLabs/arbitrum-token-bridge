@@ -1,7 +1,6 @@
 import { ComponentType, useEffect, useState } from 'react'
 import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
-import { decodeString, encodeString } from 'use-query-params'
 import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { constants } from 'ethers'
 
@@ -112,7 +111,7 @@ function getDestinationWithSanitizedQueryParams(
     experiments: string | undefined
     token: string | undefined
     tab: string
-    disabledFeatures: string[] | undefined
+    disabledFeatures: string[] | null
     mode: string | undefined
   },
   query: GetServerSidePropsContext['query']
@@ -143,10 +142,10 @@ function getDestinationWithSanitizedQueryParams(
 
   const encodedSource = encodeChainQueryParam(sanitized.sourceChainId)
   const encodedDestination = encodeChainQueryParam(sanitized.destinationChainId)
-  const encodedExperiments = encodeString(sanitized.experiments)
-  const encodedToken = encodeString(sanitized.token)
-  const encodedTab = encodeString(sanitized.tab)
-  const encodedMode = encodeString(sanitized.mode)
+  const encodedExperiments = sanitized.experiments
+  const encodedToken = sanitized.token
+  const encodedTab = sanitized.tab
+  const encodedMode = sanitized.mode
 
   if (encodedSource) {
     params.set('sourceChain', encodedSource)
@@ -199,18 +198,27 @@ export async function getServerSideProps({
 }: GetServerSidePropsContext): Promise<
   GetServerSidePropsResult<Record<string, never>>
 > {
-  const sourceChainId = decodeChainQueryParam(query.sourceChain)
-  const destinationChainId = decodeChainQueryParam(query.destinationChain)
-  const experiments = decodeString(query.experiments)
-  const token = decodeString(query.token)
-  const tab = decodeString(query.tab)
-  const mode = decodeString(query.mode)
+  const sourceChainId = decodeChainQueryParam(
+    typeof query.sourceChain === 'string' ? query.sourceChain : undefined
+  )
+  const destinationChainId = decodeChainQueryParam(
+    typeof query.destinationChain === 'string'
+      ? query.destinationChain
+      : undefined
+  )
+  const experiments =
+    typeof query.experiments === 'string' ? query.experiments : undefined
+  const token = typeof query.token === 'string' ? query.token : undefined
+  const tab = typeof query.tab === 'string' ? query.tab : undefined
+  const mode = typeof query.mode === 'string' ? query.mode : undefined
 
   // Parse disabled features string/array to array
-  const disabledFeatures =
-    typeof query.disabledFeatures === 'string'
-      ? [query.disabledFeatures]
-      : query.disabledFeatures
+  let disabledFeatures: string[] = []
+  if (typeof query.disabledFeatures === 'string') {
+    disabledFeatures = [query.disabledFeatures]
+  } else if (Array.isArray(query.disabledFeatures)) {
+    disabledFeatures = query.disabledFeatures
+  }
 
   // If both sourceChain and destinationChain are not present, let the client sync with Metamask
   if (!sourceChainId && !destinationChainId) {
@@ -241,7 +249,9 @@ export async function getServerSideProps({
       destinationChainId: sanitizedChainIds.destinationChainId
     }),
     tab: sanitizeTabQueryParam(tab),
-    disabledFeatures: DisabledFeaturesParam.decode(disabledFeatures),
+    disabledFeatures: DisabledFeaturesParam.parse(
+      DisabledFeaturesParam.serialize(disabledFeatures || [])
+    ),
     mode: mode ? mode : undefined
   }
 
@@ -252,7 +262,7 @@ export async function getServerSideProps({
     experiments !== sanitized.experiments ||
     token !== sanitized.token ||
     tab !== sanitized.tab ||
-    (disabledFeatures?.length || 0) !== sanitized.disabledFeatures.length ||
+    (disabledFeatures?.length || 0) !== sanitized.disabledFeatures?.length ||
     mode !== sanitized.mode
   ) {
     console.log(`[getServerSideProps] sanitizing query params`)

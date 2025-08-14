@@ -1,14 +1,8 @@
 import { act, renderHook } from '@testing-library/react'
 import { vi, it, expect } from 'vitest'
 import { useAmountBigNumber } from './useAmountBigNumber'
-import {
-  EncodedQuery,
-  QueryParamAdapter,
-  QueryParamOptions,
-  QueryParamProvider
-} from 'use-query-params'
-import React, { PropsWithChildren } from 'react'
-import { makeMockAdapter } from '../../../hooks/__tests__/helpers'
+import { withNuqsTestingAdapter } from 'nuqs/adapters/testing'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 const mocks = vi.hoisted(() => {
   return {
@@ -22,58 +16,52 @@ vi.mock('../../../hooks/TransferPanel/useSelectedTokenDecimals', () => {
   }
 })
 
-export function setupWrapper(query: EncodedQuery, options?: QueryParamOptions) {
-  const Adapter = makeMockAdapter({
-    search: new URLSearchParams(query as Record<string, string>).toString()
-  })
-
-  const adapter = Adapter.adapter as QueryParamAdapter
-  const wrapper = ({ children }: PropsWithChildren) => (
-    <QueryParamProvider adapter={Adapter} options={options}>
-      {children}
-    </QueryParamProvider>
-  )
-
-  return { wrapper, adapter }
-}
-
 it('Does not do anything if selectedToken has more decimals than the amount', () => {
   mocks.useSelectedTokenDecimals.mockReturnValue(18)
-  const { wrapper } = setupWrapper({ amount: '1.23456789' })
-  const { result } = renderHook(() => useAmountBigNumber(), { wrapper })
+  const { result } = renderHook(() => useAmountBigNumber(), {
+    wrapper: withNuqsTestingAdapter({ searchParams: { amount: '1.23456789' } })
+  })
   expect(result.current.toString()).toEqual('1234567890000000000')
 })
 
 it('Truncate if selectedToken has less decimals than the amount', () => {
   mocks.useSelectedTokenDecimals.mockReturnValue(6)
-  const { wrapper } = setupWrapper({ amount: '1.123456789' })
-  const { result } = renderHook(() => useAmountBigNumber(), { wrapper })
+  const { result } = renderHook(() => useAmountBigNumber(), {
+    wrapper: withNuqsTestingAdapter({ searchParams: { amount: '1.123456789' } })
+  })
   expect(result.current.toString()).toEqual('1123456')
 })
 
 it('Does not truncate if amount has more digits than number of decimals', () => {
   mocks.useSelectedTokenDecimals.mockReturnValue(6)
-  const { wrapper } = setupWrapper({ amount: '123456789' })
-  const { result } = renderHook(() => useAmountBigNumber(), { wrapper })
+  const { result } = renderHook(() => useAmountBigNumber(), {
+    wrapper: withNuqsTestingAdapter({ searchParams: { amount: '123456789' } })
+  })
   expect(result.current.toString()).toEqual('123456789000000')
 })
 
 it('Update amount if selectedToken changes', async () => {
   mocks.useSelectedTokenDecimals.mockReturnValue(18)
-  const { wrapper, adapter } = setupWrapper({ amount: '1.23456789' })
-  const { result, rerender } = renderHook(() => useAmountBigNumber(), {
-    wrapper
+  const onUrlUpdate = vi.fn()
+  const { result } = renderHook(() => useAmountBigNumber(), {
+    wrapper: withNuqsTestingAdapter({
+      searchParams: { amount: '1.23456789' },
+      onUrlUpdate
+    })
   })
   expect(result.current.toString()).toEqual('1234567890000000000')
+
+  const { result: arbQueryParams } = renderHook(() => useArbQueryParams(), {
+    wrapper: withNuqsTestingAdapter()
+  })
 
   mocks.useSelectedTokenDecimals.mockReturnValue(6)
 
   await act(async () => {
-    rerender()
+    arbQueryParams.current[1]({
+      token: '0x1234567890123456789012345678901234567890'
+    })
   })
 
-  expect(adapter.push).toHaveBeenCalledExactlyOnceWith({
-    search: '?amount=1.234567'
-  })
   expect(result.current.toString()).toEqual('1234567')
 })

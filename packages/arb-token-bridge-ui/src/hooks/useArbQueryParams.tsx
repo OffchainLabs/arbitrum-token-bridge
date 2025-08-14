@@ -13,17 +13,13 @@
     `setQueryParams(newAmount)`
 
 */
-import queryString from 'query-string'
-import NextAdapterPages from 'next-query-params/pages'
 import {
-  BooleanParam,
-  QueryParamProvider,
-  StringParam,
-  decodeNumber,
-  decodeString,
-  useQueryParams,
-  withDefault
-} from 'use-query-params'
+  createParser,
+  parseAsBoolean,
+  parseAsString,
+  useQueryStates
+} from 'nuqs'
+import { NuqsAdapter } from 'nuqs/adapters/next/pages'
 
 import {
   ChainKeyQueryParam,
@@ -71,33 +67,18 @@ export const isValidDisabledFeature = (feature: string) => {
   )
 }
 
-export const DisabledFeaturesParam = {
-  encode: (disabledFeatures: string[] | undefined) => {
-    if (!disabledFeatures?.length) {
-      return undefined
-    }
-
-    const url = new URLSearchParams()
-    const dedupedFeatures = new Set(
-      disabledFeatures
-        .map(feature => feature.toLowerCase())
-        .filter(feature => isValidDisabledFeature(feature))
-    )
-
-    for (const feature of dedupedFeatures) {
-      url.append('disabledFeatures', feature)
-    }
-
-    return url.toString()
-  },
-  decode: (value: string | (string | null)[] | null | undefined) => {
+export const DisabledFeaturesParam = createParser({
+  parse: value => {
     if (!value) return []
 
     // Handle both string and array inputs
-    const features =
-      typeof value === 'string'
-        ? [value]
-        : value.filter((val): val is string => val !== null)
+    const features = Array.isArray(value)
+      ? value
+      : value
+          .toString()
+          .split(',')
+          .map(f => f.trim())
+          .filter(f => f.length > 0)
 
     // Normalize, validate and deduplicate in one pass
     const dedupedFeatures = new Set<string>()
@@ -109,21 +90,24 @@ export const DisabledFeaturesParam = {
     }
 
     return Array.from(dedupedFeatures)
-  }
-}
-
-export const ThemeParam = {
-  encode: (config: ThemeConfig | undefined) => {
-    if (!config) return undefined
-    try {
-      return encodeURIComponent(JSON.stringify(config)) // Encode the JSON string to handle special characters like # in hex colors
-    } catch {
-      return undefined
-    }
   },
-  decode: (
-    configStr: string | (string | null)[] | null | undefined
-  ): ThemeConfig => {
+  serialize: disabledFeatures => {
+    if (!disabledFeatures?.length) {
+      return ''
+    }
+
+    const dedupedFeatures = new Set(
+      disabledFeatures
+        .map(feature => feature.toLowerCase())
+        .filter(feature => isValidDisabledFeature(feature))
+    )
+
+    return Array.from(dedupedFeatures).join(',')
+  }
+})
+
+export const ThemeParam = createParser({
+  parse: configStr => {
     if (!configStr || Array.isArray(configStr)) return defaultTheme
     try {
       const decodedTheme = JSON.parse(decodeURIComponent(configStr))
@@ -131,22 +115,31 @@ export const ThemeParam = {
     } catch {
       return defaultTheme
     }
-  }
-}
-
-const ModeParam = {
-  encode: (mode: ModeParamEnum) => {
-    if (!mode) return undefined
-    return mode
   },
-  decode: (value: string | (string | null)[] | null | undefined) => {
+  serialize: (config: ThemeConfig | undefined) => {
+    if (!config || JSON.stringify(config) === JSON.stringify(defaultTheme))
+      return ''
+    try {
+      return encodeURIComponent(JSON.stringify(config)) // Encode the JSON string to handle special characters like # in hex colors
+    } catch {
+      return ''
+    }
+  }
+})
+
+const ModeParam = createParser({
+  parse: value => {
     const modeStr = value?.toString()?.toLowerCase()
     if (modeStr === ModeParamEnum.EMBED) {
       return modeStr
     }
-    return undefined
+    return null
+  },
+  serialize: (mode: ModeParamEnum) => {
+    if (!mode) return ''
+    return mode
   }
-}
+})
 
 export const useArbQueryParams = () => {
   /*
@@ -155,19 +148,24 @@ export const useArbQueryParams = () => {
       setQueryParams (setter for all query state variables)
     ]
   */
-  return useQueryParams({
-    sourceChain: ChainParam,
-    destinationChain: ChainParam,
-    amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
-    amount2: withDefault(AmountQueryParam, ''), // extra eth to send together with erc20
-    destinationAddress: withDefault(StringParam, undefined),
-    token: TokenQueryParam, // import a new token using a Dialog Box
-    settingsOpen: withDefault(BooleanParam, false),
-    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
-    disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
-    mode: withDefault(ModeParam, undefined), // mode: 'embed', or undefined for normal mode
-    theme: withDefault(ThemeParam, defaultTheme) // theme customization
-  })
+  return useQueryStates(
+    {
+      sourceChain: ChainParam,
+      destinationChain: ChainParam,
+      amount: AmountQueryParam.withDefault(''), // amount which is filled in Transfer panel
+      amount2: AmountQueryParam.withDefault(''), // extra eth to send together with erc20
+      destinationAddress: parseAsString.withDefault(''), // not present in URL when undefined
+      token: parseAsString.withDefault(''), // import a new token using a Dialog Box - not present in URL when undefined
+      settingsOpen: parseAsBoolean.withDefault(false),
+      tab: TabParam.withDefault(tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
+      disabledFeatures: DisabledFeaturesParam.withDefault([]), // disabled features in the bridge
+      mode: ModeParam, // mode: 'embed', or undefined for normal mode
+      theme: ThemeParam.withDefault(defaultTheme) // theme customization
+    },
+    {
+      clearOnDefault: true
+    }
+  )
 }
 
 const isMax = (amount: string | undefined) =>
@@ -213,41 +211,31 @@ export const sanitizeAmountQueryParam = (amount: string) => {
 // Our custom query param type for Amount field - will be parsed and returned as a string,
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
-export const AmountQueryParam = {
-  // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | undefined = '') => sanitizeAmountQueryParam(amount),
-  decode: (amount: string | (string | null)[] | null | undefined) => {
+export const AmountQueryParam = createParser({
+  parse: amount => {
     // toString() casts the potential string array into a string
     const amountStr = amount?.toString() ?? ''
     return sanitizeAmountQueryParam(amountStr)
-  }
-}
-
-const TokenQueryParam = {
-  encode: (token: string | undefined) => {
-    return token?.toLowerCase()
   },
-  decode: (token: string | (string | null)[] | null | undefined) => {
-    const tokenStr = token?.toString()
-    // We are not checking for a valid address because we handle it in the UI
-    // by showing an invalid token dialog
-    return tokenStr?.toLowerCase()
+  serialize: (amount = '') => {
+    const sanitized = sanitizeAmountQueryParam(amount)
+    return sanitized || ''
   }
-}
+})
 
 // Parse chainId to ChainQueryParam or ChainId for orbit chain
 export function encodeChainQueryParam(
   chainId: number | null | undefined
-): string | undefined {
+): string {
   if (!chainId) {
-    return undefined
+    return ''
   }
 
   try {
     const chain = getChainQueryParamForChain(chainId)
     return chain.toString()
   } catch (e) {
-    return undefined
+    return ''
   }
 }
 
@@ -262,15 +250,14 @@ function isValidNumber(value: number | null | undefined): value is number {
 // Parse ChainQueryParam/ChainId to ChainId
 // URL accept both chainId and chainQueryParam (string)
 export function decodeChainQueryParam(
-  value: string | (string | null)[] | null | undefined
+  value: string | null | undefined
   // ChainId type doesn't include custom orbit chain, we need to add number type
 ): ChainId | number | undefined {
-  const valueString = decodeString(value)
-  if (!valueString) {
+  if (!value) {
     return undefined
   }
 
-  const valueNumber = decodeNumber(value)
+  const valueNumber = parseInt(value, 10)
   if (
     isValidNumber(valueNumber) &&
     isValidChainQueryParam(valueNumber as ChainId)
@@ -278,17 +265,17 @@ export function decodeChainQueryParam(
     return valueNumber
   }
 
-  if (isValidChainQueryParam(valueString)) {
-    return getChainForChainKeyQueryParam(valueString as ChainKeyQueryParam).id
+  if (isValidChainQueryParam(value)) {
+    return getChainForChainKeyQueryParam(value as ChainKeyQueryParam).id
   }
 
   return undefined
 }
 
-export const ChainParam = {
-  encode: encodeChainQueryParam,
-  decode: decodeChainQueryParam
-}
+export const ChainParam = createParser({
+  parse: decodeChainQueryParam,
+  serialize: encodeChainQueryParam
+})
 
 export function encodeTabQueryParam(
   tabIndex: number | null | undefined
@@ -301,37 +288,22 @@ export function encodeTabQueryParam(
 
 // Parse string to number
 // URL accepts string only
-export function decodeTabQueryParam(
-  tab: string | (string | null)[] | null | undefined
-): number {
+export function decodeTabQueryParam(tab: string | null | undefined): number {
   if (typeof tab === 'string' && tab in tabToIndex) {
     return tabToIndex[tab as TabParamEnum]
   }
   return tabToIndex[TabParamEnum.BRIDGE]
 }
 
-export const TabParam = {
-  encode: encodeTabQueryParam,
-  decode: decodeTabQueryParam
-}
+export const TabParam = createParser({
+  parse: decodeTabQueryParam,
+  serialize: encodeTabQueryParam
+})
 
 export function ArbQueryParamProvider({
   children
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <QueryParamProvider
-      adapter={NextAdapterPages}
-      options={{
-        searchStringToObject: queryString.parse,
-        objectToSearchString: queryString.stringify,
-        updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
-        removeDefaultsFromUrl: true,
-        enableBatching: true
-      }}
-    >
-      {children}
-    </QueryParamProvider>
-  )
+  return <NuqsAdapter>{children}</NuqsAdapter>
 }

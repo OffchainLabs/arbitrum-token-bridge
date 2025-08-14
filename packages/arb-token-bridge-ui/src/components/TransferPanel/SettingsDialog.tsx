@@ -189,8 +189,8 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
         }
 
         if (destinationAddressError) {
-          setQueryParams({ destinationAddress: undefined })
-          setDestinationAddress(undefined)
+          setQueryParams({ destinationAddress: '' })
+          setDestinationAddress('')
         } else {
           setQueryParams({ destinationAddress })
         }
