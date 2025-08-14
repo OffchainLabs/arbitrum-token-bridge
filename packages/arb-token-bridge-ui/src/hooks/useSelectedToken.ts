@@ -49,12 +49,12 @@ export function sanitizeNullSelectedToken({
   destinationChainId,
   erc20ParentAddress
 }: {
-  sourceChainId: number | undefined
-  destinationChainId: number | undefined
+  sourceChainId: number | null | undefined
+  destinationChainId: number | null | undefined
   erc20ParentAddress: string | null
 }) {
   if (!sourceChainId || !destinationChainId) {
-    return undefined
+    return ''
   }
 
   try {
@@ -133,12 +133,13 @@ export const useSelectedToken = (): [
     (erc20ParentAddress: string | null) => {
       return setQueryParams(latestQuery => {
         try {
+          console.log('erc20ParentAddress', erc20ParentAddress)
           const sanitizedTokenAddress = sanitizeNullSelectedToken({
             sourceChainId: latestQuery.sourceChain,
             destinationChainId: latestQuery.destinationChain,
             erc20ParentAddress
           })
-
+          console.log('sanitizedTokenAddress', sanitizedTokenAddress)
           if (sanitizedTokenAddress) {
             return {
               token: sanitizedTokenAddress
@@ -150,7 +151,7 @@ export const useSelectedToken = (): [
           }
         } catch (error) {
           console.error('Error sanitizing token address:', error)
-          return { token: undefined }
+          return { token: '' }
         }
       })
     },
@@ -170,14 +171,14 @@ export const useSelectedToken = (): [
   ] as const
 }
 
-function sanitizeTokenAddress(tokenAddress: string | null): string | undefined {
+function sanitizeTokenAddress(tokenAddress: string | null): string {
   if (!tokenAddress) {
-    return undefined
+    return ''
   }
   if (utils.isAddress(tokenAddress)) {
     return tokenAddress
   }
-  return undefined
+  return ''
 }
 
 export async function getUsdcToken({

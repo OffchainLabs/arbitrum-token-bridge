@@ -9,6 +9,7 @@ import { getExplorerUrl } from '../../util/networks'
 import { SafeImage } from '../common/SafeImage'
 import { useAccountMenu } from '../../hooks/useAccountMenu'
 import { CustomBoringAvatar } from '../common/CustomBoringAvatar'
+import { useArbQueryParams } from '@/bridge/hooks/useArbQueryParams'
 
 export const AccountMenuItem = () => {
   const {
@@ -18,9 +19,9 @@ export const AccountMenuItem = () => {
     ensAvatar,
     disconnect,
     udInfo,
-    chain,
-    setQueryParams
+    chain
   } = useAccountMenu()
+  const [, setQueryParams] = useArbQueryParams()
 
   return (
     <MenuItemExpandable

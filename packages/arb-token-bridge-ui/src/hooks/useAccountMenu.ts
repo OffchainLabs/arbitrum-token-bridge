@@ -3,7 +3,6 @@ import { useState, useEffect, useMemo } from 'react'
 import Resolution from '@unstoppabledomains/resolution'
 
 import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi'
-import { useArbQueryParams } from './useArbQueryParams'
 import { shortenAddress } from '../util/CommonUtils'
 import { onDisconnectHandler } from '../util/walletConnectUtils'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
@@ -45,8 +44,6 @@ export const useAccountMenu = () => {
       onSettled: onDisconnectHandler
     }
   })
-
-  const [, setQueryParams] = useArbQueryParams()
 
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
   const { data: ensName } = useEnsName({
@@ -100,7 +97,6 @@ export const useAccountMenu = () => {
     ensAvatar,
     disconnect,
     udInfo,
-    chain,
-    setQueryParams
+    chain
   }
 }

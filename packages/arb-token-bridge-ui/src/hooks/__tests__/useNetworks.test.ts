@@ -31,7 +31,7 @@ describe('sanitizeQueryParams', () => {
     })
 
     localStorageGetItemMock = vi
-      .spyOn(Storage.prototype, 'getItem')
+      .spyOn(localStorage, 'getItem')
       .mockImplementation((key: string) => {
         if (key === customChainLocalStorageKey) {
           return JSON.stringify([

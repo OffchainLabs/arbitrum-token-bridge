@@ -209,8 +209,8 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   } = useMemo(
     () =>
       sanitizeQueryParams({
-        sourceChainId,
-        destinationChainId,
+        sourceChainId: sourceChainId || undefined,
+        destinationChainId: destinationChainId || undefined,
         disableTransfersToNonArbitrumChains
       }),
     [destinationChainId, sourceChainId, disableTransfersToNonArbitrumChains]
