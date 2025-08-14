@@ -23,7 +23,7 @@ module.exports = {
 
         // PRIMARY
         cyan: '#DDEAFA',
-        brick: '#FFDDD6',
+        brick: '#ff9f8b',
         orange: '#FFEED3',
         lime: '#E8FFE4',
         lilac: '#754562',

@@ -33,19 +33,25 @@ export const WidgetHeaderAccountButton = () => {
         <Menu>
           {({ open }) => (
             <>
-              <MenuButton className="flex h-[30px] items-center gap-2 rounded-md p-1 hover:bg-white/10 focus-visible:!outline-none">
-                <SafeImage
-                  src={ensAvatar || undefined}
-                  className="h-6 w-6 rounded-full"
-                  fallback={<CustomBoringAvatar size={20} name={address} />}
-                />{' '}
-                {shortenAddress(address ?? '')}
-                <ChevronDownIcon
-                  className={twMerge(
-                    'h-3 w-3 transition-all',
-                    open && 'rotate-180'
-                  )}
-                />
+              <MenuButton
+                as={Button}
+                variant="secondary"
+                className="h-[40px] px-[10px] py-[10px]"
+              >
+                <div className="flex flex-nowrap items-center gap-2">
+                  <SafeImage
+                    src={ensAvatar || undefined}
+                    className="h-6 w-6 rounded-full"
+                    fallback={<CustomBoringAvatar size={20} name={address} />}
+                  />{' '}
+                  {shortenAddress(address ?? '')}
+                  <ChevronDownIcon
+                    className={twMerge(
+                      'h-3 w-3 transition-all',
+                      open && 'rotate-180'
+                    )}
+                  />
+                </div>
               </MenuButton>
               <MenuItems
                 transition

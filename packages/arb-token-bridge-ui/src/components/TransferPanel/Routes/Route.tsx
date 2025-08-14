@@ -419,7 +419,8 @@ export const Route = React.memo(
     })
     const [_token] = useSelectedToken()
     const [{ amount2, destinationAddress }] = useArbQueryParams()
-    const { embedMode } = useMode()
+    // const { embedMode } = useMode()
+    const embedMode = false
     const isBatchTransferSupported = useIsBatchTransferSupported()
     const [{ theme }] = useArbQueryParams()
 

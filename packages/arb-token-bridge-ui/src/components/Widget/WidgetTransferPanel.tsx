@@ -15,6 +15,7 @@ import { TokenImportDialog } from '../TransferPanel/TokenImportDialog'
 import { ToSConfirmationCheckbox } from '../TransferPanel/ToSConfirmationCheckbox'
 import { UseDialogProps } from '../common/Dialog'
 import WidgetTxHistoryIcon from '@/images/WidgetTxHistoryIcon.svg'
+import { Button } from '../common/Button'
 
 type WidgetTransferPanelProps = {
   moveFundsButtonOnClick: () => void
@@ -46,28 +47,31 @@ export function WidgetTransferPanel({
       <div className="relative m-auto grid w-full grid-cols-1 gap-4 rounded-lg bg-transparent p-4 text-white transition-all duration-300 min-[850px]:grid min-[850px]:grid-cols-2">
         {/* Left/Top panel */}
         <div className="flex h-full flex-col gap-1 overflow-hidden">
-          <div className="mb-2 flex h-[30px] flex-row items-center justify-between text-lg">
+          <div className="mb-2 flex h-[40px] flex-row items-center justify-between text-lg">
             <WidgetHeaderAccountButton />
 
             <div className="flex flex-row gap-2 text-sm">
               {/* widget transaction history */}
               {isConnected && (
-                <button
-                  className="arb-hover text-white"
+                <Button
+                  variant="secondary"
+                  className="h-[40px] px-[10px] py-[10px] text-white"
                   onClick={() => openDialog('widget_transaction_history')}
                 >
                   <Image
-                    height={20}
-                    width={20}
+                    height={18}
+                    width={18}
                     alt="Tx history logo"
                     src={WidgetTxHistoryIcon}
                   />
-                </button>
+                </Button>
               )}
 
               {/* slippage and advanced settings */}
               {showSettingsButton && (
-                <button
+                <Button
+                  variant="secondary"
+                  className="h-[40px] px-[10px] py-[10px] text-white"
                   onClick={() => openDialog('settings')}
                   aria-label="Open Settings"
                 >
@@ -75,7 +79,7 @@ export function WidgetTransferPanel({
                     width={20}
                     className="arb-hover text-white/80"
                   />
-                </button>
+                </Button>
               )}
             </div>
           </div>
