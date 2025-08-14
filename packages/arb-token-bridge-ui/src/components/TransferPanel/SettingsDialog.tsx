@@ -18,13 +18,14 @@ import {
 } from '@heroicons/react/24/outline'
 import { shallow } from 'zustand/shallow'
 import { ExternalLink } from '../common/ExternalLink'
-import { AdvancedSettings } from './AdvancedSettings'
+// import { AdvancedSettings } from './AdvancedSettings'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useAccountType } from '../../hooks/useAccountType'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
 import { isDepositMode as isDepositModeUtil } from '../../util/isDepositMode'
+import Image from 'next/image'
 
 function useTools() {
   const [{ sourceChain, destinationChain }] = useNetworks()
@@ -86,7 +87,7 @@ function Tools({
   toggle: (tool: string, enable: boolean) => void
 }) {
   return (
-    <div className={twMerge('grid grid-cols-2 gap-2 pl-2', 'sm:grid-cols-3')}>
+    <div className={twMerge('grid grid-cols-2 gap-3 pl-2', 'sm:grid-cols-3')}>
       {tools.map(tool => (
         <Checkbox
           key={tool.key}
@@ -96,6 +97,7 @@ function Tools({
                 src={tool.logoURI}
                 width="15"
                 height="15"
+                className="ml-1 rounded"
                 fallback={<div className="h-3 w-3 bg-gray-dark" />}
               />
               <div
@@ -197,12 +199,58 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
       }}
       isFooterHidden
     >
-      <div className="mt-4 flex flex-col gap-4 pb-6 text-sm text-gray-2">
+      <div className="mt-4 flex flex-col gap-6 pb-6 text-sm text-gray-2">
         {isLifiSupported && useLifiSettingsStore.persist.hasHydrated() && (
           <>
-            <div className="flex flex-col justify-center gap-1">
+            <div className="flex flex-col gap-3">
+              <div className="text-base"> % Maximum slippage</div>
+
+              <div className="flex flex-nowrap items-center gap-1 opacity-50">
+                {slippageIsTooLow && (
+                  <>
+                    <ExclamationCircleIcon
+                      height={16}
+                      className="text-orange"
+                    />
+                    <span className="text-sm text-orange">
+                      Slippage amount is low. You may see very limited route
+                      options.
+                    </span>
+                  </>
+                )}
+                {slippageIsTooHigh && (
+                  <>
+                    <ExclamationCircleIcon
+                      height={16}
+                      className="text-orange"
+                    />
+                    <span className="text-sm text-orange">
+                      Slippage amount is high. Industry recommendation is 0.5%
+                      or less.
+                    </span>
+                  </>
+                )}
+                {!slippageIsTooHigh && !slippageIsTooLow && (
+                  <>
+                    <InformationCircleIcon
+                      height={16}
+                      className="text-white/80"
+                    />
+                    <span className="flex flex-nowrap gap-1">
+                      0.5% - 1% is the recommended range for slippage.{' '}
+                      <ExternalLink
+                        href="https://www.ledger.com/academy/what-is-slippage-in-crypto"
+                        className="arb-hover flex items-center underline"
+                      >
+                        Read more
+                        <ArrowTopRightOnSquareIcon className="ml-[2px] h-3 w-3 text-white/60 sm:text-white" />
+                      </ExternalLink>
+                    </span>
+                  </>
+                )}
+              </div>
+
               <span className="relative mr-auto">
-                Maximum slippage:{' '}
                 <input
                   type="text"
                   inputMode="decimal"
@@ -226,7 +274,7 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
                     }
                   }}
                   className={twMerge(
-                    'ml-1 w-12 rounded border border-gray-dark bg-black py-1 pl-2 pr-5 text-center text-sm text-gray-4',
+                    'h-[40px] w-[100px] rounded border border-white/10 bg-white/10 py-1 pl-2 pr-5  text-center text-sm text-gray-4',
                     (slippageIsTooHigh || slippageIsTooLow) &&
                       'border-orange-dark bg-orange-dark'
                   )}
@@ -235,54 +283,20 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
                   %
                 </div>
               </span>
-              <div className="flex items-center gap-1">
-                {slippageIsTooLow && (
-                  <>
-                    <ExclamationCircleIcon
-                      height={20}
-                      className="text-orange"
-                    />
-                    <span className="text-sm text-orange">
-                      Slippage amount is low. You may see very limited route
-                      options.
-                    </span>
-                  </>
-                )}
-                {slippageIsTooHigh && (
-                  <>
-                    <ExclamationCircleIcon
-                      height={20}
-                      className="text-orange"
-                    />
-                    <span className="text-sm text-orange">
-                      Slippage amount is high. Industry recommendation is 0.5%
-                      or less.
-                    </span>
-                  </>
-                )}
-                {!slippageIsTooHigh && !slippageIsTooLow && (
-                  <>
-                    <InformationCircleIcon
-                      height={20}
-                      className="text-white/80"
-                    />
-                    <span className="md:flex md:items-center md:gap-1">
-                      0.5% - 1% is the recommended range for slippage.{' '}
-                      <ExternalLink
-                        href="https://www.ledger.com/academy/what-is-slippage-in-crypto"
-                        className="arb-hover flex items-center underline"
-                      >
-                        Read more
-                        <ArrowTopRightOnSquareIcon className="ml-[2px] h-3 w-3 text-white/60 sm:text-white" />
-                      </ExternalLink>
-                    </span>
-                  </>
-                )}
-              </div>
             </div>
 
-            <div className="grid gap-2">
-              <div>Supported Bridges</div>
+            <hr className="border-white/20" />
+
+            <div className="grid gap-3">
+              <div className="flex items-center gap-2 text-base">
+                <Image
+                  src="/icons/bridge.svg"
+                  width={18}
+                  height={18}
+                  alt="bridge fee"
+                />{' '}
+                Supported Bridges
+              </div>
               {isLoadingTools && <Loader size="small" color="white" />}
               {tools && tools.bridges.length > 0 && (
                 <Tools
@@ -294,13 +308,13 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
             </div>
           </>
         )}
-        {!isLoadingAccountType && !isSmartContractWallet && (
+        {/* {!isLoadingAccountType && !isSmartContractWallet && (
           // For SCW, destination address is shown outside of settings panel
           <AdvancedSettings
             destinationAddress={destinationAddress}
             onDestinationAddressChange={setDestinationAddress}
           />
-        )}
+        )} */}
       </div>
     </Dialog>
   )

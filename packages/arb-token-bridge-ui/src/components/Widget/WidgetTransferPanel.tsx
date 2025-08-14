@@ -15,7 +15,7 @@ import { ToSConfirmationCheckbox } from '../TransferPanel/ToSConfirmationCheckbo
 import { UseDialogProps } from '../common/Dialog'
 import WidgetTxHistoryIcon from '@/images/WidgetTxHistoryIcon.svg'
 import { Button } from '../common/Button'
-import { LifiSettingsButton } from '../TransferPanel/LifiSettings'
+import { LifiSettingsButton } from '../TransferPanel/LifiSettingsButton'
 
 type WidgetTransferPanelProps = {
   moveFundsButtonOnClick: () => void
@@ -65,7 +65,6 @@ export function WidgetTransferPanel({
                 </Button>
               )}
 
-              {/* advanced settings */}
               <LifiSettingsButton />
             </div>
           </div>

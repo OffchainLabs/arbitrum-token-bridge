@@ -38,7 +38,7 @@ import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceCh
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 import { useBalances } from '../../../hooks/useBalances'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
-import { LifiSettingsButton } from '../LifiSettings'
+import { LifiSettingsButton } from '../LifiSettingsButton'
 import { useMode } from '../../../hooks/useMode'
 
 function Amount2ToggleButton() {
