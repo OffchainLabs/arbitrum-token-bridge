@@ -38,6 +38,8 @@ import { useSourceChainNativeCurrencyDecimals } from '../../../hooks/useSourceCh
 import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
 import { useBalances } from '../../../hooks/useBalances'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
+import { LifiSettingsButton } from '../LifiSettings'
+import { useMode } from '../../../hooks/useMode'
 
 function Amount2ToggleButton() {
   const [networks] = useNetworks()
@@ -229,6 +231,7 @@ export function SourceNetworkBox() {
   const isBatchTransferSupported = useIsBatchTransferSupported()
   const isCctpTransfer = useIsCctpTransfer()
   const isOft = useIsOftV2Transfer()
+  const { embedMode } = useMode()
 
   return (
     <>
@@ -238,6 +241,8 @@ export function SourceNetworkBox() {
             type="source"
             onClick={openSourceNetworkSelectionDialog}
           />
+
+          {!embedMode && <LifiSettingsButton />}
         </div>
 
         <div className="flex flex-col gap-1">

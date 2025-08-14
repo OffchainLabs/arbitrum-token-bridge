@@ -1,6 +1,5 @@
 import { useAccount } from 'wagmi'
 import Image from 'next/image'
-import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import {
   DialogProps,
   DialogWrapper,
@@ -16,6 +15,7 @@ import { ToSConfirmationCheckbox } from '../TransferPanel/ToSConfirmationCheckbo
 import { UseDialogProps } from '../common/Dialog'
 import WidgetTxHistoryIcon from '@/images/WidgetTxHistoryIcon.svg'
 import { Button } from '../common/Button'
+import { LifiSettingsButton } from '../TransferPanel/LifiSettings'
 
 type WidgetTransferPanelProps = {
   moveFundsButtonOnClick: () => void
@@ -24,7 +24,6 @@ type WidgetTransferPanelProps = {
   tokenImportDialogProps: UseDialogProps
   openDialog: OpenDialogFunction
   dialogProps: DialogProps
-  showSettingsButton: boolean
   closeWithResetTokenImportDialog: () => void
 }
 
@@ -35,7 +34,6 @@ export function WidgetTransferPanel({
   isTokenAlreadyImported,
   tokenFromSearchParams,
   tokenImportDialogProps,
-  showSettingsButton,
   closeWithResetTokenImportDialog
 }: WidgetTransferPanelProps) {
   const { isConnected } = useAccount()
@@ -67,20 +65,8 @@ export function WidgetTransferPanel({
                 </Button>
               )}
 
-              {/* slippage and advanced settings */}
-              {showSettingsButton && (
-                <Button
-                  variant="secondary"
-                  className="h-[40px] px-[10px] py-[10px] text-white"
-                  onClick={() => openDialog('settings')}
-                  aria-label="Open Settings"
-                >
-                  <Cog8ToothIcon
-                    width={20}
-                    className="arb-hover text-white/80"
-                  />
-                </Button>
-              )}
+              {/* advanced settings */}
+              <LifiSettingsButton />
             </div>
           </div>
           <TransferPanelMain />

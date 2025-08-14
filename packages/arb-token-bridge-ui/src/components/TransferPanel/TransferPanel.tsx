@@ -94,14 +94,10 @@ import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
 import { AdvancedSettings } from './AdvancedSettings'
-import { Cog8ToothIcon } from '@heroicons/react/24/outline'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 import { useMode } from '../../hooks/useMode'
-import {
-  getTokenOverride,
-  isValidLifiTransfer
-} from '../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -1336,20 +1332,6 @@ export function TransferPanel() {
     return transfer()
   }
 
-  /**
-   * Show settings if we're displaying lifi routes
-   * or if it's an EOA (to display custom destination address input)
-   */
-  const showSettingsButton =
-    isValidLifiTransfer({
-      sourceChainId: networks.sourceChain.id,
-      destinationChainId: networks.destinationChain.id,
-      fromToken: isDepositMode
-        ? selectedToken?.address
-        : selectedToken?.l2Address
-    }) ||
-    (!isLoadingAccountType && !isSmartContractWallet)
-
   if (embedMode) {
     return (
       <WidgetTransferPanel
@@ -1359,7 +1341,6 @@ export function TransferPanel() {
         isTokenAlreadyImported={isTokenAlreadyImported}
         tokenFromSearchParams={tokenFromSearchParams}
         tokenImportDialogProps={tokenImportDialogProps}
-        showSettingsButton={showSettingsButton}
         closeWithResetTokenImportDialog={closeWithResetTokenImportDialog}
       />
     )
@@ -1376,16 +1357,7 @@ export function TransferPanel() {
         )}
       >
         <TransferPanelMain />
-        {showSettingsButton && (
-          <div className="z-50 mb-2 ml-auto sm:relative">
-            <button
-              onClick={() => openDialog('settings')}
-              aria-label="Open Settings"
-            >
-              <Cog8ToothIcon width={30} className="arb-hover text-white" />
-            </button>
-          </div>
-        )}
+
         <Routes />
         {!isLoadingAccountType && isSmartContractWallet && (
           <AdvancedSettings
