@@ -171,7 +171,7 @@ function BalancesContainer() {
 
   return (
     <div
-      className="rounded px-3 text-white [&>*+*]:border-t [&>*+*]:border-gray-600"
+      className="rounded px-3 text-white/70 [&>*+*]:border-t [&>*+*]:border-gray-600"
       style={{ backgroundColor: '#00000050' }}
     >
       {showNativeUsdcBalance ? (

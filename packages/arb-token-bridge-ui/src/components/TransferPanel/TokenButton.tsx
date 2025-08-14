@@ -68,22 +68,20 @@ export function TokenButton({
       <DialogWrapper {...dialogProps} />
 
       <Button
-        variant="primary"
-        className="arb-hover h-full w-max rounded-bl rounded-tl border-0 bg-transparent px-3 pb-1 pt-2 text-white"
+        variant="secondary"
+        className="px-[10px] py-[5px]"
         aria-label="Select Token"
         onClick={() => openDialog('token_selection')}
         disabled={disabled}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex flex-nowrap items-center gap-1 text-sm leading-[1.1]">
           {isLoadingToken ? (
             <Loader size="small" color="white" />
           ) : (
             <>
               <TokenLogo srcOverride={options?.logoSrc} />
-              <span className="text-xl font-light">{tokenSymbol}</span>
-              {!disabled && (
-                <ChevronDownIcon className="h-3 w-3 text-gray-6 transition-transform duration-200" />
-              )}
+              <span className="font-light">{tokenSymbol}</span>
+              {!disabled && <ChevronDownIcon width={12} />}
             </>
           )}
         </div>

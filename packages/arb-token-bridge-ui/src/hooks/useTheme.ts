@@ -13,7 +13,7 @@ export interface ThemeConfig {
 }
 
 export const defaultTheme: ThemeConfig = {
-  borderRadius: '5px',
+  borderRadius: '10px',
   borderWidth: '1px',
   widgetBackgroundColor: '#191919',
   fontFamily: `${unica.style.fontFamily}, Roboto, sans-serif`

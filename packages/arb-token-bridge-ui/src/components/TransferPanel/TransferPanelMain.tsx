@@ -83,12 +83,17 @@ export function SwitchNetworksButton(
       <Button
         type="button"
         variant="tertiary"
-        disabled={disabled}
         className={twMerge(
-          'group relative flex h-7 w-7 items-center justify-center rounded-full bg-gray-1 p-1',
-          theme.primaryCtaColor ? 'bg-primary-cta' : ''
+          'group relative flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-gray-1 bg-[#212121] p-1',
+          theme.primaryCtaColor ? 'bg-primary-cta' : '',
+          disabled && 'pointer-events-none'
         )}
         onClick={() => {
+          // we don't want to add `disabled` property to the button because it will change the button styles, so instead we handle it on click
+          if (disabled) {
+            return
+          }
+
           setNetworks({
             sourceChainId: networks.destinationChain.id,
             destinationChainId: networks.sourceChain.id
@@ -99,49 +104,13 @@ export function SwitchNetworksButton(
       >
         {/* <SwitchNetworkButtonBorderTop /> */}
         {isNetworkSwapBlocked ? (
-          <ArrowDownIcon className="h-5 w-5 stroke-1 text-white" />
+          <ArrowDownIcon className="h-4 w-4 stroke-2 text-white" />
         ) : (
-          <ArrowsUpDownIcon className="h-4 w-4 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
+          <ArrowsUpDownIcon className="h-4 w-4 stroke-2 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
         )}
         {/* <SwitchNetworkButtonBorderBottom /> */}
       </Button>
     </div>
-  )
-}
-
-function SwitchNetworkButtonBorderTop() {
-  const [networks] = useNetworks()
-  const [{ theme }] = useArbQueryParams()
-
-  const sourceNetworkColor = getBridgeUiConfigForChain(
-    networks.sourceChain.id
-  ).color
-
-  return (
-    <div
-      className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
-      style={{
-        borderColor: theme.networkThemeOverrideColor ?? sourceNetworkColor
-      }}
-    />
-  )
-}
-
-function SwitchNetworkButtonBorderBottom() {
-  const [networks] = useNetworks()
-  const [{ theme }] = useArbQueryParams()
-
-  const destinationNetworkColor = getBridgeUiConfigForChain(
-    networks.destinationChain.id
-  ).color
-
-  return (
-    <div
-      className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
-      style={{
-        borderColor: theme.networkThemeOverrideColor ?? destinationNetworkColor
-      }}
-    />
   )
 }
 
@@ -205,13 +174,13 @@ export function NetworkContainer({
   }, [customAddress, walletAddress])
 
   return (
-    <div>
+    <div className="rounded border border-white/10">
       {showCustomAddressBanner && (
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
         className={twMerge(
-          'relative rounded bg-white/10 transition-colors duration-400',
+          'relative rounded bg-white/5 transition-colors duration-400',
           showCustomAddressBanner && 'rounded-t-none'
         )}
       >

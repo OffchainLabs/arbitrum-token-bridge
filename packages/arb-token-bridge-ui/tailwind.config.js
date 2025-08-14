@@ -114,7 +114,8 @@ module.exports = {
         8: '2rem'
       },
       borderRadius: {
-        DEFAULT: 'var(--border-radius, 5px)'
+        DEFAULT: 'var(--border-radius, 10px)',
+        sm: 'calc(var(--border-radius, 10px) / 2)'
       },
       borderWidth: {
         DEFAULT: 'var(--border-width, 1px)'

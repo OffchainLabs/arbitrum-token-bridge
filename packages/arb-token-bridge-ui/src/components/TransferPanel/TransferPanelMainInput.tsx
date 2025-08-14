@@ -25,6 +25,7 @@ import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedT
 import { useMode } from '../../hooks/useMode'
 import { addressesEqual } from '../../util/AddressUtils'
 import { constants } from 'ethers'
+import { Button } from '../common/Button'
 
 function MaxButton({
   className = '',
@@ -56,16 +57,9 @@ function MaxButton({
   }
 
   return (
-    <button
-      type="button"
-      className={twMerge(
-        'rounded bg-white/30 px-1 py-0.5 text-right text-xs font-medium leading-none text-white opacity-80 transition-opacity hover:opacity-60',
-        className
-      )}
-      {...rest}
-    >
+    <Button variant="secondary" className={className} {...rest}>
       MAX
-    </button>
+    </Button>
   )
 }
 
@@ -121,9 +115,9 @@ function SourceChainTokenBalance({
   if (formattedBalance) {
     return (
       <>
-        <span className="text-sm font-light text-white">Balance: </span>
+        <span className="text-sm font-light text-white/70">Balance: </span>
         <span
-          className="whitespace-nowrap text-sm text-white"
+          className="whitespace-nowrap text-sm text-white/70"
           aria-label={`${symbol} balance amount on ${
             isDepositMode ? 'parentChain' : 'childChain'
           }`}
@@ -136,7 +130,7 @@ function SourceChainTokenBalance({
 
   return (
     <>
-      <span className="text-sm font-light text-white">Balance: </span>
+      <span className="text-sm font-light text-white/70">Balance: </span>
       <Loader wrapperClass="ml-1" color="white" size={12} />
     </>
   )
@@ -289,10 +283,10 @@ export const TransferPanelMainInput = React.memo(
 
     return (
       <>
-        <div className={twMerge('flex flex-row rounded bg-white/10')}>
+        <div className="flex flex-row rounded bg-white/10">
           <div
             className={twMerge(
-              'flex min-h-[83px] grow flex-row items-center justify-center'
+              'flex min-h-[96px] grow flex-row items-center justify-center'
             )}
           >
             <TransferPanelInputField
@@ -300,15 +294,18 @@ export const TransferPanelMainInput = React.memo(
               value={localValue}
               onChange={handleInputChange}
             />
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-end gap-[10px] px-[15px]">
               <TokenButton options={options} />
               {isConnected && (
-                <div className="flex items-center space-x-1 px-3 pb-2 pt-1">
+                <div className="flex items-center space-x-1">
                   <SourceChainTokenBalance
                     balanceOverride={options?.balance}
                     symbolOverride={options?.symbol}
                   />
-                  <MaxButton onClick={handleMaxButtonClick} />
+                  <MaxButton
+                    className="rounded-sm px-[8px] py-[2px] text-[10px]"
+                    onClick={handleMaxButtonClick}
+                  />
                 </div>
               )}
             </div>

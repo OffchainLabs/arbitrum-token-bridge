@@ -38,6 +38,7 @@ import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useMode } from '../../hooks/useMode'
 import { Dialog, useDialog } from './Dialog'
 import { DialogProps } from './Dialog2'
+import { Button } from './Button'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -139,14 +140,8 @@ export function NetworkButton({
     isLoading
 
   return (
-    <button
-      className={twMerge(
-        'arb-hover flex w-max items-center gap-1 rounded border border-white/20 px-[12px] py-[8px] text-sm text-white outline-none hover:bg-white/10 md:gap-2 md:text-2xl'
-      )}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <span className="flex max-w-[220px] flex-nowrap items-center gap-1 truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
+    <Button variant="secondary" disabled={disabled} onClick={onClick}>
+      <div className="flex flex-nowrap items-center gap-1 text-sm leading-[1.1]">
         {isSource ? 'From:' : 'To: '}
         <NetworkImage
           chainId={
@@ -156,9 +151,9 @@ export function NetworkButton({
           size={20}
         />
         {getNetworkName(selectedChainId)}
-      </span>
-      {!disabled && <ChevronDownIcon width={12} />}
-    </button>
+        {!disabled && <ChevronDownIcon width={12} />}
+      </div>
+    </Button>
   )
 }
 
