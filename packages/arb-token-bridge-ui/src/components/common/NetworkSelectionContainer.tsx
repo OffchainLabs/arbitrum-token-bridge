@@ -10,11 +10,11 @@ import { Chain } from 'wagmi/chains'
 import { useDebounce } from '@uidotdev/usehooks'
 import {
   ChevronDownIcon,
+  ExclamationCircleIcon,
   ShieldExclamationIcon
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
-
 import { isNetwork, getNetworkName } from '../../util/networks'
 import { ChainId } from '../../types/ChainId'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
@@ -36,10 +36,15 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useMode } from '../../hooks/useMode'
+import { formatAmount } from '../../util/NumberUtils'
+import { BigNumber } from 'ethers'
+import { useNativeCurrencyBalancesAcrossAllChains } from '../../hooks/useNativeCurrencyBalancesAcrossAllChains'
+import { useAccount } from 'wagmi'
 import { Dialog, useDialog } from './Dialog'
 import { DialogProps } from './Dialog2'
 import { Button } from './Button'
 import { Tooltip } from './Tooltip'
+import { Loader } from './atoms/Loader'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
@@ -165,13 +170,25 @@ function NetworkRow({
   isSelected,
   style,
   onClick,
-  close
+  close,
+  balanceState
 }: {
   chainId: ChainId
   isSelected: boolean
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
+  balanceState:
+    | {
+        loading: boolean
+        error: Error | null
+        value: {
+          balance: BigNumber
+          decimals: number
+          symbol: string
+        } | null
+      }
+    | undefined
 }) {
   const { network, nativeTokenData } = getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
@@ -205,13 +222,43 @@ function NetworkRow({
       >
         <span className="truncate text-base">{network.name}</span>
 
-        <Tooltip
-          content={`${nativeTokenData?.symbol ?? 'ETH'} is the native token`}
-        >
+        {!balanceState && (
+          <Tooltip
+            content={`${nativeTokenData?.symbol ?? 'ETH'} is the native token`}
+          >
+            <p className="text-sm leading-none text-white/70">
+              {nativeTokenData?.symbol ?? 'ETH'}
+            </p>
+          </Tooltip>
+        )}
+
+        {balanceState && (
           <p className="text-sm leading-none text-white/70">
-            0 {nativeTokenData?.symbol ?? 'ETH'}
+            {balanceState.loading && <Loader size="small" />}
+
+            {!balanceState.loading && balanceState.error && (
+              <Tooltip content="Error fetching balance">
+                <div className="flex items-center gap-1">
+                  <ExclamationCircleIcon className="h-4 w-4 text-brick" />0{' '}
+                  {nativeTokenData?.symbol ?? 'ETH'}
+                </div>
+              </Tooltip>
+            )}
+
+            {balanceState.value && (
+              <Tooltip
+                content={`${
+                  nativeTokenData?.symbol ?? 'ETH'
+                } is the native token`}
+              >
+                {formatAmount(balanceState.value.balance, {
+                  decimals: balanceState.value.decimals,
+                  symbol: balanceState.value.symbol
+                })}
+              </Tooltip>
+            )}
           </p>
-        </Tooltip>
+        )}
       </div>
     </button>
   )
@@ -258,6 +305,9 @@ function NetworksPanel({
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
   const { embedMode } = useMode()
+  const { address: walletAddress } = useAccount()
+  const { nativeCurrencyBalances } =
+    useNativeCurrencyBalancesAcrossAllChains(walletAddress)
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -366,6 +416,7 @@ function NetworksPanel({
           isSelected={networkOrChainTypeName === selectedChainId}
           onClick={onNetworkRowClick}
           close={close}
+          balanceState={nativeCurrencyBalances[networkOrChainTypeName]}
         />
       )
     },
