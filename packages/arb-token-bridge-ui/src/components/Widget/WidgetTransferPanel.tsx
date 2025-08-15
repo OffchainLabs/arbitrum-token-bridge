@@ -16,6 +16,7 @@ import { UseDialogProps } from '../common/Dialog'
 import WidgetTxHistoryIcon from '@/images/WidgetTxHistoryIcon.svg'
 import { Button } from '../common/Button'
 import { LifiSettingsButton } from '../TransferPanel/LifiSettingsButton'
+import { ReceiveFundsHeader } from '../TransferPanel/ReceiveFundsHeader'
 
 type WidgetTransferPanelProps = {
   moveFundsButtonOnClick: () => void
@@ -74,7 +75,8 @@ export function WidgetTransferPanel({
         {/* Right/Bottom panel */}
         <div className="flex h-full flex-col gap-1 min-[850px]:justify-between">
           <div className="flex flex-col gap-1">
-            <div className="mb-2 h-[30px] text-lg">Receive</div>
+            <ReceiveFundsHeader />
+
             <WidgetRoutes />
           </div>
 
