@@ -38,7 +38,7 @@ export const SearchPanelTable = ({
     <div className="flex w-[calc(100vw_-_60px)] flex-col gap-3 md:w-full">
       <form onSubmit={onSubmit} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <div className="relative flex h-full w-full grow items-center rounded border-[1px] border-gray-dark bg-black/30 text-white shadow-input">
+          <div className="relative flex h-full w-full grow items-center rounded bg-black/30 text-white shadow-input">
             <MagnifyingGlassIcon className="absolute left-2 top-1/2 -mt-2 h-4 w-4 shrink-0" />
             <input
               ref={inputRef}
@@ -57,7 +57,7 @@ export const SearchPanelTable = ({
       </form>
       <div
         className={twMerge(
-          'sm:shadow-search-panel h-[calc(100vh_-_200px)] min-h-[180px] rounded border border-gray-dark bg-black/30 md:h-[calc(100vh_-_390px)]',
+          'sm:shadow-search-panel h-[calc(100vh_-_200px)] min-h-[180px] rounded md:h-[calc(100vh_-_390px)]',
           isDialog ? 'md:max-h-[700px]' : 'md:max-h-[400px]'
         )}
         data-cy={dataCy}

@@ -39,13 +39,14 @@ import { useMode } from '../../hooks/useMode'
 import { Dialog, useDialog } from './Dialog'
 import { DialogProps } from './Dialog2'
 import { Button } from './Button'
+import { Tooltip } from './Tooltip'
 
 type NetworkType = 'core' | 'more' | 'orbit'
 
 enum ChainGroupName {
-  core = 'CORE CHAINS',
-  more = 'MORE CHAINS',
-  orbit = 'ORBIT CHAINS'
+  core = 'Core Chains',
+  more = 'More Chains',
+  orbit = 'Orbit Chains'
 }
 
 type ChainGroupInfo = {
@@ -94,6 +95,7 @@ function ChainTypeInfoRow({
 }) {
   const { name, description } = chainGroup
   const isOrbitGroup = chainGroup.name === ChainGroupName.orbit
+  const isCoreGroup = chainGroup.name === ChainGroupName.core
 
   return (
     <div
@@ -102,7 +104,8 @@ function ChainTypeInfoRow({
       className={twMerge(
         'px-4 py-3',
         !isOrbitGroup &&
-          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-white/30 before:content-[""]'
+          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-white/30 before:content-[""]',
+        isCoreGroup && 'before:h-[0px]'
       )}
     >
       <p className="text-sm text-white/70">{name}</p>
@@ -147,7 +150,7 @@ export function NetworkButton({
           chainId={
             isSource ? networks.sourceChain.id : networks.destinationChain.id
           }
-          className="h-[20px] w-[20px] p-[4px]"
+          className="h-[20px] w-[20px] p-[2px]"
           size={20}
         />
         {getNetworkName(selectedChainId)}
@@ -186,28 +189,29 @@ function NetworkRow({
       type="button"
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
-        'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
+        'flex h-[40px] w-full items-center gap-4 rounded px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
         isSelected && 'bg-white/10' // selected row
       )}
     >
       <NetworkImage
         chainId={chainId}
-        className="h-[32px] w-[32px] p-[6px]"
+        className="h-[20px] w-[20px] p-[2px]"
         size={20}
       />
-      <div className={twMerge('flex flex-col items-start gap-1')}>
-        <span className="truncate leading-[1.1]">{network.name}</span>
-        {network.description && (
-          <p
-            className="line-clamp-3 text-left text-xs leading-[1.15] text-white/70"
-            title={network.description}
-          >
-            {network.description}
-          </p>
+      <div
+        className={twMerge(
+          'flex w-full flex-row items-center justify-between gap-1'
         )}
-        <p className="text-[10px] leading-none text-white/50">
-          {nativeTokenData?.symbol ?? 'ETH'} is the native gas token
-        </p>
+      >
+        <span className="truncate text-base">{network.name}</span>
+
+        <Tooltip
+          content={`${nativeTokenData?.symbol ?? 'ETH'} is the native token`}
+        >
+          <p className="text-sm leading-none text-white/70">
+            0 {nativeTokenData?.symbol ?? 'ETH'}
+          </p>
+        </Tooltip>
       </div>
     </button>
   )
@@ -319,7 +323,7 @@ function NetworksPanel({
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
     if (rowItem.network.description) {
-      return 95
+      return 50
     }
     return 60
   }
@@ -379,7 +383,7 @@ function NetworksPanel({
   return (
     <div className="flex flex-col gap-4">
       <SearchPanelTable
-        searchInputPlaceholder="Search a network name"
+        searchInputPlaceholder="Search by network name"
         searchInputValue={networkSearched}
         searchInputOnChange={onSearchInputChange}
         errorMessage={errorMessage}
