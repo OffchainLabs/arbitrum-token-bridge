@@ -4,6 +4,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { Button } from '../common/Button'
 
 export const CROSS_CHAIN_TRANSACTIONS_STORAGE_KEY =
   'arbitrum:bridge:cross-chain-transactions'
@@ -38,13 +39,18 @@ export const WidgetTransactionHistory = (props: UseDialogProps) => {
       isFooterHidden={true}
       className="relative h-screen overflow-hidden"
     >
-      <ExternalLink
-        href="https://bridge.arbitrum.io/?tab=tx_history"
-        className="absolute right-6 top-4 flex items-center gap-1 text-sm"
+      <Button
+        variant="secondary"
+        className="absolute right-6 top-3 border-none bg-primary-cta"
       >
-        See full transaction history
-        <ArrowTopRightOnSquareIcon className="h-3 w-3" />
-      </ExternalLink>
+        <ExternalLink
+          href="https://bridge.arbitrum.io/?tab=tx_history"
+          className="flex items-center gap-1 text-xs"
+        >
+          See full transaction history
+          <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+        </ExternalLink>
+      </Button>
 
       <div className="my-3 flex flex-col gap-2">
         <div className="mt-2 text-lg">Latest Transaction Details</div>

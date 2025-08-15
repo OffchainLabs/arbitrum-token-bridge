@@ -63,6 +63,7 @@ export const ReceiveFundsHeader = () => {
           aria-label="show custom destination address input"
           onClick={toggleCustomDestinationAddressInput}
           disabled={!!destinationAddressError || isSmartContractWallet}
+          className="px-0"
         >
           <div className="flex flex-nowrap items-center gap-1 text-sm opacity-50">
             Send to custom address
