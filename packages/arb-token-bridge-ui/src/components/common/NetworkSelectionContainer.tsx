@@ -37,8 +37,7 @@ import { useSelectedToken } from '../../hooks/useSelectedToken'
 import { useDisabledFeatures } from '../../hooks/useDisabledFeatures'
 import { useMode } from '../../hooks/useMode'
 import { formatAmount } from '../../util/NumberUtils'
-import { BigNumber } from 'ethers'
-import { useNativeCurrencyBalancesAcrossAllChains } from '../../hooks/useNativeCurrencyBalancesAcrossAllChains'
+import { useNativeCurrencyBalanceForChainId } from '../../hooks/useNativeCurrencyBalanceForChainId'
 import { useAccount } from 'wagmi'
 import { Dialog, useDialog } from './Dialog'
 import { DialogProps } from './Dialog2'
@@ -170,28 +169,22 @@ function NetworkRow({
   isSelected,
   style,
   onClick,
-  close,
-  balanceState
+  close
 }: {
   chainId: ChainId
   isSelected: boolean
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
-  balanceState:
-    | {
-        loading: boolean
-        error: Error | null
-        value: {
-          balance: BigNumber
-          decimals: number
-          symbol: string
-        } | null
-      }
-    | undefined
 }) {
   const { network, nativeTokenData } = getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
+  const { address: walletAddress } = useAccount()
+  const {
+    data: balanceState,
+    isLoading: isLoadingBalance,
+    error: balanceError
+  } = useNativeCurrencyBalanceForChainId(chainId, walletAddress)
 
   function handleClick() {
     onClick(chain)
@@ -222,43 +215,43 @@ function NetworkRow({
       >
         <span className="truncate text-base">{network.name}</span>
 
-        {!balanceState && (
-          <Tooltip
-            content={`${nativeTokenData?.symbol ?? 'ETH'} is the native token`}
-          >
-            <p className="text-sm leading-none text-white/70">
-              {nativeTokenData?.symbol ?? 'ETH'}
-            </p>
-          </Tooltip>
-        )}
+        <p className="text-sm leading-none text-white/70">
+          {!walletAddress && (
+            <Tooltip
+              content={`${
+                nativeTokenData?.symbol ?? 'ETH'
+              } is the native token`}
+            >
+              <p className="text-sm leading-none text-white/70">
+                {nativeTokenData?.symbol ?? 'ETH'}
+              </p>
+            </Tooltip>
+          )}
 
-        {balanceState && (
-          <p className="text-sm leading-none text-white/70">
-            {balanceState.loading && <Loader size="small" />}
+          {isLoadingBalance && <Loader size="small" />}
 
-            {!balanceState.loading && balanceState.error && (
-              <Tooltip content="Error fetching balance">
-                <div className="flex items-center gap-1">
-                  <ExclamationCircleIcon className="h-4 w-4 text-brick" />0{' '}
-                  {nativeTokenData?.symbol ?? 'ETH'}
-                </div>
-              </Tooltip>
-            )}
+          {!isLoadingBalance && balanceError && (
+            <Tooltip content="Error fetching balance">
+              <div className="flex items-center gap-1">
+                <ExclamationCircleIcon className="h-4 w-4 text-brick" />0{' '}
+                {nativeTokenData?.symbol ?? 'ETH'}
+              </div>
+            </Tooltip>
+          )}
 
-            {balanceState.value && (
-              <Tooltip
-                content={`${
-                  nativeTokenData?.symbol ?? 'ETH'
-                } is the native token`}
-              >
-                {formatAmount(balanceState.value.balance, {
-                  decimals: balanceState.value.decimals,
-                  symbol: balanceState.value.symbol
-                })}
-              </Tooltip>
-            )}
-          </p>
-        )}
+          {balanceState && (
+            <Tooltip
+              content={`${
+                nativeTokenData?.symbol ?? 'ETH'
+              } is the native token`}
+            >
+              {formatAmount(balanceState.balance, {
+                decimals: balanceState.decimals,
+                symbol: balanceState.symbol
+              })}
+            </Tooltip>
+          )}
+        </p>
       </div>
     </button>
   )
@@ -305,9 +298,6 @@ function NetworksPanel({
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
   const { embedMode } = useMode()
-  const { address: walletAddress } = useAccount()
-  const { nativeCurrencyBalances } =
-    useNativeCurrencyBalancesAcrossAllChains(walletAddress)
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -416,7 +406,6 @@ function NetworksPanel({
           isSelected={networkOrChainTypeName === selectedChainId}
           onClick={onNetworkRowClick}
           close={close}
-          balanceState={nativeCurrencyBalances[networkOrChainTypeName]}
         />
       )
     },
