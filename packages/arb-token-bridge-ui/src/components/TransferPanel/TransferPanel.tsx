@@ -93,11 +93,13 @@ import { useLifiMergedTransactionCacheStore } from '../../hooks/useLifiMergedTra
 import { getStepTransaction } from '@lifi/sdk'
 import { isValidTransactionRequest } from '../../util/isValidTransactionRequest'
 import { getAmountToPay } from './useTransferReadiness'
-import { AdvancedSettings } from './AdvancedSettings'
+import { CustomDestinationAddressInput } from './CustomDestinationAddressInput'
 import { ToSConfirmationCheckbox } from './ToSConfirmationCheckbox'
 import { WidgetTransferPanel } from '../Widget/WidgetTransferPanel'
 import { useMode } from '../../hooks/useMode'
 import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
+import { Button } from '../common/Button'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'
@@ -160,8 +162,7 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const { current: signer } = useLatest(
     useEthersSigner({ chainId: networks.sourceChain.id })
@@ -1332,6 +1333,32 @@ export function TransferPanel() {
     return transfer()
   }
 
+  const [
+    showCustomDestinationAddressInput,
+    setShowCustomDestinationAddressInput
+  ] = useState(false)
+
+  useEffect(() => {
+    // if there is an error, show the custom destination address input
+    if (destinationAddressError) {
+      setShowCustomDestinationAddressInput(true)
+      return
+    }
+
+    if (isSmartContractWallet && !showCustomDestinationAddressInput) {
+      setShowCustomDestinationAddressInput(true)
+    }
+  }, [isSmartContractWallet])
+
+  const toggleCustomDestinationAddressInput = useCallback(() => {
+    // for SCW, we must always show the custom destination address input
+    if (isSmartContractWallet) {
+      setShowCustomDestinationAddressInput(true)
+    }
+
+    setShowCustomDestinationAddressInput(prev => !prev)
+  }, [isSmartContractWallet])
+
   if (embedMode) {
     return (
       <WidgetTransferPanel
@@ -1352,21 +1379,49 @@ export function TransferPanel() {
 
       <div
         className={twMerge(
-          'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
+          'mb-7 flex flex-col gap-4 border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
           'sm:rounded sm:border'
         )}
       >
         <TransferPanelMain />
 
-        <Routes />
-        {!isLoadingAccountType && isSmartContractWallet && (
-          <AdvancedSettings
+        {/* Receive section */}
+        <div
+          className={twMerge(
+            'max-h-[40px] overflow-hidden transition-all duration-200',
+            showCustomDestinationAddressInput && 'max-h-[150px]',
+            destinationAddressError && 'max-h-[200px]'
+          )}
+        >
+          <div className="flex flex-nowrap items-center justify-between text-white">
+            <div className="text-[18px]">Receive</div>
+            <Button
+              variant="tertiary"
+              aria-label="show custom destination address input"
+              onClick={toggleCustomDestinationAddressInput}
+              disabled={!!destinationAddressError || isSmartContractWallet}
+            >
+              <div className="flex flex-nowrap items-center gap-1 text-sm opacity-50">
+                Send to custom address
+                <ChevronDownIcon
+                  className={twMerge(
+                    'h-3 w-3 transition duration-200',
+                    showCustomDestinationAddressInput && 'rotate-180'
+                  )}
+                />
+              </div>
+            </Button>
+          </div>
+
+          <CustomDestinationAddressInput
             destinationAddress={destinationAddress}
             onDestinationAddressChange={setDestinationAddress}
           />
-        )}
+        </div>
 
-        <ToSConfirmationCheckbox className="my-2" />
+        <Routes />
+
+        <ToSConfirmationCheckbox />
 
         {isConnected ? (
           <MoveFundsButton onClick={moveFundsButtonOnClick} />

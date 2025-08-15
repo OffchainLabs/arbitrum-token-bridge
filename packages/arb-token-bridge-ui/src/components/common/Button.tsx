@@ -15,7 +15,7 @@ function getClassNameForVariant(variant: ButtonVariant) {
       return 'hover:(not:disabled):opacity-70 active:(not:disabled):opacity-80 arb-hover flex w-max flex-nowrap items-center gap-1 rounded border border-white/20 px-[12px] py-[8px] text-sm text-white outline-none hover:bg-white/10 bg-transparent'
 
     case 'tertiary':
-      return 'bg-transparent border-transparent text-white'
+      return 'bg-transparent border-transparent text-white disabled:border-none disabled:bg-transparent'
   }
 }
 

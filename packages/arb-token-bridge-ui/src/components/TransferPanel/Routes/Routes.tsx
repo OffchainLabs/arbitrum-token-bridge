@@ -27,7 +27,7 @@ function Wrapper({ children }: PropsWithChildren) {
   return (
     <div
       className={twMerge(
-        'mb-2 flex flex-col gap-2',
+        'flex flex-col gap-2',
         embedMode && 'overflow-auto overflow-x-hidden rounded-md pb-2'
       )}
     >

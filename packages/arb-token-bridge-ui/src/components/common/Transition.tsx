@@ -8,6 +8,8 @@ type TransitionOptions = {
   enterSpeed?: TransitionSpeed
   leaveSpeed?: TransitionSpeed
   unmountOnLeave?: boolean
+  startClassName?: string
+  endClassName?: string
 }
 
 type TransitionProps = PropsWithChildren<{
@@ -40,11 +42,11 @@ export const Transition = (props: TransitionProps) => {
       show={isOpen}
       unmount={unmountOnLeave}
       enter={twMerge('transition ease-out', getDurationClassName(enterSpeed))}
-      enterFrom="opacity-0 translate-y-1"
-      enterTo="opacity-100 translate-y-0"
+      enterFrom={twMerge('opacity-0 translate-y-1', options?.startClassName)}
+      enterTo={twMerge('opacity-100 translate-y-0', options?.endClassName)}
       leave={twMerge('transition ease-in', getDurationClassName(leaveSpeed))}
-      leaveFrom="opacity-100 translate-y-0"
-      leaveTo="opacity-0 translate-y-1"
+      leaveFrom={twMerge('opacity-100 translate-y-0', options?.endClassName)}
+      leaveTo={twMerge('opacity-0 translate-y-1', options?.startClassName)}
       afterLeave={afterLeave}
     >
       {className ? <div className={className}>{children}</div> : children}

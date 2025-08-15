@@ -2,7 +2,7 @@ import useSWRImmutable from 'swr/immutable'
 import { isAddress } from 'ethers/lib/utils'
 import { useAccount } from 'wagmi'
 
-import { DestinationAddressErrors } from '../AdvancedSettings'
+import { DestinationAddressErrors } from '../CustomDestinationAddressInput'
 import { addressIsDenylisted } from '../../../util/AddressUtils'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { useNetworks } from '../../../hooks/useNetworks'

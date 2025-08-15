@@ -18,7 +18,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { shallow } from 'zustand/shallow'
 import { ExternalLink } from '../common/ExternalLink'
-// import { AdvancedSettings } from './AdvancedSettings'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -149,8 +148,7 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
   )
   const { destinationAddressError } =
     useDestinationAddressError(destinationAddress)
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { isSmartContractWallet } = useAccountType()
   const isLifiSupported = useMemo(
     () =>
       isValidLifiTransfer({
@@ -308,13 +306,6 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
             </div>
           </>
         )}
-        {/* {!isLoadingAccountType && !isSmartContractWallet && (
-          // For SCW, destination address is shown outside of settings panel
-          <AdvancedSettings
-            destinationAddress={destinationAddress}
-            onDestinationAddressChange={setDestinationAddress}
-          />
-        )} */}
       </div>
     </Dialog>
   )

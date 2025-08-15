@@ -272,9 +272,7 @@ export function TransferPanelMain() {
   useUpdateUSDCTokenData()
 
   return (
-    <div
-      className={twMerge('flex flex-col pb-6 lg:gap-y-1', embedMode && 'pb-0')}
-    >
+    <div className={twMerge('flex flex-col lg:gap-y-1', embedMode && 'pb-0')}>
       <SourceNetworkBox />
 
       <SwitchNetworksButton />

@@ -20,7 +20,11 @@ import { useIsBatchTransferSupported } from '../../../hooks/TransferPanel/useIsB
 import { useETHPrice } from '../../../hooks/useETHPrice'
 import { isNetwork } from '../../../util/networks'
 import { Tooltip } from '../../common/Tooltip'
-import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import {
+  ClockIcon,
+  InformationCircleIcon,
+  UserIcon
+} from '@heroicons/react/24/outline'
 import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
@@ -107,7 +111,6 @@ const DelimiterDot = () => (
 
 // Route Amount Component
 type RouteAmountProps = {
-  destinationAddress?: string
   amountReceived: string
   token: ERC20BridgeToken | NativeCurrency
   showUsdValueForReceivedToken: boolean
@@ -117,7 +120,6 @@ type RouteAmountProps = {
 }
 
 const RouteAmount = ({
-  destinationAddress,
   amountReceived,
   token,
   showUsdValueForReceivedToken,
@@ -128,17 +130,7 @@ const RouteAmount = ({
   const { ethToUSD } = useETHPrice()
 
   return (
-    <div className="flex min-w-36 flex-col">
-      {/* if custom destination address is the receiver, explicitly show it */}
-      {destinationAddress && (
-        <span className="flex gap-1">
-          <Tooltip content={destinationAddress}>
-            {shortenAddress(destinationAddress)}
-          </Tooltip>
-          will receive:
-        </span>
-      )}
-
+    <div className="flex min-w-36 flex-col gap-1">
       <div className="flex flex-col text-lg">
         <div className="flex flex-row items-center gap-[15px]">
           <TokenLogo
@@ -411,7 +403,6 @@ export const Route = React.memo(
       >
         <div className="flex flex-row flex-nowrap items-center justify-between gap-2">
           <RouteAmount
-            destinationAddress={destinationAddress}
             amountReceived={amountReceived}
             token={token}
             showUsdValueForReceivedToken={showUsdValueForReceivedToken}
@@ -444,6 +435,19 @@ export const Route = React.memo(
             bridgeFee={bridgeFee}
             showUSDValueForBridgeFee={showUSDValueForBridgeFee}
           />
+
+          {/* if custom destination address is the receiver, explicitly show it */}
+          {destinationAddress && <DelimiterDot />}
+          {destinationAddress && (
+            <Tooltip
+              content={`${destinationAddress} will be the recipient of the funds. Be sure you mean to send it here.`}
+            >
+              <div className="flex items-center gap-1 text-xs">
+                <UserIcon className="h-3 w-3" />
+                {shortenAddress(destinationAddress)} will receive
+              </div>
+            </Tooltip>
+          )}
         </div>
       </button>
     )
