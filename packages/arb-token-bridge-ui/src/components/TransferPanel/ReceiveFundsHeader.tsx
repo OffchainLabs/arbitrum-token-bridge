@@ -51,19 +51,19 @@ export const ReceiveFundsHeader = () => {
   return (
     <div
       className={twMerge(
-        'max-h-[40px] overflow-hidden transition-all duration-200',
-        showCustomDestinationAddressInput && 'max-h-[150px]',
-        destinationAddressError && 'max-h-[200px]'
+        'flex max-h-[40px] flex-col gap-3 overflow-hidden transition-all duration-200',
+        showCustomDestinationAddressInput && 'max-h-[180px]',
+        destinationAddressError && 'max-h-[230px]'
       )}
     >
-      <div className="flex flex-nowrap items-center justify-between text-white">
+      <div className="flex flex-nowrap items-end justify-between text-white">
         <div className="text-[18px]">Receive</div>
         <Button
           variant="tertiary"
-          aria-label="show custom destination address input"
+          aria-label="Show Custom Destination Address"
           onClick={toggleCustomDestinationAddressInput}
           disabled={!!destinationAddressError || isSmartContractWallet}
-          className="px-0"
+          className="p-0"
         >
           <div className="flex flex-nowrap items-center gap-1 text-sm opacity-50">
             Send to custom address

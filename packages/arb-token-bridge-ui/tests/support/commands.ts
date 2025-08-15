@@ -114,8 +114,8 @@ export const searchAndSelectToken = ({
 }
 
 export const fillCustomDestinationAddress = () => {
-  // click on settings
-  cy.findByLabelText('Open Settings')
+  // click on Send to custom address toggle button
+  cy.findByLabelText('Show Custom Destination Address')
     .scrollIntoView()
     .should('be.visible')
     .click()

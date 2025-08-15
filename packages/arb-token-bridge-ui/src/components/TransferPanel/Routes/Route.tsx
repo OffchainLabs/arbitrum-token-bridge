@@ -30,6 +30,7 @@ import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { Token } from '../../../pages/api/crosschain-transfers/types'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { useMode } from '../../../hooks/useMode'
 
 // Types
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
@@ -55,11 +56,14 @@ function Tag({
   children,
   className
 }: PropsWithChildren<{ className: string }>) {
+  const { embedMode } = useMode()
+
   return (
     <div className="flex">
       <div
         className={twMerge(
           'flex h-fit items-center space-x-1 truncate rounded px-2 py-1 text-center text-xs',
+          embedMode && 'min-[850px]:hidden',
           className
         )}
       >
@@ -300,11 +304,13 @@ const RouteFees = ({
               </span>
               {showUSDValueForBridgeFee && (
                 <div className="text-xs tabular-nums opacity-80">
+                  (
                   {formatUSD(
                     ethToUSD(
                       Number(utils.formatEther(BigNumber.from(bridgeFee.fee)))
                     )
                   )}
+                  )
                 </div>
               )}
             </div>
