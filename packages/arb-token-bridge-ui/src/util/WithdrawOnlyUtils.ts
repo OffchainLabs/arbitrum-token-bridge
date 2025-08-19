@@ -255,6 +255,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0xdDb46999F8891663a8F2828d25298f70416d7610',
       l1Address: '0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD',
       l2Address: '0x688c202577670fa1ae186c433965d178f26347f9'
+    },
+    {
+      symbol: 'RLC',
+      l2CustomAddr: '0xe649e6a1F2afc63ca268C2363691ceCAF75CF47C',
+      l1Address: '0x607f4c5bb672230e8672085532f7e901544a7375',
+      l2Address: '0xe575586566b02a16338c199c23ca6d295d794e66'
     }
   ],
   [ChainId.ArbitrumNova]: [],
