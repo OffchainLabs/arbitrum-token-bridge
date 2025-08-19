@@ -768,56 +768,6 @@
       }
     },
     {
-      "chainId": 111188,
-      "confirmPeriodBlocks": 45818,
-      "ethBridge": {
-        "bridge": "0x39D2EEcC8B55f46aE64789E2494dE777cDDeED03",
-        "inbox": "0xf538671ddd60eE54BdD6FBb0E309c491A7A2df11",
-        "outbox": "0x8592Ca44dE1D354A20F75160F5602E5933D33761",
-        "rollup": "0xc4F7B37bE2bBbcF07373F28c61b1A259dfe49d2a",
-        "sequencerInbox": "0x51C4a227D59E49E26Ea07D8e4E9Af163da4c87A0"
-      },
-      "nativeToken": "0xC0Cc5eA00cAe0894B441E3B5a3Bb57aa92F15421",
-      "explorerUrl": "https://explorer.re.al/",
-      "rpcUrl": "https://rpc.realforreal.gelato.digital/",
-      "isCustom": true,
-      "isTestnet": false,
-      "name": "re.al",
-      "slug": "re.al",
-      "parentChainId": 1,
-      "tokenBridge": {
-        "parentCustomGateway": "0xEe4718fa63683D0b716296C3fbc8334645B32882",
-        "parentErc20Gateway": "0xfC89B875970122E24C6C5ADd4Dea139443943ea7",
-        "parentGatewayRouter": "0x490f337Ac108b2a555183f5b5fd2ee84a7F45a18",
-        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0xE3B8dd8F9bD9700e9Af5bE6e3290E777E82Ad6E8",
-        "childErc20Gateway": "0x326FFa9E3836577C6C46b0aA5A5b223FB4a4067c",
-        "childGatewayRouter": "0xF0b66c2d7Abb3CbbD26463a971BF62d6c4eaDE34",
-        "childMultiCall": "0xE416f7c3B35c0bEdF2CBBb6357928612a9dB0BE1",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#1C122C",
-        "network": {
-          "name": "re.al",
-          "logo": "/images/re.al_Logo.png",
-          "description": "re.al is the DeFi-native L2 for tokenized RWAs, using off-chain yields to support deep onchain liquidity."
-        },
-        "nativeTokenData": {
-          "name": "re.al Ether",
-          "symbol": "reETH",
-          "decimals": 18,
-          "logoUrl": "/images/re.al_NativeTokenLogo.png"
-        },
-        "fastWithdrawalTime": 900000
-      }
-    },
-    {
       "chainId": 88899,
       "confirmPeriodBlocks": 274908,
       "ethBridge": {
