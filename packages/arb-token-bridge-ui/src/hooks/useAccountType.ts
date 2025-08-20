@@ -4,15 +4,10 @@ import useSWRImmutable from 'swr/immutable'
 import { useNetworks } from './useNetworks'
 import { AccountType, getAccountType } from '../util/AccountUtils'
 
-type Result =
-  | {
-      accountType: AccountType
-      isLoading: false
-    }
-  | {
-      accountType: undefined
-      isLoading: true
-    }
+type Result = {
+  accountType: AccountType | undefined
+  isLoading: boolean
+}
 
 export function useAccountType(addressOverride?: string): Result {
   const { address: walletAddress } = useAccount()
@@ -23,7 +18,7 @@ export function useAccountType(addressOverride?: string): Result {
 
   const address = addressOverride ?? walletAddress
 
-  const { data: accountType } = useSWRImmutable(
+  const { data: accountType, isLoading } = useSWRImmutable(
     address && sourceChain ? [address, sourceChain.id, 'useAccountType'] : null,
     ([_address, chainId]) =>
       getAccountType({ address: _address, chainId: chainId }),
@@ -34,15 +29,8 @@ export function useAccountType(addressOverride?: string): Result {
     }
   )
 
-  if (!accountType) {
-    return {
-      accountType: undefined,
-      isLoading: true
-    }
-  }
-
   return {
     accountType,
-    isLoading: false
+    isLoading
   }
 }
