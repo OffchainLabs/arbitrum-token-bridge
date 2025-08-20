@@ -87,7 +87,9 @@ export const AdvancedSettings = ({
   const { destinationAddressError: error } =
     useDestinationAddressError(destinationAddress)
   const { data: warning } = useSWRImmutable(
-    destinationAddress && !isLoadingAccountType
+    destinationAddress &&
+      !isLoadingAccountType &&
+      typeof accountType !== 'undefined'
       ? [
           destinationAddress,
           accountType,
