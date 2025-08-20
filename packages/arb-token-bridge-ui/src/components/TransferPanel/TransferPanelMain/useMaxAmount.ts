@@ -40,11 +40,6 @@ export function useMaxAmount() {
     )
 
     if (nativeCurrency.isCustom && isDepositMode) {
-      if (selectedToken) {
-        // For custom fee token deposits, we can set the max amount, as the fees will be paid in native-currency
-        return nativeCurrencyBalanceFormatted
-      }
-
       // for custom fee native token deposits, we will need to subtract the child gas fee from source-balance
       return String(
         parseFloat(nativeCurrencyBalanceFormatted) -
