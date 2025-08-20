@@ -11,7 +11,7 @@ import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import {
   LifiCrosschainTransfersRoute,
   Order
-} from '../../../pages/api/crosschain-transfers/lifi'
+} from '../../../app/api/crosschain-transfers/lifi'
 import {
   useLifiCrossTransfersRoute,
   UseLifiCrossTransfersRouteParams
@@ -26,7 +26,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
 import { shallow } from 'zustand/shallow'
 import { Address } from 'viem'
-import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../../app/api/crosschain-transfers/utils'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { useRoutes } from './Routes'
 import { NoteBox } from '../../common/NoteBox'

@@ -26,7 +26,7 @@ import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
-import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../../app/api/crosschain-transfers/utils'
 
 function BalanceRow({
   parentErc20Address,

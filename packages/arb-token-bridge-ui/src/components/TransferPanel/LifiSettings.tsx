@@ -23,7 +23,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { shallow } from 'zustand/shallow'
 import { ExternalLink } from '../common/ExternalLink'
-import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../app/api/crosschain-transfers/utils'
 
 function useIsLifiSupported() {
   const [networks] = useNetworks()

@@ -23,7 +23,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
 import { useAccountType } from '../../hooks/useAccountType'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
+import { isValidLifiTransfer } from '../../app/api/crosschain-transfers/utils'
 import { isDepositMode as isDepositModeUtil } from '../../util/isDepositMode'
 
 function useTools() {

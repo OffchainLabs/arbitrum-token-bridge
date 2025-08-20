@@ -101,7 +101,7 @@ import { useMode } from '../../hooks/useMode'
 import {
   getTokenOverride,
   isValidLifiTransfer
-} from '../../pages/api/crosschain-transfers/utils'
+} from '../../app/api/crosschain-transfers/utils'
 
 const signerUndefinedError = 'Signer is undefined'
 const transferNotAllowedError = 'Transfer not allowed'

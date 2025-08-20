@@ -1,7 +1,7 @@
 import { constants } from 'ethers'
 import { UseGasSummaryResult } from '../../../hooks/TransferPanel/useGasSummary'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
-import { Token } from '../../../pages/api/crosschain-transfers/types'
+import { Token } from '@/bridge/app/api/crosschain-transfers/types'
 
 export function getGasCostAndToken({
   childChainNativeCurrency,

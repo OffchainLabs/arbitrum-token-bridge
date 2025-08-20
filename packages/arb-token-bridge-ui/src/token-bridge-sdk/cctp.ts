@@ -5,7 +5,7 @@ import {
   writeContract
 } from '@wagmi/core'
 import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
-import { ChainDomain } from '../pages/api/cctp/[type]'
+import { ChainDomain } from '../app/api/cctp/[type]'
 
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
