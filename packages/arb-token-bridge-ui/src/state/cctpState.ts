@@ -180,8 +180,8 @@ export const useCCTPDeposits = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { accountType, isLoading: isLoadingAccountType } = useAccountType()
+  const isSmartContractWallet = accountType === 'smart-contract-wallet'
   const [networks] = useNetworks()
 
   const { isEthereumMainnetOrTestnet } = isNetwork(networks.sourceChain.id)
@@ -241,8 +241,8 @@ export const useCCTPWithdrawals = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { accountType, isLoading: isLoadingAccountType } = useAccountType()
+  const isSmartContractWallet = accountType === 'smart-contract-wallet'
   const [networks] = useNetworks()
 
   const { isEthereumMainnetOrTestnet } = isNetwork(networks.sourceChain.id)
@@ -561,7 +561,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   const { waitForAttestation, receiveMessage } = getCctpUtils({
     sourceChainId: tx.cctpData?.sourceChainId
   })
-  const { isSmartContractWallet } = useAccountType()
+  const { accountType } = useAccountType()
   const wagmiConfig = useConfig()
 
   const signer = useEthersSigner({ chainId: tx.destinationChainId })
@@ -606,7 +606,8 @@ export function useClaimCctp(tx: MergedTransaction) {
       trackEvent(
         isEthereumMainnetOrTestnet ? 'CCTP Withdrawal' : 'CCTP Deposit',
         {
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          accountType:
+            accountType === 'smart-contract-wallet' ? 'Smart Contract' : 'EOA',
           network: currentNetworkName,
           amount: Number(tx.value),
           complete: true
@@ -626,7 +627,7 @@ export function useClaimCctp(tx: MergedTransaction) {
       setIsClaiming(false)
     }
   }, [
-    isSmartContractWallet,
+    accountType,
     receiveMessage,
     signer,
     tx,

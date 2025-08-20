@@ -12,6 +12,7 @@ import { IBridge__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IBridge__
 import { IRollupCore__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IRollupCore__factory'
 import { getChainIdFromProvider, getProviderForChainId } from './utils'
 import { TELEPORT_ALLOWLIST } from '../util/networks'
+import { getAccountType } from '../util/AccountUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 export const isValidTeleportChainPair = ({
@@ -74,6 +75,12 @@ async function tryGetInboxFromRouter(
   if (!(await addressIsSmartContract(address, chainId))) {
     throw new Error(
       '[tryGetInboxFromRouter]: address passed is not a smart contract'
+    )
+  }
+
+  if ((await getAccountType({ address, chainId })) === 'delegated-account') {
+    throw new Error(
+      '[tryGetInboxFromRouter]: address passed is a delegated wallet'
     )
   }
 
