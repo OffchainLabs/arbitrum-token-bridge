@@ -24,12 +24,6 @@ export function useMaxAmount() {
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
 
-  console.log('xxxx', {
-    estimatedParentChainGasFees,
-    estimatedChildChainGasFees,
-    selectedToken
-  })
-
   const nativeCurrencyBalances = useNativeCurrencyBalances()
 
   const nativeCurrencyMaxAmount = useMemo(() => {
