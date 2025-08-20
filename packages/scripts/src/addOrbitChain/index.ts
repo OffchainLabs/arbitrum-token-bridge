@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import * as core from "@actions/core";
+import * as core from '@actions/core'
 import {
   initializeAndFetchData,
   processChainData,
   handleImages,
   createAndValidateOrbitChain,
-  updateOrbitChainsList,
-} from "./transforms";
+  updateOrbitChainsList
+} from './transforms'
 
 /**
  * Main function to add an Orbit chain
@@ -14,24 +14,24 @@ import {
  */
 export async function addOrbitChain(targetJsonPath: string): Promise<void> {
   try {
-    await initializeAndFetchData();
+    await initializeAndFetchData()
 
-    const { branchName, validatedIncomingData } = await processChainData();
+    const { branchName, validatedIncomingData } = await processChainData()
 
     const { chainLogoPath, nativeTokenLogoPath } = await handleImages(
       branchName,
       validatedIncomingData
-    );
+    )
 
     const orbitChain = await createAndValidateOrbitChain(
       validatedIncomingData,
       chainLogoPath,
       nativeTokenLogoPath
-    );
+    )
 
-    await updateOrbitChainsList(orbitChain, targetJsonPath);
+    await updateOrbitChainsList(orbitChain, targetJsonPath)
   } catch (error) {
-    core.setFailed(`Error in addOrbitChain: ${error}`);
-    throw error;
+    core.setFailed(`Error in addOrbitChain: ${error}`)
+    throw error
   }
 }
