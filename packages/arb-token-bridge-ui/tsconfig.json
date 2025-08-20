@@ -3,13 +3,8 @@
   "include": [
     "src",
     "additional.d.ts",
-    "postcss.config.js",
-    "prettier.config.js",
-    "tailwind.config.js",
-    "next.config.js",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "build/types/**/*.ts",
     "vitest.config.ts",
     "vitest.mocks.ts",
     "src/generateOpenGraphImages.tsx"
@@ -18,11 +13,6 @@
     "noEmit": true,
     "incremental": true,
     "jsx": "preserve",
-    "paths": {
-      "@/images/*": ["./public/images/*"],
-      "@/icons/*": ["./public/icons/*"],
-      "@/token-bridge-sdk/*": ["./src/token-bridge-sdk/*"]
-    },
     "plugins": [
       {
         "name": "next"

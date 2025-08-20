@@ -1,8 +1,8 @@
-import dotenv from "dotenv";
+import dotenv from 'dotenv'
 
 // Load environment variables for tests
-dotenv.config();
+dotenv.config()
 
 // Set GITHUB_TOKEN to "test" if it's not already set
-const githubToken = process.env.GITHUB_TOKEN || "test";
-process.env.GITHUB_TOKEN = githubToken;
+const githubToken = process.env.GITHUB_TOKEN || 'test'
+process.env.GITHUB_TOKEN = githubToken
