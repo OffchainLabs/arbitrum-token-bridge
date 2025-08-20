@@ -14,6 +14,17 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/app/*": ["./packages/app/src/*"],
+      "@/bridge/*": ["./packages/arb-token-bridge-ui/src/*"],
+      "@/token-bridge-sdk/*": [
+        "./packages/arb-token-bridge-ui/src/token-bridge-sdk/*"
+      ],
+      "@/icons/*": ["./packages/app/public/icons/*"],
+      "@/images/*": ["./packages/app/public/images/*"],
+      "@/public/*": ["./packages/app/public/*"]
+    }
   }
 }
