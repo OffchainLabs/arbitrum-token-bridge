@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { constants, utils } from 'ethers'
+import { utils } from 'ethers'
 import useSWRImmutable from 'swr/immutable'
 import { Provider } from '@ethersproject/providers'
 import {
@@ -26,7 +26,9 @@ import {
 } from '../components/TransferPanel/TokenSearchUtils'
 import { useArbQueryParams } from './useArbQueryParams'
 import { ChainId } from '../types/ChainId'
-import { getArbitrumNetwork } from '@arbitrum/sdk'
+import { sanitizeNullSelectedToken } from '../util/queryParamUtils'
+
+export { sanitizeNullSelectedToken } from '../util/queryParamUtils'
 
 const commonUSDC: ERC20BridgeToken = {
   name: 'USD Coin',
@@ -37,45 +39,6 @@ const commonUSDC: ERC20BridgeToken = {
   address: '',
   logoURI:
     'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
-}
-
-/**
- * On orbit chains with custom fee token, if selectedToken is null, we default to the native token of the chain
- * for transfer from and to the parent chain.
- * And constants.Zero (ETH) otherwise
- */
-export function sanitizeNullSelectedToken({
-  sourceChainId,
-  destinationChainId,
-  erc20ParentAddress
-}: {
-  sourceChainId: number | undefined
-  destinationChainId: number | undefined
-  erc20ParentAddress: string | null
-}) {
-  if (!sourceChainId || !destinationChainId) {
-    return undefined
-  }
-
-  try {
-    const destinationChain = getArbitrumNetwork(destinationChainId)
-
-    // If the destination chain has a custom fee token, and selectedToken is null,
-    // return native token for deposit from the parent chain, ETH otherwise
-    if (destinationChain.nativeToken && !erc20ParentAddress) {
-      if (sourceChainId === destinationChain.parentChainId) {
-        return erc20ParentAddress
-      }
-      return constants.AddressZero
-    }
-  } catch (error) {
-    // Withdrawing to non Arbitrum chains (Base, Ethereum)
-    const sourceChain = getArbitrumNetwork(sourceChainId)
-    if (sourceChain.parentChainId === destinationChainId) {
-      return erc20ParentAddress
-    }
-    return constants.AddressZero
-  }
 }
 
 export const useSelectedToken = (): [

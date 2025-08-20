@@ -11,6 +11,10 @@ module.exports = {
   experimental: {
     externalDir: true
   },
+  webpack: config => {
+    config.externals.push('pino-pretty', 'lokijs', 'encoding')
+    return config
+  },
   images: {
     remotePatterns: [
       {
@@ -39,7 +43,8 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:slug((?!^$|api/|_next/|public/)(?!.*\\.[^/]+$).+)',
+        source:
+          '/:slug((?!^$|api/|_next/|public/|restricted)(?!.*\\.[^/]+$).+)',
         missing: [
           {
             type: 'query',

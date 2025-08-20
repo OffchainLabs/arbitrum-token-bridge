@@ -12,8 +12,8 @@
   },
   "include": [
     "next-env.d.ts",
-    "pages/**/*.ts",
-    "pages/**/*.tsx",
+    "src/app/**/*.ts",
+    "src/app/**/*.tsx",
     ".next/types/**/*.ts",
     "*.js",
     "../arb-token-bridge-ui/additional.d.ts",

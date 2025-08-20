@@ -77,7 +77,7 @@ export default [
       '@next/next/no-html-link-for-pages': [
         'error',
         [
-          path.join(__dirname, '/packages/arb-token-bridge-ui/src/pages'),
+          path.join(__dirname, '/packages/arb-token-bridge-ui/src/components'),
           path.join(__dirname, '/packages/app/pages')
         ]
       ]

@@ -3,7 +3,7 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useRouteStore } from './hooks/useRouteStore'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { BigNumber } from 'ethers'
-import { Token } from '../../pages/api/crosschain-transfers/types'
+import { Token } from '@/bridge/app/api/crosschain-transfers/types'
 import { getAmountToPay } from './useTransferReadiness'
 
 type AmountProps = {

@@ -19,7 +19,7 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
 import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
-import { lifiDestinationChainIds } from '../pages/api/crosschain-transfers/constants'
+import { lifiDestinationChainIds } from '../app/api/crosschain-transfers/constants'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
