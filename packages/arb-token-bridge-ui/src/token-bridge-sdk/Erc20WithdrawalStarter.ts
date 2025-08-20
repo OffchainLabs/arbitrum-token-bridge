@@ -21,7 +21,7 @@ import {
   percentIncrease
 } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
-import { addressIsSmartContract } from '../util/AddressUtils'
+import { getAccountType } from '../util/AccountUtils'
 
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'
@@ -211,10 +211,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    const isSmartContractWallet = await addressIsSmartContract(
-      address,
-      sourceChainId
-    )
+    const isSmartContractWallet =
+      (await getAccountType({
+        address,
+        chainId: sourceChainId
+      })) === 'smart-contract-wallet'
 
     if (isSmartContractWallet && !destinationAddress) {
       throw new Error(`Missing destination address`)

@@ -28,7 +28,7 @@ export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
   const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
     networks.destinationChain.id
   )
-  const { isSmartContractWallet } = useAccountType()
+  const { accountType } = useAccountType()
   const { transferReady } = useTransferReadiness()
   const isDisabled =
     !signer ||
@@ -52,7 +52,7 @@ export function MoveFundsButton({ onClick }: MoveFundsButtonProps) {
     >
       {!selectedRoute && Number(amount) > 0
         ? 'Select route'
-        : isSmartContractWallet && isTransferring
+        : accountType === 'smart-contract-wallet' && isTransferring
         ? 'Sending request...'
         : `Move funds to ${getNetworkName(networks.destinationChain.id)}`}
     </Button>

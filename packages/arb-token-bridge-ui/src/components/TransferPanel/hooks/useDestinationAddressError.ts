@@ -45,8 +45,8 @@ export function useDestinationAddressError(destinationAddress?: string) {
   const [networks] = useNetworks()
   const { address } = useAccount()
   const { isTeleportMode } = useNetworksRelationship(networks)
-  const { isSmartContractWallet: isSenderSmartContractWallet } =
-    useAccountType()
+  const { accountType } = useAccountType()
+  const isSenderSmartContractWallet = accountType === 'smart-contract-wallet'
 
   const { data: destinationAddressError } = useSWRImmutable(
     [

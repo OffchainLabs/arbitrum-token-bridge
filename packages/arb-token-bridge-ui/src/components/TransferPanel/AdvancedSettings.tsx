@@ -10,6 +10,7 @@ import { ExternalLink } from '../common/ExternalLink'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { AccountType } from '../../util/AccountUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useDestinationAddressError } from './hooks/useDestinationAddressError'
@@ -28,11 +29,11 @@ enum DestinationAddressWarnings {
 
 async function getDestinationAddressWarning({
   destinationAddress,
-  isEOA,
+  accountType,
   destinationChainId
 }: {
   destinationAddress: string | undefined
-  isEOA: boolean
+  accountType: AccountType
   destinationChainId: number
 }) {
   if (!destinationAddress) {
@@ -49,7 +50,11 @@ async function getDestinationAddressWarning({
   )
 
   // checks if trying to send to a contract address, only checks EOA
-  if (isEOA && destinationIsSmartContract) {
+  if (
+    (accountType === 'externally-owned-account' ||
+      accountType === 'delegated-account') &&
+    destinationIsSmartContract
+  ) {
     return DestinationAddressWarnings.CONTRACT_ADDRESS
   }
 
@@ -73,19 +78,19 @@ export const AdvancedSettings = ({
     isDepositMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const { accountType, isLoading: isLoadingAccountType } = useAccountType()
 
   const [inputLocked, setInputLocked] = useState(
-    !destinationAddress && !isSmartContractWallet
+    !destinationAddress && accountType !== 'smart-contract-wallet'
   )
 
   const { destinationAddressError: error } =
     useDestinationAddressError(destinationAddress)
   const { data: warning } = useSWRImmutable(
-    destinationAddress
+    destinationAddress && !isLoadingAccountType
       ? [
           destinationAddress,
-          isEOA,
+          accountType,
           networks.destinationChain.id,
           isDepositMode,
           childChainProvider,
@@ -95,15 +100,17 @@ export const AdvancedSettings = ({
           'useDestinationAddressWarning'
         ]
       : null,
-    ([_destinationAddress, _isEOA, _destinationChainId]) =>
+    ([_destinationAddress, _accountType, _destinationChainId]) =>
       getDestinationAddressWarning({
         destinationAddress: _destinationAddress,
-        isEOA: _isEOA,
+        accountType: _accountType,
         destinationChainId: _destinationChainId
       })
   )
 
-  if (!isEOA && !isSmartContractWallet) {
+  const isSmartContractWallet = accountType === 'smart-contract-wallet'
+
+  if (isLoadingAccountType) {
     return null
   }
 
@@ -111,18 +118,18 @@ export const AdvancedSettings = ({
     <div className="mb-6 flex flex-col items-end">
       <div className="mt-2 w-full rounded border border-white/30 bg-brick-dark p-2 text-white">
         <p className="text-sm font-light">
-          {isEOA ? (
+          {isSmartContractWallet ? (
+            <>
+              With Smart Contract Wallets, you{' '}
+              <span className="font-semibold">must specify an address</span>{' '}
+              you&apos;d like the funds sent to.
+            </>
+          ) : (
             <>
               Send your funds to a different address.{' '}
               <span className="font-semibold">This is not standard.</span> Be
               sure you mean to send it here, or it may lead to an irrecoverable
               loss of funds.
-            </>
-          ) : (
-            <>
-              With Smart Contract Wallets, you{' '}
-              <span className="font-semibold">must specify an address</span>{' '}
-              you&apos;d like the funds sent to.
             </>
           )}
         </p>
@@ -138,7 +145,9 @@ export const AdvancedSettings = ({
         >
           <input
             className="w-full bg-transparent text-white placeholder-white/50"
-            placeholder={isEOA ? address : 'Enter Custom Destination Address'}
+            placeholder={
+              isSmartContractWallet ? 'Enter Destination Address' : address
+            }
             value={destinationAddress}
             disabled={inputLocked}
             spellCheck={false}
@@ -147,7 +156,7 @@ export const AdvancedSettings = ({
             }}
             aria-label="Custom Destination Address Input"
           />
-          {isEOA && (
+          {!isSmartContractWallet && (
             <button
               onClick={() => setInputLocked(!inputLocked)}
               aria-label="Custom destination input lock"

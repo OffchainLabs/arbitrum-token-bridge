@@ -119,7 +119,7 @@ export function NetworkButton({
   onClick: () => void
 }) {
   const [networks] = useNetworks()
-  const { isSmartContractWallet, isLoading } = useAccountType()
+  const { accountType, isLoading } = useAccountType()
   const isSource = type === 'source'
   const chains = useChainIdsForNetworkSelection({ isSource })
   const { isFeatureDisabled } = useDisabledFeatures()
@@ -137,7 +137,7 @@ export function NetworkButton({
   const disabled =
     isNetworkSelectionDisabled ||
     hasOneOrLessChain ||
-    (isSmartContractWallet && type === 'source') ||
+    (accountType === 'smart-contract-wallet' && type === 'source') ||
     isLoading
 
   const backgroundColor =
