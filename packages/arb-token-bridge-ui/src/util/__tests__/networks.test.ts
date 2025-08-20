@@ -63,6 +63,15 @@ beforeAll(() => {
 
   registerCustomArbitrumNetwork(xaiTestnet)
 
+  const uniteTestnetChainId = 888991
+  const uniteTestnet = orbitTestnets[uniteTestnetChainId]
+
+  if (!uniteTestnet) {
+    throw new Error(`Could not find Unite Testnet in the Orbit chains list.`)
+  }
+
+  registerCustomArbitrumNetwork(uniteTestnet)
+
   const apeChain = orbitMainnets[ChainId.ApeChain]
 
   if (!apeChain) {
@@ -344,7 +353,7 @@ describe('getDestinationChainIds', () => {
     const defaultChainId = destinationChainIds[0]
     const nonDefaultChainIds = destinationChainIds.slice(1)
 
-    expect(defaultChainId).toBe(241320161)
+    expect(defaultChainId).toBe(888991)
     expect(isAscending(nonDefaultChainIds)).toBe(true)
   })
 

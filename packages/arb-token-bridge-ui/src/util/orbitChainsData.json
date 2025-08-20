@@ -768,56 +768,6 @@
       }
     },
     {
-      "chainId": 111188,
-      "confirmPeriodBlocks": 45818,
-      "ethBridge": {
-        "bridge": "0x39D2EEcC8B55f46aE64789E2494dE777cDDeED03",
-        "inbox": "0xf538671ddd60eE54BdD6FBb0E309c491A7A2df11",
-        "outbox": "0x8592Ca44dE1D354A20F75160F5602E5933D33761",
-        "rollup": "0xc4F7B37bE2bBbcF07373F28c61b1A259dfe49d2a",
-        "sequencerInbox": "0x51C4a227D59E49E26Ea07D8e4E9Af163da4c87A0"
-      },
-      "nativeToken": "0xC0Cc5eA00cAe0894B441E3B5a3Bb57aa92F15421",
-      "explorerUrl": "https://explorer.re.al/",
-      "rpcUrl": "https://rpc.realforreal.gelato.digital/",
-      "isCustom": true,
-      "isTestnet": false,
-      "name": "re.al",
-      "slug": "re.al",
-      "parentChainId": 1,
-      "tokenBridge": {
-        "parentCustomGateway": "0xEe4718fa63683D0b716296C3fbc8334645B32882",
-        "parentErc20Gateway": "0xfC89B875970122E24C6C5ADd4Dea139443943ea7",
-        "parentGatewayRouter": "0x490f337Ac108b2a555183f5b5fd2ee84a7F45a18",
-        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0xE3B8dd8F9bD9700e9Af5bE6e3290E777E82Ad6E8",
-        "childErc20Gateway": "0x326FFa9E3836577C6C46b0aA5A5b223FB4a4067c",
-        "childGatewayRouter": "0xF0b66c2d7Abb3CbbD26463a971BF62d6c4eaDE34",
-        "childMultiCall": "0xE416f7c3B35c0bEdF2CBBb6357928612a9dB0BE1",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#1C122C",
-        "network": {
-          "name": "re.al",
-          "logo": "/images/re.al_Logo.png",
-          "description": "re.al is the DeFi-native L2 for tokenized RWAs, using off-chain yields to support deep onchain liquidity."
-        },
-        "nativeTokenData": {
-          "name": "re.al Ether",
-          "symbol": "reETH",
-          "decimals": 18,
-          "logoUrl": "/images/re.al_NativeTokenLogo.png"
-        },
-        "fastWithdrawalTime": 900000
-      }
-    },
-    {
       "chainId": 88899,
       "confirmPeriodBlocks": 274908,
       "ethBridge": {
@@ -1561,6 +1511,100 @@
           "description": "House Party Protocol (HPP) is a modular AI-powered blockchain and data infrastructure designed for the next generation of decentralized applications, built on the pillars of trustworthy data, verifiable AI, and real-world scalability."
         }
       }
+    },
+    {
+      "chainId": 241320162,
+      "confirmPeriodBlocks": 302400,
+      "ethBridge": {
+        "bridge": "0xA9C3B7672C477EeDA999A3ab1c8Eec28DEEB7d41",
+        "inbox": "0x249D5D37502f26c5286De3096e0120FeAFa6772a",
+        "outbox": "0x5997b6350580178f0eaD414500eBA266b3C8d569",
+        "rollup": "0xB6B4C28278FbBF444Ff7B6dF8fEdB7Bc90f72924",
+        "sequencerInbox": "0x5107C4267F13D0e55eab45A3129DB04AE8BB1AF3"
+      },
+      "nativeToken": "0x63C6667798fdA65E2E29228C43fbfDa0Cd4634A8",
+      "explorerUrl": "https://xmtp-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://xmtp-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "XMTP Mainnet",
+      "slug": "xmtp-mainnet",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0x17ed0dB9e4F591A8807C2c7a35C59cADb6BCED11",
+        "parentErc20Gateway": "0x8adc6180F8913DF9FD09D75eb4977b8586095A12",
+        "parentGatewayRouter": "0xE2264A562bb69fe8E791c9Ea276270A8B6e6b3F4",
+        "parentMultiCall": "0xd58210a17a1487a624E17251E13726fEc11F13E8",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x62563e22193EB53a6B06539cBb8c7497b74467B0",
+        "childErc20Gateway": "0xC47914b4a58cb1a9ba0A73EDDCA875B5e82F061b",
+        "childGatewayRouter": "0x8f0B3e879CdD6fD8dE8eD29B1131D9f2d31d0235",
+        "childMultiCall": "0x960CBcA44eb0699E58b1Ae41c8417243562B2065",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#ef4343",
+        "network": {
+          "name": "XMTP Mainnet",
+          "logo": "/images/XMTPMainnet_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "xUSD",
+          "symbol": "xUSD",
+          "logoUrl": "/images/XMTPMainnet_Logo.png"
+        }
+      }
+    },
+    {
+      "chainId": 869,
+      "confirmPeriodBlocks": 302400,
+      "ethBridge": {
+        "bridge": "0x249888c93F18f50a0EcA6a29b644F8Fa1Ff7539d",
+        "inbox": "0x46EE1145523b58125fF5ed02A8946F748B9735FB",
+        "outbox": "0xa38d087580480A2266D2e50656bF43a39982c694",
+        "rollup": "0x6Db7d43375720FFf98A50841ddddc80ACB07d969",
+        "sequencerInbox": "0x3Ba9426AcC831cDDa0Dd0b537f6b4E98670Bf280"
+      },
+      "nativeToken": "0x3e31966d4f81C72D2a55310A6365A56A4393E98D",
+      "explorerUrl": "https://explorer.worldmobile.io/",
+      "rpcUrl": "https://worldmobilechain-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "World Mobile Chain Mainnet",
+      "slug": "world-mobile-chain-mainnet",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0xC2d0262B9C071E32f65b7e4fdF9802C5C5a1Fba3",
+        "parentErc20Gateway": "0x1eEBD7c1B3D1B3030cF20145fef3FC566facE666",
+        "parentGatewayRouter": "0xBFBaAA107DF2ceBa5ef2Ca74A245F8C0A164422f",
+        "parentMultiCall": "0xd58210a17a1487a624E17251E13726fEc11F13E8",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xd4F03F5Ee514DD2daB05Fdbd53D7F884Bb83B6F9",
+        "childErc20Gateway": "0x0018453D2F57680D5BD429B41219C2f2Ba8df766",
+        "childGatewayRouter": "0x5F6c991808B08a79E7F29cA55f325877B311366d",
+        "childMultiCall": "0x59aFA0551e8A7B21e37947eb899F070C71276269",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#fdf631",
+        "network": {
+          "name": "World Mobile Chain Mainnet",
+          "logo": "/images/WorldMobileChainMainnet_Logo.svg"
+        },
+        "nativeTokenData": {
+          "name": "World Mobile Token",
+          "symbol": "WMTX",
+          "logoUrl": "/images/WorldMobileChainMainnet_NativeTokenLogo.svg"
+        }
+      }
     }
   ],
   "testnet": [
@@ -1884,48 +1928,6 @@
           "name": "Unite",
           "symbol": "UNITE",
           "logoUrl": "/images/unite-testnet_Logo.png"
-        }
-      }
-    },
-    {
-      "chainId": 98864,
-      "confirmPeriodBlocks": 60,
-      "ethBridge": {
-        "bridge": "0xF3BE11Ead404740017e4839712Af28e3c0b5C202",
-        "inbox": "0xDe66d6a8BabE07f6838ea712e708BBD47837de52",
-        "outbox": "0xE8806C827217b9C1D9610b5334254Da4d143dF3D",
-        "rollup": "0x7404f23fc2189e090E2342FaaF7f20efa7bD366a",
-        "sequencerInbox": "0xDcAb173C5D846d686856A2D3300B8a64ba12130D"
-      },
-      "explorerUrl": "https://test-explorer.plumenetwork.xyz/",
-      "rpcUrl": "https://test-rpc.plumenetwork.xyz/",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Plume Devnet (Legacy)",
-      "slug": "plume-devnet-legacy",
-      "parentChainId": 11155111,
-      "tokenBridge": {
-        "parentCustomGateway": "0xa8168b76Aa023228CaA8Ef5110477cD6d02F1508",
-        "parentErc20Gateway": "0xD7A43a671c177Ed55D2B4bCaFc597Bb669Ce4B99",
-        "parentGatewayRouter": "0x0a4671a34D411868852be59cCa137D5f251dEe52",
-        "parentMultiCall": "0x73465577E9FD7Cd585E4270F23A9eBa99B92b6eD",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
-        "parentWethGateway": "0x8a3f580894fF2C51E202Da7712f5550533a956B1",
-        "childCustomGateway": "0xA7E44Ce807F488791c6Bc8877c9CA7b36c68B9C0",
-        "childErc20Gateway": "0xc9F79584303fDcb2cf5d147D7Dc79c38EA3BEC11",
-        "childGatewayRouter": "0x52a0A8a9A65F90E160940972A0de15491172db87",
-        "childMultiCall": "0xA569f0e5e284A45F6155cbc4C904ad3cae0a82b0",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x1738E5247c85f96c9D35FE55800557C5479b7063",
-        "childWethGateway": "0xc260574cD5F7469d9a840f85A6648F74b7Bd4097"
-      },
-      "bridgeUiConfig": {
-        "color": "#F43B3A",
-        "network": {
-          "name": "Plume Devnet (Legacy)",
-          "logo": "/images/PlumeDevnet_Logo.png",
-          "description": "(Legacy) Bringing the real world onchain. Optimized for real world assets."
         }
       }
     },
