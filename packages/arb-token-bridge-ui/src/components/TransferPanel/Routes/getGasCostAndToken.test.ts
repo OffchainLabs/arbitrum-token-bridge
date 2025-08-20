@@ -3,10 +3,6 @@ import { constants } from 'ethers'
 import { getGasCostAndToken } from './getGasCostAndToken'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
 import { GasEstimationStatus } from '../../../hooks/TransferPanel/useGasSummary'
-import {
-  ERC20BridgeToken,
-  TokenType
-} from '../../../hooks/arbTokenBridge.types'
 
 describe('getGasCostAndToken', () => {
   const mockNativeCurrency: NativeCurrency & { address: string } = {
@@ -23,15 +19,6 @@ describe('getGasCostAndToken', () => {
     decimals: 18,
     isCustom: true,
     address: '0x0000000000000000000000000000000000000222'
-  }
-
-  const mockErc20: ERC20BridgeToken = {
-    name: 'ERC20',
-    symbol: 'ERC20',
-    decimals: 18,
-    type: TokenType.ERC20,
-    address: '0x1111111111111111111111111111111111111111',
-    listIds: new Set<string>()
   }
 
   describe('should return isLoading true', () => {
@@ -78,8 +65,7 @@ describe('getGasCostAndToken', () => {
             gasSummaryStatus: status as GasEstimationStatus,
             estimatedChildChainGasFees,
             estimatedParentChainGasFees,
-            isDepositMode: true,
-            selectedToken: null
+            isDepositMode: true
           })
         ).toEqual(expected)
       }
@@ -167,8 +153,7 @@ describe('getGasCostAndToken', () => {
             gasSummaryStatus: 'success',
             estimatedChildChainGasFees,
             estimatedParentChainGasFees,
-            isDepositMode,
-            selectedToken: null
+            isDepositMode
           })
         ).toEqual({
           isLoading: false,
@@ -190,7 +175,6 @@ describe('getGasCostAndToken', () => {
         childCurrency: mockCustomNativeCurrency,
         estimatedParentChainGasFees: 201,
         estimatedChildChainGasFees: 305,
-        selectedToken: null,
         expected: {
           isLoading: false,
           gasCost: [
@@ -206,7 +190,6 @@ describe('getGasCostAndToken', () => {
         childCurrency: mockCustomNativeCurrency,
         estimatedParentChainGasFees: 201,
         estimatedChildChainGasFees: 305,
-        selectedToken: mockErc20,
         expected: {
           isLoading: false,
           gasCost: [
@@ -226,7 +209,6 @@ describe('getGasCostAndToken', () => {
         childCurrency: mockNativeCurrency,
         estimatedParentChainGasFees: 634,
         estimatedChildChainGasFees: 234,
-        selectedToken: null,
         expected: {
           isLoading: false,
           gasCost: [
@@ -242,7 +224,6 @@ describe('getGasCostAndToken', () => {
         childCurrency: mockNativeCurrency,
         estimatedParentChainGasFees: 634,
         estimatedChildChainGasFees: 234,
-        selectedToken: mockErc20,
         expected: {
           isLoading: false,
           gasCost: [
@@ -269,7 +250,6 @@ describe('getGasCostAndToken', () => {
         childCurrency,
         estimatedParentChainGasFees,
         estimatedChildChainGasFees,
-        selectedToken,
         expected
       }) => {
         expect(
@@ -279,8 +259,7 @@ describe('getGasCostAndToken', () => {
             gasSummaryStatus: 'success',
             estimatedChildChainGasFees,
             estimatedParentChainGasFees,
-            isDepositMode: true,
-            selectedToken
+            isDepositMode: true
           })
         ).toEqual(expected)
       }
@@ -339,8 +318,7 @@ describe('getGasCostAndToken', () => {
             gasSummaryStatus: 'success',
             estimatedChildChainGasFees,
             estimatedParentChainGasFees,
-            isDepositMode: false,
-            selectedToken: null
+            isDepositMode: false
           })
         ).toEqual(expected)
       }
