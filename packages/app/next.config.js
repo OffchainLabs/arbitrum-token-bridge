@@ -8,6 +8,9 @@ module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
+  experimental: {
+    externalDir: true
+  },
   images: {
     remotePatterns: [
       {

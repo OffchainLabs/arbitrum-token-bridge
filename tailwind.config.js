@@ -1,8 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './src/**/*.{js,ts,jsx,tsx}',
-    '../../node_modules/@offchainlabs/cobalt/**/*.{js,ts,jsx,tsx}'
+    './packages/arb-token-bridge-ui/src/**/*.{js,ts,jsx,tsx}',
+    './packages/app/pages/**/*.{js,ts,jsx,tsx}',
+    './node_modules/@offchainlabs/cobalt/**/*.{js,ts,jsx,tsx}'
   ],
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require('@headlessui/tailwindcss')],

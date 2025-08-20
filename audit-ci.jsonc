@@ -22,6 +22,21 @@
     // GHSA-95m3-7q98-8xr5|arb-token-bridge-ui>wagmi>@wagmi/connectors>cbw-sdk>sha.js
     // Reason to ignore: Low risk client-side vulnerability in Coinbase Wallet connector only.
     // Does not affect core bridge functionality, limited to wallet-specific operations.
-    "GHSA-95m3-7q98-8xr5"
+    "GHSA-95m3-7q98-8xr5",
+    // https://github.com/advisories/GHSA-v6h2-p8h4-qcjw
+    // Vulnerability was found in juliangruber brace-expansion up to 1.1.11/2.0.1/3.0.0/4.0.0. It has been rated as problematic.
+    // Affected by this issue is the function expand of the file index.js.
+    //
+    // Reason to ignore: This is a development issue only (eslint)
+    // GHSA-v6h2-p8h4-qcjw|@typescript-eslint/parser>@typescript-eslint/typescript-estree>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|@typescript-eslint/eslint-plugin>@typescript-eslint/type-utils>@typescript-eslint/typescript-estree>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|typescript-eslint>@typescript-eslint/eslint-plugin>@typescript-eslint/type-utils>@typescript-eslint/typescript-estree>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|typescript-eslint>@typescript-eslint/eslint-plugin>@typescript-eslint/type-utils>@typescript-eslint/utils>@typescript-eslint/typescript-estree>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|eslint-config-next>@typescript-eslint/parser>@typescript-eslint/typescript-estree>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|eslint-config-next>@typescript-eslint/eslint-plugin>@typescript-eslint/type-utils>@typescript-eslint/typescript-estree>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|eslint-config-next>@typescript-eslint/eslint-plugin>@typescript-eslint/type-utils>@typescript-eslint/utils>@typescript-eslint/typescript-estree>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|@eslint/eslintrc>minimatch>brace-expansion
+    // GHSA-v6h2-p8h4-qcjw|eslint>@eslint/eslintrc>minimatch>brace-expansion
+    "GHSA-v6h2-p8h4-qcjw"
   ]
 }

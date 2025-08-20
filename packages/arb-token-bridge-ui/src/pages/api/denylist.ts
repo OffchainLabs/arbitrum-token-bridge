@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import denylist from '../../../public/__auto-generated-denylist.json'
+import denylist from '@/public/__auto-generated-denylist.json'
 
 const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7
 
