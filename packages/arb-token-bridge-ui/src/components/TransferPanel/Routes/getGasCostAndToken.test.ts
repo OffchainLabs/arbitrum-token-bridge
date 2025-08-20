@@ -181,6 +181,10 @@ describe('getGasCostAndToken', () => {
             {
               gasCost: 201,
               gasToken: mockNativeCurrency
+            },
+            {
+              gasCost: 305,
+              gasToken: mockCustomNativeCurrency
             }
           ]
         }
@@ -215,6 +219,10 @@ describe('getGasCostAndToken', () => {
             {
               gasCost: 634,
               gasToken: mockCustomNativeCurrency
+            },
+            {
+              gasCost: 234,
+              gasToken: mockNativeCurrency
             }
           ]
         }
