@@ -33,19 +33,19 @@ export function useMaxAmount() {
       return undefined
     }
 
-    // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
-    if (nativeCurrency.isCustom && isDepositMode) {
-      return utils.formatUnits(
-        nativeCurrencySourceBalance,
-        nativeCurrencyDecimalsOnSourceChain
-      )
-    }
-
     // ETH deposits and ETH/custom fee token withdrawals
     const nativeCurrencyBalanceFormatted = utils.formatUnits(
       nativeCurrencySourceBalance,
       nativeCurrencyDecimalsOnSourceChain
     )
+
+    if (nativeCurrency.isCustom && isDepositMode) {
+      // for custom fee native token deposits, we will need to subtract the child gas fee from source-balance
+      return String(
+        parseFloat(nativeCurrencyBalanceFormatted) -
+          (estimatedChildChainGasFees ?? 0) * 1.4
+      )
+    }
 
     if (
       typeof estimatedParentChainGasFees === 'undefined' ||

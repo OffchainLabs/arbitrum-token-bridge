@@ -96,8 +96,7 @@ export function ArbitrumCanonicalRoute() {
         gasSummaryStatus,
         estimatedChildChainGasFees,
         estimatedParentChainGasFees,
-        isDepositMode,
-        selectedToken
+        isDepositMode
       }),
     [
       childChainNativeCurrency,
@@ -105,8 +104,7 @@ export function ArbitrumCanonicalRoute() {
       estimatedParentChainGasFees,
       gasSummaryStatus,
       isDepositMode,
-      parentChainNativeCurrency,
-      selectedToken
+      parentChainNativeCurrency
     ]
   )
 

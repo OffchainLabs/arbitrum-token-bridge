@@ -1,7 +1,6 @@
 import { constants } from 'ethers'
 import { UseGasSummaryResult } from '../../../hooks/TransferPanel/useGasSummary'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
-import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { Token } from '../../../pages/api/crosschain-transfers/types'
 
 export function getGasCostAndToken({
@@ -10,8 +9,7 @@ export function getGasCostAndToken({
   gasSummaryStatus,
   estimatedChildChainGasFees,
   estimatedParentChainGasFees,
-  isDepositMode,
-  selectedToken
+  isDepositMode
 }: {
   childChainNativeCurrency: NativeCurrency
   parentChainNativeCurrency: NativeCurrency
@@ -19,7 +17,6 @@ export function getGasCostAndToken({
   estimatedChildChainGasFees: UseGasSummaryResult['estimatedChildChainGasFees']
   estimatedParentChainGasFees: UseGasSummaryResult['estimatedParentChainGasFees']
   isDepositMode: boolean
-  selectedToken: ERC20BridgeToken | null
 }): {
   isLoading: boolean
   gasCost: { gasCost: number; gasToken: Token }[] | null
@@ -88,15 +85,14 @@ export function getGasCostAndToken({
       {
         gasCost: estimatedParentChainGasFees!,
         gasToken: parentChainNativeCurrencyWithAddress
-      }
-    ]
+      },
 
-    if (selectedToken) {
-      gasCost.push({
+      // for custom-native-token deposits that use retryables we will need to add the child gas fee
+      {
         gasCost: estimatedChildChainGasFees!,
         gasToken: childChainNativeCurrencyWithAddress
-      })
-    }
+      }
+    ]
 
     return {
       gasCost,
