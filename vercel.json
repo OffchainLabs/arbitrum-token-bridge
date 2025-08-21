@@ -11,6 +11,10 @@
         "Access-Control-Allow-Methods": "GET",
         "Referrer-Policy": "origin-when-cross-origin"
       }
+    },
+    {
+      "$schema": "https://openapi.vercel.sh/vercel.json",
+      "outputDirectory": "/packages/app/build"
     }
   ]
 }
