@@ -159,6 +159,9 @@ export function NetworkButton({
       )}
       disabled={disabled}
       onClick={onClick}
+      aria-label={
+        (isSource ? 'From: ' : 'To: ') + getNetworkName(selectedChainId)
+      }
     >
       <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
         {isSource ? 'From:' : 'To: '} {getNetworkName(selectedChainId)}
