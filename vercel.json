@@ -1,4 +1,6 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "packages/app/build",
   "routes": [
     {
       "src": "/token-list-42161.json",
