@@ -1,4 +1,6 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "packages/app/build",
   "routes": [
     {
       "src": "/token-list-42161.json",
@@ -11,9 +13,6 @@
         "Access-Control-Allow-Methods": "GET",
         "Referrer-Policy": "origin-when-cross-origin"
       }
-    },
-    {
-      "outputDirectory": "/packages/app/build"
     }
   ]
 }
