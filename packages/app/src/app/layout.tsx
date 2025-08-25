@@ -7,7 +7,10 @@ import '@/bridge/styles/tailwind.css'
 
 export const metadata: Metadata = {
   title: 'Arbitrum Token Bridge',
-  description: 'Bridge tokens between Ethereum and Arbitrum networks'
+  description: 'Bridge tokens between Ethereum and Arbitrum networks',
+  icons: {
+    icon: '/logo.png'
+  }
 }
 
 export default function RootLayout({ children }: PropsWithChildren) {
