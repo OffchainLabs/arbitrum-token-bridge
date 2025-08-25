@@ -5,7 +5,7 @@ import { Chain } from 'wagmi/chains'
 import { UseNetworksState } from './useNetworks'
 import { isDepositMode } from '../util/isDepositMode'
 import { isValidTeleportChainPair } from '@/token-bridge-sdk/teleport'
-import { isLifiTransfer } from '../pages/api/crosschain-transfers/utils'
+import { isLifiTransfer } from '../app/api/crosschain-transfers/utils'
 import { ChainId } from '../types/ChainId'
 
 type UseNetworksRelationshipState = {

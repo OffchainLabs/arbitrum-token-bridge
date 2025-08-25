@@ -41,8 +41,8 @@ import {
 } from './hooks/useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { isLifiEnabled } from '../../util/featureFlag'
-import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
-import { Token } from '../../pages/api/crosschain-transfers/types'
+import { isValidLifiTransfer } from '../../app/api/crosschain-transfers/utils'
+import { Token } from '../../app/api/crosschain-transfers/types'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers (both deposits and withdrawals) and display an info box in the transfer panel
