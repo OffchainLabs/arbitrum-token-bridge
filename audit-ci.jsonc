@@ -16,6 +16,12 @@
     // Reason to ignore: This is a development server issue, not a production one.
     // It's not a concern for us when we are developing, so we can ignore it.
     // GHSA-3h52-269p-cp9r|arb-token-bridge-ui>next
-    "GHSA-3h52-269p-cp9r"
+    "GHSA-3h52-269p-cp9r",
+    // https://github.com/advisories/GHSA-95m3-7q98-8xr5
+    // sha.js missing type checks leading to hash rewind and passing on crafted data
+    // GHSA-95m3-7q98-8xr5|arb-token-bridge-ui>wagmi>@wagmi/connectors>cbw-sdk>sha.js
+    // Reason to ignore: Low risk client-side vulnerability in Coinbase Wallet connector only.
+    // Does not affect core bridge functionality, limited to wallet-specific operations.
+    "GHSA-95m3-7q98-8xr5"
   ]
 }
