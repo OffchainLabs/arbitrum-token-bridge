@@ -12,6 +12,7 @@ import {
 } from "vitest";
 import { IncomingChainData, Issue } from "../schemas";
 import {
+  extractImageUrlFromMarkdown,
   extractRawChainData,
   fetchAndProcessImage,
   nameToSlug,
@@ -289,6 +290,47 @@ describe("Transforms", () => {
   });
 
   describe("Image URL Extraction", () => {
+    describe("extractImageUrlFromMarkdown", () => {
+      it("should extract URL from old GitHub markdown format", () => {
+        const oldFormat =
+          "![Image](https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8)";
+        const result = extractImageUrlFromMarkdown(oldFormat);
+        expect(result).toBe(
+          "https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8"
+        );
+      });
+
+      it("should extract URL from new GitHub HTML img tag format", () => {
+        const newFormat = `<img width="1034" height="557" alt="Image" src="https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8" />`;
+        const result = extractImageUrlFromMarkdown(newFormat);
+        expect(result).toBe(
+          "https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8"
+        );
+      });
+
+      it("should extract URL from HTML img tag with single quotes", () => {
+        const singleQuoteFormat = `<img width="1034" height="557" alt="Image" src='https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8' />`;
+        const result = extractImageUrlFromMarkdown(singleQuoteFormat);
+        expect(result).toBe(
+          "https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8"
+        );
+      });
+
+      it("should extract URL from HTML img tag with different attribute order", () => {
+        const differentOrderFormat = `<img src="https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8" width="1034" height="557" alt="Image" />`;
+        const result = extractImageUrlFromMarkdown(differentOrderFormat);
+        expect(result).toBe(
+          "https://github.com/user-attachments/assets/0e5ddf1f-0847-457d-be07-f489d68630e8"
+        );
+      });
+
+      it("should return original string if no image format is detected", () => {
+        const plainUrl = "https://example.com/direct-url.png";
+        const result = extractImageUrlFromMarkdown(plainUrl);
+        expect(result).toBe(plainUrl);
+      });
+    });
+
     it("should handle both markdown and direct URL for chain and token logos", () => {
       const issue: Issue = {
         body: `
