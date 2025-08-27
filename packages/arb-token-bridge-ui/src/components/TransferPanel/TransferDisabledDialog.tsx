@@ -14,7 +14,7 @@ import { useSelectedTokenIsWithdrawOnly } from './hooks/useSelectedTokenIsWithdr
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { addressesEqual } from '../../util/AddressUtils'
-import { isValidLifiTransfer } from '../../pages/api/crosschain-transfers/utils'
+import { isValidLifiTransfer } from '../../app/api/crosschain-transfers/utils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { isLifiEnabled } from '../../util/featureFlag'
 import { CommonAddress } from '../../util/CommonAddressUtils'

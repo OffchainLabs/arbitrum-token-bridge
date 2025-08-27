@@ -6,7 +6,11 @@
   "dependencies": {
     "next": "^14.2.30",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tippy.js": "^6.3.7",
+    "use-query-params": "^2.2.1",
+    "@rainbow-me/rainbowkit": "^2.2.4",
+    "react-toastify": "^9.1.1"
   },
   "scripts": {
     "predev": "yarn workspace arb-token-bridge-ui generateDenylist",

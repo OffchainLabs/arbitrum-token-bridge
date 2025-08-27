@@ -12,8 +12,8 @@ import {
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { Address } from 'viem'
-import { TransactionRequest } from '../pages/api/crosschain-transfers/lifi'
-import { Token } from '../pages/api/crosschain-transfers/types'
+import { TransactionRequest } from '@/bridge/app/api/crosschain-transfers/lifi'
+import { Token } from '@/bridge/app/api/crosschain-transfers/types'
 
 export type AmountWithToken = {
   amount: BigNumber
