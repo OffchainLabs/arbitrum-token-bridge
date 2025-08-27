@@ -157,6 +157,15 @@ export const extractImageUrlFromMarkdown = (
   if (markdownMatch && markdownMatch[1]) {
     return markdownMatch[1];
   }
+
+  // Match HTML img tag syntax: <img ... src="url" ... />
+  const htmlMatch = markdown.match(
+    /<img[^>]+src\s*=\s*["']([^"']+)["'][^>]*\/?>/
+  );
+  if (htmlMatch && htmlMatch[1]) {
+    return htmlMatch[1];
+  }
+
   return markdown;
 };
 
