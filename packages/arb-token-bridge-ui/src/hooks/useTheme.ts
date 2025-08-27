@@ -1,16 +1,7 @@
 import useSWRImmutable from 'swr/immutable'
 import { useArbQueryParams } from './useArbQueryParams'
 import { unica } from '../components/common/Font'
-
-// Theme configuration types
-export interface ThemeConfig {
-  borderRadius?: string
-  widgetBackgroundColor?: string
-  borderWidth?: string
-  networkThemeOverrideColor?: string
-  primaryCtaColor?: string
-  fontFamily?: string
-}
+import { ThemeConfig } from '../util/queryParamUtils'
 
 export const defaultTheme: ThemeConfig = {
   borderRadius: '5px',

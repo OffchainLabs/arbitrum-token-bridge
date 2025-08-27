@@ -18,7 +18,7 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 import { twMerge } from 'tailwind-merge'
 import { useMode } from '../../../hooks/useMode'
-import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
+import { isValidLifiTransfer } from '../../../app/api/crosschain-transfers/utils'
 import { useIsArbitrumCanonicalTransfer } from '../hooks/useIsCanonicalTransfer'
 
 function Wrapper({ children }: PropsWithChildren) {
@@ -151,7 +151,13 @@ export function getRoutes({
   }
 
   return {
-    ChildRoutes: <>{ChildRoutes.map(ChildRoute => ChildRoute)}</>,
+    ChildRoutes: (
+      <>
+        {ChildRoutes.map((ChildRoute, index) =>
+          React.cloneElement(ChildRoute, { key: index })
+        )}
+      </>
+    ),
     routes
   }
 }

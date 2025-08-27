@@ -14,7 +14,7 @@ import {
 } from '@arbitrum/sdk'
 import { isDepositMode } from '../util/isDepositMode'
 import { EnhancedProvider } from './EnhancedProvider'
-import { isValidLifiTransfer } from '../pages/api/crosschain-transfers/utils'
+import { isValidLifiTransfer } from '../app/api/crosschain-transfers/utils'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()

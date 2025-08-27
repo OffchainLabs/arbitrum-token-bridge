@@ -25,7 +25,7 @@ import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { useMode } from '../../../hooks/useMode'
-import { Token } from '../../../pages/api/crosschain-transfers/types'
+import { Token } from '@/bridge/app/api/crosschain-transfers/types'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
 // Types
