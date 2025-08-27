@@ -107,6 +107,7 @@ describe('Batch Deposit', () => {
 
     context('should show gas estimations and summary', () => {
       cy.typeAmount(ERC20AmountToSend)
+      cy.wait(2_000)
       cy.typeAmount2(nativeCurrencyAmountToSend)
       cy.findGasFeeSummary(zeroToLessThanOneEth)
     })
@@ -189,6 +190,7 @@ describe('Batch Deposit', () => {
 
     context('should fill custom destination address successfully', () => {
       cy.fillCustomDestinationAddress()
+      cy.wait(1_000)
     })
 
     context('amount2 input should not exist', () => {
@@ -211,6 +213,7 @@ describe('Batch Deposit', () => {
 
     context('should show gas estimations and summary', () => {
       cy.typeAmount(ERC20AmountToSend)
+      cy.wait(2_000)
       cy.typeAmount2(nativeCurrencyAmountToSend)
       cy.findGasFeeSummary(zeroToLessThanOneEth)
     })
