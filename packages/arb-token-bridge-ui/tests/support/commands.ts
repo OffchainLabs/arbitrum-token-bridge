@@ -151,13 +151,19 @@ export function findAmount2Input(): Cypress.Chainable<JQuery<HTMLElement>> {
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findAmountInput().scrollIntoView().type(String(amount))
+  return cy
+    .findAmountInput()
+    .scrollIntoView()
+    .type(String(amount), { delay: 20 })
 }
 
 export function typeAmount2(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findAmount2Input().scrollIntoView().type(String(amount))
+  return cy
+    .findAmount2Input()
+    .scrollIntoView()
+    .type(String(amount), { delay: 20 })
 }
 
 export function findSourceChainButton(
