@@ -77,7 +77,7 @@ export {
  */
 let pendingUpdates: QueryParamConfigMap = {}
 let debounceTimeout: NodeJS.Timeout | null = null
-type SetQueryParamsParameters =
+export type SetQueryParamsParameters =
   | Partial<DecodedValueMap<QueryParamConfigMap>>
   | ((
       latestValues: DecodedValueMap<QueryParamConfigMap>
@@ -132,7 +132,7 @@ export const useArbQueryParams = () => {
   return [queryParams, debouncedSetQueryParams] as const
 }
 
-const options: QueryParamOptions = {
+export const queryParamProviderOptions: QueryParamOptions = {
   searchStringToObject: queryString.parse,
   objectToSearchString: queryString.stringify,
   updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
@@ -158,7 +158,10 @@ export function ArbQueryParamProvider({
   children: React.ReactNode
 }) {
   return (
-    <QueryParamProvider adapter={NextAdapterApp} options={options}>
+    <QueryParamProvider
+      adapter={NextAdapterApp}
+      options={queryParamProviderOptions}
+    >
       {children}
     </QueryParamProvider>
   )
