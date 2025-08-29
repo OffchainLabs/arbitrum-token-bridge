@@ -86,7 +86,7 @@ export type UseTransactionHistoryResult = {
   loading: boolean
   completed: boolean
   error: unknown
-  failedChainPairs: ChainPair[]
+  chainErrors: ChainError[]
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
@@ -94,6 +94,10 @@ export type UseTransactionHistoryResult = {
 }
 
 export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
+export type ChainError = {
+  chainPair: ChainPair
+  error: string
+}
 
 export type Deposit = Transaction
 
@@ -117,6 +121,14 @@ export const useForceFetchReceived = create<ForceFetchReceivedStore>(set => ({
   forceFetchReceived: false,
   setForceFetchReceived: forceFetchReceived => set({ forceFetchReceived })
 }))
+
+function errorToHumanReadableFeedback(err: unknown) {
+  if (err instanceof Error) {
+    return err.message
+  }
+
+  return 'An unknown error occurred. Please try again later, and if the issue persists contact support for more information.'
+}
 
 function getTransactionTimestamp(tx: Transfer) {
   if (isLifiTransfer(tx)) {
@@ -389,10 +401,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       isTestnet: isTestnetMode
     })
 
-  const { data: failedChainPairs, mutate: addFailedChainPair } =
-    useSWRImmutable<ChainPair[]>(
-      address ? ['failed_chain_pairs', address] : null
-    )
+  const { data: chainErrors = [], mutate: addChainError } = useSWRImmutable<
+    ChainError[]
+  >(address ? ['chainErrors', address] : null)
 
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
@@ -440,6 +451,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                   destinationChainId: chainPair.childChainId
                 })
               ) {
+                if (chainPair.childChainId === 42170) {
+                  console.log('nova error 1')
+                }
                 // teleporter does not support withdrawals
                 if (type === 'withdrawals') return []
 
@@ -457,15 +471,31 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 })
               }
 
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 2')
+              }
+
               const batchSizeBlocks = BATCH_FETCH_BLOCKS[chainPair.childChainId]
+
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 3')
+              }
 
               const withdrawalFn =
                 typeof batchSizeBlocks === 'number'
                   ? fetchWithdrawalsInBatches
                   : fetchWithdrawals
 
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 4')
+              }
+
               const fetcherFn =
                 type === 'deposits' ? fetchDeposits : withdrawalFn
+
+              if (chainPair.childChainId === 42170) {
+                console.log('nova error 5')
+              }
 
               // else, fetch deposits or withdrawals
               return await fetcherFn({
@@ -478,23 +508,28 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 forceFetchReceived,
                 batchSizeBlocks
               })
-            } catch {
-              addFailedChainPair(prevFailedChainPairs => {
-                if (!prevFailedChainPairs) {
-                  return [chainPair]
-                }
-                if (
-                  typeof prevFailedChainPairs.find(
-                    prevPair =>
-                      prevPair.parentChainId === chainPair.parentChainId &&
-                      prevPair.childChainId === chainPair.childChainId
-                  ) !== 'undefined'
-                ) {
-                  // already added
-                  return prevFailedChainPairs
+            } catch (err) {
+              addChainError(prevChainErrors => {
+                const newChainError = {
+                  chainPair,
+                  error: errorToHumanReadableFeedback(err)
                 }
 
-                return [...prevFailedChainPairs, chainPair]
+                if (!prevChainErrors) {
+                  return [newChainError]
+                }
+
+                const alreadyExists = prevChainErrors.some(
+                  prev =>
+                    prev.chainPair.parentChainId === chainPair.parentChainId &&
+                    prev.chainPair.childChainId === chainPair.childChainId
+                )
+
+                if (alreadyExists) {
+                  return prevChainErrors
+                }
+
+                return [...prevChainErrors, newChainError]
               })
 
               return []
@@ -505,7 +540,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     [
       address,
       isTestnetMode,
-      addFailedChainPair,
+      addChainError,
       isSmartContractWallet,
       chain,
       forceFetchReceived
@@ -557,7 +592,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
       cctpLoading ||
       oftLoading,
     error: depositsError ?? withdrawalsError,
-    failedChainPairs: failedChainPairs || []
+    chainErrors
   }
 }
 
@@ -595,7 +630,7 @@ export const useTransactionHistory = (
     data,
     loading: isLoadingTxsWithoutStatus,
     error,
-    failedChainPairs
+    chainErrors
   } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
@@ -960,7 +995,7 @@ export const useTransactionHistory = (
       transactions: newTransactionsData || [],
       loading: isLoadingTxsWithoutStatus,
       error,
-      failedChainPairs: [],
+      chainErrors: [],
       completed: true,
       pause,
       resume,
@@ -974,7 +1009,7 @@ export const useTransactionHistory = (
     loading: isLoadingFirstPage || isLoadingMore,
     completed,
     error: txPagesError ?? error,
-    failedChainPairs,
+    chainErrors,
     pause,
     resume,
     addPendingTransaction,
