@@ -18,6 +18,7 @@ import queryString from 'query-string'
 import NextAdapterApp from 'next-query-params/app'
 import {
   BooleanParam,
+  DecodedValueMap,
   QueryParamConfigMap,
   QueryParamOptions,
   QueryParamProvider,
@@ -76,11 +77,14 @@ export {
  */
 let pendingUpdates: QueryParamConfigMap = {}
 let debounceTimeout: NodeJS.Timeout | null = null
+type SetQueryParamsParameters =
+  | Partial<DecodedValueMap<QueryParamConfigMap>>
+  | ((
+      latestValues: DecodedValueMap<QueryParamConfigMap>
+    ) => Partial<DecodedValueMap<QueryParamConfigMap>>)
 
 const debouncedUpdateQueryParams = (
-  updates:
-    | QueryParamConfigMap
-    | ((prevState: QueryParamConfigMap) => QueryParamConfigMap),
+  updates: SetQueryParamsParameters,
   originalSetQueryParams: SetQuery<QueryParamConfigMap>
 ) => {
   // Handle function update: setQueryParams((prevState) => ({ ...prevState, ...newUpdate }))
@@ -120,11 +124,8 @@ export const useArbQueryParams = () => {
   const [queryParams, setQueryParams] = useQueryParams()
 
   const debouncedSetQueryParams = useCallback(
-    (
-      updates:
-        | QueryParamConfigMap
-        | ((prevState: QueryParamConfigMap) => QueryParamConfigMap)
-    ) => debouncedUpdateQueryParams(updates, setQueryParams),
+    (updates: SetQueryParamsParameters) =>
+      debouncedUpdateQueryParams(updates, setQueryParams),
     [setQueryParams]
   )
 
