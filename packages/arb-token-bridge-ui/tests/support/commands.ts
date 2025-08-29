@@ -154,7 +154,7 @@ export function typeAmount(
   return cy
     .findAmountInput()
     .scrollIntoView()
-    .type(String(amount), { delay: 30 })
+    .type(String(amount), { delay: 0 })
 }
 
 export function typeAmount2(
@@ -163,7 +163,7 @@ export function typeAmount2(
   return cy
     .findAmount2Input()
     .scrollIntoView()
-    .type(String(amount), { delay: 30 })
+    .type(String(amount), { delay: 0 })
 }
 
 export function findSourceChainButton(
