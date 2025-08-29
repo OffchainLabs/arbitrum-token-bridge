@@ -13,11 +13,15 @@
     `setQueryParams(newAmount)`
 
 */
+import { useCallback } from 'react'
 import queryString from 'query-string'
 import NextAdapterApp from 'next-query-params/app'
 import {
   BooleanParam,
+  QueryParamConfigMap,
+  QueryParamOptions,
   QueryParamProvider,
+  SetQuery,
   StringParam,
   useQueryParams,
   withDefault
@@ -67,14 +71,73 @@ export {
   TabParam
 }
 
+/**
+ * We use variables outside of the hook to share the accumulator accross multiple calls of useArbQueryParams
+ */
+let pendingUpdates: QueryParamConfigMap = {}
+let debounceTimeout: NodeJS.Timeout | null = null
+
+const debouncedUpdateQueryParams = (
+  updates:
+    | QueryParamConfigMap
+    | ((prevState: QueryParamConfigMap) => QueryParamConfigMap),
+  originalSetQueryParams: SetQuery<QueryParamConfigMap>
+) => {
+  // Handle function update: setQueryParams((prevState) => ({ ...prevState, ...newUpdate }))
+  if (typeof updates === 'function') {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout)
+      debounceTimeout = null
+    }
+
+    originalSetQueryParams(prevState =>
+      updates({ ...prevState, ...pendingUpdates })
+    )
+    pendingUpdates = {}
+  } else {
+    // Handle classic object updates: setQueryParams({ amount: "0.1" })
+    pendingUpdates = { ...pendingUpdates, ...updates }
+
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout)
+    }
+
+    debounceTimeout = setTimeout(() => {
+      originalSetQueryParams(pendingUpdates)
+      pendingUpdates = {}
+      debounceTimeout = null
+    }, 400)
+  }
+}
+
 export const useArbQueryParams = () => {
   /*
     returns [
       queryParams (getter for all query state variables),
-      setQueryParams (setter for all query state variables)
+      setQueryParams (setter for all query state variables with debounced accumulator)
     ]
   */
-  return useQueryParams({
+  const [queryParams, setQueryParams] = useQueryParams()
+
+  const debouncedSetQueryParams = useCallback(
+    (
+      updates:
+        | QueryParamConfigMap
+        | ((prevState: QueryParamConfigMap) => QueryParamConfigMap)
+    ) => debouncedUpdateQueryParams(updates, setQueryParams),
+    [setQueryParams]
+  )
+
+  return [queryParams, debouncedSetQueryParams] as const
+}
+
+const options: QueryParamOptions = {
+  searchStringToObject: queryString.parse,
+  objectToSearchString: queryString.stringify,
+  updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
+  removeDefaultsFromUrl: true,
+  enableBatching: true,
+  params: {
     sourceChain: ChainParam,
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
@@ -86,25 +149,15 @@ export const useArbQueryParams = () => {
     disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
     mode: withDefault(ModeParam, undefined), // mode: 'embed', or undefined for normal mode
     theme: withDefault(ThemeParam, defaultTheme) // theme customization
-  })
+  }
 }
-
 export function ArbQueryParamProvider({
   children
 }: {
   children: React.ReactNode
 }) {
   return (
-    <QueryParamProvider
-      adapter={NextAdapterApp}
-      options={{
-        searchStringToObject: queryString.parse,
-        objectToSearchString: queryString.stringify,
-        updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
-        removeDefaultsFromUrl: true,
-        enableBatching: true
-      }}
-    >
+    <QueryParamProvider adapter={NextAdapterApp} options={options}>
       {children}
     </QueryParamProvider>
   )
