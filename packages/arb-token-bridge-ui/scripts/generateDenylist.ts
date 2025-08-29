@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { getArbitrumNetworks } from '@arbitrum/sdk'
@@ -153,7 +154,10 @@ async function main() {
       2
     ) + '\n'
 
-  fs.writeFileSync('./public/__auto-generated-denylist.json', resultJson)
+  fs.writeFileSync(
+    path.join(__dirname, '../../app/public/__auto-generated-denylist.json'),
+    resultJson
+  )
 }
 
 main()

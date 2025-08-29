@@ -34,7 +34,7 @@ import { BlockExplorerTokenLink } from './TokenInfoTooltip'
 import { addressesEqual } from '../../util/AddressUtils'
 import { constants } from 'ethers'
 import { ChainId } from '../../types/ChainId'
-import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../app/api/crosschain-transfers/utils'
 
 function tokenListIdsToNames(ids: string[]): string {
   return ids

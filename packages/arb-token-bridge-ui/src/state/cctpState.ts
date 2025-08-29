@@ -18,7 +18,7 @@ import {
   CompletedCCTPTransfer,
   PendingCCTPTransfer,
   Response
-} from '../pages/api/cctp/[type]'
+} from '../app/api/cctp/[type]'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'

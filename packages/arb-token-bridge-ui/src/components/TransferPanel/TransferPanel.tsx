@@ -101,7 +101,7 @@ import { useMode } from '../../hooks/useMode'
 import {
   getTokenOverride,
   isValidLifiTransfer
-} from '../../pages/api/crosschain-transfers/utils'
+} from '../../app/api/crosschain-transfers/utils'
 import { NoteBox } from '../common/NoteBox'
 
 const signerUndefinedError = 'Signer is undefined'

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { PropsWithChildren } from 'react'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
@@ -7,28 +7,23 @@ import { SiteBanner } from './SiteBanner'
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 
-import 'react-toastify/dist/ReactToastify.css'
 import { useMode } from '../../hooks/useMode'
 import { unica } from './Font'
 
-export type LayoutProps = {
-  children: React.ReactNode
-}
-
-export function Layout(props: LayoutProps) {
+export function Layout(props: PropsWithChildren) {
   const { embedMode } = useMode()
 
   if (embedMode) {
     return (
-      <body className={twMerge('bg-widget-background', unica.variable)}>
+      <div className={twMerge('bg-widget-background', unica.variable)}>
         {props.children}
         <Toast />
-      </body>
+      </div>
     )
   }
 
   return (
-    <body className={twMerge('relative flex-col bg-black', unica.variable)}>
+    <div className={twMerge('relative flex-col bg-black', unica.variable)}>
       <Image
         src={EclipseBottom}
         alt="grains"
@@ -59,6 +54,6 @@ export function Layout(props: LayoutProps) {
           <Toast />
         </div>
       </div>
-    </body>
+    </div>
   )
 }
