@@ -1,25 +1,18 @@
-import { PropsWithChildren, useEffect, useState, useMemo } from 'react'
-import { PlusCircleIcon } from '@heroicons/react/24/outline'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useIsCctpTransfer } from '../hooks/useIsCctpTransfer'
-import { useIsOftV2Transfer } from '../hooks/useIsOftV2Transfer'
+import { PropsWithChildren, useEffect } from 'react'
 import { ArbitrumCanonicalRoute } from './ArbitrumCanonicalRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
 import React from 'react'
-import { RouteType, useRouteStore } from '../hooks/useRouteStore'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
+import {
+  useRouteStore,
+  useRouteManagementUpdater
+} from '../hooks/useRouteStore'
 import { LifiRoutes } from './LifiRoute'
-import { isNetwork } from '../../../util/networks'
 import { shallow } from 'zustand/shallow'
-import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
-import { useSelectedToken } from '../../../hooks/useSelectedToken'
-import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
-import { twMerge } from 'tailwind-merge'
 import { useMode } from '../../../hooks/useMode'
-import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
-import { useIsArbitrumCanonicalTransfer } from '../hooks/useIsCanonicalTransfer'
+import { twMerge } from 'tailwind-merge'
+import { Loader } from '../../common/atoms/Loader'
+import { NoteBox } from '../../common/NoteBox'
 
 function Wrapper({ children }: PropsWithChildren) {
   const { embedMode } = useMode()
@@ -36,236 +29,93 @@ function Wrapper({ children }: PropsWithChildren) {
   )
 }
 
-function ShowHiddenRoutesButton(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement>
-) {
-  return (
-    <div className="mt-1 flex justify-center text-xs text-white/80">
-      <button className="arb-hover flex space-x-1" {...props}>
-        <span>Show more routes</span>
-        <PlusCircleIcon width={16} />
-      </button>
-    </div>
-  )
-}
+// All route management logic has been moved to useRouteStore.useRouteManagement()
 
-export function getRoutes({
-  isOftV2Transfer,
-  isCctpTransfer,
-  amount,
-  isDepositMode,
-  isTestnet,
-  showHiddenRoutes,
-  setShowHiddenRoutes,
-  sourceChainId,
-  destinationChainId,
-  selectedToken,
-  isArbitrumCanonicalTransfer
-}: {
-  isOftV2Transfer: boolean
-  isCctpTransfer: boolean
-  amount: string
-  isDepositMode: boolean
-  isTestnet: boolean
-  showHiddenRoutes: boolean
-  setShowHiddenRoutes: (toggle: boolean) => void
-  sourceChainId: number
-  destinationChainId: number
-  selectedToken: ERC20BridgeToken | null
-  isArbitrumCanonicalTransfer: boolean
-}): {
-  ChildRoutes: React.JSX.Element | null
-  routes: RouteType[]
-} {
-  const isLifiEnabled = isLifiEnabledUtil() && !isTestnet
-
-  if (Number(amount) === 0) {
-    return {
-      ChildRoutes: null,
-      routes: []
-    }
-  }
-
-  if (isOftV2Transfer) {
-    return {
-      ChildRoutes: <OftV2Route />,
-      routes: ['oftV2']
-    }
-  }
-
-  if (isCctpTransfer) {
-    if (isDepositMode) {
-      return {
-        ChildRoutes: (
-          <>
-            <CctpRoute />
-            <LifiRoutes fastestTag="fastest" />
-            {showHiddenRoutes ? (
-              <ArbitrumCanonicalRoute />
-            ) : (
-              <ShowHiddenRoutesButton
-                onClick={() => setShowHiddenRoutes(true)}
-              />
-            )}
-          </>
-        ),
-        routes: showHiddenRoutes
-          ? ['cctp', 'lifi-fastest', 'arbitrum']
-          : ['cctp', 'lifi-fastest']
-      }
-    }
-
-    return {
-      ChildRoutes: (
-        <>
-          {isLifiEnabled && <LifiRoutes fastestTag="fastest" />}
-          <CctpRoute />
-        </>
-      ),
-      routes: isLifiEnabled ? ['lifi-fastest', 'cctp'] : ['cctp']
-    }
-  }
-
-  const isValidLifiRoute =
-    isLifiEnabled &&
-    isValidLifiTransfer({
-      fromToken: isDepositMode
-        ? selectedToken?.address
-        : selectedToken?.l2Address,
-      sourceChainId: sourceChainId,
-      destinationChainId: destinationChainId
-    })
-
-  const ChildRoutes: React.JSX.Element[] = []
-  const routes: RouteType[] = []
-  if (isValidLifiRoute) {
-    ChildRoutes.push(
-      <LifiRoutes cheapestTag="best-deal" fastestTag="fastest" />
-    )
-    routes.push('lifi')
-  }
-
-  if (isArbitrumCanonicalTransfer) {
-    ChildRoutes.push(<ArbitrumCanonicalRoute />)
-    routes.push('arbitrum')
-  }
-
-  return {
-    ChildRoutes: <>{ChildRoutes.map(ChildRoute => ChildRoute)}</>,
-    routes
-  }
-}
-
-export function useRoutes() {
-  const [networks] = useNetworks()
-  const { isDepositMode } = useNetworksRelationship(networks)
-  const [{ amount }] = useArbQueryParams()
-  const isCctpTransfer = useIsCctpTransfer()
-  const isOftV2Transfer = useIsOftV2Transfer()
-  const [selectedToken] = useSelectedToken()
-
-  const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
-
-  const { isTestnet } = isNetwork(networks.sourceChain.id)
-  const isArbitrumCanonicalTransfer = useIsArbitrumCanonicalTransfer()
-
-  return useMemo(
-    () =>
-      getRoutes({
-        isOftV2Transfer,
-        isCctpTransfer,
-        amount,
-        isDepositMode,
-        isTestnet,
-        showHiddenRoutes,
-        setShowHiddenRoutes,
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id,
-        selectedToken,
-        isArbitrumCanonicalTransfer
-      }),
-    [
-      isOftV2Transfer,
-      isCctpTransfer,
-      amount,
-      isDepositMode,
-      isTestnet,
-      showHiddenRoutes,
-      setShowHiddenRoutes,
-      networks.sourceChain.id,
-      networks.destinationChain.id,
-      selectedToken,
-      isArbitrumCanonicalTransfer
-    ]
-  )
-}
-
-/**
- * Display CCTP routes:
- *  - Mainnet/Arb1, Sepolia/ArbSepolia
- *  - Native USDC on Arbitrum, USDC on L1
- * Display layerzero:
- *  - Mainnet/Arb1
- *  - USDT0 on Arb
- * Display canonical route for every route except:
- *  - Native USDC on Arb1
- *  - If layerzero is displayed
- *  - Arb1/ArbNova
- *  - Teleport mode with USDC
- * Display no routes for:
- * - Arb1/ArbNova
- *
- * We memo the component, so calling `setSelectedRoute` doesn't rerender and cause infinite loop
- *
- * Tag logic:
- * LiFi + Cctp
- * - Cctp route: Best Deal
- * - Cheapest LiFi route: no tag
- * - Fastest LiFi route: Fastest
- *
- * LiFi + Canonical:
- * - Cheapest LiFi route: Best Deal
- * - Fastest LiFi route: Fastest
- * - Canonical route: Security guaranteed by Arbitrum
- *
- * Canonical + Cctp:
- * - Cctp route: Best Deal
- * - Canonical route: Security guaranteed by Arbitrum
- *
- * Canonical only: Security guaranteed by Arbitrum
- */
 export const Routes = React.memo(() => {
-  const [selectedToken] = useSelectedToken()
-  const [, setShowHiddenRoutes] = useState(false)
-  const { setSelectedRoute, clearRoute } = useRouteStore(
+  // Update the store when inputs change
+  useRouteManagementUpdater()
+
+  const { setSelectedRoute, routeState } = useRouteStore(
     state => ({
       setSelectedRoute: state.setSelectedRoute,
-      clearRoute: state.clearRoute
+      routeState: state.routeState
     }),
     shallow
   )
 
-  const { routes, ChildRoutes } = useRoutes()
-
+  // Auto-select first route if only one is available
   useEffect(() => {
-    const focus = routes[0]
-    if (routes.length === 1 && focus) {
-      setSelectedRoute(focus)
-    } else {
-      clearRoute()
+    if (routeState.eligibleRoutes.length === 1) {
+      const focus = routeState.eligibleRoutes[0]
+      if (focus) {
+        setSelectedRoute(focus)
+      }
     }
-  }, [setSelectedRoute, routes, clearRoute, ChildRoutes])
+    // Don't auto-clear when multiple routes are available - let user choose
+  }, [setSelectedRoute, routeState.eligibleRoutes])
 
-  useEffect(() => {
-    // If selected token changes, reset the showHidden route state
-    setShowHiddenRoutes(false)
-  }, [selectedToken])
+  // Show loading state while routes are being fetched
+  if (routeState.isLoading) {
+    return (
+      <Wrapper>
+        <div className="flex items-center justify-center py-8">
+          <Loader color="white" size="medium" />
+          <span className="ml-3 text-white">Finding available routes...</span>
+        </div>
+      </Wrapper>
+    )
+  }
 
-  if (!ChildRoutes) {
+  // Show error state if there are errors
+  if (routeState.error) {
+    return (
+      <Wrapper>
+        <NoteBox variant="error" className="w-fit">
+          Unable to load routes
+        </NoteBox>
+        <p className="flex flex-col text-sm text-white">
+          There was an error loading available routes. This could be due to:
+          <br /> <br />
+          <ol className="list-decimal pl-6">
+            <li>Network connectivity issues</li>
+            <li>Temporary service unavailability</li>
+            <li>Invalid input parameters</li>
+          </ol>
+          <br />
+          Please try refreshing the page or check your connection.
+        </p>
+      </Wrapper>
+    )
+  }
+
+  if (routeState.eligibleRoutes.length === 0) {
     return null
   }
 
-  return <Wrapper>{ChildRoutes}</Wrapper>
+  return (
+    <Wrapper>
+      {/* Render OFT V2 route */}
+      {routeState.data.oftV2 && <OftV2Route key="oftV2" />}
+
+      {/* Render CCTP route */}
+      {routeState.data.cctp && <CctpRoute key="cctp" />}
+
+      {/* Render LiFi routes */}
+      {routeState.data.lifi && routeState.data.lifi.length > 0 && (
+        <LifiRoutes key="lifi" cheapestTag="best-deal" fastestTag="fastest" />
+      )}
+
+      {/* Render Arbitrum canonical route */}
+      {routeState.data.arbitrum && <ArbitrumCanonicalRoute key="arbitrum" />}
+
+      {/* Show low liquidity message if needed */}
+      {routeState.flags.hasLowLiquidity && (
+        <div className="rounded border border-lilac bg-lilac/50 p-3 text-sm text-white">
+          Low liquidity detected. Some routes may not be available.
+        </div>
+      )}
+    </Wrapper>
+  )
 })
 
 Routes.displayName = 'Routes'

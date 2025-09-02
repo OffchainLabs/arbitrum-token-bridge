@@ -13,9 +13,9 @@ import {
   getContextFromRoute,
   isLifiRoute,
   RouteContext,
-  useRouteStore
+  useRouteStore,
+  RouteType
 } from '../../components/TransferPanel/hooks/useRouteStore'
-import { useRoutes } from '../../components/TransferPanel/Routes/Routes'
 import { useMemo } from 'react'
 import {
   useLifiCrossTransfersRoute,
@@ -86,11 +86,15 @@ export function useGasEstimates({
   const balance = useBalanceOnSourceChain(selectedToken)
   const wagmiConfig = useConfig()
   const context = useRouteStore(state => state.context)
-  const { routes } = useRoutes()
+
+  // Read route state from the store
+  const routeState = useRouteStore(state => state.routeState)
   const isLifiOnly = useMemo(
-    () => routes.every(route => isLifiRoute(route)),
-    [routes]
+    () =>
+      routeState.eligibleRoutes.every((route: RouteType) => isLifiRoute(route)),
+    [routeState.eligibleRoutes]
   )
+
   const overrideToken = useMemo(
     () =>
       getTokenOverride({

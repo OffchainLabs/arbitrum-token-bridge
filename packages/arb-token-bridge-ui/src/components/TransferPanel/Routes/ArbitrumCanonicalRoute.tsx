@@ -4,18 +4,10 @@ import { utils } from 'ethers'
 import { Route } from './Route'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
-import {
-  getOrbitDepositDuration,
-  getStandardDepositDuration,
-  getWithdrawalDuration
-} from '../../../hooks/useTransferDuration'
-import { isNetwork } from '../../../util/networks'
-import dayjs from 'dayjs'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
-import { useRouteStore } from '../hooks/useRouteStore'
+import { useRouteStore, ArbitrumRouteData } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { shallow } from 'zustand/shallow'
 import { getGasCostAndToken } from './getGasCostAndToken'
 import {
@@ -23,49 +15,10 @@ import {
   nativeUsdcToken
 } from '../../../util/CommonAddressUtils'
 
-function getDuration({
-  isTestnet,
-  sourceChainId,
-  isTeleportMode,
-  isWithdrawal,
-  isOrbitChain
-}: {
-  isTestnet: boolean
-  sourceChainId: number
-  isTeleportMode: boolean
-  isWithdrawal: boolean
-  isOrbitChain: boolean
-}) {
-  if (isTeleportMode) {
-    return (
-      getStandardDepositDuration(isTestnet) + getOrbitDepositDuration(isTestnet)
-    )
-  }
-
-  if (isWithdrawal) {
-    return getWithdrawalDuration({
-      createdAt: dayjs().valueOf(),
-      sourceChainId: sourceChainId
-    })
-  }
-
-  if (isOrbitChain) {
-    return getOrbitDepositDuration(isTestnet)
-  }
-
-  return getStandardDepositDuration(isTestnet)
-}
-
 export function ArbitrumCanonicalRoute() {
-  const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    isTeleportMode,
-    childChainProvider,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
+  const { childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const {
     status: gasSummaryStatus,
     estimatedParentChainGasFees,
@@ -77,7 +30,6 @@ export function ArbitrumCanonicalRoute() {
   const parentChainNativeCurrency = useNativeCurrency({
     provider: parentChainProvider
   })
-  const { isTestnet, isOrbitChain } = isNetwork(childChain.id)
 
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
@@ -87,6 +39,9 @@ export function ArbitrumCanonicalRoute() {
     shallow
   )
   const [selectedToken] = useSelectedToken()
+
+  // Get route data from centralized store
+  const arbitrumData = useRouteStore(state => state.routeState.data.arbitrum)
 
   const { gasCost, isLoading } = useMemo(
     () =>
@@ -115,24 +70,18 @@ export function ArbitrumCanonicalRoute() {
    */
   const isUsdcTransfer = isTokenNativeUSDC(selectedToken?.address)
   const overrideToken = isDepositMode ? bridgedUsdcToken : nativeUsdcToken
-  const durationMs =
-    getDuration({
-      isTestnet,
-      isWithdrawal: !isDepositMode,
-      sourceChainId: networks.sourceChain.id,
-      isTeleportMode,
-      isOrbitChain
-    }) *
-    60 *
-    1_000
+
+  if (!arbitrumData) {
+    return null
+  }
 
   return (
     <Route
       type="arbitrum"
-      bridge={'Arbitrum Bridge'}
-      bridgeIconURI={'/icons/arbitrum.svg'}
-      durationMs={durationMs}
-      amountReceived={amount.toString()}
+      bridge={arbitrumData.bridge}
+      bridgeIconURI={arbitrumData.bridgeIconURI}
+      durationMs={arbitrumData.durationMs}
+      amountReceived={arbitrumData.amountReceived}
       isLoadingGasEstimate={isLoading}
       overrideToken={isUsdcTransfer ? overrideToken : undefined}
       gasCost={

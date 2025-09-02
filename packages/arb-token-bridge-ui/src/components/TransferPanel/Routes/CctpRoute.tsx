@@ -3,11 +3,7 @@ import { shallow } from 'zustand/shallow'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { Route } from './Route'
-import { isNetwork } from '../../../util/networks'
-
-import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { useRouteStore } from '../hooks/useRouteStore'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
 import {
   ERC20BridgeToken,
@@ -15,9 +11,7 @@ import {
 } from '../../../hooks/arbTokenBridge.types'
 
 export function CctpRoute() {
-  const [{ amount }] = useArbQueryParams()
   const [{ sourceChain }] = useNetworks()
-  const { isTestnet } = isNetwork(sourceChain.id)
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
       selectedRoute: state.selectedRoute,
@@ -25,6 +19,9 @@ export function CctpRoute() {
     }),
     shallow
   )
+
+  // Get route data from centralized store
+  const cctpData = useRouteStore(state => state.routeState.data.cctp)
 
   const nativeUsdcToken: ERC20BridgeToken = useMemo(
     () => ({
@@ -40,13 +37,17 @@ export function CctpRoute() {
     [sourceChain.id]
   )
 
+  if (!cctpData) {
+    return null
+  }
+
   return (
     <Route
       type="cctp"
-      bridge={'Circle'}
-      bridgeIconURI={'/images/CctpLogoColor.svg'}
-      durationMs={getCctpTransferDuration(isTestnet) * 60 * 1_000}
-      amountReceived={amount.toString()}
+      bridge={cctpData.bridge}
+      bridgeIconURI={cctpData.bridgeIconURI}
+      durationMs={cctpData.durationMs}
+      amountReceived={cctpData.amountReceived}
       overrideToken={nativeUsdcToken}
       isLoadingGasEstimate={false}
       gasCost={undefined}
