@@ -5,7 +5,6 @@ import { LiFiStep } from '@lifi/sdk'
 import { Address } from 'viem'
 import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-transfers/lifi'
 import { BigNumber } from 'ethers'
-import { shallow } from 'zustand/shallow'
 
 export type RouteType =
   | 'arbitrum'
@@ -171,9 +170,4 @@ export function getContextFromRoute(
     destinationTxId: null,
     step: route.protocolData.step
   }
-}
-
-// Utility hook for components to access route data from the store
-export function useRouteData() {
-  return useRouteStore(state => state.routeState, shallow)
 }

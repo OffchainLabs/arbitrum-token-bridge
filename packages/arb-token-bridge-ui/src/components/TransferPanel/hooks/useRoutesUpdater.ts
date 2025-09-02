@@ -181,9 +181,6 @@ export function useRoutesUpdater() {
     error: lifiError
   } = useLifiCrossTransfersRoute(lifiParameters)
 
-  // Determine if there's an overall error
-  const hasError = lifiError && eligibleRoutes.includes('lifi')
-
   // Construct route data
   const routeData = useMemo(() => {
     const data: {
@@ -267,10 +264,22 @@ export function useRoutesUpdater() {
   const flags = useMemo(
     () => ({
       hasLowLiquidity:
-        eligibleRoutes.includes('lifi') && !lifiRoutes && !isLifiLoading
+        // Only true if:
+        // 1. LiFi is the ONLY eligible route
+        // 2. LiFi fetcher response was successful (no error)
+        // 3. LiFi response contains no routes
+        eligibleRoutes.includes('lifi') &&
+        eligibleRoutes.length === 1 &&
+        !lifiError &&
+        !isLifiLoading &&
+        (!lifiRoutes || lifiRoutes.length === 0)
     }),
-    [eligibleRoutes, lifiRoutes, isLifiLoading]
+    [eligibleRoutes, lifiError, isLifiLoading, lifiRoutes]
   )
+
+  // Only show error if ALL routes fail (LiFi is the only route and it failed)
+  const hasError =
+    lifiError && eligibleRoutes.includes('lifi') && eligibleRoutes.length === 1
 
   // Update store when data changes
   useEffect(() => {
@@ -278,8 +287,9 @@ export function useRoutesUpdater() {
       eligibleRoutes,
       isLoading: isLifiLoading,
       error: hasError
-        ? lifiError?.message || 'Failed to load LiFi routes'
+        ? `Routes failed to load: ${lifiError?.message || 'Unknown error'}`
         : null,
+
       data: routeData,
       flags
     })
@@ -287,7 +297,7 @@ export function useRoutesUpdater() {
     eligibleRoutes,
     isLifiLoading,
     hasError,
-    lifiError?.message,
+    lifiError,
     routeData,
     flags,
     setRouteState
