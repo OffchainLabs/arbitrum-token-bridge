@@ -11189,7 +11189,7 @@ next-query-params@^5.1.0:
   dependencies:
     tslib "^2.0.3"
 
-next@^14.2.30:
+next@^14.2.32:
   version "14.2.32"
   resolved "https://registry.yarnpkg.com/next/-/next-14.2.32.tgz#279b544f0c8ed023c33454ce4d563d3e05c2f3fb"
   integrity sha512-fg5g0GZ7/nFc09X8wLe6pNSU8cLWbLRG3TZzPJ1BJvi2s9m7eF991se67wliM9kR5yLHRkyGKU49MMx58s3LJg==
