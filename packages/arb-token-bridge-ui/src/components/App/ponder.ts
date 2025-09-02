@@ -9,17 +9,17 @@ const schema = {
     fromAddress: '',
     toAddress: '',
     l1TokenAddress: '',
-    amount: 0n,
+    amount: BigInt(0),
     statusOnChildChain: '',
-    parentChainTimestamp: 0n
+    parentChainTimestamp: BigInt(0)
   },
   DepositEth: {
     id: '',
     parentChainSenderAddress: '',
     childChainRecipientAddress: '',
-    ethAmountDepositedToChildChain: 0n,
+    ethAmountDepositedToChildChain: BigInt(0),
     statusOnChildChain: '',
-    parentChainTimestamp: 0n
+    parentChainTimestamp: BigInt(0)
   }
 }
 

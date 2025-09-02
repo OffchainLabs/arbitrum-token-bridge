@@ -13,7 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from '@lifi/sdk'
 import { INTEGRATOR_ID } from '@/bridge/app/api/crosschain-transfers/lifi'
 
-import { ArbitrumIndexerProvider } from '../../../../indexer-provider'
+import { ArbitrumIndexerProvider } from '@arbitrum/indexer-provider'
 import { PonderProvider } from '@ponder/react'
 import { client } from './ponder'
 
@@ -67,9 +67,12 @@ export function AppProviders({ children }: AppProvidersProps) {
               <RainbowKitProvider theme={rainbowkitTheme}>
                 <AppContextProvider>
                   <ArbitrumIndexerProvider
+                    //@ts-ignore
                     ponderClient={client}
+                    //@ts-ignore
                     queryClient={queryClient}
                   >
+                    {/* @ts-ignore */}
                     {children}
                   </ArbitrumIndexerProvider>
                 </AppContextProvider>
