@@ -172,8 +172,11 @@ export function useRoutesUpdater() {
     toToken: overrideToken.destination?.address || constants.AddressZero,
     denyBridges: disabledBridges,
     denyExchanges: disabledExchanges,
-    slippage
+    slippage,
+    enabled: eligibleRoutes.includes('lifi')
   }
+
+  console.log('xxx eligibleRoutes', eligibleRoutes, lifiParameters)
 
   const {
     data: lifiRoutes,
