@@ -71,6 +71,39 @@ describe.sequential('useArbQueryParams debouncing', () => {
     })
   })
 
+  it('should flush pending updates when receiving a call with debounce: false', async () => {
+    const { result } = renderHook(() => useArbQueryParams(), {
+      wrapper: TestWrapper
+    })
+
+    await act(async () => {
+      const [, setQueryParams] = result.current
+      setQueryParams({ amount: '10.5' }, { debounce: true })
+      setQueryParams({ sourceChain: ChainId.ArbitrumOne }, { debounce: true })
+      setQueryParams(
+        { destinationChain: ChainId.Ethereum },
+        { debounce: false }
+      )
+      setQueryParams(
+        { token: '0xaf88d065e77c8cc2239327c5edb3a432268e5831' },
+        { debounce: true }
+      )
+      vi.runOnlyPendingTimers()
+    })
+
+    expect(mockSetQueryParams).toHaveBeenCalledTimes(2)
+    // The first 2 debounced updates are merged with the first non-debounced update
+    expect(mockSetQueryParams).toHaveBeenNthCalledWith(1, {
+      amount: '10.5',
+      sourceChain: ChainId.ArbitrumOne,
+      destinationChain: ChainId.Ethereum
+    })
+
+    expect(mockSetQueryParams).toHaveBeenNthCalledWith(2, {
+      token: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+    })
+  })
+
   it('should not be batched with debounce: false', async () => {
     const { result } = renderHook(() => useArbQueryParams(), {
       wrapper: TestWrapper
@@ -86,16 +119,16 @@ describe.sequential('useArbQueryParams debouncing', () => {
     })
 
     expect(mockSetQueryParams).toHaveBeenCalledTimes(4)
-    expect(mockSetQueryParams).toHaveBeenCalledWith({
+    expect(mockSetQueryParams).toHaveBeenNthCalledWith(1, {
       amount: '10.5'
     })
-    expect(mockSetQueryParams).toHaveBeenCalledWith({
+    expect(mockSetQueryParams).toHaveBeenNthCalledWith(2, {
       sourceChain: ChainId.ArbitrumOne
     })
-    expect(mockSetQueryParams).toHaveBeenCalledWith({
+    expect(mockSetQueryParams).toHaveBeenNthCalledWith(3, {
       destinationChain: ChainId.Ethereum
     })
-    expect(mockSetQueryParams).toHaveBeenCalledWith({
+    expect(mockSetQueryParams).toHaveBeenNthCalledWith(4, {
       token: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
     })
   })
