@@ -85,7 +85,9 @@ export type SetQueryParamsParameters =
 
 const debouncedUpdateQueryParams = (
   updates: SetQueryParamsParameters,
-  originalSetQueryParams: SetQuery<QueryParamConfigMap>
+  originalSetQueryParams: SetQuery<QueryParamConfigMap>,
+  /** debounce only applies to object update, for function updates it will be called immediately */
+  debounce: boolean = false
 ) => {
   // Handle function update: setQueryParams((prevState) => ({ ...prevState, ...newUpdate }))
   if (typeof updates === 'function') {
@@ -106,11 +108,17 @@ const debouncedUpdateQueryParams = (
       clearTimeout(debounceTimeout)
     }
 
-    debounceTimeout = setTimeout(() => {
+    if (debounce) {
+      debounceTimeout = setTimeout(() => {
+        originalSetQueryParams(pendingUpdates)
+        pendingUpdates = {}
+        debounceTimeout = null
+      }, 400)
+    } else {
       originalSetQueryParams(pendingUpdates)
       pendingUpdates = {}
       debounceTimeout = null
-    }, 400)
+    }
   }
 }
 
@@ -124,8 +132,10 @@ export const useArbQueryParams = () => {
   const [queryParams, setQueryParams] = useQueryParams()
 
   const debouncedSetQueryParams = useCallback(
-    (updates: SetQueryParamsParameters) =>
-      debouncedUpdateQueryParams(updates, setQueryParams),
+    (
+      updates: SetQueryParamsParameters,
+      { debounce }: { debounce?: boolean } = {}
+    ) => debouncedUpdateQueryParams(updates, setQueryParams, debounce),
     [setQueryParams]
   )
 
