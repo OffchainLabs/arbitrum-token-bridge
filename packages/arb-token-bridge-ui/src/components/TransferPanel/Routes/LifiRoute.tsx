@@ -37,7 +37,7 @@ export function LifiRoutes({
   const selectedRoute = useRouteStore(state => state.selectedRoute)
 
   // Get LiFi routes from centralized store
-  const lifiData = useRouteStore(state => state.routeState.data.lifi)
+  const lifiData = useRouteStore(state => state.routes.lifi)
   const lifiRoutes = lifiData?.map(lifiData => lifiData.route) || []
 
   // Clear route when LiFi data changes - only if selection was lifi route

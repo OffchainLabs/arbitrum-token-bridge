@@ -21,7 +21,7 @@ export function CctpRoute() {
   )
 
   // Get route data from centralized store
-  const cctpData = useRouteStore(state => state.routeState.data.cctp)
+  const cctpData = useRouteStore(state => state.routes.cctp)
 
   const nativeUsdcToken: ERC20BridgeToken = useMemo(
     () => ({

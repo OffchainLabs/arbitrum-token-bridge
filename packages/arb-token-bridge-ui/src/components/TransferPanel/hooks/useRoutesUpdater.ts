@@ -290,8 +290,8 @@ export function useRoutesUpdater() {
         ? `Routes failed to load: ${lifiError?.message || 'Unknown error'}`
         : null,
 
-      data: routeData,
-      flags
+      routes: routeData,
+      hasLowLiquidity: flags.hasLowLiquidity
     })
   }, [
     eligibleRoutes,

@@ -85,14 +85,16 @@ export function useGasEstimates({
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
   const wagmiConfig = useConfig()
-  const context = useRouteStore(state => state.context)
-
-  // Read route state from the store
-  const routeState = useRouteStore(state => state.routeState)
+  const { context, eligibleRoutes } = useRouteStore(
+    state => ({
+      context: state.context,
+      eligibleRoutes: state.eligibleRoutes
+    }),
+    shallow
+  )
   const isLifiOnly = useMemo(
-    () =>
-      routeState.eligibleRoutes.every((route: RouteType) => isLifiRoute(route)),
-    [routeState.eligibleRoutes]
+    () => eligibleRoutes.every((route: RouteType) => isLifiRoute(route)),
+    [eligibleRoutes]
   )
 
   const overrideToken = useMemo(

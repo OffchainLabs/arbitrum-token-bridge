@@ -24,7 +24,7 @@ export function OftV2Route() {
   const [selectedToken] = useSelectedToken()
 
   // Get route data from centralized store
-  const oftV2Data = useRouteStore(state => state.routeState.data.oftV2)
+  const oftV2Data = useRouteStore(state => state.routes.oftV2)
 
   const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
     useOftV2FeeEstimates({

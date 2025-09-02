@@ -41,7 +41,7 @@ export function ArbitrumCanonicalRoute() {
   const [selectedToken] = useSelectedToken()
 
   // Get route data from centralized store
-  const arbitrumData = useRouteStore(state => state.routeState.data.arbitrum)
+  const arbitrumData = useRouteStore(state => state.routes.arbitrum)
 
   const { gasCost, isLoading } = useMemo(
     () =>

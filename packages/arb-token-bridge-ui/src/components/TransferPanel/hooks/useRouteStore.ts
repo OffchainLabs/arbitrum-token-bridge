@@ -80,31 +80,52 @@ export type RouteContext = LifiData &
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
 
 interface RouteState {
-  // Current selected route (existing functionality)
+  // Selection state
   selectedRoute: RouteType | undefined
   context: RouteContext | undefined
 
-  // New centralized route data
-  routeState: RouteStateData
+  // Route discovery
+  eligibleRoutes: RouteType[]
+  isLoading: boolean
+  error?: string | null
+
+  // Available routes
+  routes: {
+    cctp?: CctpRouteData
+    lifi?: LifiRouteData[]
+    arbitrum?: ArbitrumRouteData
+    oftV2?: OftV2RouteData
+  }
+
+  // UI flags
+  hasLowLiquidity: boolean
 
   // Actions
   setSelectedRoute: SetRoute
   clearRoute: () => void
-  setRouteState: (state: RouteStateData) => void
+  setRouteState: (
+    state: Partial<
+      Omit<
+        RouteState,
+        | 'selectedRoute'
+        | 'context'
+        | 'setSelectedRoute'
+        | 'clearRoute'
+        | 'setRouteState'
+        | 'updateRouteData'
+      >
+    >
+  ) => void
   updateRouteData: (routeType: RouteType, data: any) => void
 }
 
 export const useRouteStore = create<RouteState>()(set => ({
   selectedRoute: undefined,
   context: undefined,
-  routeState: {
-    eligibleRoutes: [],
-    isLoading: false,
-    data: {},
-    flags: {
-      hasLowLiquidity: false
-    }
-  },
+  eligibleRoutes: [],
+  isLoading: false,
+  routes: {},
+  hasLowLiquidity: false,
 
   setSelectedRoute: (route, context) =>
     set({
@@ -118,16 +139,13 @@ export const useRouteStore = create<RouteState>()(set => ({
       context: undefined
     }),
 
-  setRouteState: routeState => set({ routeState }),
+  setRouteState: updates => set(updates),
 
   updateRouteData: (routeType, data) =>
     set(state => ({
-      routeState: {
-        ...state.routeState,
-        data: {
-          ...state.routeState.data,
-          [routeType]: data
-        }
+      routes: {
+        ...state.routes,
+        [routeType]: data
       }
     }))
 }))
