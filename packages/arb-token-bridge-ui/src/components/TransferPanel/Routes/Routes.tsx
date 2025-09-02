@@ -3,10 +3,8 @@ import { ArbitrumCanonicalRoute } from './ArbitrumCanonicalRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
 import React from 'react'
-import {
-  useRouteStore,
-  useRouteManagementUpdater
-} from '../hooks/useRouteStore'
+import { useRouteStore } from '../hooks/useRouteStore'
+import { useRoutesUpdater } from '../hooks/useRoutesUpdater'
 import { LifiRoutes } from './LifiRoute'
 import { shallow } from 'zustand/shallow'
 import { useMode } from '../../../hooks/useMode'
@@ -33,7 +31,7 @@ function Wrapper({ children }: PropsWithChildren) {
 
 export const Routes = React.memo(() => {
   // Update the store when inputs change
-  useRouteManagementUpdater()
+  useRoutesUpdater()
 
   const { setSelectedRoute, routeState } = useRouteStore(
     state => ({
