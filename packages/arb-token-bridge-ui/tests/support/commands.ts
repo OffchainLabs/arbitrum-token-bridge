@@ -230,8 +230,8 @@ export function findSelectTokenButton(
     .should('have.text', text)
 }
 
-export async function switchToTransferPanelTab() {
-  await cy.wait(1_000)
+export function switchToTransferPanelTab() {
+  cy.wait(1_000)
   return cy.findByLabelText('Switch to Bridge Tab').click()
 }
 
