@@ -199,7 +199,7 @@ export const TransactionHistoryTable = (
     return (
       <EmptyTransactionHistory
         loading={loading}
-        isError={typeof error !== 'undefined'}
+        isError={!!error}
         paused={paused}
         resume={resume}
         tabType={isPendingTab ? 'pending' : 'settled'}

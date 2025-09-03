@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Provider as OvermindProvider } from 'overmind-react'
 import { WagmiProvider } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
@@ -12,6 +12,10 @@ import { getProps } from '../../util/wagmi/setup'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from '@lifi/sdk'
 import { INTEGRATOR_ID } from '@/bridge/app/api/crosschain-transfers/lifi'
+
+import { ArbitrumIndexerProvider } from '@arbitrum/indexer-provider'
+import { PonderProvider } from '@ponder/react'
+import { client } from './ponder'
 
 const rainbowkitTheme = merge(darkTheme(), {
   colors: {
@@ -45,7 +49,7 @@ Object.keys(localStorage).forEach(key => {
 })
 
 interface AppProvidersProps {
-  children: ReactNode
+  children: React.JSX.Element
 }
 
 const queryClient = new QueryClient()
@@ -55,16 +59,25 @@ export function AppProviders({ children }: AppProvidersProps) {
   const overmind = useMemo(() => createOvermind(config), [])
 
   return (
-    <OvermindProvider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiProvider config={wagmiConfig}>
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider theme={rainbowkitTheme}>
-              <AppContextProvider>{children}</AppContextProvider>
-            </RainbowKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </ArbQueryParamProvider>
-    </OvermindProvider>
+    <PonderProvider client={client}>
+      <QueryClientProvider client={queryClient}>
+        <OvermindProvider value={overmind}>
+          <ArbQueryParamProvider>
+            <WagmiProvider config={wagmiConfig}>
+              <RainbowKitProvider theme={rainbowkitTheme}>
+                <AppContextProvider>
+                  <ArbitrumIndexerProvider
+                    ponderClient={client}
+                    queryClient={queryClient}
+                  >
+                    {children}
+                  </ArbitrumIndexerProvider>
+                </AppContextProvider>
+              </RainbowKitProvider>
+            </WagmiProvider>
+          </ArbQueryParamProvider>
+        </OvermindProvider>
+      </QueryClientProvider>
+    </PonderProvider>
   )
 }
