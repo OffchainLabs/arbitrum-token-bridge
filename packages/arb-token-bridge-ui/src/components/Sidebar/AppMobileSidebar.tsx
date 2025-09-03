@@ -1,20 +1,10 @@
-'use client'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { MenuItem } from '@offchainlabs/cobalt'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import dynamic from 'next/dynamic'
 import { usePostHog } from 'posthog-js/react'
 import { useAccount } from 'wagmi'
 import { AccountMenuItem } from './AccountMenuItem'
-
-// Dynamically import the MobileSidebar component with SSR disabled
-const DynamicMobileSidebar = dynamic(
-  () =>
-    import('@offchainlabs/cobalt').then(mod => ({
-      default: mod.MobileSidebar
-    })),
-  { ssr: false }
-)
+import { MobileSidebar } from '@offchainlabs/cobalt'
 
 export const AppMobileSidebar: React.FC<React.PropsWithChildren> = () => {
   const posthog = usePostHog()
@@ -22,7 +12,7 @@ export const AppMobileSidebar: React.FC<React.PropsWithChildren> = () => {
 
   return (
     <div className="flex flex-col justify-center sm:hidden">
-      <DynamicMobileSidebar
+      <MobileSidebar
         logger={posthog}
         activeMenu="Bridge"
         mobileToggleButtonClassOverrides="bg-transparent"
@@ -42,7 +32,7 @@ export const AppMobileSidebar: React.FC<React.PropsWithChildren> = () => {
             )}
           </ConnectButton.Custom>
         )}
-      </DynamicMobileSidebar>
+      </MobileSidebar>
     </div>
   )
 }

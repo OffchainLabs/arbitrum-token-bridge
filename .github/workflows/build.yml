@@ -34,7 +34,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path:  |
-          ./packages/arb-token-bridge-ui/build
+          ./packages/app/build
         key: build-artifacts-${{ github.run_id }}
 
     - name: Install node_modules
@@ -58,5 +58,5 @@ jobs:
       uses: actions/cache/save@v4
       with:
         path: |
-          ./packages/arb-token-bridge-ui/build
+          ./packages/app/build
         key: build-artifacts-${{ github.run_id }}

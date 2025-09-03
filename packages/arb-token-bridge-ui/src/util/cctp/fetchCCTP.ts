@@ -4,7 +4,7 @@ import {
   CompletedCCTPTransfer,
   PendingCCTPTransfer,
   Response
-} from '../../pages/api/cctp/[type]'
+} from '../../app/api/cctp/[type]'
 import { utils } from 'ethers'
 
 export type FetchParams = {

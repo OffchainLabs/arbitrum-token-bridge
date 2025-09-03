@@ -21,7 +21,7 @@ import {
   useLifiCrossTransfersRoute,
   UseLifiCrossTransfersRouteParams
 } from '../useLifiCrossTransferRoute'
-import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../app/api/crosschain-transfers/utils'
 import { Address } from 'viem'
 import { useLifiSettingsStore } from '../../components/TransferPanel/hooks/useLifiSettingsStore'
 import { shallow } from 'zustand/shallow'
