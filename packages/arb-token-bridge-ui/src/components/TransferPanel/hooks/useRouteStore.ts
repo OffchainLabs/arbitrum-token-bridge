@@ -5,6 +5,7 @@ import { LiFiStep } from '@lifi/sdk'
 import { Address } from 'viem'
 import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-transfers/lifi'
 import { BigNumber } from 'ethers'
+import { BadgeType } from '../Routes/Route'
 
 export type RouteType =
   | 'arbitrum'
@@ -23,12 +24,13 @@ export interface CctpRouteData {
   amountReceived: string
   gasCost?: any
   bridgeFee?: any
+  tag?: BadgeType
 }
 
 export interface LifiRouteData {
   type: 'lifi-fastest' | 'lifi-cheapest' | 'lifi'
   route: LifiCrosschainTransfersRoute
-  tag?: string
+  tag?: BadgeType
 }
 
 export interface ArbitrumRouteData {
@@ -39,6 +41,7 @@ export interface ArbitrumRouteData {
   amountReceived: string
   gasCost?: any
   bridgeFee?: any
+  tag?: BadgeType
 }
 
 export interface OftV2RouteData {
@@ -49,6 +52,7 @@ export interface OftV2RouteData {
   amountReceived: string
   gasCost?: any
   bridgeFee?: any
+  tag?: BadgeType
 }
 
 export type RouteData =

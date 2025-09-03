@@ -200,7 +200,9 @@ export function useRoutesUpdater() {
         bridge: 'LayerZero',
         bridgeIconURI: '/icons/layerzero.svg',
         durationMs: 5 * 60 * 1_000, // 5 minutes
-        amountReceived: amount.toString()
+        amountReceived: amount.toString(),
+        // No tag when OFT V2 is the only route (as per requirements)
+        tag: undefined
       }
     }
 
@@ -211,11 +213,13 @@ export function useRoutesUpdater() {
         bridge: 'Circle CCTP',
         bridgeIconURI: '/icons/cctp.svg',
         durationMs: 1 * 60 * 1_000, // 1 minute
-        amountReceived: amount.toString()
+        amountReceived: amount.toString(),
+        // Tag as "Best Deal" when shown with LiFi routes
+        tag: eligibleRoutes.includes('lifi') ? 'best-deal' : undefined
       }
     }
 
-    // LiFi route data
+    // LiFi route data with sophisticated tagging logic
     if (eligibleRoutes.includes('lifi') && lifiRoutes) {
       const cheapestRoute = lifiRoutes.find(route =>
         route.protocolData.orders.includes('CHEAPEST' as any)
@@ -226,22 +230,58 @@ export function useRoutesUpdater() {
 
       const lifiData: LifiRouteData[] = []
 
-      if (cheapestRoute) {
-        lifiData.push({
-          type: 'lifi-cheapest',
-          route: cheapestRoute,
-          tag: 'best-deal'
-        })
+      // Determine tags based on route combination
+      if (eligibleRoutes.includes('cctp')) {
+        // LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag, Fastest LiFi = "Fastest"
+        if (cheapestRoute) {
+          lifiData.push({
+            type: 'lifi-cheapest',
+            route: cheapestRoute,
+            tag: undefined // No tag for cheapest when CCTP is present
+          })
+        }
+        if (fastestRoute) {
+          lifiData.push({
+            type: 'lifi-fastest',
+            route: fastestRoute,
+            tag: 'fastest'
+          })
+        }
+      } else if (eligibleRoutes.includes('arbitrum')) {
+        // LiFi + Canonical: Cheapest LiFi = "Best Deal", Fastest LiFi = "Fastest"
+        if (cheapestRoute) {
+          lifiData.push({
+            type: 'lifi-cheapest',
+            route: cheapestRoute,
+            tag: 'best-deal'
+          })
+        }
+        if (fastestRoute) {
+          lifiData.push({
+            type: 'lifi-fastest',
+            route: fastestRoute,
+            tag: 'fastest'
+          })
+        }
+      } else {
+        // LiFi only: Show "fastest" and "best return" routes with tags
+        if (cheapestRoute) {
+          lifiData.push({
+            type: 'lifi-cheapest',
+            route: cheapestRoute,
+            tag: 'best-deal'
+          })
+        }
+        if (fastestRoute) {
+          lifiData.push({
+            type: 'lifi-fastest',
+            route: fastestRoute,
+            tag: 'fastest'
+          })
+        }
       }
 
-      if (fastestRoute) {
-        lifiData.push({
-          type: 'lifi-fastest',
-          route: fastestRoute,
-          tag: 'fastest'
-        })
-      }
-
+      // If only one LiFi route, simplify the type
       if (lifiData.length === 1 && lifiData[0]) {
         lifiData[0].type = 'lifi'
       }
@@ -256,7 +296,9 @@ export function useRoutesUpdater() {
         bridge: 'Arbitrum Bridge',
         bridgeIconURI: '/icons/arbitrum.svg',
         durationMs: (isTestnet ? 1 : 7) * 24 * 60 * 60 * 1_000, // 1 day testnet, 7 days mainnet
-        amountReceived: amount.toString()
+        amountReceived: amount.toString(),
+        // Tag as "Security guaranteed by Arbitrum" when shown with other routes
+        tag: eligibleRoutes.length > 1 ? 'security-guaranteed' : undefined
       }
     }
 

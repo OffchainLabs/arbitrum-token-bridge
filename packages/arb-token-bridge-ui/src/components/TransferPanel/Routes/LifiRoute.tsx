@@ -17,13 +17,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
-export function LifiRoutes({
-  cheapestTag,
-  fastestTag
-}: {
-  cheapestTag?: BadgeType
-  fastestTag?: BadgeType
-}) {
+export function LifiRoutes() {
   const { disabledBridges, disabledExchanges, slippage } = useLifiSettingsStore(
     state => ({
       disabledBridges: state.disabledBridges,
@@ -67,12 +61,11 @@ export function LifiRoutes({
   // Render LiFi routes based on centralized data
   const route = lifiRoutes[0]
   if (lifiRoutes.length === 1 && route) {
+    // Get the tag from the centralized data
+    const lifiRouteData = lifiData?.find(data => data.route === route)
     const tags: BadgeType[] = []
-    if (fastestTag) {
-      tags.push(fastestTag)
-    }
-    if (cheapestTag) {
-      tags.push(cheapestTag)
+    if (lifiRouteData?.tag) {
+      tags.push(lifiRouteData.tag)
     }
     return (
       <LifiRoute
@@ -84,29 +77,39 @@ export function LifiRoutes({
     )
   }
 
-  // Find cheapest and fastest routes
-  const cheapestRoute = lifiRoutes.find(route =>
-    route.protocolData.orders.includes(Order.Cheapest)
+  // Find cheapest and fastest routes with their tags from centralized data
+  const cheapestRouteData = lifiData?.find(
+    data =>
+      data.type === 'lifi-cheapest' &&
+      data.route ===
+        lifiRoutes.find(route =>
+          route.protocolData.orders.includes(Order.Cheapest)
+        )
   )
-  const fastestRoute = lifiRoutes.find(route =>
-    route.protocolData.orders.includes(Order.Fastest)
+  const fastestRouteData = lifiData?.find(
+    data =>
+      data.type === 'lifi-fastest' &&
+      data.route ===
+        lifiRoutes.find(route =>
+          route.protocolData.orders.includes(Order.Fastest)
+        )
   )
 
   return (
     <>
-      {cheapestRoute && (
+      {cheapestRouteData && (
         <LifiRoute
           type="lifi-cheapest"
-          route={cheapestRoute}
-          tag={cheapestTag}
+          route={cheapestRouteData.route}
+          tag={cheapestRouteData.tag}
           overrideToken={undefined}
         />
       )}
-      {fastestRoute && (
+      {fastestRouteData && (
         <LifiRoute
           type="lifi-fastest"
-          route={fastestRoute}
-          tag={fastestTag}
+          route={fastestRouteData.route}
+          tag={fastestRouteData.tag}
           overrideToken={undefined}
         />
       )}

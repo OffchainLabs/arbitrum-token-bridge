@@ -98,7 +98,7 @@ export function ArbitrumCanonicalRoute() {
           : []
       }
       onSelectedRouteClick={setSelectedRoute}
-      tag={'security-guaranteed'}
+      tag={arbitrumData.tag}
       selected={selectedRoute === 'arbitrum'}
     />
   )

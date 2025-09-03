@@ -93,6 +93,7 @@ export function OftV2Route() {
       bridgeFee={bridgeFee}
       selected={selectedRoute === 'oftV2'}
       onSelectedRouteClick={setSelectedRoute}
+      tag={oftV2Data.tag}
     />
   )
 }

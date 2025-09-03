@@ -71,9 +71,7 @@ export const Routes = React.memo(() => {
       {routes.cctp && <CctpRoute key="cctp" />}
 
       {/* Render LiFi routes */}
-      {routes.lifi && routes.lifi.length > 0 && (
-        <LifiRoutes key="lifi" cheapestTag="best-deal" fastestTag="fastest" />
-      )}
+      {routes.lifi && routes.lifi.length > 0 && <LifiRoutes key="lifi" />}
 
       {/* Render Arbitrum canonical route */}
       {routes.arbitrum && <ArbitrumCanonicalRoute key="arbitrum" />}
