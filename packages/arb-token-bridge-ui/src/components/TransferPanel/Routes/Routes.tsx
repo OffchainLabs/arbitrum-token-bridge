@@ -29,17 +29,24 @@ export const Routes = React.memo(() => {
   // Update the store when inputs change
   useRoutesUpdater()
 
-  const { setSelectedRoute, eligibleRoutes, error, routes, hasLowLiquidity } =
-    useRouteStore(
-      state => ({
-        setSelectedRoute: state.setSelectedRoute,
-        eligibleRoutes: state.eligibleRoutes,
-        error: state.error,
-        routes: state.routes,
-        hasLowLiquidity: state.hasLowLiquidity
-      }),
-      shallow
-    )
+  const {
+    setSelectedRoute,
+    eligibleRoutes,
+    error,
+    routes,
+    hasLowLiquidity,
+    hasModifiedSettings
+  } = useRouteStore(
+    state => ({
+      setSelectedRoute: state.setSelectedRoute,
+      eligibleRoutes: state.eligibleRoutes,
+      error: state.error,
+      routes: state.routes,
+      hasLowLiquidity: state.hasLowLiquidity,
+      hasModifiedSettings: state.hasModifiedSettings
+    }),
+    shallow
+  )
 
   // Auto-select first route if only one is available
   useEffect(() => {
@@ -79,7 +86,37 @@ export const Routes = React.memo(() => {
       {/* Show low liquidity message if needed */}
       {hasLowLiquidity && (
         <div className="rounded border border-lilac bg-lilac/50 p-3 text-sm text-white">
-          Low liquidity detected. Some routes may not be available.
+          {hasModifiedSettings ? (
+            <>
+              Unable to find viable routes. Consider{' '}
+              <button
+                onClick={() => {
+                  // Open settings dialog by updating query params
+                  const url = new URL(window.location.href)
+                  url.searchParams.set('settingsOpen', 'true')
+                  window.history.pushState({}, '', url.toString())
+                  // Trigger a custom event to notify the app
+                  window.dispatchEvent(new CustomEvent('openSettings'))
+                }}
+                className="underline hover:text-lilac/80"
+              >
+                updating your settings
+              </button>{' '}
+              or try a different amount.
+            </>
+          ) : (
+            <>
+              Low liquidity detected. Unable to find viable routes.
+              <br />
+              <br />
+              You can try to:
+              <ol className="mt-2 list-decimal pl-6">
+                <li>Check back soon: Liquidity conditions can improve.</li>
+                <li>Reduce your transaction amount.</li>
+                <li>Consider alternative assets or destinations.</li>
+              </ol>
+            </>
+          )}
         </div>
       )}
     </Wrapper>

@@ -100,6 +100,7 @@ interface RouteState {
 
   // UI flags
   hasLowLiquidity: boolean
+  hasModifiedSettings: boolean
 
   // Actions
   setSelectedRoute: SetRoute
@@ -127,6 +128,7 @@ export const useRouteStore = create<RouteState>()(set => ({
   isLoading: false,
   routes: {},
   hasLowLiquidity: false,
+  hasModifiedSettings: false,
 
   setSelectedRoute: (route, context) =>
     set({

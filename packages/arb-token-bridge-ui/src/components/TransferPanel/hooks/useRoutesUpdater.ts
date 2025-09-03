@@ -10,7 +10,10 @@ import { useAccount } from 'wagmi'
 import { constants } from 'ethers'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 import { useAmountBigNumber } from '../hooks/useAmountBigNumber'
-import { useLifiSettingsStore } from '../hooks/useLifiSettingsStore'
+import {
+  useLifiSettingsStore,
+  defaultSlippage
+} from '../hooks/useLifiSettingsStore'
 import { isNetwork } from '../../../util/networks'
 import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
@@ -323,9 +326,22 @@ export function useRoutesUpdater() {
         eligibleRoutes.length === 1 &&
         !lifiError &&
         !isLifiLoading &&
-        (!lifiRoutes || lifiRoutes.length === 0)
+        (!lifiRoutes || lifiRoutes.length === 0),
+      // Check if user has modified default settings
+      hasModifiedSettings:
+        slippage !== defaultSlippage.toString() ||
+        disabledExchanges.length > 0 ||
+        disabledBridges.length > 0
     }),
-    [eligibleRoutes, lifiError, isLifiLoading, lifiRoutes]
+    [
+      eligibleRoutes,
+      lifiError,
+      isLifiLoading,
+      lifiRoutes,
+      slippage,
+      disabledExchanges,
+      disabledBridges
+    ]
   )
 
   // Only show error if ALL routes fail (LiFi is the only route and it failed)
@@ -342,7 +358,8 @@ export function useRoutesUpdater() {
         : null,
 
       routes: routeData,
-      hasLowLiquidity: flags.hasLowLiquidity
+      hasLowLiquidity: flags.hasLowLiquidity,
+      hasModifiedSettings: flags.hasModifiedSettings
     })
   }, [
     eligibleRoutes,
