@@ -38,7 +38,7 @@
     "posthog-js": "^1.236.5",
     "query-string": "^9.1.1",
     "react-loader-spinner": "^5.4.5",
-    "react-syntax-highlighter": "^15.6.1",
+    "react-syntax-highlighter": "^15.6.6",
     "react-toastify": "^9.1.1",
     "react-use": "^17.6.0",
     "react-virtualized": "^9.22.6",

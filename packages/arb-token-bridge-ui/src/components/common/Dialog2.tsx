@@ -61,7 +61,7 @@ export function useDialog2(): UseDialogResult {
   const resolveRef =
     useRef<
       (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
-    >()
+    >(undefined)
 
   // Whether the dialog is currently open
   const [openedDialogType, setOpenedDialogType] = useState<DialogType | null>(

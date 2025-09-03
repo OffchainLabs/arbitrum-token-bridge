@@ -4,31 +4,34 @@ import { sanitizeImageSrc } from '../../util'
 import useSWR from 'swr'
 
 export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
-  fallback?: JSX.Element
+  fallback?: React.ReactNode
 }
 
 export function SafeImage(props: SafeImageProps) {
   const { fallback = null, src, ...imgProps } = props
 
-  const { data: validImageSrc, error } = useSWR(src, _src => {
-    return new Promise<string>((resolve, reject) => {
-      const image = new Image()
+  const { data: validImageSrc, error } = useSWR(
+    src,
+    (_src: string | undefined) => {
+      return new Promise<string>((resolve, reject) => {
+        const image = new Image()
 
-      if (typeof _src === 'undefined') {
-        resolve('')
-      } else {
-        const sanitizedImageSrc = sanitizeImageSrc(_src)
+        if (typeof _src === 'undefined') {
+          resolve('')
+        } else {
+          const sanitizedImageSrc = sanitizeImageSrc(_src)
 
-        image.onerror = () => {
-          reject()
+          image.onerror = () => {
+            reject()
+          }
+          image.onload = () => {
+            resolve(sanitizedImageSrc)
+          }
+          image.src = sanitizedImageSrc
         }
-        image.onload = () => {
-          resolve(sanitizedImageSrc)
-        }
-        image.src = sanitizedImageSrc
-      }
-    })
-  })
+      })
+    }
+  )
 
   if (!validImageSrc || error) {
     return fallback
