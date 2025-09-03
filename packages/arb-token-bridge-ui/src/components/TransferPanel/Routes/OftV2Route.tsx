@@ -23,8 +23,10 @@ export function OftV2Route() {
   )
   const [selectedToken] = useSelectedToken()
 
-  // Get route data and context from centralized store
-  const oftV2Data = useRouteStore(state => state.routes.oftV2)
+  // Get route data from centralized store
+  const oftV2Data = useRouteStore(
+    state => state.routes.find(route => route.type === 'oftV2')?.data
+  )
 
   const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
     useOftV2FeeEstimates({

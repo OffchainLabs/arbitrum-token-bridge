@@ -1,12 +1,16 @@
-import { PropsWithChildren, useEffect } from 'react'
+import { PropsWithChildren, useEffect, useMemo, useCallback } from 'react'
 import { ArbitrumCanonicalRoute } from './ArbitrumCanonicalRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
 import React from 'react'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useRoutesUpdater } from '../hooks/useRoutesUpdater'
-import { LifiRoutes } from './LifiRoute'
+import { LifiRoute } from './LifiRoute'
 import { shallow } from 'zustand/shallow'
+import { BadgeType } from './Route'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 import { useMode } from '../../../hooks/useMode'
 import { twMerge } from 'tailwind-merge'
 
@@ -56,23 +60,113 @@ export const Routes = React.memo(() => {
     }
   }, [setSelectedRoute, eligibleRoutes])
 
+  // Calculate token override for LiFi routes
+  const [networks] = useNetworks()
+  const [selectedToken] = useSelectedToken()
+  const overrideToken = useMemo(
+    () =>
+      getTokenOverride({
+        sourceChainId: networks.sourceChain.id,
+        fromToken: selectedToken?.address,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [
+      selectedToken?.address,
+      networks.sourceChain.id,
+      networks.destinationChain.id
+    ]
+  )
+
+  // Tag calculation logic moved from individual components
+  const getRouteTag = useCallback(
+    (routeType: string): BadgeType | undefined => {
+      switch (routeType) {
+        case 'cctp':
+          // Tag as "Best Deal" when shown with LiFi routes OR when shown with Canonical
+          if (
+            eligibleRoutes.includes('lifi') ||
+            eligibleRoutes.includes('arbitrum')
+          ) {
+            return 'best-deal'
+          }
+          return undefined
+
+        case 'arbitrum':
+          // Always show "Security guaranteed by Arbitrum" for security
+          return 'security-guaranteed'
+
+        case 'lifi-cheapest':
+          if (eligibleRoutes.includes('cctp')) {
+            // LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag
+            return undefined
+          } else if (eligibleRoutes.includes('arbitrum')) {
+            // LiFi + Canonical: Cheapest LiFi = "Best Deal"
+            return 'best-deal'
+          } else {
+            // LiFi only: Show "best deal"
+            return 'best-deal'
+          }
+
+        case 'lifi-fastest':
+          // Fastest always gets "fastest" tag
+          return 'fastest'
+
+        case 'lifi':
+          // Single LiFi route (when fastest and cheapest are the same)
+          if (eligibleRoutes.includes('cctp')) {
+            // LiFi + CCTP: CCTP = "Best Deal", LiFi = no tag
+            return undefined
+          } else if (eligibleRoutes.includes('arbitrum')) {
+            // LiFi + Canonical: LiFi = "Best Deal"
+            return 'best-deal'
+          } else {
+            // LiFi only: Show "best deal"
+            return 'best-deal'
+          }
+
+        default:
+          return undefined
+      }
+    },
+    [eligibleRoutes]
+  )
+
   if (eligibleRoutes.length === 0) {
     return null
   }
 
   return (
     <Wrapper>
-      {/* Render OFT V2 route */}
-      {routes.oftV2 && <OftV2Route />}
+      {/* Render routes from flattened array */}
+      {routes.map((route, index) => {
+        const tag = getRouteTag(route.type)
 
-      {/* Render CCTP route */}
-      {routes.cctp && <CctpRoute />}
+        switch (route.type) {
+          case 'oftV2':
+            return <OftV2Route key={`oftV2-${index}`} />
+          case 'cctp':
+            return <CctpRoute key={`cctp-${index}`} />
+          case 'lifi':
+          case 'lifi-fastest':
+          case 'lifi-cheapest':
+            const lifiRoute = route.data.route
+            if (!lifiRoute) return null
 
-      {/* Render LiFi routes */}
-      {routes.lifi && routes.lifi.length > 0 && <LifiRoutes />}
-
-      {/* Render Arbitrum canonical route */}
-      {routes.arbitrum && <ArbitrumCanonicalRoute />}
+            return (
+              <LifiRoute
+                key={`lifi-${index}`}
+                type={route.type}
+                route={lifiRoute}
+                tag={tag}
+                overrideToken={overrideToken.destination || undefined}
+              />
+            )
+          case 'arbitrum':
+            return <ArbitrumCanonicalRoute key={`arbitrum-${index}`} />
+          default:
+            return null
+        }
+      })}
 
       {/* Show low liquidity message if needed */}
       {hasLowLiquidity && (

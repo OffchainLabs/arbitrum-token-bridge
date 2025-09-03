@@ -14,54 +14,38 @@ export type RouteType =
   | 'lifi-cheapest'
   | 'lifi' // If fastest and cheapest quotes are the same
 
-// Route data interfaces for different route types
-export interface CctpRouteData {
-  type: 'cctp'
-  amountReceived: string
-  gasCost?: any
-  bridgeFee?: any
-}
-
-export interface LifiRouteData {
-  type: 'lifi-fastest' | 'lifi-cheapest' | 'lifi'
-  route: LifiCrosschainTransfersRoute
-}
-
-export interface ArbitrumRouteData {
-  type: 'arbitrum'
-  amountReceived: string
-  gasCost?: any
-  bridgeFee?: any
-}
-
-export interface OftV2RouteData {
-  type: 'oftV2'
-  amountReceived: string
-  gasCost?: any
-  bridgeFee?: any
-}
-
+// Discriminated union for route data
 export type RouteData =
-  | CctpRouteData
-  | LifiRouteData
-  | ArbitrumRouteData
-  | OftV2RouteData
-
-// Centralized route state
-export interface RouteStateData {
-  eligibleRoutes: RouteType[]
-  isLoading: boolean
-  error?: string | null
-  data: {
-    cctp?: CctpRouteData
-    lifi?: LifiRouteData[]
-    arbitrum?: ArbitrumRouteData
-    oftV2?: OftV2RouteData
-  }
-  flags: {
-    hasLowLiquidity: boolean
-  }
-}
+  | {
+      type: 'cctp'
+      data: {
+        amountReceived: string
+        gasCost?: any
+        bridgeFee?: any
+      }
+    }
+  | {
+      type: 'lifi' | 'lifi-fastest' | 'lifi-cheapest'
+      data: {
+        route: LifiCrosschainTransfersRoute
+      }
+    }
+  | {
+      type: 'arbitrum'
+      data: {
+        amountReceived: string
+        gasCost?: any
+        bridgeFee?: any
+      }
+    }
+  | {
+      type: 'oftV2'
+      data: {
+        amountReceived: string
+        gasCost?: any
+        bridgeFee?: any
+      }
+    }
 
 /** When route is in context, we didn't fetch transactionRequest yet and we only have information about the step */
 export type RouteContext = LifiData &
@@ -80,12 +64,7 @@ interface RouteState {
   error?: string | null
 
   // Available routes
-  routes: {
-    cctp?: CctpRouteData
-    lifi?: LifiRouteData[]
-    arbitrum?: ArbitrumRouteData
-    oftV2?: OftV2RouteData
-  }
+  routes: RouteData[]
 
   // UI flags
   hasLowLiquidity: boolean
@@ -115,7 +94,7 @@ export const useRouteStore = create<RouteState>()(set => ({
   context: undefined,
   eligibleRoutes: [],
   isLoading: false,
-  routes: {},
+  routes: [],
   hasLowLiquidity: false,
   hasModifiedSettings: false,
 
@@ -135,10 +114,11 @@ export const useRouteStore = create<RouteState>()(set => ({
 
   updateRouteData: (routeType, data) =>
     set(state => ({
-      routes: {
-        ...state.routes,
-        [routeType]: data
-      }
+      routes: state.routes.map(route =>
+        route.type === routeType
+          ? { ...route, data: { ...route.data, ...data } }
+          : route
+      )
     }))
 }))
 

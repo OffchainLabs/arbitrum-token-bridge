@@ -18,14 +18,7 @@ import { isNetwork } from '../../../util/networks'
 import { isLifiEnabled as isLifiEnabledUtil } from '../../../util/featureFlag'
 import { isValidLifiTransfer } from '../../../pages/api/crosschain-transfers/utils'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
-import {
-  useRouteStore,
-  RouteType,
-  CctpRouteData,
-  LifiRouteData,
-  ArbitrumRouteData,
-  OftV2RouteData
-} from './useRouteStore'
+import { useRouteStore, RouteType, RouteData } from './useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { useLifiCrossTransfersRoute } from '../../../hooks/useLifiCrossTransferRoute'
 import { Address } from 'viem'
@@ -185,32 +178,31 @@ export function useRoutesUpdater() {
     error: lifiError
   } = useLifiCrossTransfersRoute(lifiParameters)
 
-  // Construct route data (only dynamic data, static data handled by components)
+  // Construct flattened route data array
   const routeData = useMemo(() => {
-    const data: {
-      oftV2?: OftV2RouteData
-      cctp?: CctpRouteData
-      lifi?: LifiRouteData[]
-      arbitrum?: ArbitrumRouteData
-    } = {}
+    const routes: RouteData[] = []
 
-    // OFT V2 route data - only amount (bridge, icon, duration are static)
+    // OFT V2 route data
     if (eligibleRoutes.includes('oftV2')) {
-      data.oftV2 = {
+      routes.push({
         type: 'oftV2',
-        amountReceived: amount.toString()
-      }
+        data: {
+          amountReceived: amount.toString()
+        }
+      })
     }
 
-    // CCTP route data - only amount (bridge, icon, duration are static)
+    // CCTP route data
     if (eligibleRoutes.includes('cctp')) {
-      data.cctp = {
+      routes.push({
         type: 'cctp',
-        amountReceived: amount.toString()
-      }
+        data: {
+          amountReceived: amount.toString()
+        }
+      })
     }
 
-    // LiFi route data - only routes (tags handled by components)
+    // LiFi route data
     if (eligibleRoutes.includes('lifi') && lifiRoutes) {
       const cheapestRoute = lifiRoutes.find(route =>
         route.protocolData.orders.includes('CHEAPEST' as any)
@@ -219,38 +211,51 @@ export function useRoutesUpdater() {
         route.protocolData.orders.includes('FASTEST' as any)
       )
 
-      const lifiData: LifiRouteData[] = []
+      // Check if fastest and cheapest are the same route
+      const isSameRoute =
+        cheapestRoute && fastestRoute && cheapestRoute === fastestRoute
 
-      if (cheapestRoute) {
-        lifiData.push({
-          type: 'lifi-cheapest',
-          route: cheapestRoute
+      if (isSameRoute) {
+        // Single route with both fastest and cheapest tags
+        routes.push({
+          type: 'lifi',
+          data: {
+            route: cheapestRoute
+          }
         })
-      }
-      if (fastestRoute) {
-        lifiData.push({
-          type: 'lifi-fastest',
-          route: fastestRoute
-        })
-      }
+      } else {
+        // Separate routes for fastest and cheapest
+        if (cheapestRoute) {
+          routes.push({
+            type: 'lifi-cheapest',
+            data: {
+              route: cheapestRoute
+            }
+          })
+        }
 
-      // If only one LiFi route, simplify the type
-      if (lifiData.length === 1 && lifiData[0]) {
-        lifiData[0].type = 'lifi'
+        if (fastestRoute) {
+          routes.push({
+            type: 'lifi-fastest',
+            data: {
+              route: fastestRoute
+            }
+          })
+        }
       }
-
-      data.lifi = lifiData
     }
 
-    // Arbitrum canonical route data - only amount (bridge, icon, duration are static)
+    // Arbitrum canonical route data
     if (eligibleRoutes.includes('arbitrum')) {
-      data.arbitrum = {
+      routes.push({
         type: 'arbitrum',
-        amountReceived: amount.toString()
-      }
+        data: {
+          amountReceived: amount.toString()
+        }
+      })
     }
 
-    return data
+    return routes
   }, [eligibleRoutes, lifiRoutes, amount])
 
   // Determine flags
