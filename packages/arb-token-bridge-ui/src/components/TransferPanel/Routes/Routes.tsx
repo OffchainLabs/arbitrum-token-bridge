@@ -1,4 +1,10 @@
-import { PropsWithChildren, useEffect, useMemo, useCallback } from 'react'
+import {
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useCallback,
+  useState
+} from 'react'
 import { ArbitrumCanonicalRoute } from './ArbitrumCanonicalRoute'
 import { CctpRoute } from './CctpRoute'
 import { OftV2Route } from './OftV2Route'
@@ -13,6 +19,7 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 import { useMode } from '../../../hooks/useMode'
 import { twMerge } from 'tailwind-merge'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 
 function Wrapper({ children }: PropsWithChildren) {
   const { embedMode } = useMode()
@@ -29,9 +36,14 @@ function Wrapper({ children }: PropsWithChildren) {
   )
 }
 
+// Configuration
+const MAX_ROUTES_VISIBLE = 3
+
 export const Routes = React.memo(() => {
-  // Update the store when inputs change
   useRoutesUpdater()
+
+  // Hidden routes state
+  const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
 
   const {
     setSelectedRoute,
@@ -50,16 +62,6 @@ export const Routes = React.memo(() => {
     shallow
   )
 
-  // Auto-select first route if only one is available
-  useEffect(() => {
-    if (eligibleRoutes.length === 1) {
-      const focus = eligibleRoutes[0]
-      if (focus) {
-        setSelectedRoute(focus)
-      }
-    }
-  }, [setSelectedRoute, eligibleRoutes])
-
   // Calculate token override for LiFi routes
   const [networks] = useNetworks()
   const [selectedToken] = useSelectedToken()
@@ -76,6 +78,21 @@ export const Routes = React.memo(() => {
       networks.destinationChain.id
     ]
   )
+
+  // Auto-select first route if only one is available
+  useEffect(() => {
+    if (eligibleRoutes.length === 1) {
+      const focus = eligibleRoutes[0]
+      if (focus) {
+        setSelectedRoute(focus)
+      }
+    }
+  }, [setSelectedRoute, eligibleRoutes])
+
+  // Reset hidden routes state when token changes
+  useEffect(() => {
+    setShowHiddenRoutes(false)
+  }, [selectedToken])
 
   // Tag calculation logic moved from individual components
   const getRouteTag = useCallback(
@@ -135,10 +152,16 @@ export const Routes = React.memo(() => {
     return null
   }
 
+  // Filter routes based on visibility threshold
+  const visibleRoutes = showHiddenRoutes
+    ? routes
+    : routes.slice(0, MAX_ROUTES_VISIBLE)
+  const hasHiddenRoutes = routes.length > MAX_ROUTES_VISIBLE
+
   return (
     <Wrapper>
-      {/* Render routes from flattened array */}
-      {routes.map((route, index) => {
+      {/* Render visible routes */}
+      {visibleRoutes.map((route, index) => {
         const tag = getRouteTag(route.type)
 
         switch (route.type) {
@@ -167,6 +190,21 @@ export const Routes = React.memo(() => {
             return null
         }
       })}
+
+      {/* Show hidden routes toggle button */}
+      {hasHiddenRoutes && (
+        <div className="mt-1 flex justify-center text-xs text-white/80">
+          <button
+            className="arb-hover flex space-x-1"
+            onClick={() => setShowHiddenRoutes(!showHiddenRoutes)}
+          >
+            <span>
+              {showHiddenRoutes ? 'Show fewer routes' : 'Show more routes'}
+            </span>
+            <PlusCircleIcon width={16} />
+          </button>
+        </div>
+      )}
 
       {/* Show low liquidity message if needed */}
       {hasLowLiquidity && (
