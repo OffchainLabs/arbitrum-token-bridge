@@ -199,7 +199,6 @@ export function useRoutesUpdater() {
         type: 'oftV2',
         bridge: 'LayerZero',
         bridgeIconURI: '/icons/layerzero.svg',
-        durationMs: 5 * 60 * 1_000, // 5 minutes
         amountReceived: amount.toString(),
         // No tag when OFT V2 is the only route (as per requirements)
         tag: undefined
@@ -212,7 +211,6 @@ export function useRoutesUpdater() {
         type: 'cctp',
         bridge: 'Circle CCTP',
         bridgeIconURI: '/icons/cctp.svg',
-        durationMs: 1 * 60 * 1_000, // 1 minute
         amountReceived: amount.toString(),
         // Tag as "Best Deal" when shown with LiFi routes
         tag: eligibleRoutes.includes('lifi') ? 'best-deal' : undefined
@@ -295,7 +293,6 @@ export function useRoutesUpdater() {
         type: 'arbitrum',
         bridge: 'Arbitrum Bridge',
         bridgeIconURI: '/icons/arbitrum.svg',
-        durationMs: (isTestnet ? 1 : 7) * 24 * 60 * 60 * 1_000, // 1 day testnet, 7 days mainnet
         amountReceived: amount.toString(),
         // Tag as "Security guaranteed by Arbitrum" when shown with other routes
         tag: eligibleRoutes.length > 1 ? 'security-guaranteed' : undefined

@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
 import { useNetworks } from '../../../hooks/useNetworks'
+import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
+import { isNetwork } from '../../../util/networks'
 import { Route } from './Route'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
@@ -22,6 +24,10 @@ export function CctpRoute() {
 
   // Get route data from centralized store
   const cctpData = useRouteStore(state => state.routes.cctp)
+
+  // Calculate duration based on network context
+  const { isTestnet } = isNetwork(sourceChain.id)
+  const durationMs = getCctpTransferDuration(isTestnet) * 60 * 1_000
 
   const nativeUsdcToken: ERC20BridgeToken = useMemo(
     () => ({
@@ -46,7 +52,7 @@ export function CctpRoute() {
       type="cctp"
       bridge={cctpData.bridge}
       bridgeIconURI={cctpData.bridgeIconURI}
-      durationMs={cctpData.durationMs}
+      durationMs={durationMs}
       amountReceived={cctpData.amountReceived}
       overrideToken={nativeUsdcToken}
       isLoadingGasEstimate={false}

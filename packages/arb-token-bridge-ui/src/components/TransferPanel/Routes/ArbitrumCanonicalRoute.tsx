@@ -6,7 +6,7 @@ import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
-import { useRouteStore, ArbitrumRouteData } from '../hooks/useRouteStore'
+import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 import { getGasCostAndToken } from './getGasCostAndToken'
@@ -14,6 +14,46 @@ import {
   bridgedUsdcToken,
   nativeUsdcToken
 } from '../../../util/CommonAddressUtils'
+import {
+  getOrbitDepositDuration,
+  getStandardDepositDuration,
+  getWithdrawalDuration
+} from '../../../hooks/useTransferDuration'
+import { isNetwork } from '../../../util/networks'
+import dayjs from 'dayjs'
+
+function getDuration({
+  isTestnet,
+  sourceChainId,
+  isTeleportMode,
+  isWithdrawal,
+  isOrbitChain
+}: {
+  isTestnet: boolean
+  sourceChainId: number
+  isTeleportMode: boolean
+  isWithdrawal: boolean
+  isOrbitChain: boolean
+}) {
+  if (isTeleportMode) {
+    return (
+      getStandardDepositDuration(isTestnet) + getOrbitDepositDuration(isTestnet)
+    )
+  }
+
+  if (isWithdrawal) {
+    return getWithdrawalDuration({
+      createdAt: dayjs().valueOf(),
+      sourceChainId: sourceChainId
+    })
+  }
+
+  if (isOrbitChain) {
+    return getOrbitDepositDuration(isTestnet)
+  }
+
+  return getStandardDepositDuration(isTestnet)
+}
 
 export function ArbitrumCanonicalRoute() {
   const [networks] = useNetworks()
@@ -42,6 +82,19 @@ export function ArbitrumCanonicalRoute() {
 
   // Get route data from centralized store
   const arbitrumData = useRouteStore(state => state.routes.arbitrum)
+
+  // Calculate duration based on network context
+  const { isTestnet, isOrbitChain } = isNetwork(networks.sourceChain.id)
+  const durationMs =
+    getDuration({
+      isTestnet,
+      sourceChainId: networks.sourceChain.id,
+      isTeleportMode: isDepositMode && isOrbitChain,
+      isWithdrawal: !isDepositMode,
+      isOrbitChain
+    }) *
+    60 *
+    1_000
 
   const { gasCost, isLoading } = useMemo(
     () =>
@@ -80,7 +133,7 @@ export function ArbitrumCanonicalRoute() {
       type="arbitrum"
       bridge={arbitrumData.bridge}
       bridgeIconURI={arbitrumData.bridgeIconURI}
-      durationMs={arbitrumData.durationMs}
+      durationMs={durationMs}
       amountReceived={arbitrumData.amountReceived}
       isLoadingGasEstimate={isLoading}
       overrideToken={isUsdcTransfer ? overrideToken : undefined}

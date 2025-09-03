@@ -26,6 +26,9 @@ export function OftV2Route() {
   // Get route data from centralized store
   const oftV2Data = useRouteStore(state => state.routes.oftV2)
 
+  // Calculate duration - OFT V2 is always 5 minutes
+  const durationMs = 5 * 60 * 1_000
+
   const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
     useOftV2FeeEstimates({
       sourceChainErc20Address: isDepositMode
@@ -86,7 +89,7 @@ export function OftV2Route() {
       type="oftV2"
       bridge={oftV2Data.bridge}
       bridgeIconURI={oftV2Data.bridgeIconURI}
-      durationMs={oftV2Data.durationMs}
+      durationMs={durationMs}
       amountReceived={oftV2Data.amountReceived}
       isLoadingGasEstimate={status === 'loading'}
       gasCost={gasCost}

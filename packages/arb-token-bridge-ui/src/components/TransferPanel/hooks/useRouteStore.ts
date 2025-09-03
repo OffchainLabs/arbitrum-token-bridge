@@ -20,7 +20,6 @@ export interface CctpRouteData {
   type: 'cctp'
   bridge: string
   bridgeIconURI: string
-  durationMs: number
   amountReceived: string
   gasCost?: any
   bridgeFee?: any
@@ -37,7 +36,6 @@ export interface ArbitrumRouteData {
   type: 'arbitrum'
   bridge: string
   bridgeIconURI: string
-  durationMs: number
   amountReceived: string
   gasCost?: any
   bridgeFee?: any
@@ -48,7 +46,6 @@ export interface OftV2RouteData {
   type: 'oftV2'
   bridge: string
   bridgeIconURI: string
-  durationMs: number
   amountReceived: string
   gasCost?: any
   bridgeFee?: any
