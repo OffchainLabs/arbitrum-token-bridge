@@ -64,6 +64,7 @@
     "start": "next start",
     "test": "vitest --config vitest.config.ts --watch",
     "test:ci": "vitest --config vitest.config.ts --run",
+    "test:perf": "ts-node  ./tests/perf/switchNetwork.mts",
     "lint": "tsc && eslint",
     "lint:fix": "tsc && eslint --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",

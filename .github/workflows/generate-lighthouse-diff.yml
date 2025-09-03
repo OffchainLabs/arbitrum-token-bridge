@@ -1,0 +1,86 @@
+name: Run Lighthouse Diff
+
+on:
+  pull_request:
+    branches: ["master"]
+    types:
+      - opened
+      - reopened
+      - synchronize
+      # we skip ci for draft PRs
+      # https://github.com/reviewdog/action-eslint/issues/29#issuecomment-985939887
+      - ready_for_review
+  workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate_lighthouse_diff:
+    name: "Generate lighthouse diff"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install node_modules
+        uses: OffchainLabs/actions/node-modules/install@main
+
+      - name: Build scripts
+        run: yarn workspace scripts build
+
+      - name: Build the bridge
+        run: yarn build
+        env:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ETHEREUM: https://mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_SEPOLIA: https://sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE: https://arbitrum-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE: https://base-mainnet.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA: https://arbitrum-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_INFURA_KEY_BASE_SEPOLIA: https://base-sepolia.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+          THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
+        
+      - name: Start server and wait
+        run: yarn start & npx wait-on http://localhost:3000
+
+      - name: Install linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+          fluxbox \
+          xvfb
+
+      - name: Run xvfb and fluxbox
+        run: |
+          Xvfb :0 -screen 0 1366x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
+
+      - name: Run generateLighthouseDiff script
+        run: yarn workspace scripts generate-lighthouse-diff
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          DISPLAY: :0.0
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports-${{ github.sha }}
+          path: |
+            ./lhreport.html
+          if-no-files-found: 'ignore'
+        continue-on-error: true

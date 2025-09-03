@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { addOrbitChain } from "./addOrbitChain";
+import { generateLighthouseReport } from "./generateLighthouseReport";
 
 const program = new Command();
 
@@ -17,6 +18,13 @@ program
       console.error(`Error in addOrbitChain: ${error}`);
       process.exit(1);
     });
+  });
+
+program
+  .command("generate-lighthouse-report")
+  .description("Run lighthouse diff")
+  .action(() => {
+    generateLighthouseReport();
   });
 
 // Add more commands here as needed, for example:
