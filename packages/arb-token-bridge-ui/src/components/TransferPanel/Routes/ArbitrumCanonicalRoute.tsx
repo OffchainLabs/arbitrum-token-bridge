@@ -58,6 +58,7 @@ function getDuration({
 export function ArbitrumCanonicalRoute() {
   const [networks] = useNetworks()
   const {
+    childChain,
     isTeleportMode,
     childChainProvider,
     parentChainProvider,
@@ -74,6 +75,7 @@ export function ArbitrumCanonicalRoute() {
   const parentChainNativeCurrency = useNativeCurrency({
     provider: parentChainProvider
   })
+  const { isTestnet, isOrbitChain } = isNetwork(childChain.id)
 
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
@@ -115,14 +117,12 @@ export function ArbitrumCanonicalRoute() {
   const isUsdcTransfer = isTokenNativeUSDC(selectedToken?.address)
   const overrideToken = isDepositMode ? bridgedUsdcToken : nativeUsdcToken
 
-  // Calculate duration based on network context
-  const { isTestnet, isOrbitChain } = isNetwork(networks.sourceChain.id)
   const durationMs =
     getDuration({
       isTestnet,
+      isWithdrawal: !isDepositMode,
       sourceChainId: networks.sourceChain.id,
       isTeleportMode,
-      isWithdrawal: !isDepositMode,
       isOrbitChain
     }) *
     60 *
