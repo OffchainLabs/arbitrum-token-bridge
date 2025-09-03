@@ -8,6 +8,7 @@ import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-tran
 import { useCallback, useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { utils } from 'ethers'
 
 // Simplified LifiRoute component that handles only one route
 export function LifiRoute({
@@ -61,7 +62,10 @@ export function LifiRoute({
       bridge={route.protocolData.tool.name}
       bridgeIconURI={route.protocolData.tool.logoURI}
       durationMs={route.durationMs}
-      amountReceived={route.toAmount.amount}
+      amountReceived={utils.formatUnits(
+        route.toAmount.amount,
+        route.toAmount.token.decimals
+      )}
       overrideToken={overrideToken}
       isLoadingGasEstimate={false}
       gasCost={gasCost}
