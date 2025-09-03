@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
 import { useNetworks } from '../../../hooks/useNetworks'
-import { Route, BadgeType } from './Route'
+import { Route } from './Route'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { isNetwork } from '../../../util/networks'
 import { useRouteStore } from '../hooks/useRouteStore'
@@ -14,6 +14,7 @@ import {
 
 export function CctpRoute() {
   const [{ sourceChain }] = useNetworks()
+  const { isTestnet } = isNetwork(sourceChain.id)
   const { selectedRoute, setSelectedRoute } = useRouteStore(
     state => ({
       selectedRoute: state.selectedRoute,
@@ -24,11 +25,6 @@ export function CctpRoute() {
 
   // Get route data and context from centralized store
   const cctpData = useRouteStore(state => state.routes.cctp)
-  const eligibleRoutes = useRouteStore(state => state.eligibleRoutes)
-
-  // Calculate duration based on network context
-  const { isTestnet } = isNetwork(sourceChain.id)
-  const durationMs = getCctpTransferDuration(isTestnet) * 60 * 1_000
 
   const nativeUsdcToken: ERC20BridgeToken = useMemo(
     () => ({
@@ -48,32 +44,19 @@ export function CctpRoute() {
     return null
   }
 
-  // Determine tag based on route combination
-  const getTag = (): BadgeType | undefined => {
-    // Tag as "Best Deal" when shown with LiFi routes OR when shown with Canonical
-    // This covers: LiFi + CCTP, CCTP + Canonical scenarios
-    if (
-      eligibleRoutes.includes('lifi') ||
-      eligibleRoutes.includes('arbitrum')
-    ) {
-      return 'best-deal'
-    }
-    return undefined
-  }
-
   return (
     <Route
       type="cctp"
-      bridge={cctpData.bridge}
-      bridgeIconURI={cctpData.bridgeIconURI}
-      durationMs={durationMs}
+      bridge="Circle"
+      bridgeIconURI="/images/CctpLogoColor.svg"
+      durationMs={getCctpTransferDuration(isTestnet) * 60 * 1_000}
       amountReceived={cctpData.amountReceived}
       overrideToken={nativeUsdcToken}
       isLoadingGasEstimate={false}
       gasCost={undefined}
       selected={selectedRoute === 'cctp'}
       onSelectedRouteClick={setSelectedRoute}
-      tag={getTag()}
+      tag="best-deal"
     />
   )
 }
