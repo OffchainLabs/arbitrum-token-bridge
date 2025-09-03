@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Provider as OvermindProvider } from 'overmind-react'
 import { WagmiProvider } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
@@ -49,7 +49,7 @@ Object.keys(localStorage).forEach(key => {
 })
 
 interface AppProvidersProps {
-  children: ReactNode
+  children: React.JSX.Element
 }
 
 const queryClient = new QueryClient()
@@ -67,12 +67,9 @@ export function AppProviders({ children }: AppProvidersProps) {
               <RainbowKitProvider theme={rainbowkitTheme}>
                 <AppContextProvider>
                   <ArbitrumIndexerProvider
-                    //@ts-ignore
                     ponderClient={client}
-                    //@ts-ignore
                     queryClient={queryClient}
                   >
-                    {/* @ts-ignore */}
                     {children}
                   </ArbitrumIndexerProvider>
                 </AppContextProvider>

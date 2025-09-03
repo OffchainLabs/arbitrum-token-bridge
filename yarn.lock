@@ -2920,18 +2920,18 @@
     playwright "1.45.2"
 
 "@ponder/client@^0.11.19":
-  version "0.11.19"
-  resolved "https://registry.yarnpkg.com/@ponder/client/-/client-0.11.19.tgz#d27f5de2b5e383bf5eea82d4fe137b64e3fa0fd1"
-  integrity sha512-KNxk058PI3KgI667fKStW4bwUMUZEx79UEB+vmK/2ojZcpB4VNA96sv9ftroCgiZ3ffP8GN4Lplw/eMM229VEg==
+  version "0.11.43"
+  resolved "https://registry.yarnpkg.com/@ponder/client/-/client-0.11.43.tgz#779ba8a91e237dd01bf69e0e52e5da6e9c2cb9dd"
+  integrity sha512-s81/WISCRNQ5ZN+6n1Szj3NIMECsIkuS1d49d/cg1odEJTphqyMVjtto7xkYK13flZ6Dekb3/kG3lVPgW49mWQ==
   dependencies:
     drizzle-orm "0.41.0"
     eventsource "^3.0.5"
     superjson "^2.2.2"
 
 "@ponder/react@^0.11.19":
-  version "0.11.19"
-  resolved "https://registry.yarnpkg.com/@ponder/react/-/react-0.11.19.tgz#ecdd428cc086b7e2d7cebf4f17379f6138466a94"
-  integrity sha512-zaOmsv4ceICP4zqcydV+0xPTb0HJI+8IDDNvyaAZWFKGLspUOi0ps3hEKE2xeWe8DWueJ5MwoyuNFPkjBkiolQ==
+  version "0.11.43"
+  resolved "https://registry.yarnpkg.com/@ponder/react/-/react-0.11.43.tgz#d5003673d47b393f8c447eaac55bddf71ec289b8"
+  integrity sha512-HPkgLYicOonAHHVB76dGkKI4FeNgSMKSgJTq4fD9r4sBNSYCIApy4L0rp0E+KlKdtiH3SPTMJQq7hHt6yvR1yw==
   dependencies:
     superjson "^2.2.2"
 
@@ -3590,17 +3590,17 @@
     viem "^1.6.0"
     wait-on "^7.0.1"
 
-"@tanstack/query-core@5.81.2":
-  version "5.81.2"
-  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.81.2.tgz#4ff8cc7f07753db41aa493dcbe5413d694dddb0d"
-  integrity sha512-QLYkPdrudoMATDFa3MiLEwRhNnAlzHWDf0LKaXUqJd0/+QxN8uTPi7bahRlxoAyH0UbLMBdeDbYzWALj7THOtw==
+"@tanstack/query-core@5.85.9":
+  version "5.85.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.85.9.tgz#69e800f4d1c42ca4a110469229d8ecca409d477a"
+  integrity sha512-5fxb9vwyftYE6KFLhhhDyLr8NO75+Wpu7pmTo+TkwKmMX2oxZDoLwcqGP8ItKSpUMwk3urWgQDZfyWr5Jm9LsQ==
 
-"@tanstack/react-query@^5.63.0":
-  version "5.81.2"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.81.2.tgz#e4cc02102ce4d14a51440d6bcbad152dc8f140ed"
-  integrity sha512-pe8kFlTrL2zFLlcAj2kZk9UaYYHDk9/1hg9EBaoO3cxDhOZf1FRGJeziSXKrVZyxIfs7b3aoOj/bw7Lie0mDUg==
+"@tanstack/react-query@^5.85.9":
+  version "5.85.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.85.9.tgz#d27315b3f327af31237d513e505f3e6a2cad5739"
+  integrity sha512-2T5zgSpcOZXGkH/UObIbIkGmUPQqZqn7esVQFXLOze622h4spgWf5jmvrqAo9dnI13/hyMcNsF1jsoDcb59nJQ==
   dependencies:
-    "@tanstack/query-core" "5.81.2"
+    "@tanstack/query-core" "5.85.9"
 
 "@tanstack/react-virtual@^3.13.6":
   version "3.13.6"
