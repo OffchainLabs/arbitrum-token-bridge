@@ -84,8 +84,8 @@ export function OftV2Route() {
   return (
     <Route
       type="oftV2"
-      bridge={'LayerZero'}
-      bridgeIconURI={'/icons/layerzero.svg'}
+      bridge="LayerZero"
+      bridgeIconURI="/icons/layerzero.svg"
       durationMs={5 * 60 * 1_000} // 5 minutes in miliseconds
       amountReceived={oftV2Data.amountReceived}
       isLoadingGasEstimate={status === 'loading'}

@@ -185,7 +185,7 @@ export function useRoutesUpdater() {
     error: lifiError
   } = useLifiCrossTransfersRoute(lifiParameters)
 
-  // Construct route data (tags handled by individual components)
+  // Construct route data (only dynamic data, static data handled by components)
   const routeData = useMemo(() => {
     const data: {
       oftV2?: OftV2RouteData
@@ -194,27 +194,23 @@ export function useRoutesUpdater() {
       arbitrum?: ArbitrumRouteData
     } = {}
 
-    // OFT V2 route data
+    // OFT V2 route data - only amount (bridge, icon, duration are static)
     if (eligibleRoutes.includes('oftV2')) {
       data.oftV2 = {
         type: 'oftV2',
-        bridge: 'LayerZero',
-        bridgeIconURI: '/icons/layerzero.svg',
         amountReceived: amount.toString()
       }
     }
 
-    // CCTP route data
+    // CCTP route data - only amount (bridge, icon, duration are static)
     if (eligibleRoutes.includes('cctp')) {
       data.cctp = {
         type: 'cctp',
-        bridge: 'Circle',
-        bridgeIconURI: '/icons/cctp.svg',
         amountReceived: amount.toString()
       }
     }
 
-    // LiFi route data
+    // LiFi route data - only routes (tags handled by components)
     if (eligibleRoutes.includes('lifi') && lifiRoutes) {
       const cheapestRoute = lifiRoutes.find(route =>
         route.protocolData.orders.includes('CHEAPEST' as any)
@@ -246,12 +242,10 @@ export function useRoutesUpdater() {
       data.lifi = lifiData
     }
 
-    // Arbitrum canonical route data
+    // Arbitrum canonical route data - only amount (bridge, icon, duration are static)
     if (eligibleRoutes.includes('arbitrum')) {
       data.arbitrum = {
         type: 'arbitrum',
-        bridge: 'Arbitrum Bridge',
-        bridgeIconURI: '/icons/arbitrum.svg',
         amountReceived: amount.toString()
       }
     }
