@@ -19,7 +19,7 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 import { useMode } from '../../../hooks/useMode'
 import { twMerge } from 'tailwind-merge'
-import { PlusCircleIcon } from '@heroicons/react/24/outline'
+import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline'
 
 function Wrapper({ children }: PropsWithChildren) {
   const { embedMode } = useMode()
@@ -45,14 +45,14 @@ export const Routes = React.memo(() => {
 
   const {
     setSelectedRoute,
-    eligibleRoutes,
+    eligibleRouteTypes,
     routes,
     hasLowLiquidity,
     hasModifiedSettings
   } = useRouteStore(
     state => ({
       setSelectedRoute: state.setSelectedRoute,
-      eligibleRoutes: state.eligibleRoutes,
+      eligibleRouteTypes: state.eligibleRouteTypes,
       routes: state.routes,
       hasLowLiquidity: state.hasLowLiquidity,
       hasModifiedSettings: state.hasModifiedSettings
@@ -77,13 +77,13 @@ export const Routes = React.memo(() => {
   )
 
   useEffect(() => {
-    if (eligibleRoutes.length === 1) {
-      const focus = eligibleRoutes[0]
+    if (eligibleRouteTypes.length === 1) {
+      const focus = eligibleRouteTypes[0]
       if (focus) {
         setSelectedRoute(focus)
       }
     }
-  }, [setSelectedRoute, eligibleRoutes])
+  }, [setSelectedRoute, eligibleRouteTypes])
 
   useEffect(() => {
     setShowHiddenRoutes(false)
@@ -95,8 +95,8 @@ export const Routes = React.memo(() => {
         case 'cctp':
           // Tag as "Best Deal" when shown with LiFi routes OR when shown with Canonical
           if (
-            eligibleRoutes.includes('lifi') ||
-            eligibleRoutes.includes('arbitrum')
+            eligibleRouteTypes.includes('lifi') ||
+            eligibleRouteTypes.includes('arbitrum')
           ) {
             return 'best-deal'
           }
@@ -107,10 +107,10 @@ export const Routes = React.memo(() => {
           return 'security-guaranteed'
 
         case 'lifi-cheapest':
-          if (eligibleRoutes.includes('cctp')) {
+          if (eligibleRouteTypes.includes('cctp')) {
             // LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag
             return undefined
-          } else if (eligibleRoutes.includes('arbitrum')) {
+          } else if (eligibleRouteTypes.includes('arbitrum')) {
             // LiFi + Canonical: Cheapest LiFi = "Best Deal"
             return 'best-deal'
           } else {
@@ -124,10 +124,10 @@ export const Routes = React.memo(() => {
 
         case 'lifi':
           // Single LiFi route (when fastest and cheapest are the same)
-          if (eligibleRoutes.includes('cctp')) {
+          if (eligibleRouteTypes.includes('cctp')) {
             // LiFi + CCTP: CCTP = "Best Deal", LiFi = no tag
             return undefined
-          } else if (eligibleRoutes.includes('arbitrum')) {
+          } else if (eligibleRouteTypes.includes('arbitrum')) {
             // LiFi + Canonical: LiFi = "Best Deal"
             return 'best-deal'
           } else {
@@ -139,10 +139,10 @@ export const Routes = React.memo(() => {
           return undefined
       }
     },
-    [eligibleRoutes]
+    [eligibleRouteTypes]
   )
 
-  if (eligibleRoutes.length === 0) {
+  if (eligibleRouteTypes.length === 0) {
     return null
   }
 
@@ -192,7 +192,11 @@ export const Routes = React.memo(() => {
             <span>
               {showHiddenRoutes ? 'Show fewer routes' : 'Show more routes'}
             </span>
-            <PlusCircleIcon width={16} />
+            {showHiddenRoutes ? (
+              <MinusCircleIcon width={16} />
+            ) : (
+              <PlusCircleIcon width={16} />
+            )}
           </button>
         </div>
       )}

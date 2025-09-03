@@ -85,16 +85,16 @@ export function useGasEstimates({
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
   const wagmiConfig = useConfig()
-  const { context, eligibleRoutes } = useRouteStore(
+  const { context, eligibleRouteTypes } = useRouteStore(
     state => ({
       context: state.context,
-      eligibleRoutes: state.eligibleRoutes
+      eligibleRouteTypes: state.eligibleRouteTypes
     }),
     shallow
   )
-  const isLifiOnly = useMemo(
-    () => eligibleRoutes.every((route: RouteType) => isLifiRoute(route)),
-    [eligibleRoutes]
+  const allRoutesAreLifi = useMemo(
+    () => eligibleRouteTypes.every((route: RouteType) => isLifiRoute(route)),
+    [eligibleRouteTypes]
   )
 
   const overrideToken = useMemo(
@@ -141,7 +141,10 @@ export function useGasEstimates({
 
   const { data: gasEstimates, error } = useSWR(
     () => {
-      if (isLifiOnly && (isLoadingLifiRoutes || lifiRoutes?.length === 0)) {
+      if (
+        allRoutesAreLifi &&
+        (isLoadingLifiRoutes || lifiRoutes?.length === 0)
+      ) {
         return null
       }
 
@@ -151,7 +154,7 @@ export function useGasEstimates({
        * pass the first lifi route as context
        * Otherwise, default to canonical transfer
        */
-      const lifiContext = isLifiOnly
+      const lifiContext = allRoutesAreLifi
         ? lifiRoutes?.[0] && getContextFromRoute(lifiRoutes?.[0])
         : context
 

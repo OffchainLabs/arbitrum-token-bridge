@@ -57,7 +57,7 @@ interface RouteState {
   selectedRoute: RouteType | undefined
   context: RouteContext | undefined
 
-  eligibleRoutes: RouteType[]
+  eligibleRouteTypes: RouteType[]
   isLoading: boolean
   error?: string | null
 
@@ -87,7 +87,7 @@ interface RouteState {
 export const useRouteStore = create<RouteState>()(set => ({
   selectedRoute: undefined,
   context: undefined,
-  eligibleRoutes: [],
+  eligibleRouteTypes: [],
   isLoading: false,
   routes: [],
   hasLowLiquidity: false,
