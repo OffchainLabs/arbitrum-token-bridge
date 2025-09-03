@@ -50,8 +50,9 @@ export function LifiRoutes() {
     ]
   )
 
-  // Get LiFi routes from centralized store
+  // Get LiFi routes and context from centralized store
   const lifiData = useRouteStore(state => state.routes.lifi)
+  const eligibleRoutes = useRouteStore(state => state.eligibleRoutes)
   const lifiRoutes = lifiData?.map(lifiData => lifiData.route) || []
 
   // Clear route when LiFi data changes - only if selection was lifi route
@@ -81,12 +82,26 @@ export function LifiRoutes() {
   // Render LiFi routes based on centralized data
   const route = lifiRoutes[0]
   if (lifiRoutes.length === 1 && route) {
-    // Get the tag from the centralized data
-    const lifiRouteData = lifiData?.find(data => data.route === route)
-    const tags: BadgeType[] = []
-    if (lifiRouteData?.tag) {
-      tags.push(lifiRouteData.tag)
+    // Determine tag for single LiFi route
+    const getTag = (): BadgeType | undefined => {
+      if (eligibleRoutes.includes('cctp')) {
+        // LiFi + CCTP: CCTP = "Best Deal", LiFi = no tag
+        return undefined
+      } else if (eligibleRoutes.includes('arbitrum')) {
+        // LiFi + Canonical: LiFi = "Best Deal"
+        return 'best-deal'
+      } else {
+        // LiFi only: Show "best deal"
+        return 'best-deal'
+      }
     }
+
+    const tags: BadgeType[] = []
+    const tag = getTag()
+    if (tag) {
+      tags.push(tag)
+    }
+
     return (
       <LifiRoute
         type="lifi"
@@ -97,39 +112,48 @@ export function LifiRoutes() {
     )
   }
 
-  // Find cheapest and fastest routes with their tags from centralized data
-  const cheapestRouteData = lifiData?.find(
-    data =>
-      data.type === 'lifi-cheapest' &&
-      data.route ===
-        lifiRoutes.find(route =>
-          route.protocolData.orders.includes(Order.Cheapest)
-        )
+  // Find cheapest and fastest routes
+  const cheapestRoute = lifiRoutes.find(route =>
+    route.protocolData.orders.includes(Order.Cheapest)
   )
-  const fastestRouteData = lifiData?.find(
-    data =>
-      data.type === 'lifi-fastest' &&
-      data.route ===
-        lifiRoutes.find(route =>
-          route.protocolData.orders.includes(Order.Fastest)
-        )
+  const fastestRoute = lifiRoutes.find(route =>
+    route.protocolData.orders.includes(Order.Fastest)
   )
+
+  // Determine tags for multiple LiFi routes
+  const getCheapestTag = (): BadgeType | undefined => {
+    if (eligibleRoutes.includes('cctp')) {
+      // LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag
+      return undefined
+    } else if (eligibleRoutes.includes('arbitrum')) {
+      // LiFi + Canonical: Cheapest LiFi = "Best Deal"
+      return 'best-deal'
+    } else {
+      // LiFi only: Show "best deal"
+      return 'best-deal'
+    }
+  }
+
+  const getFastestTag = (): BadgeType => {
+    // Fastest always gets "fastest" tag
+    return 'fastest'
+  }
 
   return (
     <>
-      {cheapestRouteData && (
+      {cheapestRoute && (
         <LifiRoute
           type="lifi-cheapest"
-          route={cheapestRouteData.route}
-          tag={cheapestRouteData.tag}
+          route={cheapestRoute}
+          tag={getCheapestTag()}
           overrideToken={overrideToken.destination || undefined}
         />
       )}
-      {fastestRouteData && (
+      {fastestRoute && (
         <LifiRoute
           type="lifi-fastest"
-          route={fastestRouteData.route}
-          tag={fastestRouteData.tag}
+          route={fastestRoute}
+          tag={getFastestTag()}
           overrideToken={overrideToken.destination || undefined}
         />
       )}

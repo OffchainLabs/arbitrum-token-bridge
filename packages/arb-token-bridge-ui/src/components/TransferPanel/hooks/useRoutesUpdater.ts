@@ -185,14 +185,7 @@ export function useRoutesUpdater() {
     error: lifiError
   } = useLifiCrossTransfersRoute(lifiParameters)
 
-  // Construct route data with advanced tagging logic
-  // Tagging scenarios:
-  // 1. LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag, Fastest LiFi = "Fastest"
-  // 2. LiFi + Canonical: Cheapest LiFi = "Best Deal", Fastest LiFi = "Fastest", Canonical = "Security guaranteed by Arbitrum"
-  // 3. CCTP + Canonical: CCTP = "Best Deal", Canonical = "Security guaranteed by Arbitrum"
-  // 4. Canonical only: "Security guaranteed by Arbitrum"
-  // 5. LiFi only: Cheapest = "Best Deal", Fastest = "Fastest"
-  // 6. OFT V2 only: No tags (only 1 option)
+  // Construct route data (tags handled by individual components)
   const routeData = useMemo(() => {
     const data: {
       oftV2?: OftV2RouteData
@@ -207,9 +200,7 @@ export function useRoutesUpdater() {
         type: 'oftV2',
         bridge: 'LayerZero',
         bridgeIconURI: '/icons/layerzero.svg',
-        amountReceived: amount.toString(),
-        // No tags when OFT V2 is the only route (as per requirements)
-        tag: undefined
+        amountReceived: amount.toString()
       }
     }
 
@@ -217,19 +208,13 @@ export function useRoutesUpdater() {
     if (eligibleRoutes.includes('cctp')) {
       data.cctp = {
         type: 'cctp',
-        bridge: 'Circle CCTP',
+        bridge: 'Circle',
         bridgeIconURI: '/icons/cctp.svg',
-        amountReceived: amount.toString(),
-        // Tag as "Best Deal" when shown with LiFi routes OR when shown with Canonical
-        // This covers: LiFi + CCTP, CCTP + Canonical scenarios
-        tag:
-          eligibleRoutes.includes('lifi') || eligibleRoutes.includes('arbitrum')
-            ? 'best-deal'
-            : undefined
+        amountReceived: amount.toString()
       }
     }
 
-    // LiFi route data with sophisticated tagging logic
+    // LiFi route data
     if (eligibleRoutes.includes('lifi') && lifiRoutes) {
       const cheapestRoute = lifiRoutes.find(route =>
         route.protocolData.orders.includes('CHEAPEST' as any)
@@ -240,55 +225,17 @@ export function useRoutesUpdater() {
 
       const lifiData: LifiRouteData[] = []
 
-      // Determine tags based on route combination
-      if (eligibleRoutes.includes('cctp')) {
-        // LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag, Fastest LiFi = "Fastest"
-        if (cheapestRoute) {
-          lifiData.push({
-            type: 'lifi-cheapest',
-            route: cheapestRoute,
-            tag: undefined // No tag for cheapest when CCTP is present
-          })
-        }
-        if (fastestRoute) {
-          lifiData.push({
-            type: 'lifi-fastest',
-            route: fastestRoute,
-            tag: 'fastest'
-          })
-        }
-      } else if (eligibleRoutes.includes('arbitrum')) {
-        // LiFi + Canonical: Cheapest LiFi = "Best Deal", Fastest LiFi = "Fastest"
-        if (cheapestRoute) {
-          lifiData.push({
-            type: 'lifi-cheapest',
-            route: cheapestRoute,
-            tag: 'best-deal'
-          })
-        }
-        if (fastestRoute) {
-          lifiData.push({
-            type: 'lifi-fastest',
-            route: fastestRoute,
-            tag: 'fastest'
-          })
-        }
-      } else {
-        // LiFi only: Show "fastest" and "best return" routes with tags
-        if (cheapestRoute) {
-          lifiData.push({
-            type: 'lifi-cheapest',
-            route: cheapestRoute,
-            tag: 'best-deal'
-          })
-        }
-        if (fastestRoute) {
-          lifiData.push({
-            type: 'lifi-fastest',
-            route: fastestRoute,
-            tag: 'fastest'
-          })
-        }
+      if (cheapestRoute) {
+        lifiData.push({
+          type: 'lifi-cheapest',
+          route: cheapestRoute
+        })
+      }
+      if (fastestRoute) {
+        lifiData.push({
+          type: 'lifi-fastest',
+          route: fastestRoute
+        })
       }
 
       // If only one LiFi route, simplify the type
@@ -305,14 +252,12 @@ export function useRoutesUpdater() {
         type: 'arbitrum',
         bridge: 'Arbitrum Bridge',
         bridgeIconURI: '/icons/arbitrum.svg',
-        amountReceived: amount.toString(),
-        // Tag as "Security guaranteed by Arbitrum" - always shown for security
-        tag: 'security-guaranteed'
+        amountReceived: amount.toString()
       }
     }
 
     return data
-  }, [eligibleRoutes, lifiRoutes, amount, isTestnet])
+  }, [eligibleRoutes, lifiRoutes, amount])
 
   // Determine flags
   const flags = useMemo(

@@ -1,7 +1,7 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { utils } from 'ethers'
-import { Route } from './Route'
+import { Route, BadgeType } from './Route'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
 import {
@@ -132,6 +132,12 @@ export function ArbitrumCanonicalRoute() {
     return null
   }
 
+  // Determine tag based on route combination
+  const getTag = (): BadgeType => {
+    // Always show "Security guaranteed by Arbitrum" for security
+    return 'security-guaranteed'
+  }
+
   return (
     <Route
       type="arbitrum"
@@ -155,7 +161,7 @@ export function ArbitrumCanonicalRoute() {
           : []
       }
       onSelectedRouteClick={setSelectedRoute}
-      tag={arbitrumData.tag}
+      tag={getTag()}
       selected={selectedRoute === 'arbitrum'}
     />
   )

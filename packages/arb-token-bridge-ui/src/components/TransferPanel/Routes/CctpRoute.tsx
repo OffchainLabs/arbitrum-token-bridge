@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
 import { useNetworks } from '../../../hooks/useNetworks'
-import { Route } from './Route'
+import { Route, BadgeType } from './Route'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { isNetwork } from '../../../util/networks'
 import { useRouteStore } from '../hooks/useRouteStore'
@@ -22,8 +22,9 @@ export function CctpRoute() {
     shallow
   )
 
-  // Get route data from centralized store
+  // Get route data and context from centralized store
   const cctpData = useRouteStore(state => state.routes.cctp)
+  const eligibleRoutes = useRouteStore(state => state.eligibleRoutes)
 
   // Calculate duration based on network context
   const { isTestnet } = isNetwork(sourceChain.id)
@@ -47,6 +48,19 @@ export function CctpRoute() {
     return null
   }
 
+  // Determine tag based on route combination
+  const getTag = (): BadgeType | undefined => {
+    // Tag as "Best Deal" when shown with LiFi routes OR when shown with Canonical
+    // This covers: LiFi + CCTP, CCTP + Canonical scenarios
+    if (
+      eligibleRoutes.includes('lifi') ||
+      eligibleRoutes.includes('arbitrum')
+    ) {
+      return 'best-deal'
+    }
+    return undefined
+  }
+
   return (
     <Route
       type="cctp"
@@ -59,7 +73,7 @@ export function CctpRoute() {
       gasCost={undefined}
       selected={selectedRoute === 'cctp'}
       onSelectedRouteClick={setSelectedRoute}
-      tag={cctpData.tag}
+      tag={getTag()}
     />
   )
 }
