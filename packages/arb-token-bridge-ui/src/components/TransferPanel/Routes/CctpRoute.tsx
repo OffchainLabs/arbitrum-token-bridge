@@ -23,7 +23,6 @@ export function CctpRoute() {
     shallow
   )
 
-  // Get route data from centralized store
   const cctpData = useRouteStore(
     state => state.routes.find(route => route.type === 'cctp')?.data
   )

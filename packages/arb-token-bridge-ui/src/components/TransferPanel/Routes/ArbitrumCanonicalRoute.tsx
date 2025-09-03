@@ -86,7 +86,6 @@ export function ArbitrumCanonicalRoute() {
   )
   const [selectedToken] = useSelectedToken()
 
-  // Get route data from centralized store
   const arbitrumData = useRouteStore(
     state => state.routes.find(route => route.type === 'arbitrum')?.data
   )

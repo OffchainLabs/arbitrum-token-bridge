@@ -23,7 +23,6 @@ export function OftV2Route() {
   )
   const [selectedToken] = useSelectedToken()
 
-  // Get route data from centralized store
   const oftV2Data = useRouteStore(
     state => state.routes.find(route => route.type === 'oftV2')?.data
   )

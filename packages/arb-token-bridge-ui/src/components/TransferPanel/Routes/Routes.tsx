@@ -36,13 +36,11 @@ function Wrapper({ children }: PropsWithChildren) {
   )
 }
 
-// Configuration
 const MAX_ROUTES_VISIBLE = 3
 
 export const Routes = React.memo(() => {
   useRoutesUpdater()
 
-  // Hidden routes state
   const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
 
   const {
@@ -62,7 +60,6 @@ export const Routes = React.memo(() => {
     shallow
   )
 
-  // Calculate token override for LiFi routes
   const [networks] = useNetworks()
   const [selectedToken] = useSelectedToken()
   const overrideToken = useMemo(
@@ -79,7 +76,6 @@ export const Routes = React.memo(() => {
     ]
   )
 
-  // Auto-select first route if only one is available
   useEffect(() => {
     if (eligibleRoutes.length === 1) {
       const focus = eligibleRoutes[0]
@@ -89,12 +85,10 @@ export const Routes = React.memo(() => {
     }
   }, [setSelectedRoute, eligibleRoutes])
 
-  // Reset hidden routes state when token changes
   useEffect(() => {
     setShowHiddenRoutes(false)
   }, [selectedToken])
 
-  // Tag calculation logic moved from individual components
   const getRouteTag = useCallback(
     (routeType: string): BadgeType | undefined => {
       switch (routeType) {
@@ -152,7 +146,6 @@ export const Routes = React.memo(() => {
     return null
   }
 
-  // Filter routes based on visibility threshold
   const visibleRoutes = showHiddenRoutes
     ? routes
     : routes.slice(0, MAX_ROUTES_VISIBLE)
@@ -160,7 +153,6 @@ export const Routes = React.memo(() => {
 
   return (
     <Wrapper>
-      {/* Render visible routes */}
       {visibleRoutes.map((route, index) => {
         const tag = getRouteTag(route.type)
 
@@ -191,7 +183,6 @@ export const Routes = React.memo(() => {
         }
       })}
 
-      {/* Show hidden routes toggle button */}
       {hasHiddenRoutes && (
         <div className="mt-1 flex justify-center text-xs text-white/80">
           <button
@@ -206,7 +197,6 @@ export const Routes = React.memo(() => {
         </div>
       )}
 
-      {/* Show low liquidity message if needed */}
       {hasLowLiquidity && (
         <div className="rounded border border-lilac bg-lilac/50 p-3 text-sm text-white">
           {hasModifiedSettings ? (

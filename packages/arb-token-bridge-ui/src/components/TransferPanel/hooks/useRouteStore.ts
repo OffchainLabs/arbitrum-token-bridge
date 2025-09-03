@@ -14,7 +14,7 @@ export type RouteType =
   | 'lifi-cheapest'
   | 'lifi' // If fastest and cheapest quotes are the same
 
-// Discriminated union for route data
+// Discriminated union for route data - each type has its own data structure
 export type RouteData =
   | {
       type: 'cctp'
@@ -54,23 +54,18 @@ export type RouteContext = LifiData &
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
 
 interface RouteState {
-  // Selection state
   selectedRoute: RouteType | undefined
   context: RouteContext | undefined
 
-  // Route discovery
   eligibleRoutes: RouteType[]
   isLoading: boolean
   error?: string | null
 
-  // Available routes
   routes: RouteData[]
 
-  // UI flags
   hasLowLiquidity: boolean
   hasModifiedSettings: boolean
 
-  // Actions
   setSelectedRoute: SetRoute
   clearRoute: () => void
   setRouteState: (

@@ -23,7 +23,6 @@ import { shallow } from 'zustand/shallow'
 import { useLifiCrossTransfersRoute } from '../../../hooks/useLifiCrossTransferRoute'
 import { Address } from 'viem'
 
-// Helper function to determine eligible routes (sync)
 function getEligibleRoutes({
   isOftV2Transfer,
   isCctpTransfer,
@@ -92,7 +91,6 @@ function getEligibleRoutes({
   return eligibleRoutes
 }
 
-// Hook that updates the store when inputs change
 export function useRoutesUpdater() {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
@@ -116,7 +114,6 @@ export function useRoutesUpdater() {
   const isArbitrumCanonicalTransfer = useIsArbitrumCanonicalTransfer()
   const setRouteState = useRouteStore(state => state.setRouteState)
 
-  // Determine eligible routes
   const eligibleRoutes = useMemo(
     () =>
       getEligibleRoutes({
@@ -143,7 +140,6 @@ export function useRoutesUpdater() {
     ]
   )
 
-  // Always call LiFi hook if LiFi is enabled (to avoid conditional hook calls)
   const overrideToken = useMemo(
     () =>
       getTokenOverride({
@@ -178,7 +174,6 @@ export function useRoutesUpdater() {
     error: lifiError
   } = useLifiCrossTransfersRoute(lifiParameters)
 
-  // Construct flattened route data array
   const routeData = useMemo(() => {
     const routes: RouteData[] = []
 
@@ -202,7 +197,7 @@ export function useRoutesUpdater() {
       })
     }
 
-    // LiFi route data
+    // LiFi route data - handle fastest/cheapest consolidation
     if (eligibleRoutes.includes('lifi') && lifiRoutes) {
       const cheapestRoute = lifiRoutes.find(route =>
         route.protocolData.orders.includes('CHEAPEST' as any)
@@ -258,7 +253,6 @@ export function useRoutesUpdater() {
     return routes
   }, [eligibleRoutes, lifiRoutes, amount])
 
-  // Determine flags
   const flags = useMemo(
     () => ({
       hasLowLiquidity:
@@ -271,8 +265,8 @@ export function useRoutesUpdater() {
         !lifiError &&
         !isLifiLoading &&
         (!lifiRoutes || lifiRoutes.length === 0),
-      // Check if user has modified default settings
       hasModifiedSettings:
+        // Check if user has modified default settings
         slippage !== defaultSlippage.toString() ||
         disabledExchanges.length > 0 ||
         disabledBridges.length > 0
