@@ -57,8 +57,12 @@ function getDuration({
 
 export function ArbitrumCanonicalRoute() {
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    isTeleportMode,
+    childChainProvider,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const {
     status: gasSummaryStatus,
     estimatedParentChainGasFees,
@@ -117,7 +121,7 @@ export function ArbitrumCanonicalRoute() {
     getDuration({
       isTestnet,
       sourceChainId: networks.sourceChain.id,
-      isTeleportMode: isDepositMode && isOrbitChain,
+      isTeleportMode,
       isWithdrawal: !isDepositMode,
       isOrbitChain
     }) *
