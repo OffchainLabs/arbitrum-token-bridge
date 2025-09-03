@@ -32,7 +32,6 @@ export const Routes = React.memo(() => {
   const {
     setSelectedRoute,
     eligibleRoutes,
-    error,
     routes,
     hasLowLiquidity,
     hasModifiedSettings
@@ -40,7 +39,6 @@ export const Routes = React.memo(() => {
     state => ({
       setSelectedRoute: state.setSelectedRoute,
       eligibleRoutes: state.eligibleRoutes,
-      error: state.error,
       routes: state.routes,
       hasLowLiquidity: state.hasLowLiquidity,
       hasModifiedSettings: state.hasModifiedSettings
@@ -64,24 +62,17 @@ export const Routes = React.memo(() => {
 
   return (
     <Wrapper>
-      {/* Show warning if there are partial failures */}
-      {error && (
-        <div className="mb-4 rounded border border-yellow-500 bg-yellow-500/20 p-3 text-sm text-yellow-200">
-          ⚠️ {error}
-        </div>
-      )}
-
       {/* Render OFT V2 route */}
-      {routes.oftV2 && <OftV2Route key="oftV2" />}
+      {routes.oftV2 && <OftV2Route />}
 
       {/* Render CCTP route */}
-      {routes.cctp && <CctpRoute key="cctp" />}
+      {routes.cctp && <CctpRoute />}
 
       {/* Render LiFi routes */}
-      {routes.lifi && routes.lifi.length > 0 && <LifiRoutes key="lifi" />}
+      {routes.lifi && routes.lifi.length > 0 && <LifiRoutes />}
 
       {/* Render Arbitrum canonical route */}
-      {routes.arbitrum && <ArbitrumCanonicalRoute key="arbitrum" />}
+      {routes.arbitrum && <ArbitrumCanonicalRoute />}
 
       {/* Show low liquidity message if needed */}
       {hasLowLiquidity && (
