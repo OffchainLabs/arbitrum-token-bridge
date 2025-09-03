@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
 import { useNetworks } from '../../../hooks/useNetworks'
+import { Route } from './Route'
 import { getCctpTransferDuration } from '../../../hooks/useTransferDuration'
 import { isNetwork } from '../../../util/networks'
-import { Route } from './Route'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { getUsdcTokenAddressFromSourceChainId } from '../../../state/cctpState'
 import {

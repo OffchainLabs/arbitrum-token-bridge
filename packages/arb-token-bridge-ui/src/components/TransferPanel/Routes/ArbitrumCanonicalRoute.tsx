@@ -4,6 +4,13 @@ import { utils } from 'ethers'
 import { Route } from './Route'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { useNativeCurrency } from '../../../hooks/useNativeCurrency'
+import {
+  getOrbitDepositDuration,
+  getStandardDepositDuration,
+  getWithdrawalDuration
+} from '../../../hooks/useTransferDuration'
+import { isNetwork } from '../../../util/networks'
+import dayjs from 'dayjs'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
@@ -14,13 +21,6 @@ import {
   bridgedUsdcToken,
   nativeUsdcToken
 } from '../../../util/CommonAddressUtils'
-import {
-  getOrbitDepositDuration,
-  getStandardDepositDuration,
-  getWithdrawalDuration
-} from '../../../hooks/useTransferDuration'
-import { isNetwork } from '../../../util/networks'
-import dayjs from 'dayjs'
 
 function getDuration({
   isTestnet,
@@ -83,19 +83,6 @@ export function ArbitrumCanonicalRoute() {
   // Get route data from centralized store
   const arbitrumData = useRouteStore(state => state.routes.arbitrum)
 
-  // Calculate duration based on network context
-  const { isTestnet, isOrbitChain } = isNetwork(networks.sourceChain.id)
-  const durationMs =
-    getDuration({
-      isTestnet,
-      sourceChainId: networks.sourceChain.id,
-      isTeleportMode: isDepositMode && isOrbitChain,
-      isWithdrawal: !isDepositMode,
-      isOrbitChain
-    }) *
-    60 *
-    1_000
-
   const { gasCost, isLoading } = useMemo(
     () =>
       getGasCostAndToken({
@@ -123,6 +110,19 @@ export function ArbitrumCanonicalRoute() {
    */
   const isUsdcTransfer = isTokenNativeUSDC(selectedToken?.address)
   const overrideToken = isDepositMode ? bridgedUsdcToken : nativeUsdcToken
+
+  // Calculate duration based on network context
+  const { isTestnet, isOrbitChain } = isNetwork(networks.sourceChain.id)
+  const durationMs =
+    getDuration({
+      isTestnet,
+      sourceChainId: networks.sourceChain.id,
+      isTeleportMode: isDepositMode && isOrbitChain,
+      isWithdrawal: !isDepositMode,
+      isOrbitChain
+    }) *
+    60 *
+    1_000
 
   if (!arbitrumData) {
     return null

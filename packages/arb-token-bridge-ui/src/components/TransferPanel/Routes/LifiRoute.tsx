@@ -1,3 +1,4 @@
+import { useNetworks } from '../../../hooks/useNetworks'
 import { utils } from 'ethers'
 import { BadgeType, Route } from './Route'
 import {
@@ -14,11 +15,10 @@ import {
   useLifiSettingsStore
 } from '../hooks/useLifiSettingsStore'
 import { useCallback, useEffect, useMemo } from 'react'
-import { shallow } from 'zustand/shallow'
-import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
-import { useNetworks } from '../../../hooks/useNetworks'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { shallow } from 'zustand/shallow'
 import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
+import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
 export function LifiRoutes() {
   const [networks] = useNetworks()
