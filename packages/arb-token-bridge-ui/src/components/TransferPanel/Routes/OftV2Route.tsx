@@ -1,7 +1,7 @@
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { constants, utils } from 'ethers'
-import { Route, BadgeType } from './Route'
+import { Route } from './Route'
 import { ether } from '../../../constants'
 import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEstimates'
@@ -25,10 +25,6 @@ export function OftV2Route() {
 
   // Get route data and context from centralized store
   const oftV2Data = useRouteStore(state => state.routes.oftV2)
-  const eligibleRoutes = useRouteStore(state => state.eligibleRoutes)
-
-  // Calculate duration - OFT V2 is always 5 minutes
-  const durationMs = 5 * 60 * 1_000
 
   const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
     useOftV2FeeEstimates({
@@ -85,29 +81,18 @@ export function OftV2Route() {
     return null
   }
 
-  // Determine tag based on route combination
-  const getTag = (): BadgeType | undefined => {
-    // No tags when OFT V2 is the only route (as per requirements)
-    if (eligibleRoutes.length === 1) {
-      return undefined
-    }
-    // Could add more complex logic here if needed
-    return undefined
-  }
-
   return (
     <Route
       type="oftV2"
-      bridge={oftV2Data.bridge}
-      bridgeIconURI={oftV2Data.bridgeIconURI}
-      durationMs={durationMs}
+      bridge={'LayerZero'}
+      bridgeIconURI={'/icons/layerzero.svg'}
+      durationMs={5 * 60 * 1_000} // 5 minutes in miliseconds
       amountReceived={oftV2Data.amountReceived}
       isLoadingGasEstimate={status === 'loading'}
       gasCost={gasCost}
       bridgeFee={bridgeFee}
       selected={selectedRoute === 'oftV2'}
       onSelectedRouteClick={setSelectedRoute}
-      tag={getTag()}
     />
   )
 }
