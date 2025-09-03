@@ -176,8 +176,6 @@ export function useRoutesUpdater() {
     enabled: eligibleRoutes.includes('lifi')
   }
 
-  console.log('xxx eligibleRoutes', eligibleRoutes, lifiParameters)
-
   const {
     data: lifiRoutes,
     isLoading: isLifiLoading,

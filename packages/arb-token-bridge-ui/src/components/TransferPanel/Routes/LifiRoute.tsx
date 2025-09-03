@@ -16,8 +16,13 @@ import {
 import { useCallback, useEffect, useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useSelectedToken } from '../../../hooks/useSelectedToken'
+import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 
 export function LifiRoutes() {
+  const [networks] = useNetworks()
+  const [selectedToken] = useSelectedToken()
   const { disabledBridges, disabledExchanges, slippage } = useLifiSettingsStore(
     state => ({
       disabledBridges: state.disabledBridges,
@@ -29,6 +34,21 @@ export function LifiRoutes() {
 
   const clearRoute = useRouteStore(state => state.clearRoute)
   const selectedRoute = useRouteStore(state => state.selectedRoute)
+
+  // Calculate token override for LiFi routes
+  const overrideToken = useMemo(
+    () =>
+      getTokenOverride({
+        sourceChainId: networks.sourceChain.id,
+        fromToken: selectedToken?.address,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [
+      selectedToken?.address,
+      networks.sourceChain.id,
+      networks.destinationChain.id
+    ]
+  )
 
   // Get LiFi routes from centralized store
   const lifiData = useRouteStore(state => state.routes.lifi)
@@ -72,7 +92,7 @@ export function LifiRoutes() {
         type="lifi"
         route={route}
         tag={tags}
-        overrideToken={undefined}
+        overrideToken={overrideToken.destination || undefined}
       />
     )
   }
@@ -102,7 +122,7 @@ export function LifiRoutes() {
           type="lifi-cheapest"
           route={cheapestRouteData.route}
           tag={cheapestRouteData.tag}
-          overrideToken={undefined}
+          overrideToken={overrideToken.destination || undefined}
         />
       )}
       {fastestRouteData && (
@@ -110,7 +130,7 @@ export function LifiRoutes() {
           type="lifi-fastest"
           route={fastestRouteData.route}
           tag={fastestRouteData.tag}
-          overrideToken={undefined}
+          overrideToken={overrideToken.destination || undefined}
         />
       )}
     </>
