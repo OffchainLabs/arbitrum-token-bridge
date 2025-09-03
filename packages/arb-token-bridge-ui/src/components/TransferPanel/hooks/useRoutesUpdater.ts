@@ -182,7 +182,14 @@ export function useRoutesUpdater() {
     error: lifiError
   } = useLifiCrossTransfersRoute(lifiParameters)
 
-  // Construct route data
+  // Construct route data with advanced tagging logic
+  // Tagging scenarios:
+  // 1. LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag, Fastest LiFi = "Fastest"
+  // 2. LiFi + Canonical: Cheapest LiFi = "Best Deal", Fastest LiFi = "Fastest", Canonical = "Security guaranteed by Arbitrum"
+  // 3. CCTP + Canonical: CCTP = "Best Deal", Canonical = "Security guaranteed by Arbitrum"
+  // 4. Canonical only: "Security guaranteed by Arbitrum"
+  // 5. LiFi only: Cheapest = "Best Deal", Fastest = "Fastest"
+  // 6. OFT V2 only: No tags (only 1 option)
   const routeData = useMemo(() => {
     const data: {
       oftV2?: OftV2RouteData
@@ -198,7 +205,7 @@ export function useRoutesUpdater() {
         bridge: 'LayerZero',
         bridgeIconURI: '/icons/layerzero.svg',
         amountReceived: amount.toString(),
-        // No tag when OFT V2 is the only route (as per requirements)
+        // No tags when OFT V2 is the only route (as per requirements)
         tag: undefined
       }
     }
@@ -210,8 +217,12 @@ export function useRoutesUpdater() {
         bridge: 'Circle CCTP',
         bridgeIconURI: '/icons/cctp.svg',
         amountReceived: amount.toString(),
-        // Tag as "Best Deal" when shown with LiFi routes
-        tag: eligibleRoutes.includes('lifi') ? 'best-deal' : undefined
+        // Tag as "Best Deal" when shown with LiFi routes OR when shown with Canonical
+        // This covers: LiFi + CCTP, CCTP + Canonical scenarios
+        tag:
+          eligibleRoutes.includes('lifi') || eligibleRoutes.includes('arbitrum')
+            ? 'best-deal'
+            : undefined
       }
     }
 
@@ -292,8 +303,8 @@ export function useRoutesUpdater() {
         bridge: 'Arbitrum Bridge',
         bridgeIconURI: '/icons/arbitrum.svg',
         amountReceived: amount.toString(),
-        // Tag as "Security guaranteed by Arbitrum" when shown with other routes
-        tag: eligibleRoutes.length > 1 ? 'security-guaranteed' : undefined
+        // Tag as "Security guaranteed by Arbitrum" - always shown for security
+        tag: 'security-guaranteed'
       }
     }
 
