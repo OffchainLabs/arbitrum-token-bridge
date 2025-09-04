@@ -247,9 +247,14 @@ async function sanitizeAndRedirect(searchParams: {
   }
 }
 
+let initializationDone = false
 export default async function HomePage({ searchParams }: Props) {
-  addOrbitChainsToArbitrumSDK()
-  await sanitizeAndRedirect(searchParams)
+  if (!initializationDone) {
+    /** AppRouter execute this code on every render, we want this to run only once */
+    initializationDone = true
+    addOrbitChainsToArbitrumSDK()
+    await sanitizeAndRedirect(searchParams)
+  }
 
   return <BridgeClient />
 }
