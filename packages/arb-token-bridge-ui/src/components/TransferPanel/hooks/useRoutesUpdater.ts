@@ -23,6 +23,41 @@ import { shallow } from 'zustand/shallow'
 import { useLifiCrossTransfersRoute } from '../../../hooks/useLifiCrossTransferRoute'
 import { Address } from 'viem'
 
+/**
+ * Determines the best route based on priority order.
+ *
+ * Route Selection Priority:
+ * 1. OFT V2 (highest priority) - LayerZero protocol for USDT transfers
+ * 2. CCTP (second priority) - Circle's native USDC transfers
+ * 3. LiFi cheapest (third priority) - Best deal from LiFi aggregator
+ * 4. LiFi single route (fourth priority) - When fastest and cheapest are the same
+ * 5. First available route (fallback) - Any other route that was successfully fetched
+ *
+ * @param routes - Array of successfully fetched routes
+ * @returns The best route type or undefined if no routes available
+ */
+function getBestRouteForDefaultSelection(
+  routes: RouteData[]
+): RouteType | undefined {
+  // 1. OFT V2 (highest priority)
+  const oftV2Route = routes.find(route => route.type === 'oftV2')
+  if (oftV2Route) return 'oftV2'
+
+  // 2. CCTP (second priority)
+  const cctpRoute = routes.find(route => route.type === 'cctp')
+  if (cctpRoute) return 'cctp'
+
+  // 3. LiFi best deal (third priority)
+  const lifiCheapestRoute = routes.find(route => route.type === 'lifi-cheapest')
+  if (lifiCheapestRoute) return 'lifi-cheapest'
+
+  const lifiRoute = routes.find(route => route.type === 'lifi')
+  if (lifiRoute) return 'lifi'
+
+  // 4. First available route (fallback)
+  return routes[0]?.type
+}
+
 interface GetEligibleRoutesParams {
   isOftV2Transfer: boolean
   isCctpTransfer: boolean
@@ -114,7 +149,13 @@ export function useRoutesUpdater() {
 
   const { isTestnet } = isNetwork(networks.sourceChain.id)
   const isArbitrumCanonicalTransfer = useIsArbitrumCanonicalTransfer()
-  const setRouteState = useRouteStore(state => state.setRouteState)
+  const { setRouteState, userSelectedRoute } = useRouteStore(
+    state => ({
+      setRouteState: state.setRouteState,
+      userSelectedRoute: state.userSelectedRoute
+    }),
+    shallow
+  )
 
   const eligibleRouteTypes = useMemo(
     () =>
@@ -290,8 +331,14 @@ export function useRoutesUpdater() {
     eligibleRouteTypes.includes('lifi') &&
     eligibleRouteTypes.length === 1
 
-  // Update store when data changes
   useEffect(() => {
+    // if user has not selected a route, then pre-select the best route
+    const selectedRoute =
+      userSelectedRoute &&
+      routeData.some(route => route.type === userSelectedRoute)
+        ? userSelectedRoute // User selection is valid - preserve it
+        : getBestRouteForDefaultSelection(routeData) // Auto-select best route - becomes default selection
+
     setRouteState({
       eligibleRouteTypes,
       isLoading: isLifiLoading,
@@ -301,7 +348,8 @@ export function useRoutesUpdater() {
 
       routes: routeData,
       hasLowLiquidity: flags.hasLowLiquidity,
-      hasModifiedSettings: flags.hasModifiedSettings
+      hasModifiedSettings: flags.hasModifiedSettings,
+      selectedRoute
     })
   }, [
     eligibleRouteTypes,
@@ -310,6 +358,7 @@ export function useRoutesUpdater() {
     lifiError,
     routeData,
     flags,
-    setRouteState
+    setRouteState,
+    userSelectedRoute
   ])
 }

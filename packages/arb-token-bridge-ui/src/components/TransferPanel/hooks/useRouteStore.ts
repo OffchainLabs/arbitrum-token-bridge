@@ -14,7 +14,6 @@ export type RouteType =
   | 'lifi-cheapest'
   | 'lifi' // If fastest and cheapest quotes are the same
 
-// Discriminated union for route data - each type has its own data structure
 export type RouteData =
   | {
       type: 'cctp'
@@ -54,8 +53,9 @@ export type RouteContext = LifiData &
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
 
 interface RouteState {
-  selectedRoute: RouteType | undefined
-  context: RouteContext | undefined
+  selectedRoute: RouteType | undefined // the route that is currently selected - can be default or user-selected
+  userSelectedRoute: RouteType | undefined // subset of `selectedRoute` - filled only if user has clicked and selected a route
+  context: RouteContext | undefined // selected route's context (details)
 
   eligibleRouteTypes: RouteType[]
   isLoading: boolean
@@ -72,7 +72,7 @@ interface RouteState {
     state: Partial<
       Omit<
         RouteState,
-        | 'selectedRoute'
+        | 'userSelectedRoute'
         | 'context'
         | 'setSelectedRoute'
         | 'clearRoute'
@@ -86,6 +86,7 @@ interface RouteState {
 
 export const useRouteStore = create<RouteState>()(set => ({
   selectedRoute: undefined,
+  userSelectedRoute: undefined,
   context: undefined,
   eligibleRouteTypes: [],
   isLoading: false,
@@ -96,12 +97,14 @@ export const useRouteStore = create<RouteState>()(set => ({
   setSelectedRoute: (route, context) =>
     set({
       selectedRoute: route,
+      userSelectedRoute: route, // Mark as user-selected to preserve across route refreshes
       context
     }),
 
   clearRoute: () =>
     set({
       selectedRoute: undefined,
+      userSelectedRoute: undefined,
       context: undefined
     }),
 

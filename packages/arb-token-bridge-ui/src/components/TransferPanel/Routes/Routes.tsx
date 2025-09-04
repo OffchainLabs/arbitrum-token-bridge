@@ -43,22 +43,16 @@ export const Routes = React.memo(() => {
 
   const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
 
-  const {
-    setSelectedRoute,
-    eligibleRouteTypes,
-    routes,
-    hasLowLiquidity,
-    hasModifiedSettings
-  } = useRouteStore(
-    state => ({
-      setSelectedRoute: state.setSelectedRoute,
-      eligibleRouteTypes: state.eligibleRouteTypes,
-      routes: state.routes,
-      hasLowLiquidity: state.hasLowLiquidity,
-      hasModifiedSettings: state.hasModifiedSettings
-    }),
-    shallow
-  )
+  const { eligibleRouteTypes, routes, hasLowLiquidity, hasModifiedSettings } =
+    useRouteStore(
+      state => ({
+        eligibleRouteTypes: state.eligibleRouteTypes,
+        routes: state.routes,
+        hasLowLiquidity: state.hasLowLiquidity,
+        hasModifiedSettings: state.hasModifiedSettings
+      }),
+      shallow
+    )
 
   const [networks] = useNetworks()
   const [selectedToken] = useSelectedToken()
@@ -75,15 +69,6 @@ export const Routes = React.memo(() => {
       networks.destinationChain.id
     ]
   )
-
-  useEffect(() => {
-    if (eligibleRouteTypes.length === 1) {
-      const focus = eligibleRouteTypes[0]
-      if (focus) {
-        setSelectedRoute(focus)
-      }
-    }
-  }, [setSelectedRoute, eligibleRouteTypes])
 
   useEffect(() => {
     setShowHiddenRoutes(false)
