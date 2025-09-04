@@ -30,7 +30,11 @@ runs:
           if [[ "$file" == packages/scripts/* ]]; then
             test_scripts=true
           fi
-          
+
+          if [[ "$file" == packages/app/* ]]; then
+            test_scripts=true
+          fi
+
           if [[ "$file" == .github/workflows/e2e-tests.yml ]]; then
             run_tests=true
           fi
