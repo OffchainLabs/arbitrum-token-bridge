@@ -114,7 +114,7 @@ it('Update amount if selectedToken changes', async () => {
   })
 
   expect(adapter.push).toHaveBeenCalledExactlyOnceWith({
-    search: '?amount=1.234567'
+    search: '?sanitized=true&amount=1.234567'
   })
   expect(result.current.toString()).toEqual('1234567')
 

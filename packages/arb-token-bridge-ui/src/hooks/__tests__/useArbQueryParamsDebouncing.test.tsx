@@ -66,6 +66,7 @@ describe.sequential('useArbQueryParams debouncing', () => {
     expect(mockSetQueryParams).toHaveBeenCalledExactlyOnceWith({
       amount: '10.5',
       sourceChain: ChainId.ArbitrumOne,
+      sanitized: 'true',
       destinationChain: ChainId.Ethereum,
       token: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
     })
