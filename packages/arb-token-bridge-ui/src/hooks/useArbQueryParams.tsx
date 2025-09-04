@@ -75,7 +75,10 @@ export {
 /**
  * We use variables outside of the hook to share the accumulator accross multiple calls of useArbQueryParams
  */
-let pendingUpdates: QueryParamConfigMap = {}
+let pendingUpdates: DecodedValueMap<QueryParamConfigMap> = {
+  /** If no sanitization happened on the server, set a flag on first change of query param to avoid infinite loop */
+  sanitized: 'true'
+}
 let debounceTimeout: NodeJS.Timeout | null = null
 export type SetQueryParamsParameters =
   | Partial<DecodedValueMap<QueryParamConfigMap>>
