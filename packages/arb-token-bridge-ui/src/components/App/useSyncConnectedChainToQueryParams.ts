@@ -40,7 +40,7 @@ export function useSyncConnectedChainToQueryParams() {
         disableTransfersToNonArbitrumChains
       })
 
-    setQueryParams({ sourceChain, destinationChain })
+    setQueryParams({ sourceChain, destinationChain, sanitized: 'true' })
   }, [chain, setQueryParams, disableTransfersToNonArbitrumChains])
 
   useEffect(() => {
