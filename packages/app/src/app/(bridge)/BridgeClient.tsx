@@ -11,6 +11,7 @@ import {
 } from '../../initialization'
 import { ComponentType } from 'react'
 import { registerLocalNetwork } from '@/bridge/util/networks'
+import { useSanitizeQueryParams } from '@/bridge/hooks/useSanitizeQueryParams'
 import dynamic from 'next/dynamic'
 
 // Configure dayjs plugins
@@ -44,6 +45,7 @@ const App = dynamic(() => {
       await registerLocalNetwork()
     }
 
+    // Initialize SDK with custom chains from localStorage (client-side only)
     addOrbitChainsToArbitrumSDK()
     const AppComponent = await import('@/bridge/components/App/App')
     resolve(AppComponent)
@@ -51,5 +53,19 @@ const App = dynamic(() => {
 })
 
 export default function Index() {
+  const { isSanitizing } = useSanitizeQueryParams()
+
+  // Show loading state while sanitizing to prevent flash of wrong content
+  if (isSanitizing) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="border-blue-600 mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return <App />
 }
