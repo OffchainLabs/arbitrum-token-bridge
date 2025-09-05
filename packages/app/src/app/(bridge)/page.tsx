@@ -172,6 +172,9 @@ function getDestinationWithSanitizedQueryParams(
     }
   }
 
+  // Run sanitization only once per session
+  params.set('sanitized', 'true')
+
   return `/?${params.toString()}`
 }
 
@@ -240,18 +243,20 @@ async function sanitizeAndRedirect(searchParams: {
       `[sanitizeAndRedirect]     sourceChain=${sourceChainId}&destinationChain=${destinationChainId}&experiments=${experiments}&token=${token}&tab=${tab}&disabledFeatures=${disabledFeatures}&mode=${mode} (before)`
     )
     console.log(
-      `[sanitizeAndRedirect]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab}&disabledFeatures=${sanitized.disabledFeatures}&mode=${sanitized.mode} (after)`
+      `[sanitizeAndRedirect]     sourceChain=${sanitized.sourceChainId}&destinationChain=${sanitized.destinationChainId}&experiments=${sanitized.experiments}&token=${sanitized.token}&tab=${sanitized.tab}&disabledFeatures=${sanitized.disabledFeatures}&mode=${sanitized.mode}&sanitized=true (after)`
     )
 
     redirect(getDestinationWithSanitizedQueryParams(sanitized, searchParams))
   }
 }
 
-let initializationDone = false
 export default async function HomePage({ searchParams }: Props) {
-  if (!initializationDone) {
-    /** AppRouter execute this code on every render, we want this to run only once */
-    initializationDone = true
+  /**
+   * This code is run on every query param change,
+   * we don't want to sanitize every query param change.
+   * It should only be executed once per user per session.
+   */
+  if (searchParams.sanitized !== 'true') {
     addOrbitChainsToArbitrumSDK()
     await sanitizeAndRedirect(searchParams)
   }
