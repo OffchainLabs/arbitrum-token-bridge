@@ -10,7 +10,7 @@ import {
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
-const TokenListSyncer = (): JSX.Element => {
+const TokenListSyncer = (): React.ReactNode => {
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
