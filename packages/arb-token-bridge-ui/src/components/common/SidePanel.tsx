@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { Dialog, DialogBackdrop } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -22,34 +22,13 @@ export const SidePanel = ({
   scrollable = true,
   dialogWrapperClassName
 }: SidePanelProps) => {
-  const [open, setOpen] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-
-  // When user refreshes the page with the panel open, the query param starts as true
-  // For the transition to trigger we need to start from false, that's why we need another state
-  // Otherwise it also causes the backdrop to have no opacity so it looks quite bad
-  useEffect(() => {
-    setOpen(isOpen)
-  }, [isOpen])
-
   const handleClose = useCallback(() => {
-    setIsClosing(true)
-
-    setTimeout(() => {
-      onClose?.()
-
-      setTimeout(() => {
-        setIsClosing(false)
-        // prevent flickering caused by race conditions
-      }, 10)
-
-      // 200ms for the transition to finish
-    }, 200)
-  }, [setIsClosing])
+    onClose?.()
+  }, [onClose])
 
   return (
     <Dialog
-      open={open && !isClosing}
+      open={isOpen}
       onClose={handleClose}
       className={twMerge(
         'fixed z-40 h-screen max-h-screen',
