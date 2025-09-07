@@ -20,6 +20,7 @@ import { getTokenOverride } from '../../../pages/api/crosschain-transfers/utils'
 import { useMode } from '../../../hooks/useMode'
 import { twMerge } from 'tailwind-merge'
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline'
+import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 
 function Wrapper({ children }: PropsWithChildren) {
   const { embedMode } = useMode()
@@ -42,6 +43,8 @@ export const Routes = React.memo(() => {
   useRoutesUpdater()
 
   const [showHiddenRoutes, setShowHiddenRoutes] = useState(false)
+
+  const [, setQueryParams] = useArbQueryParams()
 
   const {
     setSelectedRoute,
@@ -110,11 +113,9 @@ export const Routes = React.memo(() => {
           if (eligibleRouteTypes.includes('cctp')) {
             // LiFi + CCTP: CCTP = "Best Deal", Cheapest LiFi = no tag
             return undefined
-          } else if (eligibleRouteTypes.includes('arbitrum')) {
-            // LiFi + Canonical: Cheapest LiFi = "Best Deal"
-            return 'best-deal'
           } else {
             // LiFi only: Show "best deal"
+            // LiFi + Canonical: Cheapest LiFi = "Best Deal"
             return 'best-deal'
           }
 
@@ -125,13 +126,11 @@ export const Routes = React.memo(() => {
         case 'lifi':
           // Single LiFi route (when fastest and cheapest are the same)
           if (eligibleRouteTypes.includes('cctp')) {
-            // LiFi + CCTP: CCTP = "Best Deal", LiFi = no tag
-            return undefined
-          } else if (eligibleRouteTypes.includes('arbitrum')) {
-            // LiFi + Canonical: LiFi = "Best Deal"
-            return 'best-deal'
+            // LiFi + CCTP: CCTP = "Best Deal", LiFi = 'fastest'
+            return 'fastest'
           } else {
             // LiFi only: Show "best deal"
+            // LiFi + Canonical: LiFi = "Best Deal"
             return 'best-deal'
           }
 
@@ -164,14 +163,11 @@ export const Routes = React.memo(() => {
           case 'lifi':
           case 'lifi-fastest':
           case 'lifi-cheapest':
-            const lifiRoute = route.data.route
-            if (!lifiRoute) return null
-
             return (
               <LifiRoute
                 key={`lifi-${index}`}
                 type={route.type}
-                route={lifiRoute}
+                route={route.data.route}
                 tag={tag}
                 overrideToken={overrideToken.destination || undefined}
               />
@@ -207,14 +203,7 @@ export const Routes = React.memo(() => {
             <>
               Unable to find viable routes. Consider{' '}
               <button
-                onClick={() => {
-                  // Open settings dialog by updating query params
-                  const url = new URL(window.location.href)
-                  url.searchParams.set('settingsOpen', 'true')
-                  window.history.pushState({}, '', url.toString())
-                  // Trigger a custom event to notify the app
-                  window.dispatchEvent(new CustomEvent('openSettings'))
-                }}
+                onClick={() => setQueryParams({ settingsOpen: true })}
                 className="underline hover:text-lilac/80"
               >
                 updating your settings

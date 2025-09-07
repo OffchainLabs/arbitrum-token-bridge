@@ -96,6 +96,7 @@ export function useGasEstimates({
     () => eligibleRouteTypes.every((route: RouteType) => isLifiRoute(route)),
     [eligibleRouteTypes]
   )
+  const isLifiRouteEligible = eligibleRouteTypes.includes('lifi')
 
   const overrideToken = useMemo(
     () =>
@@ -115,6 +116,7 @@ export function useGasEstimates({
     shallow
   )
   const parameters = {
+    enabled: isLifiRouteEligible,
     fromAddress: walletAddress,
     fromAmount: amount.toString(),
     fromChainId: sourceChain.id,

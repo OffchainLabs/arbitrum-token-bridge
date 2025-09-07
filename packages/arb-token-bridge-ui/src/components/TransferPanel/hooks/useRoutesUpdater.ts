@@ -22,6 +22,7 @@ import { useRouteStore, RouteType, RouteData } from './useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { useLifiCrossTransfersRoute } from '../../../hooks/useLifiCrossTransferRoute'
 import { Address } from 'viem'
+import { Order } from '../../../pages/api/crosschain-transfers/lifi'
 
 interface GetEligibleRoutesParams {
   isOftV2Transfer: boolean
@@ -157,6 +158,7 @@ export function useRoutesUpdater() {
   )
 
   const lifiParameters = {
+    enabled: eligibleRouteTypes.includes('lifi'), // only fetch lifi routes if lifi is eligible
     fromAddress: address,
     fromAmount: amountBN.toString(),
     fromChainId: networks.sourceChain.id,
@@ -166,8 +168,7 @@ export function useRoutesUpdater() {
     toToken: overrideToken.destination?.address || constants.AddressZero,
     denyBridges: disabledBridges,
     denyExchanges: disabledExchanges,
-    slippage,
-    enabled: eligibleRouteTypes.includes('lifi')
+    slippage
   }
 
   const {
@@ -202,10 +203,10 @@ export function useRoutesUpdater() {
     // LiFi route data - handle fastest/cheapest consolidation
     if (eligibleRouteTypes.includes('lifi') && lifiRoutes) {
       const cheapestRoute = lifiRoutes.find(route =>
-        route.protocolData.orders.includes('CHEAPEST' as any)
+        route.protocolData.orders.find(order => order === Order.Cheapest)
       )
       const fastestRoute = lifiRoutes.find(route =>
-        route.protocolData.orders.includes('FASTEST' as any)
+        route.protocolData.orders.find(order => order === Order.Fastest)
       )
 
       // Check if fastest and cheapest are the same route
