@@ -13,138 +13,115 @@
     `setQueryParams(newAmount)`
 
 */
+import { useCallback } from 'react'
 import queryString from 'query-string'
-import NextAdapterPages from 'next-query-params/pages'
+import NextAdapterApp from 'next-query-params/app'
 import {
   BooleanParam,
+  DecodedValueMap,
+  QueryParamConfigMap,
+  QueryParamOptions,
   QueryParamProvider,
+  SetQuery,
   StringParam,
-  decodeNumber,
-  decodeString,
   useQueryParams,
   withDefault
 } from 'use-query-params'
 
+import { defaultTheme } from './useTheme'
 import {
-  ChainKeyQueryParam,
-  getChainForChainKeyQueryParam,
-  getChainQueryParamForChain,
-  isValidChainQueryParam
-} from '../types/ChainQueryParam'
-import { ChainId } from '../types/ChainId'
-import { defaultTheme, ThemeConfig } from './useTheme'
+  TabParamEnum,
+  DisabledFeatures,
+  ModeParamEnum,
+  AmountQueryParamEnum,
+  tabToIndex,
+  indexToTab,
+  isValidDisabledFeature,
+  DisabledFeaturesParam,
+  encodeChainQueryParam,
+  decodeChainQueryParam,
+  encodeTabQueryParam,
+  decodeTabQueryParam,
+  ModeParam,
+  ThemeParam,
+  AmountQueryParam,
+  sanitizeAmountQueryParam,
+  TokenQueryParam,
+  ChainParam,
+  TabParam
+} from '../util/queryParamUtils'
 
-export enum TabParamEnum {
-  BRIDGE = 'bridge',
-  TX_HISTORY = 'tx_history'
+export {
+  TabParamEnum,
+  DisabledFeatures,
+  ModeParamEnum,
+  AmountQueryParamEnum,
+  tabToIndex,
+  indexToTab,
+  isValidDisabledFeature,
+  DisabledFeaturesParam,
+  encodeChainQueryParam,
+  decodeChainQueryParam,
+  encodeTabQueryParam,
+  decodeTabQueryParam,
+  ThemeParam,
+  AmountQueryParam,
+  sanitizeAmountQueryParam,
+  TokenQueryParam,
+  ChainParam,
+  TabParam
 }
 
-export enum DisabledFeatures {
-  BATCH_TRANSFERS = 'batch-transfers',
-  TX_HISTORY = 'tx-history',
-  NETWORK_SELECTION = 'network-selection',
-  TRANSFERS_TO_NON_ARBITRUM_CHAINS = 'transfers-to-non-arbitrum-chains'
+/**
+ * We use variables outside of the hook to share the accumulator accross multiple calls of useArbQueryParams
+ */
+let pendingUpdates: DecodedValueMap<QueryParamConfigMap> = {
+  /** If no sanitization happened on the server, set a flag on first change of query param to avoid infinite loop */
+  sanitized: 'true'
 }
+let debounceTimeout: NodeJS.Timeout | null = null
+export type SetQueryParamsParameters =
+  | Partial<DecodedValueMap<QueryParamConfigMap>>
+  | ((
+      latestValues: DecodedValueMap<QueryParamConfigMap>
+    ) => Partial<DecodedValueMap<QueryParamConfigMap>>)
 
-export enum AmountQueryParamEnum {
-  MAX = 'max'
-}
-
-export enum ModeParamEnum {
-  EMBED = 'embed'
-  // add other modes when we have a use case for it
-}
-
-export const tabToIndex = {
-  [TabParamEnum.BRIDGE]: 0,
-  [TabParamEnum.TX_HISTORY]: 1
-} as const satisfies Record<TabParamEnum, number>
-
-export const indexToTab = {
-  0: TabParamEnum.BRIDGE,
-  1: TabParamEnum.TX_HISTORY
-} as const satisfies Record<number, TabParamEnum>
-
-export const isValidDisabledFeature = (feature: string) => {
-  return Object.values(DisabledFeatures).includes(
-    feature.toLowerCase() as DisabledFeatures
-  )
-}
-
-export const DisabledFeaturesParam = {
-  encode: (disabledFeatures: string[] | undefined) => {
-    if (!disabledFeatures?.length) {
-      return undefined
+const debouncedUpdateQueryParams = (
+  updates: SetQueryParamsParameters,
+  originalSetQueryParams: SetQuery<QueryParamConfigMap>,
+  /** debounce only applies to object update, for function updates it will be called immediately */
+  debounce: boolean = false
+) => {
+  // Handle function update: setQueryParams((prevState) => ({ ...prevState, ...newUpdate }))
+  if (typeof updates === 'function') {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout)
+      debounceTimeout = null
     }
 
-    const url = new URLSearchParams()
-    const dedupedFeatures = new Set(
-      disabledFeatures
-        .map(feature => feature.toLowerCase())
-        .filter(feature => isValidDisabledFeature(feature))
+    originalSetQueryParams(prevState =>
+      updates({ ...prevState, ...pendingUpdates })
     )
+    pendingUpdates = {}
+  } else {
+    // Handle classic object updates: setQueryParams({ amount: "0.1" })
+    pendingUpdates = { ...pendingUpdates, ...updates }
 
-    for (const feature of dedupedFeatures) {
-      url.append('disabledFeatures', feature)
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout)
     }
 
-    return url.toString()
-  },
-  decode: (value: string | (string | null)[] | null | undefined) => {
-    if (!value) return []
-
-    // Handle both string and array inputs
-    const features =
-      typeof value === 'string'
-        ? [value]
-        : value.filter((val): val is string => val !== null)
-
-    // Normalize, validate and deduplicate in one pass
-    const dedupedFeatures = new Set<string>()
-    for (const feature of features) {
-      const normalized = feature.toLowerCase()
-      if (isValidDisabledFeature(normalized)) {
-        dedupedFeatures.add(normalized)
-      }
+    if (debounce) {
+      debounceTimeout = setTimeout(() => {
+        originalSetQueryParams(pendingUpdates)
+        pendingUpdates = {}
+        debounceTimeout = null
+      }, 400)
+    } else {
+      originalSetQueryParams(pendingUpdates)
+      pendingUpdates = {}
+      debounceTimeout = null
     }
-
-    return Array.from(dedupedFeatures)
-  }
-}
-
-export const ThemeParam = {
-  encode: (config: ThemeConfig | undefined) => {
-    if (!config) return undefined
-    try {
-      return encodeURIComponent(JSON.stringify(config)) // Encode the JSON string to handle special characters like # in hex colors
-    } catch {
-      return undefined
-    }
-  },
-  decode: (
-    configStr: string | (string | null)[] | null | undefined
-  ): ThemeConfig => {
-    if (!configStr || Array.isArray(configStr)) return defaultTheme
-    try {
-      const decodedTheme = JSON.parse(decodeURIComponent(configStr))
-      return { ...defaultTheme, ...decodedTheme }
-    } catch {
-      return defaultTheme
-    }
-  }
-}
-
-const ModeParam = {
-  encode: (mode: ModeParamEnum) => {
-    if (!mode) return undefined
-    return mode
-  },
-  decode: (value: string | (string | null)[] | null | undefined) => {
-    const modeStr = value?.toString()?.toLowerCase()
-    if (modeStr === ModeParamEnum.EMBED) {
-      return modeStr
-    }
-    return undefined
   }
 }
 
@@ -152,10 +129,29 @@ export const useArbQueryParams = () => {
   /*
     returns [
       queryParams (getter for all query state variables),
-      setQueryParams (setter for all query state variables)
+      setQueryParams (setter for all query state variables with debounced accumulator)
     ]
   */
-  return useQueryParams({
+  const [queryParams, setQueryParams] = useQueryParams()
+
+  const debouncedSetQueryParams = useCallback(
+    (
+      updates: SetQueryParamsParameters,
+      { debounce }: { debounce?: boolean } = {}
+    ) => debouncedUpdateQueryParams(updates, setQueryParams, debounce),
+    [setQueryParams]
+  )
+
+  return [queryParams, debouncedSetQueryParams] as const
+}
+
+export const queryParamProviderOptions: QueryParamOptions = {
+  searchStringToObject: queryString.parse,
+  objectToSearchString: queryString.stringify,
+  updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
+  removeDefaultsFromUrl: true,
+  enableBatching: true,
+  params: {
     sourceChain: ChainParam,
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
@@ -163,158 +159,12 @@ export const useArbQueryParams = () => {
     destinationAddress: withDefault(StringParam, undefined),
     token: TokenQueryParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
-    tab: withDefault(TabParam, tabToIndex[TabParamEnum.BRIDGE]), // which tab is active
+    tab: TabParam, // which tab is active
     disabledFeatures: withDefault(DisabledFeaturesParam, []), // disabled features in the bridge
     mode: withDefault(ModeParam, undefined), // mode: 'embed', or undefined for normal mode
     theme: withDefault(ThemeParam, defaultTheme) // theme customization
-  })
-}
-
-const isMax = (amount: string | undefined) =>
-  amount?.toLowerCase() === AmountQueryParamEnum.MAX
-
-/**
- * Sanitise amount value
- * @param amount - transfer amount value from the input field or from the URL
- * @returns sanitised value
- */
-export const sanitizeAmountQueryParam = (amount: string) => {
-  // no need to process empty string
-  if (amount.length === 0) {
-    return amount
-  }
-
-  const parsedAmount = amount.replace(/[,]/g, '.').toLowerCase()
-
-  // add 0 to values starting with .
-  if (parsedAmount.startsWith('.')) {
-    return `0${parsedAmount}`
-  }
-
-  // to catch strings like `amount=asdf` from the URL
-  if (isNaN(Number(parsedAmount))) {
-    // return original string if the string is `max` (case-insensitive)
-    // it doesn't show on the input[type=number] field because it isn't in the allowed chars
-    return isMax(parsedAmount) ? parsedAmount : ''
-  }
-
-  // to reach here they must be a number
-  // check for negative sign at first char
-  if (parsedAmount.startsWith('-')) {
-    return String(Math.abs(Number(parsedAmount)))
-  }
-
-  // replace leading zeros and spaces
-  // this regex finds 1 or more 0s before any digits including 0
-  // but the digits are not captured into the result string
-  return parsedAmount.replace(/(^0+(?=\d))| /g, '')
-}
-
-// Our custom query param type for Amount field - will be parsed and returned as a string,
-// but we need to make sure that only valid numeric-string values are considered, else return '0'
-// Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
-export const AmountQueryParam = {
-  // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | undefined = '') => sanitizeAmountQueryParam(amount),
-  decode: (amount: string | (string | null)[] | null | undefined) => {
-    // toString() casts the potential string array into a string
-    const amountStr = amount?.toString() ?? ''
-    return sanitizeAmountQueryParam(amountStr)
   }
 }
-
-const TokenQueryParam = {
-  encode: (token: string | undefined) => {
-    return token?.toLowerCase()
-  },
-  decode: (token: string | (string | null)[] | null | undefined) => {
-    const tokenStr = token?.toString()
-    // We are not checking for a valid address because we handle it in the UI
-    // by showing an invalid token dialog
-    return tokenStr?.toLowerCase()
-  }
-}
-
-// Parse chainId to ChainQueryParam or ChainId for orbit chain
-export function encodeChainQueryParam(
-  chainId: number | null | undefined
-): string | undefined {
-  if (!chainId) {
-    return undefined
-  }
-
-  try {
-    const chain = getChainQueryParamForChain(chainId)
-    return chain.toString()
-  } catch (e) {
-    return undefined
-  }
-}
-
-function isValidNumber(value: number | null | undefined): value is number {
-  if (typeof value === 'undefined' || value === null) {
-    return false
-  }
-
-  return !Number.isNaN(value)
-}
-
-// Parse ChainQueryParam/ChainId to ChainId
-// URL accept both chainId and chainQueryParam (string)
-export function decodeChainQueryParam(
-  value: string | (string | null)[] | null | undefined
-  // ChainId type doesn't include custom orbit chain, we need to add number type
-): ChainId | number | undefined {
-  const valueString = decodeString(value)
-  if (!valueString) {
-    return undefined
-  }
-
-  const valueNumber = decodeNumber(value)
-  if (
-    isValidNumber(valueNumber) &&
-    isValidChainQueryParam(valueNumber as ChainId)
-  ) {
-    return valueNumber
-  }
-
-  if (isValidChainQueryParam(valueString)) {
-    return getChainForChainKeyQueryParam(valueString as ChainKeyQueryParam).id
-  }
-
-  return undefined
-}
-
-export const ChainParam = {
-  encode: encodeChainQueryParam,
-  decode: decodeChainQueryParam
-}
-
-export function encodeTabQueryParam(
-  tabIndex: number | null | undefined
-): string {
-  if (typeof tabIndex === 'number' && tabIndex in indexToTab) {
-    return indexToTab[tabIndex as keyof typeof indexToTab]
-  }
-  return TabParamEnum.BRIDGE
-}
-
-// Parse string to number
-// URL accepts string only
-export function decodeTabQueryParam(
-  tab: string | (string | null)[] | null | undefined
-): number {
-  if (typeof tab === 'string' && tab in tabToIndex) {
-    return tabToIndex[tab as TabParamEnum]
-  }
-  return tabToIndex[TabParamEnum.BRIDGE]
-}
-
-export const TabParam = {
-  encode: encodeTabQueryParam,
-  decode: decodeTabQueryParam
-}
-
 export function ArbQueryParamProvider({
   children
 }: {
@@ -322,14 +172,8 @@ export function ArbQueryParamProvider({
 }) {
   return (
     <QueryParamProvider
-      adapter={NextAdapterPages}
-      options={{
-        searchStringToObject: queryString.parse,
-        objectToSearchString: queryString.stringify,
-        updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
-        removeDefaultsFromUrl: true,
-        enableBatching: true
-      }}
+      adapter={NextAdapterApp}
+      options={queryParamProviderOptions}
     >
       {children}
     </QueryParamProvider>

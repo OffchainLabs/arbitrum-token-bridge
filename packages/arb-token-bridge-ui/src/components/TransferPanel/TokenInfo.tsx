@@ -16,7 +16,7 @@ import {
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
-import { getTokenOverride } from '../../pages/api/crosschain-transfers/utils'
+import { getTokenOverride } from '../../app/api/crosschain-transfers/utils'
 
 export function TokenLogoFallback({ className }: { className?: string }) {
   return (

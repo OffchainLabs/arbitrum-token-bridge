@@ -30,17 +30,21 @@ runs:
           if [[ "$file" == packages/scripts/* ]]; then
             test_scripts=true
           fi
-          
+
+          if [[ $file == packages/app/* ]]; then
+            # Dont run tests if only images/docs were changed
+            if [[ "$file" =~ \.(md|svg|png|webp|gif|jpg|jpeg|txt)$ ]]; then
+              continue
+            fi
+            
+            run_tests=true
+          fi
+
           if [[ "$file" == .github/workflows/e2e-tests.yml ]]; then
             run_tests=true
           fi
           
           if [[ $file == packages/arb-token-bridge-ui/* ]]; then
-            # Dont run tests if only images/docs were changed
-            if [[ "$file" =~ \.(md|svg|png|webp|gif|jpg|jpeg|txt)$ ]]; then
-              continue
-            fi
-
             # Dont run tests if a new Orbit chain is added, it would not catch any potential issues anyway
             if [[ "$file" == */orbitChainsData.json ]]; then
               continue

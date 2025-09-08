@@ -25,7 +25,7 @@ export function useAmountBigNumber() {
       )
 
       if (amount !== sanitizedAmount) {
-        setQueryParams({ amount: sanitizedAmount })
+        setQueryParams({ amount: sanitizedAmount }, { debounce: true })
       }
 
       return utils.parseUnits(sanitizedAmount, selectedTokenDecimals)

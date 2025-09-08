@@ -4,7 +4,7 @@ import {
   RouteType,
   useRouteStore
 } from '../hooks/useRouteStore'
-import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-transfers/lifi'
+import { LifiCrosschainTransfersRoute } from '../../../app/api/crosschain-transfers/lifi'
 import { useCallback, useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'

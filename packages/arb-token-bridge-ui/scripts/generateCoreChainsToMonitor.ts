@@ -34,6 +34,12 @@ async function generateCoreChainsToMonitor() {
     })
   )
 
+  // Ensure the public directory exists
+  const publicDir = './public'
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true })
+  }
+
   // write to orbit-chains.json, we will use this json as an input to the monitoring script
   const resultsJson = JSON.stringify(
     {

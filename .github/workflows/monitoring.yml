@@ -57,10 +57,11 @@ jobs:
       run: cp ./packages/arb-token-bridge-ui/public/${{ steps.config.outputs.config_file }} ./arbitrum-monitoring/config.json
 
     - name: Run monitoring command
-      run: cd ./arbitrum-monitoring && yarn ${{ inputs.monitor }}-monitor --enableAlerting --writeToNotion
+      run: cd ./arbitrum-monitoring && yarn ${{ inputs.monitor }}-monitor --enableAlerting --writeToNotion ${{ inputs.chain == 'core' && 'true' || 'false' }} ${{ inputs.monitor == 'retryable' && '--autoRedeem' || '' }}
       env:
         RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
         RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
+        RETRYABLE_MONITORING_PRIVATE_KEY: ${{ secrets.RETRYABLE_MONITORING_PRIVATE_KEY }}
         BATCH_POSTER_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}
         BATCH_POSTER_MONITORING_SLACK_CHANNEL: ${{ secrets[steps.config.outputs.slack_channel] }}
         ASSERTION_MONITORING_SLACK_TOKEN: ${{ secrets[steps.config.outputs.slack_token] }}

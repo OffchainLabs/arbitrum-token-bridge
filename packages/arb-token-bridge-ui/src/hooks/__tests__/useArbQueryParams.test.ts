@@ -10,7 +10,10 @@ import {
   DisabledFeaturesParam
 } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
-import { sanitizeTabQueryParam, sanitizeTokenQueryParam } from '../../pages'
+import {
+  sanitizeTabQueryParam,
+  sanitizeTokenQueryParam
+} from '../../util/queryParamUtils'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {

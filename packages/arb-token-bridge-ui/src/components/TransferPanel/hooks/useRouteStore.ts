@@ -3,12 +3,12 @@ import { create } from 'zustand'
 import { MergedTransactionLifiData } from '../../../state/app/state'
 import { LiFiStep } from '@lifi/sdk'
 import { Address } from 'viem'
-import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-transfers/lifi'
+import { LifiCrosschainTransfersRoute } from '@/bridge/app/api/crosschain-transfers/lifi'
 import { BigNumber } from 'ethers'
 import {
   RouteGas,
   BridgeFee
-} from '../../../pages/api/crosschain-transfers/types'
+} from '../../../app/api/crosschain-transfers/types'
 
 export type RouteType =
   | 'arbitrum'
