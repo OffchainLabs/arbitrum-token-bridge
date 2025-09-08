@@ -12,7 +12,7 @@ export function useSetInputAmount() {
     (newAmount: string) => {
       const correctDecimalsAmount = truncateExtraDecimals(newAmount, decimals)
 
-      setQueryParams({ amount: correctDecimalsAmount })
+      setQueryParams({ amount: correctDecimalsAmount }, { debounce: true })
     },
     [decimals, setQueryParams]
   )
@@ -21,7 +21,7 @@ export function useSetInputAmount() {
     (newAmount: string) => {
       const correctDecimalsAmount = truncateExtraDecimals(newAmount, 18)
 
-      setQueryParams({ amount2: correctDecimalsAmount })
+      setQueryParams({ amount2: correctDecimalsAmount }, { debounce: true })
     },
     [setQueryParams]
   )

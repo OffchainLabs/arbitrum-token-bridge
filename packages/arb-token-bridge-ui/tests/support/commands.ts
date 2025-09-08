@@ -151,13 +151,19 @@ export function findAmount2Input(): Cypress.Chainable<JQuery<HTMLElement>> {
 export function typeAmount(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findAmountInput().scrollIntoView().type(String(amount))
+  return cy
+    .findAmountInput()
+    .scrollIntoView()
+    .type(String(amount), { delay: 0 })
 }
 
 export function typeAmount2(
   amount: string | number
 ): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findAmount2Input().scrollIntoView().type(String(amount))
+  return cy
+    .findAmount2Input()
+    .scrollIntoView()
+    .type(String(amount), { delay: 0 })
 }
 
 export function findSourceChainButton(
@@ -179,10 +185,17 @@ export function findDestinationChainButton(
   )
 }
 
-export function findGasFeeSummary(
-  amount: string | number | RegExp
-): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy.findByLabelText('Route gas').should('contain', amount)
+export function findGasFeeSummary(amount: string | number | RegExp) {
+  return cy
+    .findByLabelText('Route gas')
+    .invoke('text')
+    .then(text => {
+      if (typeof amount === 'string' || typeof amount === 'number') {
+        expect(text).to.eq(amount)
+      } else {
+        expect(text).to.match(amount)
+      }
+    })
 }
 
 export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
@@ -218,6 +231,7 @@ export function findSelectTokenButton(
 }
 
 export function switchToTransferPanelTab() {
+  cy.wait(1_000)
   return cy.findByLabelText('Switch to Bridge Tab').click()
 }
 

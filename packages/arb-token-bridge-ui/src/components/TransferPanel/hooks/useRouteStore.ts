@@ -3,12 +3,12 @@ import { create } from 'zustand'
 import { MergedTransactionLifiData } from '../../../state/app/state'
 import { LiFiStep } from '@lifi/sdk'
 import { Address } from 'viem'
-import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-transfers/lifi'
+import { LifiCrosschainTransfersRoute } from '@/bridge/app/api/crosschain-transfers/lifi'
 import { BigNumber } from 'ethers'
 import {
   RouteGas,
   BridgeFee
-} from '../../../pages/api/crosschain-transfers/types'
+} from '../../../app/api/crosschain-transfers/types'
 
 export type RouteType =
   | 'arbitrum'
@@ -83,7 +83,6 @@ interface RouteState {
   setSelectedRoute: SetRoute
   clearRoute: () => void
   setRouteState: (state: Partial<RouteStateUpdate>) => void
-  updateRouteData: (routeType: RouteType, data: Record<string, unknown>) => void
 }
 
 export const useRouteStore = create<RouteState>()(set => ({
@@ -110,16 +109,7 @@ export const useRouteStore = create<RouteState>()(set => ({
       context: undefined
     }),
 
-  setRouteState: updates => set(updates),
-
-  updateRouteData: (routeType, data) =>
-    set(state => ({
-      routes: state.routes.map(route =>
-        route.type === routeType
-          ? ({ ...route, data: { ...route.data, ...data } } as RouteData)
-          : route
-      )
-    }))
+  setRouteState: updates => set(updates)
 }))
 
 export function isLifiRoute(selectedRoute: RouteType | undefined) {

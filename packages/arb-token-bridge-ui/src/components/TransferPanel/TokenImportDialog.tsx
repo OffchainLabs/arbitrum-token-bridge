@@ -19,7 +19,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
-import { addressesEqual } from '../../util/AddressUtils'
 import { constants } from 'ethers'
 
 enum ImportStatus {
@@ -67,7 +66,7 @@ export function TokenImportDialog({
       arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
-  const [selectedToken, setSelectedToken] = useSelectedToken()
+  const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider } =
     useNetworksRelationship(networks)
@@ -173,7 +172,7 @@ export function TokenImportDialog({
   )
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || isImportingToken) {
       return
     }
 
@@ -222,37 +221,8 @@ export function TokenImportDialog({
     isL1AddressLoading,
     isOpen,
     l1Address,
-    searchForTokenInLists
-  ])
-
-  useEffect(() => {
-    if (!isOpen) {
-      return
-    }
-
-    if (isL1AddressLoading && !l1Address) {
-      return
-    }
-
-    const foundToken = tokensFromUser[l1Address || tokenAddress]
-
-    if (typeof foundToken === 'undefined') {
-      return
-    }
-
-    // Listen for the token to be added to the bridge so we can automatically select it
-    if (!addressesEqual(foundToken.address, selectedToken?.address)) {
-      onClose(true)
-      selectToken(foundToken)
-    }
-  }, [
-    isL1AddressLoading,
-    tokenAddress,
-    isOpen,
-    l1Address,
-    onClose,
-    selectToken,
-    tokensFromUser
+    searchForTokenInLists,
+    isImportingToken
   ])
 
   async function storeNewToken(newToken: string) {
@@ -286,9 +256,15 @@ export function TokenImportDialog({
       selectToken(tokenToImport!)
     } else {
       // Token is not added to the bridge, so we add it
-      storeNewToken(l1Address).catch(() => {
-        setStatus(ImportStatus.ERROR)
-      })
+      storeNewToken(l1Address)
+        .then(() => {
+          if (tokenToImport) {
+            selectToken(tokenToImport)
+          }
+        })
+        .catch(() => {
+          setStatus(ImportStatus.ERROR)
+        })
     }
   }
 

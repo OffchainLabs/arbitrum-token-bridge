@@ -19,7 +19,7 @@ import {
   defaultL3CustomGasTokenNetwork
 } from './networksNitroTestnode'
 import { isE2eTestingEnvironment, isProductionEnvironment } from './CommonUtils'
-import { lifiDestinationChainIds } from '../pages/api/crosschain-transfers/constants'
+import { lifiDestinationChainIds } from '../app/api/crosschain-transfers/constants'
 
 /** The network that you reference when calling `block.number` in solidity */
 type BlockNumberReferenceNetwork = {
@@ -86,7 +86,7 @@ export const getChains = (
   })
 }
 
-function getChainByChainId(
+export function getChainByChainId(
   chainId: number,
   { includeRootChainsWithoutDestination } = {
     includeRootChainsWithoutDestination: false
@@ -511,7 +511,7 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainId] = chain.explorerUrl
 }
 
-function isArbitrumChain(
+export function isArbitrumChain(
   chain: BlockNumberReferenceNetwork | ArbitrumNetwork
 ): chain is ArbitrumNetwork {
   return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'

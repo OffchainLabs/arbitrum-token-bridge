@@ -17,8 +17,9 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 import { Layout } from '../common/Layout'
-import { AppProviders } from './AppProviders'
 import { useTheme } from '../../hooks/useTheme'
+import dynamic from 'next/dynamic'
+import { Loader } from '../common/atoms/Loader'
 
 declare global {
   interface Window {
@@ -127,6 +128,21 @@ const AppContent = React.memo(() => {
 })
 
 AppContent.displayName = 'AppContent'
+
+const AppProviders = dynamic(
+  () => import('./AppProviders').then(mod => mod.AppProviders),
+  {
+    ssr: false, // use-query-params provider doesn't support SSR
+    loading: () => (
+      <div className="bg-black-500 flex h-screen w-screen items-center justify-center">
+        <div className="h-12 w-full lg:h-16" />
+        <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
+          <Loader size="large" color="white" />
+        </div>
+      </div>
+    )
+  }
+)
 
 export default function App() {
   return (

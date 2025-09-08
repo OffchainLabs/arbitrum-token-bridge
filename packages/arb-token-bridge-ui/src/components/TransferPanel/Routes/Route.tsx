@@ -28,7 +28,7 @@ import { useMode } from '../../../hooks/useMode'
 import {
   RouteGas,
   BridgeFee
-} from '../../../pages/api/crosschain-transfers/types'
+} from '../../../app/api/crosschain-transfers/types'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
 // Types
