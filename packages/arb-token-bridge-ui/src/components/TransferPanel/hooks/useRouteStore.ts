@@ -82,7 +82,7 @@ interface RouteState {
   setSelectedRoute: SetRoute
   clearRoute: () => void
   setRouteState: (state: Partial<RouteStateUpdate>) => void
-  updateRouteData: (routeType: RouteType, data: Record<string, unknown>) => void
+  updateRouteData: (routeType: RouteType, data: RouteData[]) => void
 }
 
 export const useRouteStore = create<RouteState>()(set => ({
