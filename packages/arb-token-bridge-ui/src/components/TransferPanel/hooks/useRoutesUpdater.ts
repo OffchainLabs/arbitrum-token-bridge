@@ -26,7 +26,7 @@ import { Order } from '../../../pages/api/crosschain-transfers/lifi'
 
 interface GetEligibleRoutesParams {
   isOftV2Transfer: boolean
-  isCctpTransfer: boolean
+  isNativeUsdcTransfer: boolean
   amount: string
   isDepositMode: boolean
   sourceChainId: number
@@ -37,7 +37,7 @@ interface GetEligibleRoutesParams {
 
 function getEligibleRoutes({
   isOftV2Transfer,
-  isCctpTransfer,
+  isNativeUsdcTransfer,
   amount,
   isDepositMode,
   sourceChainId,
@@ -58,7 +58,7 @@ function getEligibleRoutes({
     return eligibleRouteTypes
   }
 
-  if (isCctpTransfer) {
+  if (isNativeUsdcTransfer) {
     eligibleRouteTypes.push('cctp')
 
     if (isLifiEnabled) {
@@ -97,7 +97,7 @@ export function useRoutesUpdater() {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
   const [{ amount }] = useArbQueryParams()
-  const isCctpTransfer = useIsCctpTransfer()
+  const isNativeUsdcTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
   const [selectedToken] = useSelectedToken()
   const { address } = useAccount()
@@ -119,7 +119,7 @@ export function useRoutesUpdater() {
     () =>
       getEligibleRoutes({
         isOftV2Transfer,
-        isCctpTransfer,
+        isNativeUsdcTransfer,
         amount,
         isDepositMode,
         sourceChainId: networks.sourceChain.id,
@@ -129,7 +129,7 @@ export function useRoutesUpdater() {
       }),
     [
       isOftV2Transfer,
-      isCctpTransfer,
+      isNativeUsdcTransfer,
       amount,
       isDepositMode,
       networks.sourceChain.id,
@@ -181,7 +181,7 @@ export function useRoutesUpdater() {
       routes.push({
         type: 'oftV2',
         data: {
-          amountReceived: amount.toString()
+          amountReceived: amount
         }
       })
     }
@@ -191,7 +191,7 @@ export function useRoutesUpdater() {
       routes.push({
         type: 'cctp',
         data: {
-          amountReceived: amount.toString()
+          amountReceived: amount
         }
       })
     }
@@ -244,7 +244,7 @@ export function useRoutesUpdater() {
       routes.push({
         type: 'arbitrum',
         data: {
-          amountReceived: amount.toString()
+          amountReceived: amount
         }
       })
     }
