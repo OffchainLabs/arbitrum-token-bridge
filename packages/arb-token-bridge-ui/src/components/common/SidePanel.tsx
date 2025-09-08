@@ -23,7 +23,6 @@ export const SidePanel = ({
   dialogWrapperClassName
 }: SidePanelProps) => {
   const [open, setOpen] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
 
   // When user refreshes the page with the panel open, the query param starts as true
   // For the transition to trigger we need to start from false, that's why we need another state
@@ -33,23 +32,12 @@ export const SidePanel = ({
   }, [isOpen])
 
   const handleClose = useCallback(() => {
-    setIsClosing(true)
-
-    setTimeout(() => {
-      onClose?.()
-
-      setTimeout(() => {
-        setIsClosing(false)
-        // prevent flickering caused by race conditions
-      }, 10)
-
-      // 200ms for the transition to finish
-    }, 200)
-  }, [setIsClosing])
+    onClose?.()
+  }, [onClose])
 
   return (
     <Dialog
-      open={open && !isClosing}
+      open={open}
       onClose={handleClose}
       className={twMerge(
         'fixed z-40 h-screen max-h-screen',
