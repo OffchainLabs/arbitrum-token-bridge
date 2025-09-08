@@ -5,6 +5,10 @@ import { LiFiStep } from '@lifi/sdk'
 import { Address } from 'viem'
 import { LifiCrosschainTransfersRoute } from '../../../pages/api/crosschain-transfers/lifi'
 import { BigNumber } from 'ethers'
+import {
+  RouteGas,
+  BridgeFee
+} from '../../../pages/api/crosschain-transfers/types'
 
 export type RouteType =
   | 'arbitrum'
@@ -19,8 +23,8 @@ export type RouteData =
       type: 'cctp'
       data: {
         amountReceived: string
-        gasCost?: any
-        bridgeFee?: any
+        gasCost?: RouteGas[]
+        bridgeFee?: BridgeFee
       }
     }
   | {
@@ -33,16 +37,16 @@ export type RouteData =
       type: 'arbitrum'
       data: {
         amountReceived: string
-        gasCost?: any
-        bridgeFee?: any
+        gasCost?: RouteGas[]
+        bridgeFee?: BridgeFee
       }
     }
   | {
       type: 'oftV2'
       data: {
         amountReceived: string
-        gasCost?: any
-        bridgeFee?: any
+        gasCost?: RouteGas[]
+        bridgeFee?: BridgeFee
       }
     }
 
@@ -51,6 +55,16 @@ export type RouteContext = LifiData &
   Omit<MergedTransactionLifiData, 'transactionRequest'> & { step: LiFiStep }
 
 export type SetRoute = (route: RouteType, context?: RouteContext) => void
+
+export type RouteStateUpdate = {
+  selectedRoute: RouteType | undefined
+  eligibleRouteTypes: RouteType[]
+  isLoading: boolean
+  error?: string | null
+  routes: RouteData[]
+  hasLowLiquidity: boolean
+  hasModifiedSettings: boolean
+}
 
 interface RouteState {
   selectedRoute: RouteType | undefined // the route that is currently selected - can be default or user-selected
@@ -68,20 +82,8 @@ interface RouteState {
 
   setSelectedRoute: SetRoute
   clearRoute: () => void
-  setRouteState: (
-    state: Partial<
-      Omit<
-        RouteState,
-        | 'userSelectedRoute'
-        | 'context'
-        | 'setSelectedRoute'
-        | 'clearRoute'
-        | 'setRouteState'
-        | 'updateRouteData'
-      >
-    >
-  ) => void
-  updateRouteData: (routeType: RouteType, data: any) => void
+  setRouteState: (state: Partial<RouteStateUpdate>) => void
+  updateRouteData: (routeType: RouteType, data: Record<string, unknown>) => void
 }
 
 export const useRouteStore = create<RouteState>()(set => ({
@@ -114,7 +116,7 @@ export const useRouteStore = create<RouteState>()(set => ({
     set(state => ({
       routes: state.routes.map(route =>
         route.type === routeType
-          ? { ...route, data: { ...route.data, ...data } }
+          ? ({ ...route, data: { ...route.data, ...data } } as RouteData)
           : route
       )
     }))

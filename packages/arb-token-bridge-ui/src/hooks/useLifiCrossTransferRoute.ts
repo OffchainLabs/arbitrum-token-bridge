@@ -20,7 +20,7 @@ export type UseLifiCrossTransfersRouteParams = Pick<
 }
 
 export const useLifiCrossTransfersRoute = ({
-  enabled = false, // default to false to avoid unnecessary API calls
+  enabled = true,
   fromAmount,
   fromToken,
   toToken,

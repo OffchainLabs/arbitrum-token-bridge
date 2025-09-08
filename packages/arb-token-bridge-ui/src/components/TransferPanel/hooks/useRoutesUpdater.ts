@@ -22,6 +22,7 @@ import { useRouteStore, RouteType, RouteData } from './useRouteStore'
 import { shallow } from 'zustand/shallow'
 import { useLifiCrossTransfersRoute } from '../../../hooks/useLifiCrossTransferRoute'
 import { Address } from 'viem'
+import { Order } from '../../../pages/api/crosschain-transfers/lifi'
 
 /**
  * Determines the best route based on priority order.
@@ -60,10 +61,9 @@ function getBestRouteForDefaultSelection(
 
 interface GetEligibleRoutesParams {
   isOftV2Transfer: boolean
-  isCctpTransfer: boolean
+  isNativeUsdcTransfer: boolean
   amount: string
   isDepositMode: boolean
-  isTestnet: boolean
   sourceChainId: number
   destinationChainId: number
   selectedToken: ERC20BridgeToken | null
@@ -72,15 +72,15 @@ interface GetEligibleRoutesParams {
 
 function getEligibleRoutes({
   isOftV2Transfer,
-  isCctpTransfer,
+  isNativeUsdcTransfer,
   amount,
   isDepositMode,
-  isTestnet,
   sourceChainId,
   destinationChainId,
   selectedToken,
   isArbitrumCanonicalTransfer
 }: GetEligibleRoutesParams): RouteType[] {
+  const { isTestnet } = isNetwork(sourceChainId)
   const isLifiEnabled = isLifiEnabledUtil() && !isTestnet
   const eligibleRouteTypes: RouteType[] = []
 
@@ -93,7 +93,7 @@ function getEligibleRoutes({
     return eligibleRouteTypes
   }
 
-  if (isCctpTransfer) {
+  if (isNativeUsdcTransfer) {
     eligibleRouteTypes.push('cctp')
 
     if (isLifiEnabled) {
@@ -132,7 +132,7 @@ export function useRoutesUpdater() {
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
   const [{ amount }] = useArbQueryParams()
-  const isCctpTransfer = useIsCctpTransfer()
+  const isNativeUsdcTransfer = useIsCctpTransfer()
   const isOftV2Transfer = useIsOftV2Transfer()
   const [selectedToken] = useSelectedToken()
   const { address } = useAccount()
@@ -147,7 +147,6 @@ export function useRoutesUpdater() {
     shallow
   )
 
-  const { isTestnet } = isNetwork(networks.sourceChain.id)
   const isArbitrumCanonicalTransfer = useIsArbitrumCanonicalTransfer()
   const { setRouteState, userSelectedRoute } = useRouteStore(
     state => ({
@@ -161,10 +160,9 @@ export function useRoutesUpdater() {
     () =>
       getEligibleRoutes({
         isOftV2Transfer,
-        isCctpTransfer,
+        isNativeUsdcTransfer,
         amount,
         isDepositMode,
-        isTestnet,
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id,
         selectedToken,
@@ -172,10 +170,9 @@ export function useRoutesUpdater() {
       }),
     [
       isOftV2Transfer,
-      isCctpTransfer,
+      isNativeUsdcTransfer,
       amount,
       isDepositMode,
-      isTestnet,
       networks.sourceChain.id,
       networks.destinationChain.id,
       selectedToken,
@@ -198,6 +195,7 @@ export function useRoutesUpdater() {
   )
 
   const lifiParameters = {
+    enabled: eligibleRouteTypes.includes('lifi'), // only fetch lifi routes if lifi is eligible
     fromAddress: address,
     fromAmount: amountBN.toString(),
     fromChainId: networks.sourceChain.id,
@@ -207,8 +205,7 @@ export function useRoutesUpdater() {
     toToken: overrideToken.destination?.address || constants.AddressZero,
     denyBridges: disabledBridges,
     denyExchanges: disabledExchanges,
-    slippage,
-    enabled: eligibleRouteTypes.includes('lifi')
+    slippage
   }
 
   const {
@@ -225,7 +222,7 @@ export function useRoutesUpdater() {
       routes.push({
         type: 'oftV2',
         data: {
-          amountReceived: amount.toString()
+          amountReceived: amount
         }
       })
     }
@@ -235,7 +232,7 @@ export function useRoutesUpdater() {
       routes.push({
         type: 'cctp',
         data: {
-          amountReceived: amount.toString()
+          amountReceived: amount
         }
       })
     }
@@ -243,10 +240,10 @@ export function useRoutesUpdater() {
     // LiFi route data - handle fastest/cheapest consolidation
     if (eligibleRouteTypes.includes('lifi') && lifiRoutes) {
       const cheapestRoute = lifiRoutes.find(route =>
-        route.protocolData.orders.includes('CHEAPEST' as any)
+        route.protocolData.orders.find(order => order === Order.Cheapest)
       )
       const fastestRoute = lifiRoutes.find(route =>
-        route.protocolData.orders.includes('FASTEST' as any)
+        route.protocolData.orders.find(order => order === Order.Fastest)
       )
 
       // Check if fastest and cheapest are the same route
@@ -288,7 +285,7 @@ export function useRoutesUpdater() {
       routes.push({
         type: 'arbitrum',
         data: {
-          amountReceived: amount.toString()
+          amountReceived: amount
         }
       })
     }
