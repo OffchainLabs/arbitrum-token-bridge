@@ -15,7 +15,6 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { isTokenNativeUSDC } from '../../../util/TokenUtils'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { shallow } from 'zustand/shallow'
 import { getGasCostAndToken } from './getGasCostAndToken'
 import {
@@ -57,7 +56,6 @@ function getDuration({
 }
 
 export function ArbitrumCanonicalRoute() {
-  const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -88,6 +86,10 @@ export function ArbitrumCanonicalRoute() {
   )
   const [selectedToken] = useSelectedToken()
 
+  const arbitrumData = useRouteStore(
+    state => state.routes.find(route => route.type === 'arbitrum')?.data
+  )
+
   const { gasCost, isLoading } = useMemo(
     () =>
       getGasCostAndToken({
@@ -115,6 +117,7 @@ export function ArbitrumCanonicalRoute() {
    */
   const isUsdcTransfer = isTokenNativeUSDC(selectedToken?.address)
   const overrideToken = isDepositMode ? bridgedUsdcToken : nativeUsdcToken
+
   const durationMs =
     getDuration({
       isTestnet,
@@ -126,13 +129,17 @@ export function ArbitrumCanonicalRoute() {
     60 *
     1_000
 
+  if (!arbitrumData) {
+    return null
+  }
+
   return (
     <Route
       type="arbitrum"
-      bridge={'Arbitrum Bridge'}
-      bridgeIconURI={'/icons/arbitrum.svg'}
+      bridge="Arbitrum Bridge"
+      bridgeIconURI="/icons/arbitrum.svg"
       durationMs={durationMs}
-      amountReceived={amount.toString()}
+      amountReceived={arbitrumData.amountReceived}
       isLoadingGasEstimate={isLoading}
       overrideToken={isUsdcTransfer ? overrideToken : undefined}
       gasCost={
@@ -149,7 +156,7 @@ export function ArbitrumCanonicalRoute() {
           : []
       }
       onSelectedRouteClick={setSelectedRoute}
-      tag={'security-guaranteed'}
+      tag="security-guaranteed"
       selected={selectedRoute === 'arbitrum'}
     />
   )

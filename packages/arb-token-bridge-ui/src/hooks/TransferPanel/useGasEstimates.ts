@@ -13,9 +13,9 @@ import {
   getContextFromRoute,
   isLifiRoute,
   RouteContext,
-  useRouteStore
+  useRouteStore,
+  RouteType
 } from '../../components/TransferPanel/hooks/useRouteStore'
-import { useRoutes } from '../../components/TransferPanel/Routes/Routes'
 import { useMemo } from 'react'
 import {
   useLifiCrossTransfersRoute,
@@ -85,12 +85,19 @@ export function useGasEstimates({
   const { address: walletAddress } = useAccount()
   const balance = useBalanceOnSourceChain(selectedToken)
   const wagmiConfig = useConfig()
-  const context = useRouteStore(state => state.context)
-  const { routes } = useRoutes()
-  const isLifiOnly = useMemo(
-    () => routes.every(route => isLifiRoute(route)),
-    [routes]
+  const { context, eligibleRouteTypes } = useRouteStore(
+    state => ({
+      context: state.context,
+      eligibleRouteTypes: state.eligibleRouteTypes
+    }),
+    shallow
   )
+  const allRoutesAreLifi = useMemo(
+    () => eligibleRouteTypes.every((route: RouteType) => isLifiRoute(route)),
+    [eligibleRouteTypes]
+  )
+  const isLifiRouteEligible = eligibleRouteTypes.includes('lifi')
+
   const overrideToken = useMemo(
     () =>
       getTokenOverride({
@@ -109,6 +116,7 @@ export function useGasEstimates({
     shallow
   )
   const parameters = {
+    enabled: isLifiRouteEligible,
     fromAddress: walletAddress,
     fromAmount: amount.toString(),
     fromChainId: sourceChain.id,
@@ -135,7 +143,10 @@ export function useGasEstimates({
 
   const { data: gasEstimates, error } = useSWR(
     () => {
-      if (isLifiOnly && (isLoadingLifiRoutes || lifiRoutes?.length === 0)) {
+      if (
+        allRoutesAreLifi &&
+        (isLoadingLifiRoutes || lifiRoutes?.length === 0)
+      ) {
         return null
       }
 
@@ -145,7 +156,7 @@ export function useGasEstimates({
        * pass the first lifi route as context
        * Otherwise, default to canonical transfer
        */
-      const lifiContext = isLifiOnly
+      const lifiContext = allRoutesAreLifi
         ? lifiRoutes?.[0] && getContextFromRoute(lifiRoutes?.[0])
         : context
 

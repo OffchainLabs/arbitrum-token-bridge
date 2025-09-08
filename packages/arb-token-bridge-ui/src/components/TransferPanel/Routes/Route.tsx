@@ -25,13 +25,14 @@ import { getConfirmationTime } from '../../../util/WithdrawalUtils'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { useMode } from '../../../hooks/useMode'
-import { Token } from '@/bridge/app/api/crosschain-transfers/types'
+import {
+  RouteGas,
+  BridgeFee
+} from '../../../app/api/crosschain-transfers/types'
 import { ERC20BridgeToken } from '../../../hooks/arbTokenBridge.types'
 
 // Types
 export type BadgeType = 'security-guaranteed' | 'best-deal' | 'fastest'
-
-export type RouteGas = { gasCost: string | undefined; gasToken: Token }
 export type RouteProps = {
   type: RouteType
   amountReceived: string
@@ -39,7 +40,7 @@ export type RouteProps = {
   isLoadingGasEstimate: boolean
   overrideToken?: ERC20BridgeToken
   gasCost: RouteGas[] | undefined
-  bridgeFee?: { fee: string | undefined; token: Token }
+  bridgeFee?: BridgeFee
   bridge: string
   bridgeIconURI: string
   tag?: BadgeType | BadgeType[]
@@ -238,7 +239,7 @@ type RouteFeesProps = {
   isLoadingGasEstimate: boolean
   gasCost: RouteGas[] | undefined
   gasEth?: RouteGas | false
-  bridgeFee?: { fee: string | undefined; token: Token }
+  bridgeFee?: BridgeFee
   showUSDValueForBridgeFee: boolean
   embedMode: boolean
 }

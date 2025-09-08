@@ -7,13 +7,11 @@ import { useSelectedToken } from '../../../hooks/useSelectedToken'
 import { useOftV2FeeEstimates } from '../../../hooks/TransferPanel/useOftV2FeeEstimates'
 import { useRouteStore } from '../hooks/useRouteStore'
 import { useMemo } from 'react'
-import { useArbQueryParams } from '../../../hooks/useArbQueryParams'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 import { shallow } from 'zustand/shallow'
 
 // Only displayed during USDT transfers
 export function OftV2Route() {
-  const [{ amount }] = useArbQueryParams()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
   const { selectedRoute, setSelectedRoute } = useRouteStore(
@@ -24,6 +22,10 @@ export function OftV2Route() {
     shallow
   )
   const [selectedToken] = useSelectedToken()
+
+  const oftV2Data = useRouteStore(
+    state => state.routes.find(route => route.type === 'oftV2')?.data
+  )
 
   const { feeEstimates: oftFeeEstimates, error: oftFeeEstimatesError } =
     useOftV2FeeEstimates({
@@ -76,17 +78,17 @@ export function OftV2Route() {
     }
   }, [oftFeeEstimates?.sourceChainGasFee])
 
-  if (oftFeeEstimatesError) {
+  if (oftFeeEstimatesError || !oftV2Data) {
     return null
   }
 
   return (
     <Route
       type="oftV2"
-      bridge={'LayerZero'}
-      bridgeIconURI={'/icons/layerzero.svg'}
+      bridge="LayerZero"
+      bridgeIconURI="/icons/layerzero.svg"
       durationMs={5 * 60 * 1_000} // 5 minutes in miliseconds
-      amountReceived={amount.toString()}
+      amountReceived={oftV2Data.amountReceived}
       isLoadingGasEstimate={status === 'loading'}
       gasCost={gasCost}
       bridgeFee={bridgeFee}

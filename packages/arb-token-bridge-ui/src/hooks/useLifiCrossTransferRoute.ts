@@ -11,6 +11,7 @@ export type UseLifiCrossTransfersRouteParams = Pick<
   LifiParams,
   'fromAmount' | 'fromToken' | 'toToken' | 'slippage' | 'fromAddress'
 > & {
+  enabled?: boolean
   toAddress: Address | undefined
   fromChainId: number
   toChainId: number
@@ -19,6 +20,7 @@ export type UseLifiCrossTransfersRouteParams = Pick<
 }
 
 export const useLifiCrossTransfersRoute = ({
+  enabled = true,
   fromAmount,
   fromToken,
   toToken,
@@ -32,7 +34,7 @@ export const useLifiCrossTransfersRoute = ({
 }: UseLifiCrossTransfersRouteParams) => {
   /** Fetch only after 1 second elapsed since last parameter changed */
   const queryKey = useDebounce(
-    fromAmount !== '0'
+    enabled && fromAmount !== '0'
       ? ([
           fromAmount,
           fromToken,

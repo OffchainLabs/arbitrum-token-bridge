@@ -15,6 +15,9 @@ export type Token = Pick<
   'symbol' | 'decimals' | 'address' | 'logoURI'
 >
 
+export type RouteGas = { gasCost: string | undefined; gasToken: Token }
+export type BridgeFee = { fee: string | undefined; token: Token }
+
 /** This interface is meant to be extended by the different API, it's not meant to be consummed by the bridge  */
 export interface CrosschainTransfersRouteBase {
   durationMs: number
