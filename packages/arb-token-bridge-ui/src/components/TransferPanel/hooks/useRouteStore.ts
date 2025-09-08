@@ -82,7 +82,6 @@ interface RouteState {
   setSelectedRoute: SetRoute
   clearRoute: () => void
   setRouteState: (state: Partial<RouteStateUpdate>) => void
-  updateRouteData: (newRoute: RouteData) => void
 }
 
 export const useRouteStore = create<RouteState>()(set => ({
@@ -106,14 +105,7 @@ export const useRouteStore = create<RouteState>()(set => ({
       context: undefined
     }),
 
-  setRouteState: updates => set(updates),
-
-  updateRouteData: newRoute =>
-    set(state => ({
-      routes: state.routes.map(route =>
-        route.type === newRoute.type ? newRoute : route
-      )
-    }))
+  setRouteState: updates => set(updates)
 }))
 
 export function isLifiRoute(selectedRoute: RouteType | undefined) {
