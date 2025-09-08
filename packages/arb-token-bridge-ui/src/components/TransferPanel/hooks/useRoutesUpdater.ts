@@ -29,7 +29,6 @@ interface GetEligibleRoutesParams {
   isCctpTransfer: boolean
   amount: string
   isDepositMode: boolean
-  isTestnet: boolean
   sourceChainId: number
   destinationChainId: number
   selectedToken: ERC20BridgeToken | null
@@ -41,12 +40,12 @@ function getEligibleRoutes({
   isCctpTransfer,
   amount,
   isDepositMode,
-  isTestnet,
   sourceChainId,
   destinationChainId,
   selectedToken,
   isArbitrumCanonicalTransfer
 }: GetEligibleRoutesParams): RouteType[] {
+  const { isTestnet } = isNetwork(sourceChainId)
   const isLifiEnabled = isLifiEnabledUtil() && !isTestnet
   const eligibleRouteTypes: RouteType[] = []
 
@@ -113,7 +112,6 @@ export function useRoutesUpdater() {
     shallow
   )
 
-  const { isTestnet } = isNetwork(networks.sourceChain.id)
   const isArbitrumCanonicalTransfer = useIsArbitrumCanonicalTransfer()
   const setRouteState = useRouteStore(state => state.setRouteState)
 
@@ -124,7 +122,6 @@ export function useRoutesUpdater() {
         isCctpTransfer,
         amount,
         isDepositMode,
-        isTestnet,
         sourceChainId: networks.sourceChain.id,
         destinationChainId: networks.destinationChain.id,
         selectedToken,
@@ -135,7 +132,6 @@ export function useRoutesUpdater() {
       isCctpTransfer,
       amount,
       isDepositMode,
-      isTestnet,
       networks.sourceChain.id,
       networks.destinationChain.id,
       selectedToken,
