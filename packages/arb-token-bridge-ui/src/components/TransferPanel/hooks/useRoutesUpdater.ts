@@ -52,6 +52,9 @@ function getBestRouteForDefaultSelection(
   const lifiCheapestRoute = routes.find(route => route.type === 'lifi-cheapest')
   if (lifiCheapestRoute) return 'lifi-cheapest'
 
+  const lifiFastestRoute = routes.find(route => route.type === 'lifi-fastest')
+  if (lifiFastestRoute) return 'lifi-fastest'
+
   const lifiRoute = routes.find(route => route.type === 'lifi')
   if (lifiRoute) return 'lifi'
 
