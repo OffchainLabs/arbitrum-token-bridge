@@ -18,7 +18,13 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "types": [
+      "dayjs/plugin/relativeTime",
+      "dayjs/plugin/advancedFormat",
+      "dayjs/plugin/timezone",
+      "dayjs/plugin/utc"
+    ]
   },
   "exclude": ["node_modules"]
 }
