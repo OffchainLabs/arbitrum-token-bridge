@@ -1383,7 +1383,6 @@ export function TransferPanel() {
             and Proof of Play Boss on Sept 27th, please withdraw funds now.
           </NoteBox>
         )}
-        TEST
         <TransferPanelMain />
         {showSettingsButton && (
           <div className="z-50 mb-2 ml-auto sm:relative">

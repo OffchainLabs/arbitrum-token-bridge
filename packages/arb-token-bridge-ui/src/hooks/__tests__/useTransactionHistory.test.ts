@@ -133,7 +133,6 @@ describe.sequential('useTransactionHistory', () => {
 
       // finally, no more transactions left to be fetched
       expect(result.current.completed).toBe(true)
-      expect(3).toBe(2)
     }
   )
 })
