@@ -1383,6 +1383,7 @@ export function TransferPanel() {
             and Proof of Play Boss on Sept 27th, please withdraw funds now.
           </NoteBox>
         )}
+
         <TransferPanelMain />
         {showSettingsButton && (
           <div className="z-50 mb-2 ml-auto sm:relative">
@@ -1401,12 +1402,15 @@ export function TransferPanel() {
             onDestinationAddressChange={setDestinationAddress}
           />
         )}
+
         <ToSConfirmationCheckbox className="my-2" />
+
         {isConnected ? (
           <MoveFundsButton onClick={moveFundsButtonOnClick} />
         ) : (
           <ConnectWalletButton />
         )}
+
         {isTokenAlreadyImported === false && tokenFromSearchParams && (
           <TokenImportDialog
             {...tokenImportDialogProps}
@@ -1414,6 +1418,7 @@ export function TransferPanel() {
             tokenAddress={tokenFromSearchParams}
           />
         )}
+
         {showSmartContractWalletTooltip && (
           <Tippy
             placement="bottom-end"
