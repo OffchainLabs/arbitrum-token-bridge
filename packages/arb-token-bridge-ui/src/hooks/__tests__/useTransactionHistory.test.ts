@@ -61,21 +61,21 @@ describe.sequential('useTransactionHistory', () => {
   })
 
   it.each([
-    // createTestCase({
-    //   address: wallets.WALLET_MULTIPLE_TX,
-    //   enabled: true,
-    //   expectedPagesTxCounts: [3, 5]
-    // }),
-    // createTestCase({
-    //   address: wallets.WALLET_MULTIPLE_TX,
-    //   enabled: false,
-    //   expectedPagesTxCounts: [0]
-    // }),
-    // createTestCase({
-    //   address: wallets.WALLET_SINGLE_TX,
-    //   enabled: true,
-    //   expectedPagesTxCounts: [1]
-    // }),
+    createTestCase({
+      address: wallets.WALLET_MULTIPLE_TX,
+      enabled: true,
+      expectedPagesTxCounts: [3, 5]
+    }),
+    createTestCase({
+      address: wallets.WALLET_MULTIPLE_TX,
+      enabled: false,
+      expectedPagesTxCounts: [0]
+    }),
+    createTestCase({
+      address: wallets.WALLET_SINGLE_TX,
+      enabled: true,
+      expectedPagesTxCounts: [1]
+    }),
     createTestCase({
       address: wallets.WALLET_SINGLE_TX,
       enabled: false,
@@ -104,7 +104,6 @@ describe.sequential('useTransactionHistory', () => {
       const { result } = await renderHookAsyncUseTransactionHistory(address)
 
       // fetch each batch
-      console.log(expectedPagesTxCounts.length)
       for (let page = 0; page < expectedPagesTxCounts.length; page++) {
         // initial fetch starts immediately
         if (page > 0) {
