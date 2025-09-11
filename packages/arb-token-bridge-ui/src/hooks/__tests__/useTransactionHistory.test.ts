@@ -42,15 +42,20 @@ vi.mock('../useArbQueryParams', async importActual => ({
   useArbQueryParams: vi.fn().mockReturnValue([{}, vi.fn()])
 }))
 
-const renderHookAsyncUseTransactionHistory = async (address: Address) => {
+const renderHookAsyncUseTransactionHistory = async (
+  address: Address,
+  enabled: boolean
+) => {
   const hook = renderHook(() =>
     useTransactionHistory(address, { runFetcher: true })
   )
 
   // Allow initial async operations to settle
-  await act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 0))
-  })
+  if (enabled) {
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0))
+    })
+  }
 
   return { result: hook.result }
 }
@@ -102,7 +107,10 @@ describe.sequential('useTransactionHistory', () => {
       ])
 
       const address = wallets[key]
-      const { result } = await renderHookAsyncUseTransactionHistory(address)
+      const { result } = await renderHookAsyncUseTransactionHistory(
+        address,
+        enabled
+      )
 
       // fetch each batch
       for (let page = 0; page < expectedPagesTxCounts.length; page++) {
