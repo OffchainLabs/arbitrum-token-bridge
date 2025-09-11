@@ -5,8 +5,8 @@ import { useTransactionHistory } from '../useTransactionHistory'
 import { useArbQueryParams } from '../useArbQueryParams'
 
 const wallets = {
-  WALLET_MULTIPLE_TX: '0x1798440327d78ebb19db0c8999e2368eaed8f413',
-  WALLET_SINGLE_TX: '0x6d051646D4A9df8679E9AD3429e70415f75f6499',
+  WALLET_MULTIPLE_TX: '0x7503Aad60fd0d205702b0Dcd945a1b36c42101b3',
+  WALLET_SINGLE_TX: '0x2aC2E4BbB84A996E2EA904933536ce139cCecb5A',
   WALLET_EMPTY: '0xa5801D65537dF15e90D284E5E917AE84e3F3201c'
 } as const
 
@@ -32,7 +32,7 @@ vi.mock('wagmi', async importActual => ({
   ...(await importActual()),
   useAccount: () => ({
     isConnected: true,
-    chain: { id: 11155111 },
+    chain: { id: 1 },
     connector: null
   })
 }))
@@ -44,7 +44,7 @@ vi.mock('../useArbQueryParams', async importActual => ({
 
 const renderHookAsyncUseTransactionHistory = async (
   address: Address,
-  enabled: boolean
+  { enabled }: { enabled: boolean }
 ) => {
   const hook = renderHook(() =>
     useTransactionHistory(address, { runFetcher: true })
@@ -69,7 +69,7 @@ describe.sequential('useTransactionHistory', () => {
     createTestCase({
       key: 'WALLET_MULTIPLE_TX',
       enabled: true,
-      expectedPagesTxCounts: [3, 5]
+      expectedPagesTxCounts: [3, 4]
     }),
     createTestCase({
       key: 'WALLET_MULTIPLE_TX',
@@ -100,17 +100,16 @@ describe.sequential('useTransactionHistory', () => {
       mockUseArbQueryParams.mockReturnValue([
         {
           ...currentParams,
-          sourceChain: 11155111,
+          sourceChain: 1,
           disabledFeatures: enabled ? [] : ['tx-history']
         },
         setParams
       ])
 
       const address = wallets[key]
-      const { result } = await renderHookAsyncUseTransactionHistory(
-        address,
+      const { result } = await renderHookAsyncUseTransactionHistory(address, {
         enabled
-      )
+      })
 
       // fetch each batch
       for (let page = 0; page < expectedPagesTxCounts.length; page++) {
@@ -132,19 +131,11 @@ describe.sequential('useTransactionHistory', () => {
           { timeout: 30_000, interval: 500 }
         )
 
-        // await act(async () => {
-        //   await new Promise(resolve => setTimeout(resolve, 0))
-        // })
-
         // total results so far
         expect(result.current.transactions).toHaveLength(
           Number(expectedPagesTxCounts[page])
         )
       }
-
-      // await act(async () => {
-      //   await new Promise(resolve => setTimeout(resolve, 0))
-      // })
 
       // finally, no more transactions left to be fetched
       expect(result.current.completed).toBe(true)
