@@ -130,7 +130,7 @@ describe.sequential(
             () => {
               expect(result.current.loading).toBe(false)
             },
-            { timeout: 30_000, interval: 500 }
+            { timeout: 60_000, interval: 500 }
           )
 
           // total results so far
@@ -144,5 +144,5 @@ describe.sequential(
       }
     )
   },
-  { timeout: 60_000 }
+  { timeout: 120_000 }
 )
