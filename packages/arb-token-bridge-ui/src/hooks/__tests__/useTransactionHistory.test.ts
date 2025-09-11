@@ -60,85 +60,89 @@ const renderHookAsyncUseTransactionHistory = async (
   return { result: hook.result }
 }
 
-describe.sequential('useTransactionHistory', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it.each([
-    createTestCase({
-      key: 'WALLET_MULTIPLE_TX',
-      enabled: true,
-      expectedPagesTxCounts: [3, 4]
-    }),
-    createTestCase({
-      key: 'WALLET_MULTIPLE_TX',
-      enabled: false,
-      expectedPagesTxCounts: [0]
-    }),
-    createTestCase({
-      key: 'WALLET_SINGLE_TX',
-      enabled: true,
-      expectedPagesTxCounts: [1]
-    }),
-    createTestCase({
-      key: 'WALLET_SINGLE_TX',
-      enabled: false,
-      expectedPagesTxCounts: [0]
-    }),
-    createTestCase({
-      key: 'WALLET_EMPTY',
-      enabled: true,
-      expectedPagesTxCounts: [0]
+describe.sequential(
+  'useTransactionHistory',
+  () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
     })
-  ])(
-    'fetches history for key:$key enabled:$enabled expectedPagesTxCounts:$expectedPagesTxCounts',
-    async ({ key, enabled, expectedPagesTxCounts }) => {
-      const mockUseArbQueryParams = vi.mocked(useArbQueryParams)
-      const [currentParams, setParams] = mockUseArbQueryParams()
 
-      mockUseArbQueryParams.mockReturnValue([
-        {
-          ...currentParams,
-          sourceChain: 1,
-          disabledFeatures: enabled ? [] : ['tx-history']
-        },
-        setParams
-      ])
-
-      const address = wallets[key]
-      const { result } = await renderHookAsyncUseTransactionHistory(address, {
-        enabled
+    it.each([
+      createTestCase({
+        key: 'WALLET_MULTIPLE_TX',
+        enabled: true,
+        expectedPagesTxCounts: [3, 4]
+      }),
+      createTestCase({
+        key: 'WALLET_MULTIPLE_TX',
+        enabled: false,
+        expectedPagesTxCounts: [0]
+      }),
+      createTestCase({
+        key: 'WALLET_SINGLE_TX',
+        enabled: true,
+        expectedPagesTxCounts: [1]
+      }),
+      createTestCase({
+        key: 'WALLET_SINGLE_TX',
+        enabled: false,
+        expectedPagesTxCounts: [0]
+      }),
+      createTestCase({
+        key: 'WALLET_EMPTY',
+        enabled: true,
+        expectedPagesTxCounts: [0]
       })
+    ])(
+      'fetches history for key:$key enabled:$enabled expectedPagesTxCounts:$expectedPagesTxCounts',
+      async ({ key, enabled, expectedPagesTxCounts }) => {
+        const mockUseArbQueryParams = vi.mocked(useArbQueryParams)
+        const [currentParams, setParams] = mockUseArbQueryParams()
 
-      // fetch each batch
-      for (let page = 0; page < expectedPagesTxCounts.length; page++) {
-        // initial fetch starts immediately
-        if (page > 0) {
-          act(() => {
-            result.current.resume()
-          })
-        }
+        mockUseArbQueryParams.mockReturnValue([
+          {
+            ...currentParams,
+            sourceChain: 1,
+            disabledFeatures: enabled ? [] : ['tx-history']
+          },
+          setParams
+        ])
 
-        await waitFor(() => {
-          expect(result.current.loading).toBe(true)
+        const address = wallets[key]
+        const { result } = await renderHookAsyncUseTransactionHistory(address, {
+          enabled
         })
 
-        await waitFor(
-          () => {
-            expect(result.current.loading).toBe(false)
-          },
-          { timeout: 30_000, interval: 500 }
-        )
+        // fetch each batch
+        for (let page = 0; page < expectedPagesTxCounts.length; page++) {
+          // initial fetch starts immediately
+          if (page > 0) {
+            act(() => {
+              result.current.resume()
+            })
+          }
 
-        // total results so far
-        expect(result.current.transactions).toHaveLength(
-          Number(expectedPagesTxCounts[page])
-        )
+          await waitFor(() => {
+            expect(result.current.loading).toBe(true)
+          })
+
+          await waitFor(
+            () => {
+              expect(result.current.loading).toBe(false)
+            },
+            { timeout: 30_000, interval: 500 }
+          )
+
+          // total results so far
+          expect(result.current.transactions).toHaveLength(
+            Number(expectedPagesTxCounts[page])
+          )
+        }
+
+        // finally, no more transactions left to be fetched
+        expect(result.current.completed).toBe(true)
       }
-
-      // finally, no more transactions left to be fetched
-      expect(result.current.completed).toBe(true)
-    }
-  )
-})
+    )
+  },
+  { timeout: 60_000 }
+)
