@@ -24,7 +24,7 @@ export function TokenButton({
   options
 }: {
   options?: TokenButtonOptions
-}): JSX.Element {
+}): React.ReactNode {
   const [selectedToken] = useSelectedToken()
   const disabled = options?.disabled ?? false
 
