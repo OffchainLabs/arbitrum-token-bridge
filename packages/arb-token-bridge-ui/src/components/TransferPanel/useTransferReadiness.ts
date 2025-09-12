@@ -49,7 +49,7 @@ import { Token } from '../../app/api/crosschain-transfers/types'
 export const DISABLED_CHAIN_IDS: number[] = []
 
 // withdraw-only chains (will also display error message in the transfer panel)
-const WITHDRAW_ONLY_CHAIN_IDS: number[] = [98865, 70700, 70701] // Plume Legacy, PoP Apex, PoP Boss
+const WITHDRAW_ONLY_CHAIN_IDS: number[] = [98865, 70700, 70701, 140] // Plume Legacy, PoP Apex, PoP Boss, Data Lake Mainnet
 
 type ErrorMessages = {
   inputAmount1?: string | TransferReadinessRichErrorMessage
