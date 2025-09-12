@@ -191,7 +191,10 @@ export const SettingsDialog = React.memo((props: UseDialogProps) => {
           setQueryParams({ destinationAddress: undefined })
           setDestinationAddress(undefined)
         } else {
-          setQueryParams({ destinationAddress })
+          // If string is empty, we want to remove the param from URL (passing undefined)
+          setQueryParams({
+            destinationAddress: destinationAddress || undefined
+          })
         }
       }}
       isFooterHidden

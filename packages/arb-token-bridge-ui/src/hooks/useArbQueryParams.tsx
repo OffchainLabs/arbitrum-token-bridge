@@ -132,7 +132,8 @@ export const useArbQueryParams = () => {
       setQueryParams (setter for all query state variables with debounced accumulator)
     ]
   */
-  const [queryParams, setQueryParams] = useQueryParams()
+  const [queryParams, setQueryParams] =
+    useQueryParams<typeof queryParamProviderOptions.params>()
 
   const debouncedSetQueryParams = useCallback(
     (
@@ -145,7 +146,7 @@ export const useArbQueryParams = () => {
   return [queryParams, debouncedSetQueryParams] as const
 }
 
-export const queryParamProviderOptions: QueryParamOptions = {
+export const queryParamProviderOptions = {
   searchStringToObject: queryString.parse,
   objectToSearchString: queryString.stringify,
   updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
@@ -164,7 +165,7 @@ export const queryParamProviderOptions: QueryParamOptions = {
     mode: withDefault(ModeParam, undefined), // mode: 'embed', or undefined for normal mode
     theme: withDefault(ThemeParam, defaultTheme) // theme customization
   }
-}
+} as const satisfies QueryParamOptions
 export function ArbQueryParamProvider({
   children
 }: {
