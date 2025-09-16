@@ -331,7 +331,7 @@ async function generateSvg(
   const file = isOrbitChain
     ? `${chainsOrOrbitChain}.jpg`
     : `${chainsOrOrbitChain.from}-to-${chainsOrOrbitChain.to}.jpg`
-  const filePath = `./public/images/__auto-generated/open-graph/${file}`
+  const filePath = `../../app/public/images/__auto-generated/open-graph/${file}`
 
   await sharp(Buffer.from(svg))
     .jpeg({ quality: 90, mozjpeg: true })
