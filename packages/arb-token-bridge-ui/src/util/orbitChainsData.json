@@ -2260,53 +2260,6 @@
       }
     },
     {
-      "chainId": 1712,
-      "confirmPeriodBlocks": 150,
-      "ethBridge": {
-        "bridge": "0xA5Bcd72e7D4D99A95F6eB83fda3AD2E0B9A4744B",
-        "inbox": "0x00ef4932Df17a0227F643d565AFAf9564eB219C6",
-        "outbox": "0x3b7C01Ab11260f8e1403c03B9CdA58713Ee60742",
-        "rollup": "0xbc0Dc54832621cdebb7DdF364F9C18A0daB2132f",
-        "sequencerInbox": "0x675e73C895E004117797AeD42899d21419e5CfeF"
-      },
-      "nativeToken": "0x809050Eb1575364DB42Fb7a1D32ceD95c65950f3",
-      "explorerUrl": "https://wylerchain-sepolia.explorer.alchemy.com/",
-      "rpcUrl": "https://wylerchain-sepolia.g.alchemy.com/public",
-      "isCustom": true,
-      "isTestnet": true,
-      "name": "Wylerchain Sepolia",
-      "slug": "wylerchain-sepolia",
-      "parentChainId": 421614,
-      "tokenBridge": {
-        "parentCustomGateway": "0x1f024B64325BeF11B5E5e3cFaC66d863b6ce5cb7",
-        "parentErc20Gateway": "0x1f024B64325BeF11B5E5e3cFaC66d863b6ce5cb7",
-        "parentGatewayRouter": "0xE4709D109BF0BD219cB19f8c50cD1135FFE11C23",
-        "parentMultiCall": "0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x21323a391B765725032F3E58c4f782466Ae40696",
-        "childErc20Gateway": "0x8Ed5bb22aE040Cce4e760e9b705c12a0fdF6167B",
-        "childGatewayRouter": "0x8d2bd0BCEe3d787568a7927c01f8431a440F5E8B",
-        "childMultiCall": "0xeD67d0abffd0fa6E344Ac52838A2C54eEE47dfd1",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#925eff",
-        "network": {
-          "name": "Wylerchain Sepolia",
-          "logo": "/images/WylerchainSepolia_Logo.png"
-        },
-        "nativeTokenData": {
-          "name": "Wyler",
-          "symbol": "WYLER",
-          "logoUrl": "/images/WylerchainSepolia_Logo.png"
-        }
-      }
-    },
-    {
       "chainId": 323432,
       "confirmPeriodBlocks": 900,
       "ethBridge": {
