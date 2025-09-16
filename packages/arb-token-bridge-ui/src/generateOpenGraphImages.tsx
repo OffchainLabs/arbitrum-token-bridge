@@ -212,7 +212,7 @@ function getCoreChainImage(from: Chain, to: Chain) {
 async function getOrbitChainImage(orbitChain: Chain) {
   const chainConfig = getBridgeUiConfigForChain(orbitChain)
   const isSvg = chainConfig.network.logo.endsWith('.svg')
-  const logoFileBuffer = fs.readFileSync(`./public${chainConfig.network.logo}`)
+  const logoFileBuffer = fs.readFileSync(`../../app/public${chainConfig.network.logo}`)
 
   console.log(`Generating image for ${orbitChain}`)
 
