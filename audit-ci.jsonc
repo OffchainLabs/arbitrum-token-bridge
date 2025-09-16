@@ -37,6 +37,18 @@
     // GHSA-v6h2-p8h4-qcjw|eslint-config-next>@typescript-eslint/eslint-plugin>@typescript-eslint/type-utils>@typescript-eslint/utils>@typescript-eslint/typescript-estree>minimatch>brace-expansion
     // GHSA-v6h2-p8h4-qcjw|@eslint/eslintrc>minimatch>brace-expansion
     // GHSA-v6h2-p8h4-qcjw|eslint>@eslint/eslintrc>minimatch>brace-expansion
-    "GHSA-v6h2-p8h4-qcjw"
+    "GHSA-v6h2-p8h4-qcjw",
+    //
+    // https://github.com/advisories/GHSA-qj3p-xc97-xw74
+    // Reason to ignore: Does not affect us as we did not perform any installations without a lock file
+    //
+    // This advisory only applies to developers who use MetaMask SDK in the browser and who, on Sept 8th 2025 between 13:00–15:30 UTC, performed one of the following actions and then deployed their application:
+    // Installed MetaMask SDK into a project with a lockfile for the first time
+    // Installed MetaMask SDK in a project without a lockfile
+    // Updated a lockfile to pull in debug@4.4.2 (e.g., via npm update or yarn upgrade)
+    //
+    // GHSA-qj3p-xc97-xw74|arb-token-bridge-ui>wagmi>@wagmi/connectors>@metamask/sdk>@metamask/sdk-communication-layer
+    // GHSA-qj3p-xc97-xw74|arb-token-bridge-ui>wagmi>@wagmi/connectors>@metamask/sdk
+    "GHSA-qj3p-xc97-xw74"
   ]
 }
