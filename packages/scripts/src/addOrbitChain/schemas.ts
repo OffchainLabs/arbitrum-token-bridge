@@ -8,7 +8,7 @@ import { getProvider } from './provider'
 
 // Load .env from the UI project directory
 dotenv.config({
-  path: path.resolve(__dirname, '../../../arb-token-bridge-ui/.env')
+  path: path.resolve(__dirname, '../../../app/.env')
 })
 export const TESTNET_PARENT_CHAIN_IDS = [11155111, 421614, 84532]
 const ZERO_ADDRESS = constants.AddressZero
