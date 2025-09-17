@@ -328,10 +328,7 @@ export const fetchAndSaveImage = async (
   const { buffer, fileExtension } = await fetchAndProcessImage(urlOrPath)
   const imageSavePath = `images/${fileName}${fileExtension}`
 
-  const fullPath = path.join(
-    process.cwd(),
-    '../../packages/app/public/images'
-  )
+  const fullPath = path.join(process.cwd(), '../../packages/app/public/images')
 
   // Save the file locally
   fs.writeFileSync(path.join(fullPath, `${fileName}${fileExtension}`), buffer)
