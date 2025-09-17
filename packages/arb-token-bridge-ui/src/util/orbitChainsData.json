@@ -719,55 +719,6 @@
       }
     },
     {
-      "chainId": 41455,
-      "confirmPeriodBlocks": 45818,
-      "ethBridge": {
-        "bridge": "0x41Ec9456AB918f2aBA81F38c03Eb0B93b78E84d9",
-        "inbox": "0x56D8EC76a421063e1907503aDd3794c395256AEb",
-        "outbox": "0x73bb50c32a3BD6A1032aa5cFeA048fBDA3D6aF6e",
-        "rollup": "0x1CA12290D954CFe022323b6A6Df92113ed6b1C98",
-        "sequencerInbox": "0xF75206c49c1694594E3e69252E519434f1579876"
-      },
-      "nativeToken": "0xdD0ae774F7E300CdAA4EA371cD55169665Ee6AFe",
-      "explorerUrl": "https://evm-explorer.alephzero.org/",
-      "rpcUrl": "https://rpc.alephzero.raas.gelato.cloud",
-      "isCustom": true,
-      "isTestnet": false,
-      "name": "Aleph Zero EVM",
-      "slug": "aleph-zero-evm",
-      "parentChainId": 1,
-      "tokenBridge": {
-        "parentCustomGateway": "0x1CA12290D954CFe022323b6A6Df92113ed6b1C98",
-        "parentErc20Gateway": "0xccaF21F002EAF230c9Fa810B34837a3739B70F7B",
-        "parentGatewayRouter": "0xeBb17f398ed30d02F2e8733e7c1e5cf566e17812",
-        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
-        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "parentWeth": "0x0000000000000000000000000000000000000000",
-        "parentWethGateway": "0x0000000000000000000000000000000000000000",
-        "childCustomGateway": "0x2f70c8E4B7e168869db1bA7c33DDeDC90A0618F8",
-        "childErc20Gateway": "0x2A5a79061b723BBF453ef7E07c583C750AFb9BD6",
-        "childGatewayRouter": "0xD296d45171B97720D3aBdb68B0232be01F1A9216",
-        "childMultiCall": "0xadA1e2BD204b976Da39699bd051264425c78D060",
-        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
-        "childWeth": "0x0000000000000000000000000000000000000000",
-        "childWethGateway": "0x0000000000000000000000000000000000000000"
-      },
-      "bridgeUiConfig": {
-        "color": "#00EAC7",
-        "network": {
-          "name": "Aleph Zero EVM",
-          "logo": "/images/AlephZeroEVM_Logo.webp",
-          "description": "Aleph Zero EVM is a Layer 2 for DeFi, gaming, and enterprise solutions."
-        },
-        "nativeTokenData": {
-          "name": "AZERO",
-          "symbol": "AZERO",
-          "logoUrl": "/images/AlephZeroEVM_Logo.webp"
-        },
-        "fastWithdrawalTime": 21600000
-      }
-    },
-    {
       "chainId": 88899,
       "confirmPeriodBlocks": 274908,
       "ethBridge": {
