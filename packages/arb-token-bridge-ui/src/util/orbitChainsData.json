@@ -1556,6 +1556,53 @@
           "logoUrl": "/images/WorldMobileChainMainnet_NativeTokenLogo.svg"
         }
       }
+    },
+    {
+      "chainId": 510003,
+      "confirmPeriodBlocks": 302400,
+      "ethBridge": {
+        "bridge": "0x64d426e64B7191a1fCf48C89d2D12772FbFB297f",
+        "inbox": "0xAE824E2d20F21B222932aFC6079cDaA1EB5b2F00",
+        "outbox": "0xdBFF2d1df0E30F6e5dDa325C29EC0bC8944ebA7b",
+        "rollup": "0xf12832C23a94db0E966C4776DCce50ADe0697A32",
+        "sequencerInbox": "0x916eb8bbA622b547341843fBcF6D5Fa71C6B950E"
+      },
+      "nativeToken": "0x11dC28D01984079b7efE7763b533e6ed9E3722B9",
+      "explorerUrl": "https://commons.explorer.syndicate.io",
+      "rpcUrl": "https://commons.rpc.syndicate.io",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Commons",
+      "slug": "commons",
+      "parentChainId": 8453,
+      "tokenBridge": {
+        "parentCustomGateway": "0x2dFf0C44AeDeDAbc3285c6590D24c96D077C733A",
+        "parentErc20Gateway": "0xbb03Ac04c9Dd48a8F93f4a843762e4d9BDfd5093",
+        "parentGatewayRouter": "0x2e5B0Df3F931caeF3e330c15819008472D47b6f0",
+        "parentMultiCall": "0xb444317D808b5cFfE66495920D40A35E7D247cC4",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x15961fd104438a6aB998Bd90187593A0A75FAdD2",
+        "childErc20Gateway": "0x272d785336CdE55a1C4E9443Acc2f63c7A8157Ec",
+        "childGatewayRouter": "0xd5889D7cD6735359676B5Eb5540bB323E156F74c",
+        "childMultiCall": "0xd19410830E092D61cb4e4F4643A49ccE81bFc120",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#5E46FF",
+        "network": {
+          "name": "Commons",
+          "logo": "/images/Commons_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "Syndicate",
+          "symbol": "SYND",
+          "logoUrl": "/images/Commons_NativeTokenLogo.png"
+        }
+      }
     }
   ],
   "testnet": [
