@@ -206,7 +206,7 @@ describe('Transforms', () => {
       process.cwd(),
       '..',
       '..',
-      'arb-token-bridge-ui',
+      'app',
       'public',
       'images',
       'downloaded_chain_logo.png'
@@ -244,7 +244,7 @@ describe('Transforms', () => {
         process.cwd(),
         '..',
         '..',
-        'arb-token-bridge-ui',
+        'app',
         'public',
         savedImagePath
       )
@@ -360,7 +360,7 @@ const saveImageLocally = (
     process.cwd(),
     '..',
     '..',
-    'arb-token-bridge-ui',
+    'app',
     'public',
     imageSavePath
   )
