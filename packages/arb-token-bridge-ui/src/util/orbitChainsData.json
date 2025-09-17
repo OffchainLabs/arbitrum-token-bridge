@@ -1603,6 +1603,47 @@
           "logoUrl": "/images/Commons_NativeTokenLogo.png"
         }
       }
+    },
+    {
+      "chainId": 510,
+      "confirmPeriodBlocks": 50400,
+      "ethBridge": {
+        "bridge": "0x3C8cF0ae6E89AC0796f29B3a58e7dEa1cD072277",
+        "inbox": "0x5EA55Fd41D42Eb307D281bdE78E4e7572A35ea13",
+        "outbox": "0xf555Bc86D1C953414F676479Bf7C979b1A737E8C",
+        "rollup": "0x451bD7813909B899DA6EbEC55E8fF823c057e14A",
+        "sequencerInbox": "0x12ad349e5d72B582856290736e0f13FE5fA57Aa4"
+      },
+      "explorerUrl": "https://synd-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://synd-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Syndicate Network",
+      "slug": "syndicate-network",
+      "parentChainId": 1,
+      "tokenBridge": {
+        "parentCustomGateway": "0x85C88ddc2f525459E243AB27D6059f55Ce80EB0c",
+        "parentErc20Gateway": "0x6CA109706c6EBe5379c45f20B3311441D50cb711",
+        "parentGatewayRouter": "0x534Eb1F79C8df3aB1E507e408EeF4e99D53A1239",
+        "parentMultiCall": "0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0xdb0a2E87eE6bAe0fa6Ce6f213B6B6664174a4416",
+        "childErc20Gateway": "0xBE9eF55Cb610d13324341654bd623B0B5EC11976",
+        "childGatewayRouter": "0xD96323e3ce7556Dc5119653DCe1BB73F22562F6C",
+        "childMultiCall": "0x6AcFa1BF5d8230134Ce2Fc3027f305c2952051A0",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#161616",
+        "network": {
+          "name": "Syndicate Network",
+          "logo": "/images/SyndicateNetwork_Logo.png"
+        }
+      }
     }
   ],
   "testnet": [
