@@ -47,6 +47,10 @@ export const fetchDeposits = async ({
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
 
+  if (l2ChainId === 42170) {
+    console.log('nova error d1')
+  }
+
   const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
 
   if (!fromBlock) {
