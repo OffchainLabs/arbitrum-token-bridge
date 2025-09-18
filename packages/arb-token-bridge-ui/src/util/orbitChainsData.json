@@ -2576,6 +2576,53 @@
           "logoUrl": "/images/JASMYChain_Logo.png"
         }
       }
+    },
+    {
+      "chainId": 351243127,
+      "confirmPeriodBlocks": 900,
+      "ethBridge": {
+        "bridge": "0xD05baD3cec5E67152178F731aae8025fC1F2DAEA",
+        "inbox": "0xA382f402Cb702484B424AC8e2B7fEE9B032C6b9d",
+        "outbox": "0xFFdE0Ef70824CdFa9cf12AD59e11e4137fbDe89b",
+        "rollup": "0xFE03FC0422F46f5C4169B8F33873B7955c3897a3",
+        "sequencerInbox": "0x66513AD1844E9dc1268bB8cC2cbcc1F6BBA74B77"
+      },
+      "nativeToken": "0x63C6667798fdA65E2E29228C43fbfDa0Cd4634A8",
+      "explorerUrl": "https://xmtp-ropsten.explorer.alchemy.com/",
+      "rpcUrl": "https://xmtp-ropsten.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": true,
+      "name": "XMTP Ropsten",
+      "slug": "xmtp-ropsten",
+      "parentChainId": 84532,
+      "tokenBridge": {
+        "parentCustomGateway": "0x04Ba99762bC1533aB79931C9e0Dc4C9AE684F34E",
+        "parentErc20Gateway": "0x57a13F0AEa726CAd42b78077C2E4Fb387b414557",
+        "parentGatewayRouter": "0x543b7e86b780A3aa1A06760E41459Fb1A8149F37",
+        "parentMultiCall": "0xE0753Df74d86D6B25aCd2d049389c7E52e2dd728",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x9Be7A91d9B6c93e1E366EC075e43Fa436c56802D",
+        "childErc20Gateway": "0x7bA100949292Fbff87099Dd79B595CC0dd9c515d",
+        "childGatewayRouter": "0x3bCF6527d00100B5bC66F45A41da216ba3b6d878",
+        "childMultiCall": "0x6292a462bd54e0F1DCBc56434516C1eb81062C3C",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#ef4343",
+        "network": {
+          "name": "XMTP Ropsten",
+          "logo": "/images/XMTPRopsten_Logo.png"
+        },
+        "nativeTokenData": {
+          "name": "xUSD",
+          "symbol": "xUSD",
+          "logoUrl": "/images/XMTPRopsten_NativeTokenLogo.png"
+        }
+      }
     }
   ]
 }
