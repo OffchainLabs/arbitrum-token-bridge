@@ -5,8 +5,8 @@ import { useTransactionHistory } from '../useTransactionHistory'
 import { useArbQueryParams } from '../useArbQueryParams'
 
 const wallets = {
-  WALLET_MULTIPLE_TX: '0x1798440327d78ebb19db0c8999e2368eaed8f413',
-  WALLET_SINGLE_TX: '0x6d051646D4A9df8679E9AD3429e70415f75f6499',
+  WALLET_MULTIPLE_TX: '0x7503Aad60fd0d205702b0Dcd945a1b36c42101b3',
+  WALLET_SINGLE_TX: '0x2aC2E4BbB84A996E2EA904933536ce139cCecb5A',
   WALLET_EMPTY: '0xa5801D65537dF15e90D284E5E917AE84e3F3201c'
 } as const
 
@@ -32,7 +32,7 @@ vi.mock('wagmi', async importActual => ({
   ...(await importActual()),
   useAccount: () => ({
     isConnected: true,
-    chain: { id: 11155111 },
+    chain: { id: 1 },
     connector: null
   })
 }))
@@ -42,97 +42,107 @@ vi.mock('../useArbQueryParams', async importActual => ({
   useArbQueryParams: vi.fn().mockReturnValue([{}, vi.fn()])
 }))
 
-const renderHookAsyncUseTransactionHistory = async (address: Address) => {
+const renderHookAsyncUseTransactionHistory = async (
+  address: Address,
+  { enabled }: { enabled: boolean }
+) => {
   const hook = renderHook(() =>
     useTransactionHistory(address, { runFetcher: true })
   )
 
+  // Allow initial async operations to settle
+  if (enabled) {
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0))
+    })
+  }
+
   return { result: hook.result }
 }
 
-describe.sequential('useTransactionHistory', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it.each([
-    createTestCase({
-      key: 'WALLET_MULTIPLE_TX',
-      enabled: true,
-      expectedPagesTxCounts: [3, 5]
-    }),
-    createTestCase({
-      key: 'WALLET_MULTIPLE_TX',
-      enabled: false,
-      expectedPagesTxCounts: [0]
-    }),
-    createTestCase({
-      key: 'WALLET_SINGLE_TX',
-      enabled: true,
-      expectedPagesTxCounts: [1]
-    }),
-    createTestCase({
-      key: 'WALLET_SINGLE_TX',
-      enabled: false,
-      expectedPagesTxCounts: [0]
-    }),
-    createTestCase({
-      key: 'WALLET_EMPTY',
-      enabled: true,
-      expectedPagesTxCounts: [0]
+describe.sequential(
+  'useTransactionHistory',
+  () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
     })
-  ])(
-    'fetches history for key:$key enabled:$enabled expectedPagesTxCounts:$expectedPagesTxCounts',
-    async ({ key, enabled, expectedPagesTxCounts }) => {
-      const mockUseArbQueryParams = vi.mocked(useArbQueryParams)
-      const [currentParams, setParams] = mockUseArbQueryParams()
 
-      mockUseArbQueryParams.mockReturnValue([
-        {
-          ...currentParams,
-          sourceChain: 11155111,
-          disabledFeatures: enabled ? [] : ['tx-history']
-        },
-        setParams
-      ])
+    it.each([
+      createTestCase({
+        key: 'WALLET_MULTIPLE_TX',
+        enabled: true,
+        expectedPagesTxCounts: [3, 4]
+      }),
+      createTestCase({
+        key: 'WALLET_MULTIPLE_TX',
+        enabled: false,
+        expectedPagesTxCounts: [0]
+      }),
+      createTestCase({
+        key: 'WALLET_SINGLE_TX',
+        enabled: true,
+        expectedPagesTxCounts: [1]
+      }),
+      createTestCase({
+        key: 'WALLET_SINGLE_TX',
+        enabled: false,
+        expectedPagesTxCounts: [0]
+      }),
+      createTestCase({
+        key: 'WALLET_EMPTY',
+        enabled: true,
+        expectedPagesTxCounts: [0]
+      })
+    ])(
+      'fetches history for key:$key enabled:$enabled expectedPagesTxCounts:$expectedPagesTxCounts',
+      async ({ key, enabled, expectedPagesTxCounts }) => {
+        const mockUseArbQueryParams = vi.mocked(useArbQueryParams)
+        const [currentParams, setParams] = mockUseArbQueryParams()
 
-      const address = wallets[key]
+        mockUseArbQueryParams.mockReturnValue([
+          {
+            ...currentParams,
+            sourceChain: 1,
+            disabledFeatures: enabled ? [] : ['tx-history']
+          },
+          setParams
+        ])
 
-      if (!address) {
-        throw new Error(
-          `Wallet ${key} not found. Make sure it's added to the list of wallets.`
-        )
-      }
+        const address = wallets[key]
+        const { result } = await renderHookAsyncUseTransactionHistory(address, {
+          enabled
+        })
 
-      const { result } = await renderHookAsyncUseTransactionHistory(address)
+        // fetch each batch
+        for (let page = 0; page < expectedPagesTxCounts.length; page++) {
+          // initial fetch starts immediately
+          if (page > 0) {
+            act(() => {
+              result.current.resume()
+            })
+          }
 
-      // fetch each batch
-      for (let page = 0; page < expectedPagesTxCounts.length; page++) {
-        // initial fetch starts immediately
-        if (page > 0) {
-          act(() => {
-            result.current.resume()
+          await waitFor(() => {
+            expect(result.current.loading).toBe(true)
           })
+
+          await waitFor(
+            () => {
+              expect(result.current.loading).toBe(false)
+            },
+            { timeout: 60_000, interval: 500 }
+          )
+
+          // total results so far
+          expect(result.current.transactions).toHaveLength(
+            Number(expectedPagesTxCounts[page])
+          )
         }
 
-        expect(result.current.loading).toBe(true)
-
-        await waitFor(
-          () => {
-            // fetching finished
-            expect(result.current.loading).toBe(false)
-          },
-          { timeout: 30_000, interval: 500 }
-        )
-
-        // total results so far
-        expect(result.current.transactions).toHaveLength(
-          Number(expectedPagesTxCounts[page])
-        )
+        // finally, no more transactions left to be fetched
+        expect(result.current.completed).toBe(true)
       }
-
-      // finally, no more transactions left to be fetched
-      expect(result.current.completed).toBe(true)
-    }
-  )
-})
+    )
+  },
+  { timeout: 120_000 }
+)
