@@ -61,3 +61,29 @@ export const stepGeneratorForTransactionEthers: UiDriverStepGeneratorForTransact
       return data
     }
   }
+
+export type UiDriverStepGeneratorForTransactionWagmi<
+  TStep extends UiDriverStep = UiDriverStep
+> = (
+  context: UiDriverContext,
+  payload: UiDriverStepPayloadFor<'tx_wagmi'>
+) => AsyncGenerator<
+  TStep,
+  providers.TransactionReceipt | void,
+  UiDriverStepResultFor<TStep['type']>
+>
+
+export const stepGeneratorForTransactionWagmi: UiDriverStepGeneratorForTransactionWagmi =
+  async function* (context, payload) {
+    if (context.isSmartContractWallet) {
+      yield* step({ type: 'scw_tooltip' })
+    }
+
+    const { error, data } = yield* step({ type: 'tx_wagmi', payload })
+
+    if (typeof error !== 'undefined') {
+      yield* step({ type: 'return' })
+    } else {
+      return data
+    }
+  }
