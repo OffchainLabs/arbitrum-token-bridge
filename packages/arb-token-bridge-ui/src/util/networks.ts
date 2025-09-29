@@ -348,8 +348,6 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
 }
 
 export const l2UsdcGatewayAddresses: { [chainId: number]: string } = {
-  // PoP Apex
-  70700: '0x97e2b88b44946cd932fb85675412699723200987',
   // Superposition
   [ChainId.Superposition]: '0xF70ae1Af7D49dA0f7D66Bb55469caC9da336181b'
 }
