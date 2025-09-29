@@ -1375,7 +1375,6 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-
         <TransferPanelMain />
         {showSettingsButton && (
           <div className="z-50 mb-2 ml-auto sm:relative">
