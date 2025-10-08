@@ -39,15 +39,21 @@ export function hasTeleporterSubgraph(l1ChainId: number) {
 export const fetchLatestSubgraphBlockNumber = async (
   chainId: number
 ): Promise<number> => {
-  const response = await fetch(
-    `${getAPIBaseUrl()}/api/chains/${chainId}/block-number`,
-    {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
+  try {
+    const response = await fetch(
+      `${getAPIBaseUrl()}/api/chains/${chainId}/block-number`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
 
-  return ((await response.json()) as { data: number }).data
+    console.log({ response })
+  
+    return ((await response.json()) as { data: number }).data
+  } catch {
+    return 0
+  }
 }
 
 export const shouldIncludeSentTxs = ({
