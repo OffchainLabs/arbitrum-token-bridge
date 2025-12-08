@@ -1513,6 +1513,48 @@
           "logo": "/images/SyndicateNetwork_Logo.png"
         }
       }
+    },
+    {
+      "chainId": 3343,
+      "confirmPeriodBlocks": 50400,
+      "ethBridge": {
+        "bridge": "0x6F4836aFD5e21EDcee9b838C5a4125829EC198d0",
+        "inbox": "0xeB88b89e085D6B747Dd6b9CEaf2716bdd89F1E7c",
+        "outbox": "0x9f427c80C4DF962726808d4c876fc2c55474a764",
+        "rollup": "0x14FdC47483e79d5A76599a74A2D622DA1cf97BBF",
+        "sequencerInbox": "0xe44B83D8a3A86994043C809E29B723a44FAEE479"
+      },
+      "explorerUrl": "https://edge-mainnet.explorer.alchemy.com/",
+      "rpcUrl": "https://edge-mainnet.g.alchemy.com/public",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Edge Mainnet",
+      "slug": "edge-mainnet",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x5c87311c2F3F6eE4e9fa7ecBF142451fc22f1754",
+        "parentErc20Gateway": "0x107695630130919cb040B095b9b20511D6e211bB",
+        "parentGatewayRouter": "0x3616995dF5D07B28f2B186F1386cace9EB9Bbd20",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        "parentWethGateway": "0x9580Af28042fCC37DF0569f3Ccf2d8b8A897EFFC",
+        "childCustomGateway": "0x99C29D8977BbE9F4e6EA836B2cebCEe605964D4D",
+        "childErc20Gateway": "0x1EC1398AE7772eAAd8B4523613B94b240158cF8b",
+        "childGatewayRouter": "0x8BD5e5C114375f8A7A034f96fE2e67B31EEb48Ac",
+        "childMultiCall": "0xF0226E2A1544b4f8BFdAAB9c75b81d70eFdC9b2e",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0xBf10e3Dd6D1303310D3bf4567595091758827bc5",
+        "childWethGateway": "0x6961Dc9B524222FA264A21746ea7395066C01b24"
+      },
+      "bridgeUiConfig": {
+        "color": "#22FD73",
+        "network": {
+          "name": "Edge Mainnet",
+          "logo": "/images/EdgeMainnet_Logo.png"
+        },
+        "fastWithdrawalTime": 180000
+      }
     }
   ],
   "testnet": [
