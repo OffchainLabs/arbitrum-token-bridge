@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { Provider as OvermindProvider } from 'overmind-react'
 import { WagmiProvider } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
@@ -12,6 +12,10 @@ import { getProps } from '../../util/wagmi/setup'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from '@lifi/sdk'
 import { INTEGRATOR_ID } from '@/bridge/app/api/crosschain-transfers/lifi'
+
+import { ArbitrumIndexerProvider } from '@arbitrum/indexer-provider'
+import { PonderProvider } from '@ponder/react'
+import { createIndexerClient, getIndexerApiUrl } from './ponder'
 
 const rainbowkitTheme = merge(darkTheme(), {
   colors: {
@@ -53,18 +57,37 @@ const queryClient = new QueryClient()
 createConfig({ integrator: INTEGRATOR_ID })
 export function AppProviders({ children }: AppProvidersProps) {
   const overmind = useMemo(() => createOvermind(config), [])
+  const [indexerApiUrl, setIndexerApiUrl] = useState(() => getIndexerApiUrl())
+  const ponderClient = useMemo(
+    () => createIndexerClient(indexerApiUrl),
+    [indexerApiUrl]
+  )
+
+  useEffect(() => {
+    setIndexerApiUrl(getIndexerApiUrl())
+  }, [])
 
   return (
-    <OvermindProvider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiProvider config={wagmiConfig}>
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider theme={rainbowkitTheme}>
-              <AppContextProvider>{children}</AppContextProvider>
-            </RainbowKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </ArbQueryParamProvider>
-    </OvermindProvider>
+    <PonderProvider client={ponderClient}>
+      <QueryClientProvider client={queryClient}>
+        <OvermindProvider value={overmind}>
+          <ArbQueryParamProvider>
+            <WagmiProvider config={wagmiConfig}>
+              <RainbowKitProvider theme={rainbowkitTheme}>
+                <AppContextProvider>
+                  <ArbitrumIndexerProvider
+                    ponderClient={ponderClient as any}
+                    queryClient={queryClient as any}
+                    config={{ apiUrl: indexerApiUrl }}
+                  >
+                    {children as any}
+                  </ArbitrumIndexerProvider>
+                </AppContextProvider>
+              </RainbowKitProvider>
+            </WagmiProvider>
+          </ArbQueryParamProvider>
+        </OvermindProvider>
+      </QueryClientProvider>
+    </PonderProvider>
   )
 }

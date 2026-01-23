@@ -1,4 +1,5 @@
 // @ts-check type next.config.js
+const path = require('path')
 
 /**
  * @type {import('next').NextConfig}
@@ -8,11 +9,21 @@ module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
+  transpilePackages: ['@arbitrum/indexer-provider'],
   experimental: {
     externalDir: true
   },
   webpack: config => {
     config.externals.push('pino-pretty', 'lokijs', 'encoding')
+
+    // Resolve peer dependencies for external indexer-provider package
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@tanstack/react-query': path.resolve(__dirname, '../../node_modules/@tanstack/react-query'),
+      '@ponder/client': path.resolve(__dirname, '../../node_modules/@ponder/client'),
+      '@ponder/react': path.resolve(__dirname, '../../node_modules/@ponder/react'),
+    }
+
     return config
   },
   images: {

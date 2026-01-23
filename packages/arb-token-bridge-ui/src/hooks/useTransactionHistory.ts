@@ -75,6 +75,8 @@ import {
 import { create } from 'zustand'
 import { useLifiMergedTransactionCacheStore } from './useLifiMergedTransactionCacheStore'
 import { useDisabledFeatures } from './useDisabledFeatures'
+import { useIndexerHistory } from '../components/TransactionHistory/useIndexerHistory'
+import { isExperimentalFeatureEnabled } from '../util'
 
 const BATCH_FETCH_BLOCKS: { [key: number]: number } = {
   33139: 5_000_000, // ApeChain
@@ -146,7 +148,7 @@ function getTransactionTimestamp(tx: Transfer) {
   return normalizeTimestamp(tx.timestamp?.toNumber() ?? 0)
 }
 
-function sortByTimestampDescending(a: Transfer, b: Transfer) {
+export function sortByTimestampDescending(a: Transfer, b: Transfer) {
   return getTransactionTimestamp(a) > getTransactionTimestamp(b) ? -1 : 1
 }
 
@@ -582,6 +584,9 @@ export const useTransactionHistory = (
   const lifiTransactions = useLifiMergedTransactionCacheStore(
     state => state.transactions
   )
+
+  const indexerResult = useIndexerHistory(address)
+
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 3
@@ -953,6 +958,12 @@ export const useTransactionHistory = (
   function resume() {
     setFetching(true)
     setPage(prevPage => prevPage + 1)
+  }
+
+  const isIndexerEnabled = isExperimentalFeatureEnabled('indexer')
+
+  if (isIndexerEnabled) {
+    return { ...indexerResult, addPendingTransaction, updatePendingTransaction }
   }
 
   if (isLoadingTxsWithoutStatus || error) {

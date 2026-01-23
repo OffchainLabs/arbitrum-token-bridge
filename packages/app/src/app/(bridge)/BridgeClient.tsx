@@ -19,8 +19,11 @@ initializeDayjs()
 // Initialize Sentry for error tracking
 initializeSentry(process.env.NEXT_PUBLIC_SENTRY_DSN)
 
-// Initialize PostHog
-if (typeof process.env.NEXT_PUBLIC_POSTHOG_KEY === 'string') {
+// Initialize PostHog (only in browser)
+if (
+  typeof window !== 'undefined' &&
+  typeof process.env.NEXT_PUBLIC_POSTHOG_KEY === 'string'
+) {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     api_host: 'https://app.posthog.com',
     loaded: posthog => {

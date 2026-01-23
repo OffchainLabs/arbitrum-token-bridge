@@ -1,5 +1,8 @@
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import { useEffect, useMemo } from 'react'
+
+dayjs.extend(relativeTime)
 import { Tab } from '@headlessui/react'
 
 import { MergedTransaction } from '../../state/app/state'

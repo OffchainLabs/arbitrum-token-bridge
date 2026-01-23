@@ -143,7 +143,12 @@ export function getBlockNumberReferenceChainIdByChainId({
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
-  if (typeof localStorage === 'undefined') return [] // required so that it does not fail test-runners
+  if (
+    typeof localStorage === 'undefined' ||
+    typeof localStorage.getItem !== 'function'
+  ) {
+    return []
+  }
 
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
@@ -182,6 +187,12 @@ export function getCustomChainFromLocalStorageById(chainId: ChainId) {
 }
 
 export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
+  if (
+    typeof localStorage === 'undefined' ||
+    typeof localStorage.setItem !== 'function'
+  ) {
+    return
+  }
   const customChains = getCustomChainsFromLocalStorage()
 
   if (
@@ -201,6 +212,12 @@ export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
 }
 
 export function removeCustomChainFromLocalStorage(chainId: number) {
+  if (
+    typeof localStorage === 'undefined' ||
+    typeof localStorage.setItem !== 'function'
+  ) {
+    return
+  }
   const newCustomChains = getCustomChainsFromLocalStorage().filter(
     chain => chain.chainId !== chainId
   )

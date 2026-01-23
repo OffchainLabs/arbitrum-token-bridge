@@ -41,11 +41,15 @@ export const getAPIBaseUrl = () => {
 }
 
 // add feature flags to the array
-const featureFlags = [] as const
+const featureFlags = ['indexer'] as const
 
 type FeatureFlag = (typeof featureFlags)[number]
 
 export const isExperimentalFeatureEnabled = (flag: FeatureFlag) => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
   const query = new URLSearchParams(window.location.search)
   const flags = query.get('experiments')
 
@@ -57,6 +61,10 @@ export const isExperimentalFeatureEnabled = (flag: FeatureFlag) => {
 }
 
 export const isExperimentalModeEnabled = () => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
   const query = new URLSearchParams(window.location.search)
   const flags = query.get('experiments')
 

@@ -88,6 +88,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
+"@arbitrum/indexer-provider@github:offchainlabs/arbitrum-indexer#feat/e2e-tests":
+  version "0.1.20"
+  resolved "git+ssh://git@github.com/offchainlabs/arbitrum-indexer.git#cd4a7041f4a69b7f81aa9815ee2ae634e63b87f1"
+
 "@arbitrum/sdk@^4.0.3":
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.3.tgz#40383cc478ff7a94e54dc69c160879bdf9fc2f07"
@@ -2918,6 +2922,22 @@
   integrity sha512-JxG9eq92ET75EbVi3s+4sYbcG7q72ECeZNbdBlaMkGcNbiDQ4cAi8U2QP5oKkOx+1gpaiL1LDStmzCaEM1Z6fQ==
   dependencies:
     playwright "1.45.2"
+
+"@ponder/client@^0.11.19":
+  version "0.11.43"
+  resolved "https://registry.yarnpkg.com/@ponder/client/-/client-0.11.43.tgz#779ba8a91e237dd01bf69e0e52e5da6e9c2cb9dd"
+  integrity sha512-s81/WISCRNQ5ZN+6n1Szj3NIMECsIkuS1d49d/cg1odEJTphqyMVjtto7xkYK13flZ6Dekb3/kG3lVPgW49mWQ==
+  dependencies:
+    drizzle-orm "0.41.0"
+    eventsource "^3.0.5"
+    superjson "^2.2.2"
+
+"@ponder/react@^0.11.19":
+  version "0.11.43"
+  resolved "https://registry.yarnpkg.com/@ponder/react/-/react-0.11.43.tgz#d5003673d47b393f8c447eaac55bddf71ec289b8"
+  integrity sha512-HPkgLYicOonAHHVB76dGkKI4FeNgSMKSgJTq4fD9r4sBNSYCIApy4L0rp0E+KlKdtiH3SPTMJQq7hHt6yvR1yw==
+  dependencies:
+    superjson "^2.2.2"
 
 "@popperjs/core@^2.9.0":
   version "2.11.8"
@@ -6612,6 +6632,13 @@ cookie@^0.7.1:
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.7.2.tgz#556369c472a2ba910f2979891b526b3436237ed7"
   integrity sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==
 
+copy-anything@^4:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/copy-anything/-/copy-anything-4.0.5.tgz#16cabafd1ea4bb327a540b750f2b4df522825aea"
+  integrity sha512-7Vv6asjS4gMOuILabD3l739tsaxFQmC+a7pLZm02zyvs8p977bL3zEgq3yDk5rn9B0PbYgIv++jmHcuUab4RhA==
+  dependencies:
+    is-what "^5.2.0"
+
 copy-to-clipboard@^3.3.1:
   version "3.3.3"
   resolved "https://registry.npmjs.org/copy-to-clipboard/-/copy-to-clipboard-3.3.3.tgz"
@@ -7365,6 +7392,11 @@ download@^8.0.0:
     make-dir "^2.1.0"
     p-event "^2.1.0"
     pify "^4.0.1"
+
+drizzle-orm@0.41.0:
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/drizzle-orm/-/drizzle-orm-0.41.0.tgz#61b55ef3bf5983222deaaeed848b8c58c4aa3e0a"
+  integrity sha512-7A4ZxhHk9gdlXmTdPj/lREtP+3u8KvZ4yEN6MYVxBzZGex5Wtdc+CWSbu7btgF6TB0N+MNPrvW7RKBbxJchs/Q==
 
 dunder-proto@^1.0.0, dunder-proto@^1.0.1:
   version "1.0.1"
@@ -8301,7 +8333,7 @@ eventsource-parser@^3.0.1:
   resolved "https://registry.yarnpkg.com/eventsource-parser/-/eventsource-parser-3.0.1.tgz#5e358dba9a55ba64ca90da883c4ca35bd82467bd"
   integrity sha512-VARTJ9CYeuQYb0pZEPbzi740OWFgpHe7AYJ2WFZVnUDUQp5Dk2yJUgF36YsZ81cOyxT0QxmXD2EQpapAouzWVA==
 
-eventsource@^3.0.2:
+eventsource@^3.0.2, eventsource@^3.0.5:
   version "3.0.7"
   resolved "https://registry.yarnpkg.com/eventsource/-/eventsource-3.0.7.tgz#1157622e2f5377bb6aef2114372728ba0c156989"
   integrity sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==
@@ -10130,6 +10162,11 @@ is-weakset@^2.0.3:
   dependencies:
     call-bound "^1.0.3"
     get-intrinsic "^1.2.6"
+
+is-what@^5.2.0:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/is-what/-/is-what-5.5.0.tgz#a3031815757cfe1f03fed990bf6355a2d3f628c4"
+  integrity sha512-oG7cgbmg5kLYae2N5IVd3jm2s+vldjxJzK1pcu9LfpGuQ93MQSzo0okvRna+7y5ifrD+20FE8FvjusyGaz14fw==
 
 is-windows@^1.0.2:
   version "1.0.2"
@@ -13950,6 +13987,13 @@ sucrase@^3.35.0:
     mz "^2.7.0"
     pirates "^4.0.1"
     ts-interface-checker "^0.1.9"
+
+superjson@^2.2.2:
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/superjson/-/superjson-2.2.6.tgz#a223a3a988172a5f9656e2063fe5f733af40d099"
+  integrity sha512-H+ue8Zo4vJmV2nRjpx86P35lzwDT3nItnIsocgumgr0hHMQ+ZGq5vrERg9kJBo5AWGmxZDhzDo+WVIJqkB0cGA==
+  dependencies:
+    copy-anything "^4"
 
 superstruct@0.14.2:
   version "0.14.2"
