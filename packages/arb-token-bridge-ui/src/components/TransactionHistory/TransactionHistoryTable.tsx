@@ -8,20 +8,13 @@ import {
 } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { Column, Table } from 'react-virtualized'
-import {
-  ExclamationCircleIcon,
-  PlusCircleIcon
-} from '@heroicons/react/24/outline'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 import { isTokenDeposit } from '../../state/app/utils'
-import {
-  ChainPair,
-  UseTransactionHistoryResult
-} from '../../hooks/useTransactionHistory'
+import { UseTransactionHistoryResult } from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
-import { getNetworkName } from '../../util/networks'
 import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
@@ -100,39 +93,6 @@ export const HistoryLoader = () => {
   return <span className="animate-pulse">Loading transactions...</span>
 }
 
-const FailedChainPairsTooltip = ({
-  failedChainPairs
-}: {
-  failedChainPairs: ChainPair[]
-}) => {
-  if (failedChainPairs.length === 0) {
-    return null
-  }
-
-  return (
-    <Tooltip
-      content={
-        <div className="flex flex-col space-y-1 text-xs">
-          <span>
-            We were unable to fetch data for the following chain pairs:
-          </span>
-          <ul className="flex list-disc flex-col pl-4">
-            {failedChainPairs.map(pair => (
-              <li key={`${pair.parentChainId}-${pair.childChainId}`}>
-                <b>{getNetworkName(pair.parentChainId)}</b>
-                {' <> '}
-                <b>{getNetworkName(pair.childChainId)}</b>
-              </li>
-            ))}
-          </ul>
-        </div>
-      }
-    >
-      <ExclamationCircleIcon height={20} className="text-error" />
-    </Tooltip>
-  )
-}
-
 type TransactionHistoryTableProps = UseTransactionHistoryResult & {
   selectedTabIndex: number
   oldestTxTimeAgoString: string
@@ -146,7 +106,6 @@ export const TransactionHistoryTable = (
     loading,
     completed,
     error,
-    failedChainPairs,
     resume,
     selectedTabIndex,
     oldestTxTimeAgoString
@@ -220,13 +179,11 @@ export const TransactionHistoryTable = (
       >
         {loading ? (
           <div className="flex h-[28px] items-center space-x-2">
-            <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
             <HistoryLoader />
           </div>
         ) : (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center justify-start space-x-1">
-              <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
               <span className="text-xs">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
