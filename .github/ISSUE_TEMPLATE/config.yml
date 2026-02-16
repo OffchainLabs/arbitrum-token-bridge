@@ -3,7 +3,6 @@ contact_links:
   - name: Add an Orbit Chain to the Bridge UI
     url: https://github.com/OffchainLabs/arbitrum-portal/issues/new?template=add-orbit-chain-request.yml
     about: File a request to add your Orbit chain to the bridge.
-contact_links:
   - name: Arbitrum Bridge UI Support
     url: https://support.arbitrum.io/hc/en-gb/requests/new?ticket_form_id=18155929976987
     about: Please ask your specific questions here.
