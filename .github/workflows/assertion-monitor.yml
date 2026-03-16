@@ -2,8 +2,8 @@ name: Assertion Monitor
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 */6 * * *"  # Run every 6 hours
+  # schedule:
+  #  - cron: "0 */6 * * *"  # Run every 6 hours
 
 jobs:
   run-monitoring:
