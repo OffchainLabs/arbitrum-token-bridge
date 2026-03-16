@@ -1513,6 +1513,54 @@
           "logo": "/images/SyndicateNetwork_Logo.png"
         }
       }
+    },
+    {
+      "chainId": 175200,
+      "confirmPeriodBlocks": 40320,
+      "ethBridge": {
+        "bridge": "0x7a472B48D9e9D2f6B7fF8FCBb5251849ca75D18f",
+        "inbox": "0x009060fdb0816c354F487843d275D9e1d90B1956",
+        "outbox": "0x09c35e5848B52Fa422447AD6728b328d0Aa39bA9",
+        "rollup": "0xA11359544aEDC8E5d6700DEf8A8D9dCb828cf646",
+        "sequencerInbox": "0x3a1b2BDcD084f0536bEF90B8e709fbcCDBf9fEb3"
+      },
+      "nativeToken": "0xC7603786470F04D33E35f9E9B56bD0Ca8803fB95",
+      "explorerUrl": "https://lit-chain-explorer.litprotocol.com",
+      "rpcUrl": "https://lit-chain-rpc.litprotocol.com",
+      "isCustom": true,
+      "isTestnet": false,
+      "name": "Lit Chain",
+      "slug": "lit-chain",
+      "parentChainId": 42161,
+      "tokenBridge": {
+        "parentCustomGateway": "0x38acac5aC57EC48e69e5Ed1dacecC444bc3699B2",
+        "parentErc20Gateway": "0x504463Bfa84E30E420389BB1973e95334d666195",
+        "parentGatewayRouter": "0x50bF4428E0b05223431B932CFE79fb46518E6190",
+        "parentMultiCall": "0x90B02D9F861017844F30dFbdF725b6aa84E63822",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "parentWeth": "0x0000000000000000000000000000000000000000",
+        "parentWethGateway": "0x0000000000000000000000000000000000000000",
+        "childCustomGateway": "0x25d3e0964ce42E5C343a0F5911122cBE10ed283a",
+        "childErc20Gateway": "0x024bf9Fa73C5a6880E48e0451ff0695084c3df04",
+        "childGatewayRouter": "0xf490cF5cF1303c76556C8055Defc7d98E17f3c94",
+        "childMultiCall": "0x8e3caDdF5E38779D7A6384dc8a92d9785D9d0c91",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
+        "childWeth": "0x0000000000000000000000000000000000000000",
+        "childWethGateway": "0x0000000000000000000000000000000000000000"
+      },
+      "bridgeUiConfig": {
+        "color": "#FF4205",
+        "network": {
+          "name": "Lit Chain",
+          "logo": "/images/LitChain_Logo.svg",
+          "description": "Lit Protocol's mainnet chain."
+        },
+        "nativeTokenData": {
+          "name": "Lit Protocol",
+          "symbol": "LITKEY",
+          "logoUrl": "/images/LitChain_NativeTokenLogo.svg"
+        }
+      }
     }
   ],
   "testnet": [
