@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { Chain } from 'viem'
 import { BigNumber } from 'ethers'
@@ -80,6 +80,98 @@ class TokenDisabledError extends Error {
   }
 }
 
+export async function processTokensFromList({
+  arbTokenList,
+  listId,
+  parentChainId,
+  childChainId
+}: {
+  arbTokenList: TokenList
+  listId: string
+  parentChainId: number
+  childChainId: number
+}) {
+  const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+  const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
+
+  for (const tokenData of arbTokenList.tokens) {
+    const { address, name, symbol, extensions, decimals, logoURI, chainId } =
+      tokenData
+
+    if (![parentChainId, childChainId].includes(chainId)) {
+      continue
+    }
+
+    const bridgeInfo = (() => {
+      // TODO: parsing the token list format could be from arbts or the tokenlist package
+      interface Extensions {
+        bridgeInfo: {
+          [chainId: string]: {
+            tokenAddress: string
+            originBridgeAddress: string
+            destBridgeAddress: string
+          }
+        }
+      }
+      const isExtensions = (obj: any): obj is Extensions => {
+        if (!obj) return false
+        if (!obj['bridgeInfo']) return false
+        return Object.keys(obj['bridgeInfo'])
+          .map(key => obj['bridgeInfo'][key])
+          .every(
+            e =>
+              e &&
+              'tokenAddress' in e &&
+              'originBridgeAddress' in e &&
+              'destBridgeAddress' in e
+          )
+      }
+      if (!isExtensions(extensions)) {
+        return null
+      } else {
+        return extensions.bridgeInfo
+      }
+    })()
+
+    if (bridgeInfo) {
+      const l1Address = bridgeInfo[parentChainId]?.tokenAddress.toLowerCase()
+
+      if (l1Address) {
+        bridgeTokensToAdd[l1Address] = {
+          name,
+          type: TokenType.ERC20,
+          symbol,
+          address: l1Address,
+          l2Address: address.toLowerCase(),
+          parentBridgeAddress: bridgeInfo[parentChainId]?.destBridgeAddress,
+          childBridgeAddress: bridgeInfo[parentChainId]?.originBridgeAddress,
+          decimals,
+          logoURI,
+          listIds: new Set([listId])
+        }
+      }
+    }
+    // save potentially unbridged L1 tokens:
+    // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
+    else if (arbTokenList.tokens.length < 1000) {
+      candidateUnbridgedTokensToAdd.push({
+        name,
+        type: TokenType.ERC20,
+        symbol,
+        address: address.toLowerCase(),
+        decimals,
+        logoURI,
+        listIds: new Set([listId])
+      })
+    }
+  }
+
+  return {
+    bridgeTokensToAdd,
+    candidateUnbridgedTokensToAdd
+  }
+}
+
 export interface TokenBridgeParams {
   l1: { provider: JsonRpcProvider; network: Chain }
   l2: { provider: JsonRpcProvider; network: Chain }
@@ -135,8 +227,6 @@ export const useArbTokenBridge = (
       React.Dispatch<void>
     ]
 
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
-
   const removeTokensFromList = (listID: string) => {
     setBridgeTokens(prevBridgeTokens => {
       const newBridgeTokens = { ...prevBridgeTokens }
@@ -158,81 +248,13 @@ export const useArbTokenBridge = (
     const l1ChainID = l1.network.id
     const l2ChainID = l2.network.id
 
-    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-
-    const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
-
-    for (const tokenData of arbTokenList.tokens) {
-      const { address, name, symbol, extensions, decimals, logoURI, chainId } =
-        tokenData
-
-      if (![l1ChainID, l2ChainID].includes(chainId)) {
-        continue
-      }
-
-      const bridgeInfo = (() => {
-        // TODO: parsing the token list format could be from arbts or the tokenlist package
-        interface Extensions {
-          bridgeInfo: {
-            [chainId: string]: {
-              tokenAddress: string
-              originBridgeAddress: string
-              destBridgeAddress: string
-            }
-          }
-        }
-        const isExtensions = (obj: any): obj is Extensions => {
-          if (!obj) return false
-          if (!obj['bridgeInfo']) return false
-          return Object.keys(obj['bridgeInfo'])
-            .map(key => obj['bridgeInfo'][key])
-            .every(
-              e =>
-                e &&
-                'tokenAddress' in e &&
-                'originBridgeAddress' in e &&
-                'destBridgeAddress' in e
-            )
-        }
-        if (!isExtensions(extensions)) {
-          return null
-        } else {
-          return extensions.bridgeInfo
-        }
-      })()
-
-      if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
-
-        if (!l1Address) {
-          return
-        }
-
-        bridgeTokensToAdd[l1Address] = {
-          name,
-          type: TokenType.ERC20,
-          symbol,
-          address: l1Address,
-          l2Address: address.toLowerCase(),
-          decimals,
-          logoURI,
-          listIds: new Set([listId])
-        }
-      }
-      // save potentially unbridged L1 tokens:
-      // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
-      else if (arbTokenList.tokens.length < 1000) {
-        candidateUnbridgedTokensToAdd.push({
-          name,
-          type: TokenType.ERC20,
-          symbol,
-          address: address.toLowerCase(),
-          decimals,
-          logoURI,
-          listIds: new Set([listId])
-        })
-      }
-    }
+    const { bridgeTokensToAdd, candidateUnbridgedTokensToAdd } =
+      await processTokensFromList({
+        arbTokenList,
+        listId,
+        parentChainId: l1ChainID,
+        childChainId: l2ChainID
+      })
 
     // add L1 tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
     const l1AddressesOfBridgedTokens = new Set(
