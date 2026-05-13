@@ -185,8 +185,8 @@
         "sequencerInbox": "0x24B68936C13A414cd91437aE7AA730321B9ff159"
       },
       "nativeToken": "0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8",
-      "explorerUrl": "https://explorer.sanko.xyz",
-      "rpcUrl": "https://mainnet.sanko.xyz",
+      "explorerUrl": "https://sanko-mainnet.calderaexplorer.xyz/",
+      "rpcUrl": "https://sanko-mainnet.calderachain.xyz/http",
       "isCustom": true,
       "isTestnet": false,
       "name": "Sanko",
@@ -197,28 +197,28 @@
         "parentErc20Gateway": "0xb4951c0C41CFceB0D195A95FE66280457A80a990",
         "parentGatewayRouter": "0x847186fbeEBf41eEe9c230360D0bF8585c0Db57B",
         "parentMultiCall": "0x909b042B88F587d745dBF52e2569545376f6eAA4",
-        "parentProxyAdmin": "0xd18b1C6376633000c85541F7c15c591Ffe5f9556",
+        "parentProxyAdmin": "0x0000000000000000000000000000000000000000",
         "parentWeth": "0x0000000000000000000000000000000000000000",
         "parentWethGateway": "0x0000000000000000000000000000000000000000",
         "childCustomGateway": "0x5dd84FB52A27B9D5b760b0373fDeda52D10d3c4a",
         "childErc20Gateway": "0xAf574BbE2139e39F560C4db1A118E1245aC0983d",
         "childGatewayRouter": "0x505421b85ae7F906e8807bf59ee3Da62e894CDC3",
         "childMultiCall": "0x446696a44B13D7B03dBEe837610692d2A71D6232",
-        "childProxyAdmin": "0xa2A055fa56b7B4d36F0320c5c65562854873e5B2",
+        "childProxyAdmin": "0x0000000000000000000000000000000000000000",
         "childWeth": "0x0000000000000000000000000000000000000000",
         "childWethGateway": "0x0000000000000000000000000000000000000000"
       },
       "bridgeUiConfig": {
-        "color": "#0367FF",
+        "color": "#090a12",
         "network": {
           "name": "Sanko",
-          "logo": "/images/SankoLogo.png",
-          "description": "Sanko Mainnet is an Orbit L3 chain - home to SankoPets and much more."
+          "logo": "/images/Sanko_Logo.webp",
+          "description": "Sanko is an Arbitrum Orbit Layer 3 designed to bring the internet of value to the golden days of gaming."
         },
         "nativeTokenData": {
           "name": "DMT",
           "symbol": "DMT",
-          "logoUrl": "/images/SankoLogo.png"
+          "logoUrl": "/images/Sanko_NativeTokenLogo.webp"
         }
       }
     },
