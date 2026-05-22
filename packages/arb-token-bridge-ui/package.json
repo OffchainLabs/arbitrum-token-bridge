@@ -30,7 +30,7 @@
     "ethers": "^5.8.0",
     "exponential-backoff": "^3.1.2",
     "graphql": "^16.10.0",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "^4.17.23",
     "next-query-params": "^5.1.0",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
