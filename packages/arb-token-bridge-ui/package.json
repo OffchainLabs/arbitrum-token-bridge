@@ -20,7 +20,7 @@
     "@uidotdev/usehooks": "^2.4.1",
     "@uniswap/token-lists": "^1.0.0-beta.34",
     "@unstoppabledomains/resolution": "^8.3.3",
-    "ajv": "^8.17.1",
+    "ajv": "^8.18.0",
     "ajv-formats": "^2.1.1",
     "apollo-link-timeout": "^5.0.2",
     "axios": "^1.12.0",
